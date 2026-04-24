@@ -6,6 +6,7 @@ const routes = [
   { path: '/', redirect: '/dashboard' },
   { path: '/dashboard', name: 'Dashboard', component: () => import('@/views/DashboardView.vue') },
   { path: '/clientes', name: 'Clientes', component: () => import('@/views/Clientes/ClientesListView.vue') },
+  { path: '/clientes/:id', name: 'ClienteDetalle', component: () => import('@/views/Clientes/ClienteDetailView.vue') },
   { path: '/proyectos', name: 'Proyectos', component: () => import('@/views/Proyectos/ProyectosListView.vue') },
   { path: '/proyectos/:id', name: 'ProyectoDetalle', component: () => import('@/views/Proyectos/ProyectoDetailView.vue') },
   { path: '/fallas', name: 'Fallas', component: () => import('@/views/Fallas/FallasListView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
