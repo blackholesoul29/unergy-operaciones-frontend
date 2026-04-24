@@ -34,6 +34,7 @@ const titles = {
   Proyectos:       'Proyectos',
   ProyectoDetalle: 'Detalle de proyecto',
   Fallas:          'Fallas',
+  FallaDetalle:    'Detalle de falla',
   Liquidaciones:   'Liquidaciones',
 }
 

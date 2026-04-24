@@ -1,176 +1,255 @@
 <template>
-  <form class="space-y-4 pt-1" @submit.prevent="save">
-
-    <!-- Proyecto -->
-    <div class="grid grid-cols-2 gap-3">
-      <div class="col-span-2">
-        <label class="field-label">Proyecto *</label>
-        <Select v-model="form.proyecto_id" :options="proyectos"
-                option-value="id" option-label="nombre_display"
-                class="w-full" placeholder="Selecciona un proyecto…"
-                filter show-clear required />
+  <form @submit.prevent="submit" class="space-y-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <!-- Proyecto -->
+      <div class="sm:col-span-2 flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">Proyecto *</label>
+        <Select
+          v-model="form.proyecto_id"
+          :options="proyectos"
+          optionLabel="nombre_comercial"
+          optionValue="id"
+          placeholder="Seleccionar proyecto"
+          filter
+          class="w-full"
+          :class="{ 'p-invalid': errors.proyecto_id }"
+        />
+        <small v-if="errors.proyecto_id" class="text-red-500 text-xs">{{ errors.proyecto_id }}</small>
       </div>
 
-      <!-- Tipo de falla -->
-      <div class="col-span-2">
-        <label class="field-label">Tipo de falla *</label>
-        <Select v-model="form.tipo_falla_id" :options="tiposConCategoria"
-                option-value="id" option-label="etiqueta"
-                option-group-label="label" option-group-children="items"
-                class="w-full" placeholder="Selecciona el tipo…" filter required>
-          <template #optiongroup="{ option }">
-            <div class="flex items-center gap-2 py-1">
-              <span class="text-[10px] font-bold uppercase tracking-wide"
-                    style="color:#915BD8;">{{ option.label }}</span>
-            </div>
-          </template>
-        </Select>
+      <!-- Tipo -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">Tipo de falla *</label>
+        <Select
+          v-model="form.tipo_id"
+          :options="tiposAgrupados"
+          optionLabel="etiqueta"
+          optionValue="id"
+          optionGroupLabel="categoria"
+          optionGroupChildren="items"
+          placeholder="Seleccionar tipo"
+          class="w-full"
+          :class="{ 'p-invalid': errors.tipo_id }"
+        />
+        <small v-if="errors.tipo_id" class="text-red-500 text-xs">{{ errors.tipo_id }}</small>
       </div>
 
       <!-- Estado -->
-      <div>
-        <label class="field-label">Estado inicial</label>
-        <Select v-model="form.estado_id" :options="catalogos.estados"
-                option-value="id" option-label="etiqueta"
-                class="w-full" />
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">Estado *</label>
+        <Select
+          v-model="form.estado_id"
+          :options="catalogos.estados"
+          optionLabel="etiqueta"
+          optionValue="id"
+          placeholder="Seleccionar estado"
+          class="w-full"
+          :class="{ 'p-invalid': errors.estado_id }"
+        />
+        <small v-if="errors.estado_id" class="text-red-500 text-xs">{{ errors.estado_id }}</small>
       </div>
 
       <!-- Prioridad -->
-      <div>
-        <label class="field-label">Prioridad</label>
-        <Select v-model="form.prioridad_id" :options="catalogos.prioridades"
-                option-value="id" option-label="etiqueta"
-                class="w-full" />
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">Prioridad *</label>
+        <Select
+          v-model="form.prioridad_id"
+          :options="catalogos.prioridades"
+          optionLabel="etiqueta"
+          optionValue="id"
+          placeholder="Seleccionar prioridad"
+          class="w-full"
+          :class="{ 'p-invalid': errors.prioridad_id }"
+        />
+        <small v-if="errors.prioridad_id" class="text-red-500 text-xs">{{ errors.prioridad_id }}</small>
+      </div>
+
+      <!-- Asignado a -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">Asignado a</label>
+        <Select
+          v-model="form.asignado_a_id"
+          :options="usuarios"
+          optionLabel="nombre"
+          optionValue="id"
+          placeholder="Sin asignar"
+          showClear
+          class="w-full"
+        />
       </div>
 
       <!-- Fecha identificación -->
-      <div>
-        <label class="field-label">Fecha identificación *</label>
-        <DatePicker v-model="form.fecha_identificacion" date-format="dd/mm/yy"
-                    class="w-full" show-icon required />
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">Fecha identificación *</label>
+        <DatePicker
+          v-model="form.fecha_identificacion"
+          dateFormat="yy-mm-dd"
+          placeholder="AAAA-MM-DD"
+          class="w-full"
+          :class="{ 'p-invalid': errors.fecha_identificacion }"
+        />
+        <small v-if="errors.fecha_identificacion" class="text-red-500 text-xs">{{ errors.fecha_identificacion }}</small>
       </div>
 
-      <!-- Hora -->
-      <div>
-        <label class="field-label">Hora identificación</label>
-        <DatePicker v-model="form.hora_identificacion" time-only
-                    hour-format="24" class="w-full" />
+      <!-- SLA horas -->
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">SLA límite (horas)</label>
+        <InputNumber v-model="form.sla_limite_horas" placeholder="Ej: 24" class="w-full" :min="1" />
       </div>
 
       <!-- Fecha ocurrencia -->
-      <div class="col-span-2">
-        <label class="field-label">
+      <div class="sm:col-span-2 flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">
           Fecha y hora de ocurrencia
-          <span style="color:#9b89b5;">(si difiere de la identificación)</span>
+          <span style="color: #9b89b5;">(si difiere de la identificación)</span>
         </label>
-        <DatePicker v-model="form.fecha_ocurrencia" date-format="dd/mm/yy"
-                    show-time hour-format="24" class="w-full" show-icon />
+        <DatePicker
+          v-model="form.fecha_ocurrencia"
+          dateFormat="yy-mm-dd"
+          showTime
+          hourFormat="24"
+          class="w-full"
+          showIcon
+        />
+      </div>
+
+      <!-- Descripción -->
+      <div class="sm:col-span-2 flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">Descripción *</label>
+        <Textarea
+          v-model="form.descripcion"
+          rows="3"
+          autoResize
+          placeholder="Describe la falla, síntomas observados, equipos afectados..."
+          class="w-full"
+          :class="{ 'p-invalid': errors.descripcion }"
+        />
+        <small v-if="errors.descripcion" class="text-red-500 text-xs">{{ errors.descripcion }}</small>
+      </div>
+
+      <!-- Nota inicial -->
+      <div class="sm:col-span-2 flex flex-col gap-1">
+        <label class="text-xs font-medium" style="color: #6b5a8a;">
+          Nota inicial
+          <span style="color: #9b89b5;">(crea el primer seguimiento automáticamente)</span>
+        </label>
+        <Textarea
+          v-model="form.nota_inicial"
+          rows="2"
+          autoResize
+          placeholder="Ej: Se identificó durante monitoreo remoto..."
+          class="w-full"
+        />
       </div>
     </div>
 
-    <!-- Descripción -->
-    <div>
-      <label class="field-label">Descripción adicional</label>
-      <Textarea v-model="form.descripcion" rows="3" class="w-full"
-                placeholder="Detalla la falla, síntomas observados, equipos afectados…" />
+    <div class="flex justify-end gap-2 pt-2">
+      <Button label="Cancelar" severity="secondary" type="button" @click="$emit('cancel')" />
+      <Button
+        :label="initial ? 'Guardar cambios' : 'Registrar falla'"
+        type="submit"
+        :loading="saving"
+        style="background: #915BD8; border-color: #915BD8;"
+      />
     </div>
-
-    <!-- Nota inicial (seguimiento) -->
-    <div>
-      <label class="field-label">
-        Nota inicial
-        <span style="color:#9b89b5;">(crea el primer seguimiento automáticamente)</span>
-      </label>
-      <Textarea v-model="form.nota_inicial" rows="2" class="w-full"
-                placeholder="Ej: Se identificó la falla durante monitoreo remoto…" />
-    </div>
-
-    <!-- SLA -->
-    <div>
-      <label class="field-label">SLA límite (días) <span style="color:#9b89b5;">— se hereda del contrato si se deja vacío</span></label>
-      <InputNumber v-model="form.sla_limite_dias" :min="1" :max="365"
-                   class="w-full" placeholder="7" />
-    </div>
-
-    <!-- Botones -->
-    <div class="flex justify-end gap-2 pt-2 border-t" style="border-color:#f0eaf8;">
-      <Button type="button" label="Cancelar" severity="secondary" text @click="$emit('cancel')" />
-      <Button type="submit" label="Registrar falla" icon="pi pi-plus" :loading="loading" />
-    </div>
-
   </form>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import Button from 'primevue/button'
+import { ref, computed, onMounted } from 'vue'
 import Select from 'primevue/select'
-import Textarea from 'primevue/textarea'
-import InputNumber from 'primevue/inputnumber'
+import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
-import { useToast } from 'primevue/usetoast'
+import InputNumber from 'primevue/inputnumber'
+import Textarea from 'primevue/textarea'
 import api from '@/api/client'
 
-const props = defineProps({ catalogos: Object, proyectos: Array })
-const emit  = defineEmits(['save', 'cancel'])
-const toast = useToast()
+const props = defineProps({
+  initial: { type: Object, default: null },
+  catalogos: { type: Object, required: true },
+})
+const emit = defineEmits(['save', 'cancel'])
 
-const loading = ref(false)
+const proyectos = ref([])
+const usuarios = ref([])
+const saving = ref(false)
+const errors = ref({})
 
 const form = ref({
-  proyecto_id:         null,
-  tipo_falla_id:       null,
-  estado_id:           null,
-  prioridad_id:        null,
-  fecha_identificacion:new Date(),
-  hora_identificacion: null,
-  fecha_ocurrencia:    null,
-  descripcion:         '',
-  nota_inicial:        '',
-  sla_limite_dias:     null,
+  proyecto_id: props.initial?.proyecto_id ?? null,
+  tipo_id: props.initial?.tipo?.id ?? null,
+  estado_id: props.initial?.estado?.id ?? null,
+  prioridad_id: props.initial?.prioridad?.id ?? null,
+  asignado_a_id: props.initial?.asignado_a?.id ?? null,
+  descripcion: props.initial?.descripcion ?? '',
+  fecha_identificacion: props.initial?.fecha_identificacion ? new Date(props.initial.fecha_identificacion) : null,
+  fecha_ocurrencia: props.initial?.fecha_ocurrencia ? new Date(props.initial.fecha_ocurrencia) : null,
+  sla_limite_horas: props.initial?.sla_limite_horas ?? null,
+  nota_inicial: '',
 })
 
-// Inicializar estado por defecto = "activa"
-const estadoActiva = props.catalogos?.estados?.find(e => e.codigo === 'activa')
-if (estadoActiva) form.value.estado_id = estadoActiva.id
-
-// Agrupar tipos por categoría para el select
-const tiposConCategoria = computed(() => {
-  const grupos = {}
-  for (const t of (props.catalogos?.tipos || [])) {
-    const cat = t.categoria?.etiqueta || 'Sin categoría'
-    if (!grupos[cat]) grupos[cat] = { label: cat, items: [] }
-    grupos[cat].items.push({ ...t, etiqueta: `${t.codigo} · ${t.etiqueta}` })
+const tiposAgrupados = computed(() => {
+  const groups = {}
+  for (const t of props.catalogos.tipos ?? []) {
+    const cat = t.categoria?.etiqueta ?? 'General'
+    if (!groups[cat]) groups[cat] = { categoria: cat, items: [] }
+    groups[cat].items.push(t)
   }
-  return Object.values(grupos)
+  return Object.values(groups)
 })
 
-async function save() {
-  if (!form.value.proyecto_id || !form.value.tipo_falla_id) {
-    toast.add({ severity: 'warn', summary: 'Completa los campos requeridos', life: 2500 })
-    return
-  }
-  loading.value = true
+function validate() {
+  const e = {}
+  if (!form.value.proyecto_id) e.proyecto_id = 'Requerido'
+  if (!form.value.tipo_id) e.tipo_id = 'Requerido'
+  if (!form.value.estado_id) e.estado_id = 'Requerido'
+  if (!form.value.prioridad_id) e.prioridad_id = 'Requerido'
+  if (!form.value.descripcion?.trim()) e.descripcion = 'Requerido'
+  if (!form.value.fecha_identificacion) e.fecha_identificacion = 'Requerido'
+  errors.value = e
+  return Object.keys(e).length === 0
+}
+
+async function submit() {
+  if (!validate()) return
+  saving.value = true
   try {
     const payload = {
-      ...form.value,
-      fecha_identificacion: form.value.fecha_identificacion
-        ? form.value.fecha_identificacion.toISOString().split('T')[0] : null,
-      hora_identificacion: form.value.hora_identificacion
-        ? form.value.hora_identificacion.toTimeString().slice(0, 8) : null,
-      nota_inicial: form.value.nota_inicial?.trim() || null,
+      proyecto_id: form.value.proyecto_id,
+      tipo_id: form.value.tipo_id,
+      estado_id: form.value.estado_id,
+      prioridad_id: form.value.prioridad_id,
+      descripcion: form.value.descripcion,
+      fecha_identificacion: formatDate(form.value.fecha_identificacion),
     }
-    await api.post('/fallas', payload)
-    emit('save')
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al registrar',
-                detail: e.response?.data?.detail, life: 4000 })
+    if (form.value.asignado_a_id) payload.asignado_a_id = form.value.asignado_a_id
+    if (form.value.sla_limite_horas) payload.sla_limite_horas = form.value.sla_limite_horas
+    if (form.value.fecha_ocurrencia) payload.fecha_ocurrencia = form.value.fecha_ocurrencia.toISOString()
+    if (form.value.nota_inicial?.trim()) payload.nota_inicial = form.value.nota_inicial.trim()
+
+    emit('save', payload)
   } finally {
-    loading.value = false
+    saving.value = false
   }
 }
-</script>
 
-<style scoped>
-.field-label { @apply block text-xs font-medium mb-1; color: #6b5a8a; }
-</style>
+function formatDate(d) {
+  if (!d) return null
+  if (typeof d === 'string') return d
+  return d.toISOString().split('T')[0]
+}
+
+onMounted(async () => {
+  const [pRes] = await Promise.all([
+    api.get('/proyectos', { params: { size: 500 } }),
+  ])
+  proyectos.value = pRes.data.items ?? []
+
+  try {
+    const uData = await api.get('/usuarios', { params: { size: 100 } })
+    usuarios.value = uData.data.items ?? []
+  } catch {
+    // /usuarios may not exist yet
+  }
+})
+</script>

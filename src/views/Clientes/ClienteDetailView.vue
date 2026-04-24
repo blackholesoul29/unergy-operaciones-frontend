@@ -30,29 +30,6 @@
           <ClienteForm :initial="cliente" @save="saveInfo" @cancel="() => {}" :inline="true" />
         </div>
 
-        <!-- ── Tab: RUT ── -->
-        <div v-if="activeTab === 'rut'" class="max-w-lg space-y-4">
-          <p class="text-sm" style="color: #6b5a8a;">
-            Pega el enlace al RUT del cliente (Google Drive, OneDrive, etc.)
-          </p>
-          <div>
-            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
-              URL del RUT
-            </label>
-            <input v-model="rutUrl" type="url" placeholder="https://drive.google.com/..."
-              class="w-full px-4 py-2.5 rounded-lg text-sm outline-none"
-              style="border: 1.5px solid #d4c8e8;" />
-          </div>
-          <div class="flex gap-2 items-center">
-            <button @click="saveRut" class="px-4 py-2 rounded-lg text-sm font-semibold text-white"
-              style="background: #915BD8;">Guardar enlace</button>
-            <a v-if="cliente.rut_url" :href="cliente.rut_url" target="_blank"
-              class="text-sm flex items-center gap-1 hover:underline" style="color: #915BD8;">
-              <i class="pi pi-external-link text-xs" /> Ver RUT actual
-            </a>
-          </div>
-        </div>
-
         <!-- ── Tab: Servicios ── -->
         <div v-if="activeTab === 'servicios'" class="space-y-4">
           <div class="flex items-center justify-between">
@@ -70,75 +47,153 @@
 
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div v-for="s in cliente.servicios" :key="s.id"
-              class="flex items-center justify-between rounded-xl p-4"
+              class="rounded-xl p-4 space-y-2"
               style="border: 1.5px solid #e8e0f0;">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                  :style="{ background: servicioColor(s.tipo) }">
-                  {{ s.tipo[0].toUpperCase() }}
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                    :style="{ background: servicioColor(s.tipo) }">
+                    {{ s.tipo[0].toUpperCase() }}
+                  </div>
+                  <div>
+                    <p class="text-sm font-semibold capitalize" style="color: #2C2039;">{{ servicioLabel(s.tipo) }}</p>
+                    <p v-if="s.fecha_inicio" class="text-xs" style="color: #9b89b5;">
+                      Desde {{ formatDate(s.fecha_inicio) }}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p class="text-sm font-semibold capitalize" style="color: #2C2039;">{{ servicioLabel(s.tipo) }}</p>
-                  <p v-if="s.fecha_inicio" class="text-xs" style="color: #9b89b5;">
-                    Desde {{ formatDate(s.fecha_inicio) }}
-                  </p>
-                </div>
+                <button @click="confirmarEliminarServicio(s)" class="text-red-400 hover:text-red-600 transition-colors">
+                  <i class="pi pi-trash text-sm" />
+                </button>
               </div>
-              <button @click="confirmarEliminarServicio(s)"
-                class="text-red-400 hover:text-red-600 transition-colors">
-                <i class="pi pi-trash text-sm" />
-              </button>
+
+              <!-- Documentos vinculados al servicio -->
+              <div class="pt-1 space-y-1">
+                <template v-for="tipo in ['oferta', 'contrato']" :key="tipo">
+                  <div class="flex items-center justify-between rounded-lg px-3 py-1.5"
+                    style="background: #f8f5fd;">
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full"
+                        :style="tipo === 'oferta' ? 'background:#f0ebfd;color:#915BD8' : 'background:#e8f5e9;color:#2e7d32'">
+                        {{ tipo === 'oferta' ? 'Oferta' : 'Contrato' }}
+                      </span>
+                      <span v-if="docDeServicio(s.id, tipo)" class="text-xs truncate max-w-32" style="color:#2C2039;">
+                        {{ docDeServicio(s.id, tipo).archivo_nombre || docDeServicio(s.id, tipo).nombre }}
+                      </span>
+                      <span v-else class="text-xs italic" style="color:#bba8d4;">Sin archivo</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                      <a v-if="docDeServicio(s.id, tipo)?.archivo_url"
+                        :href="docDeServicio(s.id, tipo).archivo_url" target="_blank"
+                        class="text-xs hover:underline flex items-center gap-0.5" style="color: #915BD8;">
+                        <i class="pi pi-external-link text-xs" />
+                      </a>
+                      <button v-if="docDeServicio(s.id, tipo)"
+                        @click="abrirDialogoDocumento(docDeServicio(s.id, tipo))"
+                        class="text-xs hover:text-purple-700" style="color:#6b5a8a;">
+                        <i class="pi pi-pencil" />
+                      </button>
+                      <button v-else @click="abrirDialogoDocumento(null, tipo, s.id)"
+                        class="text-xs font-medium" style="color:#915BD8;">
+                        + Subir
+                      </button>
+                    </div>
+                  </div>
+                </template>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- ── Tab: Contratos/Ofertas ── -->
-        <div v-if="activeTab === 'documentos'" class="space-y-4">
+        <!-- ── Tab: Documentos ── -->
+        <div v-if="activeTab === 'documentos'" class="space-y-5">
           <div class="flex items-center justify-between">
-            <p class="text-sm" style="color: #6b5a8a;">Primero se registra la oferta, luego el contrato.</p>
+            <p class="text-sm" style="color: #6b5a8a;">Documentos del cliente: identificación y comerciales.</p>
             <button @click="abrirDialogoDocumento(null)"
               class="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5"
               style="background: #915BD8;">
-              <i class="pi pi-plus text-xs" /> Agregar
+              <i class="pi pi-plus text-xs" /> Agregar documento
             </button>
           </div>
 
-          <div v-if="documentosOrdenados.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
-            Sin ofertas ni contratos registrados.
-          </div>
-
-          <div v-else class="space-y-2">
-            <div v-for="doc in documentosOrdenados" :key="doc.id"
-              class="flex items-center justify-between rounded-xl px-4 py-3"
-              style="border: 1.5px solid #e8e0f0;">
-              <div class="flex items-center gap-3">
-                <span class="text-xs font-bold px-2 py-0.5 rounded-full"
-                  :style="doc.tipo === 'oferta'
-                    ? 'background:#f5f0fb; color:#915BD8;'
-                    : 'background:#e8f5e9; color:#2e7d32;'">
-                  {{ doc.tipo === 'oferta' ? 'Oferta' : 'Contrato' }}
-                </span>
-                <div>
-                  <p class="text-sm font-medium" style="color: #2C2039;">{{ doc.nombre }}</p>
-                  <p class="text-xs" style="color: #9b89b5;">
-                    {{ doc.numero ? `N° ${doc.numero} · ` : '' }}{{ estadoLabel(doc.estado) }}{{ doc.fecha ? ' · ' + formatDate(doc.fecha) : '' }}
-                  </p>
+          <!-- Identificación -->
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #9b89b5;">
+              Identificación del cliente
+            </h3>
+            <div v-if="docsIdentificacion.length === 0"
+              class="text-sm text-center py-6 rounded-xl" style="color:#bba8d4; border: 1.5px dashed #e8e0f0;">
+              Sin documentos de identificación. Agrega el RUT, certificado bancario o cámara de comercio.
+            </div>
+            <div v-else class="space-y-2">
+              <div v-for="doc in docsIdentificacion" :key="doc.id"
+                class="flex items-center justify-between rounded-xl px-4 py-3"
+                style="border: 1.5px solid #e8e0f0;">
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
+                    :style="badgeStyle(doc.tipo)">
+                    {{ tipoLabel(doc.tipo) }}
+                  </span>
+                  <div>
+                    <p class="text-sm font-medium" style="color: #2C2039;">
+                      {{ doc.archivo_nombre || doc.nombre }}
+                    </p>
+                    <p v-if="doc.notas" class="text-xs" style="color: #9b89b5;">{{ doc.notas }}</p>
+                  </div>
                 </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <a v-if="doc.archivo_url" :href="doc.archivo_url" target="_blank"
-                  class="text-xs hover:underline flex items-center gap-1" style="color: #915BD8;">
-                  <i class="pi pi-external-link text-xs" /> Ver
-                </a>
-                <button @click="abrirDialogoDocumento(doc)" style="color: #6b5a8a;" class="hover:text-purple-700">
-                  <i class="pi pi-pencil text-sm" />
-                </button>
-                <button @click="eliminarDocumento(doc)" class="text-red-400 hover:text-red-600">
-                  <i class="pi pi-trash text-sm" />
-                </button>
+                <div class="flex items-center gap-2">
+                  <a v-if="doc.archivo_url" :href="doc.archivo_url" target="_blank"
+                    class="text-xs hover:underline flex items-center gap-1" style="color: #915BD8;">
+                    <i class="pi pi-external-link text-xs" /> Ver
+                  </a>
+                  <button @click="abrirDialogoDocumento(doc)" style="color: #6b5a8a;" class="hover:text-purple-700">
+                    <i class="pi pi-pencil text-sm" />
+                  </button>
+                  <button @click="eliminarDocumento(doc)" class="text-red-400 hover:text-red-600">
+                    <i class="pi pi-trash text-sm" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+
+          <!-- Contratos y Ofertas generales (sin servicio vinculado) -->
+          <div v-if="docsComerciales.length > 0">
+            <h3 class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #9b89b5;">
+              Contratos y Ofertas (generales)
+            </h3>
+            <div class="space-y-2">
+              <div v-for="doc in docsComerciales" :key="doc.id"
+                class="flex items-center justify-between rounded-xl px-4 py-3"
+                style="border: 1.5px solid #e8e0f0;">
+                <div class="flex items-center gap-3">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded-full"
+                    :style="badgeStyle(doc.tipo)">
+                    {{ tipoLabel(doc.tipo) }}
+                  </span>
+                  <div>
+                    <p class="text-sm font-medium" style="color: #2C2039;">{{ doc.nombre }}</p>
+                    <p class="text-xs" style="color: #9b89b5;">
+                      {{ doc.numero ? `N° ${doc.numero} · ` : '' }}{{ estadoLabel(doc.estado) }}{{ doc.fecha ? ' · ' + formatDate(doc.fecha) : '' }}
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <a v-if="doc.archivo_url" :href="doc.archivo_url" target="_blank"
+                    class="text-xs hover:underline flex items-center gap-1" style="color: #915BD8;">
+                    <i class="pi pi-external-link text-xs" /> Ver
+                  </a>
+                  <button @click="abrirDialogoDocumento(doc)" style="color: #6b5a8a;" class="hover:text-purple-700">
+                    <i class="pi pi-pencil text-sm" />
+                  </button>
+                  <button @click="eliminarDocumento(doc)" class="text-red-400 hover:text-red-600">
+                    <i class="pi pi-trash text-sm" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -150,7 +205,7 @@
     <i class="pi pi-spin pi-spinner text-2xl" style="color: #915BD8;" />
   </div>
 
-  <!-- ── Dialog: Confirmar servicio ── -->
+  <!-- ── Dialog: Agregar servicio ── -->
   <Dialog v-model:visible="dialogServicio" modal header="Agregar servicio" class="w-full max-w-sm">
     <div class="space-y-4 pt-2">
       <div>
@@ -192,46 +247,94 @@
     </template>
   </Dialog>
 
-  <!-- ── Dialog: Documento comercial ── -->
+  <!-- ── Dialog: Documento ── -->
   <Dialog v-model:visible="dialogDocumento" modal
-    :header="editandoDocumento?.id ? 'Editar documento' : 'Nueva oferta / contrato'"
+    :header="editandoDocumento?.id ? 'Editar documento' : 'Nuevo documento'"
     class="w-full max-w-lg">
     <div class="space-y-4 pt-2">
       <div class="grid grid-cols-2 gap-4">
-        <div>
+
+        <!-- Tipo -->
+        <div class="col-span-2">
           <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Tipo *</label>
-          <Select v-model="formDoc.tipo" :options="[{label:'Oferta',value:'oferta'},{label:'Contrato',value:'contrato'}]"
-            optionLabel="label" optionValue="value" class="w-full" placeholder="Seleccionar" />
+          <Select v-model="formDoc.tipo" :options="TIPOS_DOC" optionLabel="label" optionValue="value"
+            class="w-full" placeholder="Seleccionar tipo" @change="onTipoChange" />
         </div>
-        <div>
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Estado</label>
-          <Select v-model="formDoc.estado" :options="estadosDoc" optionLabel="label" optionValue="value" class="w-full" />
+
+        <!-- Servicio (solo para oferta/contrato) -->
+        <div v-if="formDoc.tipo === 'oferta' || formDoc.tipo === 'contrato'" class="col-span-2">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
+            Servicio relacionado
+          </label>
+          <Select v-model="formDoc.servicio_id" :options="opcionesServicio" optionLabel="label" optionValue="value"
+            class="w-full" placeholder="Seleccionar servicio (opcional)" showClear />
         </div>
+
+        <!-- Nombre -->
         <div class="col-span-2">
           <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Nombre *</label>
-          <InputText v-model="formDoc.nombre" class="w-full" placeholder="Ej: Oferta de operación 2025" />
+          <InputText v-model="formDoc.nombre" class="w-full" placeholder="Ej: RUT Empresa XYZ" />
         </div>
-        <div>
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Número</label>
-          <InputText v-model="formDoc.numero" class="w-full" placeholder="Ej: OFR-001" />
-        </div>
-        <div>
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Fecha</label>
-          <DatePicker v-model="formDoc.fecha" class="w-full" dateFormat="dd/mm/yy" showButtonBar />
-        </div>
+
+        <!-- Estado (solo oferta/contrato) -->
+        <template v-if="formDoc.tipo === 'oferta' || formDoc.tipo === 'contrato'">
+          <div>
+            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Estado</label>
+            <Select v-model="formDoc.estado" :options="ESTADOS_DOC" optionLabel="label" optionValue="value" class="w-full" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Número</label>
+            <InputText v-model="formDoc.numero" class="w-full" placeholder="Ej: OFR-001" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Fecha</label>
+            <DatePicker v-model="formDoc.fecha" class="w-full" dateFormat="dd/mm/yy" showButtonBar />
+          </div>
+          <div />
+        </template>
+
+        <!-- Archivo -->
         <div class="col-span-2">
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Enlace al documento</label>
-          <InputText v-model="formDoc.archivo_url" class="w-full" placeholder="https://drive.google.com/..." />
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
+            Archivo (PDF, JPG, PNG — máx. 20 MB)
+          </label>
+          <div class="flex items-center gap-3">
+            <label class="cursor-pointer px-4 py-2 rounded-lg text-sm font-medium text-white flex items-center gap-1.5"
+              style="background: #6b5a8a;">
+              <i class="pi pi-upload text-xs" />
+              {{ archivoSeleccionado ? 'Cambiar' : 'Seleccionar archivo' }}
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" class="hidden" @change="onArchivoChange" />
+            </label>
+            <span v-if="archivoSeleccionado" class="text-sm truncate max-w-48" style="color: #2C2039;">
+              {{ archivoSeleccionado.name }}
+            </span>
+            <span v-else-if="formDoc.archivo_nombre" class="text-sm truncate max-w-48" style="color: #9b89b5;">
+              Actual: {{ formDoc.archivo_nombre }}
+            </span>
+          </div>
         </div>
+
+        <!-- URL alternativa -->
+        <div class="col-span-2">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
+            O pega un enlace (Google Drive, OneDrive)
+          </label>
+          <InputText v-model="formDoc.archivo_url" class="w-full" placeholder="https://drive.google.com/..."
+            :disabled="!!archivoSeleccionado" />
+        </div>
+
+        <!-- Notas -->
         <div class="col-span-2">
           <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Notas</label>
           <Textarea v-model="formDoc.notas" class="w-full" rows="2" />
         </div>
+
       </div>
     </div>
     <template #footer>
       <Button label="Cancelar" severity="secondary" @click="dialogDocumento = false" />
-      <Button label="Guardar" :disabled="!formDoc.tipo || !formDoc.nombre" @click="guardarDocumento"
+      <Button label="Guardar" :disabled="!formDoc.tipo || !formDoc.nombre || guardando"
+        :loading="guardando" @click="guardarDocumento"
         style="background: #915BD8; border-color: #915BD8;" />
     </template>
   </Dialog>
@@ -254,13 +357,13 @@ const route = useRoute()
 const toast = useToast()
 const cliente = ref(null)
 const activeTab = ref('info')
-const rutUrl = ref('')
+const guardando = ref(false)
+const archivoSeleccionado = ref(null)
 
 const tabs = [
-  { key: 'info',       label: 'Información',       icon: 'pi pi-user' },
-  { key: 'rut',        label: 'RUT',               icon: 'pi pi-file' },
-  { key: 'servicios',  label: 'Servicios',          icon: 'pi pi-briefcase' },
-  { key: 'documentos', label: 'Contratos / Ofertas', icon: 'pi pi-file-edit' },
+  { key: 'info',       label: 'Información',  icon: 'pi pi-user' },
+  { key: 'servicios',  label: 'Servicios',     icon: 'pi pi-briefcase' },
+  { key: 'documentos', label: 'Documentos',    icon: 'pi pi-folder' },
 ]
 
 const SERVICIOS = [
@@ -268,6 +371,14 @@ const SERVICIOS = [
   { value: 'representacion', label: 'Representación en mercado' },
   { value: 'cgm',            label: 'CGM' },
   { value: 'promotor',       label: 'Promotor' },
+]
+
+const TIPOS_DOC = [
+  { value: 'rut',                label: 'RUT' },
+  { value: 'certificado_bancario', label: 'Certificado bancario' },
+  { value: 'camara_comercio',    label: 'Cámara de comercio' },
+  { value: 'oferta',             label: 'Oferta de servicio' },
+  { value: 'contrato',           label: 'Contrato de servicio' },
 ]
 
 const ESTADOS_DOC = [
@@ -278,9 +389,36 @@ const ESTADOS_DOC = [
   { value: 'rechazado', label: 'Rechazado' },
 ]
 
-const estadosDoc = ESTADOS_DOC
+const TIPOS_IDENTIFICACION = ['rut', 'certificado_bancario', 'camara_comercio']
+const TIPOS_COMERCIAL = ['oferta', 'contrato']
 
-// ── Servicios ──
+// ── Computed ──────────────────────────────────────────────────────────────────
+
+const docsIdentificacion = computed(() =>
+  (cliente.value?.documentos_comerciales || []).filter(d => TIPOS_IDENTIFICACION.includes(d.tipo))
+)
+
+const docsComerciales = computed(() =>
+  (cliente.value?.documentos_comerciales || [])
+    .filter(d => TIPOS_COMERCIAL.includes(d.tipo) && !d.servicio_id)
+    .sort((a, b) => (a.tipo === b.tipo ? 0 : a.tipo === 'oferta' ? -1 : 1))
+)
+
+const opcionesServicio = computed(() =>
+  (cliente.value?.servicios || []).map(s => ({
+    label: servicioLabel(s.tipo),
+    value: s.id,
+  }))
+)
+
+function docDeServicio(servicioId, tipo) {
+  return (cliente.value?.documentos_comerciales || []).find(
+    d => d.servicio_id === servicioId && d.tipo === tipo
+  )
+}
+
+// ── Servicios ──────────────────────────────────────────────────────────────────
+
 const dialogServicio = ref(false)
 const dialogConfirmServicio = ref(false)
 const nuevoServicio = reactive({ tipo: '', fecha_inicio: null, notas: '' })
@@ -306,7 +444,9 @@ async function guardarServicio() {
   try {
     await api.post(`/clientes/${route.params.id}/servicios`, {
       tipo: nuevoServicio.tipo,
-      fecha_inicio: nuevoServicio.fecha_inicio ? nuevoServicio.fecha_inicio.toISOString().split('T')[0] : null,
+      fecha_inicio: nuevoServicio.fecha_inicio
+        ? nuevoServicio.fecha_inicio.toISOString().split('T')[0]
+        : null,
       notas: nuevoServicio.notas || null,
     })
     dialogConfirmServicio.value = false
@@ -324,75 +464,123 @@ async function confirmarEliminarServicio(s) {
   await cargar()
 }
 
-// ── Documentos ──
+// ── Documentos ────────────────────────────────────────────────────────────────
+
 const dialogDocumento = ref(false)
 const editandoDocumento = ref(null)
-const formDoc = reactive({ tipo: '', nombre: '', numero: '', fecha: null, estado: 'borrador', archivo_url: '', notas: '' })
-
-const documentosOrdenados = computed(() => {
-  const docs = cliente.value?.documentos_comerciales || []
-  return [...docs].sort((a, b) => {
-    if (a.tipo === b.tipo) return 0
-    return a.tipo === 'oferta' ? -1 : 1
-  })
+const formDoc = reactive({
+  tipo: '', nombre: '', numero: '', fecha: null,
+  estado: 'borrador', archivo_url: '', archivo_nombre: '',
+  servicio_id: null, notas: '',
 })
 
-function abrirDialogoDocumento(doc) {
+function abrirDialogoDocumento(doc, tipoPreset = null, servicioPreset = null) {
   editandoDocumento.value = doc
+  archivoSeleccionado.value = null
   if (doc) {
-    Object.assign(formDoc, { ...doc, fecha: doc.fecha ? new Date(doc.fecha) : null })
+    Object.assign(formDoc, {
+      ...doc,
+      fecha: doc.fecha ? new Date(doc.fecha) : null,
+      archivo_url: doc.archivo_url || '',
+      archivo_nombre: doc.archivo_nombre || '',
+    })
   } else {
-    Object.assign(formDoc, { tipo: '', nombre: '', numero: '', fecha: null, estado: 'borrador', archivo_url: '', notas: '' })
+    Object.assign(formDoc, {
+      tipo: tipoPreset || '',
+      nombre: tipoPreset ? nombreSugerido(tipoPreset) : '',
+      numero: '', fecha: null, estado: 'borrador',
+      archivo_url: '', archivo_nombre: '',
+      servicio_id: servicioPreset || null, notas: '',
+    })
   }
   dialogDocumento.value = true
 }
 
-async function guardarDocumento() {
-  const payload = {
-    tipo: formDoc.tipo,
-    nombre: formDoc.nombre,
-    numero: formDoc.numero || null,
-    fecha: formDoc.fecha ? new Date(formDoc.fecha).toISOString().split('T')[0] : null,
-    estado: formDoc.estado,
-    archivo_url: formDoc.archivo_url || null,
-    notas: formDoc.notas || null,
+function onTipoChange() {
+  if (!editandoDocumento.value) {
+    formDoc.nombre = nombreSugerido(formDoc.tipo)
   }
+}
+
+function nombreSugerido(tipo) {
+  const labels = {
+    rut: 'RUT',
+    certificado_bancario: 'Certificado bancario',
+    camara_comercio: 'Cámara de comercio',
+    oferta: 'Oferta de servicio',
+    contrato: 'Contrato de servicio',
+  }
+  const base = labels[tipo] || ''
+  return base ? `${base} — ${cliente.value?.razon_social_nombre || ''}` : ''
+}
+
+function onArchivoChange(e) {
+  archivoSeleccionado.value = e.target.files[0] || null
+  if (archivoSeleccionado.value) {
+    formDoc.archivo_url = ''
+  }
+}
+
+async function guardarDocumento() {
+  guardando.value = true
   try {
+    const payload = {
+      tipo: formDoc.tipo,
+      nombre: formDoc.nombre,
+      numero: formDoc.numero || null,
+      fecha: formDoc.fecha ? new Date(formDoc.fecha).toISOString().split('T')[0] : null,
+      estado: formDoc.estado,
+      archivo_url: archivoSeleccionado.value ? null : (formDoc.archivo_url || null),
+      archivo_nombre: formDoc.archivo_nombre || null,
+      servicio_id: formDoc.servicio_id || null,
+      notas: formDoc.notas || null,
+    }
+
+    let docId
     if (editandoDocumento.value?.id) {
       await api.patch(`/clientes/${route.params.id}/documentos/${editandoDocumento.value.id}`, payload)
-      toast.add({ severity: 'success', summary: 'Documento actualizado', life: 3000 })
+      docId = editandoDocumento.value.id
     } else {
-      await api.post(`/clientes/${route.params.id}/documentos`, payload)
-      toast.add({ severity: 'success', summary: 'Documento guardado', life: 3000 })
+      const { data } = await api.post(`/clientes/${route.params.id}/documentos`, payload)
+      docId = data.id
     }
+
+    // Upload archivo si se seleccionó uno
+    if (archivoSeleccionado.value) {
+      const fd = new FormData()
+      fd.append('archivo', archivoSeleccionado.value)
+      await api.post(`/clientes/${route.params.id}/documentos/${docId}/archivo`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+    }
+
     dialogDocumento.value = false
+    toast.add({ severity: 'success', summary: 'Documento guardado', life: 3000 })
     await cargar()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
+  } finally {
+    guardando.value = false
   }
 }
 
 async function eliminarDocumento(doc) {
-  if (!confirm(`¿Eliminar "${doc.nombre}"?`)) return
+  if (!confirm(`¿Eliminar "${doc.archivo_nombre || doc.nombre}"?`)) return
   await api.delete(`/clientes/${route.params.id}/documentos/${doc.id}`)
   toast.add({ severity: 'success', summary: 'Eliminado', life: 3000 })
   await cargar()
 }
 
-// ── Info & RUT ──
+// ── Info ──────────────────────────────────────────────────────────────────────
+
 async function saveInfo(payload) {
   await api.patch(`/clientes/${route.params.id}`, payload)
   toast.add({ severity: 'success', summary: 'Información actualizada', life: 3000 })
   await cargar()
 }
 
-async function saveRut() {
-  await api.patch(`/clientes/${route.params.id}`, { rut_url: rutUrl.value || null })
-  toast.add({ severity: 'success', summary: 'RUT guardado', life: 3000 })
-  await cargar()
-}
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
-// ── Helpers ──
 function servicioLabel(tipo) {
   return SERVICIOS.find(s => s.value === tipo)?.label || tipo
 }
@@ -402,8 +590,23 @@ function servicioColor(tipo) {
   return colors[tipo] || '#9b89b5'
 }
 
+function tipoLabel(tipo) {
+  return TIPOS_DOC.find(t => t.value === tipo)?.label || tipo
+}
+
 function estadoLabel(estado) {
   return ESTADOS_DOC.find(e => e.value === estado)?.label || estado
+}
+
+function badgeStyle(tipo) {
+  const styles = {
+    rut:                  'background:#e3f0fd; color:#1976D2',
+    certificado_bancario: 'background:#e8f5e9; color:#388E3C',
+    camara_comercio:      'background:#fff3e0; color:#F57C00',
+    oferta:               'background:#f5f0fb; color:#915BD8',
+    contrato:             'background:#e8f5e9; color:#2e7d32',
+  }
+  return styles[tipo] || 'background:#f3f3f3; color:#555'
 }
 
 function formatDate(d) {
@@ -414,7 +617,6 @@ function formatDate(d) {
 async function cargar() {
   const { data } = await api.get(`/clientes/${route.params.id}`)
   cliente.value = data
-  rutUrl.value = data.rut_url || ''
 }
 
 onMounted(cargar)
