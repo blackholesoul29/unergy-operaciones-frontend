@@ -135,7 +135,7 @@
               </p>
               <p class="text-[13px] font-semibold leading-snug line-clamp-2"
                  style="color:#2C2039;">
-                {{ f.tipo_falla?.etiqueta || f.descripcion || '(sin descripción)' }}
+                {{ f.tipo?.etiqueta || f.descripcion || '(sin descripción)' }}
               </p>
             </div>
             <span class="shrink-0">
@@ -149,7 +149,7 @@
           <div class="flex justify-between items-center text-[11px]">
             <span style="color:#9b89b5;">Tipo</span>
             <span class="font-semibold" style="color:#2C2039;">
-              {{ f.tipo_falla?.codigo }} · {{ f.tipo_falla?.categoria?.etiqueta?.split(' ').slice(1).join(' ') || '—' }}
+              {{ f.tipo?.codigo }} · {{ f.tipo?.categoria?.etiqueta?.split(' ').slice(1).join(' ') || '—' }}
             </span>
           </div>
           <div class="flex justify-between items-center text-[11px]">
@@ -315,7 +315,7 @@
         <div>
           <label class="field-label">Estado nuevo <span style="color:#9b89b5;">(opcional)</span></label>
           <Select v-model="segEstado" :options="catalogos.estados"
-                  option-value="codigo" option-label="etiqueta"
+                  option-value="id" option-label="etiqueta"
                   class="w-full" placeholder="Sin cambio" show-clear />
         </div>
         <div>
@@ -413,11 +413,11 @@ const kpis = computed(() => [
 // ── helpers visuales ─────────────────────────────────────────
 const proyectoNombre = (f) => {
   if (!f) return '—'
-  return f.proyecto?.nombre_display || f.proyecto?.nombre_clientes || f.proyecto_nombre_raw || '—'
+  return f.proyecto?.nombre_comercial || '—'
 }
 
 const cardStyle = (f) => {
-  const border = f.estado?.es_terminal
+  const border = f.estado?.es_estado_final
     ? 'border-left:3px solid #10B981'
     : f.dias_abierta >= 7 ? 'border-left:3px solid #EF4444'
     : f.dias_abierta >= 4 ? 'border-left:3px solid #F59E0B'
@@ -428,10 +428,11 @@ const cardStyle = (f) => {
 const tagStyle = (estado) => {
   if (!estado) return 'background:#f3f4f6;color:#6b7280;border:none'
   const m = {
-    activa:      'background:#FEF2F2;color:#EF4444;border:1px solid #FECACA',
-    en_revision: 'background:#FFFBEB;color:#B45309;border:1px solid #FDE68A',
-    programada:  'background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE',
-    terminada:   'background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0',
+    abierta:      'background:#FEF2F2;color:#EF4444;border:1px solid #FECACA',
+    en_gestion:   'background:#FFFBEB;color:#B45309;border:1px solid #FDE68A',
+    en_espera:    'background:#EFF6FF;color:#2563EB;border:1px solid #BFDBFE',
+    cerrada:      'background:#F0FDF4;color:#15803D;border:1px solid #BBF7D0',
+    sin_solucion: 'background:#F9FAFB;color:#6B7280;border:1px solid #E5E7EB',
   }
   return m[estado.codigo] || 'background:#f3f4f6;color:#6b7280;border:none'
 }
@@ -440,9 +441,9 @@ const prioTagStyle = (p) => {
   if (!p) return 'background:#f3f4f6;color:#6b7280;border:none'
   const m = {
     critica: 'background:#FEF2F2;color:#DC2626;border:1px solid #FECACA',
-    alta:    'background:#FFFBEB;color:#B45309;border:1px solid #FDE68A',
+    grave:   'background:#FFFBEB;color:#B45309;border:1px solid #FDE68A',
     media:   'background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE',
-    baja:    'background:#F9FAFB;color:#6B7280;border:1px solid #E5E7EB',
+    leve:    'background:#F9FAFB;color:#6B7280;border:1px solid #E5E7EB',
   }
   return m[p.codigo] || 'background:#f3f4f6;color:#6b7280;border:none'
 }
@@ -452,7 +453,7 @@ const diasColor = (d) => !d ? '#9b89b5' : d >= 7 ? '#EF4444' : d >= 4 ? '#F59E0B
 const slaLabel = (f) => {
   if (!f.sla_limite_dias || f.dias_abierta == null) return '—'
   const pct = Math.round(f.dias_abierta / f.sla_limite_dias * 100)
-  if (f.estado?.es_terminal) return f.sla_cumplido ? '✅ Cumplido' : '❌ Excedió'
+  if (f.estado?.es_estado_final) return f.sla_cumplido ? '✅ Cumplido' : '❌ Excedió'
   return pct > 100 ? `❌ ${pct}%` : `${pct}%`
 }
 
@@ -478,7 +479,7 @@ const fmtDate = (d) => {
 async function load() {
   loading.value = true
   try {
-    const params = { page: page.value, page_size: pageSize.value }
+    const params = { page: page.value, size: pageSize.value }
     if (filters.buscar)          params.buscar           = filters.buscar
     if (filters.proyecto_id)     params.proyecto_id      = filters.proyecto_id
     if (filters.estado_codigo)   params.estado_codigo    = filters.estado_codigo
@@ -567,8 +568,8 @@ async function saveSeguimiento() {
   segLoading.value = true
   try {
     await api.post(`/fallas/${segFalla.value.id}/seguimientos`, {
-      nota:         segNota.value.trim(),
-      estado_nuevo: segEstado.value || null,
+      nota:            segNota.value.trim(),
+      estado_nuevo_id: segEstado.value || null,
     })
     toast.add({ severity: 'success', summary: 'Seguimiento guardado', life: 2500 })
     segVisible.value = false
