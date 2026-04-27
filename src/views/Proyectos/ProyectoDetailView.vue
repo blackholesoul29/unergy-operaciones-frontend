@@ -7,7 +7,7 @@
         <h2 class="text-xl font-bold text-gray-800">{{ proyecto.nombre_comercial }}</h2>
         <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="mt-1" />
       </div>
-      <Button label="Editar" icon="pi pi-pencil" outlined @click="editMode = !editMode" />
+      <Button label="Editar" icon="pi pi-pencil" outlined @click="editVisible = true" />
     </div>
 
     <!-- Tabs -->
@@ -107,6 +107,11 @@
   <div v-else-if="loading" class="flex justify-center py-20">
     <ProgressSpinner />
   </div>
+
+  <!-- Dialog: Editar proyecto -->
+  <Dialog v-model:visible="editVisible" header="Editar proyecto" modal class="w-full max-w-xl">
+    <ProyectoForm :clientes="clientes" :proyecto="proyecto" @save="onEdit" @cancel="editVisible = false" />
+  </Dialog>
 </template>
 
 <script setup>
@@ -116,6 +121,7 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import ToggleSwitch from 'primevue/toggleswitch'
 import ProgressSpinner from 'primevue/progressspinner'
 import DataTable from 'primevue/datatable'
@@ -125,13 +131,14 @@ import InputNumber from 'primevue/inputnumber'
 import Divider from 'primevue/divider'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
+import ProyectoForm from './ProyectoForm.vue'
 
 const route = useRoute()
 const toast = useToast()
 const proyecto = ref(null)
 const clientes = ref([])
 const loading = ref(true)
-const editMode = ref(false)
+const editVisible = ref(false)
 const guardando = ref(false)
 const srvFlags = reactive({})
 
@@ -198,6 +205,17 @@ async function eliminarInversionista(invId) {
     toast.add({ severity: 'success', summary: 'Inversionista eliminado', life: 2000 })
   } catch {
     toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
+  }
+}
+
+async function onEdit(payload) {
+  try {
+    const { data } = await api.patch(`/proyectos/${route.params.id}`, payload)
+    proyecto.value = data
+    editVisible.value = false
+    toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
   }
 }
 
