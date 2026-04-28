@@ -50,6 +50,14 @@
         <label class="field-label">Topic slug</label>
         <InputText v-model="f.topic_slug" class="w-full" />
       </div>
+      <div>
+        <label class="field-label">Código base (topic / sub project)</label>
+        <InputText v-model="f.sub_project" class="w-full" placeholder="ej: perija, vallenata" />
+      </div>
+      <div>
+        <label class="field-label">Código TSF</label>
+        <InputText v-model="f.codigo_tsf" class="w-full" placeholder="ej: COLCEST58P2" />
+      </div>
     </div>
 
     <!-- Simulación P50 / P90 -->
@@ -133,6 +141,8 @@ const f = reactive({
   clasificacion_regulatoria: null,
   carpeta_drive_codigo: null,
   topic_slug: null,
+  sub_project: null,
+  codigo_tsf: null,
 })
 
 function parseMonthArray(jsonStr) {

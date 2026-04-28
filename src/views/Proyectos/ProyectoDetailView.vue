@@ -23,6 +23,8 @@
           <InfoField label="Operador de red" :value="proyecto.operador_red" />
           <InfoField label="Clasificación" :value="proyecto.clasificacion_regulatoria" />
           <InfoField label="Topic slug" :value="proyecto.topic_slug" />
+          <InfoField label="Código base (topic)" :value="proyecto.sub_project" />
+          <InfoField label="Código TSF" :value="proyecto.codigo_tsf" />
         </div>
       </TabPanel>
 
