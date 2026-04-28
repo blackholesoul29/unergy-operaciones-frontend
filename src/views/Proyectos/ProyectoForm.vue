@@ -47,11 +47,7 @@
         <InputText v-model="f.carpeta_drive_codigo" class="w-full" />
       </div>
       <div>
-        <label class="field-label">Topic slug</label>
-        <InputText v-model="f.topic_slug" class="w-full" />
-      </div>
-      <div>
-        <label class="field-label">Código base (topic / sub project)</label>
+        <label class="field-label">Código base (topic)</label>
         <InputText v-model="f.sub_project" class="w-full" placeholder="ej: perija, vallenata" />
       </div>
       <div>
@@ -140,7 +136,6 @@ const f = reactive({
   operador_red: null,
   clasificacion_regulatoria: null,
   carpeta_drive_codigo: null,
-  topic_slug: null,
   sub_project: null,
   codigo_tsf: null,
 })
