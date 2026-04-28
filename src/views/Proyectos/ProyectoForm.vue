@@ -52,6 +52,45 @@
       </div>
     </div>
 
+    <!-- Simulación P50 / P90 -->
+    <div class="border border-gray-200 rounded-lg p-4 space-y-4">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Generación simulada mensual (kWh)</p>
+
+      <!-- P90 -->
+      <div>
+        <p class="text-xs font-medium text-gray-600 mb-2">P90</p>
+        <div class="grid grid-cols-6 gap-2">
+          <div v-for="(mes, i) in MESES" :key="'p90-' + i">
+            <label class="block text-[10px] text-gray-400 mb-0.5 text-center">{{ mes }}</label>
+            <InputNumber
+              v-model="p90Array[i]"
+              :maxFractionDigits="1"
+              class="w-full"
+              inputClass="text-center text-xs px-1 py-1"
+              :placeholder="'—'"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- P50 -->
+      <div>
+        <p class="text-xs font-medium text-gray-600 mb-2">P50</p>
+        <div class="grid grid-cols-6 gap-2">
+          <div v-for="(mes, i) in MESES" :key="'p50-' + i">
+            <label class="block text-[10px] text-gray-400 mb-0.5 text-center">{{ mes }}</label>
+            <InputNumber
+              v-model="p50Array[i]"
+              :maxFractionDigits="1"
+              class="w-full"
+              inputClass="text-center text-xs px-1 py-1"
+              :placeholder="'—'"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="flex justify-end gap-2 pt-2">
       <Button type="button" label="Cancelar" severity="secondary" @click="$emit('cancel')" />
       <Button type="submit" :label="editMode ? 'Guardar cambios' : 'Crear proyecto'" />
@@ -60,11 +99,13 @@
 </template>
 
 <script setup>
-import { reactive, watch, computed } from 'vue'
+import { reactive, ref, watch, computed } from 'vue'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
+
+const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
 const props = defineProps({
   clientes: Array,
@@ -94,21 +135,45 @@ const f = reactive({
   topic_slug: null,
 })
 
+function parseMonthArray(jsonStr) {
+  if (!jsonStr) return Array(12).fill(null)
+  try {
+    const arr = JSON.parse(jsonStr)
+    if (!Array.isArray(arr)) return Array(12).fill(null)
+    return arr.map(v => (v === null || v === undefined ? null : Number(v)))
+  } catch {
+    return Array(12).fill(null)
+  }
+}
+
+const p90Array = ref(Array(12).fill(null))
+const p50Array = ref(Array(12).fill(null))
+
 watch(() => props.proyecto, (p) => {
   if (p) {
     Object.keys(f).forEach(k => { if (k in p) f[k] = p[k] })
+    p90Array.value = parseMonthArray(p.p90_mensual_kwh)
+    p50Array.value = parseMonthArray(p.p50_mensual_kwh)
   }
 }, { immediate: true })
+
+function serializeMonthArray(arr) {
+  if (arr.every(v => v === null || v === undefined)) return null
+  return JSON.stringify(arr.map(v => (v === null || v === undefined ? null : v)))
+}
 
 function submit() {
   const payload = {}
   for (const [k, v] of Object.entries(f)) {
     if (v !== null && v !== undefined && v !== '') payload[k] = v
   }
+  const p90json = serializeMonthArray(p90Array.value)
+  const p50json = serializeMonthArray(p50Array.value)
+  if (p90json !== null) payload.p90_mensual_kwh = p90json
+  if (p50json !== null) payload.p50_mensual_kwh = p50json
   emit('save', payload)
 }
 </script>
-
 
 <style scoped>
 .field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
