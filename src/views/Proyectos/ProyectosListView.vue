@@ -45,6 +45,19 @@
             </div>
           </template>
         </Column>
+        <Column header="Inversionistas" style="width:180px">
+          <template #body="{ data }">
+            <div v-if="data.inversionistas?.length" class="flex gap-1 flex-wrap">
+              <span v-for="inv in data.inversionistas.slice(0, 2)" :key="inv.id" class="inv-badge">
+                {{ inv.cliente_nombre }}
+              </span>
+              <span v-if="data.inversionistas.length > 2" class="inv-badge-more">
+                +{{ data.inversionistas.length - 2 }}
+              </span>
+            </div>
+            <span v-else class="text-gray-400 text-xs">—</span>
+          </template>
+        </Column>
         <Column header="" style="width:120px">
           <template #body="{ data }">
             <div class="flex gap-1">
@@ -186,4 +199,6 @@ async function doDelete() {
 <style scoped>
 .field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
 .srv-badge { @apply bg-green-100 text-green-800 text-[10px] font-semibold px-1.5 py-0.5 rounded; }
+.inv-badge { @apply bg-blue-50 text-blue-700 text-[10px] font-semibold px-1.5 py-0.5 rounded max-w-[80px] truncate inline-block; }
+.inv-badge-more { @apply bg-gray-100 text-gray-500 text-[10px] font-semibold px-1.5 py-0.5 rounded; }
 </style>
