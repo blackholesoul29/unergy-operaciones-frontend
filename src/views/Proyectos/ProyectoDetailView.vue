@@ -76,6 +76,14 @@
             <template #empty>
               <p class="text-center text-gray-400 py-4">Sin inversionistas registrados.</p>
             </template>
+            <ColumnGroup type="footer">
+              <Row>
+                <Column footer="Total" footerStyle="font-weight:600" />
+                <Column :footer="totalParticipacion.toFixed(4) + '%'" footerStyle="font-weight:600" />
+                <Column />
+                <Column />
+              </Row>
+            </ColumnGroup>
           </DataTable>
 
           <!-- Formulario agregar inversionista -->
@@ -84,7 +92,7 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
             <div class="flex flex-col gap-1">
               <label class="text-xs text-gray-500">Cliente</label>
-              <Select v-model="nuevoInv.cliente_id" :options="clientes"
+              <Select v-model="nuevoInv.cliente_id" :options="clientesDisponibles"
                 optionLabel="razon_social_nombre" optionValue="id"
                 placeholder="Seleccionar cliente" filter class="w-full" />
             </div>
@@ -139,7 +147,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
@@ -150,6 +158,8 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import ProgressSpinner from 'primevue/progressspinner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import ColumnGroup from 'primevue/columngroup'
+import Row from 'primevue/row'
 import Select from 'primevue/select'
 import InputNumber from 'primevue/inputnumber'
 import Divider from 'primevue/divider'
@@ -175,6 +185,17 @@ const nuevoInv = reactive({
 
 const editandoInvId = ref(null)
 const editPct = ref(null)
+
+const clientesDisponibles = computed(() => {
+  if (!proyecto.value) return clientes.value
+  const yaAgregados = new Set(proyecto.value.inversionistas.map(i => i.cliente_id))
+  return clientes.value.filter(c => !yaAgregados.has(c.id))
+})
+
+const totalParticipacion = computed(() => {
+  if (!proyecto.value?.inversionistas?.length) return 0
+  return proyecto.value.inversionistas.reduce((sum, i) => sum + (i.porcentaje_participacion ?? 0) * 100, 0)
+})
 
 const servicios = [
   { key: 'srv_operacion', label: 'Operación' },
