@@ -41,6 +41,24 @@
             </button>
           </div>
 
+          <!-- Tarifas resumen -->
+          <div v-if="cliente.tarifa_administracion != null || cliente.tarifa_cgm != null || cliente.tarifa_representacion != null"
+            class="flex flex-wrap gap-3 p-4 rounded-xl"
+            style="background: #f8f5fd; border: 1px solid #e8e0f0;">
+            <div class="text-xs" style="color: #6b5a8a;">
+              <span class="font-semibold">Tarifas cliente:</span>
+            </div>
+            <div v-if="cliente.tarifa_administracion != null" class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#ede9fb;color:#2C2039;">
+              Adm / Op: {{ cliente.tarifa_administracion }}%
+            </div>
+            <div v-if="cliente.tarifa_cgm != null" class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#ede9fb;color:#2C2039;">
+              CGM: {{ cliente.tarifa_cgm }}%
+            </div>
+            <div v-if="cliente.tarifa_representacion != null" class="text-xs px-2.5 py-1 rounded-full font-medium" style="background:#ede9fb;color:#2C2039;">
+              Representación: {{ cliente.tarifa_representacion }}%
+            </div>
+          </div>
+
           <div v-if="cliente.servicios.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
             Ningún servicio registrado aún.
           </div>
