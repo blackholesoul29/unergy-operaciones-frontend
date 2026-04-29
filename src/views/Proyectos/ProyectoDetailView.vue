@@ -360,8 +360,15 @@ async function saveEdit() {
     if (p90json !== null) payload.p90_mensual_kwh = p90json
     if (p50json !== null) payload.p50_mensual_kwh = p50json
 
-    const { data } = await api.patch(`/proyectos/${route.params.id}`, payload)
-    proyecto.value = data
+    await api.patch(`/proyectos/${route.params.id}`, payload)
+    const [proyRes, invRes] = await Promise.all([
+      api.get(`/proyectos/${route.params.id}`),
+      api.get(`/proyectos/${route.params.id}/inversionistas`),
+    ])
+    proyecto.value = {
+      ...proyRes.data,
+      inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
+    }
     router.push({ query: {} })
     toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
   } catch (e) {
@@ -399,8 +406,8 @@ async function agregarInversionista() {
       porcentaje_participacion: nuevoInv.porcentaje_pct != null ? nuevoInv.porcentaje_pct / 100 : null,
       es_patrimonio_autonomo: nuevoInv.es_patrimonio_autonomo,
     })
-    const { data } = await api.get(`/proyectos/${route.params.id}`)
-    proyecto.value = data
+    const { data } = await api.get(`/proyectos/${route.params.id}/inversionistas`)
+    proyecto.value.inversionistas = Array.isArray(data) ? data : (data.items ?? [])
     nuevoInv.cliente_id = null
     nuevoInv.porcentaje_pct = null
     nuevoInv.es_patrimonio_autonomo = false
@@ -435,8 +442,8 @@ async function guardarEdicionInversionista(invId) {
     })
     editandoInvId.value = null
     editPct.value = null
-    const { data } = await api.get(`/proyectos/${route.params.id}`)
-    proyecto.value = data
+    const { data } = await api.get(`/proyectos/${route.params.id}/inversionistas`)
+    proyecto.value.inversionistas = Array.isArray(data) ? data : (data.items ?? [])
     toast.add({ severity: 'success', summary: 'Porcentaje actualizado', life: 2000 })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al actualizar', detail: e.response?.data?.detail, life: 3000 })
@@ -448,8 +455,15 @@ async function guardarEdicionInversionista(invId) {
 // ── Servicios ─────────────────────────────────────────────────────────────────
 async function toggleServicio(key, value) {
   try {
-    const { data } = await api.patch(`/proyectos/${route.params.id}/servicios`, { [key]: value })
-    proyecto.value = data
+    await api.patch(`/proyectos/${route.params.id}/servicios`, { [key]: value })
+    const [proyRes, invRes] = await Promise.all([
+      api.get(`/proyectos/${route.params.id}`),
+      api.get(`/proyectos/${route.params.id}/inversionistas`),
+    ])
+    proyecto.value = {
+      ...proyRes.data,
+      inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
+    }
     toast.add({ severity: 'success', summary: 'Servicio actualizado', life: 2000 })
   } catch {
     srvFlags[key] = !value
@@ -465,11 +479,15 @@ const estadoSeverity = (e) => (
 // ── Carga inicial ─────────────────────────────────────────────────────────────
 onMounted(async () => {
   try {
-    const [proyRes, clientesRes] = await Promise.all([
+    const [proyRes, clientesRes, invRes] = await Promise.all([
       api.get(`/proyectos/${route.params.id}`),
       api.get('/clientes', { params: { size: 200 } }),
+      api.get(`/proyectos/${route.params.id}/inversionistas`),
     ])
-    proyecto.value = proyRes.data
+    proyecto.value = {
+      ...proyRes.data,
+      inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
+    }
     clientes.value = clientesRes.data.items
     for (const s of SERVICIOS) srvFlags[s.key] = proyRes.data[s.key]
     if (isEditMode.value) populateEditForm()
