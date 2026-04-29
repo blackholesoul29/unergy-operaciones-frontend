@@ -45,25 +45,6 @@
         <label class="field-label">ReteICA %</label>
         <InputNumber v-model="f.reteica_pct" :maxFractionDigits="4" class="w-full" />
       </div>
-
-      <!-- Tarifas de servicios -->
-      <div class="col-span-2 pt-2">
-        <p class="text-xs font-bold uppercase tracking-wide mb-3" style="color: #9b89b5;">Tarifas de servicios (%)</p>
-        <div class="grid grid-cols-3 gap-4">
-          <div>
-            <label class="field-label">Administración / Operación</label>
-            <InputNumber v-model="f.tarifa_administracion" :maxFractionDigits="2" suffix=" %" class="w-full" />
-          </div>
-          <div>
-            <label class="field-label">CGM</label>
-            <InputNumber v-model="f.tarifa_cgm" :maxFractionDigits="2" suffix=" %" class="w-full" />
-          </div>
-          <div>
-            <label class="field-label">Representación</label>
-            <InputNumber v-model="f.tarifa_representacion" :maxFractionDigits="2" suffix=" %" class="w-full" />
-          </div>
-        </div>
-      </div>
     </div>
 
     <div class="flex justify-end gap-2 pt-2">
