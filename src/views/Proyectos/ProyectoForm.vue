@@ -5,11 +5,6 @@
         <label class="field-label">Nombre comercial *</label>
         <InputText v-model="f.nombre_comercial" class="w-full" required />
       </div>
-      <div class="col-span-2">
-        <label class="field-label">Cliente *</label>
-        <Select v-model="f.cliente_id" :options="clientes" optionLabel="razon_social_nombre" optionValue="id"
-          class="w-full" placeholder="Seleccionar cliente" filter required />
-      </div>
       <div>
         <label class="field-label">Tipo de proyecto</label>
         <Select v-model="f.tipo_proyecto" :options="tipos" class="w-full" placeholder="Seleccionar" showClear />
@@ -187,7 +182,6 @@ const clasificaciones = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 
 const f = reactive({
   nombre_comercial: '',
-  cliente_id: null,
   estado: 'en_desarrollo',
   tipo_proyecto: null,
   potencia_instalada_kwp: null,

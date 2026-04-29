@@ -4,40 +4,134 @@
     <div class="flex items-center justify-between">
       <div>
         <Button icon="pi pi-arrow-left" text @click="$router.back()" class="-ml-2 mb-1" />
-        <h2 class="text-xl font-bold text-gray-800">{{ proyecto.nombre_comercial }}</h2>
-        <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="mt-1" />
+        <div v-if="!isEditMode">
+          <h2 class="text-xl font-bold text-gray-800">{{ proyecto.nombre_comercial }}</h2>
+          <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="mt-1" />
+        </div>
+        <div v-else class="flex flex-col gap-2 mt-1">
+          <InputText v-model="editForm.nombre_comercial" class="text-base font-semibold w-80" />
+          <Select v-model="editForm.estado" :options="ESTADOS" class="w-48" />
+        </div>
       </div>
-      <Button label="Editar" icon="pi pi-pencil" outlined @click="editVisible = true" />
+      <div class="flex gap-2">
+        <template v-if="isEditMode">
+          <Button label="Cancelar" severity="secondary" outlined @click="cancelEdit" />
+          <Button label="Guardar cambios" icon="pi pi-check" :loading="guardando" @click="saveEdit" />
+        </template>
+        <Button v-else label="Editar" icon="pi pi-pencil" outlined @click="enterEditMode" />
+      </div>
     </div>
 
     <!-- Tabs -->
     <TabView>
+      <!-- ══ GENERAL ══ -->
       <TabPanel header="General">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
-          <InfoField label="Cliente" :value="proyecto.cliente_id" />
-          <InfoField label="Tipo" :value="proyecto.tipo_proyecto" />
-          <InfoField label="Tecnología" :value="proyecto.tipo_tecnologia" />
-          <InfoField label="Potencia (kWp)" :value="proyecto.potencia_instalada_kwp" />
-          <InfoField label="Departamento" :value="proyecto.departamento" />
-          <InfoField label="Municipio" :value="proyecto.municipio" />
-          <InfoField label="Operador de red" :value="proyecto.operador_red" />
-          <InfoField label="Clasificación" :value="proyecto.clasificacion_regulatoria" />
-          <InfoField label="Código base (topic)" :value="proyecto.sub_project" />
-          <InfoField label="Código TSF" :value="proyecto.codigo_tsf" />
+          <template v-if="!isEditMode">
+            <InfoField label="Tipo" :value="proyecto.tipo_proyecto" />
+            <InfoField label="Tecnología" :value="proyecto.tipo_tecnologia" />
+            <InfoField label="Potencia (kWp)" :value="proyecto.potencia_instalada_kwp" />
+            <InfoField label="Departamento" :value="proyecto.departamento" />
+            <InfoField label="Municipio" :value="proyecto.municipio" />
+            <InfoField label="Operador de red" :value="proyecto.operador_red" />
+            <InfoField label="Clasificación" :value="proyecto.clasificacion_regulatoria" />
+            <InfoField label="Carpeta Drive" :value="proyecto.carpeta_drive_codigo" />
+            <InfoField label="Código base (topic)" :value="proyecto.sub_project" />
+            <InfoField label="Código TSF" :value="proyecto.codigo_tsf" />
+          </template>
+          <template v-else>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Tipo de proyecto</label>
+              <Select v-model="editForm.tipo_proyecto" :options="TIPOS_PROYECTO" class="w-full" placeholder="Seleccionar" showClear />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Tecnología</label>
+              <Select v-model="editForm.tipo_tecnologia" :options="TIPOS_TECNOLOGIA" class="w-full" placeholder="Seleccionar" showClear />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Potencia (kWp)</label>
+              <InputNumber v-model="editForm.potencia_instalada_kwp" :maxFractionDigits="2" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Departamento</label>
+              <InputText v-model="editForm.departamento" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Municipio</label>
+              <InputText v-model="editForm.municipio" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Operador de red</label>
+              <InputText v-model="editForm.operador_red" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Clasificación regulatoria</label>
+              <Select v-model="editForm.clasificacion_regulatoria" :options="CLASIFICACIONES" class="w-full" placeholder="Seleccionar" showClear />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Carpeta Drive</label>
+              <InputText v-model="editForm.carpeta_drive_codigo" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Código base (topic)</label>
+              <InputText v-model="editForm.sub_project" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Código TSF</label>
+              <InputText v-model="editForm.codigo_tsf" class="w-full" />
+            </div>
+          </template>
         </div>
       </TabPanel>
 
+      <!-- ══ TÉCNICO ══ -->
       <TabPanel header="Técnico">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
-          <InfoField label="Potencia instalada (kWp)" :value="proyecto.potencia_instalada_kwp" />
-          <InfoField label="Cantidad de paneles" :value="proyecto.cantidad_total_paneles" />
-          <InfoField label="Producción específica (kWh/kWp)" :value="proyecto.produccion_especifica_kwh_kwp" />
+          <template v-if="!isEditMode">
+            <InfoField label="Potencia instalada (kWp)" :value="proyecto.potencia_instalada_kwp" />
+            <InfoField label="Cantidad de paneles" :value="proyecto.cantidad_total_paneles" />
+            <InfoField label="Producción específica (kWh/kWp)" :value="proyecto.produccion_especifica_kwh_kwp" />
+          </template>
+          <template v-else>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Cantidad de paneles</label>
+              <InputNumber v-model="editForm.cantidad_total_paneles" :useGrouping="false" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Producción específica (kWh/kWp)</label>
+              <InputNumber v-model="editForm.produccion_especifica_kwh_kwp" :maxFractionDigits="2" class="w-full" />
+            </div>
+          </template>
         </div>
       </TabPanel>
 
+      <!-- ══ SIMULACIÓN ══ -->
+      <TabPanel header="Simulación">
+        <div class="p-4 space-y-6">
+          <div v-for="sim in SIMULACIONES" :key="sim.key">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">{{ sim.label }} (kWh/mes)</p>
+            <div class="grid grid-cols-6 gap-2">
+              <div v-for="(mes, i) in MESES" :key="sim.key + '-' + i">
+                <label class="block text-[10px] text-gray-400 mb-0.5 text-center">{{ mes }}</label>
+                <InputNumber
+                  v-if="isEditMode"
+                  v-model="sim.editArray.value[i]"
+                  :maxFractionDigits="1"
+                  class="w-full"
+                  inputClass="text-center text-xs px-1 py-1"
+                />
+                <p v-else class="text-center text-sm font-medium text-gray-700 bg-gray-50 rounded py-1">
+                  {{ sim.displayArray.value[i] != null ? sim.displayArray.value[i] : '—' }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </TabPanel>
+
+      <!-- ══ INVERSIONISTAS ══ -->
       <TabPanel header="Inversionistas">
         <div class="p-4 space-y-4">
-          <!-- Tabla inversionistas -->
           <DataTable :value="proyecto.inversionistas" class="text-sm" stripedRows>
             <Column field="cliente_nombre" header="Inversionista" />
             <Column header="Participación (%)">
@@ -86,7 +180,6 @@
             </ColumnGroup>
           </DataTable>
 
-          <!-- Formulario agregar inversionista -->
           <Divider />
           <p class="font-semibold text-gray-700">Agregar inversionista</p>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
@@ -114,11 +207,12 @@
         </div>
       </TabPanel>
 
+      <!-- ══ SERVICIOS ══ -->
       <TabPanel header="Servicios">
         <div class="p-4 space-y-3">
           <p class="text-xs text-gray-500 mb-4">Activa o desactiva los servicios contratados para este proyecto.</p>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <div v-for="srv in servicios" :key="srv.key"
+            <div v-for="srv in SERVICIOS" :key="srv.key"
               class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
               <span class="text-sm font-medium text-gray-700">{{ srv.label }}</span>
               <ToggleSwitch v-model="srvFlags[srv.key]" @change="toggleServicio(srv.key, srvFlags[srv.key])" />
@@ -138,22 +232,15 @@
     <p class="text-sm">{{ errorMsg || 'No se pudo cargar el proyecto.' }}</p>
     <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="$router.go(0)" />
   </div>
-
-  <!-- Dialog: Editar proyecto -->
-  <Dialog v-model:visible="editVisible" header="Editar proyecto" modal class="w-full max-w-xl"
-    @hide="onEditDialogHide">
-    <ProyectoForm :clientes="clientes" :proyecto="proyecto" :proyectoId="proyecto?.id" @save="onEdit" @cancel="editVisible = false" />
-  </Dialog>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
 import ToggleSwitch from 'primevue/toggleswitch'
 import ProgressSpinner from 'primevue/progressspinner'
 import DataTable from 'primevue/datatable'
@@ -161,28 +248,131 @@ import Column from 'primevue/column'
 import ColumnGroup from 'primevue/columngroup'
 import Row from 'primevue/row'
 import Select from 'primevue/select'
+import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Divider from 'primevue/divider'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
-import ProyectoForm from './ProyectoForm.vue'
 
 const route = useRoute()
+const router = useRouter()
 const toast = useToast()
+
+// ── Constantes (sin hardcode en template) ────────────────────────────────────
+const ESTADOS = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica', 'otro']
+const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
+const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
+const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+const SERVICIOS = [
+  { key: 'srv_operacion', label: 'Operación' },
+  { key: 'srv_representacion', label: 'Representación' },
+  { key: 'srv_cgm', label: 'CGM' },
+  { key: 'srv_ppa', label: 'PPA' },
+  { key: 'srv_promotor', label: 'Promotor' },
+  { key: 'srv_rec', label: 'REC' },
+]
+
+// ── Estado base ───────────────────────────────────────────────────────────────
 const proyecto = ref(null)
 const clientes = ref([])
 const loading = ref(true)
 const errorMsg = ref(null)
-const editVisible = ref(false)
 const guardando = ref(false)
 const srvFlags = reactive({})
 
-const nuevoInv = reactive({
-  cliente_id: null,
-  porcentaje_pct: null,
-  es_patrimonio_autonomo: false,
+// ── Modo edición ──────────────────────────────────────────────────────────────
+const isEditMode = computed(() => route.query.edit === 'true')
+
+const editForm = reactive({
+  nombre_comercial: '',
+  estado: '',
+  tipo_proyecto: null,
+  tipo_tecnologia: null,
+  potencia_instalada_kwp: null,
+  departamento: null,
+  municipio: null,
+  operador_red: null,
+  clasificacion_regulatoria: null,
+  carpeta_drive_codigo: null,
+  sub_project: null,
+  codigo_tsf: null,
+  cantidad_total_paneles: null,
+  produccion_especifica_kwh_kwp: null,
 })
 
+// ── Simulación P90 / P50 ──────────────────────────────────────────────────────
+const editP90 = ref(Array(12).fill(null))
+const editP50 = ref(Array(12).fill(null))
+
+const p90Display = computed(() => parseMonthArray(proyecto.value?.p90_mensual_kwh))
+const p50Display = computed(() => parseMonthArray(proyecto.value?.p50_mensual_kwh))
+
+const SIMULACIONES = [
+  { key: 'p90', label: 'P90', editArray: editP90, displayArray: p90Display },
+  { key: 'p50', label: 'P50', editArray: editP50, displayArray: p50Display },
+]
+
+function parseMonthArray(jsonStr) {
+  if (!jsonStr) return Array(12).fill(null)
+  try {
+    const arr = JSON.parse(jsonStr)
+    return Array.isArray(arr) ? arr.map(v => (v ?? null)) : Array(12).fill(null)
+  } catch {
+    return Array(12).fill(null)
+  }
+}
+
+function serializeMonthArray(arr) {
+  if (arr.every(v => v === null || v === undefined)) return null
+  return JSON.stringify(arr.map(v => v ?? null))
+}
+
+function populateEditForm() {
+  if (!proyecto.value) return
+  const p = proyecto.value
+  Object.keys(editForm).forEach(k => { if (k in p) editForm[k] = p[k] ?? null })
+  editP90.value = parseMonthArray(p.p90_mensual_kwh)
+  editP50.value = parseMonthArray(p.p50_mensual_kwh)
+}
+
+watch(isEditMode, (entering) => {
+  if (entering && proyecto.value) populateEditForm()
+})
+
+function enterEditMode() {
+  router.push({ query: { edit: 'true' } })
+}
+
+function cancelEdit() {
+  router.push({ query: {} })
+}
+
+async function saveEdit() {
+  guardando.value = true
+  try {
+    const payload = {}
+    for (const [k, v] of Object.entries(editForm)) {
+      if (v !== null && v !== undefined && v !== '') payload[k] = v
+    }
+    const p90json = serializeMonthArray(editP90.value)
+    const p50json = serializeMonthArray(editP50.value)
+    if (p90json !== null) payload.p90_mensual_kwh = p90json
+    if (p50json !== null) payload.p50_mensual_kwh = p50json
+
+    const { data } = await api.patch(`/proyectos/${route.params.id}`, payload)
+    proyecto.value = data
+    router.push({ query: {} })
+    toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
+  } finally {
+    guardando.value = false
+  }
+}
+
+// ── Inversionistas ────────────────────────────────────────────────────────────
+const nuevoInv = reactive({ cliente_id: null, porcentaje_pct: null, es_patrimonio_autonomo: false })
 const editandoInvId = ref(null)
 const editPct = ref(null)
 
@@ -195,33 +385,6 @@ const clientesDisponibles = computed(() => {
 const totalParticipacion = computed(() => {
   if (!proyecto.value?.inversionistas?.length) return 0
   return proyecto.value.inversionistas.reduce((sum, i) => sum + (i.porcentaje_participacion ?? 0) * 100, 0)
-})
-
-const servicios = [
-  { key: 'srv_operacion', label: 'Operación' },
-  { key: 'srv_representacion', label: 'Representación' },
-  { key: 'srv_cgm', label: 'CGM' },
-  { key: 'srv_ppa', label: 'PPA' },
-  { key: 'srv_promotor', label: 'Promotor' },
-  { key: 'srv_rec', label: 'REC' },
-]
-
-const estadoSeverity = (e) => ({ en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', cancelado: 'secondary' }[e] || 'secondary')
-
-onMounted(async () => {
-  try {
-    const [proyRes, clientesRes] = await Promise.all([
-      api.get(`/proyectos/${route.params.id}`),
-      api.get('/clientes', { params: { size: 200 } }),
-    ])
-    proyecto.value = proyRes.data
-    clientes.value = clientesRes.data.items
-    for (const s of servicios) srvFlags[s.key] = proyRes.data[s.key]
-  } catch (e) {
-    errorMsg.value = e.response?.data?.detail || e.message || 'Error de conexión con el servidor'
-  } finally {
-    loading.value = false
-  }
 })
 
 async function agregarInversionista() {
@@ -259,28 +422,6 @@ async function eliminarInversionista(invId) {
   }
 }
 
-async function onEdit(payload) {
-  try {
-    const { data } = await api.patch(`/proyectos/${route.params.id}`, payload)
-    proyecto.value = data
-    editVisible.value = false
-    toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
-  }
-}
-
-async function toggleServicio(key, value) {
-  try {
-    const { data } = await api.patch(`/proyectos/${route.params.id}/servicios`, { [key]: value })
-    proyecto.value = data
-    toast.add({ severity: 'success', summary: 'Servicio actualizado', life: 2000 })
-  } catch {
-    srvFlags[key] = !value
-    toast.add({ severity: 'error', summary: 'Error al actualizar', life: 3000 })
-  }
-}
-
 function iniciarEdicionInversionista(inv) {
   editandoInvId.value = inv.id
   editPct.value = inv.porcentaje_participacion != null ? +(inv.porcentaje_participacion * 100).toFixed(7) : null
@@ -304,12 +445,40 @@ async function guardarEdicionInversionista(invId) {
   }
 }
 
-async function onEditDialogHide() {
+// ── Servicios ─────────────────────────────────────────────────────────────────
+async function toggleServicio(key, value) {
   try {
-    const { data } = await api.get(`/proyectos/${route.params.id}`)
+    const { data } = await api.patch(`/proyectos/${route.params.id}/servicios`, { [key]: value })
     proyecto.value = data
-  } catch { /* silencioso: si falla el refresh no interrumpimos al usuario */ }
+    toast.add({ severity: 'success', summary: 'Servicio actualizado', life: 2000 })
+  } catch {
+    srvFlags[key] = !value
+    toast.add({ severity: 'error', summary: 'Error al actualizar', life: 3000 })
+  }
 }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const estadoSeverity = (e) => (
+  { en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', cancelado: 'secondary' }[e] || 'secondary'
+)
+
+// ── Carga inicial ─────────────────────────────────────────────────────────────
+onMounted(async () => {
+  try {
+    const [proyRes, clientesRes] = await Promise.all([
+      api.get(`/proyectos/${route.params.id}`),
+      api.get('/clientes', { params: { size: 200 } }),
+    ])
+    proyecto.value = proyRes.data
+    clientes.value = clientesRes.data.items
+    for (const s of SERVICIOS) srvFlags[s.key] = proyRes.data[s.key]
+    if (isEditMode.value) populateEditForm()
+  } catch (e) {
+    errorMsg.value = e.response?.data?.detail || e.message || 'Error de conexión con el servidor'
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <script>
@@ -319,3 +488,7 @@ const InfoField = {
 }
 export default { components: { InfoField } }
 </script>
+
+<style scoped>
+.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+</style>

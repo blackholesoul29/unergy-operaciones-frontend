@@ -16,11 +16,11 @@
       </div>
       <div>
         <label class="field-label">Estado</label>
-        <Select v-model="filters.estado" :options="estados" class="w-40" placeholder="Todos" showClear @change="load" />
+        <Select v-model="filters.estado" :options="ESTADOS" class="w-40" placeholder="Todos" showClear @change="load" />
       </div>
       <div>
         <label class="field-label">Tipo</label>
-        <Select v-model="filters.tipo_proyecto" :options="tipos" class="w-44" placeholder="Todos" showClear @change="load" />
+        <Select v-model="filters.tipo_proyecto" :options="TIPOS_PROYECTO" class="w-44" placeholder="Todos" showClear @change="load" />
       </div>
     </div>
 
@@ -39,12 +39,9 @@
         <Column header="Servicios" style="width:160px">
           <template #body="{ data }">
             <div class="flex gap-1 flex-wrap">
-              <span v-if="data.srv_operacion" class="srv-badge">OP</span>
-              <span v-if="data.srv_representacion" class="srv-badge">REP</span>
-              <span v-if="data.srv_cgm" class="srv-badge">CGM</span>
-              <span v-if="data.srv_ppa" class="srv-badge">PPA</span>
-              <span v-if="data.srv_promotor" class="srv-badge">PROM</span>
-              <span v-if="data.srv_rec" class="srv-badge">REC</span>
+              <span v-for="srv in SERVICIOS_BADGES" :key="srv.key">
+                <span v-if="data[srv.key]" class="srv-badge">{{ srv.badge }}</span>
+              </span>
             </div>
           </template>
         </Column>
@@ -52,7 +49,7 @@
           <template #body="{ data }">
             <div class="flex gap-1">
               <Button icon="pi pi-eye" text size="small" @click="goDetail(data)" v-tooltip="'Ver detalle'" />
-              <Button icon="pi pi-pencil" text size="small" severity="info" @click="openEdit(data)" v-tooltip="'Editar'" />
+              <Button icon="pi pi-pencil" text size="small" severity="info" @click="goEdit(data)" v-tooltip="'Editar'" />
               <Button icon="pi pi-trash" text size="small" severity="danger" @click="confirmDelete(data)" v-tooltip="'Eliminar'" />
             </div>
           </template>
@@ -62,12 +59,7 @@
 
     <!-- Dialog: Nuevo proyecto -->
     <Dialog v-model:visible="dialogVisible" header="Nuevo proyecto" modal class="w-full max-w-xl">
-      <ProyectoForm :clientes="clientes" @save="onCreate" @cancel="dialogVisible = false" />
-    </Dialog>
-
-    <!-- Dialog: Editar proyecto -->
-    <Dialog v-model:visible="editVisible" header="Editar proyecto" modal class="w-full max-w-xl">
-      <ProyectoForm :clientes="clientes" :proyecto="editProyecto" :proyectoId="editProyecto?.id" @save="onEdit" @cancel="editVisible = false" />
+      <ProyectoForm @save="onCreate" @cancel="dialogVisible = false" />
     </Dialog>
 
     <!-- Dialog: Confirmar eliminación -->
@@ -103,29 +95,33 @@ import ProyectoForm from './ProyectoForm.vue'
 const router = useRouter()
 const toast = useToast()
 
+const ESTADOS = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica', 'otro']
+const SERVICIOS_BADGES = [
+  { key: 'srv_operacion', badge: 'OP' },
+  { key: 'srv_representacion', badge: 'REP' },
+  { key: 'srv_cgm', badge: 'CGM' },
+  { key: 'srv_ppa', badge: 'PPA' },
+  { key: 'srv_promotor', badge: 'PROM' },
+  { key: 'srv_rec', badge: 'REC' },
+]
+
 const items = ref([])
 const total = ref(0)
 const page = ref(1)
 const size = ref(20)
 const loading = ref(false)
 const dialogVisible = ref(false)
-const clientes = ref([])
 
-// Editar
-const editVisible = ref(false)
-const editProyecto = ref(null)
-
-// Eliminar
 const deleteVisible = ref(false)
 const deleteProyecto = ref(null)
 const deleting = ref(false)
 
 const filters = reactive({ q: '', estado: null, tipo_proyecto: null })
 
-const estados = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
-const tipos = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica', 'otro']
-
-const estadoSeverity = (e) => ({ en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', cancelado: 'secondary' }[e] || 'secondary')
+const estadoSeverity = (e) => (
+  { en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', cancelado: 'secondary' }[e] || 'secondary'
+)
 
 async function load() {
   loading.value = true
@@ -142,12 +138,7 @@ async function load() {
   }
 }
 
-async function loadClientes() {
-  const { data } = await api.get('/clientes', { params: { size: 200 } })
-  clientes.value = data.items
-}
-
-onMounted(() => { load(); loadClientes() })
+onMounted(load)
 
 let searchTimer
 function onSearch() {
@@ -157,12 +148,8 @@ function onSearch() {
 
 function onPage(e) { page.value = e.page + 1; load() }
 function goDetail(row) { router.push(`/proyectos/${row.id}`) }
+function goEdit(row) { router.push(`/proyectos/${row.id}?edit=true`) }
 function openNew() { dialogVisible.value = true }
-
-function openEdit(row) {
-  editProyecto.value = row
-  editVisible.value = true
-}
 
 function confirmDelete(row) {
   deleteProyecto.value = row
@@ -174,17 +161,6 @@ async function onCreate(payload) {
     await api.post('/proyectos', payload)
     toast.add({ severity: 'success', summary: 'Proyecto creado', life: 3000 })
     dialogVisible.value = false
-    load()
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
-  }
-}
-
-async function onEdit(payload) {
-  try {
-    await api.patch(`/proyectos/${editProyecto.value.id}`, payload)
-    toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
-    editVisible.value = false
     load()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
