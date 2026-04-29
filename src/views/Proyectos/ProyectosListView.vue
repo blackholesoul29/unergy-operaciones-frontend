@@ -35,7 +35,7 @@
         </Column>
         <Column field="tipo_proyecto" header="Tipo" />
         <Column field="potencia_instalada_kwp" header="kWp" />
-        <Column field="departamento" header="Depto." />
+        <Column field="codigo_tsf" header="Cód. TSF" />
         <Column header="Servicios" style="width:160px">
           <template #body="{ data }">
             <div class="flex gap-1 flex-wrap">
