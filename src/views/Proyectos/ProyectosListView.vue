@@ -67,7 +67,7 @@
 
     <!-- Dialog: Editar proyecto -->
     <Dialog v-model:visible="editVisible" header="Editar proyecto" modal class="w-full max-w-xl">
-      <ProyectoForm :clientes="clientes" :proyecto="editProyecto" @save="onEdit" @cancel="editVisible = false" />
+      <ProyectoForm :clientes="clientes" :proyecto="editProyecto" :proyectoId="editProyecto?.id" @save="onEdit" @cancel="editVisible = false" />
     </Dialog>
 
     <!-- Dialog: Confirmar eliminación -->
@@ -122,10 +122,10 @@ const deleting = ref(false)
 
 const filters = reactive({ q: '', estado: null, tipo_proyecto: null })
 
-const estados = ['en_desarrollo', 'en_operacion', 'suspendido', 'inactivo', 'terminado']
-const tipos = ['autogeneracion', 'autoconsumo', 'gd_mercado', 'estandar']
+const estados = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const tipos = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica', 'otro']
 
-const estadoSeverity = (e) => ({ en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', inactivo: 'secondary', terminado: 'secondary' }[e] || 'secondary')
+const estadoSeverity = (e) => ({ en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', cancelado: 'secondary' }[e] || 'secondary')
 
 async function load() {
   loading.value = true

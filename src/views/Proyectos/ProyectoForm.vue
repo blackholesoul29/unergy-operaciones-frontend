@@ -95,6 +95,59 @@
       </div>
     </div>
 
+    <!-- Inversionistas (solo modo edición) -->
+    <div v-if="proyectoId" class="border border-gray-200 rounded-lg p-4 space-y-3">
+      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Inversionistas</p>
+
+      <DataTable :value="inversionistas" class="text-xs" stripedRows>
+        <Column field="cliente_nombre" header="Inversionista" />
+        <Column header="Participación (%)">
+          <template #body="{ data }">
+            {{ data.porcentaje_participacion != null ? (data.porcentaje_participacion * 100).toFixed(2) + '%' : '—' }}
+          </template>
+        </Column>
+        <Column header="Pat. autónomo">
+          <template #body="{ data }">
+            <Tag :value="data.es_patrimonio_autonomo ? 'Sí' : 'No'"
+              :severity="data.es_patrimonio_autonomo ? 'info' : 'secondary'" />
+          </template>
+        </Column>
+        <Column header="" style="width:50px">
+          <template #body="{ data }">
+            <Button icon="pi pi-trash" text severity="danger" size="small"
+              @click="eliminarInversionista(data.id)" />
+          </template>
+        </Column>
+        <template #empty>
+          <p class="text-center text-gray-400 py-2 text-xs">Sin inversionistas registrados.</p>
+        </template>
+      </DataTable>
+
+      <Divider />
+      <p class="text-xs font-medium text-gray-600">Agregar inversionista</p>
+      <div class="grid grid-cols-2 gap-2">
+        <div class="col-span-2">
+          <label class="field-label">Cliente</label>
+          <Select v-model="nuevoInv.cliente_id" :options="clientes" optionLabel="razon_social_nombre"
+            optionValue="id" class="w-full" placeholder="Seleccionar" filter />
+        </div>
+        <div>
+          <label class="field-label">% Participación</label>
+          <InputNumber v-model="nuevoInv.porcentaje_pct" :min="0" :max="100" :maxFractionDigits="2"
+            suffix="%" class="w-full" />
+        </div>
+        <div>
+          <label class="field-label">Patrimonio autónomo</label>
+          <div class="flex items-center gap-2 h-10">
+            <ToggleSwitch v-model="nuevoInv.es_patrimonio_autonomo" />
+            <span class="text-xs text-gray-600">{{ nuevoInv.es_patrimonio_autonomo ? 'Sí' : 'No' }}</span>
+          </div>
+        </div>
+      </div>
+      <Button label="Agregar" icon="pi pi-plus" size="small" :loading="guardandoInv"
+        :disabled="!nuevoInv.cliente_id" @click="agregarInversionista" />
+    </div>
+
     <div class="flex justify-end gap-2 pt-2">
       <Button type="button" label="Cancelar" severity="secondary" @click="$emit('cancel')" />
       <Button type="submit" :label="editMode ? 'Guardar cambios' : 'Crear proyecto'" />
@@ -108,21 +161,29 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import ToggleSwitch from 'primevue/toggleswitch'
+import Divider from 'primevue/divider'
+import Tag from 'primevue/tag'
+import { useToast } from 'primevue/usetoast'
+import api from '@/api/client'
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
 const props = defineProps({
   clientes: Array,
   proyecto: { type: Object, default: null },
+  proyectoId: { type: Number, default: null },
 })
 const emit = defineEmits(['save', 'cancel'])
 
 const editMode = computed(() => !!props.proyecto)
 
-const estados = ['en_desarrollo', 'en_operacion', 'suspendido', 'inactivo', 'terminado']
-const tipos = ['autogeneracion', 'autoconsumo', 'gd_mercado', 'estandar']
-const tecnologias = ['solar_fotovoltaico', 'eolico', 'hidraulico', 'cogeneracion', 'biomasa', 'otro']
-const clasificaciones = ['autogeneracion_a_gran_escala', 'autogeneracion_a_pequena_escala', 'generacion_distribuida', 'no_aplica']
+const estados = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const tipos = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica', 'otro']
+const tecnologias = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
+const clasificaciones = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 
 const f = reactive({
   nombre_comercial: '',
@@ -161,6 +222,50 @@ watch(() => props.proyecto, (p) => {
     p50Array.value = parseMonthArray(p.p50_mensual_kwh)
   }
 }, { immediate: true })
+
+const toast = useToast()
+const inversionistas = ref([])
+const guardandoInv = ref(false)
+const nuevoInv = reactive({ cliente_id: null, porcentaje_pct: null, es_patrimonio_autonomo: false })
+
+watch(() => props.proyectoId, async (id) => {
+  if (id) {
+    const { data } = await api.get(`/proyectos/${id}/inversionistas`)
+    inversionistas.value = data
+  }
+}, { immediate: true })
+
+async function agregarInversionista() {
+  if (!nuevoInv.cliente_id) return
+  guardandoInv.value = true
+  try {
+    await api.post(`/proyectos/${props.proyectoId}/inversionistas`, {
+      cliente_id: nuevoInv.cliente_id,
+      porcentaje_participacion: nuevoInv.porcentaje_pct != null ? nuevoInv.porcentaje_pct / 100 : null,
+      es_patrimonio_autonomo: nuevoInv.es_patrimonio_autonomo,
+    })
+    const { data } = await api.get(`/proyectos/${props.proyectoId}/inversionistas`)
+    inversionistas.value = data
+    nuevoInv.cliente_id = null
+    nuevoInv.porcentaje_pct = null
+    nuevoInv.es_patrimonio_autonomo = false
+    toast.add({ severity: 'success', summary: 'Inversionista agregado', life: 2000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error al agregar', detail: e.response?.data?.detail, life: 3000 })
+  } finally {
+    guardandoInv.value = false
+  }
+}
+
+async function eliminarInversionista(invId) {
+  try {
+    await api.delete(`/proyectos/${props.proyectoId}/inversionistas/${invId}`)
+    inversionistas.value = inversionistas.value.filter(i => i.id !== invId)
+    toast.add({ severity: 'success', summary: 'Inversionista eliminado', life: 2000 })
+  } catch {
+    toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
+  }
+}
 
 function serializeMonthArray(arr) {
   if (arr.every(v => v === null || v === undefined)) return null
