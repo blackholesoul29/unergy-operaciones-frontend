@@ -26,7 +26,7 @@
     <!-- Tabs -->
     <TabView v-model:activeIndex="tabActivo">
 
-      <!-- ══ Tab Lista ══ -->
+      <!-- ══ Tab Lista (tabla plana) ══ -->
       <TabPanel header="Lista">
         <ProgressSpinner v-if="loadingVista" class="block mx-auto my-8" />
         <div v-else class="rounded-xl shadow-sm overflow-hidden" style="background:#FDFAF7">
@@ -39,14 +39,14 @@
                 <tr class="text-white text-[11px] uppercase tracking-wide" style="background:#2C2039">
                   <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Proyecto</th>
                   <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Inversionista</th>
-                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Documento contable</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Doc. Contable</th>
                   <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Contacto 1</th>
                   <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Contacto 2</th>
                   <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Concepto</th>
                   <th class="px-3 py-2.5 text-right whitespace-nowrap font-semibold">Total</th>
-                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Referencia Factura</th>
-                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consecutivo Ingresos</th>
-                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consecutivo Costos</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Ref. Factura / Soporte</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consec. Ingresos</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consec. Costos</th>
                   <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Comprobante Contable</th>
                 </tr>
               </thead>
@@ -57,6 +57,9 @@
                   <tr v-if="fila.separador" style="background:#915BD8">
                     <td colspan="11" class="px-4 py-2 font-bold text-[11px] tracking-widest text-white uppercase">
                       {{ fila.label }}
+                      <span class="ml-4 font-normal text-purple-200 normal-case tracking-normal">
+                        {{ fila.sublabel }}
+                      </span>
                     </td>
                   </tr>
 
@@ -98,22 +101,22 @@
                     <!-- Total -->
                     <td class="px-3 py-1.5 text-right font-mono text-[11px]"
                       :style="fila.negativo ? 'color:#dc2626' : 'color:#2C2039'">
-                      <span v-if="fila.isPercent" class="font-semibold">{{ fila.pctLabel }}</span>
+                      <span v-if="fila.isPercent" class="font-semibold" style="color:#915BD8">{{ fila.pctLabel }}</span>
                       <span v-else>{{ fila.total != null ? fmt(fila.total) : '—' }}</span>
                     </td>
 
-                    <!-- Referencia Factura -->
-                    <td class="px-3 py-1.5 text-[11px] whitespace-nowrap" style="color:#2C2039; opacity:0.7">
-                      {{ fila.refFactura }}
-                    </td>
-
-                    <!-- Consecutivo Ingresos -->
+                    <!-- Ref. Factura / Soporte -->
                     <td class="px-3 py-1.5 text-[11px] whitespace-nowrap">
                       <a v-if="fila.soporteUrl" :href="fila.soporteUrl" target="_blank"
                         class="flex items-center gap-1 hover:underline" style="color:#915BD8">
-                        <i class="pi pi-file-pdf text-red-500" />{{ fila.conseIngresos }}
+                        <i class="pi pi-file-pdf text-red-500 text-xs" />{{ fila.refFactura || 'Ver' }}
                       </a>
-                      <span v-else style="color:#2C2039; opacity:0.6">{{ fila.conseIngresos }}</span>
+                      <span v-else style="color:#2C2039; opacity:0.7">{{ fila.refFactura }}</span>
+                    </td>
+
+                    <!-- Consecutivo Ingresos -->
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.6">
+                      {{ fila.conseIngresos }}
                     </td>
 
                     <!-- Consecutivo Costos -->
@@ -342,17 +345,7 @@ const dialogNueva = ref(false)
 const creando = ref(false)
 const nueva = ref({ proyecto_id: null, periodo: null, tipo_venta: 'bolsa' })
 
-// ─── Clasificación de tipos de línea por documento ────────────────────────────
-//
-// MANDATO (ingresos): ingreso_bruto, despacho, ventas_en_bolsa, compras_en_bolsa,
-//   redistribucion_ingresos, ajuste_comercializacion (comercialización), valor_a_pagar
-//
-// COSTOS: mantenimiento, arriendo, servicio_internet, poliza_cumplimiento,
-//   servicios_publicos_consumo, cambio_equipos_medida, seguro, otro_costo, iva
-//
-// FACTURA (servicios): representacion, cgm, administracion_operacion
-//   → vienen de facturas_servicio, no de mandato lineas
-
+// ─── Etiquetas de líneas ──────────────────────────────────────────────────────
 const ETIQUETAS_LISTA = {
   ingreso_bruto: 'Ingreso Bruto',
   ajuste_unergy: 'Ajuste Unergy',
@@ -363,18 +356,18 @@ const ETIQUETAS_LISTA = {
   ventas_en_bolsa: 'Ventas en Bolsa',
   compras_en_bolsa: 'Compras en Bolsa',
   redistribucion_ingresos: 'Redistribución de Ingresos de acuerdo al Protocolo',
-  mantenimiento: 'Mantenimiento*',
+  mantenimiento: 'Mantenimiento',
   arriendo: 'Arriendo',
-  servicio_internet: 'Servicio de Internet*',
-  poliza_cumplimiento: 'Póliza de Cumplimiento*',
+  servicio_internet: 'Servicio de Internet',
+  poliza_cumplimiento: 'Póliza de Cumplimiento',
   servicios_publicos_consumo: 'Servicios Públicos Consumo de energía',
   cambio_equipos_medida: 'Cambio Equipos de Medida',
   seguro: 'Seguro',
   otro_costo: 'Otro Costo',
   comercializacion: 'Comercialización',
-  representacion: 'Representación*',
-  cgm: 'CGM*',
-  administracion: 'Administración*',
+  representacion: 'Representación',
+  cgm: 'CGM',
+  administracion: 'Administración',
   iva: 'IVA',
   retencion_fuente: 'Retención en la Fuente',
   reteica: 'Reteica',
@@ -383,7 +376,6 @@ const ETIQUETAS_LISTA = {
   valor_a_pagar: 'Valor a Pagar',
 }
 
-// Tipos de línea que son costos (valor negativo / color rojo)
 const COSTOS_NEG = new Set([
   'ajuste_comercializacion', 'arriendo', 'mantenimiento', 'servicio_internet',
   'poliza_cumplimiento', 'servicios_publicos_consumo', 'cambio_equipos_medida',
@@ -392,34 +384,24 @@ const COSTOS_NEG = new Set([
   'reteica', 'ica_opex', 'otro_impuesto',
 ])
 
-// Label para tipos de factura de servicio
 const LABEL_FACTURA = {
-  representacion: 'Representación*',
-  cgm: 'CGM*',
-  administracion_operacion: 'Administración*',
+  representacion: 'Representación',
+  cgm: 'CGM',
+  administracion_operacion: 'Administración',
 }
 
 const OMITIR_LINEAS = new Set(['ajuste_xm'])
 
-// ─── Colores de marca ─────────────────────────────────────────────────────────
-//  #2C2039 Púrpura Profundo   → header, texto principal
-//  #915BD8 Púrpura Energético → separadores, mandato ingresos, acentos
-//  #FDFAF7 Avena              → fondo base
-//  #F6FF72 Amarillo Solar     → factura
-
+// ─── Colores ──────────────────────────────────────────────────────────────────
 const COLORES_FILA = {
-  // Información: fondo avena levemente marcado
   Información_Total: { background: 'rgba(44,32,57,0.06)' },
   Información_inv:   { background: 'rgba(44,32,57,0.03)' },
-  // Mandato ingresos: tinte púrpura energético
-  Mandato_Total: { background: 'rgba(145,91,216,0.12)' },
-  Mandato_inv:   { background: 'rgba(145,91,216,0.05)' },
-  // Costos: tinte rojizo suave
-  Costos_Total: { background: 'rgba(220,38,38,0.08)' },
-  Costos_inv:   { background: 'rgba(220,38,38,0.03)' },
-  // Factura: tinte amarillo solar
-  Factura_Total: { background: 'rgba(246,255,114,0.35)' },
-  Factura_inv:   { background: 'rgba(246,255,114,0.15)' },
+  Mandato_Total:     { background: 'rgba(145,91,216,0.12)' },
+  Mandato_inv:       { background: 'rgba(145,91,216,0.05)' },
+  Costos_Total:      { background: 'rgba(220,38,38,0.08)' },
+  Costos_inv:        { background: 'rgba(220,38,38,0.03)' },
+  Factura_Total:     { background: 'rgba(246,255,114,0.35)' },
+  Factura_inv:       { background: 'rgba(246,255,114,0.15)' },
 }
 
 function estiloFila(fila) {
@@ -428,29 +410,33 @@ function estiloFila(fila) {
 }
 
 function badgeDoc(doc) {
-  const estilos = {
-    Mandato:      { background: '#915BD8', color: '#fff' },
-    Costos:       { background: '#fee2e2', color: '#b91c1c' },
-    Factura:      { background: '#F6FF72', color: '#2C2039' },
-    Información:  { background: '#2C2039', color: '#FDFAF7' },
-  }
-  return estilos[doc] || { background: '#e5e7eb', color: '#374151' }
+  return {
+    Mandato:     { background: '#915BD8', color: '#fff' },
+    Costos:      { background: '#fee2e2', color: '#b91c1c' },
+    Factura:     { background: '#F6FF72', color: '#2C2039' },
+    Información: { background: '#2C2039', color: '#FDFAF7' },
+  }[doc] || { background: '#e5e7eb', color: '#374151' }
 }
 
-// ─── Filas planas para Tab Lista ──────────────────────────────────────────────
+// ─── Filas planas ─────────────────────────────────────────────────────────────
 const filasDetalle = computed(() => {
   const rows = []
 
   for (const proy of vistaProyectos.value) {
     for (const liq of proy.liquidaciones) {
       const proyNombre = proy.proyecto_nombre
-      const periodo = formatPeriodo(liq.periodo)
-      const contacto1 = '' // pendiente: campo comercializador en proyecto
-      const contacto2 = ''
+      const comprobante = liq.comprobante_contable_ref || ''
+      const consIng0 = liq.consecutivo_inicial_ingresos != null ? String(liq.consecutivo_inicial_ingresos) : ''
+      const consCos0 = liq.consecutivo_inicial_costos != null ? String(liq.consecutivo_inicial_costos) : ''
 
-      rows.push({ key: `sep_${liq.liquidacion_id}`, separador: true, label: `${proyNombre}  —  ${periodo}` })
+      rows.push({
+        key: `sep_${liq.liquidacion_id}`,
+        separador: true,
+        label: `${proyNombre}  —  ${formatPeriodo(liq.periodo)}`,
+        sublabel: liq.estado,
+      })
 
-      // ── Totales agregados ─────────────────────────────────────────────────
+      // ── Agregar totales del proyecto (suma de todos los inversionistas) ────
       const totalIng = new Map()
       const totalCos = new Map()
 
@@ -459,7 +445,14 @@ const filasDetalle = computed(() => {
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
             const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
-            if (!totalIng.has(k)) totalIng.set(k, { tipo_linea: l.tipo_linea, concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto, valor: 0, refFactura: l.referencia_factura || '' })
+            if (!totalIng.has(k)) {
+              totalIng.set(k, {
+                tipo_linea: l.tipo_linea,
+                concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
+                valor: 0,
+                refFactura: l.referencia_factura || '',
+              })
+            }
             totalIng.get(k).valor += l.valor_cop
           }
         }
@@ -467,79 +460,111 @@ const filasDetalle = computed(() => {
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
             const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
-            if (!totalCos.has(k)) totalCos.set(k, { tipo_linea: l.tipo_linea, concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto, valor: 0, refFactura: l.referencia_factura || '' })
+            if (!totalCos.has(k)) {
+              totalCos.set(k, {
+                tipo_linea: l.tipo_linea,
+                concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
+                valor: 0,
+                refFactura: l.referencia_factura || '',
+              })
+            }
             totalCos.get(k).valor += l.valor_cop
           }
         }
       }
 
-      // Total / Información
-      rows.push(_f(`${liq.liquidacion_id}_t_info`, { proyecto: proyNombre, inversionista: 'Total', doc: 'Información', contacto1, contacto2, concepto: 'Porcentaje de Participación', isPercent: true, pctLabel: '100.00%' }))
+      // Fila Total — Información (100%)
+      rows.push(_f(`${liq.liquidacion_id}_t_info`, {
+        proyecto: proyNombre, inversionista: 'Total', doc: 'Información',
+        contacto1: '', contacto2: '',
+        concepto: 'Porcentaje de Participación',
+        isPercent: true, pctLabel: '100.00%',
+        conseIngresos: consIng0, conseCostos: consCos0, comprobante,
+      }))
 
-      // Total / Mandato (ingresos)
+      // Filas Total — Mandato (ingresos agregados)
       for (const r of totalIng.values()) {
-        rows.push(_f(`${liq.liquidacion_id}_t_ing_${r.tipo_linea}`, { proyecto: proyNombre, inversionista: 'Total', doc: 'Mandato', contacto1, contacto2, concepto: r.concepto, total: r.valor, negativo: COSTOS_NEG.has(r.tipo_linea), refFactura: r.refFactura }))
+        rows.push(_f(`${liq.liquidacion_id}_t_ing_${r.tipo_linea}`, {
+          proyecto: proyNombre, inversionista: 'Total', doc: 'Mandato',
+          contacto1: '', contacto2: '',
+          concepto: r.concepto, total: r.valor,
+          negativo: COSTOS_NEG.has(r.tipo_linea),
+          refFactura: r.refFactura,
+          conseIngresos: consIng0, conseCostos: '', comprobante,
+        }))
       }
 
-      // Total / Costos
+      // Filas Total — Costos (agregados)
       for (const r of totalCos.values()) {
-        rows.push(_f(`${liq.liquidacion_id}_t_cos_${r.tipo_linea}`, { proyecto: proyNombre, inversionista: 'Total', doc: 'Costos', contacto1, contacto2, concepto: r.concepto, total: r.valor, negativo: true, refFactura: r.refFactura }))
+        rows.push(_f(`${liq.liquidacion_id}_t_cos_${r.tipo_linea}`, {
+          proyecto: proyNombre, inversionista: 'Total', doc: 'Costos',
+          contacto1: '', contacto2: '',
+          concepto: r.concepto, total: r.valor, negativo: true,
+          refFactura: r.refFactura,
+          conseIngresos: '', conseCostos: consCos0, comprobante,
+        }))
       }
 
-      // Total / Factura (representación, CGM, administración — nivel proyecto)
+      // Filas Total — Facturas de servicio (nivel proyecto)
       for (const f of (liq.facturas_servicio || [])) {
-        rows.push(_f(`${liq.liquidacion_id}_t_fac_${f.id}`, { proyecto: proyNombre, inversionista: 'Total', doc: 'Factura', contacto1, contacto2, concepto: LABEL_FACTURA[f.tipo_servicio] || f.tipo_servicio, total: f.valor_cop, refFactura: '', soporteUrl: f.soporte_url, comprobante: f.numero_factura || f.nro_soporte || '' }))
+        rows.push(_f(`${liq.liquidacion_id}_t_fac_${f.id}`, {
+          proyecto: proyNombre, inversionista: 'Total', doc: 'Factura',
+          contacto1: LABEL_FACTURA[f.tipo_servicio] || f.tipo_servicio,
+          contacto2: f.numero_factura || '',
+          concepto: LABEL_FACTURA[f.tipo_servicio] || f.tipo_servicio,
+          total: f.valor_cop, negativo: false,
+          refFactura: f.nro_soporte || '', soporteUrl: f.soporte_url || null,
+          conseIngresos: '', conseCostos: '', comprobante,
+        }))
       }
 
       // ── Por inversionista ─────────────────────────────────────────────────
       for (const inv of (liq.inversionistas || [])) {
-        const consIng = inv.mandatos_ingresos?.[0]?.consecutivo
-        const consCos = inv.mandatos_costos?.[0]?.consecutivo
         const pctLabel = inv.porcentaje_participacion != null
-          ? (inv.porcentaje_participacion * 100).toFixed(7) + '%' : '—'
+          ? (inv.porcentaje_participacion * 100).toFixed(4) + '%' : '—'
 
-        // Información
+        // Fila Inversionista — Información (% participación)
         rows.push(_f(`${liq.liquidacion_id}_${inv.inversionista_id}_info`, {
           proyecto: proyNombre, inversionista: inv.inversionista_nombre, doc: 'Información',
-          contacto1, contacto2, concepto: 'Porcentaje de Participación',
+          contacto1: '', contacto2: '',
+          concepto: 'Porcentaje de Participación',
           isPercent: true, pctLabel,
-          conseIngresos: consIng != null ? String(consIng) : '',
-          conseCostos: consCos != null ? String(consCos) : '',
+          conseIngresos: consIng0, conseCostos: consCos0, comprobante,
         }))
 
-        // Mandato (ingresos): ingreso bruto, comercialización, despacho, bolsa, redistribución, valor a pagar
+        // Filas Inversionista — Mandato (ingresos, omitiendo ajuste_xm)
         for (const m of (inv.mandatos_ingresos || [])) {
+          const consIng = m.consecutivo != null ? String(m.consecutivo) : consIng0
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
             rows.push(_f(`${liq.liquidacion_id}_${inv.inversionista_id}_ing_${l.id}`, {
               proyecto: proyNombre, inversionista: inv.inversionista_nombre, doc: 'Mandato',
-              contacto1, contacto2,
+              contacto1: m.numero_mandato || '',
+              contacto2: m.beneficiario_nombre || '',
               concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
               total: l.valor_cop, negativo: COSTOS_NEG.has(l.tipo_linea),
               refFactura: l.referencia_factura || '',
+              conseIngresos: consIng, conseCostos: '', comprobante,
             }))
           }
         }
 
-        // Costos: mantenimiento, arriendo, internet, póliza, servicios públicos, IVA, etc.
+        // Filas Inversionista — Costos
         for (const m of (inv.mandatos_costos || [])) {
+          const consCos = m.consecutivo != null ? String(m.consecutivo) : consCos0
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
             rows.push(_f(`${liq.liquidacion_id}_${inv.inversionista_id}_cos_${l.id}`, {
               proyecto: proyNombre, inversionista: inv.inversionista_nombre, doc: 'Costos',
-              contacto1, contacto2,
+              contacto1: m.numero_mandato || '',
+              contacto2: m.beneficiario_nombre || '',
               concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
               total: l.valor_cop, negativo: true,
               refFactura: l.referencia_factura || '',
-              comprobante: m.categoria_contable || '',
+              conseIngresos: '', conseCostos: consCos, comprobante,
             }))
           }
         }
-
-        // Factura por inversionista: cuando el backend agregue inv.facturas_servicio, descomentar:
-        // for (const f of (inv.facturas_servicio || [])) {
-        //   rows.push(_f(...))
-        // }
       }
     }
   }
