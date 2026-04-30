@@ -50,7 +50,7 @@
       <div class="col-span-2">
         <div class="border-t pt-4 mt-1">
           <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: #915BD8;">✉️ Correos de contacto</p>
-          <div class="grid grid-cols-3 gap-4">
+          <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="field-label">Correo Liquidación</label>
               <InputText v-model="f.correo_liquidacion" type="email" class="w-full" placeholder="liquidacion@empresa.com" />
@@ -59,7 +59,7 @@
               <label class="field-label">Correo Operacional</label>
               <InputText v-model="f.correo_monitoreo" type="email" class="w-full" placeholder="operaciones@empresa.com" />
             </div>
-            <div>
+            <div class="col-span-2">
               <label class="field-label">Correo Soporte / Atención</label>
               <InputText v-model="f.correo_soporte" type="email" class="w-full" placeholder="soporte@empresa.com" />
             </div>
