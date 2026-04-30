@@ -26,7 +26,7 @@
       <div class="p-6">
 
         <!-- ── Tab: Información ── -->
-        <div v-if="activeTab === 'info'">
+        <div v-if="activeTab === 'info'" class="space-y-6">
           <ClienteForm :initial="cliente" @save="saveInfo" @cancel="() => {}" :inline="true" />
         </div>
 
