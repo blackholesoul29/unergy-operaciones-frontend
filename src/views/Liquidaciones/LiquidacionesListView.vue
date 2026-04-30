@@ -320,20 +320,16 @@ async function loadLista() {
 
 async function loadVistas() {
   loadingVista.value = true
-  try {
-    const params = buildParams()
-    const [rProy, rInv] = await Promise.all([
-      api.get('/liquidaciones/vistas/por-proyecto', { params }),
-      api.get('/liquidaciones/vistas/por-inversionista', { params }),
-    ])
-    vistaProyectos.value = rProy.data
-    vistaInversionistas.value = rInv.data
-  } catch {
-    vistaProyectos.value = []
-    vistaInversionistas.value = []
-  } finally {
-    loadingVista.value = false
-  }
+  const params = buildParams()
+  const [rProy, rInv] = await Promise.allSettled([
+    api.get('/liquidaciones/vistas/por-proyecto', { params }),
+    api.get('/liquidaciones/vistas/por-inversionista', { params }),
+  ])
+  vistaProyectos.value = rProy.status === 'fulfilled' ? rProy.value.data : []
+  vistaInversionistas.value = rInv.status === 'fulfilled' ? rInv.value.data : []
+  if (rProy.status === 'rejected') console.error('Vista por proyecto:', rProy.reason)
+  if (rInv.status === 'rejected') console.error('Vista por inversionista:', rInv.reason)
+  loadingVista.value = false
 }
 
 async function loadProyectosOpciones() {
