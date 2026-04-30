@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-gray-800">Liquidaciones</h2>
+      <h2 class="text-lg font-semibold" style="color:#2C2039">Liquidaciones</h2>
       <Button label="Nueva liquidación" icon="pi pi-plus" size="small" @click="dialogNueva = true" />
     </div>
 
@@ -29,63 +29,102 @@
       <!-- ══ Tab Lista ══ -->
       <TabPanel header="Lista">
         <ProgressSpinner v-if="loadingVista" class="block mx-auto my-8" />
-        <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div v-if="!filasDetalle.length" class="text-center text-gray-400 py-8 text-sm">
+        <div v-else class="rounded-xl shadow-sm overflow-hidden" style="background:#FDFAF7">
+          <div v-if="!filasDetalle.length" class="text-center py-8 text-sm text-gray-400">
             No hay liquidaciones para los filtros seleccionados.
           </div>
           <div v-else class="overflow-x-auto">
             <table class="w-full text-xs border-collapse" style="min-width:1400px">
               <thead>
-                <tr class="bg-gray-800 text-white text-[11px]">
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Proyecto</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Inversionista</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Documento contable</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Contacto 1</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Contacto 2</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Concepto</th>
-                  <th class="px-2 py-2 text-right whitespace-nowrap">Total</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Referencia Factura</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Consecutivo Ingresos</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Consecutivo Costos</th>
-                  <th class="px-2 py-2 text-left whitespace-nowrap">Comprobante Contable</th>
+                <tr class="text-white text-[11px] uppercase tracking-wide" style="background:#2C2039">
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Proyecto</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Inversionista</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Documento contable</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Contacto 1</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Contacto 2</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Concepto</th>
+                  <th class="px-3 py-2.5 text-right whitespace-nowrap font-semibold">Total</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Referencia Factura</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consecutivo Ingresos</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consecutivo Costos</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Comprobante Contable</th>
                 </tr>
               </thead>
               <tbody>
                 <template v-for="fila in filasDetalle" :key="fila.key">
-                  <!-- Separador de período -->
-                  <tr v-if="fila.separador" class="bg-gray-600 text-white">
-                    <td colspan="11" class="px-3 py-1.5 font-bold text-[11px] tracking-wide">
+
+                  <!-- Separador proyecto / período -->
+                  <tr v-if="fila.separador" style="background:#915BD8">
+                    <td colspan="11" class="px-4 py-2 font-bold text-[11px] tracking-widest text-white uppercase">
                       {{ fila.label }}
                     </td>
                   </tr>
+
                   <!-- Fila de datos -->
-                  <tr v-else :class="claseFilaLista(fila)" class="border-b border-gray-100">
-                    <td class="px-2 py-1 text-gray-600">{{ fila.proyecto }}</td>
-                    <td class="px-2 py-1 font-medium"
-                      :class="fila.inversionista === 'Total' ? 'text-indigo-700' : 'text-gray-800'">
+                  <tr v-else :style="estiloFila(fila)"
+                    class="border-b transition-colors duration-100"
+                    style="border-color:rgba(44,32,57,0.07)">
+
+                    <!-- Proyecto -->
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.65">
+                      {{ fila.proyecto }}
+                    </td>
+
+                    <!-- Inversionista -->
+                    <td class="px-3 py-1.5 font-medium text-[11px]"
+                      :style="fila.inversionista === 'Total'
+                        ? 'color:#915BD8; font-weight:700'
+                        : 'color:#2C2039'">
                       {{ fila.inversionista }}
                     </td>
-                    <td class="px-2 py-1">
-                      <span :class="colorDoc(fila.doc)">{{ fila.doc }}</span>
+
+                    <!-- Documento contable -->
+                    <td class="px-3 py-1.5">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                        :style="badgeDoc(fila.doc)">
+                        {{ fila.doc }}
+                      </span>
                     </td>
-                    <td class="px-2 py-1 text-gray-500">{{ fila.contacto1 }}</td>
-                    <td class="px-2 py-1 text-gray-500">{{ fila.contacto2 }}</td>
-                    <td class="px-2 py-1">{{ fila.concepto }}</td>
-                    <td class="px-2 py-1 text-right font-mono"
-                      :class="fila.negativo ? 'text-red-600' : ''">
-                      <span v-if="fila.isPercent">{{ fila.pctLabel }}</span>
+
+                    <!-- Contacto 1 -->
+                    <td class="px-3 py-1.5 text-[11px] text-gray-500">{{ fila.contacto1 }}</td>
+
+                    <!-- Contacto 2 -->
+                    <td class="px-3 py-1.5 text-[11px] text-gray-500">{{ fila.contacto2 }}</td>
+
+                    <!-- Concepto -->
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039">{{ fila.concepto }}</td>
+
+                    <!-- Total -->
+                    <td class="px-3 py-1.5 text-right font-mono text-[11px]"
+                      :style="fila.negativo ? 'color:#dc2626' : 'color:#2C2039'">
+                      <span v-if="fila.isPercent" class="font-semibold">{{ fila.pctLabel }}</span>
                       <span v-else>{{ fila.total != null ? fmt(fila.total) : '—' }}</span>
                     </td>
-                    <td class="px-2 py-1 text-gray-600 whitespace-nowrap">{{ fila.refFactura }}</td>
-                    <td class="px-2 py-1 text-gray-500 whitespace-nowrap">
+
+                    <!-- Referencia Factura -->
+                    <td class="px-3 py-1.5 text-[11px] whitespace-nowrap" style="color:#2C2039; opacity:0.7">
+                      {{ fila.refFactura }}
+                    </td>
+
+                    <!-- Consecutivo Ingresos -->
+                    <td class="px-3 py-1.5 text-[11px] whitespace-nowrap">
                       <a v-if="fila.soporteUrl" :href="fila.soporteUrl" target="_blank"
-                        class="flex items-center gap-1 text-blue-600 hover:underline">
+                        class="flex items-center gap-1 hover:underline" style="color:#915BD8">
                         <i class="pi pi-file-pdf text-red-500" />{{ fila.conseIngresos }}
                       </a>
-                      <span v-else>{{ fila.conseIngresos }}</span>
+                      <span v-else style="color:#2C2039; opacity:0.6">{{ fila.conseIngresos }}</span>
                     </td>
-                    <td class="px-2 py-1 text-gray-500">{{ fila.conseCostos }}</td>
-                    <td class="px-2 py-1 text-gray-500">{{ fila.comprobante }}</td>
+
+                    <!-- Consecutivo Costos -->
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.6">
+                      {{ fila.conseCostos }}
+                    </td>
+
+                    <!-- Comprobante Contable -->
+                    <td class="px-3 py-1.5 text-[11px] font-mono" style="color:#2C2039; opacity:0.7">
+                      {{ fila.comprobante }}
+                    </td>
                   </tr>
                 </template>
               </tbody>
@@ -103,16 +142,17 @@
           </div>
 
           <div v-for="proy in vistaProyectos" :key="proy.proyecto_id"
-            class="bg-white rounded-xl shadow-sm overflow-hidden">
+            class="rounded-xl shadow-sm overflow-hidden" style="background:#FDFAF7">
 
-            <!-- Header proyecto (siempre visible) -->
-            <div class="bg-gray-800 text-white px-4 py-2 flex items-center gap-3 cursor-pointer select-none"
+            <!-- Header proyecto -->
+            <div class="text-white px-4 py-2 flex items-center gap-3 cursor-pointer select-none"
+              style="background:#2C2039"
               @click="toggleProy(proy.proyecto_id)">
               <i :class="expandidosProy.has(proy.proyecto_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
                 class="text-xs" />
-              <span class="font-semibold">{{ proy.proyecto_nombre }}</span>
+              <span class="font-semibold text-sm">{{ proy.proyecto_nombre }}</span>
               <Tag :value="proy.estado" :severity="estadoProySeverity(proy.estado)" class="text-xs" />
-              <span class="text-gray-400 text-xs ml-auto">
+              <span class="text-xs ml-auto" style="color:#915BD8">
                 {{ proy.inversionistas_registrados.length }} inv. ·
                 {{ proy.liquidaciones.length }} liq.
               </span>
@@ -121,16 +161,17 @@
             <!-- Contenido expandido -->
             <div v-if="expandidosProy.has(proy.proyecto_id)">
               <!-- Inversionistas registrados -->
-              <div class="px-4 py-3 bg-indigo-50 border-b border-indigo-100">
-                <p class="text-xs font-semibold text-indigo-700 mb-2 uppercase tracking-wide">
+              <div class="px-4 py-3 border-b" style="background:rgba(145,91,216,0.05); border-color:rgba(145,91,216,0.15)">
+                <p class="text-xs font-semibold mb-2 uppercase tracking-wide" style="color:#915BD8">
                   Inversionistas registrados
                 </p>
                 <div v-if="proy.inversionistas_registrados.length" class="flex flex-wrap gap-2">
                   <div v-for="inv in proy.inversionistas_registrados" :key="inv.proyecto_inversionista_id"
-                    class="bg-white border border-indigo-200 rounded-lg px-3 py-1.5 flex items-center gap-2">
-                    <i class="pi pi-user text-indigo-400 text-xs" />
-                    <span class="text-xs font-semibold text-gray-800">{{ inv.inversionista_nombre }}</span>
-                    <span class="text-xs text-indigo-600 font-mono">{{ pct(inv.porcentaje_participacion) }}</span>
+                    class="bg-white border rounded-lg px-3 py-1.5 flex items-center gap-2"
+                    style="border-color:rgba(145,91,216,0.25)">
+                    <i class="pi pi-user text-xs" style="color:#915BD8" />
+                    <span class="text-xs font-semibold" style="color:#2C2039">{{ inv.inversionista_nombre }}</span>
+                    <span class="text-xs font-mono" style="color:#915BD8">{{ pct(inv.porcentaje_participacion) }}</span>
                     <Tag v-if="inv.es_patrimonio_autonomo" value="PA" severity="info" class="text-[10px]" />
                   </div>
                 </div>
@@ -139,16 +180,18 @@
 
               <!-- Liquidaciones del proyecto -->
               <div v-if="proy.liquidaciones.length">
-                <div v-for="liq in proy.liquidaciones" :key="liq.liquidacion_id" class="border-b last:border-b-0">
-                  <div class="px-4 py-2 bg-gray-50 flex items-center gap-3 cursor-pointer"
+                <div v-for="liq in proy.liquidaciones" :key="liq.liquidacion_id" class="border-b last:border-b-0"
+                  style="border-color:rgba(44,32,57,0.08)">
+                  <div class="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-white/50"
+                    style="background:rgba(253,250,247,0.8)"
                     @click="toggleLiq(liq.liquidacion_id)">
                     <i :class="expandidosLiq.has(liq.liquidacion_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
                       class="text-xs text-gray-400" />
-                    <span class="font-medium text-sm">{{ formatPeriodo(liq.periodo) }}</span>
+                    <span class="font-medium text-sm" style="color:#2C2039">{{ formatPeriodo(liq.periodo) }}</span>
                     <Tag :value="liq.estado" :severity="estadoSeverity(liq.estado)" />
                     <span class="text-xs text-gray-500 ml-auto">
                       Ingreso neto:
-                      <span class="font-mono font-semibold text-blue-700">{{ fmt(liq.resumen.ingreso_neto_cop) }}</span>
+                      <span class="font-mono font-semibold" style="color:#915BD8">{{ fmt(liq.resumen.ingreso_neto_cop) }}</span>
                     </span>
                     <Button icon="pi pi-eye" text size="small"
                       @click.stop="$router.push(`/liquidaciones/${liq.liquidacion_id}`)" />
@@ -175,46 +218,46 @@
           </div>
 
           <div v-for="inv in vistaInversionistas" :key="inv.cliente_id"
-            class="bg-white rounded-xl shadow-sm overflow-hidden">
+            class="rounded-xl shadow-sm overflow-hidden bg-white">
 
             <!-- Header inversionista -->
-            <div class="bg-indigo-800 text-white px-4 py-2 flex items-center gap-3 cursor-pointer select-none"
+            <div class="text-white px-4 py-2 flex items-center gap-3 cursor-pointer select-none"
+              style="background:#915BD8"
               @click="toggleInversionista(inv.cliente_id)">
               <i :class="expandidosInv.has(inv.cliente_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
                 class="text-xs" />
-              <i class="pi pi-user" />
-              <span class="font-semibold">{{ inv.cliente_nombre }}</span>
-              <span class="text-indigo-300 text-xs ml-auto">{{ inv.proyectos.length }} proyecto(s)</span>
+              <i class="pi pi-user text-xs" />
+              <span class="font-semibold text-sm">{{ inv.cliente_nombre }}</span>
+              <span class="text-xs ml-auto" style="color:#F6FF72">{{ inv.proyectos.length }} proyecto(s)</span>
             </div>
 
             <!-- Proyectos del inversionista -->
             <div v-if="expandidosInv.has(inv.cliente_id)">
               <div v-for="proy in inv.proyectos" :key="proy.proyecto_inversionista_id"
-                class="border-b last:border-b-0">
+                class="border-b last:border-b-0" style="border-color:rgba(44,32,57,0.08)">
 
-                <!-- Fila proyecto -->
-                <div class="px-4 py-2 bg-gray-50 flex items-center gap-3 cursor-pointer"
+                <div class="px-4 py-2 flex items-center gap-3 cursor-pointer"
+                  style="background:rgba(145,91,216,0.04)"
                   @click="toggleInvProy(`${inv.cliente_id}_${proy.proyecto_id}`)">
                   <i :class="expandidosInvProy.has(`${inv.cliente_id}_${proy.proyecto_id}`) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
                     class="text-xs text-gray-400" />
-                  <span class="font-medium text-sm">{{ proy.proyecto_nombre }}</span>
+                  <span class="font-medium text-sm" style="color:#2C2039">{{ proy.proyecto_nombre }}</span>
                   <span class="text-xs text-gray-500">
-                    Part.: <strong class="text-indigo-600">{{ pct(proy.porcentaje_participacion) }}</strong>
+                    Part.: <strong style="color:#915BD8">{{ pct(proy.porcentaje_participacion) }}</strong>
                   </span>
                   <Tag v-if="proy.es_patrimonio_autonomo" value="PA" severity="info" class="text-[10px]" />
                   <span class="text-xs text-gray-400 ml-auto">{{ proy.liquidaciones.length }} liq.</span>
                 </div>
 
-                <!-- Liquidaciones del proyecto para este inversionista -->
                 <div v-if="expandidosInvProy.has(`${inv.cliente_id}_${proy.proyecto_id}`)" class="bg-white">
                   <div v-if="proy.liquidaciones.length" class="divide-y divide-gray-100">
                     <div v-for="liq in proy.liquidaciones" :key="liq.liquidacion_id"
                       class="px-6 py-2 flex items-center gap-3 hover:bg-gray-50">
-                      <span class="text-xs text-gray-600 w-20">{{ formatPeriodo(liq.periodo) }}</span>
+                      <span class="text-xs w-20" style="color:#2C2039">{{ formatPeriodo(liq.periodo) }}</span>
                       <Tag :value="liq.estado" :severity="estadoSeverity(liq.estado)" class="text-xs" />
                       <span class="text-xs text-gray-500 ml-auto">
                         Neto:
-                        <span class="font-mono font-semibold text-blue-600">{{ fmt(liq.ingreso_neto_cop) }}</span>
+                        <span class="font-mono font-semibold" style="color:#915BD8">{{ fmt(liq.ingreso_neto_cop) }}</span>
                       </span>
                       <Button icon="pi pi-eye" text size="small"
                         @click="$router.push(`/liquidaciones/${liq.liquidacion_id}`)" />
@@ -278,39 +321,40 @@ const TablaDetalleLiquidacion = defineAsyncComponent(() =>
 const toast = useToast()
 const router = useRouter()
 
-// Vistas agrupadas (fuente de datos para todos los tabs)
 const vistaProyectos = ref([])
 const vistaInversionistas = ref([])
 const loadingVista = ref(false)
-
-// Proyectos para el selector de nueva liquidación
 const proyectosOpciones = ref([])
-
 const tabActivo = ref(0)
 
-// Expansores por tab
 const expandidosProy = ref(new Set())
 const expandidosLiq = ref(new Set())
 const expandidosInv = ref(new Set())
 const expandidosInvProy = ref(new Set())
 
-// Filtros
 const filtros = ref({ desde: null, hasta: null, estado: null })
 const estadosOpciones = [
   'iniciada', 'costos_registrados', 'xm_procesado', 'mandatos_emitidos',
   'en_contabilidad', 'en_revisoria', 'facturado', 'entregado',
 ]
 
-// Nueva liquidación
 const dialogNueva = ref(false)
 const creando = ref(false)
 const nueva = ref({ proyecto_id: null, periodo: null, tipo_venta: 'bolsa' })
 
-// ─── Constantes para tabla Lista ──────────────────────────────────────────────
+// ─── Clasificación de tipos de línea por documento ────────────────────────────
+//
+// MANDATO (ingresos): ingreso_bruto, despacho, ventas_en_bolsa, compras_en_bolsa,
+//   redistribucion_ingresos, ajuste_comercializacion (comercialización), valor_a_pagar
+//
+// COSTOS: mantenimiento, arriendo, servicio_internet, poliza_cumplimiento,
+//   servicios_publicos_consumo, cambio_equipos_medida, seguro, otro_costo, iva
+//
+// FACTURA (servicios): representacion, cgm, administracion_operacion
+//   → vienen de facturas_servicio, no de mandato lineas
 
 const ETIQUETAS_LISTA = {
   ingreso_bruto: 'Ingreso Bruto',
-  ajuste_xm: 'Ajuste Xm',
   ajuste_unergy: 'Ajuste Unergy',
   ajuste_comercializacion: 'Comercialización',
   intereses: 'Intereses',
@@ -339,14 +383,7 @@ const ETIQUETAS_LISTA = {
   valor_a_pagar: 'Valor a Pagar',
 }
 
-const LABEL_FACTURA = {
-  representacion: 'Representación*',
-  cgm: 'CGM*',
-  administracion_operacion: 'Administración*',
-}
-
-const OMITIR_LINEAS = new Set(['ajuste_xm'])
-
+// Tipos de línea que son costos (valor negativo / color rojo)
 const COSTOS_NEG = new Set([
   'ajuste_comercializacion', 'arriendo', 'mantenimiento', 'servicio_internet',
   'poliza_cumplimiento', 'servicios_publicos_consumo', 'cambio_equipos_medida',
@@ -355,8 +392,52 @@ const COSTOS_NEG = new Set([
   'reteica', 'ica_opex', 'otro_impuesto',
 ])
 
-// ─── Filas planas para Tab Lista ──────────────────────────────────────────────
+// Label para tipos de factura de servicio
+const LABEL_FACTURA = {
+  representacion: 'Representación*',
+  cgm: 'CGM*',
+  administracion_operacion: 'Administración*',
+}
 
+const OMITIR_LINEAS = new Set(['ajuste_xm'])
+
+// ─── Colores de marca ─────────────────────────────────────────────────────────
+//  #2C2039 Púrpura Profundo   → header, texto principal
+//  #915BD8 Púrpura Energético → separadores, mandato ingresos, acentos
+//  #FDFAF7 Avena              → fondo base
+//  #F6FF72 Amarillo Solar     → factura
+
+const COLORES_FILA = {
+  // Información: fondo avena levemente marcado
+  Información_Total: { background: 'rgba(44,32,57,0.06)' },
+  Información_inv:   { background: 'rgba(44,32,57,0.03)' },
+  // Mandato ingresos: tinte púrpura energético
+  Mandato_Total: { background: 'rgba(145,91,216,0.12)' },
+  Mandato_inv:   { background: 'rgba(145,91,216,0.05)' },
+  // Costos: tinte rojizo suave
+  Costos_Total: { background: 'rgba(220,38,38,0.08)' },
+  Costos_inv:   { background: 'rgba(220,38,38,0.03)' },
+  // Factura: tinte amarillo solar
+  Factura_Total: { background: 'rgba(246,255,114,0.35)' },
+  Factura_inv:   { background: 'rgba(246,255,114,0.15)' },
+}
+
+function estiloFila(fila) {
+  const nivel = fila.inversionista === 'Total' ? 'Total' : 'inv'
+  return COLORES_FILA[`${fila.doc}_${nivel}`] || { background: '#FDFAF7' }
+}
+
+function badgeDoc(doc) {
+  const estilos = {
+    Mandato:      { background: '#915BD8', color: '#fff' },
+    Costos:       { background: '#fee2e2', color: '#b91c1c' },
+    Factura:      { background: '#F6FF72', color: '#2C2039' },
+    Información:  { background: '#2C2039', color: '#FDFAF7' },
+  }
+  return estilos[doc] || { background: '#e5e7eb', color: '#374151' }
+}
+
+// ─── Filas planas para Tab Lista ──────────────────────────────────────────────
 const filasDetalle = computed(() => {
   const rows = []
 
@@ -364,21 +445,13 @@ const filasDetalle = computed(() => {
     for (const liq of proy.liquidaciones) {
       const proyNombre = proy.proyecto_nombre
       const periodo = formatPeriodo(liq.periodo)
-      // Contacto 1 / 2: pendiente campo comercializador en el proyecto
-      const contacto1 = ''
+      const contacto1 = '' // pendiente: campo comercializador en proyecto
       const contacto2 = ''
 
-      // Separador de período
-      rows.push({
-        key: `sep_${liq.liquidacion_id}`,
-        separador: true,
-        label: `${proyNombre}  —  ${periodo}`,
-      })
+      rows.push({ key: `sep_${liq.liquidacion_id}`, separador: true, label: `${proyNombre}  —  ${periodo}` })
 
-      // ── Agregado TOTAL ──────────────────────────────────────────────────────
-
-      // Acumula líneas de todos los inversionistas para fila Total
-      const totalIng = new Map() // key → { tipo_linea, concepto, valor, refFactura }
+      // ── Totales agregados ─────────────────────────────────────────────────
+      const totalIng = new Map()
       const totalCos = new Map()
 
       for (const inv of (liq.inversionistas || [])) {
@@ -386,14 +459,7 @@ const filasDetalle = computed(() => {
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
             const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
-            if (!totalIng.has(k)) {
-              totalIng.set(k, {
-                tipo_linea: l.tipo_linea,
-                concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
-                valor: 0,
-                refFactura: l.referencia_factura || '',
-              })
-            }
+            if (!totalIng.has(k)) totalIng.set(k, { tipo_linea: l.tipo_linea, concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto, valor: 0, refFactura: l.referencia_factura || '' })
             totalIng.get(k).valor += l.valor_cop
           }
         }
@@ -401,159 +467,104 @@ const filasDetalle = computed(() => {
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
             const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
-            if (!totalCos.has(k)) {
-              totalCos.set(k, {
-                tipo_linea: l.tipo_linea,
-                concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
-                valor: 0,
-                refFactura: l.referencia_factura || '',
-              })
-            }
+            if (!totalCos.has(k)) totalCos.set(k, { tipo_linea: l.tipo_linea, concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto, valor: 0, refFactura: l.referencia_factura || '' })
             totalCos.get(k).valor += l.valor_cop
           }
         }
       }
 
       // Total / Información
-      rows.push(_fila(`${liq.liquidacion_id}_t_info`, {
-        proyecto: proyNombre, inversionista: 'Total', doc: 'Información',
-        contacto1, contacto2,
-        concepto: 'Porcentaje de Participación',
-        isPercent: true, pctLabel: '100.00%',
-        refFactura: '', conseIngresos: '', conseCostos: '', comprobante: '',
-      }))
+      rows.push(_f(`${liq.liquidacion_id}_t_info`, { proyecto: proyNombre, inversionista: 'Total', doc: 'Información', contacto1, contacto2, concepto: 'Porcentaje de Participación', isPercent: true, pctLabel: '100.00%' }))
 
       // Total / Mandato (ingresos)
       for (const r of totalIng.values()) {
-        rows.push(_fila(`${liq.liquidacion_id}_t_ing_${r.tipo_linea}`, {
-          proyecto: proyNombre, inversionista: 'Total', doc: 'Mandato',
-          contacto1, contacto2,
-          concepto: r.concepto, total: r.valor,
-          negativo: COSTOS_NEG.has(r.tipo_linea),
-          refFactura: r.refFactura,
-          conseIngresos: '', conseCostos: '', comprobante: '',
-        }))
+        rows.push(_f(`${liq.liquidacion_id}_t_ing_${r.tipo_linea}`, { proyecto: proyNombre, inversionista: 'Total', doc: 'Mandato', contacto1, contacto2, concepto: r.concepto, total: r.valor, negativo: COSTOS_NEG.has(r.tipo_linea), refFactura: r.refFactura }))
       }
 
       // Total / Costos
       for (const r of totalCos.values()) {
-        rows.push(_fila(`${liq.liquidacion_id}_t_cos_${r.tipo_linea}`, {
-          proyecto: proyNombre, inversionista: 'Total', doc: 'Costos',
-          contacto1, contacto2,
-          concepto: r.concepto, total: r.valor,
-          negativo: true,
-          refFactura: r.refFactura,
-          conseIngresos: '', conseCostos: '', comprobante: '',
-        }))
+        rows.push(_f(`${liq.liquidacion_id}_t_cos_${r.tipo_linea}`, { proyecto: proyNombre, inversionista: 'Total', doc: 'Costos', contacto1, contacto2, concepto: r.concepto, total: r.valor, negativo: true, refFactura: r.refFactura }))
       }
 
-      // Total / Factura (a nivel de proyecto)
+      // Total / Factura (representación, CGM, administración — nivel proyecto)
       for (const f of (liq.facturas_servicio || [])) {
-        rows.push(_fila(`${liq.liquidacion_id}_t_fac_${f.id}`, {
-          proyecto: proyNombre, inversionista: 'Total', doc: 'Factura',
-          contacto1, contacto2,
-          concepto: LABEL_FACTURA[f.tipo_servicio] || f.tipo_servicio,
-          total: f.valor_cop,
-          refFactura: '',
-          soporteUrl: f.soporte_url,
-          conseIngresos: '',
-          conseCostos: '',
-          comprobante: f.numero_factura || f.nro_soporte || '',
-        }))
+        rows.push(_f(`${liq.liquidacion_id}_t_fac_${f.id}`, { proyecto: proyNombre, inversionista: 'Total', doc: 'Factura', contacto1, contacto2, concepto: LABEL_FACTURA[f.tipo_servicio] || f.tipo_servicio, total: f.valor_cop, refFactura: '', soporteUrl: f.soporte_url, comprobante: f.numero_factura || f.nro_soporte || '' }))
       }
 
-      // ── Por inversionista ───────────────────────────────────────────────────
-
+      // ── Por inversionista ─────────────────────────────────────────────────
       for (const inv of (liq.inversionistas || [])) {
         const consIng = inv.mandatos_ingresos?.[0]?.consecutivo
         const consCos = inv.mandatos_costos?.[0]?.consecutivo
         const pctLabel = inv.porcentaje_participacion != null
-          ? (inv.porcentaje_participacion * 100).toFixed(7) + '%'
-          : '—'
+          ? (inv.porcentaje_participacion * 100).toFixed(7) + '%' : '—'
 
-        // Inversionista / Información
-        rows.push(_fila(`${liq.liquidacion_id}_${inv.inversionista_id}_info`, {
-          proyecto: proyNombre,
-          inversionista: inv.inversionista_nombre,
-          doc: 'Información',
-          contacto1, contacto2,
-          concepto: 'Porcentaje de Participación',
+        // Información
+        rows.push(_f(`${liq.liquidacion_id}_${inv.inversionista_id}_info`, {
+          proyecto: proyNombre, inversionista: inv.inversionista_nombre, doc: 'Información',
+          contacto1, contacto2, concepto: 'Porcentaje de Participación',
           isPercent: true, pctLabel,
-          refFactura: '',
           conseIngresos: consIng != null ? String(consIng) : '',
           conseCostos: consCos != null ? String(consCos) : '',
-          comprobante: '',
         }))
 
-        // Inversionista / Mandato (ingresos)
+        // Mandato (ingresos): ingreso bruto, comercialización, despacho, bolsa, redistribución, valor a pagar
         for (const m of (inv.mandatos_ingresos || [])) {
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
-            rows.push(_fila(`${liq.liquidacion_id}_${inv.inversionista_id}_ing_${l.id}`, {
-              proyecto: proyNombre,
-              inversionista: inv.inversionista_nombre,
-              doc: 'Mandato',
+            rows.push(_f(`${liq.liquidacion_id}_${inv.inversionista_id}_ing_${l.id}`, {
+              proyecto: proyNombre, inversionista: inv.inversionista_nombre, doc: 'Mandato',
               contacto1, contacto2,
               concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
-              total: l.valor_cop,
-              negativo: COSTOS_NEG.has(l.tipo_linea),
+              total: l.valor_cop, negativo: COSTOS_NEG.has(l.tipo_linea),
               refFactura: l.referencia_factura || '',
-              conseIngresos: '',
-              conseCostos: '',
-              comprobante: '',
             }))
           }
         }
 
-        // Inversionista / Costos
+        // Costos: mantenimiento, arriendo, internet, póliza, servicios públicos, IVA, etc.
         for (const m of (inv.mandatos_costos || [])) {
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
-            rows.push(_fila(`${liq.liquidacion_id}_${inv.inversionista_id}_cos_${l.id}`, {
-              proyecto: proyNombre,
-              inversionista: inv.inversionista_nombre,
-              doc: 'Costos',
+            rows.push(_f(`${liq.liquidacion_id}_${inv.inversionista_id}_cos_${l.id}`, {
+              proyecto: proyNombre, inversionista: inv.inversionista_nombre, doc: 'Costos',
               contacto1, contacto2,
               concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
-              total: l.valor_cop,
-              negativo: true,
+              total: l.valor_cop, negativo: true,
               refFactura: l.referencia_factura || '',
-              conseIngresos: '',
-              conseCostos: '',
               comprobante: m.categoria_contable || '',
             }))
           }
         }
 
-        // Inversionista / Factura
-        // Las facturas están a nivel de liquidación, no de inversionista en la API actual.
-        // Cuando el backend agregue inv.facturas_servicio, descomentar:
-        // for (const f of (inv.facturas_servicio || [])) { ... }
+        // Factura por inversionista: cuando el backend agregue inv.facturas_servicio, descomentar:
+        // for (const f of (inv.facturas_servicio || [])) {
+        //   rows.push(_f(...))
+        // }
       }
     }
   }
   return rows
 })
 
-function _fila(key, data) {
+function _f(key, d) {
   return {
     key,
     separador: false,
-    proyecto: data.proyecto ?? '',
-    inversionista: data.inversionista ?? '',
-    doc: data.doc ?? '',
-    contacto1: data.contacto1 ?? '',
-    contacto2: data.contacto2 ?? '',
-    concepto: data.concepto ?? '',
-    total: data.total ?? null,
-    isPercent: data.isPercent ?? false,
-    pctLabel: data.pctLabel ?? '',
-    negativo: data.negativo ?? false,
-    refFactura: data.refFactura ?? '',
-    soporteUrl: data.soporteUrl ?? null,
-    conseIngresos: data.conseIngresos ?? '',
-    conseCostos: data.conseCostos ?? '',
-    comprobante: data.comprobante ?? '',
+    proyecto: d.proyecto ?? '',
+    inversionista: d.inversionista ?? '',
+    doc: d.doc ?? '',
+    contacto1: d.contacto1 ?? '',
+    contacto2: d.contacto2 ?? '',
+    concepto: d.concepto ?? '',
+    total: d.total ?? null,
+    isPercent: d.isPercent ?? false,
+    pctLabel: d.pctLabel ?? '',
+    negativo: d.negativo ?? false,
+    refFactura: d.refFactura ?? '',
+    soporteUrl: d.soporteUrl ?? null,
+    conseIngresos: d.conseIngresos ?? '',
+    conseCostos: d.conseCostos ?? '',
+    comprobante: d.comprobante ?? '',
   }
 }
 
@@ -568,7 +579,7 @@ function toggleLiq(id) { toggle(expandidosLiq, id) }
 function toggleInversionista(id) { toggle(expandidosInv, id) }
 function toggleInvProy(key) { toggle(expandidosInvProy, key) }
 
-// ─── Params ───────────────────────────────────────────────────────────────────
+// ─── Params / carga ───────────────────────────────────────────────────────────
 function buildParams() {
   const p = {}
   if (filtros.value.desde) p.periodo_desde = toISOMonth(filtros.value.desde)
@@ -583,7 +594,6 @@ function toISOMonth(d) {
   return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-01`
 }
 
-// ─── Carga datos ──────────────────────────────────────────────────────────────
 async function loadVistas() {
   loadingVista.value = true
   const params = buildParams()
@@ -607,13 +617,11 @@ async function loadProyectosOpciones() {
   }
 }
 
-function recargar() {
-  loadVistas()
-}
+function recargar() { loadVistas() }
 
 function limpiarFiltros() {
   filtros.value = { desde: null, hasta: null, estado: null }
-  recargar()
+  loadVistas()
 }
 
 // ─── Nueva liquidación ────────────────────────────────────────────────────────
@@ -636,7 +644,7 @@ async function crearLiquidacion() {
   }
 }
 
-// ─── Formato y estilos ────────────────────────────────────────────────────────
+// ─── Formato ──────────────────────────────────────────────────────────────────
 function fmt(v) {
   if (v == null) return '—'
   return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2 }).format(v)
@@ -669,32 +677,7 @@ function estadoProySeverity(e) {
   }[e] || 'secondary'
 }
 
-function bgFila(doc) {
-  return {
-    Mandato: 'bg-green-50',
-    Costos: 'bg-pink-50',
-    Factura: 'bg-yellow-50',
-    Información: 'bg-indigo-50',
-  }[doc] || ''
-}
-
-function colorDoc(doc) {
-  return {
-    Mandato: 'text-green-700 font-medium',
-    Costos: 'text-pink-700 font-medium',
-    Factura: 'text-yellow-700 font-medium',
-    Información: 'text-indigo-700 font-medium',
-  }[doc] || ''
-}
-
-function claseFilaLista(fila) {
-  const base = bgFila(fila.doc)
-  return fila.inversionista === 'Total' ? `${base} font-semibold` : base
-}
-
-watch(tabActivo, () => {
-  loadVistas()
-})
+watch(tabActivo, () => { loadVistas() })
 
 onMounted(() => {
   loadVistas()
