@@ -9,18 +9,15 @@
     <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end">
       <div class="flex flex-col gap-1">
         <label class="text-xs text-gray-500">Desde</label>
-        <DatePicker v-model="filtros.desde" view="month" dateFormat="mm/yy" showButtonBar
-          placeholder="Mes inicio" class="w-36" />
+        <DatePicker v-model="filtros.desde" view="month" dateFormat="mm/yy" showButtonBar placeholder="Mes inicio" class="w-36" />
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-xs text-gray-500">Hasta</label>
-        <DatePicker v-model="filtros.hasta" view="month" dateFormat="mm/yy" showButtonBar
-          placeholder="Mes fin" class="w-36" />
+        <DatePicker v-model="filtros.hasta" view="month" dateFormat="mm/yy" showButtonBar placeholder="Mes fin" class="w-36" />
       </div>
       <div class="flex flex-col gap-1">
         <label class="text-xs text-gray-500">Estado</label>
-        <Select v-model="filtros.estado" :options="estadosOpciones" showClear placeholder="Todos"
-          class="w-44" />
+        <Select v-model="filtros.estado" :options="estadosOpciones" showClear placeholder="Todos" class="w-44" />
       </div>
       <Button icon="pi pi-search" label="Buscar" size="small" @click="recargar" />
       <Button icon="pi pi-times" severity="secondary" text size="small" @click="limpiarFiltros" />
@@ -28,7 +25,8 @@
 
     <!-- Tabs -->
     <TabView v-model:activeIndex="tabActivo">
-      <!-- ── Tab Lista general ── -->
+
+      <!-- ══ Tab Lista ══ -->
       <TabPanel header="Lista">
         <div class="bg-white rounded-xl shadow-sm overflow-hidden">
           <DataTable :value="items" lazy :loading="loadingLista" :rows="size" :totalRecords="total"
@@ -50,86 +48,143 @@
             <Column field="fecha_firma" header="Firma" style="width:100px" />
             <Column header="" style="width:60px">
               <template #body="{ data }">
-                <Button icon="pi pi-eye" text size="small"
-                  @click="$router.push(`/liquidaciones/${data.id}`)" />
+                <Button icon="pi pi-eye" text size="small" @click="$router.push(`/liquidaciones/${data.id}`)" />
               </template>
             </Column>
           </DataTable>
         </div>
       </TabPanel>
 
-      <!-- ── Tab Por Proyecto ── -->
+      <!-- ══ Tab Por Proyecto ══ -->
       <TabPanel header="Por Proyecto">
         <ProgressSpinner v-if="loadingVista" class="block mx-auto my-8" />
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-3">
           <div v-if="!vistaProyectos.length" class="text-center text-gray-400 py-8 text-sm">
-            No hay liquidaciones para los filtros seleccionados.
+            No hay proyectos registrados.
           </div>
+
           <div v-for="proy in vistaProyectos" :key="proy.proyecto_id"
             class="bg-white rounded-xl shadow-sm overflow-hidden">
-            <!-- Header proyecto -->
-            <div class="bg-gray-800 text-white px-4 py-2 flex items-center gap-3">
+
+            <!-- Header proyecto (siempre visible) -->
+            <div class="bg-gray-800 text-white px-4 py-2 flex items-center gap-3 cursor-pointer select-none"
+              @click="toggleProy(proy.proyecto_id)">
+              <i :class="expandidosProy.has(proy.proyecto_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                class="text-xs" />
               <span class="font-semibold">{{ proy.proyecto_nombre }}</span>
-              <span class="text-gray-400 text-xs">{{ proy.liquidaciones.length }} liquidación(es)</span>
+              <Tag :value="proy.estado" :severity="estadoProySeverity(proy.estado)" class="text-xs" />
+              <span class="text-gray-400 text-xs ml-auto">
+                {{ proy.inversionistas_registrados.length }} inv. ·
+                {{ proy.liquidaciones.length }} liq.
+              </span>
             </div>
-            <!-- Liquidaciones del proyecto -->
-            <div v-for="liq in proy.liquidaciones" :key="liq.liquidacion_id" class="border-b last:border-b-0">
-              <!-- Sub-header período -->
-              <div class="px-4 py-2 bg-gray-50 flex items-center gap-4 cursor-pointer"
-                @click="toggleLiq(liq.liquidacion_id)">
-                <i :class="expandidos.has(liq.liquidacion_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                  class="text-xs text-gray-400" />
-                <span class="font-medium text-sm">{{ formatPeriodo(liq.periodo) }}</span>
-                <Tag :value="liq.estado" :severity="estadoSeverity(liq.estado)" />
-                <span class="text-xs text-gray-500 ml-auto">
-                  Ingreso neto: <span class="font-mono font-semibold text-blue-700">{{ fmt(liq.resumen.ingreso_neto_cop) }}</span>
-                </span>
-                <Button icon="pi pi-eye" text size="small"
-                  @click.stop="$router.push(`/liquidaciones/${liq.liquidacion_id}`)" />
+
+            <!-- Contenido expandido -->
+            <div v-if="expandidosProy.has(proy.proyecto_id)">
+              <!-- Inversionistas registrados -->
+              <div class="px-4 py-3 bg-indigo-50 border-b border-indigo-100">
+                <p class="text-xs font-semibold text-indigo-700 mb-2 uppercase tracking-wide">
+                  Inversionistas registrados
+                </p>
+                <div v-if="proy.inversionistas_registrados.length" class="flex flex-wrap gap-2">
+                  <div v-for="inv in proy.inversionistas_registrados" :key="inv.proyecto_inversionista_id"
+                    class="bg-white border border-indigo-200 rounded-lg px-3 py-1.5 flex items-center gap-2">
+                    <i class="pi pi-user text-indigo-400 text-xs" />
+                    <span class="text-xs font-semibold text-gray-800">{{ inv.inversionista_nombre }}</span>
+                    <span class="text-xs text-indigo-600 font-mono">{{ pct(inv.porcentaje_participacion) }}</span>
+                    <Tag v-if="inv.es_patrimonio_autonomo" value="PA" severity="info" class="text-[10px]" />
+                  </div>
+                </div>
+                <p v-else class="text-xs text-gray-400 italic">Sin inversionistas registrados</p>
               </div>
-              <!-- Tabla detalle inversionistas -->
-              <div v-if="expandidos.has(liq.liquidacion_id)" class="overflow-x-auto">
-                <TablaDetalleLiquidacion :liquidacion="liq" />
+
+              <!-- Liquidaciones del proyecto -->
+              <div v-if="proy.liquidaciones.length">
+                <div v-for="liq in proy.liquidaciones" :key="liq.liquidacion_id" class="border-b last:border-b-0">
+                  <div class="px-4 py-2 bg-gray-50 flex items-center gap-3 cursor-pointer"
+                    @click="toggleLiq(liq.liquidacion_id)">
+                    <i :class="expandidosLiq.has(liq.liquidacion_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                      class="text-xs text-gray-400" />
+                    <span class="font-medium text-sm">{{ formatPeriodo(liq.periodo) }}</span>
+                    <Tag :value="liq.estado" :severity="estadoSeverity(liq.estado)" />
+                    <span class="text-xs text-gray-500 ml-auto">
+                      Ingreso neto:
+                      <span class="font-mono font-semibold text-blue-700">{{ fmt(liq.resumen.ingreso_neto_cop) }}</span>
+                    </span>
+                    <Button icon="pi pi-eye" text size="small"
+                      @click.stop="$router.push(`/liquidaciones/${liq.liquidacion_id}`)" />
+                  </div>
+                  <div v-if="expandidosLiq.has(liq.liquidacion_id)" class="overflow-x-auto">
+                    <TablaDetalleLiquidacion :liquidacion="liq" />
+                  </div>
+                </div>
+              </div>
+              <div v-else class="px-4 py-4 text-center text-xs text-gray-400">
+                Sin liquidaciones para los filtros seleccionados
               </div>
             </div>
           </div>
         </div>
       </TabPanel>
 
-      <!-- ── Tab Por Inversionista ── -->
+      <!-- ══ Tab Por Inversionista ══ -->
       <TabPanel header="Por Inversionista">
         <ProgressSpinner v-if="loadingVista" class="block mx-auto my-8" />
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-3">
           <div v-if="!vistaInversionistas.length" class="text-center text-gray-400 py-8 text-sm">
-            No hay liquidaciones para los filtros seleccionados.
+            No hay inversionistas registrados.
           </div>
+
           <div v-for="inv in vistaInversionistas" :key="inv.cliente_id"
             class="bg-white rounded-xl shadow-sm overflow-hidden">
+
             <!-- Header inversionista -->
-            <div class="bg-indigo-800 text-white px-4 py-2 flex items-center gap-3">
+            <div class="bg-indigo-800 text-white px-4 py-2 flex items-center gap-3 cursor-pointer select-none"
+              @click="toggleInversionista(inv.cliente_id)">
+              <i :class="expandidosInv.has(inv.cliente_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                class="text-xs" />
               <i class="pi pi-user" />
               <span class="font-semibold">{{ inv.cliente_nombre }}</span>
-              <span class="text-indigo-300 text-xs">{{ inv.proyectos.length }} proyecto(s)</span>
+              <span class="text-indigo-300 text-xs ml-auto">{{ inv.proyectos.length }} proyecto(s)</span>
             </div>
+
             <!-- Proyectos del inversionista -->
-            <div v-for="proy in inv.proyectos" :key="`${proy.proyecto_id}_${proy.periodo}`"
-              class="border-b last:border-b-0">
-              <div class="px-4 py-2 bg-gray-50 flex items-center gap-4 cursor-pointer"
-                @click="toggleInv(`${inv.cliente_id}_${proy.liquidacion_id}`)">
-                <i :class="expandidosInv.has(`${inv.cliente_id}_${proy.liquidacion_id}`) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                  class="text-xs text-gray-400" />
-                <span class="font-medium text-sm">{{ proy.proyecto_nombre }}</span>
-                <span class="text-xs text-gray-400">{{ formatPeriodo(proy.periodo) }}</span>
-                <Tag :value="proy.estado" :severity="estadoSeverity(proy.estado)" />
-                <span class="text-xs text-gray-500 ml-2">
-                  Part.: <strong>{{ pct(proy.porcentaje_participacion) }}</strong>
-                </span>
-                <Button icon="pi pi-eye" text size="small" class="ml-auto"
-                  @click.stop="$router.push(`/liquidaciones/${proy.liquidacion_id}`)" />
-              </div>
-              <div v-if="expandidosInv.has(`${inv.cliente_id}_${proy.liquidacion_id}`)"
-                class="overflow-x-auto">
-                <TablaDetalleLiquidacion :liquidacion="proy" :modo-inversionista="true" />
+            <div v-if="expandidosInv.has(inv.cliente_id)">
+              <div v-for="proy in inv.proyectos" :key="proy.proyecto_inversionista_id"
+                class="border-b last:border-b-0">
+
+                <!-- Fila proyecto -->
+                <div class="px-4 py-2 bg-gray-50 flex items-center gap-3 cursor-pointer"
+                  @click="toggleInvProy(`${inv.cliente_id}_${proy.proyecto_id}`)">
+                  <i :class="expandidosInvProy.has(`${inv.cliente_id}_${proy.proyecto_id}`) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                    class="text-xs text-gray-400" />
+                  <span class="font-medium text-sm">{{ proy.proyecto_nombre }}</span>
+                  <span class="text-xs text-gray-500">
+                    Part.: <strong class="text-indigo-600">{{ pct(proy.porcentaje_participacion) }}</strong>
+                  </span>
+                  <Tag v-if="proy.es_patrimonio_autonomo" value="PA" severity="info" class="text-[10px]" />
+                  <span class="text-xs text-gray-400 ml-auto">{{ proy.liquidaciones.length }} liq.</span>
+                </div>
+
+                <!-- Liquidaciones del proyecto para este inversionista -->
+                <div v-if="expandidosInvProy.has(`${inv.cliente_id}_${proy.proyecto_id}`)" class="bg-white">
+                  <div v-if="proy.liquidaciones.length" class="divide-y divide-gray-100">
+                    <div v-for="liq in proy.liquidaciones" :key="liq.liquidacion_id"
+                      class="px-6 py-2 flex items-center gap-3 hover:bg-gray-50">
+                      <span class="text-xs text-gray-600 w-20">{{ formatPeriodo(liq.periodo) }}</span>
+                      <Tag :value="liq.estado" :severity="estadoSeverity(liq.estado)" class="text-xs" />
+                      <span class="text-xs text-gray-500 ml-auto">
+                        Neto:
+                        <span class="font-mono font-semibold text-blue-600">{{ fmt(liq.ingreso_neto_cop) }}</span>
+                      </span>
+                      <Button icon="pi pi-eye" text size="small"
+                        @click="$router.push(`/liquidaciones/${liq.liquidacion_id}`)" />
+                    </div>
+                  </div>
+                  <div v-else class="px-6 py-3 text-xs text-gray-400 text-center italic">
+                    Sin liquidaciones para los filtros seleccionados
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -141,8 +196,10 @@
     <Dialog v-model:visible="dialogNueva" header="Nueva liquidación" modal class="w-full max-w-md">
       <div class="space-y-3 py-2">
         <div class="flex flex-col gap-1">
-          <label class="text-xs text-gray-600">Proyecto ID</label>
-          <InputNumber v-model="nueva.proyecto_id" :useGrouping="false" class="w-full" />
+          <label class="text-xs text-gray-600">Proyecto</label>
+          <Select v-model="nueva.proyecto_id" :options="proyectosOpciones"
+            optionLabel="nombre_comercial" optionValue="id"
+            placeholder="Seleccionar proyecto" filter class="w-full" />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs text-gray-600">Período</label>
@@ -173,7 +230,6 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
-import InputNumber from 'primevue/inputnumber'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
@@ -197,9 +253,16 @@ const vistaProyectos = ref([])
 const vistaInversionistas = ref([])
 const loadingVista = ref(false)
 
+// Proyectos para el selector de nueva liquidación
+const proyectosOpciones = ref([])
+
 const tabActivo = ref(0)
-const expandidos = ref(new Set())
+
+// Expansores por tab
+const expandidosProy = ref(new Set())
+const expandidosLiq = ref(new Set())
 const expandidosInv = ref(new Set())
+const expandidosInvProy = ref(new Set())
 
 // Filtros
 const filtros = ref({ desde: null, hasta: null, estado: null })
@@ -213,6 +276,18 @@ const dialogNueva = ref(false)
 const creando = ref(false)
 const nueva = ref({ proyecto_id: null, periodo: null, tipo_venta: 'bolsa' })
 
+// ─── Toggle helpers ───────────────────────────────────────────────────────────
+function toggle(set, key) {
+  if (set.value.has(key)) set.value.delete(key)
+  else set.value.add(key)
+  set.value = new Set(set.value)
+}
+function toggleProy(id) { toggle(expandidosProy, id) }
+function toggleLiq(id) { toggle(expandidosLiq, id) }
+function toggleInversionista(id) { toggle(expandidosInv, id) }
+function toggleInvProy(key) { toggle(expandidosInvProy, key) }
+
+// ─── Params ───────────────────────────────────────────────────────────────────
 function buildParams() {
   const p = {}
   if (filtros.value.desde) p.periodo_desde = toISOMonth(filtros.value.desde)
@@ -227,6 +302,7 @@ function toISOMonth(d) {
   return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-01`
 }
 
+// ─── Carga datos ──────────────────────────────────────────────────────────────
 async function loadLista() {
   loadingLista.value = true
   try {
@@ -260,6 +336,15 @@ async function loadVistas() {
   }
 }
 
+async function loadProyectosOpciones() {
+  try {
+    const { data } = await api.get('/proyectos', { params: { size: 200 } })
+    proyectosOpciones.value = data.items || []
+  } catch {
+    proyectosOpciones.value = []
+  }
+}
+
 function recargar() {
   page.value = 1
   if (tabActivo.value === 0) loadLista()
@@ -271,18 +356,7 @@ function limpiarFiltros() {
   recargar()
 }
 
-function toggleLiq(id) {
-  if (expandidos.value.has(id)) expandidos.value.delete(id)
-  else expandidos.value.add(id)
-  expandidos.value = new Set(expandidos.value)
-}
-
-function toggleInv(key) {
-  if (expandidosInv.value.has(key)) expandidosInv.value.delete(key)
-  else expandidosInv.value.add(key)
-  expandidosInv.value = new Set(expandidosInv.value)
-}
-
+// ─── Nueva liquidación ────────────────────────────────────────────────────────
 async function crearLiquidacion() {
   if (!nueva.value.proyecto_id || !nueva.value.periodo) return
   creando.value = true
@@ -302,6 +376,7 @@ async function crearLiquidacion() {
   }
 }
 
+// ─── Formato ──────────────────────────────────────────────────────────────────
 function onPage(e) { page.value = e.page + 1; loadLista() }
 
 function fmt(v) {
@@ -329,10 +404,20 @@ function estadoSeverity(e) {
   }[e] || 'secondary'
 }
 
+function estadoProySeverity(e) {
+  return {
+    en_operacion: 'success', en_desarrollo: 'info',
+    suspendido: 'warn', cancelado: 'secondary',
+  }[e] || 'secondary'
+}
+
 watch(tabActivo, (v) => {
   if (v === 0) loadLista()
   else loadVistas()
 })
 
-onMounted(loadLista)
+onMounted(() => {
+  loadLista()
+  loadProyectosOpciones()
+})
 </script>
