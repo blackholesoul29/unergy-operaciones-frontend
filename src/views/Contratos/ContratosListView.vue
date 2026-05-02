@@ -66,12 +66,14 @@
         :rowsPerPageOptions="[10, 20, 50]"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
         emptyMessage="No hay contratos PPA registrados."
-        @row-click="irAProyecto"
         rowHover
       >
-        <Column field="proyecto_nombre" header="Proyecto" sortable>
+        <Column header="Proyectos">
           <template #body="{ data }">
-            <span class="font-medium text-gray-800">{{ data.proyecto_nombre || '—' }}</span>
+            <span v-if="data.proyectos?.length" class="text-sm text-gray-700">
+              {{ data.proyectos.map(p => p.nombre_comercial).join(', ') }}
+            </span>
+            <span v-else class="text-gray-300">—</span>
           </template>
         </Column>
         <Column header="Contrato" sortable sortField="nombre_interno">
@@ -84,12 +86,8 @@
             </div>
           </template>
         </Column>
-        <Column header="Tipo" style="width:90px">
-          <template #body="{ data }">
-            <Tag v-if="data.tipo_contrato" :value="data.tipo_contrato"
-              :severity="data.tipo_contrato === 'venta' ? 'success' : 'info'" class="text-xs" />
-            <span v-else class="text-gray-300">—</span>
-          </template>
+        <Column header="Índice" style="width:80px">
+          <template #body="{ data }">{{ data.indice_indexacion || '—' }}</template>
         </Column>
         <Column header="Comprador">
           <template #body="{ data }">{{ data.comprador_nombre || '—' }}</template>
@@ -108,13 +106,10 @@
             {{ data.tarifa_base != null ? `$${Number(data.tarifa_base).toFixed(4)}` : '—' }}
           </template>
         </Column>
-        <Column header="Índice" style="width:90px">
-          <template #body="{ data }">{{ data.indice_indexacion || '—' }}</template>
-        </Column>
         <Column style="width:50px">
           <template #body="{ data }">
             <Button icon="pi pi-arrow-right" text size="small" severity="secondary"
-              @click.stop="irAProyecto({ data })" v-tooltip="'Ver en proyecto'" />
+              @click.stop="irAContrato(data)" v-tooltip="'Ver detalle'" />
           </template>
         </Column>
       </DataTable>
@@ -189,8 +184,8 @@ function formatFecha(f) {
   return String(f).slice(0, 10)
 }
 
-function irAProyecto({ data }) {
-  router.push(`/proyectos/${data.proyecto_id}/ppa`)
+function irAContrato(data) {
+  router.push(`/contratos/${data.id}`)
 }
 
 let buscarTimeout = null

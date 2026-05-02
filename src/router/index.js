@@ -11,6 +11,7 @@ const routes = [
   { path: '/proyectos/:id', name: 'ProyectoDetalle', component: () => import('@/views/Proyectos/ProyectoDetailView.vue') },
   { path: '/proyectos/:id/ppa', name: 'ProyectoPPA', component: () => import('@/views/Servicios/PPAView.vue') },
   { path: '/servicios', name: 'Servicios', component: () => import('@/views/Contratos/ContratosListView.vue') },
+  { path: '/contratos/:id', name: 'ContratoDetalle', component: () => import('@/views/Contratos/ContratoDetailView.vue') },
   { path: '/fallas', name: 'Fallas', component: () => import('@/views/Fallas/MonitoreoView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/fallas/:id', name: 'FallaDetalle', component: () => import('@/views/Fallas/FallaDetailView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/liquidaciones', name: 'Liquidaciones', component: () => import('@/views/Liquidaciones/LiquidacionesListView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
