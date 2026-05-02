@@ -102,16 +102,14 @@
           <Column v-if="vistaCantidades === 'mensual'" header="Mes" style="width:130px">
             <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
           </Column>
-          <Column header="Mín (MWh/mes)">
+          <Column :header="vistaCantidades === 'anual' ? 'Mín (MWh/año)' : 'Mín (MWh/mes)'">
             <template #body="{ data }">
               {{ data.energia_minima != null ? Number(data.energia_minima).toLocaleString('es-CO', { maximumFractionDigits: 1 }) : '—' }}
-              <span v-if="vistaCantidades === 'anual' && data._promedio" class="text-xs text-gray-400 ml-1">prom.</span>
             </template>
           </Column>
-          <Column header="Máx (MWh/mes)">
+          <Column :header="vistaCantidades === 'anual' ? 'Máx (MWh/año)' : 'Máx (MWh/mes)'">
             <template #body="{ data }">
               {{ data.energia_maxima != null ? Number(data.energia_maxima).toLocaleString('es-CO', { maximumFractionDigits: 1 }) : '—' }}
-              <span v-if="vistaCantidades === 'anual' && data._promedio" class="text-xs text-gray-400 ml-1">prom.</span>
             </template>
           </Column>
           <Column header="Rango">
@@ -148,7 +146,7 @@
               <span class="font-mono font-medium text-amber-700">
                 {{ data.tarifa != null ? `$${Number(data.tarifa).toLocaleString('es-CO', { maximumFractionDigits: 2 })}` : '—' }}
               </span>
-              <span v-if="vistaTarifas === 'anual' && data._promedio" class="text-xs text-gray-400 ml-1">prom.</span>
+              <span v-if="vistaTarifas === 'anual' && !data._uniforme" class="text-xs text-gray-400 ml-1">prom.</span>
             </template>
           </Column>
           <Column header="Variación">
@@ -252,7 +250,7 @@ function variacion(prev, curr) {
   return `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`
 }
 
-function promedioAnual(rows, campos) {
+function agregarPorAño(rows, campos, modo) {
   const byYear = {}
   for (const r of rows) {
     ;(byYear[r.año] = byYear[r.año] || []).push(r)
@@ -260,10 +258,10 @@ function promedioAnual(rows, campos) {
   return Object.keys(byYear).sort((a, b) => a - b).map(año => {
     const filas = byYear[año]
     const uniforme = campos.every(c => filas.every(f => f[c] === filas[0][c]))
-    const entry = { año: Number(año), _promedio: !uniforme }
+    const entry = { año: Number(año), _uniforme: uniforme }
     for (const c of campos) {
       const sum = filas.reduce((acc, f) => acc + (f[c] ?? 0), 0)
-      entry[c] = sum / filas.length
+      entry[c] = modo === 'suma' ? sum : sum / filas.length
     }
     return entry
   })
@@ -276,7 +274,7 @@ const tarifasMensuales = computed(() => {
 
 const tarifasAnuales = computed(() => {
   if (!contrato.value?.tarifas) return []
-  return promedioAnual(tarifasMensuales.value, ['tarifa'])
+  return agregarPorAño(tarifasMensuales.value, ['tarifa'], 'promedio')
 })
 
 const currentTarifas = computed(() =>
@@ -290,7 +288,7 @@ const cantidadesMensuales = computed(() => {
 
 const cantidadesAnuales = computed(() => {
   if (!contrato.value?.compromisos_energia) return []
-  return promedioAnual(cantidadesMensuales.value, ['energia_minima', 'energia_maxima'])
+  return agregarPorAño(cantidadesMensuales.value, ['energia_minima', 'energia_maxima'], 'suma')
 })
 
 async function cargar() {
