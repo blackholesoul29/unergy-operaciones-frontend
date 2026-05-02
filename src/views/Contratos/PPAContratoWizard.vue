@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:visible="visible" modal :style="{ width: '820px' }" :breakpoints="{ '900px': '95vw' }"
+  <Dialog :visible="visible" @update:visible="$emit('update:visible', $event)" modal :style="{ width: '820px' }" :breakpoints="{ '900px': '95vw' }"
     :header="null" :closable="true" @hide="$emit('cerrar')">
 
     <!-- Step indicator -->
