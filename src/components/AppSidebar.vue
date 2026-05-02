@@ -51,6 +51,7 @@ const all = [
   { to: '/dashboard',     label: 'Dashboard',     icon: 'pi pi-home' },
   { to: '/clientes',      label: 'Clientes',       icon: 'pi pi-building' },
   { to: '/proyectos',     label: 'Proyectos',      icon: 'pi pi-bolt' },
+  { to: '/contratos',     label: 'Contratos',      icon: 'pi pi-file-edit' },
   { to: '/fallas',        label: 'Monitoreo',         icon: 'pi pi-exclamation-triangle', roles: ['admin', 'operaciones', 'monitoreo'] },
   { to: '/liquidaciones', label: 'Liquidaciones',  icon: 'pi pi-dollar',               roles: ['admin', 'liquidaciones'] },
 ]
