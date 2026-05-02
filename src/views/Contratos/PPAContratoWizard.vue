@@ -1,5 +1,5 @@
 <template>
-  <Dialog v-model:visible="visible" modal :style="{ width: '780px' }" :breakpoints="{ '900px': '95vw' }"
+  <Dialog v-model:visible="visible" modal :style="{ width: '820px' }" :breakpoints="{ '900px': '95vw' }"
     :header="null" :closable="true" @hide="$emit('cerrar')">
 
     <!-- Step indicator -->
@@ -7,7 +7,7 @@
       <div class="flex items-start">
         <template v-for="(s, i) in STEPS" :key="i">
           <div class="flex flex-col items-center gap-1.5" style="flex:1">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
               :class="{
                 'bg-amber-500 text-white shadow-sm shadow-amber-200': step === i,
                 'bg-amber-400 text-white': step > i,
@@ -16,23 +16,23 @@
               <i v-if="step > i" class="pi pi-check text-xs" />
               <span v-else>{{ i + 1 }}</span>
             </div>
-            <span class="text-[11px] text-center leading-tight px-1"
+            <span class="text-[10px] text-center leading-tight px-0.5"
               :class="step === i ? 'text-amber-600 font-semibold' : step > i ? 'text-gray-500' : 'text-gray-300'">
               {{ s.label }}
             </span>
           </div>
-          <div v-if="i < STEPS.length - 1" class="h-0.5 mt-4 mx-1 transition-all" style="flex:1"
+          <div v-if="i < STEPS.length - 1" class="h-0.5 mt-3.5 mx-0.5 transition-all" style="flex:1"
             :class="step > i ? 'bg-amber-400' : 'bg-gray-100'" />
         </template>
       </div>
     </div>
 
     <!-- Contenido -->
-    <div class="px-6 py-5 min-h-64">
+    <div class="px-6 py-5 min-h-72">
 
       <!-- ── PASO 0: Proyectos e identificación ─────────────────────────── -->
       <template v-if="step === 0">
-        <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-4">Proyectos e identificación</p>
+        <p class="step-title">Proyectos e identificación</p>
         <div class="space-y-4">
           <div class="flex flex-col gap-1">
             <label class="field-label">Proyectos asociados <span class="text-red-400">*</span></label>
@@ -43,7 +43,7 @@
               placeholder="Buscar y seleccionar proyectos…"
               filter
               filterPlaceholder="Buscar proyecto"
-              :maxSelectedLabels="3"
+              :maxSelectedLabels="4"
               selectedItemsLabel="{0} proyectos seleccionados"
               class="w-full"
               display="chip"
@@ -65,7 +65,7 @@
 
       <!-- ── PASO 1: Partes ─────────────────────────────────────────────── -->
       <template v-if="step === 1">
-        <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-4">Partes del contrato</p>
+        <p class="step-title">Partes del contrato</p>
         <div class="grid grid-cols-2 gap-1 mb-1 px-1">
           <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Comprador</span>
           <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Vendedor</span>
@@ -96,7 +96,7 @@
 
       <!-- ── PASO 2: Condiciones comerciales ───────────────────────────── -->
       <template v-if="step === 2">
-        <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-4">Condiciones comerciales</p>
+        <p class="step-title">Condiciones comerciales</p>
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
@@ -110,10 +110,6 @@
           </div>
           <div class="grid grid-cols-3 gap-4">
             <div class="flex flex-col gap-1">
-              <label class="field-label">Tarifa base ($/kWh)</label>
-              <InputNumber v-model="form.tarifa_base" :maxFractionDigits="4" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
               <label class="field-label">Índice de indexación</label>
               <InputText v-model="form.indice_indexacion" placeholder="IPP, IPC…" class="w-full" />
             </div>
@@ -124,15 +120,11 @@
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Período base (AAAA-MM)</label>
-              <InputText v-model="form.periodo_indexacion_base" placeholder="2024-01" maxlength="7" class="w-full" />
+              <InputText v-model="form.periodo_indexacion_base" placeholder="2023-07" maxlength="7" class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Valor base indexación</label>
               <InputNumber v-model="form.valor_indexacion_base" :maxFractionDigits="4" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Tiempo de pago (días)</label>
-              <InputNumber v-model="form.tiempo_pago" :useGrouping="false" placeholder="30" class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Periodicidad facturación</label>
@@ -140,12 +132,8 @@
                 optionLabel="label" optionValue="value" placeholder="Seleccionar" showClear class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="field-label">Energía mín. (kWh/mes)</label>
-              <InputNumber v-model="form.cantidad_minima_kwh_mes" :maxFractionDigits="3" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Energía máx. (kWh/mes)</label>
-              <InputNumber v-model="form.cantidad_maxima_kwh_mes" :maxFractionDigits="3" class="w-full" />
+              <label class="field-label">Tiempo de pago (días)</label>
+              <InputNumber v-model="form.tiempo_pago" :useGrouping="false" placeholder="15" class="w-full" />
             </div>
           </div>
           <div class="flex flex-col gap-1">
@@ -155,12 +143,101 @@
         </div>
       </template>
 
-      <!-- ── PASO 3: GESCON + Resumen ───────────────────────────────────── -->
+      <!-- ── PASO 3: Tarifas ────────────────────────────────────────────── -->
       <template v-if="step === 3">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
-          Registro GESCON / ASIC <span class="normal-case font-normal">(opcional)</span>
+        <p class="step-title">Tabla de tarifas <span class="normal-case font-normal text-gray-400">(opcional)</span></p>
+        <p class="text-xs text-gray-400 mb-3">
+          Copia las columnas <strong>Año · Mes · Tarifa</strong> desde Excel y pégalas aquí.
+          Acepta tabulaciones o comas como separador. El mes puede ser nombre en español o número.
         </p>
-        <div class="grid grid-cols-3 gap-4 mb-6">
+        <Textarea
+          v-model="tarifasPaste"
+          rows="6"
+          placeholder="2023&#9;Noviembre&#9;460&#10;2023&#9;Diciembre&#9;460&#10;2024&#9;Enero&#9;460"
+          class="w-full font-mono text-xs"
+          @paste="onPasteTarifas"
+        />
+        <div class="flex items-center gap-2 mt-2">
+          <Button label="Procesar" icon="pi pi-refresh" size="small" severity="secondary" outlined @click="parseTarifas" />
+          <Button v-if="tarifasRows.length" label="Limpiar" icon="pi pi-times" size="small" severity="danger" text @click="tarifasRows = []; tarifasPaste = ''" />
+          <span v-if="tarifasRows.length" class="text-xs text-green-600 font-medium">
+            ✓ {{ tarifasRows.length }} filas listas
+          </span>
+          <span v-if="tarifasError" class="text-xs text-red-400">{{ tarifasError }}</span>
+        </div>
+        <div v-if="tarifasRows.length" class="mt-3 border border-gray-100 rounded-lg overflow-hidden">
+          <table class="w-full text-xs">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-3 py-1.5 text-left text-gray-500 font-medium">Año</th>
+                <th class="px-3 py-1.5 text-left text-gray-500 font-medium">Mes</th>
+                <th class="px-3 py-1.5 text-right text-gray-500 font-medium">Tarifa ($/kWh)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(r, i) in tarifasPreview" :key="i" class="border-t border-gray-50">
+                <td class="px-3 py-1 text-gray-700">{{ r.año }}</td>
+                <td class="px-3 py-1 text-gray-700">{{ r.mes }}</td>
+                <td class="px-3 py-1 text-right text-gray-700">{{ r.tarifa }}</td>
+              </tr>
+              <tr v-if="tarifasRows.length > PREVIEW_ROWS" class="border-t border-gray-50">
+                <td colspan="3" class="px-3 py-1 text-gray-300 italic">… y {{ tarifasRows.length - PREVIEW_ROWS }} filas más</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+
+      <!-- ── PASO 4: Compromisos de energía ────────────────────────────── -->
+      <template v-if="step === 4">
+        <p class="step-title">Compromisos de energía <span class="normal-case font-normal text-gray-400">(opcional)</span></p>
+        <p class="text-xs text-gray-400 mb-3">
+          Copia las columnas <strong>Año · Mes · Mín · Máx</strong> desde Excel y pégalas aquí (valores en MWh/mes).
+        </p>
+        <Textarea
+          v-model="energiaPaste"
+          rows="6"
+          placeholder="2023&#9;Noviembre&#9;90&#9;180&#10;2023&#9;Diciembre&#9;90&#9;180"
+          class="w-full font-mono text-xs"
+          @paste="onPasteEnergia"
+        />
+        <div class="flex items-center gap-2 mt-2">
+          <Button label="Procesar" icon="pi pi-refresh" size="small" severity="secondary" outlined @click="parseEnergia" />
+          <Button v-if="energiaRows.length" label="Limpiar" icon="pi pi-times" size="small" severity="danger" text @click="energiaRows = []; energiaPaste = ''" />
+          <span v-if="energiaRows.length" class="text-xs text-green-600 font-medium">
+            ✓ {{ energiaRows.length }} filas listas
+          </span>
+          <span v-if="energiaError" class="text-xs text-red-400">{{ energiaError }}</span>
+        </div>
+        <div v-if="energiaRows.length" class="mt-3 border border-gray-100 rounded-lg overflow-hidden">
+          <table class="w-full text-xs">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-3 py-1.5 text-left text-gray-500 font-medium">Año</th>
+                <th class="px-3 py-1.5 text-left text-gray-500 font-medium">Mes</th>
+                <th class="px-3 py-1.5 text-right text-gray-500 font-medium">Mín (MWh)</th>
+                <th class="px-3 py-1.5 text-right text-gray-500 font-medium">Máx (MWh)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(r, i) in energiaPreview" :key="i" class="border-t border-gray-50">
+                <td class="px-3 py-1 text-gray-700">{{ r.año }}</td>
+                <td class="px-3 py-1 text-gray-700">{{ r.mes }}</td>
+                <td class="px-3 py-1 text-right text-gray-700">{{ r.energia_minima }}</td>
+                <td class="px-3 py-1 text-right text-gray-700">{{ r.energia_maxima }}</td>
+              </tr>
+              <tr v-if="energiaRows.length > PREVIEW_ROWS" class="border-t border-gray-50">
+                <td colspan="4" class="px-3 py-1 text-gray-300 italic">… y {{ energiaRows.length - PREVIEW_ROWS }} filas más</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </template>
+
+      <!-- ── PASO 5: GESCON + Resumen ───────────────────────────────────── -->
+      <template v-if="step === 5">
+        <p class="step-title text-gray-400">Registro GESCON / ASIC <span class="normal-case font-normal">(opcional)</span></p>
+        <div class="grid grid-cols-3 gap-4 mb-5">
           <div class="flex flex-col gap-1">
             <label class="field-label">Código SIC</label>
             <InputText v-model="form.codigo_sic" class="w-full" />
@@ -189,7 +266,7 @@
 
         <!-- Resumen -->
         <div class="rounded-lg border border-amber-100 bg-amber-50 p-4">
-          <p class="text-xs font-semibold text-amber-700 mb-3">Resumen del contrato</p>
+          <p class="text-xs font-semibold text-amber-700 mb-3">Resumen</p>
           <div class="mb-2">
             <span class="text-xs text-gray-400">Proyectos:</span>
             <div class="flex flex-wrap gap-1 mt-1">
@@ -207,10 +284,10 @@
             <ResumenFila label="Vendedor" :value="form.vendedor_nombre" />
             <ResumenFila label="Inicio despacho" :value="formatFecha(form.fecha_inicio)" />
             <ResumenFila label="Fin despacho" :value="formatFecha(form.fecha_fin)" />
-            <ResumenFila label="Tarifa base" :value="form.tarifa_base != null ? `$${form.tarifa_base}/kWh` : null" />
             <ResumenFila label="Índice" :value="form.indice_indexacion" />
             <ResumenFila label="Tiempo de pago" :value="form.tiempo_pago != null ? `${form.tiempo_pago} días` : null" />
-            <ResumenFila label="Código SIC" :value="form.codigo_sic" />
+            <ResumenFila label="Tarifas" :value="tarifasRows.length ? `${tarifasRows.length} filas` : null" />
+            <ResumenFila label="Compromisos energía" :value="energiaRows.length ? `${energiaRows.length} filas` : null" />
           </div>
         </div>
       </template>
@@ -231,7 +308,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
@@ -247,11 +324,14 @@ defineProps({ visible: Boolean })
 const emit = defineEmits(['update:visible', 'cerrar', 'creado'])
 
 const toast = useToast()
+const PREVIEW_ROWS = 5
 
 const STEPS = [
   { label: 'Proyectos' },
   { label: 'Partes' },
   { label: 'Condiciones' },
+  { label: 'Tarifas' },
+  { label: 'Energía' },
   { label: 'GESCON' },
 ]
 
@@ -262,25 +342,98 @@ const PERIODICIDADES = [
   { label: 'Anual', value: 'anual' },
 ]
 
+const MESES_ES = {
+  enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6,
+  julio: 7, agosto: 8, septiembre: 9, octubre: 10, noviembre: 11, diciembre: 12,
+}
+
 const step = ref(0)
 const guardando = ref(false)
 const todosProyectos = ref([])
 const proyectosSeleccionados = ref([])
 const errores = reactive({})
 
+// Paste state — tarifas
+const tarifasPaste = ref('')
+const tarifasRows = ref([])
+const tarifasError = ref('')
+const tarifasPreview = computed(() => tarifasRows.value.slice(0, PREVIEW_ROWS))
+
+// Paste state — energía
+const energiaPaste = ref('')
+const energiaRows = ref([])
+const energiaError = ref('')
+const energiaPreview = computed(() => energiaRows.value.slice(0, PREVIEW_ROWS))
+
 const form = reactive({
   numero_codigo_contrato: null, nombre_interno: null,
   comprador_nombre: null, comprador_nit: null,
   vendedor_nombre: null, vendedor_nit: null,
   fecha_inicio: null, fecha_fin: null,
-  tarifa_base: null, indice_indexacion: null,
-  periodicidad_indexacion: null, periodo_indexacion_base: null, valor_indexacion_base: null,
-  cantidad_minima_kwh_mes: null, cantidad_maxima_kwh_mes: null,
+  indice_indexacion: null, periodicidad_indexacion: null,
+  periodo_indexacion_base: null, valor_indexacion_base: null,
   periodicidad_facturacion: null, tiempo_pago: null, condiciones_pago: null,
   codigo_sic: null,
   gescon_codigo: null, gescon_fecha_inicio: null, gescon_fecha_fin: null,
   gescon_precio: null, gescon_cantidades_kwh: null,
 })
+
+// ── Parsers ─────────────────────────────────────────────────────────────────
+
+function splitRow(line) {
+  // handle tab-separated (Excel) or comma-separated (CSV)
+  return line.includes('\t') ? line.split('\t') : line.split(',')
+}
+
+function parseMes(raw) {
+  const s = String(raw).trim()
+  const num = parseInt(s, 10)
+  if (!isNaN(num) && num >= 1 && num <= 12) return num
+  return MESES_ES[s.toLowerCase()] ?? null
+}
+
+function parseTarifas() {
+  tarifasError.value = ''
+  const lines = tarifasPaste.value.split('\n').map(l => l.trim()).filter(Boolean)
+  const rows = []
+  for (const [i, line] of lines.entries()) {
+    const cols = splitRow(line)
+    if (cols.length < 3) { tarifasError.value = `Fila ${i + 1}: se esperan 3 columnas`; tarifasRows.value = []; return }
+    const año = parseInt(cols[0].trim(), 10)
+    const mes = parseMes(cols[1].trim())
+    const tarifa = parseFloat(cols[2].trim().replace(',', '.'))
+    if (isNaN(año) || !mes || isNaN(tarifa)) { tarifasError.value = `Fila ${i + 1}: datos inválidos`; tarifasRows.value = []; return }
+    rows.push({ año, mes, tarifa })
+  }
+  tarifasRows.value = rows
+}
+
+function parseEnergia() {
+  energiaError.value = ''
+  const lines = energiaPaste.value.split('\n').map(l => l.trim()).filter(Boolean)
+  const rows = []
+  for (const [i, line] of lines.entries()) {
+    const cols = splitRow(line)
+    if (cols.length < 4) { energiaError.value = `Fila ${i + 1}: se esperan 4 columnas`; energiaRows.value = []; return }
+    const año = parseInt(cols[0].trim(), 10)
+    const mes = parseMes(cols[1].trim())
+    const min = parseFloat(cols[2].trim().replace(',', '.'))
+    const max = parseFloat(cols[3].trim().replace(',', '.'))
+    if (isNaN(año) || !mes || isNaN(min) || isNaN(max)) { energiaError.value = `Fila ${i + 1}: datos inválidos`; energiaRows.value = []; return }
+    rows.push({ año, mes, energia_minima: min, energia_maxima: max })
+  }
+  energiaRows.value = rows
+}
+
+function onPasteTarifas(e) {
+  setTimeout(() => parseTarifas(), 50)
+}
+
+function onPasteEnergia(e) {
+  setTimeout(() => parseEnergia(), 50)
+}
+
+// ── Navegación ───────────────────────────────────────────────────────────────
 
 function validarPaso0() {
   errores.proyectos = null
@@ -296,11 +449,15 @@ function avanzar() {
   step.value++
 }
 
+// ── Utils ────────────────────────────────────────────────────────────────────
+
 function formatFecha(v) {
   if (!v) return null
   if (v instanceof Date) return v.toISOString().slice(0, 10)
   return String(v).slice(0, 10)
 }
+
+// ── Guardar ──────────────────────────────────────────────────────────────────
 
 async function guardar() {
   if (!validarPaso0()) { step.value = 0; return }
@@ -311,12 +468,27 @@ async function guardar() {
       payload[k] = formatFecha(form[k])
     }
     payload.proyecto_ids = proyectosSeleccionados.value.map(p => p.id)
-    const { data } = await api.post('/ppa', payload)
-    toast.add({ severity: 'success', summary: 'Contrato creado', detail: data.nombre_interno || data.numero_codigo_contrato, life: 3000 })
-    emit('creado', data)
+
+    const { data: contrato } = await api.post('/ppa', payload)
+
+    if (tarifasRows.value.length) {
+      await api.put(`/ppa/${contrato.id}/tarifas`, tarifasRows.value)
+    }
+    if (energiaRows.value.length) {
+      await api.put(`/ppa/${contrato.id}/compromisos`, energiaRows.value)
+    }
+
+    const msg = [
+      `Contrato "${contrato.nombre_interno || contrato.numero_codigo_contrato}" creado`,
+      tarifasRows.value.length ? `${tarifasRows.value.length} tarifas` : null,
+      energiaRows.value.length ? `${energiaRows.value.length} compromisos` : null,
+    ].filter(Boolean).join(' · ')
+
+    toast.add({ severity: 'success', summary: 'Contrato creado', detail: msg, life: 4000 })
+    emit('creado', contrato)
     emit('cerrar')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al guardar', detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.add({ severity: 'error', summary: 'Error al guardar', detail: e.response?.data?.detail || e.message, life: 5000 })
   } finally {
     guardando.value = false
   }
@@ -340,4 +512,5 @@ export default { components: { ResumenFila } }
 
 <style scoped>
 .field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+.step-title { @apply text-xs font-semibold text-amber-600 uppercase tracking-wide mb-4; }
 </style>
