@@ -165,6 +165,71 @@
         </DataTable>
       </TabPanel>
 
+      <!-- ══ CONTRATOS ASIC ══ -->
+      <TabPanel :header="`Contratos ASIC (${asicRows.length})`">
+        <div v-if="loadingAsic" class="flex items-center justify-center py-16 text-gray-400 gap-2">
+          <i class="pi pi-spin pi-spinner" />
+          <span class="text-sm">Cargando registros ASIC…</span>
+        </div>
+        <DataTable
+          v-else
+          :value="asicRows"
+          stripedRows
+          class="text-sm"
+          emptyMessage="Sin registros ASIC para este contrato."
+          sortField="fecha_solicitud"
+          :sortOrder="-1"
+        >
+          <Column field="fecha_solicitud" header="Fecha solicitud" sortable style="width:130px" />
+          <Column field="tipo_solicitud" header="Tipo" style="width:120px">
+            <template #body="{ data }">
+              <Tag
+                :value="data.tipo_solicitud"
+                :severity="{ registro: 'success', modificacion: 'info', terminacion: 'danger', desistimiento: 'secondary' }[data.tipo_solicitud] || 'secondary'"
+                class="text-xs capitalize"
+              />
+            </template>
+          </Column>
+          <Column field="estado_solicitud" header="Estado" style="width:110px">
+            <template #body="{ data }">
+              <Tag
+                :value="data.estado_solicitud.replace('_', ' ')"
+                :severity="{ publicado: 'success', en_proceso: 'warn', rechazado: 'danger', desistido: 'secondary' }[data.estado_solicitud] || 'secondary'"
+                class="text-xs capitalize"
+              />
+            </template>
+          </Column>
+          <Column field="planta_nombre" header="Planta" sortable>
+            <template #body="{ data }">
+              <router-link v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`"
+                class="text-amber-700 hover:underline">
+                {{ data.planta_nombre || data.proyecto_id }}
+              </router-link>
+              <span v-else class="text-gray-400">—</span>
+            </template>
+          </Column>
+          <Column field="fecha_inicio" header="Inicio" style="width:100px" />
+          <Column field="fecha_fin" header="Fin" style="width:100px" />
+          <Column field="porcentaje_despacho" header="% Despacho" style="width:110px">
+            <template #body="{ data }">
+              <span v-if="data.porcentaje_despacho != null"
+                :class="data.porcentaje_despacho > 100 ? 'text-red-600 font-semibold' : ''">
+                {{ Number(data.porcentaje_despacho).toFixed(1) }}%
+              </span>
+              <span v-else class="text-gray-400">—</span>
+            </template>
+          </Column>
+          <Column field="requerimiento_asic" header="Requerimiento" style="width:130px">
+            <template #body="{ data }">{{ data.requerimiento_asic || '—' }}</template>
+          </Column>
+          <Column field="observaciones" header="Observaciones">
+            <template #body="{ data }">
+              <span class="text-xs text-gray-500">{{ data.observaciones || '—' }}</span>
+            </template>
+          </Column>
+        </DataTable>
+      </TabPanel>
+
       <!-- ══ PROYECTOS ══ -->
       <TabPanel :header="`Proyectos (${contrato.proyectos?.length || 0})`">
         <div v-if="contrato.proyectos?.length" class="p-2">
@@ -226,6 +291,8 @@ const contrato = ref(null)
 const loading = ref(true)
 const vistaCantidades = ref('mensual')
 const vistaTarifas = ref('mensual')
+const asicRows = ref([])
+const loadingAsic = ref(false)
 
 const duracion = computed(() => {
   if (!contrato.value?.fecha_inicio || !contrato.value?.fecha_fin) return null
@@ -296,10 +363,23 @@ async function cargar() {
   try {
     const { data } = await api.get(`/ppa/${route.params.id}`)
     contrato.value = data
+    if (data.codigo_sic) cargarAsic(data.codigo_sic)
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e.message, life: 3000 })
   } finally {
     loading.value = false
+  }
+}
+
+async function cargarAsic(codigoSic) {
+  loadingAsic.value = true
+  try {
+    const { data } = await api.get('/asic', { params: { codigo_sic_contrato: codigoSic } })
+    asicRows.value = data
+  } catch (e) {
+    toast.add({ severity: 'warn', summary: 'ASIC', detail: 'No se pudieron cargar registros ASIC', life: 3000 })
+  } finally {
+    loadingAsic.value = false
   }
 }
 
