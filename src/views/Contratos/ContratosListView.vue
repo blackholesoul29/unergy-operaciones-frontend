@@ -68,26 +68,15 @@
         emptyMessage="No hay contratos PPA registrados."
         rowHover
       >
-        <Column header="Proyectos">
+        <Column field="nombre_interno" header="Nombre interno" sortable>
           <template #body="{ data }">
-            <span v-if="data.proyectos?.length" class="text-sm text-gray-700">
-              {{ data.proyectos.map(p => p.nombre_comercial).join(', ') }}
-            </span>
-            <span v-else class="text-gray-300">—</span>
+            <span class="font-medium text-gray-800">{{ data.nombre_interno || '—' }}</span>
           </template>
         </Column>
-        <Column header="Contrato" sortable sortField="nombre_interno">
+        <Column field="numero_codigo_contrato" header="N° contrato" sortable style="width:160px">
           <template #body="{ data }">
-            <div>
-              <p class="font-medium text-gray-700">{{ data.nombre_interno || data.numero_codigo_contrato || '—' }}</p>
-              <p v-if="data.nombre_interno && data.numero_codigo_contrato" class="text-xs text-gray-400">
-                {{ data.numero_codigo_contrato }}
-              </p>
-            </div>
+            <span class="font-mono text-xs text-gray-500">{{ data.numero_codigo_contrato || '—' }}</span>
           </template>
-        </Column>
-        <Column header="Índice" style="width:80px">
-          <template #body="{ data }">{{ data.indice_indexacion || '—' }}</template>
         </Column>
         <Column header="Comprador">
           <template #body="{ data }">{{ data.comprador_nombre || '—' }}</template>
@@ -100,11 +89,6 @@
         </Column>
         <Column header="Fin" sortable sortField="fecha_fin" style="width:100px">
           <template #body="{ data }">{{ formatFecha(data.fecha_fin) }}</template>
-        </Column>
-        <Column header="Tarifa base" sortable sortField="tarifa_base" style="width:110px">
-          <template #body="{ data }">
-            {{ data.tarifa_base != null ? `$${Number(data.tarifa_base).toFixed(4)}` : '—' }}
-          </template>
         </Column>
         <Column style="width:50px">
           <template #body="{ data }">

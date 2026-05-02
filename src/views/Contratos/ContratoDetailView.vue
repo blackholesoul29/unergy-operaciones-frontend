@@ -80,24 +80,6 @@
             </div>
           </div>
 
-          <Divider />
-
-          <!-- Proyectos asociados -->
-          <div>
-            <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-3">
-              Proyectos asociados ({{ contrato.proyectos?.length || 0 }})
-            </p>
-            <div class="flex flex-wrap gap-2">
-              <router-link
-                v-for="p in contrato.proyectos" :key="p.id"
-                :to="`/proyectos/${p.id}`"
-                class="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer"
-              >
-                {{ p.nombre_comercial }}
-              </router-link>
-              <span v-if="!contrato.proyectos?.length" class="text-sm text-gray-400">Sin proyectos asociados</span>
-            </div>
-          </div>
         </div>
       </TabPanel>
 
@@ -178,6 +160,27 @@
             </template>
           </Column>
         </DataTable>
+      </TabPanel>
+
+      <!-- ══ PROYECTOS ══ -->
+      <TabPanel :header="`Proyectos (${contrato.proyectos?.length || 0})`">
+        <div v-if="contrato.proyectos?.length" class="p-2">
+          <DataTable :value="contrato.proyectos" stripedRows class="text-sm" rowHover>
+            <Column field="id" header="ID" style="width:60px" />
+            <Column field="nombre_comercial" header="Nombre comercial" sortable>
+              <template #body="{ data }">
+                <router-link :to="`/proyectos/${data.id}`"
+                  class="font-medium text-amber-700 hover:underline">
+                  {{ data.nombre_comercial }}
+                </router-link>
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+        <div v-else class="flex flex-col items-center py-16 gap-2 text-gray-400">
+          <i class="pi pi-sitemap text-3xl" />
+          <span class="text-sm">Sin proyectos asociados</span>
+        </div>
       </TabPanel>
     </TabView>
   </div>
