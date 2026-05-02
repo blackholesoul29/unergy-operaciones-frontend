@@ -209,13 +209,39 @@
 
       <!-- ══ SERVICIOS ══ -->
       <TabPanel header="Servicios">
-        <div class="p-4 space-y-3">
-          <p class="text-xs text-gray-500 mb-4">Activa o desactiva los servicios contratados para este proyecto.</p>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <div v-for="srv in SERVICIOS" :key="srv.key"
-              class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3">
-              <span class="text-sm font-medium text-gray-700">{{ srv.label }}</span>
-              <ToggleSwitch v-model="srvFlags[srv.key]" @change="toggleServicio(srv.key, srvFlags[srv.key])" />
+        <div class="p-6">
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div
+              v-for="srv in SERVICIOS_CARDS" :key="srv.key"
+              class="relative flex flex-col items-center gap-3 rounded-xl border-2 p-5 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 select-none"
+              :class="srvFlags[srv.key]
+                ? 'border-transparent shadow-sm'
+                : 'border-gray-100 bg-gray-50 opacity-60 hover:opacity-80'"
+              :style="srvFlags[srv.key] ? `background:${srv.bg}18; border-color:${srv.color}40` : ''"
+              @click="$router.push(`/proyectos/${route.params.id}/${srv.route}`)"
+            >
+              <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                :style="srvFlags[srv.key] ? `background:${srv.color}20` : 'background:#e5e7eb'">
+                <i :class="srv.icon" class="text-2xl"
+                  :style="srvFlags[srv.key] ? `color:${srv.color}` : 'color:#9ca3af'" />
+              </div>
+              <span class="text-sm font-semibold text-center"
+                :style="srvFlags[srv.key] ? `color:${srv.color}` : 'color:#6b7280'">
+                {{ srv.label }}
+              </span>
+              <span v-if="srvFlags[srv.key]"
+                class="absolute top-2 right-2 w-2 h-2 rounded-full"
+                :style="`background:${srv.color}`" />
+            </div>
+          </div>
+          <div class="mt-6 pt-4 border-t border-gray-100">
+            <p class="text-xs text-gray-400 mb-3">Activar / desactivar servicios</p>
+            <div class="flex flex-wrap gap-3">
+              <div v-for="srv in SERVICIOS_CARDS" :key="srv.key + '_toggle'"
+                class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
+                <ToggleSwitch v-model="srvFlags[srv.key]" @change="toggleServicio(srv.key, srvFlags[srv.key])" />
+                <span class="text-xs text-gray-600">{{ srv.label }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -264,14 +290,14 @@ const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica'
 const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
-const SERVICIOS = [
-  { key: 'srv_operacion', label: 'Operación' },
-  { key: 'srv_representacion', label: 'Representación' },
-  { key: 'srv_cgm', label: 'CGM' },
-  { key: 'srv_ppa', label: 'PPA' },
-  { key: 'srv_promotor', label: 'Promotor' },
-  { key: 'srv_rec', label: 'REC' },
+const SERVICIOS_CARDS = [
+  { key: 'srv_ppa',           label: 'PPA',           icon: 'pi pi-bolt',       color: '#f59e0b', bg: '#fef3c7', route: 'ppa' },
+  { key: 'srv_representacion',label: 'Representación', icon: 'pi pi-file-edit',  color: '#3b82f6', bg: '#eff6ff', route: 'representacion' },
+  { key: 'srv_cgm',           label: 'CGM',           icon: 'pi pi-chart-bar',  color: '#10b981', bg: '#ecfdf5', route: 'cgm' },
+  { key: 'srv_promotor',      label: 'Promotor',      icon: 'pi pi-briefcase',  color: '#8b5cf6', bg: '#f5f3ff', route: 'promotor' },
+  { key: 'srv_rec',           label: 'REC',           icon: 'pi pi-verified',   color: '#14b8a6', bg: '#f0fdfa', route: 'rec' },
 ]
+const SERVICIOS = SERVICIOS_CARDS
 
 // ── Estado base ───────────────────────────────────────────────────────────────
 const proyecto = ref(null)
