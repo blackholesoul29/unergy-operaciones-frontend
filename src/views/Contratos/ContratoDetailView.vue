@@ -166,21 +166,40 @@
       </TabPanel>
 
       <!-- ══ CONTRATOS ASIC ══ -->
-      <TabPanel :header="`Contratos ASIC (${asicRows.length})`">
+      <TabPanel :header="`Contratos ASIC (${asicFiltrados.length})`">
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-xs text-gray-400">{{ asicRows.length }} registros totales</span>
+          <SelectButton v-model="vistaAsic"
+            :options="[{ label: 'Vigentes', value: 'vigentes' }, { label: 'Históricos', value: 'historicos' }]"
+            optionLabel="label" optionValue="value" />
+        </div>
         <div v-if="loadingAsic" class="flex items-center justify-center py-16 text-gray-400 gap-2">
           <i class="pi pi-spin pi-spinner" />
           <span class="text-sm">Cargando registros ASIC…</span>
         </div>
         <DataTable
           v-else
-          :value="asicRows"
+          :value="asicFiltrados"
           stripedRows
           class="text-sm"
           emptyMessage="Sin registros ASIC para este contrato."
           sortField="fecha_solicitud"
           :sortOrder="-1"
         >
-          <Column field="fecha_solicitud" header="Fecha solicitud" sortable style="width:130px" />
+          <Column field="codigo_sic_contrato" header="Código SIC" sortable style="width:110px">
+            <template #body="{ data }">
+              <span class="font-mono text-xs">{{ data.codigo_sic_contrato || '—' }}</span>
+            </template>
+          </Column>
+          <Column field="planta_nombre" header="Planta" sortable>
+            <template #body="{ data }">
+              <router-link v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`"
+                class="text-amber-700 hover:underline">
+                {{ data.planta_nombre || data.proyecto_id }}
+              </router-link>
+              <span v-else class="text-gray-400">—</span>
+            </template>
+          </Column>
           <Column field="tipo_solicitud" header="Tipo" style="width:120px">
             <template #body="{ data }">
               <Tag
@@ -199,17 +218,8 @@
               />
             </template>
           </Column>
-          <Column field="planta_nombre" header="Planta" sortable>
-            <template #body="{ data }">
-              <router-link v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`"
-                class="text-amber-700 hover:underline">
-                {{ data.planta_nombre || data.proyecto_id }}
-              </router-link>
-              <span v-else class="text-gray-400">—</span>
-            </template>
-          </Column>
-          <Column field="fecha_inicio" header="Inicio" style="width:100px" />
-          <Column field="fecha_fin" header="Fin" style="width:100px" />
+          <Column field="fecha_inicio" header="Inicio" sortable style="width:100px" />
+          <Column field="fecha_fin" header="Fin" sortable style="width:100px" />
           <Column field="porcentaje_despacho" header="% Despacho" style="width:110px">
             <template #body="{ data }">
               <span v-if="data.porcentaje_despacho != null"
@@ -219,9 +229,7 @@
               <span v-else class="text-gray-400">—</span>
             </template>
           </Column>
-          <Column field="requerimiento_asic" header="Requerimiento" style="width:130px">
-            <template #body="{ data }">{{ data.requerimiento_asic || '—' }}</template>
-          </Column>
+          <Column field="fecha_solicitud" header="F. solicitud" sortable style="width:120px" />
           <Column field="observaciones" header="Observaciones">
             <template #body="{ data }">
               <span class="text-xs text-gray-500">{{ data.observaciones || '—' }}</span>
@@ -293,6 +301,13 @@ const vistaCantidades = ref('mensual')
 const vistaTarifas = ref('mensual')
 const asicRows = ref([])
 const loadingAsic = ref(false)
+const vistaAsic = ref('vigentes')
+
+const asicFiltrados = computed(() => {
+  if (vistaAsic.value === 'historicos') return asicRows.value
+  const hoy = new Date().toISOString().slice(0, 10)
+  return asicRows.value.filter(r => r.fecha_fin && r.fecha_fin >= hoy)
+})
 
 const duracion = computed(() => {
   if (!contrato.value?.fecha_inicio || !contrato.value?.fecha_fin) return null
