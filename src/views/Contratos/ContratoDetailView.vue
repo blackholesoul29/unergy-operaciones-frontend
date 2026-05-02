@@ -86,7 +86,7 @@
       <!-- ══ CANTIDADES ══ -->
       <TabPanel :header="`Cantidades (${contrato.compromisos_energia?.length || 0})`">
         <DataTable
-          :value="contrato.compromisos_energia"
+          :value="cantidadesAgrupadas"
           stripedRows
           class="text-sm"
           paginator
@@ -94,19 +94,20 @@
           :rowsPerPageOptions="[12, 24, 60, 120]"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
           emptyMessage="Sin compromisos de energía registrados."
-          sortField="año"
-          :sortOrder="1"
         >
-          <Column field="año" header="Año" sortable style="width:70px" />
-          <Column field="mes" header="Mes" sortable style="width:110px">
-            <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
+          <Column field="año" header="Año" style="width:70px" />
+          <Column header="Mes" style="width:130px">
+            <template #body="{ data }">
+              <span v-if="data._anual" class="text-xs text-gray-400 italic">Año completo</span>
+              <span v-else>{{ MESES[data.mes - 1] }}</span>
+            </template>
           </Column>
-          <Column field="energia_minima" header="Mín (MWh/mes)" sortable>
+          <Column field="energia_minima" header="Mín (MWh/mes)">
             <template #body="{ data }">
               {{ data.energia_minima != null ? Number(data.energia_minima).toLocaleString('es-CO') : '—' }}
             </template>
           </Column>
-          <Column field="energia_maxima" header="Máx (MWh/mes)" sortable>
+          <Column field="energia_maxima" header="Máx (MWh/mes)">
             <template #body="{ data }">
               {{ data.energia_maxima != null ? Number(data.energia_maxima).toLocaleString('es-CO') : '—' }}
             </template>
@@ -125,7 +126,7 @@
       <!-- ══ TARIFAS ══ -->
       <TabPanel :header="`Tarifas (${contrato.tarifas?.length || 0})`">
         <DataTable
-          :value="contrato.tarifas"
+          :value="tarifasAgrupadas"
           stripedRows
           class="text-sm"
           paginator
@@ -133,14 +134,15 @@
           :rowsPerPageOptions="[12, 24, 60, 120]"
           paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
           emptyMessage="Sin tarifas registradas."
-          sortField="año"
-          :sortOrder="1"
         >
-          <Column field="año" header="Año" sortable style="width:70px" />
-          <Column field="mes" header="Mes" sortable style="width:110px">
-            <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
+          <Column field="año" header="Año" style="width:70px" />
+          <Column header="Mes" style="width:130px">
+            <template #body="{ data }">
+              <span v-if="data._anual" class="text-xs text-gray-400 italic">Año completo</span>
+              <span v-else>{{ MESES[data.mes - 1] }}</span>
+            </template>
           </Column>
-          <Column field="tarifa" header="Tarifa (COP/kWh)" sortable>
+          <Column field="tarifa" header="Tarifa (COP/kWh)">
             <template #body="{ data }">
               <span class="font-mono font-medium text-amber-700">
                 {{ data.tarifa != null ? `$${Number(data.tarifa).toLocaleString('es-CO')}` : '—' }}
@@ -149,12 +151,12 @@
           </Column>
           <Column header="Variación">
             <template #body="{ data, index }">
-              <template v-if="index > 0 && contrato.tarifas[index - 1]?.tarifa != null && data.tarifa != null">
+              <template v-if="index > 0 && tarifasAgrupadas[index - 1]?.tarifa != null && data.tarifa != null">
                 <span
                   class="text-xs font-medium"
-                  :class="data.tarifa < contrato.tarifas[index-1].tarifa ? 'text-green-600' : data.tarifa > contrato.tarifas[index-1].tarifa ? 'text-red-500' : 'text-gray-400'"
+                  :class="data.tarifa < tarifasAgrupadas[index-1].tarifa ? 'text-green-600' : data.tarifa > tarifasAgrupadas[index-1].tarifa ? 'text-red-500' : 'text-gray-400'"
                 >
-                  {{ variacion(contrato.tarifas[index-1].tarifa, data.tarifa) }}
+                  {{ variacion(tarifasAgrupadas[index-1].tarifa, data.tarifa) }}
                 </span>
               </template>
             </template>
@@ -242,6 +244,39 @@ function variacion(prev, curr) {
   if (pct === 0) return '—'
   return `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`
 }
+
+function agruparPorAño(rows, iguales) {
+  const byYear = {}
+  for (const r of rows) {
+    ;(byYear[r.año] = byYear[r.año] || []).push(r)
+  }
+  const result = []
+  for (const año of Object.keys(byYear).sort((a, b) => a - b)) {
+    const filas = byYear[año]
+    if (filas.length > 1 && filas.every(f => iguales(f, filas[0]))) {
+      result.push({ ...filas[0], mes: null, _anual: true })
+    } else {
+      result.push(...filas.map(f => ({ ...f, _anual: false })))
+    }
+  }
+  return result
+}
+
+const tarifasAgrupadas = computed(() => {
+  if (!contrato.value?.tarifas) return []
+  return agruparPorAño(
+    [...contrato.value.tarifas].sort((a, b) => a.año - b.año || a.mes - b.mes),
+    (f, ref) => f.tarifa === ref.tarifa,
+  )
+})
+
+const cantidadesAgrupadas = computed(() => {
+  if (!contrato.value?.compromisos_energia) return []
+  return agruparPorAño(
+    [...contrato.value.compromisos_energia].sort((a, b) => a.año - b.año || a.mes - b.mes),
+    (f, ref) => f.energia_minima === ref.energia_minima && f.energia_maxima === ref.energia_maxima,
+  )
+})
 
 async function cargar() {
   loading.value = true
