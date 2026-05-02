@@ -363,7 +363,7 @@ async function cargar() {
   try {
     const { data } = await api.get(`/ppa/${route.params.id}`)
     contrato.value = data
-    if (data.codigo_sic) cargarAsic(data.codigo_sic)
+    if (data.numero_codigo_contrato || data.codigo_sic) cargarAsic(data)
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e.message, life: 3000 })
   } finally {
@@ -371,10 +371,15 @@ async function cargar() {
   }
 }
 
-async function cargarAsic(codigoSic) {
+async function cargarAsic(c) {
   loadingAsic.value = true
   try {
-    const { data } = await api.get('/asic', { params: { codigo_sic_contrato: codigoSic } })
+    // Primero intenta por numero_codigo_contrato (un contrato PPA agrupa varios SIC)
+    // y si tiene codigo_sic lo usa como filtro adicional de respaldo
+    const params = c.numero_codigo_contrato
+      ? { contrato_interno: c.numero_codigo_contrato }
+      : { codigo_sic_contrato: c.codigo_sic }
+    const { data } = await api.get('/asic', { params })
     asicRows.value = data
   } catch (e) {
     toast.add({ severity: 'warn', summary: 'ASIC', detail: 'No se pudieron cargar registros ASIC', life: 3000 })
