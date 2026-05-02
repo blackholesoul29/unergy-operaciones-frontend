@@ -85,8 +85,11 @@
 
       <!-- ══ CANTIDADES ══ -->
       <TabPanel :header="`Cantidades (${contrato.compromisos_energia?.length || 0})`">
+        <div class="flex justify-end mb-3">
+          <SelectButton v-model="vistaCantidades" :options="VISTAS" optionLabel="label" optionValue="value" />
+        </div>
         <DataTable
-          :value="cantidadesAgrupadas"
+          :value="vistaCantidades === 'anual' ? cantidadesAnuales : cantidadesMensuales"
           stripedRows
           class="text-sm"
           paginator
@@ -96,26 +99,24 @@
           emptyMessage="Sin compromisos de energía registrados."
         >
           <Column field="año" header="Año" style="width:70px" />
-          <Column header="Mes" style="width:130px">
+          <Column v-if="vistaCantidades === 'mensual'" header="Mes" style="width:130px">
+            <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
+          </Column>
+          <Column header="Mín (MWh/mes)">
             <template #body="{ data }">
-              <span v-if="data._anual" class="text-xs text-gray-400 italic">Año completo</span>
-              <span v-else>{{ MESES[data.mes - 1] }}</span>
+              {{ data.energia_minima != null ? Number(data.energia_minima).toLocaleString('es-CO', { maximumFractionDigits: 1 }) : '—' }}
+              <span v-if="vistaCantidades === 'anual' && data._promedio" class="text-xs text-gray-400 ml-1">prom.</span>
             </template>
           </Column>
-          <Column field="energia_minima" header="Mín (MWh/mes)">
+          <Column header="Máx (MWh/mes)">
             <template #body="{ data }">
-              {{ data.energia_minima != null ? Number(data.energia_minima).toLocaleString('es-CO') : '—' }}
-            </template>
-          </Column>
-          <Column field="energia_maxima" header="Máx (MWh/mes)">
-            <template #body="{ data }">
-              {{ data.energia_maxima != null ? Number(data.energia_maxima).toLocaleString('es-CO') : '—' }}
+              {{ data.energia_maxima != null ? Number(data.energia_maxima).toLocaleString('es-CO', { maximumFractionDigits: 1 }) : '—' }}
+              <span v-if="vistaCantidades === 'anual' && data._promedio" class="text-xs text-gray-400 ml-1">prom.</span>
             </template>
           </Column>
           <Column header="Rango">
             <template #body="{ data }">
-              <div v-if="data.energia_minima != null && data.energia_maxima != null"
-                class="text-xs text-gray-400">
+              <div v-if="data.energia_minima != null && data.energia_maxima != null" class="text-xs text-gray-400">
                 {{ ((data.energia_maxima / data.energia_minima - 1) * 100).toFixed(0) }}% flex
               </div>
             </template>
@@ -125,8 +126,11 @@
 
       <!-- ══ TARIFAS ══ -->
       <TabPanel :header="`Tarifas (${contrato.tarifas?.length || 0})`">
+        <div class="flex justify-end mb-3">
+          <SelectButton v-model="vistaTarifas" :options="VISTAS" optionLabel="label" optionValue="value" />
+        </div>
         <DataTable
-          :value="tarifasAgrupadas"
+          :value="vistaTarifas === 'anual' ? tarifasAnuales : tarifasMensuales"
           stripedRows
           class="text-sm"
           paginator
@@ -136,27 +140,26 @@
           emptyMessage="Sin tarifas registradas."
         >
           <Column field="año" header="Año" style="width:70px" />
-          <Column header="Mes" style="width:130px">
-            <template #body="{ data }">
-              <span v-if="data._anual" class="text-xs text-gray-400 italic">Año completo</span>
-              <span v-else>{{ MESES[data.mes - 1] }}</span>
-            </template>
+          <Column v-if="vistaTarifas === 'mensual'" header="Mes" style="width:130px">
+            <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
           </Column>
-          <Column field="tarifa" header="Tarifa (COP/kWh)">
+          <Column :header="vistaTarifas === 'anual' ? 'Tarifa (COP/kWh)' : 'Tarifa (COP/kWh)'">
             <template #body="{ data }">
               <span class="font-mono font-medium text-amber-700">
-                {{ data.tarifa != null ? `$${Number(data.tarifa).toLocaleString('es-CO')}` : '—' }}
+                {{ data.tarifa != null ? `$${Number(data.tarifa).toLocaleString('es-CO', { maximumFractionDigits: 2 })}` : '—' }}
               </span>
+              <span v-if="vistaTarifas === 'anual' && data._promedio" class="text-xs text-gray-400 ml-1">prom.</span>
             </template>
           </Column>
           <Column header="Variación">
             <template #body="{ data, index }">
-              <template v-if="index > 0 && tarifasAgrupadas[index - 1]?.tarifa != null && data.tarifa != null">
+              <template v-if="index > 0">
                 <span
+                  v-if="currentTarifas[index - 1]?.tarifa != null && data.tarifa != null"
                   class="text-xs font-medium"
-                  :class="data.tarifa < tarifasAgrupadas[index-1].tarifa ? 'text-green-600' : data.tarifa > tarifasAgrupadas[index-1].tarifa ? 'text-red-500' : 'text-gray-400'"
+                  :class="data.tarifa < currentTarifas[index-1].tarifa ? 'text-green-600' : data.tarifa > currentTarifas[index-1].tarifa ? 'text-red-500' : 'text-gray-400'"
                 >
-                  {{ variacion(tarifasAgrupadas[index-1].tarifa, data.tarifa) }}
+                  {{ variacion(currentTarifas[index-1].tarifa, data.tarifa) }}
                 </span>
               </template>
             </template>
@@ -212,15 +215,19 @@ import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Divider from 'primevue/divider'
+import SelectButton from 'primevue/selectbutton'
 import InfoField from '@/components/InfoField.vue'
 import api from '@/api/client'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+const VISTAS = [{ label: 'Mensual', value: 'mensual' }, { label: 'Anual', value: 'anual' }]
 
 const route = useRoute()
 const toast = useToast()
 const contrato = ref(null)
 const loading = ref(true)
+const vistaCantidades = ref('mensual')
+const vistaTarifas = ref('mensual')
 
 const duracion = computed(() => {
   if (!contrato.value?.fecha_inicio || !contrato.value?.fecha_fin) return null
@@ -245,37 +252,45 @@ function variacion(prev, curr) {
   return `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`
 }
 
-function agruparPorAño(rows, iguales) {
+function promedioAnual(rows, campos) {
   const byYear = {}
   for (const r of rows) {
     ;(byYear[r.año] = byYear[r.año] || []).push(r)
   }
-  const result = []
-  for (const año of Object.keys(byYear).sort((a, b) => a - b)) {
+  return Object.keys(byYear).sort((a, b) => a - b).map(año => {
     const filas = byYear[año]
-    if (filas.length > 1 && filas.every(f => iguales(f, filas[0]))) {
-      result.push({ ...filas[0], mes: null, _anual: true })
-    } else {
-      result.push(...filas.map(f => ({ ...f, _anual: false })))
+    const uniforme = campos.every(c => filas.every(f => f[c] === filas[0][c]))
+    const entry = { año: Number(año), _promedio: !uniforme }
+    for (const c of campos) {
+      const sum = filas.reduce((acc, f) => acc + (f[c] ?? 0), 0)
+      entry[c] = sum / filas.length
     }
-  }
-  return result
+    return entry
+  })
 }
 
-const tarifasAgrupadas = computed(() => {
+const tarifasMensuales = computed(() => {
   if (!contrato.value?.tarifas) return []
-  return agruparPorAño(
-    [...contrato.value.tarifas].sort((a, b) => a.año - b.año || a.mes - b.mes),
-    (f, ref) => f.tarifa === ref.tarifa,
-  )
+  return [...contrato.value.tarifas].sort((a, b) => a.año - b.año || a.mes - b.mes)
 })
 
-const cantidadesAgrupadas = computed(() => {
+const tarifasAnuales = computed(() => {
+  if (!contrato.value?.tarifas) return []
+  return promedioAnual(tarifasMensuales.value, ['tarifa'])
+})
+
+const currentTarifas = computed(() =>
+  vistaTarifas.value === 'anual' ? tarifasAnuales.value : tarifasMensuales.value
+)
+
+const cantidadesMensuales = computed(() => {
   if (!contrato.value?.compromisos_energia) return []
-  return agruparPorAño(
-    [...contrato.value.compromisos_energia].sort((a, b) => a.año - b.año || a.mes - b.mes),
-    (f, ref) => f.energia_minima === ref.energia_minima && f.energia_maxima === ref.energia_maxima,
-  )
+  return [...contrato.value.compromisos_energia].sort((a, b) => a.año - b.año || a.mes - b.mes)
+})
+
+const cantidadesAnuales = computed(() => {
+  if (!contrato.value?.compromisos_energia) return []
+  return promedioAnual(cantidadesMensuales.value, ['energia_minima', 'energia_maxima'])
 })
 
 async function cargar() {
