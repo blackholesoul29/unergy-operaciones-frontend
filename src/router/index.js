@@ -16,6 +16,10 @@ const routes = [
   { path: '/fallas/:id', name: 'FallaDetalle', component: () => import('@/views/Fallas/FallaDetailView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/liquidaciones', name: 'Liquidaciones', component: () => import('@/views/Liquidaciones/LiquidacionesListView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/liquidaciones/:id', name: 'LiquidacionDetalle', component: () => import('@/views/Liquidaciones/LiquidacionDetailView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
+  { path: '/mem/gescon',       name: 'MemGescon',      component: () => import('@/views/MEM/GesconView.vue') },
+  { path: '/mem/fronteras',    name: 'MemFronteras',   component: () => import('@/views/MEM/FronterasView.vue') },
+  { path: '/mem/precio-bolsa', name: 'MemPrecioBolsa', component: () => import('@/views/MEM/PrecioBolsaView.vue') },
+  { path: '/mem/balance',      name: 'MemBalance',     component: () => import('@/views/MEM/BalanceView.vue') },
   { path: '/:pathMatch(.*)*', redirect: '/dashboard' },
 ]
 

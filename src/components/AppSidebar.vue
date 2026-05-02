@@ -7,17 +7,26 @@
     </div>
 
     <!-- Nav -->
-    <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-      <RouterLink
-        v-for="item in navItems"
-        :key="item.to"
-        :to="item.to"
-        class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 nav-item"
-        active-class="nav-active"
-      >
-        <i :class="[item.icon, 'text-base w-5 text-center shrink-0']" />
-        {{ item.label }}
-      </RouterLink>
+    <nav class="flex-1 px-3 py-4 overflow-y-auto">
+      <template v-for="group in navGroups" :key="group.label || '__main__'">
+        <!-- Separador de sección -->
+        <div v-if="group.label" class="px-3 pt-4 pb-1.5">
+          <span class="text-[10px] font-bold uppercase tracking-widest" style="color: rgba(145,91,216,0.7);">
+            {{ group.label }}
+          </span>
+        </div>
+
+        <RouterLink
+          v-for="item in group.items"
+          :key="item.to"
+          :to="item.to"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-150 nav-item"
+          active-class="nav-active"
+        >
+          <i :class="[item.icon, 'text-base w-5 text-center shrink-0']" />
+          {{ item.label }}
+        </RouterLink>
+      </template>
     </nav>
 
     <!-- User footer -->
@@ -47,16 +56,34 @@ const initials = computed(() => {
   return name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
 })
 
-const all = [
-  { to: '/dashboard',     label: 'Dashboard',     icon: 'pi pi-home' },
-  { to: '/clientes',      label: 'Clientes',       icon: 'pi pi-building' },
-  { to: '/proyectos',     label: 'Proyectos',      icon: 'pi pi-bolt' },
-  { to: '/servicios',     label: 'Servicios',      icon: 'pi pi-file-edit' },
-  { to: '/fallas',        label: 'Monitoreo',         icon: 'pi pi-exclamation-triangle', roles: ['admin', 'operaciones', 'monitoreo'] },
-  { to: '/liquidaciones', label: 'Liquidaciones',  icon: 'pi pi-dollar',               roles: ['admin', 'liquidaciones'] },
+const ALL_GROUPS = [
+  {
+    items: [
+      { to: '/dashboard',     label: 'Dashboard',     icon: 'pi pi-home' },
+      { to: '/clientes',      label: 'Clientes',       icon: 'pi pi-building' },
+      { to: '/proyectos',     label: 'Proyectos',      icon: 'pi pi-bolt' },
+      { to: '/servicios',     label: 'Servicios',      icon: 'pi pi-file-edit' },
+      { to: '/fallas',        label: 'Monitoreo',      icon: 'pi pi-exclamation-triangle', roles: ['admin', 'operaciones', 'monitoreo'] },
+      { to: '/liquidaciones', label: 'Liquidaciones',  icon: 'pi pi-dollar',               roles: ['admin', 'liquidaciones'] },
+    ],
+  },
+  {
+    label: 'MEM',
+    items: [
+      { to: '/mem/gescon',       label: 'GESCON',          icon: 'pi pi-book' },
+      { to: '/mem/fronteras',    label: 'Fronteras',       icon: 'pi pi-globe' },
+      { to: '/mem/precio-bolsa', label: 'Precio de bolsa', icon: 'pi pi-chart-line' },
+      { to: '/mem/balance',      label: 'Balance',         icon: 'pi pi-chart-bar' },
+    ],
+  },
 ]
 
-const navItems = computed(() => all.filter(i => !i.roles || auth.can(...i.roles)))
+const navGroups = computed(() =>
+  ALL_GROUPS.map(g => ({
+    ...g,
+    items: g.items.filter(i => !i.roles || auth.can(...i.roles)),
+  })).filter(g => g.items.length > 0)
+)
 </script>
 
 <style scoped>
