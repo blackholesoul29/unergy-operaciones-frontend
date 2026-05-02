@@ -6,6 +6,12 @@
       <p class="text-xs text-gray-400 mt-0.5">Gestión de contratos y servicios por tipo</p>
     </div>
 
+    <!-- Acción principal -->
+    <div class="flex justify-end">
+      <Button v-if="servicioActivo === 'ppa'" label="Nuevo contrato PPA" icon="pi pi-plus"
+        class="bg-amber-500 border-amber-500 hover:bg-amber-600" @click="showWizard = true" />
+    </div>
+
     <!-- Tarjetas de servicio -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       <div
@@ -114,6 +120,10 @@
       </DataTable>
     </template>
 
+    <!-- Wizard nuevo contrato -->
+    <PPAContratoWizard v-if="showWizard" :visible="showWizard"
+      @cerrar="showWizard = false" @creado="onContratoCreado" />
+
     <!-- Próximamente para otros servicios -->
     <template v-else>
       <div class="flex flex-col items-center py-16 gap-3 text-gray-400">
@@ -137,6 +147,7 @@ import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+import PPAContratoWizard from './PPAContratoWizard.vue'
 import api from '@/api/client'
 
 const router = useRouter()
@@ -156,6 +167,7 @@ const TIPOS_CONTRATO = [
 ]
 
 const servicioActivo = ref('ppa')
+const showWizard = ref(false)
 const servicioInfo = computed(() => SERVICIOS.find(s => s.key === servicioActivo.value))
 const contratos = ref([])
 const loading = ref(false)
@@ -185,6 +197,10 @@ let buscarTimeout = null
 function buscar() {
   clearTimeout(buscarTimeout)
   buscarTimeout = setTimeout(cargar, 350)
+}
+
+function onContratoCreado() {
+  cargar()
 }
 
 async function cargar() {
