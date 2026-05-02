@@ -1,12 +1,12 @@
 <template>
-  <Dialog v-model:visible="visible" modal :style="{ width: '760px' }" :breakpoints="{ '900px': '95vw' }"
+  <Dialog v-model:visible="visible" modal :style="{ width: '780px' }" :breakpoints="{ '900px': '95vw' }"
     :header="null" :closable="true" @hide="$emit('cerrar')">
 
     <!-- Step indicator -->
     <div class="px-6 pt-5 pb-4 border-b border-gray-100">
       <div class="flex items-start">
         <template v-for="(s, i) in STEPS" :key="i">
-          <div class="flex flex-col items-center gap-1.5 min-w-0" style="flex:1">
+          <div class="flex flex-col items-center gap-1.5" style="flex:1">
             <div class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all"
               :class="{
                 'bg-amber-500 text-white shadow-sm shadow-amber-200': step === i,
@@ -27,81 +27,74 @@
       </div>
     </div>
 
-    <!-- Contenido del paso -->
+    <!-- Contenido -->
     <div class="px-6 py-5 min-h-64">
 
-      <!-- ── PASO 0: Proyecto e identificación ────────────────────────────── -->
+      <!-- ── PASO 0: Proyectos e identificación ─────────────────────────── -->
       <template v-if="step === 0">
-        <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-4">Proyecto e identificación</p>
+        <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-4">Proyectos e identificación</p>
         <div class="space-y-4">
           <div class="flex flex-col gap-1">
-            <label class="field-label">Proyecto <span class="text-red-400">*</span></label>
-            <AutoComplete
-              v-model="proyectoSeleccionado"
-              :suggestions="proyectosSugeridos"
+            <label class="field-label">Proyectos asociados <span class="text-red-400">*</span></label>
+            <MultiSelect
+              v-model="proyectosSeleccionados"
+              :options="todosProyectos"
               optionLabel="nombre_comercial"
-              placeholder="Buscar proyecto…"
-              @complete="buscarProyectos"
-              @item-select="form.proyecto_id = $event.value.id"
+              placeholder="Buscar y seleccionar proyectos…"
+              filter
+              filterPlaceholder="Buscar proyecto"
+              :maxSelectedLabels="3"
+              selectedItemsLabel="{0} proyectos seleccionados"
               class="w-full"
-              dropdown
+              display="chip"
             />
-            <p v-if="errores.proyecto_id" class="text-xs text-red-400 mt-0.5">{{ errores.proyecto_id }}</p>
+            <p v-if="errores.proyectos" class="text-xs text-red-400 mt-0.5">{{ errores.proyectos }}</p>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Número de contrato</label>
-              <InputText v-model="form.numero_codigo_contrato" placeholder="Ej: PPA-2024-001" class="w-full" />
+              <InputText v-model="form.numero_codigo_contrato" placeholder="Ej: UNERGY 001-2023" class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Nombre interno</label>
-              <InputText v-model="form.nombre_interno" placeholder="Ej: PPA Planta Laureles" class="w-full" />
+              <InputText v-model="form.nombre_interno" placeholder="Ej: Terpel 1" class="w-full" />
             </div>
-          </div>
-          <div class="flex flex-col gap-1 w-56">
-            <label class="field-label">Tipo de contrato</label>
-            <Select v-model="form.tipo_contrato" :options="TIPOS_CONTRATO"
-              optionLabel="label" optionValue="value" placeholder="Seleccionar" showClear class="w-full" />
           </div>
         </div>
       </template>
 
-      <!-- ── PASO 1: Partes ────────────────────────────────────────────────── -->
+      <!-- ── PASO 1: Partes ─────────────────────────────────────────────── -->
       <template v-if="step === 1">
         <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-4">Partes del contrato</p>
-        <div class="grid grid-cols-2 gap-x-6 gap-y-4">
-          <div class="col-span-2">
-            <div class="grid grid-cols-2 gap-1 mb-1">
-              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Comprador</span>
-              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Vendedor</span>
+        <div class="grid grid-cols-2 gap-1 mb-1 px-1">
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Comprador</span>
+          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Vendedor</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 p-4 rounded-lg bg-gray-50">
+          <div class="space-y-3">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Nombre / Razón social</label>
+              <InputText v-model="form.comprador_nombre" class="w-full" />
             </div>
-            <div class="grid grid-cols-2 gap-4 p-4 rounded-lg bg-gray-50">
-              <div class="space-y-3">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Nombre / Razón social</label>
-                  <InputText v-model="form.comprador_nombre" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">NIT</label>
-                  <InputText v-model="form.comprador_nit" class="w-full" />
-                </div>
-              </div>
-              <div class="space-y-3">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Nombre / Razón social</label>
-                  <InputText v-model="form.vendedor_nombre" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">NIT</label>
-                  <InputText v-model="form.vendedor_nit" class="w-full" />
-                </div>
-              </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">NIT</label>
+              <InputText v-model="form.comprador_nit" class="w-full" />
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Nombre / Razón social</label>
+              <InputText v-model="form.vendedor_nombre" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">NIT</label>
+              <InputText v-model="form.vendedor_nit" class="w-full" />
             </div>
           </div>
         </div>
       </template>
 
-      <!-- ── PASO 2: Condiciones comerciales ──────────────────────────────── -->
+      <!-- ── PASO 2: Condiciones comerciales ───────────────────────────── -->
       <template v-if="step === 2">
         <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-4">Condiciones comerciales</p>
         <div class="space-y-4">
@@ -162,9 +155,11 @@
         </div>
       </template>
 
-      <!-- ── PASO 3: GESCON / ASIC + Resumen ──────────────────────────────── -->
+      <!-- ── PASO 3: GESCON + Resumen ───────────────────────────────────── -->
       <template v-if="step === 3">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">Registro GESCON / ASIC <span class="normal-case text-gray-300 font-normal">(opcional)</span></p>
+        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
+          Registro GESCON / ASIC <span class="normal-case font-normal">(opcional)</span>
+        </p>
         <div class="grid grid-cols-3 gap-4 mb-6">
           <div class="flex flex-col gap-1">
             <label class="field-label">Código SIC</label>
@@ -195,11 +190,19 @@
         <!-- Resumen -->
         <div class="rounded-lg border border-amber-100 bg-amber-50 p-4">
           <p class="text-xs font-semibold text-amber-700 mb-3">Resumen del contrato</p>
-          <div class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-gray-600">
-            <ResumenFila label="Proyecto" :value="proyectoSeleccionado?.nombre_comercial" />
-            <ResumenFila label="Nombre interno" :value="form.nombre_interno" />
+          <div class="mb-2">
+            <span class="text-xs text-gray-400">Proyectos:</span>
+            <div class="flex flex-wrap gap-1 mt-1">
+              <span v-for="p in proyectosSeleccionados" :key="p.id"
+                class="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                {{ p.nombre_comercial }}
+              </span>
+              <span v-if="!proyectosSeleccionados.length" class="text-xs text-gray-300">—</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs text-gray-600 mt-3">
             <ResumenFila label="Número" :value="form.numero_codigo_contrato" />
-            <ResumenFila label="Tipo" :value="form.tipo_contrato" />
+            <ResumenFila label="Nombre interno" :value="form.nombre_interno" />
             <ResumenFila label="Comprador" :value="form.comprador_nombre" />
             <ResumenFila label="Vendedor" :value="form.vendedor_nombre" />
             <ResumenFila label="Inicio despacho" :value="formatFecha(form.fecha_inicio)" />
@@ -214,57 +217,42 @@
 
     </div>
 
-    <!-- Footer navegación -->
+    <!-- Footer -->
     <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
       <Button v-if="step > 0" label="Anterior" icon="pi pi-arrow-left" severity="secondary" outlined @click="step--" />
       <span v-else />
       <div class="flex gap-2">
         <Button label="Cancelar" severity="secondary" text @click="$emit('cerrar')" />
-        <Button
-          v-if="step < STEPS.length - 1"
-          label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
-          @click="avanzar"
-        />
-        <Button
-          v-else
-          label="Guardar contrato" icon="pi pi-check"
-          :loading="guardando"
-          @click="guardar"
-        />
+        <Button v-if="step < STEPS.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right" @click="avanzar" />
+        <Button v-else label="Guardar contrato" icon="pi pi-check" :loading="guardando" @click="guardar" />
       </div>
     </div>
-
   </Dialog>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
-import AutoComplete from 'primevue/autocomplete'
+import MultiSelect from 'primevue/multiselect'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import api from '@/api/client'
 
-const props = defineProps({ visible: Boolean })
+defineProps({ visible: Boolean })
 const emit = defineEmits(['update:visible', 'cerrar', 'creado'])
 
 const toast = useToast()
 
 const STEPS = [
-  { label: 'Proyecto' },
+  { label: 'Proyectos' },
   { label: 'Partes' },
   { label: 'Condiciones' },
   { label: 'GESCON' },
-]
-
-const TIPOS_CONTRATO = [
-  { label: 'Venta', value: 'venta' },
-  { label: 'Compra', value: 'compra' },
 ]
 
 const PERIODICIDADES = [
@@ -276,13 +264,12 @@ const PERIODICIDADES = [
 
 const step = ref(0)
 const guardando = ref(false)
-const proyectoSeleccionado = ref(null)
-const proyectosSugeridos = ref([])
+const todosProyectos = ref([])
+const proyectosSeleccionados = ref([])
 const errores = reactive({})
 
 const form = reactive({
-  proyecto_id: null,
-  numero_codigo_contrato: null, nombre_interno: null, tipo_contrato: null,
+  numero_codigo_contrato: null, nombre_interno: null,
   comprador_nombre: null, comprador_nit: null,
   vendedor_nombre: null, vendedor_nit: null,
   fecha_inicio: null, fecha_fin: null,
@@ -295,19 +282,10 @@ const form = reactive({
   gescon_precio: null, gescon_cantidades_kwh: null,
 })
 
-async function buscarProyectos(event) {
-  try {
-    const { data } = await api.get('/proyectos', { params: { q: event.query, size: 20 } })
-    proyectosSugeridos.value = data.items
-  } catch {
-    proyectosSugeridos.value = []
-  }
-}
-
 function validarPaso0() {
-  errores.proyecto_id = null
-  if (!form.proyecto_id) {
-    errores.proyecto_id = 'Selecciona un proyecto para continuar'
+  errores.proyectos = null
+  if (!proyectosSeleccionados.value.length) {
+    errores.proyectos = 'Selecciona al menos un proyecto'
     return false
   }
   return true
@@ -332,6 +310,7 @@ async function guardar() {
     for (const k of ['fecha_inicio', 'fecha_fin', 'gescon_fecha_inicio', 'gescon_fecha_fin']) {
       payload[k] = formatFecha(form[k])
     }
+    payload.proyecto_ids = proyectosSeleccionados.value.map(p => p.id)
     const { data } = await api.post('/ppa', payload)
     toast.add({ severity: 'success', summary: 'Contrato creado', detail: data.nombre_interno || data.numero_codigo_contrato, life: 3000 })
     emit('creado', data)
@@ -342,6 +321,13 @@ async function guardar() {
     guardando.value = false
   }
 }
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/proyectos', { params: { size: 500 } })
+    todosProyectos.value = data.items
+  } catch { /* silencioso */ }
+})
 </script>
 
 <script>
