@@ -68,6 +68,11 @@ const ALL_GROUPS = [
     ],
   },
   {
+    items: [
+      { to: '/alertas', label: 'Alertas', icon: 'pi pi-exclamation-circle' },
+    ],
+  },
+  {
     label: 'MEM',
     items: [
       { to: '/mem/gescon',       label: 'GESCON',          icon: 'pi pi-book' },
