@@ -127,6 +127,15 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import api from '@/api/client.js'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Button from 'primevue/button'
+import Tag from 'primevue/tag'
+import InputText from 'primevue/inputtext'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import SelectButton from 'primevue/selectbutton'
+import Select from 'primevue/select'
 
 const loading = ref(false)
 const rows = ref([])
