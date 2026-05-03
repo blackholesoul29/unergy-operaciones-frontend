@@ -14,48 +14,109 @@
           <p v-if="proyectoNombre" class="text-xs text-gray-400 mt-0.5 ml-11">{{ proyectoNombre }}</p>
         </div>
       </div>
-      <Button label="Nuevo contrato" icon="pi pi-plus" @click="abrirFormNuevo" />
+      <Button v-if="tabActivo === 0" label="Nuevo contrato" icon="pi pi-plus" @click="abrirFormNuevo" />
     </div>
 
-    <!-- Lista de contratos -->
-    <div v-if="loading" class="flex justify-center py-16"><ProgressSpinner /></div>
+    <!-- Tabs -->
+    <TabView v-model:activeIndex="tabActivo">
 
-    <div v-else-if="contratos.length === 0" class="flex flex-col items-center py-16 gap-3 text-gray-400">
-      <i class="pi pi-bolt text-4xl text-amber-300" />
-      <p class="text-sm">No hay contratos PPA registrados para este proyecto.</p>
-      <Button label="Registrar primer contrato" icon="pi pi-plus" outlined @click="abrirFormNuevo" />
-    </div>
+      <!-- Tab 1: Contratos asociados -->
+      <TabPanel header="Contratos asociados">
+        <div v-if="loading" class="flex justify-center py-16"><ProgressSpinner /></div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div v-for="c in contratos" :key="c.id"
-        class="border border-gray-100 rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition-shadow">
-        <div class="flex items-start justify-between mb-3">
-          <div>
-            <p class="font-semibold text-gray-800">{{ c.nombre_interno || c.numero_codigo_contrato || 'Sin nombre' }}</p>
-            <p v-if="c.nombre_interno && c.numero_codigo_contrato" class="text-xs text-gray-400 mt-0.5">{{ c.numero_codigo_contrato }}</p>
+        <div v-else-if="contratos.length === 0" class="flex flex-col items-center py-16 gap-3 text-gray-400">
+          <i class="pi pi-bolt text-4xl text-amber-300" />
+          <p class="text-sm">No hay contratos PPA registrados para este proyecto.</p>
+          <Button label="Registrar primer contrato" icon="pi pi-plus" outlined @click="abrirFormNuevo" />
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+          <div v-for="c in contratos" :key="c.id"
+            class="border border-gray-100 rounded-xl p-5 bg-white shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-start justify-between mb-3">
+              <div>
+                <p class="font-semibold text-gray-800">{{ c.nombre_interno || c.numero_codigo_contrato || 'Sin nombre' }}</p>
+                <p v-if="c.nombre_interno && c.numero_codigo_contrato" class="text-xs text-gray-400 mt-0.5">{{ c.numero_codigo_contrato }}</p>
+              </div>
+              <div class="flex items-center gap-1">
+                <Tag :value="c.tipo_contrato || '—'" :severity="c.tipo_contrato === 'venta' ? 'success' : 'info'" class="text-xs" />
+                <Button icon="pi pi-pencil" text size="small" severity="secondary" @click="abrirFormEditar(c)" />
+                <Button icon="pi pi-trash" text size="small" severity="danger" @click="confirmarEliminar(c)" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
+              <span><b class="text-gray-600">Comprador:</b> {{ c.comprador_nombre || '—' }}</span>
+              <span><b class="text-gray-600">Vendedor:</b> {{ c.vendedor_nombre || '—' }}</span>
+              <span><b class="text-gray-600">Vigencia:</b> {{ formatFecha(c.fecha_inicio) }} → {{ formatFecha(c.fecha_fin) }}</span>
+              <span><b class="text-gray-600">Tarifa base:</b> {{ c.tarifa_base != null ? `$${c.tarifa_base}/kWh` : '—' }}</span>
+              <span><b class="text-gray-600">Índice:</b> {{ c.indice_indexacion || '—' }}</span>
+              <span><b class="text-gray-600">Tiempo pago:</b> {{ c.tiempo_pago != null ? `${c.tiempo_pago} días` : '—' }}</span>
+            </div>
+            <div v-if="c.tarifas?.length || c.compromisos_energia?.length" class="mt-3 flex gap-2">
+              <Tag v-if="c.tarifas?.length" :value="`${c.tarifas.length} tarifas`" severity="secondary" class="text-xs" />
+              <Tag v-if="c.compromisos_energia?.length" :value="`${c.compromisos_energia.length} compromisos`" severity="secondary" class="text-xs" />
+            </div>
           </div>
-          <div class="flex items-center gap-1">
-            <Tag :value="c.tipo_contrato || '—'" :severity="c.tipo_contrato === 'venta' ? 'success' : 'info'" class="text-xs" />
-            <Button icon="pi pi-pencil" text size="small" severity="secondary" @click="abrirFormEditar(c)" />
-            <Button icon="pi pi-trash" text size="small" severity="danger" @click="confirmarEliminar(c)" />
-          </div>
         </div>
-        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
-          <span><b class="text-gray-600">Comprador:</b> {{ c.comprador_nombre || '—' }}</span>
-          <span><b class="text-gray-600">Vendedor:</b> {{ c.vendedor_nombre || '—' }}</span>
-          <span><b class="text-gray-600">Vigencia:</b> {{ formatFecha(c.fecha_inicio) }} → {{ formatFecha(c.fecha_fin) }}</span>
-          <span><b class="text-gray-600">Tarifa base:</b> {{ c.tarifa_base != null ? `$${c.tarifa_base}/kWh` : '—' }}</span>
-          <span><b class="text-gray-600">Índice:</b> {{ c.indice_indexacion || '—' }}</span>
-          <span><b class="text-gray-600">Tiempo pago:</b> {{ c.tiempo_pago != null ? `${c.tiempo_pago} días` : '—' }}</span>
-        </div>
-        <div v-if="c.tarifas?.length || c.compromisos_energia?.length" class="mt-3 flex gap-2">
-          <Tag v-if="c.tarifas?.length" :value="`${c.tarifas.length} tarifas`" severity="secondary" class="text-xs" />
-          <Tag v-if="c.compromisos_energia?.length" :value="`${c.compromisos_energia.length} compromisos`" severity="secondary" class="text-xs" />
-        </div>
-      </div>
-    </div>
+      </TabPanel>
 
-    <!-- Dialog formulario -->
+      <!-- Tab 2: ASIC -->
+      <TabPanel header="ASIC">
+        <div v-if="loadingAsic" class="flex justify-center py-16"><ProgressSpinner /></div>
+
+        <div v-else-if="asicRows.length === 0" class="flex flex-col items-center py-16 gap-3 text-gray-400">
+          <i class="pi pi-file-edit text-4xl text-blue-300" />
+          <p class="text-sm">No hay registros GESCON/ASIC asociados a este proyecto.</p>
+        </div>
+
+        <div v-else class="pt-4">
+          <p class="text-xs text-gray-400 mb-3">{{ asicRows.length }} registro{{ asicRows.length !== 1 ? 's' : '' }} en GESCON</p>
+          <DataTable :value="asicRows" size="small" stripedRows :rowHover="true"
+            class="text-sm" scrollable scrollHeight="500px">
+            <Column field="codigo_sic_contrato" header="SIC" style="min-width:90px" />
+            <Column field="contrato_interno" header="Contrato" style="min-width:120px" />
+            <Column header="Tipo" style="min-width:110px">
+              <template #body="{ data }">
+                <Tag :value="data.tipo_solicitud || '—'" :severity="tipoSeverity(data.tipo_solicitud)" class="text-xs" />
+              </template>
+            </Column>
+            <Column field="requerimiento_asic" header="Req." style="min-width:90px" />
+            <Column header="Inicio" style="min-width:95px">
+              <template #body="{ data }">{{ formatFecha(data.fecha_inicio) }}</template>
+            </Column>
+            <Column header="Fin" style="min-width:95px">
+              <template #body="{ data }">
+                <span :class="esVencido(data.fecha_fin) ? 'text-red-500 font-medium' : ''">
+                  {{ formatFecha(data.fecha_fin) }}
+                </span>
+              </template>
+            </Column>
+            <Column header="Estado" style="min-width:110px">
+              <template #body="{ data }">
+                <Tag :value="data.estado_solicitud || '—'" :severity="estadoSeverity(data.estado_solicitud)" class="text-xs" />
+              </template>
+            </Column>
+            <Column header="Desp. %" style="min-width:80px">
+              <template #body="{ data }">
+                {{ data.porcentaje_fncer != null ? `${data.porcentaje_fncer}%` : '—' }}
+              </template>
+            </Column>
+            <Column header="Link" style="min-width:70px">
+              <template #body="{ data }">
+                <a v-if="data.link_archivo" :href="data.link_archivo" target="_blank"
+                  class="text-blue-500 hover:text-blue-700">
+                  <i class="pi pi-external-link" />
+                </a>
+                <span v-else class="text-gray-300">—</span>
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+      </TabPanel>
+
+    </TabView>
+
+    <!-- Dialog formulario PPA -->
     <Dialog v-model:visible="showForm" :header="editando ? 'Editar contrato PPA' : 'Nuevo contrato PPA'"
       modal :style="{ width: '780px' }" :breakpoints="{ '960px': '90vw' }" @hide="resetForm">
       <div class="space-y-5 pt-1">
@@ -233,6 +294,10 @@ import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import ConfirmDialog from 'primevue/confirmdialog'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
 import api from '@/api/client'
 
 const route = useRoute()
@@ -252,11 +317,20 @@ const PERIODICIDADES = [
 
 const proyectoId = Number(route.params.id)
 const proyectoNombre = ref('')
+const tabActivo = ref(0)
+
+// --- Tab Contratos asociados ---
 const contratos = ref([])
 const loading = ref(true)
 const showForm = ref(false)
 const guardando = ref(false)
 const editando = ref(null)
+
+// --- Tab ASIC ---
+const asicRows = ref([])
+const loadingAsic = ref(false)
+
+const hoy = new Date().toISOString().slice(0, 10)
 
 const FORM_EMPTY = {
   numero_codigo_contrato: null, nombre_interno: null, tipo_contrato: null,
@@ -295,6 +369,21 @@ function abrirFormEditar(contrato) {
 function formatFecha(f) {
   if (!f) return '—'
   return String(f).slice(0, 10)
+}
+
+function esVencido(fecha) {
+  if (!fecha) return false
+  return String(fecha).slice(0, 10) < hoy
+}
+
+function tipoSeverity(tipo) {
+  const map = { registro: 'success', modificacion: 'info', terminacion: 'danger', desistimiento: 'warn' }
+  return map[tipo] || 'secondary'
+}
+
+function estadoSeverity(estado) {
+  const map = { publicado: 'success', en_proceso: 'info', rechazado: 'danger', desistido: 'warn' }
+  return map[estado] || 'secondary'
 }
 
 function toISODate(v) {
@@ -356,11 +445,24 @@ async function cargarContratos() {
   contratos.value = data
 }
 
+async function cargarAsic() {
+  loadingAsic.value = true
+  try {
+    const { data } = await api.get('/asic', { params: { proyecto_id: proyectoId, size: 200 } })
+    asicRows.value = Array.isArray(data) ? data : (data.items ?? [])
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error ASIC', detail: e.message, life: 4000 })
+  } finally {
+    loadingAsic.value = false
+  }
+}
+
 onMounted(async () => {
   try {
     const [proyRes] = await Promise.all([
       api.get(`/proyectos/${proyectoId}`),
       cargarContratos(),
+      cargarAsic(),
     ])
     proyectoNombre.value = proyRes.data.nombre_comercial
   } catch (e) {
