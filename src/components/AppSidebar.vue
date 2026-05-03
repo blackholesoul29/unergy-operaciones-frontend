@@ -59,17 +59,22 @@ const initials = computed(() => {
 const ALL_GROUPS = [
   {
     items: [
-      { to: '/dashboard',     label: 'Dashboard',     icon: 'pi pi-home' },
-      { to: '/clientes',      label: 'Clientes',       icon: 'pi pi-building' },
-      { to: '/proyectos',     label: 'Proyectos',      icon: 'pi pi-bolt' },
-      { to: '/servicios',     label: 'Servicios',      icon: 'pi pi-file-edit' },
-      { to: '/fallas',        label: 'Monitoreo',      icon: 'pi pi-exclamation-triangle', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/liquidaciones', label: 'Liquidaciones',  icon: 'pi pi-dollar',               roles: ['admin', 'liquidaciones'] },
+      { to: '/dashboard', label: 'Dashboard', icon: 'pi pi-home' },
+      { to: '/clientes',  label: 'Clientes',  icon: 'pi pi-building' },
+      { to: '/proyectos', label: 'Proyectos', icon: 'pi pi-bolt' },
+      { to: '/servicios', label: 'Servicios', icon: 'pi pi-file-edit' },
     ],
   },
   {
+    label: 'Operaciones',
     items: [
-      { to: '/alertas', label: 'Alertas', icon: 'pi pi-exclamation-circle' },
+      { to: '/fallas', label: 'Monitoreo', icon: 'pi pi-exclamation-triangle', roles: ['admin', 'operaciones', 'monitoreo'] },
+    ],
+  },
+  {
+    label: 'Finanzas',
+    items: [
+      { to: '/liquidaciones', label: 'Liquidaciones', icon: 'pi pi-dollar', roles: ['admin', 'liquidaciones'] },
     ],
   },
   {
@@ -79,6 +84,12 @@ const ALL_GROUPS = [
       { to: '/mem/fronteras',    label: 'Fronteras',       icon: 'pi pi-globe' },
       { to: '/mem/precio-bolsa', label: 'Precio de bolsa', icon: 'pi pi-chart-line' },
       { to: '/mem/balance',      label: 'Balance',         icon: 'pi pi-chart-bar' },
+    ],
+  },
+  {
+    label: 'Alertas',
+    items: [
+      { to: '/alertas', label: 'Alertas', icon: 'pi pi-exclamation-circle' },
     ],
   },
 ]
