@@ -26,9 +26,8 @@
 
     <!-- Tabla -->
     <div class="bg-white rounded-xl overflow-hidden shadow-sm" style="border: 1px solid #e8e0f0;">
-      <DataTable :value="rowsFiltrados" :loading="loading" class="text-sm" rowHover
-        :rows="50" paginator :rowsPerPageOptions="[25, 50, 100]"
-        sortField="fecha_solicitud" :sortOrder="-1">
+      <DataTable :value="rowsMostrar" :loading="loading" class="text-sm" rowHover
+        :rows="50" paginator :rowsPerPageOptions="[25, 50, 100]">
         <template #empty>
           <div class="py-12 text-center text-sm" style="color: #9b89b5;">
             No hay contratos con los filtros actuales.
@@ -126,14 +125,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import api from '@/api/client.js'
 
 const loading = ref(false)
 const rows = ref([])
+const rowsMostrar = ref([])
+const total = ref(0)
 const filtroTexto = ref('')
 const filtroEstado = ref('vigentes')
 const filtroTipo = ref(null)
+
+const hoy = new Date().toISOString().slice(0, 10)
 
 const opcionesEstado = [
   { label: 'Vigentes', value: 'vigentes' },
@@ -146,6 +149,34 @@ const opcionesTipo = [
   { label: 'Desistimiento', value: 'desistimiento' },
 ]
 
+function filtrar() {
+  let r = rows.value.slice()
+
+  if (filtroEstado.value === 'vigentes') {
+    r = r.filter(x => x.fecha_fin && x.fecha_fin >= hoy)
+  }
+
+  if (filtroTipo.value) {
+    r = r.filter(x => x.tipo_solicitud === filtroTipo.value)
+  }
+
+  const q = filtroTexto.value.trim().toLowerCase()
+  if (q) {
+    r = r.filter(x =>
+      (x.codigo_sic_contrato || '').toLowerCase().includes(q) ||
+      (x.contrato_interno || '').toLowerCase().includes(q) ||
+      (x.nombre_interno || '').toLowerCase().includes(q) ||
+      (x.planta_nombre || '').toLowerCase().includes(q) ||
+      (x.requerimiento_asic || '').toLowerCase().includes(q)
+    )
+  }
+
+  rowsMostrar.value = r
+  total.value = r.length
+}
+
+watch([rows, filtroEstado, filtroTipo, filtroTexto], filtrar)
+
 async function cargar() {
   loading.value = true
   try {
@@ -156,36 +187,7 @@ async function cargar() {
   }
 }
 
-const hoy = new Date().toISOString().slice(0, 10)
-
-const rowsFiltrados = computed(() => {
-  let r = rows.value
-
-  if (filtroEstado.value === 'vigentes') {
-    r = r.filter(x => x.fecha_fin && x.fecha_fin >= hoy)
-  }
-
-  if (filtroTipo.value) {
-    r = r.filter(x => x.tipo_solicitud === filtroTipo.value)
-  }
-
-  if (filtroTexto.value.trim()) {
-    const q = filtroTexto.value.trim().toLowerCase()
-    r = r.filter(x =>
-      (x.codigo_sic_contrato || '').toLowerCase().includes(q) ||
-      (x.contrato_interno || '').toLowerCase().includes(q) ||
-      (x.nombre_interno || '').toLowerCase().includes(q) ||
-      (x.planta_nombre || '').toLowerCase().includes(q) ||
-      (x.requerimiento_asic || '').toLowerCase().includes(q)
-    )
-  }
-
-  return r
-})
-
-const total = computed(() => rowsFiltrados.value.length)
-
-function aplicarFiltros() { /* computed handles it reactively */ }
+function aplicarFiltros() { filtrar() }
 function limpiar() { filtroTexto.value = ''; filtroTipo.value = null }
 
 function fmt(d) {
