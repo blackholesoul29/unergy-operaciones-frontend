@@ -18,6 +18,7 @@ const routes = [
   { path: '/liquidaciones/:id', name: 'LiquidacionDetalle', component: () => import('@/views/Liquidaciones/LiquidacionDetailView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/alertas',                name: 'Alertas',             component: () => import('@/views/Alertas/AlertasView.vue') },
   { path: '/alertas/contratos-ppa',  name: 'AlertasContratosPPA', component: () => import('@/views/Alertas/AlertasContratosPPAView.vue') },
+  { path: '/alertas/monitoreo',      name: 'AlertasMonitoreo',    component: () => import('@/views/Alertas/AlertasMonitoreoView.vue') },
   { path: '/mem/gescon',       name: 'MemGescon',      component: () => import('@/views/MEM/GesconView.vue') },
   { path: '/mem/fronteras',    name: 'MemFronteras',   component: () => import('@/views/MEM/FronterasView.vue') },
   { path: '/mem/precio-bolsa', name: 'MemPrecioBolsa', component: () => import('@/views/MEM/PrecioBolsaView.vue') },

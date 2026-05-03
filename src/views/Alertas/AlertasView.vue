@@ -65,7 +65,7 @@ const MODULOS = [
     icon: 'pi pi-exclamation-triangle',
     color: '#ef4444',
     bg: '#fef2f2',
-    enabled: false,
+    enabled: true,
   },
 ]
 </script>
