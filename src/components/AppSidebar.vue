@@ -59,10 +59,10 @@ const initials = computed(() => {
 const ALL_GROUPS = [
   {
     items: [
-      { to: '/dashboard', label: 'Dashboard', icon: 'pi pi-home' },
-      { to: '/clientes',  label: 'Clientes',  icon: 'pi pi-building' },
-      { to: '/proyectos', label: 'Proyectos', icon: 'pi pi-bolt' },
-      { to: '/servicios', label: 'Servicios', icon: 'pi pi-file-edit' },
+      { to: '/clientes',       label: 'Clientes',        icon: 'pi pi-building' },
+      { to: '/proyectos',      label: 'Proyectos',       icon: 'pi pi-bolt' },
+      { to: '/servicios',      label: 'Servicios',       icon: 'pi pi-file-edit' },
+      { to: '/mem/fronteras',  label: 'Fronteras',       icon: 'pi pi-globe' },
     ],
   },
   {
@@ -81,7 +81,6 @@ const ALL_GROUPS = [
     label: 'MEM',
     items: [
       { to: '/mem/gescon',       label: 'GESCON',          icon: 'pi pi-book' },
-      { to: '/mem/fronteras',    label: 'Fronteras',       icon: 'pi pi-globe' },
       { to: '/mem/precio-bolsa', label: 'Precio de bolsa', icon: 'pi pi-chart-line' },
       { to: '/mem/balance',      label: 'Balance',         icon: 'pi pi-chart-bar' },
     ],
