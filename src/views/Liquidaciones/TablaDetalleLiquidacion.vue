@@ -14,7 +14,12 @@
       <!-- Fila TOTAL del proyecto (solo si no es modo inversionista) -->
       <template v-if="!modoInversionista">
         <tr class="bg-indigo-50 font-semibold border-b border-indigo-200">
-          <td class="px-3 py-1.5 text-indigo-800 font-bold" colspan="2">Total</td>
+          <td class="px-3 py-1.5 text-indigo-800 font-bold" colspan="2">
+            Total
+            <span class="ml-2 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-indigo-200 text-indigo-800 tracking-wide">
+              100% PROYECTO
+            </span>
+          </td>
           <td class="px-3 py-1.5 text-indigo-600">Porcentaje de Participación</td>
           <td class="px-3 py-1.5 text-right text-indigo-800">100.00%</td>
           <td colspan="2" />
@@ -93,6 +98,7 @@ const ETIQUETAS = {
   mantenimiento: 'Mantenimiento',
   arriendo: 'Arriendo',
   servicio_internet: 'Servicio de Internet',
+  iva_internet: 'IVA Internet',   // Bug 2
   poliza_cumplimiento: 'Póliza de Cumplimiento',
   servicios_publicos_consumo: 'Servicios Públicos Consumo de energía',
   cambio_equipos_medida: 'Cambio Equipos de Medida',
@@ -111,6 +117,9 @@ const ETIQUETAS = {
   valor_a_pagar: 'Valor a Pagar',
 }
 
+// Bug 1: conceptos que pertenecen SOLO a la sección Factura
+const TIPOS_FACTURA = new Set(['representacion', 'cgm', 'administracion', 'administracion_operacion'])
+
 const COSTOS_NEG = new Set([
   'ajuste_comercializacion', 'arriendo', 'mantenimiento', 'servicio_internet',
   'poliza_cumplimiento', 'servicios_publicos_consumo', 'cambio_equipos_medida',
@@ -119,14 +128,22 @@ const COSTOS_NEG = new Set([
   'reteica', 'ica_opex', 'otro_impuesto',
 ])
 
+function etiquetaLinea(l) {
+  // Bug 2: iva_internet tiene su propia etiqueta
+  if (ETIQUETAS[l.tipo_linea]) return ETIQUETAS[l.tipo_linea]
+  return l.concepto
+}
+
 function mandatosAFilas(mandatos, docLabel, consecutivoBase) {
   const filas = []
   for (const m of (mandatos || [])) {
     for (const l of (m.lineas || [])) {
+      // Bug 1: filtrar conceptos de Factura que no corresponden a Mandato/Costos
+      if (docLabel === 'Mandato' && TIPOS_FACTURA.has(l.tipo_linea)) continue
       filas.push({
         key: `${m.id}_${l.id}`,
         doc: docLabel,
-        concepto: ETIQUETAS[l.tipo_linea] || l.concepto,
+        concepto: etiquetaLinea(l),
         valor: l.valor_cop,
         negativo: COSTOS_NEG.has(l.tipo_linea),
         ref: l.referencia_factura,
@@ -141,8 +158,12 @@ function mandatosAFilas(mandatos, docLabel, consecutivoBase) {
 const filasTotal = computed(() => {
   const liq = props.liquidacion
   const filas = []
-  filas.push(...mandatosAFilas(liq.mandatos_ingresos, 'Mandato', liq.consecutivo_inicial_ingresos))
-  filas.push(...mandatosAFilas(liq.mandatos_costos, 'Costos', liq.consecutivo_inicial_costos))
+  // Bug 2: usar mandatos del Total (inversionista_id = None) cuando estén disponibles;
+  // de lo contrario caer en los campos legacy mandatos_ingresos/costos del detalle view.
+  const ingSrc = liq.mandatos_total_ingresos ?? liq.mandatos_ingresos
+  const cosSrc = liq.mandatos_total_costos  ?? liq.mandatos_costos
+  filas.push(...mandatosAFilas(ingSrc, 'Mandato', liq.consecutivo_inicial_ingresos))
+  filas.push(...mandatosAFilas(cosSrc, 'Costos', liq.consecutivo_inicial_costos))
   for (const f of (liq.facturas_servicio || [])) {
     filas.push({
       key: `f_${f.id}`,

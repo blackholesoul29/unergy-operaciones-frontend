@@ -79,6 +79,12 @@
                         ? 'color:#915BD8; font-weight:700'
                         : 'color:#2C2039'">
                       {{ fila.inversionista }}
+                      <!-- Bug 5: indicar que Total = consolidado 100% del proyecto -->
+                      <span v-if="fila.inversionista === 'Total'"
+                        class="ml-1 px-1 py-0.5 rounded text-[8px] font-semibold tracking-wide"
+                        style="background:rgba(145,91,216,0.15); color:#915BD8">
+                        100%
+                      </span>
                     </td>
 
                     <!-- Documento contable -->
@@ -359,6 +365,7 @@ const ETIQUETAS_LISTA = {
   mantenimiento: 'Mantenimiento',
   arriendo: 'Arriendo',
   servicio_internet: 'Servicio de Internet',
+  iva_internet: 'IVA Internet',   // Bug 2
   poliza_cumplimiento: 'Póliza de Cumplimiento',
   servicios_publicos_consumo: 'Servicios Públicos Consumo de energía',
   cambio_equipos_medida: 'Cambio Equipos de Medida',
@@ -375,6 +382,9 @@ const ETIQUETAS_LISTA = {
   otro_impuesto: 'Otro Impuesto',
   valor_a_pagar: 'Valor a Pagar',
 }
+
+// Bug 1: conceptos que pertenecen solo a la sección Factura
+const TIPOS_FACTURA_SET = new Set(['representacion', 'cgm', 'administracion', 'administracion_operacion'])
 
 const COSTOS_NEG = new Set([
   'ajuste_comercializacion', 'arriendo', 'mantenimiento', 'servicio_internet',
@@ -436,44 +446,8 @@ const filasDetalle = computed(() => {
         sublabel: liq.estado,
       })
 
-      // ── Agregar totales del proyecto (suma de todos los inversionistas) ────
-      const totalIng = new Map()
-      const totalCos = new Map()
-
-      for (const inv of (liq.inversionistas || [])) {
-        for (const m of (inv.mandatos_ingresos || [])) {
-          for (const l of (m.lineas || [])) {
-            if (OMITIR_LINEAS.has(l.tipo_linea)) continue
-            const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
-            if (!totalIng.has(k)) {
-              totalIng.set(k, {
-                tipo_linea: l.tipo_linea,
-                concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
-                valor: 0,
-                refFactura: l.referencia_factura || '',
-              })
-            }
-            totalIng.get(k).valor += l.valor_cop
-          }
-        }
-        for (const m of (inv.mandatos_costos || [])) {
-          for (const l of (m.lineas || [])) {
-            if (OMITIR_LINEAS.has(l.tipo_linea)) continue
-            const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
-            if (!totalCos.has(k)) {
-              totalCos.set(k, {
-                tipo_linea: l.tipo_linea,
-                concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
-                valor: 0,
-                refFactura: l.referencia_factura || '',
-              })
-            }
-            totalCos.get(k).valor += l.valor_cop
-          }
-        }
-      }
-
-      // Fila Total — Información (100%)
+      // Bug 2: usar mandatos del Total (100% proyecto) directamente en lugar de
+      // agregar desde los inversionistas, para evitar duplicar el IVA Internet.
       rows.push(_f(`${liq.liquidacion_id}_t_info`, {
         proyecto: proyNombre, inversionista: 'Total', doc: 'Información',
         contacto1: '', contacto2: '',
@@ -482,27 +456,37 @@ const filasDetalle = computed(() => {
         conseIngresos: consIng0, conseCostos: consCos0, comprobante,
       }))
 
-      // Filas Total — Mandato (ingresos agregados)
-      for (const r of totalIng.values()) {
-        rows.push(_f(`${liq.liquidacion_id}_t_ing_${r.tipo_linea}`, {
-          proyecto: proyNombre, inversionista: 'Total', doc: 'Mandato',
-          contacto1: '', contacto2: '',
-          concepto: r.concepto, total: r.valor,
-          negativo: COSTOS_NEG.has(r.tipo_linea),
-          refFactura: r.refFactura,
-          conseIngresos: consIng0, conseCostos: '', comprobante,
-        }))
+      // Filas Total — Mandato (desde mandatos_total_ingresos del backend)
+      for (const m of (liq.mandatos_total_ingresos || [])) {
+        for (const l of (m.lineas || [])) {
+          if (OMITIR_LINEAS.has(l.tipo_linea)) continue
+          // Bug 1: omitir conceptos de Factura que no deben estar en Mandato
+          if (TIPOS_FACTURA_SET.has(l.tipo_linea)) continue
+          rows.push(_f(`${liq.liquidacion_id}_t_ing_${l.id}`, {
+            proyecto: proyNombre, inversionista: 'Total', doc: 'Mandato',
+            contacto1: '', contacto2: '',
+            concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
+            total: l.valor_cop,
+            negativo: COSTOS_NEG.has(l.tipo_linea),
+            refFactura: l.referencia_factura || '',
+            conseIngresos: consIng0, conseCostos: '', comprobante,
+          }))
+        }
       }
 
-      // Filas Total — Costos (agregados)
-      for (const r of totalCos.values()) {
-        rows.push(_f(`${liq.liquidacion_id}_t_cos_${r.tipo_linea}`, {
-          proyecto: proyNombre, inversionista: 'Total', doc: 'Costos',
-          contacto1: '', contacto2: '',
-          concepto: r.concepto, total: r.valor, negativo: true,
-          refFactura: r.refFactura,
-          conseIngresos: '', conseCostos: consCos0, comprobante,
-        }))
+      // Filas Total — Costos (desde mandatos_total_costos del backend)
+      for (const m of (liq.mandatos_total_costos || [])) {
+        for (const l of (m.lineas || [])) {
+          if (OMITIR_LINEAS.has(l.tipo_linea)) continue
+          rows.push(_f(`${liq.liquidacion_id}_t_cos_${l.id}`, {
+            proyecto: proyNombre, inversionista: 'Total', doc: 'Costos',
+            contacto1: '', contacto2: '',
+            concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
+            total: l.valor_cop, negativo: true,
+            refFactura: l.referencia_factura || '',
+            conseIngresos: '', conseCostos: consCos0, comprobante,
+          }))
+        }
       }
 
       // Filas Total — Facturas de servicio (nivel proyecto)
@@ -532,11 +516,13 @@ const filasDetalle = computed(() => {
           conseIngresos: consIng0, conseCostos: consCos0, comprobante,
         }))
 
-        // Filas Inversionista — Mandato (ingresos, omitiendo ajuste_xm)
+        // Filas Inversionista — Mandato (ingresos)
         for (const m of (inv.mandatos_ingresos || [])) {
           const consIng = m.consecutivo != null ? String(m.consecutivo) : consIng0
           for (const l of (m.lineas || [])) {
             if (OMITIR_LINEAS.has(l.tipo_linea)) continue
+            // Bug 1: excluir conceptos de Factura que no pertenecen a Mandato
+            if (TIPOS_FACTURA_SET.has(l.tipo_linea)) continue
             rows.push(_f(`${liq.liquidacion_id}_${inv.inversionista_id}_ing_${l.id}`, {
               proyecto: proyNombre, inversionista: inv.inversionista_nombre, doc: 'Mandato',
               contacto1: m.numero_mandato || '',
@@ -549,7 +535,7 @@ const filasDetalle = computed(() => {
           }
         }
 
-        // Filas Inversionista — Costos
+        // Filas Inversionista — Costos (Bug 2: iva_internet tiene etiqueta propia en ETIQUETAS_LISTA)
         for (const m of (inv.mandatos_costos || [])) {
           const consCos = m.consecutivo != null ? String(m.consecutivo) : consCos0
           for (const l of (m.lineas || [])) {
