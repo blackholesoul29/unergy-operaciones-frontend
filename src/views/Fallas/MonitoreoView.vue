@@ -25,13 +25,10 @@ const auth = useAuthStore()
 const iframeRef = ref(null)
 const loading = ref(true)
 
-// VITE_BACKEND_URL apunta a Railway (definido en Vercel env vars para producción)
-const backendUrl = (import.meta.env.VITE_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
-
 const iframeSrc = computed(() => {
   const token = auth.token
   if (!token) return ''
-  return `${backendUrl}/monitoreo?token=${encodeURIComponent(token)}`
+  return `/monitoreo?token=${encodeURIComponent(token)}`
 })
 
 function onIframeLoad() {
