@@ -455,43 +455,46 @@ const filasDetalle = computed(() => {
         conseIngresos: consIng0, conseCostos: consCos0, comprobante,
       }))
 
-      // Filas Total — Mandato: deduplicar por tipo_linea|ref para tolerar
-      // mandatos duplicados en DB (ej: loader ejecutado más de una vez).
+      // Filas Total — Mandato e Costos: agregar desde inversionistas con Map de
+      // deduplicación (tipo_linea|ref como clave). Esto preserva todas las líneas
+      // IVA que existen en los inversionistas pero no en el mandato Total de la DB.
       const totalIng = new Map()
-      for (const m of (liq.mandatos_total_ingresos || [])) {
-        for (const l of (m.lineas || [])) {
-          if (OMITIR_LINEAS.has(l.tipo_linea)) continue
-          if (TIPOS_FACTURA_SET.has(l.tipo_linea)) continue
-          const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
-          if (!totalIng.has(k)) totalIng.set(k, { ...l, concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto })
+      const totalCos = new Map()
+      for (const inv of (liq.inversionistas || [])) {
+        for (const m of (inv.mandatos_ingresos || [])) {
+          for (const l of (m.lineas || [])) {
+            if (OMITIR_LINEAS.has(l.tipo_linea)) continue
+            if (TIPOS_FACTURA_SET.has(l.tipo_linea)) continue
+            const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
+            if (!totalIng.has(k)) totalIng.set(k, { tipo_linea: l.tipo_linea, concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto, valor: 0, refFactura: l.referencia_factura || '' })
+            totalIng.get(k).valor += l.valor_cop
+          }
+        }
+        for (const m of (inv.mandatos_costos || [])) {
+          for (const l of (m.lineas || [])) {
+            if (OMITIR_LINEAS.has(l.tipo_linea)) continue
+            const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
+            if (!totalCos.has(k)) totalCos.set(k, { tipo_linea: l.tipo_linea, concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto, valor: 0, refFactura: l.referencia_factura || '' })
+            totalCos.get(k).valor += l.valor_cop
+          }
         }
       }
       for (const r of totalIng.values()) {
         rows.push(_f(`${liq.liquidacion_id}_t_ing_${r.tipo_linea}`, {
           proyecto: proyNombre, inversionista: 'Total', doc: 'Mandato',
           contacto1: '', contacto2: '',
-          concepto: r.concepto, total: r.valor_cop,
+          concepto: r.concepto, total: r.valor,
           negativo: COSTOS_NEG.has(r.tipo_linea),
-          refFactura: r.referencia_factura || '',
+          refFactura: r.refFactura,
           conseIngresos: consIng0, conseCostos: '', comprobante,
         }))
-      }
-
-      // Filas Total — Costos: idem deduplicación
-      const totalCos = new Map()
-      for (const m of (liq.mandatos_total_costos || [])) {
-        for (const l of (m.lineas || [])) {
-          if (OMITIR_LINEAS.has(l.tipo_linea)) continue
-          const k = `${l.tipo_linea}|${l.referencia_factura || ''}`
-          if (!totalCos.has(k)) totalCos.set(k, { ...l, concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto })
-        }
       }
       for (const r of totalCos.values()) {
         rows.push(_f(`${liq.liquidacion_id}_t_cos_${r.tipo_linea}`, {
           proyecto: proyNombre, inversionista: 'Total', doc: 'Costos',
           contacto1: '', contacto2: '',
-          concepto: r.concepto, total: r.valor_cop, negativo: true,
-          refFactura: r.referencia_factura || '',
+          concepto: r.concepto, total: r.valor, negativo: true,
+          refFactura: r.refFactura,
           conseIngresos: '', conseCostos: consCos0, comprobante,
         }))
       }
