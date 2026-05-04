@@ -26,8 +26,8 @@
     <!-- Tabs -->
     <TabView v-model:activeIndex="tabActivo">
 
-      <!-- ══ Tab Lista (tabla plana) ══ -->
-      <TabPanel header="Lista">
+      <!-- ══ Tab Panel General (tabla plana) ══ -->
+      <TabPanel header="Panel General">
         <ProgressSpinner v-if="loadingVista" class="block mx-auto my-8" />
         <div v-else class="rounded-xl shadow-sm overflow-hidden" style="background:#FDFAF7">
           <div v-if="!filasDetalle.length" class="text-center py-8 text-sm text-gray-400">
@@ -142,142 +142,166 @@
         </div>
       </TabPanel>
 
-      <!-- ══ Tab Por Proyecto ══ -->
-      <TabPanel header="Por Proyecto">
+      <!-- ══ Tab Ingresos ══ -->
+      <TabPanel header="Ingresos">
         <ProgressSpinner v-if="loadingVista" class="block mx-auto my-8" />
-        <div v-else class="space-y-3">
-          <div v-if="!vistaProyectos.length" class="text-center text-gray-400 py-8 text-sm">
-            No hay proyectos registrados.
+        <div v-else class="rounded-xl shadow-sm overflow-hidden" style="background:#FDFAF7">
+          <div v-if="!filasIngresos.length" class="text-center py-8 text-sm text-gray-400">
+            No hay liquidaciones para los filtros seleccionados.
           </div>
-
-          <div v-for="proy in vistaProyectos" :key="proy.proyecto_id"
-            class="rounded-xl shadow-sm overflow-hidden" style="background:#FDFAF7">
-
-            <!-- Header proyecto -->
-            <div class="text-white px-4 py-2 flex items-center gap-3 cursor-pointer select-none"
-              style="background:#2C2039"
-              @click="toggleProy(proy.proyecto_id)">
-              <i :class="expandidosProy.has(proy.proyecto_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                class="text-xs" />
-              <span class="font-semibold text-sm">{{ proy.proyecto_nombre }}</span>
-              <Tag :value="proy.estado" :severity="estadoProySeverity(proy.estado)" class="text-xs" />
-              <span class="text-xs ml-auto" style="color:#915BD8">
-                {{ proy.inversionistas_registrados.length }} inv. ·
-                {{ proy.liquidaciones.length }} liq.
-              </span>
-            </div>
-
-            <!-- Contenido expandido -->
-            <div v-if="expandidosProy.has(proy.proyecto_id)">
-              <!-- Inversionistas registrados -->
-              <div class="px-4 py-3 border-b" style="background:rgba(145,91,216,0.05); border-color:rgba(145,91,216,0.15)">
-                <p class="text-xs font-semibold mb-2 uppercase tracking-wide" style="color:#915BD8">
-                  Inversionistas registrados
-                </p>
-                <div v-if="proy.inversionistas_registrados.length" class="flex flex-wrap gap-2">
-                  <div v-for="inv in proy.inversionistas_registrados" :key="inv.proyecto_inversionista_id"
-                    class="bg-white border rounded-lg px-3 py-1.5 flex items-center gap-2"
-                    style="border-color:rgba(145,91,216,0.25)">
-                    <i class="pi pi-user text-xs" style="color:#915BD8" />
-                    <span class="text-xs font-semibold" style="color:#2C2039">{{ inv.inversionista_nombre }}</span>
-                    <span class="text-xs font-mono" style="color:#915BD8">{{ pct(inv.porcentaje_participacion) }}</span>
-                    <Tag v-if="inv.es_patrimonio_autonomo" value="PA" severity="info" class="text-[10px]" />
-                  </div>
-                </div>
-                <p v-else class="text-xs text-gray-400 italic">Sin inversionistas registrados</p>
-              </div>
-
-              <!-- Liquidaciones del proyecto -->
-              <div v-if="proy.liquidaciones.length">
-                <div v-for="liq in proy.liquidaciones" :key="liq.liquidacion_id" class="border-b last:border-b-0"
-                  style="border-color:rgba(44,32,57,0.08)">
-                  <div class="px-4 py-2 flex items-center gap-3 cursor-pointer hover:bg-white/50"
-                    style="background:rgba(253,250,247,0.8)"
-                    @click="toggleLiq(liq.liquidacion_id)">
-                    <i :class="expandidosLiq.has(liq.liquidacion_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                      class="text-xs text-gray-400" />
-                    <span class="font-medium text-sm" style="color:#2C2039">{{ formatPeriodo(liq.periodo) }}</span>
-                    <Tag :value="liq.estado" :severity="estadoSeverity(liq.estado)" />
-                    <span class="text-xs text-gray-500 ml-auto">
-                      Ingreso neto:
-                      <span class="font-mono font-semibold" style="color:#915BD8">{{ fmt(liq.resumen.ingreso_neto_cop) }}</span>
-                    </span>
-                    <Button icon="pi pi-eye" text size="small"
-                      @click.stop="$router.push(`/liquidaciones/${liq.liquidacion_id}`)" />
-                  </div>
-                  <div v-if="expandidosLiq.has(liq.liquidacion_id)" class="overflow-x-auto">
-                    <TablaDetalleLiquidacion :liquidacion="liq" />
-                  </div>
-                </div>
-              </div>
-              <div v-else class="px-4 py-4 text-center text-xs text-gray-400">
-                Sin liquidaciones para los filtros seleccionados
-              </div>
-            </div>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse" style="min-width:1400px">
+              <thead>
+                <tr class="text-white text-[11px] uppercase tracking-wide" style="background:#2C2039">
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Proyecto</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Inversionista</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Doc. Contable</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Contacto 1</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Contacto 2</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Concepto</th>
+                  <th class="px-3 py-2.5 text-right whitespace-nowrap font-semibold">Total</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Ref. Factura / Soporte</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consec. Ingresos</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consec. Costos</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Comprobante Contable</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-for="fila in filasIngresos" :key="fila.key">
+                  <tr v-if="fila.separador" style="background:#915BD8">
+                    <td colspan="11" class="px-4 py-2 font-bold text-[11px] tracking-widest text-white uppercase">
+                      {{ fila.label }}
+                      <span class="ml-4 font-normal text-purple-200 normal-case tracking-normal">
+                        {{ fila.sublabel }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr v-else :style="estiloFila(fila)"
+                    class="border-b transition-colors duration-100"
+                    style="border-color:rgba(44,32,57,0.07)">
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.65">{{ fila.proyecto }}</td>
+                    <td class="px-3 py-1.5 font-medium text-[11px]"
+                      :style="fila.inversionista === 'Total' ? 'color:#915BD8; font-weight:700' : 'color:#2C2039'">
+                      {{ fila.inversionista }}
+                      <span v-if="fila.inversionista === 'Total'"
+                        class="ml-1 px-1 py-0.5 rounded text-[8px] font-semibold tracking-wide"
+                        style="background:rgba(145,91,216,0.15); color:#915BD8">100%</span>
+                    </td>
+                    <td class="px-3 py-1.5">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" :style="badgeDoc(fila.doc)">{{ fila.doc }}</span>
+                    </td>
+                    <td class="px-3 py-1.5 text-[11px] text-gray-500">{{ fila.contacto1 }}</td>
+                    <td class="px-3 py-1.5 text-[11px] text-gray-500">{{ fila.contacto2 }}</td>
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039">{{ fila.concepto }}</td>
+                    <td class="px-3 py-1.5 text-right font-mono text-[11px]"
+                      :style="fila.negativo ? 'color:#dc2626' : 'color:#2C2039'">
+                      <span v-if="fila.isPercent" class="font-semibold" style="color:#915BD8">{{ fila.pctLabel }}</span>
+                      <span v-else>{{ fila.total != null ? fmt(fila.total) : '—' }}</span>
+                    </td>
+                    <td class="px-3 py-1.5 text-[11px] whitespace-nowrap">
+                      <a v-if="fila.soporteUrl" :href="fila.soporteUrl" target="_blank"
+                        class="flex items-center gap-1 hover:underline" style="color:#915BD8">
+                        <i class="pi pi-file-pdf text-red-500 text-xs" />{{ fila.refFactura || 'Ver' }}
+                      </a>
+                      <span v-else style="color:#2C2039; opacity:0.7">{{ fila.refFactura }}</span>
+                    </td>
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.6">{{ fila.conseIngresos }}</td>
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.6">{{ fila.conseCostos }}</td>
+                    <td class="px-3 py-1.5 text-[11px] font-mono" style="color:#2C2039; opacity:0.7">{{ fila.comprobante }}</td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div v-if="ingresoBrutoTotal > 0"
+            class="px-4 py-3 border-t text-xs font-semibold" style="border-color:rgba(145,91,216,0.2); color:#2C2039">
+            Ingreso Bruto Total del período:
+            <span class="font-mono ml-1" style="color:#915BD8">{{ fmt(ingresoBrutoTotal) }}</span>
           </div>
         </div>
       </TabPanel>
 
-      <!-- ══ Tab Por Inversionista ══ -->
-      <TabPanel header="Por Inversionista">
+      <!-- ══ Tab Costos ══ -->
+      <TabPanel header="Costos">
         <ProgressSpinner v-if="loadingVista" class="block mx-auto my-8" />
-        <div v-else class="space-y-3">
-          <div v-if="!vistaInversionistas.length" class="text-center text-gray-400 py-8 text-sm">
-            No hay inversionistas registrados.
+        <div v-else class="rounded-xl shadow-sm overflow-hidden" style="background:#FDFAF7">
+          <div v-if="!filasCostos.length" class="text-center py-8 text-sm text-gray-400">
+            No hay liquidaciones para los filtros seleccionados.
           </div>
-
-          <div v-for="inv in vistaInversionistas" :key="inv.cliente_id"
-            class="rounded-xl shadow-sm overflow-hidden bg-white">
-
-            <!-- Header inversionista -->
-            <div class="text-white px-4 py-2 flex items-center gap-3 cursor-pointer select-none"
-              style="background:#915BD8"
-              @click="toggleInversionista(inv.cliente_id)">
-              <i :class="expandidosInv.has(inv.cliente_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                class="text-xs" />
-              <i class="pi pi-user text-xs" />
-              <span class="font-semibold text-sm">{{ inv.cliente_nombre }}</span>
-              <span class="text-xs ml-auto" style="color:#F6FF72">{{ inv.proyectos.length }} proyecto(s)</span>
-            </div>
-
-            <!-- Proyectos del inversionista -->
-            <div v-if="expandidosInv.has(inv.cliente_id)">
-              <div v-for="proy in inv.proyectos" :key="proy.proyecto_inversionista_id"
-                class="border-b last:border-b-0" style="border-color:rgba(44,32,57,0.08)">
-
-                <div class="px-4 py-2 flex items-center gap-3 cursor-pointer"
-                  style="background:rgba(145,91,216,0.04)"
-                  @click="toggleInvProy(`${inv.cliente_id}_${proy.proyecto_id}`)">
-                  <i :class="expandidosInvProy.has(`${inv.cliente_id}_${proy.proyecto_id}`) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                    class="text-xs text-gray-400" />
-                  <span class="font-medium text-sm" style="color:#2C2039">{{ proy.proyecto_nombre }}</span>
-                  <span class="text-xs text-gray-500">
-                    Part.: <strong style="color:#915BD8">{{ pct(proy.porcentaje_participacion) }}</strong>
-                  </span>
-                  <Tag v-if="proy.es_patrimonio_autonomo" value="PA" severity="info" class="text-[10px]" />
-                  <span class="text-xs text-gray-400 ml-auto">{{ proy.liquidaciones.length }} liq.</span>
-                </div>
-
-                <div v-if="expandidosInvProy.has(`${inv.cliente_id}_${proy.proyecto_id}`)" class="bg-white">
-                  <div v-if="proy.liquidaciones.length" class="divide-y divide-gray-100">
-                    <div v-for="liq in proy.liquidaciones" :key="liq.liquidacion_id"
-                      class="px-6 py-2 flex items-center gap-3 hover:bg-gray-50">
-                      <span class="text-xs w-20" style="color:#2C2039">{{ formatPeriodo(liq.periodo) }}</span>
-                      <Tag :value="liq.estado" :severity="estadoSeverity(liq.estado)" class="text-xs" />
-                      <span class="text-xs text-gray-500 ml-auto">
-                        Neto:
-                        <span class="font-mono font-semibold" style="color:#915BD8">{{ fmt(liq.ingreso_neto_cop) }}</span>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-xs border-collapse" style="min-width:1400px">
+              <thead>
+                <tr class="text-white text-[11px] uppercase tracking-wide" style="background:#2C2039">
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Proyecto</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Inversionista</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Doc. Contable</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Contacto 1</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Contacto 2</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Concepto</th>
+                  <th class="px-3 py-2.5 text-right whitespace-nowrap font-semibold">Total</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Ref. Factura / Soporte</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consec. Ingresos</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Consec. Costos</th>
+                  <th class="px-3 py-2.5 text-left whitespace-nowrap font-semibold">Comprobante Contable</th>
+                </tr>
+              </thead>
+              <tbody>
+                <template v-for="fila in filasCostos" :key="fila.key">
+                  <tr v-if="fila.separador" style="background:#915BD8">
+                    <td colspan="11" class="px-4 py-2 font-bold text-[11px] tracking-widest text-white uppercase">
+                      {{ fila.label }}
+                      <span class="ml-4 font-normal text-purple-200 normal-case tracking-normal">
+                        {{ fila.sublabel }}
                       </span>
-                      <Button icon="pi pi-eye" text size="small"
-                        @click="$router.push(`/liquidaciones/${liq.liquidacion_id}`)" />
-                    </div>
-                  </div>
-                  <div v-else class="px-6 py-3 text-xs text-gray-400 text-center italic">
-                    Sin liquidaciones para los filtros seleccionados
-                  </div>
-                </div>
-              </div>
-            </div>
+                    </td>
+                  </tr>
+                  <tr v-else :style="estiloFila(fila)"
+                    class="border-b transition-colors duration-100"
+                    style="border-color:rgba(44,32,57,0.07)">
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.65">{{ fila.proyecto }}</td>
+                    <td class="px-3 py-1.5 font-medium text-[11px]"
+                      :style="fila.inversionista === 'Total' ? 'color:#915BD8; font-weight:700' : 'color:#2C2039'">
+                      {{ fila.inversionista }}
+                      <span v-if="fila.inversionista === 'Total'"
+                        class="ml-1 px-1 py-0.5 rounded text-[8px] font-semibold tracking-wide"
+                        style="background:rgba(145,91,216,0.15); color:#915BD8">100%</span>
+                    </td>
+                    <td class="px-3 py-1.5">
+                      <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold" :style="badgeDoc(fila.doc)">{{ fila.doc }}</span>
+                    </td>
+                    <td class="px-3 py-1.5 text-[11px] text-gray-500">{{ fila.contacto1 }}</td>
+                    <td class="px-3 py-1.5 text-[11px] text-gray-500">{{ fila.contacto2 }}</td>
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039">{{ fila.concepto }}</td>
+                    <td class="px-3 py-1.5 text-right font-mono text-[11px]"
+                      :style="fila.negativo ? 'color:#dc2626' : 'color:#2C2039'">
+                      <span v-if="fila.isPercent" class="font-semibold" style="color:#915BD8">{{ fila.pctLabel }}</span>
+                      <span v-else>{{ fila.total != null ? fmt(fila.total) : '—' }}</span>
+                    </td>
+                    <td class="px-3 py-1.5 text-[11px] whitespace-nowrap">
+                      <a v-if="fila.soporteUrl" :href="fila.soporteUrl" target="_blank"
+                        class="flex items-center gap-1 hover:underline" style="color:#915BD8">
+                        <i class="pi pi-file-pdf text-red-500 text-xs" />{{ fila.refFactura || 'Ver' }}
+                      </a>
+                      <span v-else style="color:#2C2039; opacity:0.7">{{ fila.refFactura }}</span>
+                    </td>
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.6">{{ fila.conseIngresos }}</td>
+                    <td class="px-3 py-1.5 text-[11px]" style="color:#2C2039; opacity:0.6">{{ fila.conseCostos }}</td>
+                    <td class="px-3 py-1.5 text-[11px] font-mono" style="color:#2C2039; opacity:0.7">{{ fila.comprobante }}</td>
+                  </tr>
+                </template>
+              </tbody>
+            </table>
+          </div>
+          <div v-if="totalCostos !== 0 || totalFacturasServicio !== 0"
+            class="px-4 py-3 border-t text-xs font-semibold flex gap-6" style="border-color:rgba(220,38,38,0.2); color:#2C2039">
+            <span>
+              Total Costos:
+              <span class="font-mono ml-1" style="color:#dc2626">{{ fmt(totalCostos) }}</span>
+            </span>
+            <span>
+              Total Facturas Servicio:
+              <span class="font-mono ml-1" style="color:#2C2039">{{ fmt(totalFacturasServicio) }}</span>
+            </span>
           </div>
         </div>
       </TabPanel>
@@ -310,7 +334,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
@@ -323,23 +347,13 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 
-const TablaDetalleLiquidacion = defineAsyncComponent(() =>
-  import('@/views/Liquidaciones/TablaDetalleLiquidacion.vue')
-)
-
 const toast = useToast()
 const router = useRouter()
 
 const vistaProyectos = ref([])
-const vistaInversionistas = ref([])
 const loadingVista = ref(false)
 const proyectosOpciones = ref([])
 const tabActivo = ref(0)
-
-const expandidosProy = ref(new Set())
-const expandidosLiq = ref(new Set())
-const expandidosInv = ref(new Set())
-const expandidosInvProy = ref(new Set())
 
 const filtros = ref({ desde: null, hasta: null, estado: null })
 const estadosOpciones = [
@@ -567,6 +581,37 @@ const filasDetalle = computed(() => {
   return rows
 })
 
+// ─── Vistas filtradas por pestaña ─────────────────────────────────────────────
+const filasIngresos = computed(() =>
+  filasDetalle.value.filter(f =>
+    f.separador || f.doc === 'Mandato' || f.doc === 'Información'
+  )
+)
+
+const filasCostos = computed(() =>
+  filasDetalle.value.filter(f =>
+    f.separador || f.doc === 'Costos' || f.doc === 'Factura' || f.doc === 'Información'
+  )
+)
+
+const ingresoBrutoTotal = computed(() =>
+  filasDetalle.value
+    .filter(f => !f.separador && f.concepto === 'Ingreso Bruto' && f.inversionista === 'Total')
+    .reduce((acc, f) => acc + (f.total || 0), 0)
+)
+
+const totalCostos = computed(() =>
+  filasDetalle.value
+    .filter(f => !f.separador && f.doc === 'Costos' && f.inversionista === 'Total')
+    .reduce((acc, f) => acc + (f.total || 0), 0)
+)
+
+const totalFacturasServicio = computed(() =>
+  filasDetalle.value
+    .filter(f => !f.separador && f.doc === 'Factura' && f.inversionista === 'Total')
+    .reduce((acc, f) => acc + (f.total || 0), 0)
+)
+
 function _f(key, d) {
   return {
     key,
@@ -589,17 +634,6 @@ function _f(key, d) {
   }
 }
 
-// ─── Toggle helpers ───────────────────────────────────────────────────────────
-function toggle(set, key) {
-  if (set.value.has(key)) set.value.delete(key)
-  else set.value.add(key)
-  set.value = new Set(set.value)
-}
-function toggleProy(id) { toggle(expandidosProy, id) }
-function toggleLiq(id) { toggle(expandidosLiq, id) }
-function toggleInversionista(id) { toggle(expandidosInv, id) }
-function toggleInvProy(key) { toggle(expandidosInvProy, key) }
-
 // ─── Params / carga ───────────────────────────────────────────────────────────
 function buildParams() {
   const p = {}
@@ -618,15 +652,15 @@ function toISOMonth(d) {
 async function loadVistas() {
   loadingVista.value = true
   const params = buildParams()
-  const [rProy, rInv] = await Promise.allSettled([
-    api.get('/liquidaciones/vistas/por-proyecto', { params }),
-    api.get('/liquidaciones/vistas/por-inversionista', { params }),
-  ])
-  vistaProyectos.value = rProy.status === 'fulfilled' ? rProy.value.data : []
-  vistaInversionistas.value = rInv.status === 'fulfilled' ? rInv.value.data : []
-  if (rProy.status === 'rejected') console.error('Vista por proyecto:', rProy.reason)
-  if (rInv.status === 'rejected') console.error('Vista por inversionista:', rInv.reason)
-  loadingVista.value = false
+  try {
+    const { data } = await api.get('/liquidaciones/vistas/por-proyecto', { params })
+    vistaProyectos.value = data
+  } catch (e) {
+    console.error('Vista por proyecto:', e)
+    vistaProyectos.value = []
+  } finally {
+    loadingVista.value = false
+  }
 }
 
 async function loadProyectosOpciones() {
@@ -697,8 +731,6 @@ function estadoProySeverity(e) {
     suspendido: 'warn', cancelado: 'secondary',
   }[e] || 'secondary'
 }
-
-watch(tabActivo, () => { loadVistas() })
 
 onMounted(() => {
   loadVistas()

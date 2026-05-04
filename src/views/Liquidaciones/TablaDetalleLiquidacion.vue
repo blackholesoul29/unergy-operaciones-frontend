@@ -158,17 +158,58 @@ function mandatosAFilas(mandatos, docLabel, consecutivoBase) {
 const filasTotal = computed(() => {
   const liq = props.liquidacion
   const filas = []
-  // Bug 2: usar mandatos del Total (inversionista_id = None) cuando estén disponibles;
-  // de lo contrario caer en los campos legacy mandatos_ingresos/costos del detalle view.
   const ingSrc = liq.mandatos_total_ingresos ?? liq.mandatos_ingresos
   const cosSrc = liq.mandatos_total_costos  ?? liq.mandatos_costos
-  filas.push(...mandatosAFilas(ingSrc, 'Mandato', liq.consecutivo_inicial_ingresos))
-  filas.push(...mandatosAFilas(cosSrc, 'Costos', liq.consecutivo_inicial_costos))
+
+  const vistosIng = new Set()
+  for (const m of (ingSrc || [])) {
+    for (const l of (m.lineas || [])) {
+      if (TIPOS_FACTURA.has(l.tipo_linea)) continue
+      if (vistosIng.has(l.tipo_linea)) continue
+      vistosIng.add(l.tipo_linea)
+      filas.push({
+        key: `ing_${l.tipo_linea}`,
+        doc: 'Mandato',
+        concepto: etiquetaLinea(l),
+        valor: l.valor_cop,
+        negativo: COSTOS_NEG.has(l.tipo_linea),
+        ref: l.referencia_factura,
+        url: null,
+        consecutivo: m.consecutivo ?? liq.consecutivo_inicial_ingresos,
+      })
+    }
+  }
+
+  const vistosCos = new Set()
+  for (const m of (cosSrc || [])) {
+    for (const l of (m.lineas || [])) {
+      if (vistosCos.has(l.tipo_linea)) continue
+      vistosCos.add(l.tipo_linea)
+      filas.push({
+        key: `cos_${l.tipo_linea}`,
+        doc: 'Costos',
+        concepto: etiquetaLinea(l),
+        valor: l.valor_cop,
+        negativo: true,
+        ref: l.referencia_factura,
+        url: null,
+        consecutivo: m.consecutivo ?? liq.consecutivo_inicial_costos,
+      })
+    }
+  }
+
+  const vistosFac = new Set()
   for (const f of (liq.facturas_servicio || [])) {
+    if (vistosFac.has(f.tipo_servicio)) continue
+    vistosFac.add(f.tipo_servicio)
     filas.push({
-      key: `f_${f.id}`,
+      key: `f_${f.tipo_servicio}`,
       doc: 'Factura',
-      concepto: { representacion: 'Representación', cgm: 'CGM', administracion_operacion: 'Administración' }[f.tipo_servicio] || f.tipo_servicio,
+      concepto: {
+        representacion: 'Representación',
+        cgm: 'CGM',
+        administracion_operacion: 'Administración',
+      }[f.tipo_servicio] || f.tipo_servicio,
       valor: f.valor_cop,
       negativo: false,
       ref: f.numero_factura || f.nro_soporte,
