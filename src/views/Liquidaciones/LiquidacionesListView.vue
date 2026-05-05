@@ -60,6 +60,11 @@
                       <span class="ml-4 font-normal text-purple-200 normal-case tracking-normal">
                         {{ fila.sublabel }}
                       </span>
+                      <a v-if="fila.erUrl" :href="fila.erUrl" target="_blank"
+                        class="ml-4 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold normal-case tracking-normal hover:opacity-80"
+                        style="background:#F6FF72; color:#2C2039">
+                        <i class="pi pi-chart-line text-[9px]" />E.R.
+                      </a>
                     </td>
                   </tr>
 
@@ -174,6 +179,11 @@
                       <span class="ml-4 font-normal text-purple-200 normal-case tracking-normal">
                         {{ fila.sublabel }}
                       </span>
+                      <a v-if="fila.erUrl" :href="fila.erUrl" target="_blank"
+                        class="ml-4 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold normal-case tracking-normal hover:opacity-80"
+                        style="background:#F6FF72; color:#2C2039">
+                        <i class="pi pi-chart-line text-[9px]" />E.R.
+                      </a>
                     </td>
                   </tr>
                   <tr v-else :style="estiloFila(fila)"
@@ -253,6 +263,11 @@
                       <span class="ml-4 font-normal text-purple-200 normal-case tracking-normal">
                         {{ fila.sublabel }}
                       </span>
+                      <a v-if="fila.erUrl" :href="fila.erUrl" target="_blank"
+                        class="ml-4 inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold normal-case tracking-normal hover:opacity-80"
+                        style="background:#F6FF72; color:#2C2039">
+                        <i class="pi pi-chart-line text-[9px]" />E.R.
+                      </a>
                     </td>
                   </tr>
                   <tr v-else :style="estiloFila(fila)"
@@ -458,6 +473,7 @@ const filasDetalle = computed(() => {
         separador: true,
         label: `${proyNombre}  —  ${formatPeriodo(liq.periodo)}`,
         sublabel: liq.estado,
+        erUrl: liq.estado_resultados_url || null,
       })
 
       // Fila Total — Información (100%)
@@ -554,6 +570,7 @@ const filasDetalle = computed(() => {
               concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
               total: l.valor_cop, negativo: COSTOS_NEG.has(l.tipo_linea),
               refFactura: l.referencia_factura || '',
+              soporteUrl: l.soporte_url || null,
               conseIngresos: consIng, conseCostos: '', comprobante,
             }))
           }
@@ -571,6 +588,7 @@ const filasDetalle = computed(() => {
               concepto: ETIQUETAS_LISTA[l.tipo_linea] || l.concepto,
               total: l.valor_cop, negativo: true,
               refFactura: l.referencia_factura || '',
+              soporteUrl: l.soporte_url || null,
               conseIngresos: '', conseCostos: consCos, comprobante,
             }))
           }
@@ -616,6 +634,7 @@ function _f(key, d) {
   return {
     key,
     separador: false,
+    erUrl: null,
     proyecto: d.proyecto ?? '',
     inversionista: d.inversionista ?? '',
     doc: d.doc ?? '',

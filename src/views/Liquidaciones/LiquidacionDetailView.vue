@@ -10,7 +10,12 @@
         </h2>
         <Tag v-if="liq" :value="liq.estado" :severity="estadoSeverity(liq.estado)" class="text-xs mt-0.5" />
       </div>
-      <div class="ml-auto flex gap-2 flex-wrap">
+      <div class="ml-auto flex gap-2 flex-wrap items-center">
+        <a v-if="liq?.estado_resultados_url" :href="liq.estado_resultados_url" target="_blank"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-80 transition-opacity"
+          style="background:#F6FF72; color:#2C2039">
+          <i class="pi pi-chart-line text-xs" />Estado de Resultados
+        </a>
         <Button label="Editar resumen" icon="pi pi-calculator" outlined size="small"
           style="border-color:#915BD8; color:#915BD8" @click="abrirEditResumen" />
         <Button label="Estado" icon="pi pi-pencil" outlined size="small"
@@ -148,7 +153,13 @@
                     <td class="px-3 py-1.5" colspan="4" />
                     <td class="px-3 py-1.5" style="color:#2C2039">{{ ETIQUETAS[l.tipo_linea] || l.concepto }}</td>
                     <td class="px-3 py-1.5 text-right font-mono">{{ fmt(l.valor_cop) }}</td>
-                    <td class="px-3 py-1.5 text-gray-500">{{ l.referencia_factura }}</td>
+                    <td class="px-3 py-1.5 text-gray-500 whitespace-nowrap">
+                      <a v-if="l.soporte_url" :href="l.soporte_url" target="_blank"
+                        class="flex items-center gap-1 hover:underline" style="color:#915BD8">
+                        <i class="pi pi-external-link text-xs" />{{ l.referencia_factura || 'Ver' }}
+                      </a>
+                      <span v-else>{{ l.referencia_factura }}</span>
+                    </td>
                     <td class="px-3 py-1.5 text-center">
                       <div class="flex justify-center gap-0.5">
                         <Button icon="pi pi-pencil" text size="small" severity="info"
@@ -301,7 +312,13 @@
                       <td class="px-3 py-1.5" colspan="4" />
                       <td class="px-3 py-1.5" style="color:#2C2039">{{ ETIQUETAS[l.tipo_linea] || l.concepto }}</td>
                       <td class="px-3 py-1.5 text-right font-mono text-red-600">{{ fmt(l.valor_cop) }}</td>
-                      <td class="px-3 py-1.5 text-gray-500">{{ l.referencia_factura }}</td>
+                      <td class="px-3 py-1.5 text-gray-500 whitespace-nowrap">
+                        <a v-if="l.soporte_url" :href="l.soporte_url" target="_blank"
+                          class="flex items-center gap-1 hover:underline" style="color:#915BD8">
+                          <i class="pi pi-external-link text-xs" />{{ l.referencia_factura || 'Ver' }}
+                        </a>
+                        <span v-else>{{ l.referencia_factura }}</span>
+                      </td>
                       <td class="px-3 py-1.5 text-center">
                         <div class="flex justify-center gap-0.5">
                           <Button icon="pi pi-pencil" text size="small" severity="info"
