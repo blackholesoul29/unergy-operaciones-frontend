@@ -180,6 +180,12 @@
                   title="Según su periodicidad, a este proyecto no le corresponde cobro este mes.">
                   <i class="pi pi-clock text-[9px]" />no aplica este mes
                 </span>
+                <span v-if="fila.motivo_exclusion"
+                  class="inline-flex items-center gap-1 ml-1.5 text-[10px] font-normal px-1.5 py-0.5 rounded-full align-middle cursor-help"
+                  style="background:#fee2e2; color:#991b1b"
+                  :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
+                  <i class="pi pi-comment text-[9px]" />excluido
+                </span>
               </td>
               <td class="px-4 py-2 whitespace-nowrap">
                 <span class="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full"
