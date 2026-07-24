@@ -1,7 +1,12 @@
 <template>
   <div class="space-y-4">
     <PageHeader title="Despachos liquidados"
-                subtitle="Despachos de energía liquidados por contrato" />
+                subtitle="Despachos de energía liquidados por contrato">
+      <template #actions>
+        <Button label="Consultar IPP" icon="pi pi-percentage" size="small" outlined @click="abrirIpp" />
+        <Button label="Consultar FTP y liquidar" icon="pi pi-bolt" size="small" @click="abrirFtp" />
+      </template>
+    </PageHeader>
 
     <!-- Filtro de búsqueda -->
     <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
@@ -52,14 +57,78 @@
         </table>
       </div>
     </div>
+
+    <!-- Dialog: Consultar IPP / Consultar FTP y liquidar -->
+    <Dialog v-model:visible="dialogVisible" :header="modo === 'ftp' ? 'Consultar FTP y liquidar' : 'Consultar IPP'"
+            modal class="w-full max-w-sm">
+      <form @submit.prevent="consultar" class="space-y-4 pt-1">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="field-label">Mes</label>
+            <InputNumber v-model="c.mes" :min="1" :max="12" :useGrouping="false" class="w-full" placeholder="1–12" />
+          </div>
+          <div>
+            <label class="field-label">Año</label>
+            <InputNumber v-model="c.anio" :useGrouping="false" class="w-full" placeholder="ej: 2026" />
+          </div>
+        </div>
+        <div v-if="modo === 'ftp'">
+          <label class="field-label">Versión</label>
+          <Select v-model="c.version" :options="VERSIONES" class="w-full" placeholder="Seleccionar" />
+        </div>
+        <div class="flex justify-end gap-2 pt-1">
+          <Button type="button" label="Cancelar" severity="secondary" @click="dialogVisible = false" />
+          <Button type="submit" :label="modo === 'ftp' ? 'Consultar y liquidar' : 'Consultar'" icon="pi pi-check" />
+        </div>
+      </form>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+import Select from 'primevue/select'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
+
+// Versiones de liquidación XM (solo aplica a "Consultar FTP y liquidar").
+const VERSIONES = ['TXF', 'TX1', 'TX2', 'TX3', 'TX4', 'TX5', 'TX6', 'TX7', 'TX8']
+
+// ── Consulta (IPP: mes+año · FTP: mes+año+versión) ────────────────────────────
+const dialogVisible = ref(false)
+const modo = ref('ipp')          // 'ipp' | 'ftp'
+const c = reactive({ mes: null, anio: null, version: null })
+
+function abrirIpp() {
+  modo.value = 'ipp'
+  Object.assign(c, { mes: null, anio: null, version: null })
+  dialogVisible.value = true
+}
+function abrirFtp() {
+  modo.value = 'ftp'
+  Object.assign(c, { mes: null, anio: null, version: null })
+  dialogVisible.value = true
+}
+function consultar() {
+  if (c.mes == null || c.anio == null || (modo.value === 'ftp' && !c.version)) {
+    toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año' + (modo.value === 'ftp' ? ' y versión.' : '.'), life: 4000 })
+    return
+  }
+  toast.add({
+    severity: 'info',
+    summary: modo.value === 'ftp' ? 'Consulta FTP lista' : 'Consulta IPP lista',
+    detail: 'Se conectará a la API próximamente.',
+    life: 4500,
+  })
+  dialogVisible.value = false
+}
 
 // Columnas (en español) — los datos vienen de la API:
 // DATE, ENERGY, PRICE, DATA TYPE, CONTRACT ENERGY PROJECT, VERSION.
