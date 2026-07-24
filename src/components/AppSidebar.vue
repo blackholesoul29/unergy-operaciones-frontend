@@ -310,19 +310,30 @@ const ALL_GROUPS = [
       {
         label: 'Liquidaciones', icon: 'pi pi-dollar', roles: ['admin', 'liquidaciones'],
         children: [
-          { to: '/liquidaciones?tipo=minigranja', label: 'Minigranjas' },
-          { to: '/liquidaciones?tipo=autoconsumo', label: 'Autoconsumo' },
           { to: '/finanzas/ids-proyectos', label: 'IDs proyectos' },
           { to: '/finanzas/contratos-energia', label: 'Contratos de energía' },
           { to: '/finanzas/despachos-liquidados', label: 'Despachos liquidados' },
           { to: '/finanzas/costos-comercializacion', label: 'Costos comercialización' },
+          { to: '/finanzas/facturas-xm', label: 'Facturas de XM' },
         ],
       },
-      { to: '/liquidaciones/inversionista', label: 'Por Inversionista', icon: 'pi pi-users', roles: ['admin', 'liquidaciones'] },
-      { to: '/panel-contable', label: 'Panel Contable', icon: 'pi pi-calculator', roles: ['admin', 'liquidaciones'] },
+      {
+        label: 'Panel Contable', icon: 'pi pi-calculator', roles: ['admin', 'liquidaciones'],
+        children: [
+          { to: '/panel-contable', label: 'Panel contable' },
+          { to: '/liquidaciones?tipo=minigranja', label: 'Minigranjas' },
+          { to: '/liquidaciones?tipo=autoconsumo', label: 'Autoconsumo' },
+          { to: '/liquidaciones/inversionista', label: 'Por Inversionista' },
+        ],
+      },
+      {
+        label: 'Herramientas liquidaciones', icon: 'pi pi-wrench', roles: ['admin', 'liquidaciones'],
+        children: [
+          { to: '/validador-mandatos', label: 'Validador de Mandatos' },
+          { to: '/finanzas/descarga-xm', label: 'Descarga de XM' },
+        ],
+      },
       { to: '/finanzas/costos', label: 'Costos', icon: 'pi pi-credit-card', roles: ['admin', 'liquidaciones'] },
-      { to: '/validador-mandatos', label: 'Validador de Mandatos', icon: 'pi pi-file-check', roles: ['admin', 'liquidaciones'] },
-      { to: '/finanzas/descarga-xm', label: 'Descarga de XM', icon: 'pi pi-cloud-download', roles: ['admin', 'liquidaciones'] },
     ],
   },
   {

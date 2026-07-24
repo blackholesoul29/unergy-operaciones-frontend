@@ -1,7 +1,11 @@
 <template>
   <div class="space-y-4">
     <PageHeader title="Costos comercialización"
-                subtitle="Costos de comercialización por proyecto" />
+                subtitle="Costos de comercialización por proyecto">
+      <template #actions>
+        <Button label="Ingresar AC Power" icon="pi pi-bolt" size="small" @click="abrirAcPower" />
+      </template>
+    </PageHeader>
 
     <!-- Filtro de búsqueda -->
     <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
@@ -53,14 +57,75 @@
         </table>
       </div>
     </div>
+
+    <!-- Dialog: Ingresar AC Power de XM -->
+    <Dialog v-model:visible="acVisible" header="Ingresar AC Power de XM" modal class="w-full max-w-md">
+      <form @submit.prevent="guardarAcPower" class="space-y-4 pt-1">
+        <p class="text-xs text-gray-500">
+          Crea automáticamente los registros de ingresos (revenue) y costos (costs) del período.
+        </p>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="field-label">Mes</label>
+            <InputNumber v-model="ac.month" :min="1" :max="12" :useGrouping="false" class="w-full" placeholder="1–12" />
+          </div>
+          <div>
+            <label class="field-label">Año</label>
+            <InputNumber v-model="ac.year" :useGrouping="false" class="w-full" placeholder="ej: 2026" />
+          </div>
+        </div>
+        <div>
+          <label class="field-label">Nueva versión</label>
+          <InputText v-model="ac.new_version" class="w-full" placeholder="ej: TXF, TX3…" />
+        </div>
+        <div>
+          <label class="field-label">Total AC Power</label>
+          <InputNumber v-model="ac.total_ac_power" :maxFractionDigits="4" :useGrouping="false" class="w-full" placeholder="ej: 12345.6789" />
+        </div>
+        <div class="flex justify-end gap-2 pt-1">
+          <Button type="button" label="Cancelar" severity="secondary" @click="acVisible = false" />
+          <Button type="submit" label="Ingresar" icon="pi pi-check" />
+        </div>
+      </form>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
+import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
+import { useToast } from 'primevue/usetoast'
+
+const toast = useToast()
+
+// AC Power de XM
+// ── Ingresar AC Power de XM (crea revenue + costs automáticamente) ────────────
+// Frontend envía: month:int, year:int, new_version:string, total_ac_power:float
+const acVisible = ref(false)
+const ac = reactive({ month: null, year: null, new_version: '', total_ac_power: null })
+
+function abrirAcPower() {
+  Object.assign(ac, { month: null, year: null, new_version: '', total_ac_power: null })
+  acVisible.value = true
+}
+function guardarAcPower() {
+  if (ac.month == null || ac.year == null || !ac.new_version || ac.total_ac_power == null) {
+    toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año, nueva versión y total AC Power.', life: 4000 })
+    return
+  }
+  toast.add({
+    severity: 'info',
+    summary: 'AC Power listo para enviar',
+    detail: 'Se conectará a la API próximamente (creará ingresos y costos automáticamente).',
+    life: 4500,
+  })
+  acVisible.value = false
+}
 
 // Columnas (en español) — los datos vienen de la API:
 // FROM DATE, TO DATE, PROJECT, VALUE, PAYMENT FRECUENCY,
