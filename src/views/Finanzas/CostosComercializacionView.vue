@@ -82,6 +82,11 @@
           <label class="field-label">Total AC Power</label>
           <InputNumber v-model="ac.total_ac_power" :maxFractionDigits="4" :useGrouping="false" class="w-full" placeholder="ej: 12345.6789" />
         </div>
+        <div class="flex items-center gap-2">
+          <Checkbox v-model="ac.sobreescribir" :binary="true" inputId="ac-sobreescribir" />
+          <label for="ac-sobreescribir" class="text-sm text-gray-600 cursor-pointer">Sobreescribir</label>
+          <span class="text-[11px] text-gray-400">(reemplaza los registros del período si ya existen)</span>
+        </div>
         <div class="flex justify-end gap-2 pt-1">
           <Button type="button" label="Cancelar" severity="secondary" @click="acVisible = false" />
           <Button type="submit" label="Ingresar" icon="pi pi-check" />
@@ -97,6 +102,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import Checkbox from 'primevue/checkbox'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
@@ -107,10 +113,10 @@ const toast = useToast()
 // ── Ingresar AC Power de XM (crea revenue + costs automáticamente) ────────────
 // Frontend envía: month:int, year:int, new_version:string, total_ac_power:float
 const acVisible = ref(false)
-const ac = reactive({ month: null, year: null, new_version: '', total_ac_power: null })
+const ac = reactive({ month: null, year: null, new_version: '', total_ac_power: null, sobreescribir: false })
 
 function abrirAcPower() {
-  Object.assign(ac, { month: null, year: null, new_version: '', total_ac_power: null })
+  Object.assign(ac, { month: null, year: null, new_version: '', total_ac_power: null, sobreescribir: false })
   acVisible.value = true
 }
 function guardarAcPower() {
