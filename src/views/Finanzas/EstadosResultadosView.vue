@@ -1,22 +1,111 @@
 <template>
   <div class="space-y-4">
     <PageHeader title="Estados de resultados"
-                subtitle="Genera estados de resultados y el cruce de facturas por período">
+                subtitle="Archivos generados en Drive · estados de resultados y cruce de facturas">
       <template #actions>
         <Button label="Crear cruce facturas" icon="pi pi-file" size="small" outlined @click="abrirCrudo" />
         <Button label="Generar estado de resultados" icon="pi pi-chart-line" size="small" @click="abrirEstado" />
       </template>
     </PageHeader>
 
-    <!-- Panel informativo -->
-    <div class="bg-white rounded-xl shadow-sm border p-8 text-center" style="border-color:#ECE7F2">
-      <i class="pi pi-chart-line text-3xl mb-3 block" style="color:#915BD8" />
-      <p class="text-sm font-semibold text-gray-700">Generación de estados de resultados</p>
-      <p class="text-xs text-gray-400 mt-1 max-w-md mx-auto">
-        Usa los botones de arriba para generar el <b>estado de resultados</b> de un período
-        (opcionalmente por proyecto) o el <b>cruce de facturas</b>. La generación se conectará
-        a la API próximamente.
-      </p>
+    <!-- Filtros -->
+    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
+      <div>
+        <label class="field-label">Documento</label>
+        <div class="er-toggle">
+          <button v-for="t in TIPOS" :key="t.key" class="er-toggle-btn"
+                  :class="{ 'er-toggle-btn--on': tipo === t.key }" @click="tipo = t.key">
+            {{ t.label }}
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label class="field-label">Período</label>
+        <Select v-model="periodoSel" :options="opcionesPeriodo" optionLabel="label" optionValue="value"
+                class="w-44" :loading="cargandoPeriodos" />
+      </div>
+
+      <div>
+        <label class="field-label">Buscar</label>
+        <IconField>
+          <InputIcon class="pi pi-search" />
+          <InputText v-model="q" placeholder="Cliente o proyecto…" class="w-64" />
+        </IconField>
+      </div>
+
+      <div class="flex-1" />
+
+      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
+              v-tooltip.left="'Recargar desde Drive'" @click="cargar(true)" />
+      <div class="text-xs text-gray-400 self-center">
+        {{ filas.length }} archivo{{ filas.length === 1 ? '' : 's' }}
+      </div>
+    </div>
+
+    <!-- Aviso de listado recortado -->
+    <div v-if="truncado" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+         style="background:#FFF8E6; border:1px solid #F5E3B3; color:#7A5C00">
+      <i class="pi pi-exclamation-triangle" />
+      Se muestran los {{ archivos.length }} más recientes de {{ totalFiltrados }}. Filtra por período para ver el resto.
+    </div>
+
+    <!-- Tabla -->
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
+      <div v-if="loading" class="p-10 flex justify-center">
+        <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
+      </div>
+
+      <div v-else-if="error" class="p-10 text-center">
+        <i class="pi pi-times-circle text-2xl mb-2 block" style="color:#DC2626" />
+        <p class="text-sm text-gray-600">{{ error }}</p>
+        <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined class="mt-3" @click="cargar(true)" />
+      </div>
+
+      <div v-else class="overflow-x-auto">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-100">
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide">Documento</th>
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide" style="width:110px">Período</th>
+              <th v-if="tipo === 'cruce_facturas'"
+                  class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide" style="width:90px">Versión</th>
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide" style="width:120px">Modificado</th>
+              <th class="px-4 py-2.5 text-right font-medium text-gray-500 text-xs uppercase tracking-wide" style="width:90px">Tamaño</th>
+              <th class="px-4 py-2.5" style="width:70px"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="a in filas" :key="a.id"
+                class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
+              <td class="px-4 py-2">
+                <i class="pi pi-file-excel mr-2 text-xs" style="color:#1D6F42" />
+                <span :title="a.nombre">{{ a.descripcion || 'Cruce de facturas' }}</span>
+                <span v-if="a.es_copia" class="ml-2 text-[10px] px-1.5 py-0.5 rounded"
+                      style="background:#F1EAF9; color:#6E3FB8" title="Duplicado creado en Drive">copia</span>
+              </td>
+              <td class="px-4 py-2 text-xs text-gray-500">{{ fmtPeriodo(a.mes, a.anio) }}</td>
+              <td v-if="tipo === 'cruce_facturas'" class="px-4 py-2 text-xs font-mono uppercase">{{ a.version || '—' }}</td>
+              <td class="px-4 py-2 text-xs text-gray-500">{{ fmtFecha(a.modificado) }}</td>
+              <td class="px-4 py-2 text-right text-xs font-mono text-gray-500">{{ fmtTamano(a.tamano) }}</td>
+              <td class="px-4 py-2">
+                <div class="flex justify-end">
+                  <a v-if="a.link" :href="a.link" target="_blank" rel="noopener">
+                    <Button icon="pi pi-external-link" text rounded size="small" severity="info"
+                            v-tooltip.left="'Abrir en Drive'" />
+                  </a>
+                </div>
+              </td>
+            </tr>
+            <tr v-if="!filas.length">
+              <td :colspan="tipo === 'cruce_facturas' ? 6 : 5" class="px-4 py-12 text-center text-sm text-gray-400">
+                <i class="pi pi-folder-open text-2xl mb-2 block text-gray-300" />
+                {{ q ? 'Ningún archivo coincide con la búsqueda.' : 'No hay archivos para este período.' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <!-- Dialog: Generar estado de resultados -->
@@ -74,14 +163,104 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
+import Select from 'primevue/select'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
+import api from '@/api/client'
 
 const toast = useToast()
+
+const TIPOS = [
+  { key: 'estado_resultados', label: 'Estados de resultados' },
+  { key: 'cruce_facturas', label: 'Cruce de facturas' },
+]
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
+// ── Listado de archivos de Drive ──────────────────────────────────────────────
+// El filtro de tipo y período va al servidor (la carpeta tiene ~1.700 archivos);
+// la búsqueda por texto se hace en cliente sobre el período ya cargado.
+const TODOS = 'todos'
+const LIMITE_TODOS = 1000
+
+const tipo = ref('estado_resultados')
+const periodoSel = ref(TODOS)
+const q = ref('')
+
+const loading = ref(true)
+const cargandoPeriodos = ref(true)
+const error = ref('')
+const archivos = ref([])
+const periodos = ref([])
+const totalFiltrados = ref(0)
+const truncado = ref(false)
+
+const opcionesPeriodo = computed(() => [
+  { label: 'Todos los períodos', value: TODOS },
+  ...periodos.value.map(p => ({
+    label: `${fmtPeriodo(p.mes, p.anio)} (${p.total})`,
+    value: `${p.anio}-${p.mes}`,
+  })),
+])
+
+const filas = computed(() => {
+  const term = q.value.trim().toLowerCase()
+  if (!term) return archivos.value
+  return archivos.value.filter(a => (a.nombre || '').toLowerCase().includes(term))
+})
+
+function fmtPeriodo(mes, anio) {
+  if (!mes || !anio) return '—'
+  return `${MESES[mes - 1]} ${anio}`
+}
+function fmtFecha(iso) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime())
+    ? '—'
+    : d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+function fmtTamano(bytes) {
+  if (!bytes) return '—'
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+async function cargar(refrescar = false) {
+  loading.value = true
+  error.value = ''
+  try {
+    const params = { tipo: tipo.value, refrescar }
+    if (periodoSel.value === TODOS) {
+      params.limite = LIMITE_TODOS
+    } else {
+      const [anio, mes] = String(periodoSel.value).split('-').map(Number)
+      params.anio = anio
+      params.mes = mes
+    }
+    const { data } = await api.get('/estados-resultados/archivos', { params })
+    archivos.value = data.archivos || []
+    periodos.value = data.periodos || []
+    totalFiltrados.value = data.total_filtrados || 0
+    truncado.value = !!data.truncado
+  } catch (e) {
+    archivos.value = []
+    error.value = e.response?.data?.detail || 'No se pudo leer la carpeta de Drive'
+  } finally {
+    loading.value = false
+    cargandoPeriodos.value = false
+  }
+}
+
+// Cambiar tipo o período recarga del servidor; el texto filtra en cliente.
+watch([tipo, periodoSel], () => cargar())
+onMounted(() => cargar())
 
 // ── Generar estado de resultados (mes, año, versión, proyecto opcional) ───────
 const estadoVisible = ref(false)
@@ -100,7 +279,7 @@ function generarEstado() {
   estadoVisible.value = false
 }
 
-// ── Generar crudo de facturas (mes, año, versión) ─────────────────────────────
+// ── Generar cruce de facturas (mes, año, versión) ─────────────────────────────
 const crudoVisible = ref(false)
 const cr = reactive({ mes: null, anio: null, version: '' })
 
@@ -120,4 +299,20 @@ function generarCrudo() {
 
 <style scoped>
 .field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+
+.er-toggle {
+  display: inline-flex;
+  background: #F4F1FA;
+  border: 1px solid #E5E2EC;
+  border-radius: 8px;
+  padding: 2px;
+}
+.er-toggle-btn {
+  background: transparent; border: none;
+  padding: 5px 11px; font-size: 12px; font-weight: 700;
+  color: #6B5A8A; border-radius: 6px; cursor: pointer; transition: all .15s;
+  white-space: nowrap;
+}
+.er-toggle-btn:hover:not(.er-toggle-btn--on) { color: #2C2039; background: rgba(145, 91, 216, .08); }
+.er-toggle-btn--on { background: #915BD8; color: #FDFAF7; box-shadow: 0 1px 4px rgba(145, 91, 216, .3); }
 </style>
