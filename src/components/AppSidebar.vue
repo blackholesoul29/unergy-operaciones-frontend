@@ -315,6 +315,7 @@ const ALL_GROUPS = [
           { to: '/finanzas/ids-proyectos', label: 'IDs proyectos' },
           { to: '/finanzas/contratos-energia', label: 'Contratos de energía' },
           { to: '/finanzas/despachos-liquidados', label: 'Despachos liquidados' },
+          { to: '/finanzas/costos-comercializacion', label: 'Costos comercialización' },
         ],
       },
       { to: '/liquidaciones/inversionista', label: 'Por Inversionista', icon: 'pi pi-users', roles: ['admin', 'liquidaciones'] },
