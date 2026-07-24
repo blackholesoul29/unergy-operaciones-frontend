@@ -63,6 +63,7 @@ const routes = [
   { path: '/finanzas/despachos-liquidados', name: 'DespachosLiquidados', component: () => import('@/views/Finanzas/DespachosLiquidadosView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/costos-comercializacion', name: 'CostosComercializacion', component: () => import('@/views/Finanzas/CostosComercializacionView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/facturas-xm', name: 'FacturasXm', component: () => import('@/views/Finanzas/FacturasXmView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
+  { path: '/finanzas/verificacion-costos', name: 'VerificacionCostos', component: () => import('@/views/Finanzas/VerificacionCostosView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/panel-contable',              name: 'PanelContable',              component: () => import('@/views/PanelContable/PanelContableView.vue'),                    meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/liquidaciones/minigranjas',   redirect: '/liquidaciones' },
   { path: '/liquidaciones/:id',           name: 'LiquidacionDetalle',         component: () => import('@/views/Liquidaciones/LiquidacionDetailView.vue'),           meta: { roles: ['admin', 'liquidaciones'] } },
