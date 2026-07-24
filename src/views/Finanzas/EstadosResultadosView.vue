@@ -26,6 +26,14 @@
                 class="w-44" :loading="cargandoPeriodos" />
       </div>
 
+      <!-- La versión (txf, tx3…tx8) solo está en el nombre del cruce de facturas;
+           los estados de resultados no la llevan, así que el filtro no aplica ahí. -->
+      <div v-if="versiones.length">
+        <label class="field-label">Versión</label>
+        <Select v-model="versionSel" :options="opcionesVersion" optionLabel="label" optionValue="value"
+                class="w-32" />
+      </div>
+
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
@@ -36,6 +44,10 @@
 
       <div class="flex-1" />
 
+      <Button label="Descargar ZIP" icon="pi pi-download" size="small" outlined
+              :loading="descargandoZip" :disabled="!archivos.length"
+              v-tooltip.top="'Descarga en un ZIP todo lo que coincide con los filtros'"
+              @click="descargarZip" />
       <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
               v-tooltip.left="'Recargar desde Drive'" @click="cargar(true)" />
       <div class="text-xs text-gray-400 self-center">
@@ -89,7 +101,10 @@
               <td class="px-4 py-2 text-xs text-gray-500">{{ fmtFecha(a.modificado) }}</td>
               <td class="px-4 py-2 text-right text-xs font-mono text-gray-500">{{ fmtTamano(a.tamano) }}</td>
               <td class="px-4 py-2">
-                <div class="flex justify-end">
+                <div class="flex justify-end gap-1">
+                  <Button icon="pi pi-download" text rounded size="small" severity="secondary"
+                          :loading="descargando === a.id"
+                          v-tooltip.left="'Descargar archivo'" @click="descargarUno(a)" />
                   <a v-if="a.link" :href="a.link" target="_blank" rel="noopener">
                     <Button icon="pi pi-external-link" text rounded size="small" severity="info"
                             v-tooltip.left="'Abrir en Drive'" />
@@ -190,6 +205,7 @@ const LIMITE_TODOS = 1000
 
 const tipo = ref('estado_resultados')
 const periodoSel = ref(TODOS)
+const versionSel = ref(TODOS)
 const q = ref('')
 
 const loading = ref(true)
@@ -197,6 +213,7 @@ const cargandoPeriodos = ref(true)
 const error = ref('')
 const archivos = ref([])
 const periodos = ref([])
+const versiones = ref([])
 const totalFiltrados = ref(0)
 const truncado = ref(false)
 
@@ -206,6 +223,10 @@ const opcionesPeriodo = computed(() => [
     label: `${fmtPeriodo(p.mes, p.anio)} (${p.total})`,
     value: `${p.anio}-${p.mes}`,
   })),
+])
+const opcionesVersion = computed(() => [
+  { label: 'Todas', value: TODOS },
+  ...versiones.value.map(v => ({ label: v.toUpperCase(), value: v })),
 ])
 
 const filas = computed(() => {
@@ -232,23 +253,36 @@ function fmtTamano(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+// Filtros que van al servidor. El ZIP usa exactamente estos, así que trae lo
+// mismo que la tabla (el texto se filtra en cliente y por eso no entra aquí).
+function filtrosServidor() {
+  const p = { tipo: tipo.value }
+  if (periodoSel.value !== TODOS) {
+    const [anio, mes] = String(periodoSel.value).split('-').map(Number)
+    p.anio = anio
+    p.mes = mes
+  }
+  if (versionSel.value !== TODOS) p.version = versionSel.value
+  return p
+}
+
 async function cargar(refrescar = false) {
   loading.value = true
   error.value = ''
   try {
-    const params = { tipo: tipo.value, refrescar }
-    if (periodoSel.value === TODOS) {
-      params.limite = LIMITE_TODOS
-    } else {
-      const [anio, mes] = String(periodoSel.value).split('-').map(Number)
-      params.anio = anio
-      params.mes = mes
-    }
+    const params = { ...filtrosServidor(), refrescar }
+    if (periodoSel.value === TODOS) params.limite = LIMITE_TODOS
     const { data } = await api.get('/estados-resultados/archivos', { params })
     archivos.value = data.archivos || []
     periodos.value = data.periodos || []
+    versiones.value = data.versiones || []
     totalFiltrados.value = data.total_filtrados || 0
     truncado.value = !!data.truncado
+    // Al cambiar de tipo la versión seleccionada puede no existir (los ER no
+    // tienen versión); se limpia para no dejar un filtro invisible aplicado.
+    if (versionSel.value !== TODOS && !versiones.value.includes(versionSel.value)) {
+      versionSel.value = TODOS
+    }
   } catch (e) {
     archivos.value = []
     error.value = e.response?.data?.detail || 'No se pudo leer la carpeta de Drive'
@@ -258,9 +292,57 @@ async function cargar(refrescar = false) {
   }
 }
 
-// Cambiar tipo o período recarga del servidor; el texto filtra en cliente.
-watch([tipo, periodoSel], () => cargar())
+// Cambiar tipo, período o versión recarga del servidor; el texto filtra en cliente.
+watch([tipo, periodoSel, versionSel], () => cargar())
 onMounted(() => cargar())
+
+// ── Descargas ─────────────────────────────────────────────────────────────────
+// El backend proxea el archivo con el service account, así que funciona aunque el
+// usuario no tenga permisos sobre la carpeta de Drive.
+const descargando = ref(null)
+const descargandoZip = ref(false)
+
+function guardarBlob(blob, nombre) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = nombre
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(url), 100)
+}
+
+async function descargarUno(archivo) {
+  descargando.value = archivo.id
+  try {
+    const resp = await api.get(`/estados-resultados/archivos/${archivo.id}/descargar`,
+      { responseType: 'blob' })
+    guardarBlob(resp.data, archivo.nombre)
+  } catch {
+    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo descargar el archivo', life: 4000 })
+  } finally {
+    descargando.value = null
+  }
+}
+
+async function descargarZip() {
+  descargandoZip.value = true
+  try {
+    const resp = await api.get('/estados-resultados/archivos-zip',
+      { params: filtrosServidor(), responseType: 'blob' })
+    const partes = [tipo.value === 'cruce_facturas' ? 'cruce_facturas' : 'estados_resultados']
+    if (periodoSel.value !== TODOS) partes.push(periodoSel.value)
+    if (versionSel.value !== TODOS) partes.push(versionSel.value)
+    guardarBlob(resp.data, `${partes.join('_')}.zip`)
+  } catch (e) {
+    // El detalle viene como blob por responseType; hay que leerlo para mostrarlo
+    // (si no, el tope de 600 archivos se vería como un error genérico).
+    let detalle = 'No se pudo generar el ZIP'
+    try { detalle = JSON.parse(await e.response.data.text()).detail || detalle } catch { /* noop */ }
+    toast.add({ severity: 'warn', summary: 'ZIP no generado', detail: detalle, life: 6000 })
+  } finally {
+    descargandoZip.value = false
+  }
+}
 
 // ── Generar estado de resultados (mes, año, versión, proyecto opcional) ───────
 const estadoVisible = ref(false)
