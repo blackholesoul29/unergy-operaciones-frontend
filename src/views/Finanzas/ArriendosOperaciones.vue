@@ -192,7 +192,8 @@
     <Dialog v-model:visible="showIPCDialog" modal header="Tasas IPC — Arriendos" :style="{ width: '460px' }">
       <div class="space-y-3 pt-1">
         <p class="text-xs text-gray-500">
-          El IPC de diciembre del año N se aplica a partir del 1 de enero del año N+1.
+          El IPC de diciembre del año N (columna "Año dic") se aplica en el
+          <b>aniversario del contrato</b> del año N+1, no cada 1 de enero.
         </p>
         <DataTable :value="ipcTasas" class="text-sm" stripedRows>
           <Column field="año" header="Año dic" style="width:80px" />
@@ -366,7 +367,10 @@ const totalSeleccionado  = computed(() =>
   filas.value.filter(f => f.habilitado && seleccion[f.id]).reduce((s, f) => s + (f.canon_a_facturar || 0), 0))
 
 // IPC faltante no lo expone el backend → notificación deshabilitada
-const proyectosSinIPC = computed(() => [])
+// Proyectos con indexación incompleta por falta de tasa IPC de algún año.
+const proyectosSinIPC = computed(() =>
+  filas.value.filter(f => f.ipc_incompleto).map(f => f.proyecto)
+)
 
 function toggleTodos(e) {
   filasHabilitadas.value.forEach(f => { seleccion[f.id] = e.target.checked })
