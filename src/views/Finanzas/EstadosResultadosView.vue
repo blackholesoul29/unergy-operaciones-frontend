@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <PageHeader title="Estados de resultados"
-                subtitle="Genera estados de resultados y el crudo de facturas por período">
+                subtitle="Genera estados de resultados y el cruce de facturas por período">
       <template #actions>
         <Button label="Crear cruce facturas" icon="pi pi-file" size="small" outlined @click="abrirCrudo" />
         <Button label="Generar estado de resultados" icon="pi pi-chart-line" size="small" @click="abrirEstado" />
@@ -14,7 +14,7 @@
       <p class="text-sm font-semibold text-gray-700">Generación de estados de resultados</p>
       <p class="text-xs text-gray-400 mt-1 max-w-md mx-auto">
         Usa los botones de arriba para generar el <b>estado de resultados</b> de un período
-        (opcionalmente por proyecto) o el <b>crudo de facturas</b>. La generación se conectará
+        (opcionalmente por proyecto) o el <b>cruce de facturas</b>. La generación se conectará
         a la API próximamente.
       </p>
     </div>
@@ -47,8 +47,8 @@
       </form>
     </Dialog>
 
-    <!-- Dialog: Generar crudo de facturas -->
-    <Dialog v-model:visible="crudoVisible" header="Generar crudo de facturas" modal class="w-full max-w-md">
+    <!-- Dialog: Crear cruce facturas -->
+    <Dialog v-model:visible="crudoVisible" header="Crear cruce facturas" modal class="w-full max-w-md">
       <form @submit.prevent="generarCrudo" class="space-y-4 pt-1">
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -113,7 +113,7 @@ function generarCrudo() {
     toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año y versión.', life: 4000 })
     return
   }
-  toast.add({ severity: 'info', summary: 'Crudo de facturas listo', detail: 'La generación se conectará a la API próximamente.', life: 4500 })
+  toast.add({ severity: 'info', summary: 'Cruce de facturas listo', detail: 'La generación se conectará a la API próximamente.', life: 4500 })
   crudoVisible.value = false
 }
 </script>
