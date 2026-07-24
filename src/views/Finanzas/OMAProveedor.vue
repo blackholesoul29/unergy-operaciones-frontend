@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4 pt-3">
 
-    <div class="flex items-center gap-3">
+    <div class="bg-white rounded-xl shadow-sm p-3 flex items-center gap-3 border" style="border-color:#ECE7F2">
       <button type="button" @click="cambiarMes(-1)"
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
         <i class="pi pi-chevron-left text-xs text-gray-500" />
@@ -16,28 +16,30 @@
       <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
     </div>
 
-    <div v-if="loading" class="flex justify-center py-10"><ProgressSpinner /></div>
+    <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center border" style="border-color:#ECE7F2">
+      <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
+    </div>
     <div v-else-if="!filas.length"
-      class="rounded-xl border border-dashed p-8 text-center" style="border-color:#915BD840">
+      class="bg-white rounded-xl shadow-sm p-10 text-center border" style="border-color:#ECE7F2">
       <i class="pi pi-inbox text-2xl mb-2 block" style="color:#c4b5fd"/>
       <p class="text-sm text-gray-500">No hay proyectos guardados para este período.</p>
       <p class="text-xs text-gray-400 mt-1">Operaciones aún no guardó la selección del mes.</p>
     </div>
-    <div v-else class="rounded-xl border border-gray-100 overflow-hidden">
+    <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
       <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse" style="min-width:700px">
           <thead>
             <tr class="bg-gray-50 border-b border-gray-100">
-              <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500">Proyecto</th>
-              <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500">Mes / Año</th>
-              <th class="px-4 py-2.5 text-right text-xs font-semibold text-gray-500">Valor a Facturar</th>
-              <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500">Indexación aplicada</th>
-              <th class="px-4 py-2.5 text-center text-xs font-semibold text-gray-500">Estado</th>
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Proyecto</th>
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Periodo a facturar</th>
+              <th class="px-4 py-2.5 text-right font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Valor a Facturar</th>
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Indexación aplicada</th>
+              <th class="px-4 py-2.5 text-center font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Estado</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="fila in filas" :key="fila.contrato_id"
-              class="border-b border-gray-50 hover:bg-gray-50/50">
+              class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
               <td class="px-4 py-2.5 font-medium" style="color:#2C2039">{{ fila.nombre_proyecto }}</td>
               <td class="px-4 py-2.5 text-xs text-gray-500">{{ fila.mes_año }}</td>
               <td class="px-4 py-2.5 text-right font-semibold tabular-nums" style="color:#7c3aed">
@@ -70,7 +72,7 @@
     </div>
 
     <!-- ── Factura consolidada del mes ───────────────────────────────── -->
-    <div class="rounded-xl border bg-white overflow-hidden" style="border-color:#E5E2EC">
+    <div class="rounded-xl border bg-white shadow-sm overflow-hidden" style="border-color:#ECE7F2">
       <div class="flex items-center justify-between px-4 py-2.5 border-b" style="border-color:#F3F0FA;background:#FDFCFF">
         <div class="flex items-center gap-2">
           <i class="pi pi-file-pdf text-xs" style="color:#915BD8" />
@@ -236,7 +238,6 @@
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import Tag             from 'primevue/tag'
-import ProgressSpinner from 'primevue/progressspinner'
 import { useToast }    from 'primevue/usetoast'
 import api             from '@/api/client'
 
