@@ -3,8 +3,9 @@
     <PageHeader title="Despachos liquidados"
                 subtitle="Despachos de energía liquidados por contrato">
       <template #actions>
-        <Button label="Consultar IPP" icon="pi pi-percentage" size="small" outlined @click="abrirIpp" />
-        <Button label="Consultar FTP y liquidar" icon="pi pi-bolt" size="small" @click="abrirFtp" />
+        <Button label="Consultar IPP" icon="pi pi-percentage" size="small" outlined @click="abrir('ipp')" />
+        <Button label="Consultar FTP" icon="pi pi-download" size="small" outlined @click="abrir('ftp')" />
+        <Button label="Liquidar" icon="pi pi-bolt" size="small" @click="abrir('liquidar')" />
       </template>
     </PageHeader>
 
@@ -58,9 +59,8 @@
       </div>
     </div>
 
-    <!-- Dialog: Consultar IPP / Consultar FTP y liquidar -->
-    <Dialog v-model:visible="dialogVisible" :header="modo === 'ftp' ? 'Consultar FTP y liquidar' : 'Consultar IPP'"
-            modal class="w-full max-w-sm">
+    <!-- Dialog: Consultar IPP / Consultar FTP / Liquidar -->
+    <Dialog v-model:visible="dialogVisible" :header="cfg.header" modal class="w-full max-w-sm">
       <form @submit.prevent="consultar" class="space-y-4 pt-1">
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -72,13 +72,13 @@
             <InputNumber v-model="c.anio" :useGrouping="false" class="w-full" placeholder="ej: 2026" />
           </div>
         </div>
-        <div v-if="modo === 'ftp'">
+        <div v-if="cfg.version">
           <label class="field-label">Versión</label>
           <Select v-model="c.version" :options="VERSIONES" class="w-full" placeholder="Seleccionar" />
         </div>
         <div class="flex justify-end gap-2 pt-1">
           <Button type="button" label="Cancelar" severity="secondary" @click="dialogVisible = false" />
-          <Button type="submit" :label="modo === 'ftp' ? 'Consultar y liquidar' : 'Consultar'" icon="pi pi-check" />
+          <Button type="submit" :label="cfg.submit" icon="pi pi-check" />
         </div>
       </form>
     </Dialog>
@@ -98,32 +98,34 @@ import { useToast } from 'primevue/usetoast'
 
 const toast = useToast()
 
-// Versiones de liquidación XM (solo aplica a "Consultar FTP y liquidar").
+// Versiones de liquidación XM (aplica a Consultar FTP y a Liquidar).
 const VERSIONES = ['TXF', 'TX1', 'TX2', 'TX3', 'TX4', 'TX5', 'TX6', 'TX7', 'TX8']
 
-// ── Consulta (IPP: mes+año · FTP: mes+año+versión) ────────────────────────────
+// Tres acciones. IPP pide mes+año; FTP y Liquidar piden mes+año+versión.
+const MODOS = {
+  ipp:      { header: 'Consultar IPP', submit: 'Consultar', version: false },
+  ftp:      { header: 'Consultar FTP', submit: 'Consultar', version: true },
+  liquidar: { header: 'Liquidar',      submit: 'Liquidar',  version: true },
+}
+
 const dialogVisible = ref(false)
-const modo = ref('ipp')          // 'ipp' | 'ftp'
+const modo = ref('ipp')          // 'ipp' | 'ftp' | 'liquidar'
+const cfg = computed(() => MODOS[modo.value])
 const c = reactive({ mes: null, anio: null, version: null })
 
-function abrirIpp() {
-  modo.value = 'ipp'
-  Object.assign(c, { mes: null, anio: null, version: null })
-  dialogVisible.value = true
-}
-function abrirFtp() {
-  modo.value = 'ftp'
+function abrir(m) {
+  modo.value = m
   Object.assign(c, { mes: null, anio: null, version: null })
   dialogVisible.value = true
 }
 function consultar() {
-  if (c.mes == null || c.anio == null || (modo.value === 'ftp' && !c.version)) {
-    toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año' + (modo.value === 'ftp' ? ' y versión.' : '.'), life: 4000 })
+  if (c.mes == null || c.anio == null || (cfg.value.version && !c.version)) {
+    toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año' + (cfg.value.version ? ' y versión.' : '.'), life: 4000 })
     return
   }
   toast.add({
     severity: 'info',
-    summary: modo.value === 'ftp' ? 'Consulta FTP lista' : 'Consulta IPP lista',
+    summary: cfg.value.header + ' listo',
     detail: 'Se conectará a la API próximamente.',
     life: 4500,
   })
