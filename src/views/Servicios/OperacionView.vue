@@ -1051,7 +1051,7 @@
               dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
           </div>
           <div v-else-if="dialogEdit.tipo === 'arriendo'" class="col-span-2 md:col-span-1 flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Fecha firma contrato</label>
+            <label class="text-xs font-medium text-gray-600">Fecha de suscripción del contrato</label>
             <DatePicker v-model="dialogEdit.form.fecha_firma_contrato"
               dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
           </div>
@@ -1063,6 +1063,12 @@
               mode="currency" currency="COP" locale="es-CO" :maxFractionDigits="0"
               class="w-full" placeholder="$ 0" />
           </div>
+        </div>
+        <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-600">Periodicidad de cobro</label>
+          <Select v-model="dialogEdit.form.periodicidad_pago" :options="PERIODICIDADES"
+            optionLabel="label" optionValue="value" class="w-full" placeholder="Selecciona…" />
+          <p class="text-xs text-gray-400">Define en qué meses se cobra en el panel de Costos.</p>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Estado del pago</label>
@@ -1371,7 +1377,7 @@ const wizardTipo    = ref('mantenimiento')
 const dialogEdit = reactive({
   visible: false,
   tipo: 'mantenimiento',
-  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, enlace_drive: '', estado_pago: null },
+  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual' },
 })
 
 const dialogPago = reactive({
@@ -1486,6 +1492,7 @@ function openEditContrato(tipo) {
   dialogEdit.form.fecha_inicio = c.fecha_inicio ? new Date(c.fecha_inicio) : null
   dialogEdit.form.enlace_drive = c.enlace_drive || ''
   dialogEdit.form.estado_pago = c.estado_pago || null
+  dialogEdit.form.periodicidad_pago = c.periodicidad_pago || 'mensual'
   dialogEdit.visible = true
 }
 
@@ -1504,6 +1511,9 @@ async function saveContrato() {
       payload.fecha_inicio = toISO(dialogEdit.form.fecha_inicio)
     } else {
       payload.fecha_firma_contrato = toISO(dialogEdit.form.fecha_firma_contrato)
+    }
+    if (tipo === 'arriendo') {
+      payload.periodicidad_pago = dialogEdit.form.periodicidad_pago
     }
     const { data } = await api.patch(`/contratos-servicio/${contratos[tipo].id}`, payload)
     contratos[tipo] = { ...contratos[tipo], ...data }
