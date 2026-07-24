@@ -91,6 +91,12 @@
               <td class="px-3 py-2 font-medium" style="color:#2C2039; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
                 <span class="inline-flex items-center gap-1.5 max-w-full">
                   <span class="truncate">{{ fila.proyecto }}</span>
+                  <span v-if="fila.motivo_exclusion"
+                    class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full cursor-help flex-shrink-0"
+                    style="background:#fee2e2; color:#991b1b"
+                    :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
+                    <i class="pi pi-comment text-[9px]" />excluido
+                  </span>
                 </span>
               </td>
               <td class="px-3 py-2 font-mono text-xs text-gray-500">{{ periodoActual }}</td>
@@ -187,6 +193,28 @@
         <p>{{ proyectosSinIPC.join(', ') }} — agrégalo en el diálogo IPC.</p>
       </div>
     </div>
+
+    <!-- ── Diálogo: motivo de exclusión ─────────────────────────────────── -->
+    <Dialog v-model:visible="showExclusionDialog" modal header="Motivo de exclusión" :style="{ width: '30rem' }">
+      <p class="text-sm text-gray-600 mb-3">
+        Estos arriendos son facturables este mes pero los desmarcaste. Indica el motivo de cada exclusión (queda registrado):
+      </p>
+      <div v-for="e in exclusionPendientes" :key="e.id" class="mb-3">
+        <label class="text-xs font-semibold text-gray-700">{{ e.nombre }}</label>
+        <textarea v-model="e.motivo" rows="2"
+          class="w-full text-sm border border-gray-200 rounded-lg px-2 py-1.5 mt-1"
+          placeholder="Motivo de la exclusión…"></textarea>
+      </div>
+      <template #footer>
+        <button type="button" class="text-xs px-3 py-1.5 rounded-lg text-gray-500 hover:bg-gray-100"
+          @click="showExclusionDialog = false">Cancelar</button>
+        <button type="button" :disabled="!exclusionValida"
+          class="text-xs font-semibold px-3 py-1.5 rounded-lg"
+          style="background:#915BD8;color:#fff;border:none"
+          :style="!exclusionValida ? 'opacity:0.4;cursor:not-allowed' : 'cursor:pointer'"
+          @click="confirmarExclusiones">Guardar</button>
+      </template>
+    </Dialog>
 
     <!-- ── Dialog IPC ─────────────────────────────────────────────────────── -->
     <Dialog v-model:visible="showIPCDialog" modal header="Tasas IPC — Arriendos" :style="{ width: '460px' }">
@@ -376,10 +404,39 @@ function toggleTodos(e) {
   filasHabilitadas.value.forEach(f => { seleccion[f.id] = e.target.checked })
 }
 
+// Exclusión con observación obligatoria (paridad con Mantenimiento)
+const showExclusionDialog = ref(false)
+const exclusionPendientes = ref([])   // [{id, nombre, motivo}]
+const exclusionValida = computed(() =>
+  exclusionPendientes.value.every(e => e.motivo.trim().length > 0)
+)
+
 async function guardarSeleccion() {
+  // Proyectos facturables que quedaron desmarcados → exigir motivo antes de guardar.
+  const excluidos = filas.value.filter(f => f.habilitado && !seleccion[f.id])
+  if (excluidos.length) {
+    exclusionPendientes.value = excluidos.map(f => ({ id: f.id, nombre: f.proyecto, motivo: '' }))
+    showExclusionDialog.value = true
+    return
+  }
+  await _ejecutarGuardado({})
+}
+
+function confirmarExclusiones() {
+  const motivos = {}
+  exclusionPendientes.value.forEach(e => { motivos[e.id] = e.motivo.trim() })
+  showExclusionDialog.value = false
+  _ejecutarGuardado(motivos)
+}
+
+async function _ejecutarGuardado(motivos) {
   guardando.value = true
   try {
-    const items = filas.value.map(f => ({ proyecto_id: f.id, incluido: !!(seleccion[f.id] && f.habilitado) }))
+    const items = filas.value.map(f => ({
+      proyecto_id: f.id,
+      incluido: !!(seleccion[f.id] && f.habilitado),
+      motivo_exclusion: motivos[f.id] || null,
+    }))
     await api.post(`/arriendos/seleccion/${periodoActual.value}`, { items })
     toast.add({ severity: 'success', summary: 'Selección guardada', life: 2500 })
     await cargarDatos()
