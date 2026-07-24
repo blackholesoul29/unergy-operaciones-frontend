@@ -3,6 +3,7 @@
     <PageHeader title="Costos comercialización"
                 subtitle="Costos de comercialización por proyecto">
       <template #actions>
+        <Button label="Subir Excel costos" icon="pi pi-file-excel" size="small" outlined @click="abrirSubirExcel" />
         <Button label="Ingresar AC Power" icon="pi pi-bolt" size="small" @click="abrirAcPower" />
       </template>
     </PageHeader>
@@ -93,6 +94,47 @@
         </div>
       </form>
     </Dialog>
+
+    <!-- Input Excel oculto -->
+    <input ref="excelInput" type="file" accept=".xlsx,.xls" class="hidden" @change="onExcelSeleccionado" />
+
+    <!-- Dialog: Subir Excel de costos -->
+    <Dialog v-model:visible="excelVisible" header="Subir Excel de costos" modal class="w-full max-w-lg">
+      <div class="space-y-4 pt-1">
+        <button type="button" class="dropzone" @click="seleccionarExcel">
+          <i class="pi pi-file-excel text-3xl" style="color:#1D6F42" />
+          <p class="text-sm font-semibold text-gray-700 mt-2">Seleccionar Excel de costos</p>
+          <p class="text-xs text-gray-400">Formato .xlsx o .xls</p>
+        </button>
+
+        <div v-if="excel" class="flex items-center gap-3 rounded-lg border px-3 py-2" style="border-color:#ECE7F2">
+          <i class="pi pi-file-excel text-sm shrink-0" style="color:#1D6F42" />
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-medium text-gray-700 truncate">{{ excel.nombre }}</span>
+              <span class="text-[10px] text-gray-400 shrink-0">{{ fmtTamano(excel.tamano) }}</span>
+            </div>
+            <div class="mt-1 h-1.5 rounded-full overflow-hidden" style="background:#F1EAF9">
+              <div class="h-full rounded-full transition-all duration-200"
+                   :style="{ width: excel.progreso + '%', background: excel.estado === 'error' ? '#D64455' : '#915BD8' }" />
+            </div>
+          </div>
+          <span class="shrink-0 w-16 text-right">
+            <i v-if="excel.estado === 'completado'" class="pi pi-check-circle" style="color:#10B981" />
+            <span v-else class="text-[10px] text-gray-400">{{ excel.progreso }}%</span>
+          </span>
+        </div>
+
+        <p class="text-[11px] text-gray-400">
+          <i class="pi pi-info-circle mr-1" />
+          El envío del Excel a la API se conectará próximamente.
+        </p>
+
+        <div class="flex justify-end gap-2 pt-1">
+          <Button label="Cerrar" severity="secondary" size="small" @click="excelVisible = false" />
+        </div>
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -119,6 +161,39 @@ function abrirAcPower() {
   Object.assign(ac, { month: null, year: null, new_version: '', total_ac_power: null, sobreescribir: false })
   acVisible.value = true
 }
+// ── Subir Excel de costos (selección + progreso · se enviará por API) ─────────
+const excelVisible = ref(false)
+const excelInput = ref(null)
+const excel = ref(null)
+
+function abrirSubirExcel() {
+  excelVisible.value = true
+}
+function seleccionarExcel() {
+  excelInput.value?.click()
+}
+function onExcelSeleccionado(e) {
+  const f = (e.target.files || [])[0]
+  e.target.value = ''
+  if (!f) return
+  excel.value = { nombre: f.name, tamano: f.size, progreso: 0, estado: 'subiendo', file: f }
+  // Simula la carga; al conectar la API reemplazar por:
+  //   const fd = new FormData(); fd.append('file', f)
+  //   await api.post('/costos-comercializacion/upload-excel', fd,
+  //     { onUploadProgress: (ev) => { excel.value.progreso = Math.round(ev.loaded/ev.total*100) } })
+  const timer = setInterval(() => {
+    if (!excel.value) { clearInterval(timer); return }
+    excel.value.progreso = Math.min(100, excel.value.progreso + 12)
+    if (excel.value.progreso >= 100) { clearInterval(timer); excel.value.estado = 'completado' }
+  }, 180)
+}
+function fmtTamano(bytes) {
+  if (!bytes && bytes !== 0) return ''
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+
 function guardarAcPower() {
   if (ac.month == null || ac.year == null || !ac.new_version || ac.total_ac_power == null) {
     toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año, nueva versión y total AC Power.', life: 4000 })
@@ -168,4 +243,19 @@ function fmtNum(v) {
 
 <style scoped>
 .field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+
+.dropzone {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 22px 16px;
+  border: 2px dashed #D9CCEE;
+  border-radius: 12px;
+  background: #FBF7FF;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.dropzone:hover { border-color: #915BD8; background: #F4ECFC; }
 </style>
