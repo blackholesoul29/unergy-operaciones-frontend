@@ -60,7 +60,8 @@
                 <input type="checkbox" :checked="todosMarcados" @change="toggleTodos"
                   class="accent-purple-600" />
               </th>
-              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:240px">Proyecto</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:220px">Proyecto</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:120px">Estado contrato</th>
               <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:130px">Periodo a facturar</th>
               <th v-if="colsVisibles.n_indexaciones"
                 class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:70px">N° IPC</th>
@@ -81,21 +82,35 @@
           <tbody>
             <tr v-for="fila in filas" :key="fila.id"
               class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 group"
-              :class="!fila.habilitado ? 'opacity-50' : ''">
-              <!-- Checkbox — siempre habilitado -->
+              :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <!-- Checkbox — solo facturable (con contrato + aplica este mes) -->
               <td class="px-3 py-2 text-center">
-                <input type="checkbox" v-model="seleccion[fila.id]" class="accent-purple-600" />
+                <input type="checkbox" :disabled="!esFacturable(fila)"
+                  v-model="seleccion[fila.id]" class="accent-purple-600" />
               </td>
-              <!-- Proyecto + botón editar -->
+              <!-- Proyecto -->
               <td class="px-3 py-2 font-medium" style="color:#2C2039; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
                 <span class="inline-flex items-center gap-1.5 max-w-full">
                   <span class="truncate">{{ fila.proyecto }}</span>
+                  <span v-if="!fila.aplica_este_mes && conContrato(fila)"
+                    class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
+                    style="background:#e5e7eb; color:#4b5563"
+                    title="Según su periodicidad, a este arriendo no le corresponde cobro este mes.">
+                    <i class="pi pi-clock text-[9px]" />no aplica este mes
+                  </span>
                   <span v-if="fila.motivo_exclusion"
                     class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full cursor-help flex-shrink-0"
                     style="background:#fee2e2; color:#991b1b"
                     :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
                     <i class="pi pi-comment text-[9px]" />excluido
                   </span>
+                </span>
+              </td>
+              <!-- Estado contrato -->
+              <td class="px-3 py-2 whitespace-nowrap">
+                <span class="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full"
+                  :style="{ background: estadoContratoMeta(fila).bg, color: estadoContratoMeta(fila).fg }">
+                  {{ estadoContratoMeta(fila).label }}
                 </span>
               </td>
               <td class="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{{ periodoLabel }}</td>
@@ -162,7 +177,7 @@
             </tr>
             <!-- Fila total -->
             <tr v-if="filas.length" class="bg-gray-50 border-t-2 border-gray-200">
-              <td colspan="3" class="px-3 py-2.5 text-xs font-semibold text-gray-600">
+              <td colspan="4" class="px-3 py-2.5 text-xs font-semibold text-gray-600">
                 Total ({{ filasSeleccionadas }} proyectos seleccionados)
               </td>
               <td v-if="colsVisibles.n_indexaciones"></td>
@@ -385,12 +400,23 @@ async function cargarDatos() {
 const facturadoActual = computed(() => {
   const m = {}; filas.value.forEach(f => { m[f.id] = f.facturado }); return m
 })
-const filasHabilitadas   = computed(() => filas.value.filter(f => f.habilitado))
+// Facturable = con contrato vigente, habilitado y que aplique este mes por periodicidad.
+const conContrato  = (f) => (f.estado_contrato || 'con_contrato') === 'con_contrato'
+const esFacturable = (f) => f.habilitado && f.aplica_este_mes && conContrato(f)
+
+const ESTADO_CONTRATO_META = {
+  con_contrato: { label: 'Con contrato', bg: '#dcfce7', fg: '#166534' },
+  en_tramite:   { label: 'En trámite',   bg: '#fef3c7', fg: '#92400e' },
+  sin_contrato: { label: 'Sin contrato', bg: '#e5e7eb', fg: '#4b5563' },
+}
+const estadoContratoMeta = (f) => ESTADO_CONTRATO_META[f.estado_contrato] || ESTADO_CONTRATO_META.con_contrato
+
+const filasHabilitadas   = computed(() => filas.value.filter(esFacturable))
 const todosMarcados      = computed(() =>
   filasHabilitadas.value.length > 0 && filasHabilitadas.value.every(f => seleccion[f.id]))
 const filasSeleccionadas = computed(() => filasHabilitadas.value.filter(f => seleccion[f.id]).length)
 const totalSeleccionado  = computed(() =>
-  filas.value.filter(f => f.habilitado && seleccion[f.id]).reduce((s, f) => s + (f.canon_a_facturar || 0), 0))
+  filas.value.filter(f => esFacturable(f) && seleccion[f.id]).reduce((s, f) => s + (f.canon_a_facturar || 0), 0))
 
 // IPC faltante no lo expone el backend → notificación deshabilitada
 // Proyectos con indexación incompleta por falta de tasa IPC de algún año.
@@ -411,7 +437,7 @@ const exclusionValida = computed(() =>
 
 async function guardarSeleccion() {
   // Proyectos facturables que quedaron desmarcados → exigir motivo antes de guardar.
-  const excluidos = filas.value.filter(f => f.habilitado && !seleccion[f.id])
+  const excluidos = filas.value.filter(f => esFacturable(f) && !seleccion[f.id])
   if (excluidos.length) {
     exclusionPendientes.value = excluidos.map(f => ({ id: f.id, nombre: f.proyecto, motivo: '' }))
     showExclusionDialog.value = true
@@ -432,7 +458,7 @@ async function _ejecutarGuardado(motivos) {
   try {
     const items = filas.value.map(f => ({
       proyecto_id: f.id,
-      incluido: !!(seleccion[f.id] && f.habilitado),
+      incluido: !!(seleccion[f.id] && esFacturable(f)),
       motivo_exclusion: motivos[f.id] || null,
     }))
     await api.post(`/arriendos/seleccion/${periodoActual.value}`, { items })
