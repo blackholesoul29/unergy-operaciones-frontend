@@ -351,8 +351,9 @@ const ALL_GROUPS = [
   },
 ]
 
-// Submenús expandibles dentro de un grupo (ej. Liquidaciones)
-const expandedItems = ref(new Set(['Liquidaciones']))
+// Submenús expandibles dentro de un grupo (ej. Liquidaciones).
+// Arrancan cerrados al recargar para no saturar visualmente el menú.
+const expandedItems = ref(new Set())
 function isItemExpanded(label) { return expandedItems.value.has(label) }
 function toggleItem(label) {
   expandedItems.value.has(label)
