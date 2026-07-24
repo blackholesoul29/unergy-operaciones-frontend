@@ -3,7 +3,7 @@
     <PageHeader title="Estados de resultados"
                 subtitle="Genera estados de resultados y el crudo de facturas por período">
       <template #actions>
-        <Button label="Generar crudo de facturas" icon="pi pi-file" size="small" outlined @click="abrirCrudo" />
+        <Button label="Crear cruce facturas" icon="pi pi-file" size="small" outlined @click="abrirCrudo" />
         <Button label="Generar estado de resultados" icon="pi pi-chart-line" size="small" @click="abrirEstado" />
       </template>
     </PageHeader>
