@@ -2,7 +2,7 @@
   <div class="space-y-4 pt-3">
 
     <!-- ── Barra superior ────────────────────────────────────────────────── -->
-    <div class="flex items-center justify-between flex-wrap gap-2">
+    <div class="bg-white rounded-xl shadow-sm p-3 flex items-center justify-between flex-wrap gap-2 border" style="border-color:#ECE7F2">
       <div class="flex items-center gap-3">
         <div class="flex items-center gap-2">
           <button type="button" @click="cambiarMes(-1)"
@@ -51,7 +51,7 @@
     </div>
 
     <!-- ── Tabla ──────────────────────────────────────────────────────────── -->
-    <div class="rounded-xl border border-gray-100 overflow-hidden">
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
       <div class="overflow-x-auto">
         <table class="w-full text-sm border-collapse" style="min-width:980px; table-layout:fixed">
           <thead>
@@ -61,8 +61,7 @@
                   class="accent-purple-600" />
               </th>
               <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:240px">Proyecto</th>
-              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:90px">Período</th>
-              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:110px">Mes / Año</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:130px">Periodo a facturar</th>
               <th v-if="colsVisibles.n_indexaciones"
                 class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:70px">N° IPC</th>
               <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:130px">Valor Base</th>
@@ -81,7 +80,7 @@
           </thead>
           <tbody>
             <tr v-for="fila in filas" :key="fila.id"
-              class="border-b border-gray-50 hover:bg-gray-50/50 group"
+              class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 group"
               :class="!fila.habilitado ? 'opacity-50' : ''">
               <!-- Checkbox — siempre habilitado -->
               <td class="px-3 py-2 text-center">
@@ -99,8 +98,7 @@
                   </span>
                 </span>
               </td>
-              <td class="px-3 py-2 font-mono text-xs text-gray-500">{{ periodoActual }}</td>
-              <td class="px-3 py-2 text-xs text-gray-600">{{ periodoLabel }}</td>
+              <td class="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{{ periodoLabel }}</td>
               <td v-if="colsVisibles.n_indexaciones" class="px-3 py-2 text-right text-xs text-gray-500">
                 {{ fila.n_indexaciones ?? '—' }}
               </td>
@@ -164,7 +162,7 @@
             </tr>
             <!-- Fila total -->
             <tr v-if="filas.length" class="bg-gray-50 border-t-2 border-gray-200">
-              <td colspan="4" class="px-3 py-2.5 text-xs font-semibold text-gray-600">
+              <td colspan="3" class="px-3 py-2.5 text-xs font-semibold text-gray-600">
                 Total ({{ filasSeleccionadas }} proyectos seleccionados)
               </td>
               <td v-if="colsVisibles.n_indexaciones"></td>
