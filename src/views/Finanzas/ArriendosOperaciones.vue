@@ -50,6 +50,36 @@
       </div>
     </div>
 
+    <!-- ── Filtros ──────────────────────────────────────────────────────────── -->
+    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-600">Buscar</label>
+        <input v-model="filtroTexto" type="text" placeholder="Nombre del proyecto…"
+          class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 w-56" style="outline:none" />
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-600">Estado contrato</label>
+        <select v-model="filtroEstado" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white w-44">
+          <option value="todos">Todos</option>
+          <option value="con_contrato">Con contrato</option>
+          <option value="en_tramite">En trámite</option>
+          <option value="sin_contrato">Sin contrato</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-600">Periodicidad</label>
+        <select v-model="filtroPeriodicidad" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white w-40">
+          <option value="todos">Toda periodicidad</option>
+          <option value="mensual">Mensual</option>
+          <option value="bimestral">Bimestral</option>
+          <option value="trimestral">Trimestral</option>
+          <option value="semestral">Semestral</option>
+          <option value="anual">Anual</option>
+        </select>
+      </div>
+      <div class="ml-auto pb-1.5 text-xs text-gray-400">{{ filasFiltradas.length }} de {{ filas.length }}</div>
+    </div>
+
     <!-- ── Tabla ──────────────────────────────────────────────────────────── -->
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
       <div class="overflow-x-auto">
@@ -80,7 +110,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="fila in filas" :key="fila.id"
+            <tr v-for="fila in filasFiltradas" :key="fila.id"
               class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 group"
               :class="!esFacturable(fila) ? 'opacity-40' : ''">
               <!-- Checkbox — solo facturable (con contrato + aplica este mes) -->
@@ -410,6 +440,20 @@ const ESTADO_CONTRATO_META = {
   sin_contrato: { label: 'Sin contrato', bg: '#e5e7eb', fg: '#4b5563' },
 }
 const estadoContratoMeta = (f) => ESTADO_CONTRATO_META[f.estado_contrato] || ESTADO_CONTRATO_META.con_contrato
+
+// ── Filtros del panel ────────────────────────────────────────────────────────
+const filtroTexto        = ref('')
+const filtroEstado       = ref('todos')   // todos | con_contrato | en_tramite | sin_contrato
+const filtroPeriodicidad = ref('todos')   // todos | mensual | ... | anual
+const filasFiltradas = computed(() => {
+  const q = filtroTexto.value.trim().toLowerCase()
+  return filas.value.filter(f => {
+    if (q && !(f.proyecto || '').toLowerCase().includes(q)) return false
+    if (filtroEstado.value !== 'todos' && (f.estado_contrato || 'con_contrato') !== filtroEstado.value) return false
+    if (filtroPeriodicidad.value !== 'todos' && (f.periodicidad || 'mensual') !== filtroPeriodicidad.value) return false
+    return true
+  })
+})
 
 const filasHabilitadas   = computed(() => filas.value.filter(esFacturable))
 const todosMarcados      = computed(() =>
