@@ -71,7 +71,7 @@ const COLUMNAS = [
   { key: 'proyecto',         label: 'Proyecto' },
   { key: 'valor',            label: 'Valor',              right: true },
   { key: 'frecuencia_pago',  label: 'Frecuencia de pago' },
-  { key: 'tipo_pago',        label: 'Tipo de pago' },
+  { key: 'tipo_pago',        label: 'Costo' },
   { key: 'version',          label: 'Versión' },
 ]
 
