@@ -691,13 +691,21 @@
               >
                 {{ mode.agente }}
                 <span v-if="pcCounts" class="font-mono text-[10px] px-1 rounded"
-                  style="background: rgba(44,32,57,0.08);">{{ pcCounts[mode.key] ?? 0 }}</span>
+                  style="background: rgba(44,32,57,0.08);"
+                  v-tooltip.bottom="pcFechaCorte ? `Vigentes al ${pcFechaCorte}` : 'Vigentes'">{{ pcCountsVigentes[mode.key] ?? 0 }}</span>
+                <span v-if="pcCountsTerminados[mode.key]" class="font-mono text-[10px] px-1 rounded"
+                  style="background: rgba(214,68,85,0.14); color: #D64455;"
+                  v-tooltip.bottom="`${pcCountsTerminados[mode.key]} terminaron durante el mes (siguen listados abajo, en rojo)`">+{{ pcCountsTerminados[mode.key] }}</span>
               </button>
             </div>
           </div>
         </div>
         <span class="text-xs max-w-md" style="color: #7a6e8a;">
           {{ PC_MODE_DESC[pcMode] }}
+          <span v-if="pcFechaCorte" class="block mt-0.5" style="color: #9b89b5;">
+            El contador cuenta lo vigente al {{ pcFechaCorte }}; en
+            <span style="color: #D64455; font-weight: 600;">rojo</span> lo que terminó durante el mes.
+          </span>
         </span>
         <Button label="Exportar resumen (Excel)" icon="pi pi-file-excel" size="small" outlined class="ml-auto"
           :disabled="!pcData || pcLoading" @click="exportarResumenPlantasContratos"
@@ -793,12 +801,15 @@
               </div>
             </div>
             <div v-if="c.plantas.length" class="divide-y" style="border-color: rgba(44,32,57,0.05);">
-              <div v-for="p in c.plantas" :key="p.id" class="px-4 py-2.5 flex items-center justify-between text-sm cv-row-click"
+              <div v-for="p in c.plantas" :key="filaKey(p)" class="px-4 py-2.5 flex items-center justify-between text-sm cv-row-click"
                 :style="p.uso_del_recurso ? 'background: rgba(2,132,199,0.06);' : p.es_duplicado ? 'background: rgba(240,192,64,0.08);' : ''"
                 @click="abrirDetalleContrato(c, 'ppa_venta_ungg')"
                 v-tooltip.left="'Ver detalle del contrato (PPA + GESCON)'">
                 <div class="flex items-center gap-2">
-                  <span class="font-medium" style="color: #2C2039;">{{ p.nombre }}</span>
+                  <span class="font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</span>
+                  <span v-if="filaTerminada(p)" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                    style="background: rgba(214,68,85,0.12); color: #D64455;"
+                    v-tooltip="'Salió de esta modalidad durante el mes — su tramo siguiente está en otra piscina'"><i class="pi pi-sign-out" style="font-size: 9px;" />Terminó</span>
                   <span v-if="p.uso_del_recurso" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                     style="background: rgba(2,132,199,0.14); color: #0369a1;"
                     v-tooltip="'Uso del recurso: la planta está en bolsa y se le paga al cliente su generación a precio bolsa — también listada en c. Compra en Bolsa (UNGG). No genera garantías.'"><i class="pi pi-sync" style="font-size: 9px;" />Uso del recurso</span>
@@ -808,10 +819,8 @@
                   <span v-if="p.codigo_sic" class="text-xs font-mono px-1.5 py-0.5 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;">{{ p.codigo_sic }}</span>
                   <span v-if="p.pct_despacho != null" class="text-xs font-mono" style="color: #915BD8;">{{ (p.pct_despacho * 100).toFixed(0) }}%</span>
                 </div>
-                <div class="text-xs font-mono text-right" style="color: #7a6e8a;">
-                  <span v-if="p.fecha_inicio">{{ p.fecha_inicio }}</span>
-                  <span v-if="p.fecha_inicio && p.fecha_fin"> → </span>
-                  <span v-if="p.fecha_fin" :style="isExpiringSoon(p.fecha_fin) ? 'color: #D64455; font-weight: 600;' : ''">{{ p.fecha_fin }}</span>
+                <div class="text-xs font-mono text-right" :style="filaColorFecha(p) || 'color: #7a6e8a;'">
+                  {{ ventanaFila(p) }}
                 </div>
               </div>
             </div>
@@ -842,14 +851,12 @@
               </span>
             </div>
             <div v-if="c.plantas.length" class="divide-y" style="border-color: rgba(44,32,57,0.05);">
-              <div v-for="p in c.plantas" :key="p.id" class="px-4 py-2.5 flex items-center justify-between text-sm cv-row-click"
+              <div v-for="p in c.plantas" :key="filaKey(p)" class="px-4 py-2.5 flex items-center justify-between text-sm cv-row-click"
                 @click="abrirDetalleContrato(c, 'ppa_compra_ungc')"
                 v-tooltip.left="'Ver detalle del contrato (PPA + GESCON)'">
-                <span class="font-medium" style="color: #2C2039;">{{ p.nombre }}</span>
-                <div class="text-xs font-mono text-right" style="color: #7a6e8a;">
-                  <span v-if="p.fecha_inicio">{{ p.fecha_inicio }}</span>
-                  <span v-if="p.fecha_inicio && p.fecha_fin"> → </span>
-                  <span v-if="p.fecha_fin" :style="isExpiringSoon(p.fecha_fin) ? 'color: #D64455; font-weight: 600;' : ''">{{ p.fecha_fin }}</span>
+                <span class="font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</span>
+                <div class="text-xs font-mono text-right" :style="filaColorFecha(p) || 'color: #7a6e8a;'">
+                  {{ ventanaFila(p) }}
                 </div>
               </div>
             </div>
@@ -901,14 +908,12 @@
               </div>
             </div>
             <div v-if="c.plantas.length" class="divide-y" style="border-color: rgba(44,32,57,0.05);">
-              <div v-for="p in c.plantas" :key="p.id" class="px-4 py-2.5 flex items-center justify-between text-sm cv-row-click"
+              <div v-for="p in c.plantas" :key="filaKey(p)" class="px-4 py-2.5 flex items-center justify-between text-sm cv-row-click"
                 @click="abrirDetalleContrato(c, 'ppa_compra_externa')"
                 v-tooltip.left="'Ver detalle del contrato PPA'">
-                <span class="font-medium" style="color: #2C2039;">{{ p.nombre }}</span>
-                <div class="text-xs font-mono text-right" style="color: #7a6e8a;">
-                  <span v-if="p.fecha_inicio">{{ p.fecha_inicio }}</span>
-                  <span v-if="p.fecha_inicio && p.fecha_fin"> → </span>
-                  <span v-if="p.fecha_fin" :style="isExpiringSoon(p.fecha_fin) ? 'color: #D64455; font-weight: 600;' : ''">{{ p.fecha_fin }}</span>
+                <span class="font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</span>
+                <div class="text-xs font-mono text-right" :style="filaColorFecha(p) || 'color: #7a6e8a;'">
+                  {{ ventanaFila(p) }}
                 </div>
               </div>
             </div>
@@ -957,13 +962,13 @@
               </span>
             </div>
             <div class="divide-y" style="border-color: rgba(44,32,57,0.05);">
-              <div v-for="p in c.plantas" :key="p.id" class="px-4 py-2.5 flex items-center justify-between text-sm cv-row-click"
+              <div v-for="p in c.plantas" :key="filaKey(p)" class="px-4 py-2.5 flex items-center justify-between text-sm cv-row-click"
                 @click="abrirDetalleContrato(c, 'bolsa_compra_ungg')"
                 v-tooltip.left="'Ver detalle del contrato (PPA + GESCON)'">
                 <div class="flex items-center gap-2">
                   <i class="pi" :class="p.uso_del_recurso ? 'pi-sync' : 'pi-shopping-cart'"
                     :style="`font-size: 10px; color: ${p.uso_del_recurso ? '#0369a1' : '#9a6700'};`" />
-                  <span class="font-medium" style="color: #2C2039;">{{ p.nombre }}</span>
+                  <span class="font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</span>
                   <span v-if="p.uso_del_recurso" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                     style="background: rgba(2,132,199,0.14); color: #0369a1;"
                     v-tooltip="'Uso del recurso: la planta está en bolsa y también suministra a un contrato de venta (Venta · UNGG); se le paga al cliente a precio bolsa. No genera garantías.'">Uso del recurso</span>
@@ -972,10 +977,8 @@
                     v-tooltip="'Duplicado: esta planta también suministra a un contrato de venta (Venta · UNGG); su energía a este contrato se compra en bolsa. Genera garantías.'">Duplicado</span>
                   <span v-if="p.codigo_sic" class="text-xs font-mono px-1.5 py-0.5 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;">{{ p.codigo_sic }}</span>
                 </div>
-                <div class="text-xs font-mono" style="color: #7a6e8a;">
-                  <span v-if="p.fecha_inicio">{{ p.fecha_inicio }}</span>
-                  <span v-if="p.fecha_inicio && p.fecha_fin"> → </span>
-                  <span v-if="p.fecha_fin">{{ p.fecha_fin }}</span>
+                <div class="text-xs font-mono" :style="filaColorFecha(p) || 'color: #7a6e8a;'">
+                  {{ ventanaFila(p) }}
                 </div>
               </div>
             </div>
@@ -1002,22 +1005,30 @@
           <div v-if="pcPools.bolsa_venta_ungg.length" class="cv-card">
             <div class="px-4 py-3" style="background: rgba(44,32,57,0.04); border-bottom: 1px solid rgba(44,32,57,0.07);">
               <span class="font-bold text-sm" style="color: #2C2039;">Venta en Bolsa (UNGG)</span>
-              <span class="ml-2 text-xs" style="color: #7a6e8a;">Sin contrato vigente en GESCON en {{ MESES[pcMonth - 1] }} {{ pcYear }} — venden en bolsa como generador</span>
+              <span class="ml-2 text-xs" style="color: #7a6e8a;">Días de {{ MESES[pcMonth - 1] }} {{ pcYear }} sin contrato en GESCON — venden en bolsa como generador</span>
               <span class="ml-2 text-xs font-mono px-2 py-0.5 rounded" style="background: rgba(44,32,57,0.08); color: #7a6e8a;">
                 {{ pcPools.bolsa_venta_ungg.length }}
               </span>
             </div>
             <div class="divide-y" style="border-color: rgba(44,32,57,0.05);">
-              <div v-for="p in pcPools.bolsa_venta_ungg" :key="p.id" class="px-4 py-2.5 text-sm font-medium cv-row-click" style="color: #2C2039;"
+              <div v-for="p in pcPools.bolsa_venta_ungg" :key="filaKey(p)" class="px-4 py-2.5 text-sm cv-row-click flex items-center justify-between"
                 @click="abrirDetallePlanta(p, 'bolsa_venta_ungg')"
                 v-tooltip.left="'Ver historial GESCON de la planta'">
-                {{ p.nombre }}
+                <div class="flex items-center gap-2">
+                  <span class="font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</span>
+                  <span v-if="filaTerminada(p)" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                    style="background: rgba(214,68,85,0.12); color: #D64455;"
+                    v-tooltip="'Estuvo libre en bolsa solo este tramo del mes; después entró a otra modalidad'"><i class="pi pi-sign-out" style="font-size: 9px;" />Terminó</span>
+                </div>
+                <div class="text-xs font-mono" :style="filaColorFecha(p) || 'color: #7a6e8a;'">
+                  {{ ventanaFila(p) }}
+                </div>
               </div>
             </div>
           </div>
           <div v-else class="cv-card">
             <div class="px-4 py-8 text-xs text-center" style="color: rgba(44,32,57,0.3);">
-              Todas las plantas tienen asignación GESCON este mes
+              Todas las plantas tuvieron asignación GESCON todos los días del mes
             </div>
           </div>
         </template>
@@ -1033,12 +1044,15 @@
               </span>
             </div>
             <div class="divide-y" style="border-color: rgba(44,32,57,0.05);">
-              <div v-for="p in pcPools.bolsa_venta_ungc" :key="p.id" class="px-4 py-2.5 text-sm font-medium cv-row-click" style="color: #2C2039;"
+              <div v-for="p in pcPools.bolsa_venta_ungc" :key="filaKey(p)" class="px-4 py-2.5 text-sm font-medium cv-row-click" :style="filaColorNombre(p)"
                 @click="abrirDetallePlanta(p, 'bolsa_venta_ungc')"
                 v-tooltip.left="'Ver detalle GESCON de la planta'">
                 <div class="flex items-center gap-2">
                   <span>{{ p.nombre }}</span>
                   <span v-if="p.codigo_sic" class="text-xs font-mono px-1.5 py-0.5 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;">{{ p.codigo_sic }}</span>
+                  <span v-if="filaTerminada(p)" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                    style="background: rgba(214,68,85,0.12); color: #D64455;"
+                    v-tooltip="'Estuvo en esta modalidad solo un tramo del mes'"><i class="pi pi-sign-out" style="font-size: 9px;" />Terminó</span>
                 </div>
                 <div v-if="ventanaBolsa(p)" class="text-xs mt-0.5" style="color: #7a6e8a;"
                      v-tooltip.right="'Vigencia del registro SIC con comprador UNGC que pone la planta en esta modalidad'">
@@ -2090,6 +2104,13 @@ const pcCounts = computed(() => {
   }
 })
 
+// Los chips muestran VIGENTES a la fecha de corte (hoy si el mes es el actual,
+// cierre de mes si no) y, al lado, cuántos terminaron durante el mes. Fallback
+// a `counts` si el backend aún no manda los nuevos campos (deploy en tránsito).
+const pcFechaCorte = computed(() => pcData.value?.fecha_corte || null)
+const pcCountsVigentes = computed(() => pcData.value?.counts_vigentes || pcCounts.value || {})
+const pcCountsTerminados = computed(() => pcData.value?.counts_terminados || {})
+
 // Exporta un resumen plano y filtrable: cada contrato (venta + compra) con sus plantas,
 // y al final las plantas SIN contrato (libre) o en bolsa con el comercializador UNGC.
 async function exportarResumenPlantasContratos() {
@@ -2134,10 +2155,15 @@ async function exportarResumenPlantasContratos() {
     for (const p of c.plantas)
       aoa.push(['c. Compra en Bolsa (UNGG)', c.nombre, c.comprador_nombre || '', p.nombre, p.codigo_sic || '',
         pct(p.pct_despacho), p.fecha_inicio || '', p.fecha_fin || '', 'Duplicado — origen bolsa'])
+  // e/f llevan el tramo del mes: una planta puede tener varios (entró/salió de contrato)
+  const notaTramo = (p, base) => filaTerminada(p) ? `${base} — tramo terminado en el mes` : base
   for (const p of P.bolsa_venta_ungg)
-    aoa.push(['e. Venta en Bolsa (UNGG)', '', '', p.nombre, '', '', '', '', 'Sin SIC vigente'])
+    aoa.push(['e. Venta en Bolsa (UNGG)', '', '', p.nombre, '', '',
+      p.segmento_inicio || '', p.segmento_fin || '', notaTramo(p, 'Sin SIC vigente')])
   for (const p of P.bolsa_venta_ungc)
-    aoa.push(['f. Venta en Bolsa (UNGC)', '', 'UNGC (comercializador)', p.nombre, p.codigo_sic || '', '', '', '', 'SIC con comprador UNGC'])
+    aoa.push(['f. Venta en Bolsa (UNGC)', '', 'UNGC (comercializador)', p.nombre, p.codigo_sic || '', '',
+      p.fecha_inicio || p.segmento_inicio || '', p.fecha_fin || p.segmento_fin || '',
+      notaTramo(p, 'SIC con comprador UNGC')])
 
   const ws = XLSX.utils.aoa_to_sheet(aoa)
   const C = { morado: '915BD8', oscuro: '2C2039', blanco: 'FFFFFF' }
@@ -2797,10 +2823,53 @@ function fmtFechaDia(iso) {
 // Ventana de la modalidad Venta en Bolsa (UNGC): fecha_inicio del registro SIC
 // y fecha_fin EFECTIVA (recortada por relevos) que envía el backend.
 function ventanaBolsa(p) {
+  // Sin registro SIC con fechas, la ventana que aplica es el tramo del mes.
+  if (!p.fecha_inicio && !p.fecha_fin && p.segmento_inicio) {
+    return filaTerminada(p)
+      ? `En bolsa UNGC del ${fmtFechaDia(p.segmento_inicio)} al ${fmtFechaDia(p.segmento_fin)}`
+      : `En bolsa UNGC desde ${fmtFechaDia(p.segmento_inicio)} · vigente`
+  }
   if (!p.fecha_inicio && !p.fecha_fin) return ''
   if (!p.fecha_fin) return `En bolsa UNGC desde ${fmtFechaDia(p.fecha_inicio)} · vigente`
   if (!p.fecha_inicio) return `En bolsa UNGC hasta ${fmtFechaDia(p.fecha_fin)}`
   return `En bolsa UNGC del ${fmtFechaDia(p.fecha_inicio)} al ${fmtFechaDia(p.fecha_fin)}`
+}
+
+// ── Historial intra-mes (backend: segmento_inicio/segmento_fin/estado) ───────
+// Una planta que cambió de modalidad a mitad de mes se lista en TODAS las
+// piscinas por las que pasó. Las filas cuyo tramo ya terminó van en rojo; las
+// vigentes en color normal. Los contadores solo cuentan las vigentes.
+const ROJO_FIN = '#D64455'
+
+function filaTerminada(p) {
+  return p?.estado === 'terminado'
+}
+
+// Clave única: la misma planta puede tener dos tramos en el mismo mes
+// (p. ej. libre 1→9, contrato 10→20, libre 21→31).
+function filaKey(p) {
+  return p?.segmento_inicio ? `${p.id}-${p.segmento_inicio}` : p?.id
+}
+
+function filaColorNombre(p) {
+  return filaTerminada(p) ? `color: ${ROJO_FIN};` : 'color: #2C2039;'
+}
+
+function filaColorFecha(p) {
+  if (filaTerminada(p)) return `color: ${ROJO_FIN}; font-weight: 600;`
+  return p?.fecha_fin && isExpiringSoon(p.fecha_fin) ? `color: ${ROJO_FIN}; font-weight: 600;` : ''
+}
+
+// Ventana a mostrar. Prioriza la ventana real (contrato / registro SIC); para
+// los tramos de bolsa libre, que no tienen registro, usa el tramo del mes.
+function ventanaFila(p) {
+  if (!p) return ''
+  const ini = p.fecha_inicio || p.segmento_inicio || null
+  const fin = p.fecha_fin || (filaTerminada(p) ? p.segmento_fin : null) || null
+  if (!ini && !fin) return ''
+  if (ini && !fin) return `desde ${ini}`
+  if (!ini && fin) return `hasta ${fin}`
+  return `${ini} → ${fin}`
 }
 
 // ── Helpers de barras de cumplimiento (simulador) ─────────────────────────────
