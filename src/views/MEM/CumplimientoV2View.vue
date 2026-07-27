@@ -1281,6 +1281,283 @@
       </div>
     </div>
 
+    <!-- ═══════════════ BALANCE DE ENERGÍA TAB ═══════════════ -->
+    <div v-show="activeTab === 5" class="space-y-5">
+
+      <!-- Selectors -->
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+          <Select v-model="beYear" :options="years" class="w-24" @change="loadBalance" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Mes</label>
+          <Select v-model="beMonth" :options="MESES_OPTIONS" optionLabel="label" optionValue="value" class="w-40" @change="loadBalance" />
+        </div>
+        <span v-if="beData" class="text-xs px-2 py-1 rounded" style="background: rgba(145,91,216,0.08); color: #915BD8;">
+          {{ bePeriodoLabel }}
+        </span>
+        <label v-if="beData && beData.advertencias.compra_externa_en_bolsa.length"
+          class="flex items-center gap-2 text-xs cursor-pointer px-2 py-1.5 rounded"
+          style="background: rgba(214,68,85,0.06); color: #2C2039;">
+          <Checkbox v-model="beExcluirExterna" binary @change="loadBalance" />
+          Excluir plantas de compra externa
+        </label>
+      </div>
+
+      <div v-if="beLoading" class="flex flex-col items-center justify-center py-20 gap-3">
+        <ProgressSpinner style="width:48px;height:48px;" strokeWidth="4" animationDuration=".8s" />
+        <p class="text-sm" style="color: #7a6e8a;">Calculando el balance de {{ MESES[beMonth - 1] }}…</p>
+      </div>
+
+      <Message v-else-if="beError" severity="error" :closable="false">{{ beError }}</Message>
+
+      <template v-else-if="beData">
+
+        <Message v-if="beData.warning" severity="warn" :closable="false">{{ beData.warning }}</Message>
+
+        <Message v-if="beData.periodo.es_mes_futuro" severity="info" :closable="false">
+          {{ MESES[beMonth - 1] }} {{ beYear }} todavía no empieza: no hay generación real con la que construir un balance.
+        </Message>
+
+        <template v-else>
+
+          <!-- ── Libro mayor ─────────────────────────────────────────────── -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+
+            <!-- UNGG -->
+            <div class="cv-card px-5 py-4">
+              <div class="flex items-baseline justify-between mb-1">
+                <h3 class="text-sm font-bold uppercase tracking-wider" style="color: #2C2039;">UNGG · generador</h3>
+                <span class="text-[11px]" style="color: #7a6e8a;">MWh</span>
+              </div>
+              <p class="text-xs mb-3" style="color: #7a6e8a;">
+                Su venta y sus compras en bolsa se contrarrestan: es el mismo agente en la misma liquidación.
+              </p>
+
+              <table class="w-full text-sm">
+                <thead>
+                  <tr style="color: #7a6e8a; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <th class="text-left pb-2"></th>
+                    <th class="text-right pb-2 w-24">Real</th>
+                    <th class="text-right pb-2 w-24">Proyectado</th>
+                    <th class="text-right pb-2 w-28">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="be-linea" :class="{ activa: beFiltro === 'e' }" @click="beToggleFiltro('e')" :title="BE_AYUDA.e">
+                    <td class="py-2">
+                      <span class="font-medium" style="color: #2C2039;">Venta en bolsa</span>
+                      <span class="be-chip be-chip-alerta"><i class="pi pi-exclamation-triangle" /> cargos regulatorios</span>
+                    </td>
+                    <td class="text-right font-mono" style="color: #2C2039;">{{ fmtNum1(beB.ungg.venta_bolsa.real) }}</td>
+                    <td class="text-right font-mono" style="color: #7a6e8a;">{{ fmtNum1(beB.ungg.venta_bolsa.proyectado) }}</td>
+                    <td class="text-right font-mono font-semibold" style="color: #2C2039;">{{ fmtNum1(beB.ungg.venta_bolsa.total) }}</td>
+                  </tr>
+
+                  <tr>
+                    <td colspan="4" class="pt-3 pb-1 text-xs font-semibold uppercase tracking-wider" style="color: #7a6e8a;">Compras en bolsa</td>
+                  </tr>
+                  <tr class="be-linea" :class="{ activa: beFiltro === 'c' }" @click="beToggleFiltro('c')" :title="BE_AYUDA.c">
+                    <td class="py-2 pl-3">
+                      <span style="color: #2C2039;">· Directas — duplicados</span>
+                      <span class="be-chip be-chip-alerta"><i class="pi pi-shield" /> garantías</span>
+                    </td>
+                    <td class="text-right font-mono" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.real) }}</td>
+                    <td class="text-right font-mono" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.proyectado) }}</td>
+                    <td class="text-right font-mono font-semibold" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.total) }}</td>
+                  </tr>
+                  <tr class="be-linea" :class="{ activa: beFiltro === 'uso' }" @click="beToggleFiltro('uso')" :title="BE_AYUDA.uso">
+                    <td class="py-2 pl-3">
+                      <span style="color: #2C2039;">· No directas — uso del recurso</span>
+                      <span class="be-chip be-chip-neutro">sin garantía</span>
+                    </td>
+                    <td class="text-right font-mono" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_no_directa.real) }}</td>
+                    <td class="text-right font-mono" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_no_directa.proyectado) }}</td>
+                    <td class="text-right font-mono font-semibold" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_no_directa.total) }}</td>
+                  </tr>
+                  <tr style="border-top: 1px solid rgba(44,32,57,0.08);">
+                    <td class="py-2 pl-3 text-xs font-semibold" style="color: #7a6e8a;">Total compras en bolsa</td>
+                    <td class="text-right font-mono text-xs" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_total.real) }}</td>
+                    <td class="text-right font-mono text-xs" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_total.proyectado) }}</td>
+                    <td class="text-right font-mono text-xs font-semibold" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_total.total) }}</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr style="border-top: 2px solid rgba(44,32,57,0.12);">
+                    <td class="pt-3 font-bold" style="color: #2C2039;" :title="BE_AYUDA.neto">
+                      NETO UNGG
+                      <span class="be-chip" :style="beNetoEstilo">{{ beNetoEtiqueta }}</span>
+                    </td>
+                    <td class="pt-3 text-right font-mono font-bold" style="color: #2C2039;">{{ fmtSigno(beB.ungg.neto.real) }}</td>
+                    <td class="pt-3 text-right font-mono font-bold" style="color: #7a6e8a;">{{ fmtSigno(beB.ungg.neto.proyectado) }}</td>
+                    <td class="pt-3 text-right font-mono font-bold text-base" :style="`color: ${beNetoColor};`">{{ fmtSigno(beB.ungg.neto.total) }}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <!-- UNGC -->
+            <div class="cv-card px-5 py-4">
+              <div class="flex items-baseline justify-between mb-1">
+                <h3 class="text-sm font-bold uppercase tracking-wider" style="color: #2C2039;">UNGC · comercializador</h3>
+                <span class="text-[11px]" style="color: #7a6e8a;">MWh</span>
+              </div>
+              <p class="text-xs mb-3" style="color: #7a6e8a;">
+                Va aparte: es otro agente, así que no se contrarresta con las compras de UNGG.
+              </p>
+
+              <table class="w-full text-sm">
+                <thead>
+                  <tr style="color: #7a6e8a; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                    <th class="text-left pb-2"></th>
+                    <th class="text-right pb-2 w-24">Real</th>
+                    <th class="text-right pb-2 w-24">Proyectado</th>
+                    <th class="text-right pb-2 w-28">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="be-linea" :class="{ activa: beFiltro === 'f' }" @click="beToggleFiltro('f')" :title="BE_AYUDA.f">
+                    <td class="py-2">
+                      <span class="font-medium" style="color: #2C2039;">Venta en bolsa</span>
+                      <span class="be-chip be-chip-ok">solo cartera</span>
+                    </td>
+                    <td class="text-right font-mono" style="color: #2C2039;">{{ fmtNum1(beB.ungc.venta_bolsa.real) }}</td>
+                    <td class="text-right font-mono" style="color: #7a6e8a;">{{ fmtNum1(beB.ungc.venta_bolsa.proyectado) }}</td>
+                    <td class="text-right font-mono font-semibold" style="color: #2C2039;">{{ fmtNum1(beB.ungc.venta_bolsa.total) }}</td>
+                  </tr>
+                  <tr>
+                    <td colspan="4" class="pt-3 text-xs" style="color: #7a6e8a;">
+                      Compra en bolsa (UNGC): reglas de negocio aún por definir — la categoría existe reservada, sin filas.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div class="mt-4 pt-3 text-xs" style="border-top: 1px solid rgba(44,32,57,0.08); color: #7a6e8a;">
+                <p class="mb-1">
+                  <strong style="color: #2C2039;">{{ beB.ungg.venta_bolsa.n_plantas }}</strong> plantas venden en bolsa por UNGG ·
+                  <strong style="color: #2C2039;">{{ beB.ungc.venta_bolsa.n_plantas }}</strong> por UNGC
+                </p>
+                <p>
+                  Balance de <strong style="color: #2C2039;">{{ MESES[beMonth - 1] }} {{ beYear }}</strong>
+                  <template v-if="beData.periodo.es_mes_actual">
+                    · real del 1 al {{ beData.periodo.dia_corte }}, proyectado del
+                    {{ beData.periodo.dia_corte + 1 }} al {{ beData.periodo.dias_mes }}
+                    con el promedio diario de cada planta este mes
+                  </template>
+                  <template v-else>· mes cerrado, todo real</template>
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Advertencias ────────────────────────────────────────────── -->
+          <Message v-if="beData.advertencias.compra_externa_en_bolsa.length" severity="warn" :closable="false">
+            <p class="font-semibold mb-1">
+              {{ beData.advertencias.compra_externa_en_bolsa.length }}
+              {{ beData.advertencias.compra_externa_en_bolsa.length === 1 ? 'planta con PPA de compra externa está cayendo' : 'plantas con PPA de compra externa están cayendo' }}
+              en el residuo de bolsa.
+            </p>
+            <p class="text-xs mb-1">
+              Su energía ya está comprada por contrato fuera de GESCON, así que contarlas como venta en bolsa
+              infla la línea de cargos regulatorios. Marca la casilla de arriba para ver el balance sin ellas.
+            </p>
+            <p class="text-xs font-mono">
+              {{ beData.advertencias.compra_externa_en_bolsa.map(a => `${a.frontera} (${fmtNum1(a.mwh_total)})`).join(' · ') }}
+            </p>
+          </Message>
+
+          <Message v-if="beData.advertencias.pct_anomalos.length" severity="warn" :closable="false">
+            <p class="font-semibold mb-1">Porcentajes de despacho fuera de rango en GESCON</p>
+            <p class="text-xs font-mono">
+              {{ beData.advertencias.pct_anomalos.map(a => `${a.planta} — ${a.motivo}`).join(' · ') }}
+            </p>
+          </Message>
+
+          <Message v-if="beData.advertencias.sin_datos.length" severity="secondary" :closable="false">
+            <p class="text-xs">
+              <strong>{{ beData.advertencias.sin_datos.length }}</strong> plantas sin generación en el mes, excluidas del balance:
+              {{ beData.advertencias.sin_datos.map(a => a.planta).join(', ') }}
+            </p>
+          </Message>
+
+          <Message v-if="beData.advertencias.tramos_estimados.length" severity="secondary" :closable="false">
+            <p class="text-xs">
+              {{ beData.advertencias.tramos_estimados.length }} tramos sin lecturas de su rango exacto: se estimaron con el
+              promedio diario del mes.
+            </p>
+          </Message>
+
+          <!-- ── Inventario ──────────────────────────────────────────────── -->
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <h3 class="text-sm font-bold" style="color: #2C2039;">
+                Inventario · {{ beFilas.length }} de {{ beData.inventario.length }} filas
+              </h3>
+              <span v-if="beFiltro" class="text-xs px-2 py-1 rounded cursor-pointer"
+                style="background: rgba(145,91,216,0.12); color: #915BD8;" @click="beFiltro = null">
+                {{ BE_CATEGORIAS[beFiltro].label }} <i class="pi pi-times text-[10px] ml-1" />
+              </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <InputText v-model="beBusqueda" placeholder="Buscar frontera o contrato…" class="w-64" />
+              <button @click="exportarBalanceExcel"
+                class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold"
+                style="background: #915BD8; color: #fff;">
+                <i class="pi pi-download text-xs" /> Exportar
+              </button>
+            </div>
+          </div>
+
+          <div class="cv-card overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr style="color: #7a6e8a; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; background: rgba(145,91,216,0.04);">
+                  <th class="text-left px-4 py-3">Frontera</th>
+                  <th class="text-left px-2 py-3">Estado</th>
+                  <th class="text-left px-2 py-3">Método</th>
+                  <th class="text-right px-2 py-3">%</th>
+                  <th class="text-left px-2 py-3">Desde</th>
+                  <th class="text-left px-2 py-3">Hasta</th>
+                  <th class="text-right px-2 py-3">Real</th>
+                  <th class="text-right px-2 py-3">Proy.</th>
+                  <th class="text-right px-4 py-3">Total MWh</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(f, i) in beFilas" :key="`${f.proyecto_id}-${f.desde}-${f.categoria}-${i}`"
+                  style="border-top: 1px solid rgba(44,32,57,0.06);">
+                  <td class="px-4 py-2.5 font-medium" style="color: #2C2039;">
+                    {{ f.frontera }}
+                    <span v-if="f.frontera !== f.planta" class="block text-[11px]" style="color: #7a6e8a;">{{ f.planta }}</span>
+                  </td>
+                  <td class="px-2 py-2.5" style="color: #2C2039;">{{ f.estado }}</td>
+                  <td class="px-2 py-2.5">
+                    <span class="text-xs px-1.5 py-0.5 rounded font-medium" :style="BE_CATEGORIAS[f.categoria].badge">
+                      {{ f.metodo }}
+                    </span>
+                  </td>
+                  <td class="px-2 py-2.5 text-right font-mono text-xs" style="color: #7a6e8a;">
+                    {{ f.pct !== null && f.pct !== undefined ? (f.pct * 100).toFixed(0) + '%' : '—' }}
+                  </td>
+                  <td class="px-2 py-2.5 font-mono text-xs" style="color: #7a6e8a;">{{ f.desde || '—' }}</td>
+                  <td class="px-2 py-2.5 font-mono text-xs" style="color: #7a6e8a;">{{ f.hasta || '—' }}</td>
+                  <td class="px-2 py-2.5 text-right font-mono" style="color: #2C2039;">{{ f.mwh_real !== null ? fmtNum1(f.mwh_real) : '—' }}</td>
+                  <td class="px-2 py-2.5 text-right font-mono" style="color: #7a6e8a;">{{ f.mwh_proyectado !== null ? fmtNum1(f.mwh_proyectado) : '—' }}</td>
+                  <td class="px-4 py-2.5 text-right font-mono font-semibold" style="color: #2C2039;">{{ f.mwh_total !== null ? fmtNum1(f.mwh_total) : '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+            <div v-if="!beFilas.length" class="px-4 py-10 text-sm text-center" style="color: rgba(44,32,57,0.35);">
+              Sin filas para este filtro
+            </div>
+          </div>
+
+        </template>
+      </template>
+    </div>
+
     <!-- Floating: detalle de la capa (misma información que la imagen) -->
     <Teleport to="body">
       <template v-if="detalleCapa">
@@ -1717,12 +1994,14 @@ async function clearCacheAndReload() {
   simData.value = null
   pcData.value = null
   etData.value = null
+  beData.value = null
   tableData.value = []
   try {
     await Promise.all([loadAnnualData(), loadTableData()])
     if (activeTab.value === 0) await loadSimulator()
     if (activeTab.value === 2) await loadPlantasContratos()
     if (activeTab.value === 3) await loadEnergiaTransada()
+    if (activeTab.value === 5) await loadBalance()
   } finally {
     cacheClearing.value = false
     updateCacheSize()
@@ -1730,7 +2009,7 @@ async function clearCacheAndReload() {
 }
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-const TABS      = ['Estrategia', 'Cumplimiento', 'Proyectos', 'Energía transada', 'Matriz anual']
+const TABS      = ['Estrategia', 'Cumplimiento', 'Proyectos', 'Energía transada', 'Matriz anual', 'Balance de energía']
 const activeTab = ref(0)
 
 // ── Chart constants ───────────────────────────────────────────────────────────
@@ -3826,6 +4105,177 @@ async function loadPlantasContratos() {
   }
 }
 
+// ── Balance de energía ───────────────────────────────────────────────────────
+// Libro mayor de bolsa del mes: cuánto se compra o se compraría en bolsa. El
+// neteo ocurre DENTRO de cada agente — UNGC va aparte porque es otro agente y
+// su venta en bolsa no cancela las compras de UNGG.
+const beYear    = ref(now.getFullYear())
+const beMonth   = ref(now.getMonth() + 1)
+const beData    = ref(null)
+const beLoading = ref(false)
+const beError   = ref(null)
+const beFiltro  = ref(null)      // categoría seleccionada desde el libro mayor
+const beBusqueda = ref('')
+const beExcluirExterna = ref(false)
+
+const BE_AYUDA = {
+  e: 'Venta en bolsa (UNGG). Energía que entra a la bolsa directamente como generador: '
+   + 'los días sin contrato y el porcentaje no despachado de los días con contrato. '
+   + 'Acarrea cargos regulatorios altos — es la línea que conviene mantener baja.',
+  f: 'Venta en bolsa (UNGC). UNGG le vende a UNGC y el comercializador inyecta a la bolsa. '
+   + 'No acarrea cargos regulatorios; acarrea cartera. Sale de las plantas con registro SIC '
+   + 'vigente con comprador UNGC.',
+  c: 'Compra directa en bolsa. Plantas duplicadas: la energía no existe, así que Unergy la '
+   + 'compra en la bolsa para cubrir el contrato duplicado (por ejemplo Klik sobre Uruaco). '
+   + 'Genera garantías.',
+  uso: 'Compra no directa en bolsa (uso del recurso). La energía sí existe y se entrega al '
+   + 'contrato, pero se le paga al dueño de la planta a precio de bolsa. El contrato paga su '
+   + 'tarifa y Unergy asume la diferencia. No genera garantías.',
+  neto: 'Venta en bolsa de UNGG menos sus compras en bolsa. Positivo = UNGG termina el mes '
+   + 'vendiendo neto a la bolsa; negativo = comprando neto.',
+}
+
+const BE_CATEGORIAS = {
+  a:   { label: 'Registrado en contrato', badge: 'background: rgba(145,91,216,0.10); color: #915BD8;' },
+  c:   { label: 'Compra directa — duplicados', badge: 'background: rgba(154,103,0,0.12); color: #9a6700;' },
+  uso: { label: 'Compra no directa — uso del recurso', badge: 'background: rgba(3,105,161,0.12); color: #0369a1;' },
+  e:   { label: 'Venta en bolsa UNGG', badge: 'background: rgba(214,68,85,0.12); color: #D64455;' },
+  f:   { label: 'Venta en bolsa UNGC', badge: 'background: rgba(20,184,166,0.14); color: #0f766e;' },
+  g:   { label: 'Compra externa', badge: 'background: rgba(44,32,57,0.08); color: #2C2039;' },
+}
+
+const beB = computed(() => beData.value?.balance || {
+  ungg: {
+    venta_bolsa: {}, compra_bolsa_directa: {}, compra_bolsa_no_directa: {},
+    compra_bolsa_total: {}, neto: {},
+  },
+  ungc: { venta_bolsa: {} },
+})
+
+const bePeriodoLabel = computed(() => {
+  const p = beData.value?.periodo
+  if (!p) return ''
+  return p.es_mes_actual
+    ? `Real 1–${p.dia_corte} · Proyectado ${p.dia_corte + 1}–${p.dias_mes}`
+    : `Mes cerrado · ${p.dias_mes} días`
+})
+
+// Positivo (vende neto a bolsa) es lo esperado; negativo significa que el mes
+// se cierra comprando en bolsa, que es lo que dispara garantías.
+const beNetoColor = computed(() => (beB.value.ungg.neto?.total ?? 0) < 0 ? '#D64455' : '#2C2039')
+const beNetoEtiqueta = computed(() => (beB.value.ungg.neto?.total ?? 0) < 0 ? 'compra neta' : 'venta neta')
+const beNetoEstilo = computed(() => (beB.value.ungg.neto?.total ?? 0) < 0
+  ? 'background: rgba(214,68,85,0.12); color: #D64455;'
+  : 'background: rgba(20,184,166,0.14); color: #0f766e;')
+
+const beFilas = computed(() => {
+  let filas = beData.value?.inventario || []
+  if (beFiltro.value) filas = filas.filter(f => f.categoria === beFiltro.value)
+  const q = beBusqueda.value.trim().toLowerCase()
+  if (q) {
+    filas = filas.filter(f =>
+      (f.frontera || '').toLowerCase().includes(q) ||
+      (f.planta || '').toLowerCase().includes(q) ||
+      (f.estado || '').toLowerCase().includes(q) ||
+      (f.contrato || '').toLowerCase().includes(q))
+  }
+  return filas
+})
+
+function beToggleFiltro(categoria) {
+  beFiltro.value = beFiltro.value === categoria ? null : categoria
+}
+
+function fmtNum1(val) {
+  if (val === null || val === undefined) return '—'
+  return Math.abs(val).toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+}
+
+function fmtSigno(val) {
+  if (val === null || val === undefined) return '—'
+  return (val < 0 ? '−' : '+') + fmtNum1(val)
+}
+
+async function loadBalance() {
+  beLoading.value = true
+  beError.value   = null
+  const params = {
+    year: beYear.value,
+    month: beMonth.value,
+    excluir_compra_externa: beExcluirExterna.value,
+  }
+  // El mes en curso cambia todos los días (avanza el real, se encoge la
+  // proyección): se consulta fresco. Los meses cerrados sí van a caché.
+  const esMesActual = beYear.value === now.getFullYear() && beMonth.value === now.getMonth() + 1
+  try {
+    beData.value = esMesActual
+      ? (await client.get('/cumplimiento/balance-energia', { params, timeout: 120000 })).data
+      : await cachedGet('/cumplimiento/balance-energia', params)
+    updateCacheSize()
+  } catch (e) {
+    beError.value = e.response?.data?.detail || 'Error al calcular el balance de energía.'
+  } finally {
+    beLoading.value = false
+  }
+}
+
+async function exportarBalanceExcel() {
+  if (!beData.value) return
+  const XLSX = await import('xlsx-js-style')
+  const mes = MESES[beMonth.value - 1]
+  const b = beB.value
+
+  const aoa = [[`UNERGY — Balance de energía en bolsa · ${mes} ${beYear.value}`], [bePeriodoLabel.value], []]
+  const linea = (etiqueta, celda, signo = 1) => aoa.push([
+    etiqueta, '', '',
+    signo * (celda.real ?? 0), signo * (celda.proyectado ?? 0), signo * (celda.total ?? 0),
+  ])
+
+  aoa.push(['LIBRO MAYOR', '', '', 'Real (MWh)', 'Proyectado (MWh)', 'Total (MWh)'])
+  const filaLibro = aoa.length - 1
+  aoa.push(['UNGG · generador'])
+  linea('  Venta en bolsa — cargos regulatorios', b.ungg.venta_bolsa)
+  linea('  Compra directa — duplicados (garantías)', b.ungg.compra_bolsa_directa, -1)
+  linea('  Compra no directa — uso del recurso', b.ungg.compra_bolsa_no_directa, -1)
+  linea('  Total compras en bolsa', b.ungg.compra_bolsa_total, -1)
+  linea('  NETO UNGG', b.ungg.neto)
+  aoa.push(['UNGC · comercializador'])
+  linea('  Venta en bolsa — solo cartera', b.ungc.venta_bolsa)
+  aoa.push([])
+
+  const header = ['Frontera', 'Planta', 'Estado', 'Método', '% Despacho',
+                  'Desde', 'Hasta', 'Real (MWh)', 'Proyectado (MWh)', 'Total (MWh)']
+  const filaHeader = aoa.length
+  aoa.push(header)
+  for (const f of beData.value.inventario) {
+    aoa.push([
+      f.frontera, f.planta, f.estado, f.metodo,
+      f.pct !== null && f.pct !== undefined ? Number((f.pct * 100).toFixed(0)) : '',
+      f.desde || '', f.hasta || '',
+      f.mwh_real ?? '', f.mwh_proyectado ?? '', f.mwh_total ?? '',
+    ])
+  }
+
+  const ws = XLSX.utils.aoa_to_sheet(aoa)
+  const C = { morado: '915BD8', oscuro: '2C2039', blanco: 'FFFFFF' }
+  for (const fila of [filaLibro, filaHeader]) {
+    for (let c = 0; c < header.length; c++) {
+      const ref = XLSX.utils.encode_cell({ r: fila, c })
+      if (!ws[ref]) ws[ref] = { t: 's', v: '' }
+      ws[ref].s = { font: { bold: true, color: { rgb: C.blanco } }, fill: { fgColor: { rgb: C.morado } } }
+    }
+  }
+  const titleRef = XLSX.utils.encode_cell({ r: 0, c: 0 })
+  if (ws[titleRef]) ws[titleRef].s = { font: { bold: true, sz: 14, color: { rgb: C.oscuro } } }
+  ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: header.length - 1 } }]
+  ws['!cols'] = [{ wch: 34 }, { wch: 30 }, { wch: 26 }, { wch: 22 }, { wch: 11 },
+                 { wch: 12 }, { wch: 12 }, { wch: 13 }, { wch: 16 }, { wch: 13 }]
+  ws['!autofilter'] = { ref: `A${filaHeader + 1}:J${aoa.length}` }
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, `Balance ${mes} ${beYear.value}`.slice(0, 31))
+  XLSX.writeFile(wb, `balance_energia_${beYear.value}_${String(beMonth.value).padStart(2, '0')}.xlsx`)
+}
+
 function isExpiringSoon(dateStr) {
   if (!dateStr) return false
   const end = new Date(dateStr + 'T00:00:00')
@@ -3839,6 +4289,7 @@ watch(activeTab, (tab) => {
   if (tab === 2 && !pcData.value) loadPlantasContratos()
   if (tab === 3 && !etData.value) loadEnergiaTransada()
   if (tab === 4 && !anualMatrizData.value) loadAnualMatriz()
+  if (tab === 5 && !beData.value) loadBalance()
 })
 
 onMounted(async () => {
@@ -3874,6 +4325,25 @@ onMounted(async () => {
 }
 .cv-tab:hover { background: rgba(44,32,57,0.04); color: #2C2039; }
 .cv-tab.active { color: #2C2039; border-bottom-color: #915BD8; }
+
+/* ── Balance de energía ─────────────────────────────────────────────────────
+   Cada línea del libro mayor es clicable (filtra el inventario) y explica en
+   hover qué es y qué riesgo implica. */
+.be-linea { cursor: pointer; transition: background-color .12s; }
+.be-linea:hover { background: rgba(145,91,216,0.06); }
+.be-linea.activa { background: rgba(145,91,216,0.10); }
+.be-linea td:first-child { border-left: 2px solid transparent; padding-left: 6px; }
+.be-linea.activa td:first-child { border-left-color: #915BD8; }
+
+/* El riesgo nunca se comunica solo con color: el chip lleva su etiqueta. */
+.be-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  margin-left: 6px; padding: 1px 6px; border-radius: 999px;
+  font-size: 10px; font-weight: 600; white-space: nowrap; vertical-align: middle;
+}
+.be-chip-alerta { background: rgba(214,68,85,0.12); color: #D64455; }
+.be-chip-ok     { background: rgba(20,184,166,0.14); color: #0f766e; }
+.be-chip-neutro { background: rgba(44,32,57,0.07); color: #7a6e8a; }
 
 .cv-btn {
   display: inline-flex; align-items: center; gap: 6px; height: 34px;
