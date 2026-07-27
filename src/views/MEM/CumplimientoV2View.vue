@@ -1345,7 +1345,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="be-linea" :class="{ activa: beFiltro === 'e' }" @click="beToggleFiltro('e')" :title="BE_AYUDA.e">
+                  <tr class="be-linea" :class="{ activa: beFiltro === 'e' }" @click="beAbrirCapa('e')" :title="beTitulo('e')">
                     <td class="py-2">
                       <span class="font-medium" style="color: #2C2039;">Venta en bolsa</span>
                       <span class="be-chip be-chip-alerta"><i class="pi pi-exclamation-triangle" /> cargos regulatorios</span>
@@ -1358,7 +1358,7 @@
                   <tr>
                     <td colspan="4" class="pt-3 pb-1 text-xs font-semibold uppercase tracking-wider" style="color: #7a6e8a;">Compras en bolsa</td>
                   </tr>
-                  <tr class="be-linea" :class="{ activa: beFiltro === 'c' }" @click="beToggleFiltro('c')" :title="BE_AYUDA.c">
+                  <tr class="be-linea" :class="{ activa: beFiltro === 'c' }" @click="beAbrirCapa('c')" :title="beTitulo('c')">
                     <td class="py-2 pl-3">
                       <span style="color: #2C2039;">· Directas — duplicados</span>
                       <span class="be-chip be-chip-alerta"><i class="pi pi-shield" /> garantías</span>
@@ -1367,7 +1367,7 @@
                     <td class="text-right font-mono" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.proyectado) }}</td>
                     <td class="text-right font-mono font-semibold" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.total) }}</td>
                   </tr>
-                  <tr class="be-linea" :class="{ activa: beFiltro === 'uso' }" @click="beToggleFiltro('uso')" :title="BE_AYUDA.uso">
+                  <tr class="be-linea" :class="{ activa: beFiltro === 'uso' }" @click="beAbrirCapa('uso')" :title="beTitulo('uso')">
                     <td class="py-2 pl-3">
                       <span style="color: #2C2039;">· No directas — uso del recurso</span>
                       <span class="be-chip be-chip-neutro">sin garantía</span>
@@ -1417,7 +1417,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="be-linea" :class="{ activa: beFiltro === 'f' }" @click="beToggleFiltro('f')" :title="BE_AYUDA.f">
+                  <tr class="be-linea" :class="{ activa: beFiltro === 'f' }" @click="beAbrirCapa('f')" :title="beTitulo('f')">
                     <td class="py-2">
                       <span class="font-medium" style="color: #2C2039;">Venta en bolsa</span>
                       <span class="be-chip be-chip-ok">solo cartera</span>
@@ -1557,6 +1557,120 @@
         </template>
       </template>
     </div>
+
+    <!-- Floating: desglose de una capa del balance — de qué plantas sale la cifra -->
+    <Teleport to="body">
+      <template v-if="beCapa">
+        <div class="fixed inset-0" style="z-index: 60; background: rgba(44,32,57,0.28);" @click="beCerrarCapa" />
+        <div
+          class="fixed shadow-2xl"
+          style="z-index: 61; background: #ffffff; width: 1020px; max-width: 96vw; max-height: 90vh; overflow-y: auto; border-radius: 16px; border: 1px solid rgba(44,32,57,0.12); top: 50%; left: 50%; transform: translate(-50%, -50%);"
+          @click.stop
+        >
+          <div style="height: 6px; background: #915BD8; border-radius: 16px 16px 0 0;" />
+
+          <div class="px-6 pt-4 pb-3" style="border-bottom: 1px solid rgba(44,32,57,0.08);">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="font-bold text-lg" style="color: #2C2039;">{{ BE_CATEGORIAS[beCapa].label }}</div>
+                <div class="text-sm mt-1" style="color: #7a6e8a;">{{ BE_AYUDA[beCapa] }}</div>
+                <span class="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(145,91,216,0.10); color: #915BD8;">
+                  <i class="pi pi-calendar text-[10px]" /> {{ MESES[beMonth - 1] }} {{ beYear }} · {{ bePeriodoLabel }}
+                </span>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button @click="beVerEnTabla"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
+                  style="background: rgba(145,91,216,0.10); color: #915BD8;">
+                  <i class="pi pi-filter text-xs" /> Ver en la tabla
+                </button>
+                <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="beCerrarCapa"><i class="pi pi-times text-sm" /></button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cómo se calcula -->
+          <div class="px-6 py-3 text-xs" style="background: rgba(145,91,216,0.04); color: #7a6e8a;">
+            <span class="font-semibold" style="color: #2C2039;">Cómo sale cada fila:</span>
+            generación del tramo × porcentaje = aporte.
+            La generación del tramo es la producción real de la planta en esos días exactos (suma de lecturas,
+            no una regla de tres sobre el mes).
+            <template v-if="beData?.periodo?.es_mes_actual">
+              Los días del {{ beData.periodo.dia_corte + 1 }} al {{ beData.periodo.dias_mes }} se proyectan
+              con el promedio diario de cada planta este mes.
+            </template>
+          </div>
+
+          <!-- Desglose -->
+          <div class="px-6 py-4">
+            <table class="w-full text-sm">
+              <thead>
+                <tr style="color: #7a6e8a; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                  <th class="text-left pb-2">Frontera</th>
+                  <th class="text-left pb-2">Tramo</th>
+                  <th class="text-right pb-2">Días</th>
+                  <th class="text-right pb-2">Gen. tramo</th>
+                  <th class="text-right pb-2">%</th>
+                  <th class="text-right pb-2">Real</th>
+                  <th class="text-right pb-2">Proy.</th>
+                  <th class="text-right pb-2">Aporte</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(f, i) in beCapaFilas" :key="`${f.proyecto_id}-${f.desde}-${i}`"
+                  style="border-top: 1px solid rgba(44,32,57,0.06);">
+                  <td class="py-2 pr-2">
+                    <span class="font-medium" style="color: #2C2039;">{{ f.frontera }}</span>
+                    <span v-if="f.frontera !== f.planta" class="block text-[11px]" style="color: #7a6e8a;">{{ f.planta }}</span>
+                    <span v-if="f.contrato" class="block text-[11px]" style="color: #915BD8;">{{ f.contrato }}</span>
+                  </td>
+                  <td class="py-2 pr-2 font-mono text-xs" style="color: #7a6e8a;">
+                    {{ f.desde }} → {{ f.hasta }}
+                    <span v-if="f.estimado" class="be-chip be-chip-neutro" title="No hubo lecturas del rango exacto: se estimó con el promedio diario del mes">estimado</span>
+                  </td>
+                  <td class="py-2 text-right font-mono text-xs" style="color: #7a6e8a;">{{ f.dias }}</td>
+                  <td class="py-2 text-right font-mono" style="color: #7a6e8a;">
+                    {{ f.gen_tramo_real !== null ? fmtNum1((f.gen_tramo_real || 0) + (f.gen_tramo_proyectado || 0)) : '—' }}
+                  </td>
+                  <td class="py-2 text-right font-mono text-xs" style="color: #7a6e8a;">
+                    {{ f.pct !== null && f.pct !== undefined ? (f.pct * 100).toFixed(0) + '%' : '—' }}
+                  </td>
+                  <td class="py-2 text-right font-mono" style="color: #2C2039;">{{ f.mwh_real !== null ? fmtNum1(f.mwh_real) : '—' }}</td>
+                  <td class="py-2 text-right font-mono" style="color: #7a6e8a;">{{ f.mwh_proyectado !== null ? fmtNum1(f.mwh_proyectado) : '—' }}</td>
+                  <td class="py-2 text-right font-mono font-semibold" style="color: #2C2039;">{{ f.mwh_total !== null ? fmtNum1(f.mwh_total) : '—' }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr style="border-top: 2px solid rgba(44,32,57,0.12);">
+                  <td class="pt-3 font-bold" style="color: #2C2039;">
+                    TOTAL · {{ beCapaPlantas }} {{ beCapaPlantas === 1 ? 'planta' : 'plantas' }}
+                    <span v-if="beCapaFilas.length !== beCapaPlantas" class="text-xs font-normal" style="color: #7a6e8a;">
+                      ({{ beCapaFilas.length }} tramos)
+                    </span>
+                  </td>
+                  <td colspan="4"></td>
+                  <td class="pt-3 text-right font-mono font-bold" style="color: #2C2039;">{{ fmtNum1(beCapaTotales.real) }}</td>
+                  <td class="pt-3 text-right font-mono font-bold" style="color: #7a6e8a;">{{ fmtNum1(beCapaTotales.proyectado) }}</td>
+                  <td class="pt-3 text-right font-mono font-bold text-base" style="color: #2C2039;">{{ fmtNum1(beCapaTotales.total) }}</td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div v-if="!beCapaFilas.length" class="py-10 text-sm text-center" style="color: rgba(44,32,57,0.35);">
+              Ninguna planta aporta a esta capa en {{ MESES[beMonth - 1] }}
+            </div>
+
+            <!-- Lo que NO entró -->
+            <div v-if="beData?.advertencias?.sin_datos?.length"
+              class="mt-4 pt-3 text-xs" style="border-top: 1px solid rgba(44,32,57,0.08); color: #7a6e8a;">
+              <span class="font-semibold" style="color: #2C2039;">Fuera del cálculo:</span>
+              {{ beData.advertencias.sin_datos.length }} plantas sin generación en el mes —
+              {{ beData.advertencias.sin_datos.map(a => `${a.planta} (${a.motivo})`).join(' · ') }}
+            </div>
+          </div>
+        </div>
+      </template>
+    </Teleport>
 
     <!-- Floating: detalle de la capa (misma información que la imagen) -->
     <Teleport to="body">
@@ -4182,9 +4296,41 @@ const beFilas = computed(() => {
   return filas
 })
 
-function beToggleFiltro(categoria) {
-  beFiltro.value = beFiltro.value === categoria ? null : categoria
+// Click en una capa del libro mayor: abre el desglose de dónde sale la cifra.
+// Filtrar la tabla de abajo queda a un botón dentro del modal, para que las dos
+// acciones no compitan por el mismo click.
+const beCapa = ref(null)
+
+function beTitulo(categoria) {
+  return `${BE_AYUDA[categoria]}\n\nClick para ver de qué plantas sale la cifra.`
 }
+
+function beAbrirCapa(categoria) { beCapa.value = categoria }
+function beCerrarCapa() { beCapa.value = null }
+function beVerEnTabla() {
+  beFiltro.value = beCapa.value
+  beCapa.value = null
+}
+
+const beCapaFilas = computed(() => {
+  if (!beCapa.value) return []
+  return (beData.value?.inventario || [])
+    .filter(f => f.categoria === beCapa.value)
+    .slice()
+    .sort((a, b) => (b.mwh_total ?? -1) - (a.mwh_total ?? -1))
+})
+
+const beCapaPlantas = computed(() => new Set(beCapaFilas.value.map(f => f.proyecto_id)).size)
+
+const beCapaTotales = computed(() => {
+  const t = { real: 0, proyectado: 0, total: 0 }
+  for (const f of beCapaFilas.value) {
+    t.real += f.mwh_real || 0
+    t.proyectado += f.mwh_proyectado || 0
+    t.total += f.mwh_total || 0
+  }
+  return t
+})
 
 function fmtNum1(val) {
   if (val === null || val === undefined) return '—'
@@ -4243,16 +4389,24 @@ async function exportarBalanceExcel() {
   linea('  Venta en bolsa — solo cartera', b.ungc.venta_bolsa)
   aoa.push([])
 
-  const header = ['Frontera', 'Planta', 'Estado', 'Método', '% Despacho',
-                  'Desde', 'Hasta', 'Real (MWh)', 'Proyectado (MWh)', 'Total (MWh)']
+  // Se exporta también la generación BASE del tramo: sin el multiplicando, el
+  // Excel no permite reconstruir de dónde sale cada aporte.
+  const header = ['Frontera', 'Planta', 'Estado', 'Método', 'Contrato', 'Desde', 'Hasta', 'Días',
+                  'Gen. tramo (MWh)', '% Despacho', 'Real (MWh)', 'Proyectado (MWh)',
+                  'Total (MWh)', 'Nota']
   const filaHeader = aoa.length
   aoa.push(header)
   for (const f of beData.value.inventario) {
+    const genBase = f.gen_tramo_real !== null && f.gen_tramo_real !== undefined
+      ? Number(((f.gen_tramo_real || 0) + (f.gen_tramo_proyectado || 0)).toFixed(3))
+      : ''
     aoa.push([
-      f.frontera, f.planta, f.estado, f.metodo,
+      f.frontera, f.planta, f.estado, f.metodo, f.contrato || '',
+      f.desde || '', f.hasta || '', f.dias ?? '',
+      genBase,
       f.pct !== null && f.pct !== undefined ? Number((f.pct * 100).toFixed(0)) : '',
-      f.desde || '', f.hasta || '',
       f.mwh_real ?? '', f.mwh_proyectado ?? '', f.mwh_total ?? '',
+      f.estimado ? 'Generación estimada con el promedio diario del mes' : '',
     ])
   }
 
@@ -4268,9 +4422,10 @@ async function exportarBalanceExcel() {
   const titleRef = XLSX.utils.encode_cell({ r: 0, c: 0 })
   if (ws[titleRef]) ws[titleRef].s = { font: { bold: true, sz: 14, color: { rgb: C.oscuro } } }
   ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: header.length - 1 } }]
-  ws['!cols'] = [{ wch: 34 }, { wch: 30 }, { wch: 26 }, { wch: 22 }, { wch: 11 },
-                 { wch: 12 }, { wch: 12 }, { wch: 13 }, { wch: 16 }, { wch: 13 }]
-  ws['!autofilter'] = { ref: `A${filaHeader + 1}:J${aoa.length}` }
+  ws['!cols'] = [{ wch: 34 }, { wch: 30 }, { wch: 26 }, { wch: 22 }, { wch: 22 },
+                 { wch: 12 }, { wch: 12 }, { wch: 7 }, { wch: 17 }, { wch: 11 },
+                 { wch: 13 }, { wch: 16 }, { wch: 13 }, { wch: 44 }]
+  ws['!autofilter'] = { ref: `A${filaHeader + 1}:N${aoa.length}` }
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, `Balance ${mes} ${beYear.value}`.slice(0, 31))
   XLSX.writeFile(wb, `balance_energia_${beYear.value}_${String(beMonth.value).padStart(2, '0')}.xlsx`)
