@@ -799,6 +799,30 @@
           </template>
         </div>
       </TabPanel>
+
+      <!-- ══ FRONTERAS ══ -->
+      <TabPanel header="Fronteras">
+        <div class="p-4">
+          <DataTable :value="fronteras" class="text-sm" stripedRows>
+            <Column field="codigo_frontera" header="Código">
+              <template #body="{ data }">{{ data.codigo_frontera || '—' }}</template>
+            </Column>
+            <Column field="nombre_frontera" header="Nombre" />
+            <Column field="tipo_frontera" header="Tipo" />
+            <Column header="Estado">
+              <template #body="{ data }">
+                <Tag :value="data.estado" :severity="FRONTERA_ESTADO_SEVERITY[data.estado] || 'info'" />
+              </template>
+            </Column>
+          </DataTable>
+          <p v-if="!fronteras.length" class="text-sm text-center py-6" style="color: #9b89b5;">
+            Este proyecto no tiene fronteras asociadas.
+          </p>
+          <p class="text-xs mt-3" style="color: #9b89b5;">
+            Solo lectura -- para editar una frontera (incluyendo reasignar su proyecto), ve a la pestaña Fronteras del menú.
+          </p>
+        </div>
+      </TabPanel>
     </TabView>
 
   </div>
@@ -864,6 +888,7 @@ const SERVICIOS_FLAGS = [
 ]
 const ESTADO_LABELS_SRV = { vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación' }
 const ESTADO_SEVERITY_SRV = { vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn' }
+const FRONTERA_ESTADO_SEVERITY = { activa: 'success', en_registro: 'warn', en_falla: 'danger', cancelada: 'secondary' }
 
 // ── Pestaña activa ──────────────────────────────────────────────────────────
 // Se puede abrir el detalle directo en una pestaña vía ?tab=... (ej. desde la
@@ -878,6 +903,7 @@ const TAB_INDEX = {
   'datos-externos': 6,
   'id-liquidaciones': 7,
   'id-quoia': 8,
+  'fronteras': 9,
 }
 const activeTab = ref(0)
 watch(() => route.query.tab, (t) => {
@@ -886,6 +912,7 @@ watch(() => route.query.tab, (t) => {
 
 // ── Estado base ───────────────────────────────────────────────────────────────
 const proyecto = ref(null)
+const fronteras = ref([])
 const clientes = ref([])
 const loading = ref(true)
 const errorMsg = ref(null)
@@ -1368,17 +1395,19 @@ const operadoresRedOptions = computed(() =>
 // ── Carga inicial ─────────────────────────────────────────────────────────────
 onMounted(async () => {
   try {
-    const [proyRes, clientesRes, invRes, operadoresRes] = await Promise.all([
+    const [proyRes, clientesRes, invRes, operadoresRes, fronterasRes] = await Promise.all([
       api.get(`/proyectos/${route.params.id}`),
       api.get('/clientes', { params: { size: 200 } }),
       api.get(`/proyectos/${route.params.id}/inversionistas`),
       api.get('/operadores-red').catch(() => ({ data: [] })),
+      api.get('/fronteras', { params: { proyecto_id: route.params.id } }).catch(() => ({ data: [] })),
     ])
     proyecto.value = {
       ...proyRes.data,
       inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
     }
     clientes.value = clientesRes.data.items
+    fronteras.value = Array.isArray(fronterasRes.data) ? fronterasRes.data : (fronterasRes.data.items ?? [])
     operadoresRed.value = Array.isArray(operadoresRes.data) ? operadoresRes.data : (operadoresRes.data.items ?? [])
     for (const s of SERVICIOS_FLAGS) srvFlags[s.key] = proyRes.data[s.key]
     if (isEditMode.value) populateEditForm()

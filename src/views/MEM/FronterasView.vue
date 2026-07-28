@@ -246,6 +246,11 @@
             <Dropdown v-model="editForm.operador_red_id" :options="operadoresRedOptions" optionLabel="label"
               optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
           </div>
+          <div class="col-span-2">
+            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Proyecto</label>
+            <Dropdown v-model="editForm.proyecto_id" :options="proyectosAll" optionLabel="nombre_comercial"
+              optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
+          </div>
         </div>
       </div>
       <template #footer>
@@ -645,6 +650,7 @@ function editFrontera(f) {
     nombre_frontera: f.nombre_frontera,
     estado: f.estado,
     operador_red_id: f.operador_red_id || null,
+    proyecto_id: f.proyecto_id || null,
   }
   showEdit.value = true
 }
