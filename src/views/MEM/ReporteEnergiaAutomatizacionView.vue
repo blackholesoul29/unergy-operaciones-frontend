@@ -93,7 +93,7 @@
       <TabPanel header="Historial">
         <div class="flex flex-wrap items-center gap-3 mb-4">
           <span class="text-sm" style="color: #6b5a8a;">Ver el reporte de otro día:</span>
-          <Calendar v-model="fechaHistorial" dateFormat="yy-mm-dd" class="w-40" :maxDate="hoy" showIcon />
+          <Calendar v-model="fechaHistorial" dateFormat="yy-mm-dd" class="w-40" :maxDate="maxFecha" showIcon />
           <Button label="Ver" size="small" @click="cargarHistorial" />
         </div>
         <div v-if="loadingHistorial" class="flex items-center justify-center py-12">
@@ -236,12 +236,10 @@ function ayerColombia() {
   const h = hoyColombia()
   return new Date(h.getTime() - 24 * 60 * 60 * 1000)
 }
-// El tab "Revisión de hoy" es el flujo operativo real -- nunca hay nada
-// que enviar de "hoy", así que su calendario se limita a "ayer". El tab
-// "Historial" es solo consulta de lectura (no dispara nada) -- no hay
-// riesgo en dejar seleccionar hasta "hoy", aunque lo más común no traiga
-// filas todavía.
-const hoy = hoyColombia()
+// La clasificación solo se dispara desde "Revisión de hoy", que ya limita
+// a "ayer" -- así que una fila con fecha = hoy nunca existe. Historial
+// comparte el mismo límite, no porque dispare algo, sino porque no hay
+// ningún día actual con datos que mostrar.
 const maxFecha = ayerColombia()
 const fecha = ref(ayerColombia())
 const fechaHistorial = ref(ayerColombia())
