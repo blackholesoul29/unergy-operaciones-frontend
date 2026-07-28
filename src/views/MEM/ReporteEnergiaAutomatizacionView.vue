@@ -260,16 +260,18 @@ async function cargarResumen() {
   }
 }
 
-async function cargarLista() {
-  loadingLista.value = true
+async function cargarLista(silent = false) {
+  if (!silent) loadingLista.value = true
   try {
     const { data } = await api.get('/reporte-energia/fronteras', { params: { fecha: fechaISO.value } })
     filas.value = data
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el reporte de ese día.', life: 4000 })
-    filas.value = []
+    if (!silent) {
+      toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el reporte de ese día.', life: 4000 })
+      filas.value = []
+    }
   } finally {
-    loadingLista.value = false
+    if (!silent) loadingLista.value = false
   }
 }
 
@@ -417,19 +419,39 @@ async function validar() {
 async function ejecutarClasificacion() {
   ejecutando.value = true
   try {
-    const { data } = await api.post('/reporte-energia/ejecutar', null, { params: { fecha: fechaISO.value } })
+    await api.post('/reporte-energia/ejecutar', null, { params: { fecha: fechaISO.value } })
     toast.add({
-      severity: 'success', summary: 'Clasificación ejecutada',
-      detail: `${data.generacion} generación · ${data.consumo} consumo · ${data.omitidas} omitidas (ya editadas)`,
-      life: 4000,
+      severity: 'info', summary: 'Clasificación iniciada',
+      detail: 'Corre en segundo plano -- puede tardar varios minutos si hay medidores incompletos. La tabla se va a ir actualizando sola.',
+      life: 6000,
     })
-    await cargarResumen()
-    await cargarLista()
+    sondearResultado()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo ejecutar la clasificación.', life: 4000 })
-  } finally {
+    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo iniciar la clasificación.', life: 4000 })
     ejecutando.value = false
   }
+}
+
+// La corrida real vive en un hilo del backend (ver orquestador.ejecutar_dia_background) --
+// se sondea unos minutos para reflejar el avance sin que el usuario tenga que refrescar a mano.
+function sondearResultado() {
+  const fechaSondeada = fechaISO.value
+  let intentos = 0
+  const totalAntes = filas.value.length
+  const intervalo = setInterval(async () => {
+    intentos += 1
+    if (fechaISO.value !== fechaSondeada || intentos > 20) {
+      clearInterval(intervalo)
+      ejecutando.value = false
+      return
+    }
+    await cargarResumen()
+    await cargarLista(true)
+    if (filas.value.length > totalAntes) {
+      clearInterval(intervalo)
+      ejecutando.value = false
+    }
+  }, 10000)
 }
 
 async function generarExcel() {
