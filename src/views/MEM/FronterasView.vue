@@ -3,25 +3,38 @@
     <!-- Header -->
     <PageHeader title="Fronteras Comerciales" :subtitle="`${filteredFronteras.length} fronteras registradas`">
       <template #actions>
-        <span class="p-input-icon-left flex-1 sm:flex-none">
-          <i class="pi pi-search" />
-          <InputText v-model="search" placeholder="Buscar frontera..." class="w-full sm:w-64" />
-        </span>
-        <Dropdown v-model="estadoFilter" :options="estadoOptions" optionLabel="label" optionValue="value"
-                  placeholder="Estado" class="w-40" showClear />
-        <Dropdown v-model="proyectoFilter" :options="proyectoOptions" optionLabel="label" optionValue="value"
-                  placeholder="Proyecto" class="w-48" showClear filter />
-        <Dropdown v-model="operadorFilter" :options="operadorOptions" optionLabel="label" optionValue="value"
-                  placeholder="Operador" class="w-40" showClear />
-        <Button icon="pi pi-chart-scatter" label="Diagrama Fasorial" size="small"
-                @click="showFasorial = true"
-                style="background: #A78BDA; border-color: #A78BDA; color: #ffffff;"
-                class="whitespace-nowrap" />
-        <Button icon="pi pi-plus" label="Nueva Frontera"
-                @click="abrirCrear"
-                class="whitespace-nowrap" />
+        <Button icon="pi pi-chart-scatter" label="Diagrama Fasorial" size="small" severity="secondary" outlined
+                @click="showFasorial = true" />
+        <Button icon="pi pi-plus" label="Nueva Frontera" size="small"
+                @click="abrirCrear" />
       </template>
     </PageHeader>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
+        <span class="p-input-icon-left">
+          <i class="pi pi-search" />
+          <InputText v-model="search" placeholder="Buscar frontera..." class="w-56" />
+        </span>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Estado</label>
+        <Dropdown v-model="estadoFilter" :options="estadoOptions" optionLabel="label" optionValue="value"
+                  class="w-40" placeholder="Todos" showClear />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Proyecto</label>
+        <Dropdown v-model="proyectoFilter" :options="proyectoOptions" optionLabel="label" optionValue="value"
+                  class="w-48" placeholder="Todos" showClear filter />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Operador</label>
+        <Dropdown v-model="operadorFilter" :options="operadorOptions" optionLabel="label" optionValue="value"
+                  class="w-40" placeholder="Todos" showClear />
+      </div>
+    </div>
 
     <!-- Resumen Card -->
     <div class="flex flex-wrap gap-4">
