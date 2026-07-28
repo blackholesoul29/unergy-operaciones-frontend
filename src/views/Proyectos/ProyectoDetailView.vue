@@ -862,24 +862,6 @@ const ESTADO_LABELS_SRV = { vigente: 'Vigente', vencido: 'Vencido', terminado: '
 const ESTADO_SEVERITY_SRV = { vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn' }
 const FRONTERA_ESTADO_SEVERITY = { activa: 'success', en_registro: 'warn', en_falla: 'danger', cancelada: 'secondary' }
 
-// ── Pestaña activa ──────────────────────────────────────────────────────────
-// Se puede abrir el detalle directo en una pestaña vía ?tab=... (ej. desde la
-// vista "IDs proyectos", que enlaza a las pestañas de IDs).
-// La pestaña Fronteras solo se muestra si el proyecto tiene fronteras
-// asociadas -- los índices de las pestañas siguientes dependen de eso.
-const TAB_INDEX = computed(() => {
-  const idx = { general: 0, tecnico: 1, simulacion: 2, inversionistas: 3, contactos: 4, servicios: 5 }
-  let n = 6
-  if (fronteras.value.length) idx.fronteras = n++
-  idx['datos-externos'] = n++
-  idx['id-liquidaciones'] = n++
-  return idx
-})
-const activeTab = ref(0)
-watch([() => route.query.tab, fronteras], ([t]) => {
-  if (t && TAB_INDEX.value[t] != null) activeTab.value = TAB_INDEX.value[t]
-}, { immediate: true })
-
 // ── Estado base ───────────────────────────────────────────────────────────────
 const proyecto = ref(null)
 const fronteras = ref([])
@@ -892,6 +874,24 @@ const srvExpanded = ref(null)
 const contratosInline = ref([])
 const loadingInline = ref(false)
 const showContratoWizard = ref(false)
+
+// ── Pestaña activa ──────────────────────────────────────────────────────────
+// Se puede abrir el detalle directo en una pestaña vía ?tab=... (ej. desde la
+// vista "IDs proyectos", que enlaza a las pestañas de IDs).
+// La pestaña Fronteras solo se muestra si el proyecto tiene fronteras
+// asociadas -- los índices de las pestañas siguientes dependen de eso.
+const activeTab = ref(0)
+const TAB_INDEX = computed(() => {
+  const idx = { general: 0, tecnico: 1, simulacion: 2, inversionistas: 3, contactos: 4, servicios: 5 }
+  let n = 6
+  if (fronteras.value.length) idx.fronteras = n++
+  idx['datos-externos'] = n++
+  idx['id-liquidaciones'] = n++
+  return idx
+})
+watch([() => route.query.tab, fronteras], ([t]) => {
+  if (t && TAB_INDEX.value[t] != null) activeTab.value = TAB_INDEX.value[t]
+}, { immediate: true })
 
 // ── Cross-DB ─────────────────────────────────────────────────────────────────
 const crossData = ref(null)
