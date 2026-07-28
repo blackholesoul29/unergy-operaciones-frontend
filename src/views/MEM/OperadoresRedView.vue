@@ -1,6 +1,10 @@
 <template>
   <div class="space-y-4">
-    <PageHeader title="Operadores de Red" :subtitle="`${operadores.length} operadores · catálogo y correos de contacto para el reporte CGM`" />
+    <PageHeader title="Operadores de Red" :subtitle="`${operadores.length} operadores · catálogo y correos de contacto para el reporte CGM`">
+      <template #actions>
+        <Button icon="pi pi-plus" label="Nuevo Operador" size="small" @click="abrirCrear" />
+      </template>
+    </PageHeader>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
       <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
@@ -34,24 +38,50 @@
             </span>
           </template>
         </Column>
-        <Column header="" style="width: 70px">
+        <Column header="" style="width: 100px">
           <template #body="{ data }">
+            <Button icon="pi pi-pencil" text rounded size="small" v-tooltip.top="'Editar nombre'"
+              @click="abrirEditar(data)" />
             <Button icon="pi pi-eye" text rounded size="small" v-tooltip.top="'Ver detalle'"
               @click="$router.push(`/mem/operadores-red/${data.id}`)" />
           </template>
         </Column>
       </DataTable>
     </div>
+
+    <!-- Crear / Editar -->
+    <Dialog v-model:visible="showForm" :header="editingId ? 'Editar Operador de Red' : 'Nuevo Operador de Red'"
+      modal class="w-full max-w-sm">
+      <div class="space-y-4 pt-2">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Nombre legal *</label>
+          <InputText v-model="form.nombre_legal" class="w-full" placeholder="Ej: Electrificadora del Caribe S.A. E.S.P." />
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Nombre comercial</label>
+          <InputText v-model="form.nombre_comercial" class="w-full" placeholder="Ej: Afinia" />
+        </div>
+      </div>
+      <template #footer>
+        <Button label="Cancelar" severity="secondary" text @click="showForm = false" />
+        <Button :label="editingId ? 'Guardar' : 'Crear'" :loading="saving"
+          :disabled="!form.nombre_legal?.trim()" @click="guardar" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useToast } from 'primevue/usetoast'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
 import api from '@/api/client'
 
+const toast = useToast()
 const operadores = ref([])
 const loading = ref(true)
 
@@ -62,6 +92,47 @@ async function loadData() {
     operadores.value = data
   } finally {
     loading.value = false
+  }
+}
+
+const showForm = ref(false)
+const saving = ref(false)
+const editingId = ref(null)
+const form = ref({ nombre_legal: '', nombre_comercial: '' })
+
+function abrirCrear() {
+  editingId.value = null
+  form.value = { nombre_legal: '', nombre_comercial: '' }
+  showForm.value = true
+}
+
+function abrirEditar(op) {
+  editingId.value = op.id
+  form.value = { nombre_legal: op.nombre_legal, nombre_comercial: op.nombre_comercial || '' }
+  showForm.value = true
+}
+
+async function guardar() {
+  saving.value = true
+  const body = {
+    nombre_legal: form.value.nombre_legal.trim(),
+    nombre_comercial: form.value.nombre_comercial?.trim() || null,
+  }
+  try {
+    if (editingId.value) {
+      await api.patch(`/operadores-red/${editingId.value}`, body)
+      toast.add({ severity: 'success', summary: 'Operador actualizado', life: 2000 })
+    } else {
+      await api.post('/operadores-red', body)
+      toast.add({ severity: 'success', summary: 'Operador creado', life: 2000 })
+    }
+    showForm.value = false
+    await loadData()
+  } catch (e) {
+    const detail = e.response?.data?.detail
+    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo guardar', life: 4000 })
+  } finally {
+    saving.value = false
   }
 }
 
