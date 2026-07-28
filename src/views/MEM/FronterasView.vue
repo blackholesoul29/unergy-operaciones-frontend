@@ -45,7 +45,9 @@
              border: stat.clave && soloGenerando ? '1.5px solid #3B82F6' : '1px solid #e8e0f0',
              background: stat.clave && soloGenerando ? 'rgba(59,130,246,0.06)' : '#fff',
            }"
-           v-tooltip.top="stat.clave ? 'Clic para filtrar solo estas' : undefined"
+           v-tooltip.top="stat.clave === 'generando'
+             ? 'Proyectos de Generacion con fecha de inicio de comercializacion ya cumplida (generacion real, no solo el tipo de frontera). Clic para filtrar.'
+             : (stat.clave ? 'Clic para filtrar solo estas' : undefined)"
            @click="stat.clave === 'generando' && (soloGenerando = !soloGenerando)">
         <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ stat.label }}</p>
         <p class="text-2xl font-bold mt-1" :style="{ color: stat.color }">{{ stat.value }}</p>
@@ -578,7 +580,7 @@ const filteredFronteras = computed(() => {
   if (estadoFilter.value) list = list.filter(f => f.estado === estadoFilter.value)
   if (proyectoFilter.value) list = list.filter(f => f.proyecto_id === proyectoFilter.value)
   if (operadorFilter.value) list = list.filter(f => (f.operador_comercial || f.operador_red) === operadorFilter.value)
-  if (soloGenerando.value) list = list.filter(f => TIPOS_GENERACION.includes(f.tipo_frontera))
+  if (soloGenerando.value) list = list.filter(generaDeVerdad)
   if (search.value) {
     const s = search.value.toLowerCase()
     list = list.filter(f =>
@@ -594,6 +596,22 @@ const filteredFronteras = computed(() => {
 })
 
 const TIPOS_GENERACION = ['generacion', 'generacion_consumo']
+const HOY_STR = new Date().toISOString().split('T')[0]
+
+// "Genera de verdad" = es una frontera de tipo Generacion Y su proyecto ya
+// tiene fecha_inicio_comercializacion cumplida (el primer dia real con
+// generacion, calculado por el backend contra la API de Unergy -- ver
+// scripts/backfill_fecha_comercializacion.py). Antes esto solo miraba
+// tipo_frontera, lo que marcaba como "generando" a proyectos recien
+// registrados que aun no habian generado nada.
+// Nota: si el proyecto no tiene esa fecha calculada todavia (dato faltante,
+// no necesariamente "no genera"), queda fuera del conteo -- ver memoria
+// pendiente_identificador_monitoreo_unergy.
+function generaDeVerdad(f) {
+  return TIPOS_GENERACION.includes(f.tipo_frontera) &&
+    !!f.proyecto_fecha_inicio_comercializacion &&
+    f.proyecto_fecha_inicio_comercializacion <= HOY_STR
+}
 
 const stats = computed(() => {
   const all = fronteras.value
@@ -601,7 +619,7 @@ const stats = computed(() => {
     { label: 'Total', value: all.length, color: '#2C2039' },
     { label: 'Activas', value: all.filter(f => f.estado === 'activa').length, color: '#10B981' },
     { label: 'En registro', value: all.filter(f => f.estado === 'en_registro').length, color: '#F0C040' },
-    { label: 'Que generan', value: all.filter(f => TIPOS_GENERACION.includes(f.tipo_frontera)).length, color: '#3B82F6', clave: 'generando' },
+    { label: 'Que generan', value: all.filter(generaDeVerdad).length, color: '#3B82F6', clave: 'generando' },
     { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.capacidad_efectiva_mw) || 0), 0).toFixed(1), color: '#915BD8' },
   ]
 })
