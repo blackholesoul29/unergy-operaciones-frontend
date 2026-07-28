@@ -32,10 +32,6 @@
             <i class="pi pi-search" />
             <InputText v-model="search" placeholder="Buscar proyecto..." class="w-full sm:w-64" />
           </span>
-          <div class="flex items-center gap-2">
-            <ToggleSwitch v-model="soloPendientes" />
-            <span class="text-sm" style="color: #6b5a8a;">Solo pendientes</span>
-          </div>
         </div>
 
         <div v-if="loadingLista" class="flex items-center justify-center py-12">
@@ -143,7 +139,6 @@ import Dialog from 'primevue/dialog'
 import Calendar from 'primevue/calendar'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
-import ToggleSwitch from 'primevue/toggleswitch'
 import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
 
 const toast = useToast()
@@ -177,7 +172,6 @@ const resumen = ref(null)
 const filas = ref([])
 const loadingLista = ref(true)
 const search = ref('')
-const soloPendientes = ref(false)
 const filtroSemaforo = ref(null)
 
 const filasHistorial = ref([])
@@ -275,7 +269,6 @@ function tagTipo(item) {
 
 const proyectosFiltrados = computed(() => {
   let list = proyectos.value
-  if (soloPendientes.value) list = list.filter(p => semaforo(p) === 'critical')
   if (filtroSemaforo.value) list = list.filter(p => semaforo(p) === filtroSemaforo.value)
   if (search.value) {
     const s = search.value.toLowerCase()
