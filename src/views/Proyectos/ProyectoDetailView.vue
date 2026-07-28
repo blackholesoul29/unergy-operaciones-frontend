@@ -23,7 +23,7 @@
     </div>
 
     <!-- Tabs -->
-    <TabView v-model:activeIndex="activeTab">
+    <TabView v-model:activeIndex="activeTab" scrollable>
       <!-- ══ GENERAL ══ -->
       <TabPanel header="General">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
@@ -755,26 +755,6 @@
         </div>
       </TabPanel>
 
-      <!-- ══ ID LIQUIDACIONES ══ -->
-      <TabPanel header="ID liquidaciones">
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
-          <template v-if="!isEditMode">
-            <InfoField label="SIC generación" :value="proyecto.codigo_sic_generacion" />
-            <InfoField label="SIC consumo" :value="proyecto.codigo_sic_consumo" />
-          </template>
-          <template v-else>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">SIC generación</label>
-              <InputText v-model="editForm.codigo_sic_generacion" class="w-full" placeholder="Código SIC de generación" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">SIC consumo</label>
-              <InputText v-model="editForm.codigo_sic_consumo" class="w-full" placeholder="Código SIC de consumo" />
-            </div>
-          </template>
-        </div>
-      </TabPanel>
-
       <!-- ══ FRONTERAS ══ -->
       <TabPanel header="Fronteras">
         <div class="p-4">
@@ -794,8 +774,28 @@
             Este proyecto no tiene fronteras asociadas.
           </p>
           <p class="text-xs mt-3" style="color: #9b89b5;">
-            Solo lectura -- para editar una frontera (incluyendo reasignar su proyecto), ve a la pestaña Fronteras del menú.
+            Ve a la pestaña Fronteras del menú si deseas reasignar el proyecto.
           </p>
+        </div>
+      </TabPanel>
+
+      <!-- ══ ID LIQUIDACIONES ══ -->
+      <TabPanel header="ID liquidaciones">
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
+          <template v-if="!isEditMode">
+            <InfoField label="SIC generación" :value="proyecto.codigo_sic_generacion" />
+            <InfoField label="SIC consumo" :value="proyecto.codigo_sic_consumo" />
+          </template>
+          <template v-else>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">SIC generación</label>
+              <InputText v-model="editForm.codigo_sic_generacion" class="w-full" placeholder="Código SIC de generación" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">SIC consumo</label>
+              <InputText v-model="editForm.codigo_sic_consumo" class="w-full" placeholder="Código SIC de consumo" />
+            </div>
+          </template>
         </div>
       </TabPanel>
     </TabView>
@@ -875,9 +875,9 @@ const TAB_INDEX = {
   'inversionistas': 3,
   'contactos': 4,
   'servicios': 5,
-  'datos-externos': 6,
-  'id-liquidaciones': 7,
-  'fronteras': 8,
+  'fronteras': 6,
+  'datos-externos': 7,
+  'id-liquidaciones': 8,
 }
 const activeTab = ref(0)
 watch(() => route.query.tab, (t) => {
