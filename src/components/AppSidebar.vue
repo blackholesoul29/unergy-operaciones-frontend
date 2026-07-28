@@ -293,6 +293,12 @@ const ALL_GROUPS = [
     ],
   },
   {
+    label: 'Registros CND/ASIC',
+    items: [
+      { to: '/registros-cnd-asic', label: 'Proyectos en conexión', icon: 'pi pi-flag', roles: ['admin', 'operaciones'] },
+    ],
+  },
+  {
     label: 'Comercialización',
     items: [
       { to: '/mem/cumplimiento',    label: 'Cumplimiento PPA', icon: 'pi pi-shield' },
