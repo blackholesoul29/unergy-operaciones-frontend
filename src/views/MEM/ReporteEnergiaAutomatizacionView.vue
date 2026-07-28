@@ -3,6 +3,10 @@
     <PageHeader title="Reporte de Energía" :subtitle="`Revisión diaria · ${fechaLabel}`">
       <template #actions>
         <Calendar v-model="fecha" dateFormat="yy-mm-dd" class="w-40" :maxDate="hoy" showIcon />
+        <Button icon="pi pi-play" label="Ejecutar clasificación" severity="secondary" outlined
+                :loading="ejecutando"
+                v-tooltip.bottom="'Vuelve a correr Quoia/Solenium para este día -- puede interrogar medidores incompletos'"
+                @click="ejecutarClasificacion" />
         <Button icon="pi pi-file-excel" label="Generar Excel" severity="secondary" outlined
                 :loading="generandoExcel" @click="generarExcel" />
         <Button icon="pi pi-send" label="Enviar reporte"
@@ -39,6 +43,10 @@
 
         <div v-if="loadingLista" class="flex items-center justify-center py-12">
           <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+        </div>
+        <div v-else-if="!filas.length" class="text-center py-12" style="color: #9b89b5;">
+          <p class="mb-3">Todavía no se ha corrido la clasificación para este día.</p>
+          <Button icon="pi pi-play" label="Ejecutar clasificación" :loading="ejecutando" @click="ejecutarClasificacion" />
         </div>
         <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
           <DataTable :value="filasFiltradas" :paginator="true" :rows="20" :rowsPerPageOptions="[20, 50, 100]"
@@ -241,6 +249,7 @@ const loadingHistorial = ref(false)
 
 const generandoExcel = ref(false)
 const enviando = ref(false)
+const ejecutando = ref(false)
 
 async function cargarResumen() {
   try {
@@ -405,6 +414,24 @@ async function validar() {
 }
 
 // ── Acciones globales ──────────────────────────────────────────────────
+async function ejecutarClasificacion() {
+  ejecutando.value = true
+  try {
+    const { data } = await api.post('/reporte-energia/ejecutar', null, { params: { fecha: fechaISO.value } })
+    toast.add({
+      severity: 'success', summary: 'Clasificación ejecutada',
+      detail: `${data.generacion} generación · ${data.consumo} consumo · ${data.omitidas} omitidas (ya editadas)`,
+      life: 4000,
+    })
+    await cargarResumen()
+    await cargarLista()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo ejecutar la clasificación.', life: 4000 })
+  } finally {
+    ejecutando.value = false
+  }
+}
+
 async function generarExcel() {
   generandoExcel.value = true
   try {
