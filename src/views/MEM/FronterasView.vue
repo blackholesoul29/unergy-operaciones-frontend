@@ -13,9 +13,13 @@
                   placeholder="Proyecto" class="w-48" showClear filter />
         <Dropdown v-model="operadorFilter" :options="operadorOptions" optionLabel="label" optionValue="value"
                   placeholder="Operador" class="w-40" showClear />
+        <Button icon="pi pi-chart-scatter" label="Diagrama Fasorial" size="small"
+                @click="showFasorial = true"
+                style="background: #A78BDA; border-color: #A78BDA; color: #ffffff;"
+                class="whitespace-nowrap" />
         <Button icon="pi pi-plus" label="Nueva Frontera"
                 @click="abrirCrear"
-                class="w-48 justify-center whitespace-nowrap" />
+                class="whitespace-nowrap" />
       </template>
     </PageHeader>
 
@@ -27,10 +31,6 @@
         <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ stat.label }}</p>
         <p class="text-2xl font-bold mt-1" :style="{ color: stat.color }">{{ stat.value }}</p>
       </div>
-      <Button icon="pi pi-chart-scatter" label="Diagrama Fasorial" size="small"
-              @click="showFasorial = true"
-              style="background: #A78BDA; border-color: #A78BDA; color: #ffffff;"
-              class="h-20 flex-1 justify-center whitespace-nowrap" />
     </div>
 
     <!-- Aviso: fronteras nuevas detectadas en Quoia -->
@@ -80,6 +80,12 @@
         <Column field="estado" header="Estado" sortable style="min-width: 120px">
           <template #body="{ data }">
             <Tag :value="data.estado" :severity="estadoSeverity(data.estado)" />
+          </template>
+        </Column>
+        <Column field="fecha_registro_asic" header="Fecha Registro ASIC" sortable style="min-width: 150px">
+          <template #body="{ data }">
+            <span v-if="data.fecha_registro_asic" class="text-sm" style="color: #6b5a8a;">{{ data.fecha_registro_asic }}</span>
+            <span v-else class="text-xs" style="color: #c4b8d4;">—</span>
           </template>
         </Column>
         <Column field="nro_serie_med_ppal" header="Serial Medidor Principal" style="min-width: 170px">
@@ -549,12 +555,15 @@ const filteredFronteras = computed(() => {
   return list
 })
 
+const TIPOS_GENERACION = ['generacion', 'generacion_consumo']
+
 const stats = computed(() => {
   const all = fronteras.value
   return [
     { label: 'Total', value: all.length, color: '#2C2039' },
     { label: 'Activas', value: all.filter(f => f.estado === 'activa').length, color: '#10B981' },
     { label: 'En registro', value: all.filter(f => f.estado === 'en_registro').length, color: '#F0C040' },
+    { label: 'Que generan', value: all.filter(f => TIPOS_GENERACION.includes(f.tipo_frontera)).length, color: '#3B82F6' },
     { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.capacidad_efectiva_mw) || 0), 0).toFixed(1), color: '#915BD8' },
   ]
 })
