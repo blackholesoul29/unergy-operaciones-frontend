@@ -61,6 +61,16 @@
           <label class="block text-xs font-medium text-gray-600 mb-1">Nombre comercial</label>
           <InputText v-model="form.nombre_comercial" class="w-full" placeholder="Ej: Afinia" />
         </div>
+        <template v-if="!editingId">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Correo de contacto (opcional)</label>
+            <InputText v-model="form.contacto_email" class="w-full" placeholder="Ej: reportes@afinia.com.co" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Nombre del contacto (opcional)</label>
+            <InputText v-model="form.contacto_nombre" class="w-full" placeholder="Ej: María Pérez" />
+          </div>
+        </template>
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" text @click="showForm = false" />
@@ -112,7 +122,10 @@ async function loadData() {
 const showForm = ref(false)
 const saving = ref(false)
 const editingId = ref(null)
-const form = ref({ nombre_legal: '', nombre_comercial: '' })
+function blankForm() {
+  return { nombre_legal: '', nombre_comercial: '', contacto_email: '', contacto_nombre: '' }
+}
+const form = ref(blankForm())
 
 // Aviso de nombre parecido (409 estructurado, igual que en Fronteras/Proyectos):
 // se puede confirmar y crear igual con forzar=true.
@@ -123,14 +136,35 @@ const pendingBody = ref(null)
 
 function abrirCrear() {
   editingId.value = null
-  form.value = { nombre_legal: '', nombre_comercial: '' }
+  form.value = blankForm()
   showForm.value = true
 }
 
 function abrirEditar(op) {
   editingId.value = op.id
-  form.value = { nombre_legal: op.nombre_legal, nombre_comercial: op.nombre_comercial || '' }
+  form.value = { ...blankForm(), nombre_legal: op.nombre_legal, nombre_comercial: op.nombre_comercial || '' }
   showForm.value = true
+}
+
+// Si se diligenció un correo de contacto al crear, lo agrega tras crear el
+// operador -- no bloquea la creación si este paso falla, solo avisa aparte.
+async function _crearContactoSiAplica(operadorId) {
+  const email = form.value.contacto_email?.trim()
+  if (!email) return
+  try {
+    await api.post(`/operadores-red/${operadorId}/contactos`, {
+      email,
+      nombre: form.value.contacto_nombre?.trim() || null,
+    })
+  } catch (e) {
+    const detail = e.response?.data?.detail
+    toast.add({
+      severity: 'warn',
+      summary: 'Operador creado, pero el contacto no se pudo agregar',
+      detail: typeof detail === 'string' ? detail : 'Revísalo desde el detalle del operador',
+      life: 5000,
+    })
+  }
 }
 
 async function guardar() {
@@ -144,7 +178,8 @@ async function guardar() {
       await api.patch(`/operadores-red/${editingId.value}`, body)
       toast.add({ severity: 'success', summary: 'Operador actualizado', life: 2000 })
     } else {
-      await api.post('/operadores-red', body)
+      const { data } = await api.post('/operadores-red', body)
+      await _crearContactoSiAplica(data.id)
       toast.add({ severity: 'success', summary: 'Operador creado', life: 2000 })
     }
     showForm.value = false
@@ -168,7 +203,8 @@ async function guardar() {
 async function guardarForzado() {
   forzando.value = true
   try {
-    await api.post('/operadores-red', pendingBody.value, { params: { forzar: true } })
+    const { data } = await api.post('/operadores-red', pendingBody.value, { params: { forzar: true } })
+    await _crearContactoSiAplica(data.id)
     toast.add({ severity: 'success', summary: 'Operador creado', life: 2000 })
     duplicadoVisible.value = false
     showForm.value = false
