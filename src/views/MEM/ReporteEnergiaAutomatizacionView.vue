@@ -2,7 +2,7 @@
   <div class="space-y-5">
     <PageHeader title="Reporte de Energía" :subtitle="`Revisión diaria · ${fechaLabel}`">
       <template #actions>
-        <Calendar v-model="fecha" dateFormat="yy-mm-dd" class="w-40" :maxDate="hoy" showIcon />
+        <Calendar v-model="fecha" dateFormat="yy-mm-dd" class="w-40" :maxDate="maxFecha" showIcon />
         <Button icon="pi pi-play" label="Ejecutar clasificación" severity="secondary" outlined
                 :loading="ejecutando"
                 v-tooltip.bottom="'Vuelve a correr Quoia/Solenium para este día -- puede interrogar medidores incompletos'"
@@ -93,7 +93,7 @@
       <TabPanel header="Historial">
         <div class="flex flex-wrap items-center gap-3 mb-4">
           <span class="text-sm" style="color: #6b5a8a;">Ver el reporte de otro día:</span>
-          <Calendar v-model="fechaHistorial" dateFormat="yy-mm-dd" class="w-40" :maxDate="hoy" showIcon />
+          <Calendar v-model="fechaHistorial" dateFormat="yy-mm-dd" class="w-40" :maxDate="maxFecha" showIcon />
           <Button label="Ver" size="small" @click="cargarHistorial" />
         </div>
         <div v-if="loadingHistorial" class="flex items-center justify-center py-12">
@@ -228,9 +228,17 @@ function hoyColombia() {
   const utc = new Date(Date.now())
   return new Date(utc.getTime() - 5 * 60 * 60 * 1000)
 }
-const hoy = hoyColombia()
-const fecha = ref(hoyColombia())
-const fechaHistorial = ref(hoyColombia())
+function ayerColombia() {
+  // El reporte siempre es del día ANTERIOR (igual que el pipeline original
+  // Reporte-Energia: 'ayer = date.today() - timedelta(days=1)', sin importar
+  // qué fecha traiga Quoia) -- ni el día por defecto ni el máximo
+  // seleccionable deberían ser "hoy".
+  const h = hoyColombia()
+  return new Date(h.getTime() - 24 * 60 * 60 * 1000)
+}
+const maxFecha = ayerColombia()
+const fecha = ref(ayerColombia())
+const fechaHistorial = ref(ayerColombia())
 const activeTab = ref(0)
 
 const fechaISO = computed(() => fecha.value.toISOString().slice(0, 10))
