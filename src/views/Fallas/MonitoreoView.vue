@@ -631,7 +631,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick, defineAsyncComponent } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
@@ -661,6 +661,7 @@ ChartJS.register(Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointE
 import api from '@/api/client'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '@/utils/fallaTitulo'
 
+const route          = useRoute()
 const router         = useRouter()
 const toast          = useToast()
 const confirmService = useConfirm()
@@ -700,13 +701,27 @@ const loading    = ref(false)
 const error      = ref(null)
 
 // ── Filtros ───────────────────────────────────────────────────────────────
+// Sincronizados con la URL (?q=&proyecto=&prioridad=&estado=&desde=&hasta=)
+// para que se sostengan al volver con "atras" o al refrescar.
 const bucket           = ref('activas')
-const search           = ref('')
-const filtroProyecto   = ref(null)
-const filtroPrioridad  = ref(null)
-const filtroEstado     = ref(null)
-const filtroFechaDesde = ref(null)
-const filtroFechaHasta = ref(null)
+const search           = ref(route.query.q || '')
+const filtroProyecto   = ref(route.query.proyecto ? Number(route.query.proyecto) : null)
+const filtroPrioridad  = ref(route.query.prioridad || null)
+const filtroEstado     = ref(route.query.estado || null)
+const filtroFechaDesde = ref(route.query.desde ? new Date(route.query.desde) : null)
+const filtroFechaHasta = ref(route.query.hasta ? new Date(route.query.hasta) : null)
+
+watch([search, filtroProyecto, filtroPrioridad, filtroEstado, filtroFechaDesde, filtroFechaHasta],
+  ([q, proyecto, prioridad, estado, desde, hasta]) => {
+    const query = {}
+    if (q) query.q = q
+    if (proyecto) query.proyecto = proyecto
+    if (prioridad) query.prioridad = prioridad
+    if (estado) query.estado = estado
+    if (desde) query.desde = desde.toISOString().split('T')[0]
+    if (hasta) query.hasta = hasta.toISOString().split('T')[0]
+    router.replace({ query })
+  })
 
 // ── Refs DOM ─────────────────────────────────────────────────────────────
 const searchInputRef  = ref(null)

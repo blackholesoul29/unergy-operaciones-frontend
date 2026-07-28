@@ -554,6 +554,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import MultiSelect from 'primevue/multiselect'
 import Checkbox   from 'primevue/checkbox'
 import Button     from 'primevue/button'
@@ -618,6 +619,8 @@ const DEPT_POSITIONS = [
 // ─── Estado ──────────────────────────────────────────────────────────────────
 
 const toast        = useToast()
+const route        = useRoute()
+const router       = useRouter()
 const loading      = ref(false)
 const reloading    = ref(false)
 const initialLoaded = ref(false)
@@ -628,12 +631,14 @@ const filtros      = ref({ municipios: [], departamentos: [], estados: [] })
 const rankingData  = ref([])   // top N del API
 const internosOpts = ref([])   // proyectos internos BD
 
+// Sincronizados con la URL (mismos nombres que buildParams()) para que se
+// sostengan al volver con "atras" o al refrescar.
 const filters = reactive({
-  fechaIni:     '',
-  fechaFin:     '',
-  municipios:   [],
-  departamentos: [],
-  estados:      [],
+  fechaIni:     route.query.fechaIni || '',
+  fechaFin:     route.query.fechaFin || '',
+  municipios:   route.query.municipio ? route.query.municipio.split(',') : [],
+  departamentos: route.query.departamento ? route.query.departamento.split(',') : [],
+  estados:      route.query.estado ? route.query.estado.split(',') : [],
 })
 
 const activeTab    = ref('lineas')
@@ -659,8 +664,11 @@ async function loadFiltros() {
   try {
     const { data } = await api.get('/solar/filtros')
     filtros.value = data
-    // Seleccionar todos los estados por defecto
-    filters.estados = [...data.estados]
+    // Seleccionar todos los estados por defecto -- salvo que ya vinieran
+    // restaurados desde la URL (?estado=...), para no pisar ese filtro.
+    if (!route.query.estado) {
+      filters.estados = [...data.estados]
+    }
   } catch { /* silencioso */ }
 }
 
@@ -750,6 +758,7 @@ function buildParams() {
 }
 
 async function applyFilters() {
+  router.replace({ query: buildParams() })
   await Promise.all([loadGeneracion(), loadRanking()])
 }
 

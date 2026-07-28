@@ -130,8 +130,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -145,6 +145,7 @@ import Select from 'primevue/select'
 import FallaForm from './FallaForm.vue'
 import api from '@/api/client'
 
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
@@ -158,8 +159,24 @@ const dialogVisible = ref(false)
 const catalogos = ref({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
 const proyectos = ref([])
 
-const filters = ref({ q: '', estado_id: null, prioridad_id: null, proyecto_id: null })
+// Sincronizados con la URL para que se sostengan al volver con "atras" o al
+// refrescar (antes se reiniciaban en cada montaje del componente).
+const filters = ref({
+  q: route.query.q || '',
+  estado_id: route.query.estado_id ? Number(route.query.estado_id) : null,
+  prioridad_id: route.query.prioridad_id ? Number(route.query.prioridad_id) : null,
+  proyecto_id: route.query.proyecto_id ? Number(route.query.proyecto_id) : null,
+})
 const hasFilters = computed(() => filters.value.q || filters.value.estado_id || filters.value.prioridad_id || filters.value.proyecto_id)
+
+watch(filters, (f) => {
+  const query = {}
+  if (f.q) query.q = f.q
+  if (f.estado_id) query.estado_id = f.estado_id
+  if (f.prioridad_id) query.prioridad_id = f.prioridad_id
+  if (f.proyecto_id) query.proyecto_id = f.proyecto_id
+  router.replace({ query })
+}, { deep: true })
 
 function slaAtRisk(data) {
   if (!data.sla_limite_horas || data.sla_cumplido !== null) return false

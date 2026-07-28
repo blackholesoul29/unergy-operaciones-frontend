@@ -477,7 +477,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
@@ -495,6 +495,7 @@ import FallaForm from '@/views/Fallas/FallaForm.vue'
 import api from '@/api/client'
 import { tituloFalla, categoriaFalla } from '@/utils/fallaTitulo'
 
+const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 const confirmService = useConfirm()
@@ -526,13 +527,28 @@ const loading = ref(false)
 const error = ref(null)
 
 const bucket = ref('todas')
-const search = ref('')
-const filtroProyecto = ref(null)
-const filtroPrioridad = ref(null)
-const filtroAsignado = ref(null)
-const filtroEstado = ref(null)
-const filtroFechaDesde = ref(null)
-const filtroFechaHasta = ref(null)
+// Sincronizados con la URL (?q=&proyecto=&prioridad=&asignado=&estado=&desde=&hasta=)
+// para que se sostengan al volver con "atras" o al refrescar.
+const search = ref(route.query.q || '')
+const filtroProyecto = ref(route.query.proyecto ? Number(route.query.proyecto) : null)
+const filtroPrioridad = ref(route.query.prioridad || null)
+const filtroAsignado = ref(route.query.asignado ? Number(route.query.asignado) : null)
+const filtroEstado = ref(route.query.estado || null)
+const filtroFechaDesde = ref(route.query.desde ? new Date(route.query.desde) : null)
+const filtroFechaHasta = ref(route.query.hasta ? new Date(route.query.hasta) : null)
+
+watch([search, filtroProyecto, filtroPrioridad, filtroAsignado, filtroEstado, filtroFechaDesde, filtroFechaHasta],
+  ([q, proyecto, prioridad, asignado, estado, desde, hasta]) => {
+    const query = {}
+    if (q) query.q = q
+    if (proyecto) query.proyecto = proyecto
+    if (prioridad) query.prioridad = prioridad
+    if (asignado) query.asignado = asignado
+    if (estado) query.estado = estado
+    if (desde) query.desde = desde.toISOString().split('T')[0]
+    if (hasta) query.hasta = hasta.toISOString().split('T')[0]
+    router.replace({ query })
+  })
 
 const searchInputRef = ref(null)
 

@@ -340,6 +340,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import api from '@/api/client'
@@ -488,14 +489,30 @@ async function generarFasorial() {
 const toast = useToast()
 const confirm = useConfirm()
 
+const route = useRoute()
+const router = useRouter()
+
 const fronteras = ref([])
 const loading = ref(true)
 const saving = ref(false)
-const search = ref('')
-const estadoFilter = ref(null)
-const proyectoFilter = ref(null)
-const operadorFilter = ref(null)
-const soloGenerando = ref(false)
+
+// Filtros sincronizados con la URL (?q=&estado=&proyecto=&operador=&generando=)
+// para que se sostengan al volver con el boton "atras" o al refrescar.
+const search = ref(route.query.q || '')
+const estadoFilter = ref(route.query.estado || null)
+const proyectoFilter = ref(route.query.proyecto ? Number(route.query.proyecto) : null)
+const operadorFilter = ref(route.query.operador || null)
+const soloGenerando = ref(route.query.generando === '1')
+
+watch([search, estadoFilter, proyectoFilter, operadorFilter, soloGenerando], ([q, estado, proyecto, operador, generando]) => {
+  const query = {}
+  if (q) query.q = q
+  if (estado) query.estado = estado
+  if (proyecto) query.proyecto = proyecto
+  if (operador) query.operador = operador
+  if (generando) query.generando = '1'
+  router.replace({ query })
+})
 const showEdit = ref(false)
 const editingFrontera = ref(null)
 const editForm = ref(null)
