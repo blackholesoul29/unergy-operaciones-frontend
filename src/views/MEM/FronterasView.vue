@@ -46,7 +46,7 @@
              background: stat.clave && soloGenerando ? 'rgba(59,130,246,0.06)' : '#fff',
            }"
            v-tooltip.top="stat.clave === 'generando'
-             ? 'Proyectos de Generacion con fecha de inicio de comercializacion ya cumplida (generacion real, no solo el tipo de frontera). Clic para filtrar.'
+             ? 'Con comercialización ya iniciada (generación real). Clic para filtrar.'
              : (stat.clave ? 'Clic para filtrar solo estas' : undefined)"
            @click="stat.clave === 'generando' && (soloGenerando = !soloGenerando)">
         <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ stat.label }}</p>
