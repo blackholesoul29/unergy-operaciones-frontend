@@ -27,7 +27,13 @@
     <div class="flex flex-wrap gap-4">
       <div v-for="stat in stats" :key="stat.label"
            class="bg-white rounded-xl shadow-sm p-4 h-20 flex-1 min-w-[9rem] flex flex-col justify-center"
-           style="border: 1px solid #e8e0f0;">
+           :class="{ 'cursor-pointer select-none': stat.clave }"
+           :style="{
+             border: stat.clave && soloGenerando ? '1.5px solid #3B82F6' : '1px solid #e8e0f0',
+             background: stat.clave && soloGenerando ? 'rgba(59,130,246,0.06)' : '#fff',
+           }"
+           v-tooltip.top="stat.clave ? 'Clic para filtrar solo estas' : undefined"
+           @click="stat.clave === 'generando' && (soloGenerando = !soloGenerando)">
         <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ stat.label }}</p>
         <p class="text-2xl font-bold mt-1" :style="{ color: stat.color }">{{ stat.value }}</p>
       </div>
@@ -476,6 +482,7 @@ const search = ref('')
 const estadoFilter = ref(null)
 const proyectoFilter = ref(null)
 const operadorFilter = ref(null)
+const soloGenerando = ref(false)
 const showEdit = ref(false)
 const editingFrontera = ref(null)
 const editForm = ref(null)
@@ -541,6 +548,7 @@ const filteredFronteras = computed(() => {
   if (estadoFilter.value) list = list.filter(f => f.estado === estadoFilter.value)
   if (proyectoFilter.value) list = list.filter(f => f.proyecto_id === proyectoFilter.value)
   if (operadorFilter.value) list = list.filter(f => (f.operador_comercial || f.operador_red) === operadorFilter.value)
+  if (soloGenerando.value) list = list.filter(f => TIPOS_GENERACION.includes(f.tipo_frontera))
   if (search.value) {
     const s = search.value.toLowerCase()
     list = list.filter(f =>
@@ -563,7 +571,7 @@ const stats = computed(() => {
     { label: 'Total', value: all.length, color: '#2C2039' },
     { label: 'Activas', value: all.filter(f => f.estado === 'activa').length, color: '#10B981' },
     { label: 'En registro', value: all.filter(f => f.estado === 'en_registro').length, color: '#F0C040' },
-    { label: 'Que generan', value: all.filter(f => TIPOS_GENERACION.includes(f.tipo_frontera)).length, color: '#3B82F6' },
+    { label: 'Que generan', value: all.filter(f => TIPOS_GENERACION.includes(f.tipo_frontera)).length, color: '#3B82F6', clave: 'generando' },
     { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.capacidad_efectiva_mw) || 0), 0).toFixed(1), color: '#915BD8' },
   ]
 })
