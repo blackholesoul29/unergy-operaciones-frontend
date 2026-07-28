@@ -172,14 +172,11 @@
               <td v-if="colsVisibles.valor_anual_indexado" class="px-3 py-2 text-right font-mono text-xs">
                 {{ fila.valor_anual_indexado != null ? formatCOP(fila.valor_anual_indexado) : '—' }}
               </td>
-              <!-- Canon — muestra valor del archivo; ícono si difiere del calculado -->
+              <!-- Canon calculado -->
               <td class="px-3 py-2 text-right tabular-nums bg-purple-50/30"
                 :style="seleccion[fila.id] ? 'color:#7c3aed' : 'color:#9ca3af'">
                 <span class="inline-flex items-center justify-end gap-1">
-                  <span v-if="fila.canon_archivo != null" class="font-semibold">
-                    {{ formatCOP(fila.canon_archivo) }}
-                  </span>
-                  <span v-else-if="fila.canon_calculado != null" class="font-semibold">
+                  <span v-if="fila.canon_calculado != null" class="font-semibold">
                     {{ formatCOP(fila.canon_calculado) }}
                   </span>
                   <span v-else class="text-gray-300">—</span>
