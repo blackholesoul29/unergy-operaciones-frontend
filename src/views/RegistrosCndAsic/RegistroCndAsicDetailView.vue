@@ -19,7 +19,7 @@
       <div :style="`height:100%;width:${Math.min(100, reg.avance_pct)}%;background:#915BD8;`"></div>
     </div>
 
-    <div v-if="reg.siguiente_paso" class="bg-white rounded-xl p-3 shadow-sm" style="border:1px solid #e8e0f0;">
+    <div v-if="reg.siguiente_paso && reg.avance_pct < 100" class="bg-white rounded-xl p-3 shadow-sm" style="border:1px solid #e8e0f0;">
       <span class="text-xs" style="color:#9b89b5;">Siguiente paso:</span>
       <span class="font-mono font-semibold ml-1" style="color:#915BD8;">{{ reg.siguiente_paso.codigo }}</span>
       <span class="text-sm" style="color:#2C2039;"> — {{ reg.siguiente_paso.descripcion }}</span>
@@ -35,6 +35,38 @@
 
     <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="border:1px solid #e8e0f0;">
       <TabView>
+        <!-- GENERAL (datos del registro) -->
+        <TabPanel header="General">
+          <div class="grid md:grid-cols-3 gap-3 p-1">
+            <label class="text-xs" style="color:#2C2039;">N° expediente
+              <InputText v-model="general.numero_expediente" class="w-full" /></label>
+            <label class="text-xs" style="color:#2C2039;">ID requerimiento OR
+              <InputText v-model="general.id_requerimiento_or" class="w-full" /></label>
+            <label class="text-xs" style="color:#2C2039;">N° solicitud appweb
+              <InputText v-model="general.numero_solicitud_appweb" class="w-full" /></label>
+            <label class="text-xs" style="color:#2C2039;">Fecha conexión estimada
+              <input type="date" v-model="general.fecha_conexion_estimada" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
+            <label class="text-xs" style="color:#2C2039;">Vigencia CREG 174 / ámbito
+              <input type="date" v-model="general.vigencia_aprobacion_conexion" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
+            <label class="text-xs" style="color:#2C2039;">Fecha visita protecciones
+              <input type="date" v-model="general.fecha_visita_protecciones" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
+            <label class="text-xs" style="color:#2C2039;">Tipo visita protecciones
+              <Select v-model="general.tipo_visita_protecciones" :options="cat.tipos_visita" showClear placeholder="—" class="w-full" /></label>
+            <label class="text-xs col-span-2" style="color:#2C2039;">Punto de conexión (texto)
+              <InputText v-model="general.punto_conexion_texto" class="w-full" /></label>
+            <label class="text-xs col-span-3" style="color:#2C2039;">Notas
+              <Textarea v-model="general.notas" rows="2" class="w-full" /></label>
+            <div class="flex gap-4 col-span-3">
+              <label class="flex items-center gap-2 text-sm" style="color:#2C2039;">
+                <Checkbox v-model="general.exporta" :binary="true" /> Exporta energía</label>
+              <label class="flex items-center gap-2 text-sm" style="color:#2C2039;">
+                <Checkbox v-model="general.comercializador_es_or" :binary="true" /> Comercializador es el OR</label>
+            </div>
+          </div>
+          <Button label="Guardar datos generales" icon="pi pi-save" size="small" class="mt-2" :loading="guardandoGeneral"
+            @click="guardarGeneral" style="background:#915BD8; border-color:#915BD8;" />
+        </TabPanel>
+
         <!-- ETAPAS -->
         <TabPanel header="Etapas">
           <div class="space-y-3 p-1">
@@ -262,16 +294,19 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
+import Checkbox from 'primevue/checkbox'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import api from '@/api/client'
 
 const route = useRoute()
 const toast = useToast()
-const id = route.params.id
+const proyectoId = route.params.proyectoId
 
 const reg = ref(null)
-const cat = ref({ transiciones: {}, tipos_equipo: [], tipos_documento: [] })
+const regId = ref(null)
+const cat = ref({ transiciones: {}, tipos_equipo: [], tipos_documento: [], tipos_visita: [] })
+const general = ref({})
 const params = ref({})
 const validacion = ref(null)
 const equipos = ref([])
@@ -279,7 +314,14 @@ const documentos = ref([])
 const alertas = ref([])
 const transicionando = ref(false)
 const guardandoParams = ref(false)
+const guardandoGeneral = ref(false)
 const recomputando = ref(false)
+
+const CAMPOS_GENERAL = [
+  'numero_expediente', 'id_requerimiento_or', 'numero_solicitud_appweb',
+  'fecha_conexion_estimada', 'vigencia_aprobacion_conexion', 'fecha_visita_protecciones',
+  'tipo_visita_protecciones', 'exporta', 'comercializador_es_or', 'punto_conexion_texto', 'notas',
+]
 
 const campos93 = [
   { k: 'voltaje_max_kv', label: 'V máx (kV)' },
@@ -307,39 +349,66 @@ function siguientesEstados(e) {
   return (cat.value.transiciones?.[e.etapa]?.[e.estado_actual]) || []
 }
 
-async function cargarReg() {
-  const { data } = await api.get(`/registros-cnd/${id}`)
+function setReg(data) {
   reg.value = data
+  regId.value = data.id
   alertas.value = data.alertas_pendientes || []
+  general.value = Object.fromEntries(CAMPOS_GENERAL.map(k => [k, data[k] ?? (typeof data[k] === 'boolean' ? false : '')]))
+  general.value.exporta = !!data.exporta
+  general.value.comercializador_es_or = !!data.comercializador_es_or
+}
+
+async function materializar() {
+  // crea el registro si no existe y devuelve su resumen
+  const { data } = await api.post(`/registros-cnd/por-proyecto/${proyectoId}`)
+  setReg(data)
+}
+async function recargarReg() {
+  const { data } = await api.get(`/registros-cnd/${regId.value}`)
+  setReg(data)
 }
 async function cargarCatalogos() {
   const { data } = await api.get('/registros-cnd/catalogos')
   cat.value = data
 }
 async function cargarParams() {
-  const { data } = await api.get(`/registros-cnd/${id}/parametros-93`)
+  const { data } = await api.get(`/registros-cnd/${regId.value}/parametros-93`)
   params.value = data || {}
   await cargarValidacion()
 }
 async function cargarValidacion() {
-  const { data } = await api.get(`/registros-cnd/${id}/validacion-93`)
+  const { data } = await api.get(`/registros-cnd/${regId.value}/validacion-93`)
   validacion.value = data
 }
 async function cargarEquipos() {
-  const { data } = await api.get(`/registros-cnd/${id}/equipos`)
+  const { data } = await api.get(`/registros-cnd/${regId.value}/equipos`)
   equipos.value = data
 }
 async function cargarDocumentos() {
-  const { data } = await api.get(`/registros-cnd/${id}/documentos`)
+  const { data } = await api.get(`/registros-cnd/${regId.value}/documentos`)
   documentos.value = data
+}
+
+async function guardarGeneral() {
+  guardandoGeneral.value = true
+  try {
+    const payload = { ...general.value }
+    for (const k of CAMPOS_GENERAL) if (payload[k] === '') payload[k] = null
+    await api.patch(`/registros-cnd/${regId.value}`, payload)
+    await recargarReg()
+    toast.add({ severity: 'success', summary: 'Datos guardados', life: 2500 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e.response?.data?.detail ?? '', life: 6000 })
+  } finally {
+    guardandoGeneral.value = false
+  }
 }
 
 async function hacerTransicion(etapa, aEstado) {
   transicionando.value = true
   try {
-    const { data } = await api.post(`/registros-cnd/${id}/transicion`, { etapa, a_estado: aEstado })
-    reg.value = data
-    alertas.value = data.alertas_pendientes || []
+    const { data } = await api.post(`/registros-cnd/${regId.value}/transicion`, { etapa, a_estado: aEstado })
+    setReg(data)
     toast.add({ severity: 'success', summary: 'Estado actualizado', life: 2500 })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Transición no válida', detail: e.response?.data?.detail ?? '', life: 6000 })
@@ -353,7 +422,7 @@ async function guardarParams() {
   try {
     const payload = {}
     for (const f of campos93) if (params.value[f.k] !== undefined && params.value[f.k] !== '') payload[f.k] = params.value[f.k]
-    await api.put(`/registros-cnd/${id}/parametros-93`, payload)
+    await api.put(`/registros-cnd/${regId.value}/parametros-93`, payload)
     await cargarValidacion()
     toast.add({ severity: 'success', summary: 'Parámetros guardados', life: 2500 })
   } catch (e) {
@@ -366,7 +435,7 @@ async function guardarParams() {
 async function recomputar() {
   recomputando.value = true
   try {
-    const { data } = await api.post(`/registros-cnd/${id}/alertas/recomputar`)
+    const { data } = await api.post(`/registros-cnd/${regId.value}/alertas/recomputar`)
     alertas.value = data.alertas || []
     toast.add({ severity: 'success', summary: `Alertas: ${data.alertas.length} (${data.creadas} nuevas)`, life: 3000 })
   } catch (e) {
@@ -383,7 +452,7 @@ function abrirEquipo() { equipoForm.value = {}; equipoDialog.value = true }
 async function crearEquipo() {
   try {
     const payload = Object.fromEntries(Object.entries(equipoForm.value).filter(([, v]) => v !== '' && v != null))
-    await api.post(`/registros-cnd/${id}/equipos`, payload)
+    await api.post(`/registros-cnd/${regId.value}/equipos`, payload)
     equipoDialog.value = false
     await cargarEquipos()
     toast.add({ severity: 'success', summary: 'Equipo agregado', life: 2500 })
@@ -393,7 +462,7 @@ async function crearEquipo() {
 }
 async function borrarEquipo(row) {
   if (!confirm(`¿Eliminar el equipo ${row.tipo}?`)) return
-  await api.delete(`/registros-cnd/${id}/equipos/${row.id}`)
+  await api.delete(`/registros-cnd/${regId.value}/equipos/${row.id}`)
   await cargarEquipos()
 }
 
@@ -404,7 +473,7 @@ function abrirDoc() { docForm.value = { estado: 'BORRADOR' }; docDialog.value = 
 async function crearDoc() {
   try {
     const payload = Object.fromEntries(Object.entries(docForm.value).filter(([, v]) => v !== '' && v != null))
-    await api.post(`/registros-cnd/${id}/documentos`, payload)
+    await api.post(`/registros-cnd/${regId.value}/documentos`, payload)
     docDialog.value = false
     await cargarDocumentos()
     toast.add({ severity: 'success', summary: 'Documento agregado', life: 2500 })
@@ -414,7 +483,7 @@ async function crearDoc() {
 }
 async function borrarDoc(row) {
   if (!confirm(`¿Eliminar el documento ${row.tipo}?`)) return
-  await api.delete(`/registros-cnd/${id}/documentos/${row.id}`)
+  await api.delete(`/registros-cnd/${regId.value}/documentos/${row.id}`)
   await cargarDocumentos()
 }
 
@@ -423,7 +492,7 @@ const correoDialog = ref(false)
 const correo = ref(null)
 async function generarCorreo(tipo) {
   try {
-    const { data } = await api.post(`/registros-cnd/${id}/correos/${tipo}`)
+    const { data } = await api.post(`/registros-cnd/${regId.value}/correos/${tipo}`)
     correo.value = data
     correoDialog.value = true
   } catch (e) {
@@ -436,6 +505,11 @@ function copiarCorreo() {
 }
 
 onMounted(async () => {
-  await Promise.all([cargarReg(), cargarCatalogos(), cargarParams(), cargarEquipos(), cargarDocumentos()])
+  try {
+    await materializar()          // crea/obtiene el registro por proyecto_id
+    await Promise.all([cargarCatalogos(), cargarParams(), cargarEquipos(), cargarDocumentos()])
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo abrir el proyecto', detail: e.response?.data?.detail ?? '', life: 6000 })
+  }
 })
 </script>

@@ -86,7 +86,7 @@ const routes = [
 
   // ── Registros CND/ASIC ───────────────────────────────────────────
   { path: '/registros-cnd-asic',     name: 'RegistrosCndAsic',       component: () => import('@/views/RegistrosCndAsic/RegistrosCndAsicListView.vue'), meta: { roles: ['admin', 'operaciones'] } },
-  { path: '/registros-cnd-asic/:id', name: 'RegistroCndAsicDetalle', component: () => import('@/views/RegistrosCndAsic/RegistroCndAsicDetailView.vue'), meta: { roles: ['admin', 'operaciones'] } },
+  { path: '/registros-cnd-asic/:proyectoId', name: 'RegistroCndAsicDetalle', component: () => import('@/views/RegistrosCndAsic/RegistroCndAsicDetailView.vue'), meta: { roles: ['admin', 'operaciones'] } },
 
   // ── Admin ────────────────────────────────────────────────────────
   { path: '/admin/usuarios',    name: 'AdminUsuarios',   component: () => import('@/views/Admin/AdminUsuariosView.vue'),     meta: { roles: ['admin', 'operaciones'] } },
