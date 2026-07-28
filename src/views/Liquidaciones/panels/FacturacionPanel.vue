@@ -1,0 +1,304 @@
+<template>
+  <div class="fac p-4 sm:p-5 space-y-4">
+    <!-- Sub-pestañas -->
+    <div class="flex items-center justify-between flex-wrap gap-2">
+      <div class="fac-subtabs">
+        <button v-for="s in SUBS" :key="s.key" class="fac-subtab"
+          :class="{ on: sub === s.key }" @click="sub = s.key">
+          <i :class="s.icon" /><span>{{ s.label }}</span>
+        </button>
+      </div>
+      <span class="text-[11px]" style="color:#9b8fb0">
+        Energía del despacho × tarifa PPA indexada por IPP · {{ formatPeriodo(periodo) }}
+      </span>
+    </div>
+
+    <ProgressSpinner v-if="loading" class="block mx-auto my-10" />
+
+    <template v-else>
+      <!-- Aviso IPP faltante -->
+      <div v-if="!ippActual && sub !== 'ipp'" class="rounded-lg px-3 py-2.5 text-xs flex items-center gap-2"
+        style="background:#fff7e6; border:1px solid #f5d99a; color:#8a5a12">
+        <i class="pi pi-exclamation-triangle" />
+        Falta el <b>IPP</b> de {{ formatPeriodo(periodo) }}. La facturación no se puede calcular sin él.
+        <button class="fac-link ml-1" @click="sub = 'ipp'">Cargarlo →</button>
+      </div>
+
+      <!-- ═══ 1. FACTURACIÓN ═══ -->
+      <template v-if="sub === 'facturacion'">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="fac-kpi"><p class="k">Facturación total</p><p class="v">{{ fmtCOP(res.facturacion_total || 0) }}</p></div>
+          <div class="fac-kpi"><p class="k">Energía facturada</p><p class="v">{{ fmtMWh(res.kwh_total) }}</p></div>
+          <div class="fac-kpi"><p class="k">Contratos facturables</p><p class="v">{{ res.facturables || 0 }}</p></div>
+          <div class="fac-kpi"><p class="k">Sin PPA</p><p class="v" :style="{ color: (res.sin_ppa ? '#c0392b' : '#2C2039') }">{{ res.sin_ppa || 0 }}</p></div>
+        </div>
+
+        <div class="fac-card">
+          <div class="tblwrap">
+            <table class="dt">
+              <thead><tr>
+                <th class="l">Proyecto / Contrato</th><th class="l">Comerc.</th>
+                <th>Energía (kWh)</th><th>Tarifa</th><th>Facturación</th>
+              </tr></thead>
+              <tbody>
+                <tr v-for="l in facturables" :key="l.contrato">
+                  <td class="l"><span class="proj">{{ l.proyecto || l.contrato }}</span>
+                    <span class="sub2">{{ l.contrato }}</span></td>
+                  <td class="l"><span class="tag">{{ l.comprador || '—' }}</span></td>
+                  <td>{{ fmtNum(l.kwh) }}</td>
+                  <td>{{ fmtNum(l.tarifa_indexada) }}</td>
+                  <td class="fw">{{ fmtCOP(l.facturacion) }}</td>
+                </tr>
+              </tbody>
+              <tfoot><tr>
+                <td class="l" colspan="2">Total ({{ facturables.length }} contratos)</td>
+                <td>{{ fmtNum(res.kwh_total) }}</td><td></td>
+                <td class="fw">{{ fmtCOP(res.facturacion_total || 0) }}</td>
+              </tr></tfoot>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sin PPA (no facturable por esta vía) -->
+        <div v-if="sinPpa.length" class="fac-card">
+          <p class="fac-note"><i class="pi pi-info-circle" /> Sin PPA marco — no facturable por esta vía (venden vía UNGC):</p>
+          <div class="tblwrap">
+            <table class="dt">
+              <thead><tr><th class="l">Contrato</th><th class="l">Comerc.</th><th>Energía (kWh)</th></tr></thead>
+              <tbody>
+                <tr v-for="l in sinPpa" :key="l.contrato">
+                  <td class="l">{{ l.contrato }}</td><td class="l"><span class="tag warn">{{ l.comprador || '—' }}</span></td>
+                  <td>{{ fmtNum(l.kwh) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </template>
+
+      <!-- ═══ 2. POR CÓDIGO SIC ═══ -->
+      <template v-else-if="sub === 'sic'">
+        <div class="fac-card">
+          <div class="tblwrap">
+            <table class="dt">
+              <thead><tr><th class="l">Código SIC (comercializador)</th><th>Contratos</th><th>Energía (kWh)</th><th>Facturación</th></tr></thead>
+              <tbody>
+                <tr v-for="g in porSic" :key="g.comprador">
+                  <td class="l"><span class="tag">{{ g.comprador }}</span></td>
+                  <td>{{ g.contratos }}</td><td>{{ fmtNum(g.kwh) }}</td><td class="fw">{{ fmtCOP(g.facturacion) }}</td>
+                </tr>
+              </tbody>
+              <tfoot><tr>
+                <td class="l">Total</td>
+                <td>{{ porSic.reduce((s,g)=>s+g.contratos,0) }}</td>
+                <td>{{ fmtNum(res.kwh_total) }}</td>
+                <td class="fw">{{ fmtCOP(res.facturacion_total || 0) }}</td>
+              </tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </template>
+
+      <!-- ═══ 3. DESPACHOS ═══ -->
+      <template v-else-if="sub === 'despachos'">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="text-xs" style="color:#6b5a8a">
+            <template v-if="despacho.contratos && despacho.contratos.length">
+              {{ despacho.contratos.length }} contratos · {{ fmtMWh(despacho.kwh_total) }}
+              <span v-if="despacho.archivo" class="sub2">· {{ despacho.archivo }}</span>
+            </template>
+            <template v-else>Sin despacho cargado para este mes.</template>
+          </span>
+          <button class="fac-upload" :disabled="subiendo" @click="pickDespacho">
+            <i :class="subiendo ? 'pi pi-spin pi-spinner' : 'pi pi-upload'" class="text-xs" />
+            {{ subiendo ? 'Subiendo…' : 'Subir despacho XM' }}
+          </button>
+        </div>
+        <div v-if="despacho.contratos && despacho.contratos.length" class="fac-card">
+          <div class="tblwrap">
+            <table class="dt">
+              <thead><tr><th class="l">Contrato</th><th class="l">Vendedor</th><th class="l">Comprador</th><th>Energía (kWh)</th></tr></thead>
+              <tbody>
+                <tr v-for="d in despacho.contratos" :key="d.contrato">
+                  <td class="l">{{ d.contrato }}</td><td class="l muted">{{ d.vendedor || '—' }}</td>
+                  <td class="l"><span class="tag">{{ d.comprador || '—' }}</span></td>
+                  <td>{{ fmtNum(d.kwh) }}</td>
+                </tr>
+              </tbody>
+              <tfoot><tr><td class="l" colspan="3">Total</td><td>{{ fmtNum(despacho.kwh_total) }}</td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </template>
+
+      <!-- ═══ 4. IPP ═══ -->
+      <template v-else-if="sub === 'ipp'">
+        <div class="fac-card p-4">
+          <p class="text-sm font-bold mb-1" style="color:#2C2039">IPP del mes — {{ formatPeriodo(periodo) }}</p>
+          <p class="text-[11px] mb-3" style="color:#9b8fb0">Índice de Precios al Productor (DANE). Numerador de la indexación de las tarifas de energía.</p>
+          <div class="flex items-end gap-2">
+            <div>
+              <label class="fac-lbl">Valor IPP</label>
+              <input v-model.number="ippInput" type="number" step="0.01" class="fac-in" placeholder="187.43" />
+            </div>
+            <button class="fac-btn" :disabled="guardandoIpp || !ippInput" @click="guardarIpp">
+              <i :class="guardandoIpp ? 'pi pi-spin pi-spinner' : 'pi pi-save'" class="text-xs" /> Guardar
+            </button>
+            <span v-if="ippActual" class="text-[11px] ml-1" style="color:#2C7a3f">Actual: {{ ippActual }}</span>
+          </div>
+        </div>
+        <div class="fac-card">
+          <p class="fac-note">Histórico</p>
+          <div class="tblwrap">
+            <table class="dt">
+              <thead><tr><th class="l">Período</th><th>IPP</th></tr></thead>
+              <tbody>
+                <tr v-for="r in ippHist" :key="r.año + '-' + r.mes" :class="{ cur: r.año === añoMes.a && r.mes === añoMes.m }">
+                  <td class="l">{{ r.año }}-{{ String(r.mes).padStart(2,'0') }}</td>
+                  <td>{{ r.valor }}</td>
+                </tr>
+                <tr v-if="!ippHist.length"><td class="l muted" colspan="2">Sin IPP cargado aún.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </template>
+    </template>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, computed, watch, onMounted } from 'vue'
+import ProgressSpinner from 'primevue/progressspinner'
+import { useToast } from 'primevue/usetoast'
+import api from '@/api/client'
+import { fmtCOP, formatPeriodo } from '@/utils/liquidaciones'
+
+const props = defineProps({ periodo: { type: String, required: true } })
+const toast = useToast()
+
+const SUBS = [
+  { key: 'facturacion', label: 'Facturación', icon: 'pi pi-dollar' },
+  { key: 'sic', label: 'Por código SIC', icon: 'pi pi-sitemap' },
+  { key: 'despachos', label: 'Despachos', icon: 'pi pi-database' },
+  { key: 'ipp', label: 'IPP', icon: 'pi pi-percentage' },
+]
+const sub = ref('facturacion')
+const loading = ref(false)
+const res = ref({})
+const lineas = ref([])
+const porSic = ref([])
+const despacho = ref({ contratos: [], kwh_total: 0 })
+const ippHist = ref([])
+const ippInput = ref(null)
+const subiendo = ref(false)
+const guardandoIpp = ref(false)
+
+const per = computed(() => (props.periodo || '').slice(0, 7))
+const añoMes = computed(() => { const [a, m] = per.value.split('-').map(Number); return { a, m } })
+const ippActual = computed(() => {
+  const r = ippHist.value.find(x => x.año === añoMes.value.a && x.mes === añoMes.value.m)
+  return r ? r.valor : null
+})
+const facturables = computed(() => lineas.value.filter(l => l.estado === 'ok'))
+const sinPpa = computed(() => lineas.value.filter(l => l.estado === 'sin_ppa'))
+
+const fmtNum = (v) => v == null ? '—' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 2 })
+const fmtMWh = (kwh) => kwh == null ? '—' : (kwh / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' MWh'
+
+async function load () {
+  if (!per.value) return
+  loading.value = true
+  try {
+    const [fac, desp, ipp] = await Promise.all([
+      api.get('/facturacion', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({})),
+      api.get('/facturacion/despacho', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({ contratos: [] })),
+      api.get('/ppa/ipp/mensual').then(r => r.data).catch(() => []),
+    ])
+    res.value = fac.resumen || {}
+    lineas.value = fac.lineas || []
+    porSic.value = fac.por_codigo_sic || []
+    despacho.value = desp || { contratos: [] }
+    ippHist.value = (ipp || []).slice().sort((a, b) => (b.año - a.año) || (b.mes - a.mes))
+    ippInput.value = ippActual.value
+  } finally {
+    loading.value = false
+  }
+}
+
+function pickDespacho () {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.xlsx'
+  input.onchange = () => { const f = input.files && input.files[0]; if (f) subirDespacho(f) }
+  input.click()
+}
+async function subirDespacho (file) {
+  subiendo.value = true
+  try {
+    const fd = new FormData()
+    fd.append('archivo', file)
+    const { data } = await api.post(`/facturacion/despacho?periodo=${per.value}`, fd,
+      { headers: { 'Content-Type': 'multipart/form-data' } })
+    toast.add({ severity: 'success', summary: 'Despacho cargado', detail: `${data.contratos} contratos · ${(data.kwh_total / 1000).toFixed(0)} MWh`, life: 4000 })
+    await load()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo cargar', detail: e?.response?.data?.detail || e.message, life: 6000 })
+  } finally { subiendo.value = false }
+}
+
+async function guardarIpp () {
+  guardandoIpp.value = true
+  try {
+    await api.put('/ppa/ipp/mensual', [{ año: añoMes.value.a, mes: añoMes.value.m, valor: Number(ippInput.value) }])
+    toast.add({ severity: 'success', summary: 'IPP guardado', detail: `${formatPeriodo(props.periodo)} = ${ippInput.value}`, life: 3500 })
+    await load()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e?.response?.data?.detail || e.message, life: 6000 })
+  } finally { guardandoIpp.value = false }
+}
+
+watch(() => props.periodo, load)
+onMounted(load)
+</script>
+
+<style scoped>
+.fac-subtabs { display:inline-flex; background:#F4F1FA; border:1px solid #E5E2EC; border-radius:10px; padding:3px; gap:2px; }
+.fac-subtab { display:inline-flex; align-items:center; gap:6px; background:transparent; border:none; padding:6px 12px;
+  font-size:12px; font-weight:700; color:#6B5A8A; border-radius:7px; cursor:pointer; white-space:nowrap; }
+.fac-subtab.on { background:#915BD8; color:#FDFAF7; }
+.fac-subtab:focus-visible { outline:2px solid #915BD8; outline-offset:2px; }
+
+.fac-kpi { background:#fff; border:1px solid #e8e0f0; border-radius:12px; padding:12px 14px; }
+.fac-kpi .k { font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:#6b5a8a; font-weight:600; }
+.fac-kpi .v { font-size:18px; font-weight:800; color:#2C2039; margin-top:4px; font-variant-numeric:tabular-nums; }
+
+.fac-card { background:#fff; border:1px solid #e8e0f0; border-radius:14px; overflow:hidden; }
+.fac-note { font-size:11.5px; color:#6b5a8a; padding:10px 12px 2px; display:flex; align-items:center; gap:6px; }
+.tblwrap { overflow-x:auto; }
+.dt { width:100%; border-collapse:collapse; font-size:12.5px; }
+.dt thead th { text-align:right; padding:9px 12px; font-size:10px; text-transform:uppercase; letter-spacing:.04em;
+  color:#9b8fb0; font-weight:700; border-bottom:1px solid #f0ebf6; background:#faf7ff; white-space:nowrap; }
+.dt th.l { text-align:left; }
+.dt tbody td { padding:8px 12px; border-bottom:1px solid #f7f3fc; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.dt td.l { text-align:left; white-space:normal; }
+.dt tbody tr:hover { background:#faf7ff; }
+.dt tbody tr.cur { background:#f3ecfb; }
+.dt tfoot td { padding:9px 12px; border-top:2px solid #915BD8; background:rgba(145,91,216,.06);
+  font-weight:800; color:#2C2039; text-align:right; font-variant-numeric:tabular-nums; }
+.dt tfoot td.l { text-align:left; }
+.proj { font-weight:600; color:#2C2039; }
+.sub2 { display:block; font-size:10.5px; color:#9b8fb0; }
+.muted { color:#9b8fb0; }
+.fw { font-weight:700; color:#2C2039; }
+.tag { display:inline-block; font-size:11px; padding:1px 7px; border-radius:6px; background:#f3ecfb; color:#6E3FB8; font-weight:600; }
+.tag.warn { background:#fbe9e7; color:#c0392b; }
+
+.fac-upload, .fac-btn { display:inline-flex; align-items:center; gap:6px; background:#915BD8; color:#fff; border:none;
+  padding:7px 14px; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer; }
+.fac-upload:disabled, .fac-btn:disabled { opacity:.6; cursor:default; }
+.fac-lbl { display:block; font-size:11px; color:#6b5a8a; font-weight:600; margin-bottom:3px; }
+.fac-in { width:140px; padding:6px 10px; border:1px solid #ddd6e8; border-radius:8px; font-size:13px;
+  font-variant-numeric:tabular-nums; }
+.fac-link { background:none; border:none; color:#915BD8; font-weight:700; font-size:11px; cursor:pointer; text-decoration:underline; }
+</style>

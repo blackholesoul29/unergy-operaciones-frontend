@@ -18,8 +18,8 @@
 
       <div class="liq-topbar-spacer" />
 
-      <!-- Tipo (preliquidación / oficial) — no aplica a Diferencia (compara ambos) -->
-      <div v-if="tab !== 'diferencia'" class="liq-tipo-toggle">
+      <!-- Tipo (preliquidación / oficial) — no aplica a Diferencia ni Facturación -->
+      <div v-if="tab !== 'diferencia' && tab !== 'facturacion'" class="liq-tipo-toggle">
         <button class="liq-tipo-btn" :class="{ 'liq-tipo-btn--on': tipo === 'preliquidacion' }"
           @click="tipo = 'preliquidacion'">Preliq.</button>
         <button class="liq-tipo-btn" :class="{ 'liq-tipo-btn--on': tipo === 'oficial' }"
@@ -27,7 +27,7 @@
       </div>
 
       <!-- Exportar a Excel el resumen del período (#7) -->
-      <button v-if="tab !== 'diferencia'" class="liq-export" :disabled="exportando" @click="exportarExcel"
+      <button v-if="tab !== 'diferencia' && tab !== 'facturacion'" class="liq-export" :disabled="exportando" @click="exportarExcel"
         v-tooltip.bottom="'Exportar el resumen del período a Excel'">
         <i :class="exportando ? 'pi pi-spin pi-spinner' : 'pi pi-file-excel'" class="text-xs" />
         <span>Excel</span>
@@ -50,6 +50,7 @@
     <LiquidacionesListView v-else-if="tab === 'proyectos'" embedded :periodo="periodo" :tipo="tipo" />
     <LiquidacionesPorInversionistaView v-else-if="tab === 'inversionistas'" embedded :periodo="periodo" :tipo="tipo" />
     <DiferenciaPanel v-else-if="tab === 'diferencia'" :periodo="periodo" />
+    <FacturacionPanel v-else-if="tab === 'facturacion'" :periodo="periodo" />
 
   </div>
 </template>
@@ -62,6 +63,7 @@ import ResumenPanel from './panels/ResumenPanel.vue'
 import LiquidacionesListView from './LiquidacionesListView.vue'
 import LiquidacionesPorInversionistaView from './LiquidacionesPorInversionistaView.vue'
 import DiferenciaPanel from './panels/DiferenciaPanel.vue'
+import FacturacionPanel from './panels/FacturacionPanel.vue'
 import api from '@/api/client'
 import { formatPeriodo, mesActualISO } from '@/utils/liquidaciones'
 
@@ -70,6 +72,7 @@ const TABS = [
   { key: 'proyectos', label: 'Proyectos', icon: 'pi pi-folder' },
   { key: 'inversionistas', label: 'Inversionistas', icon: 'pi pi-users' },
   { key: 'diferencia', label: 'Diferencia', icon: 'pi pi-arrows-h' },
+  { key: 'facturacion', label: 'Facturación', icon: 'pi pi-bolt' },
 ]
 const VALID = TABS.map(t => t.key)
 
