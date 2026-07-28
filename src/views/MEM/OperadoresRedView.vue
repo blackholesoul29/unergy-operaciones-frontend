@@ -68,6 +68,20 @@
           :disabled="!form.nombre_legal?.trim()" @click="guardar" />
       </template>
     </Dialog>
+
+    <!-- Dialog: nombre parecido a un operador existente -->
+    <Dialog v-model:visible="duplicadoVisible" header="Operador parecido ya existe" modal class="w-full max-w-sm">
+      <p class="text-sm mb-4" style="color: #6b5a8a;">
+        Ya existe un operador con un nombre muy parecido:
+        <strong>{{ duplicadoInfo?.candidato_nombre }}</strong>
+        (ID {{ duplicadoInfo?.candidato_id }}).
+        Si de verdad es un operador distinto, puedes crearlo igual.
+      </p>
+      <div class="flex justify-end gap-2">
+        <Button label="Cancelar" severity="secondary" text @click="duplicadoVisible = false" />
+        <Button label="Crear de todos modos" :loading="forzando" @click="guardarForzado" />
+      </div>
+    </Dialog>
   </div>
 </template>
 
@@ -100,6 +114,13 @@ const saving = ref(false)
 const editingId = ref(null)
 const form = ref({ nombre_legal: '', nombre_comercial: '' })
 
+// Aviso de nombre parecido (409 estructurado, igual que en Fronteras/Proyectos):
+// se puede confirmar y crear igual con forzar=true.
+const duplicadoVisible = ref(false)
+const duplicadoInfo = ref(null)   // { mensaje, candidato_id, candidato_nombre }
+const forzando = ref(false)
+const pendingBody = ref(null)
+
 function abrirCrear() {
   editingId.value = null
   form.value = { nombre_legal: '', nombre_comercial: '' }
@@ -130,9 +151,33 @@ async function guardar() {
     await loadData()
   } catch (e) {
     const detail = e.response?.data?.detail
+    // Aviso de nombre parecido (409 estructurado): se puede confirmar y crear
+    // igual. Distinto de un choque real de nombre_legal exacto (detail es un string).
+    if (e.response?.status === 409 && detail?.duplicado_nombre) {
+      duplicadoInfo.value = detail
+      pendingBody.value = body
+      duplicadoVisible.value = true
+      return
+    }
     toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo guardar', life: 4000 })
   } finally {
     saving.value = false
+  }
+}
+
+async function guardarForzado() {
+  forzando.value = true
+  try {
+    await api.post('/operadores-red', pendingBody.value, { params: { forzar: true } })
+    toast.add({ severity: 'success', summary: 'Operador creado', life: 2000 })
+    duplicadoVisible.value = false
+    showForm.value = false
+    await loadData()
+  } catch (e) {
+    const detail = e.response?.data?.detail
+    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo crear', life: 4000 })
+  } finally {
+    forzando.value = false
   }
 }
 
