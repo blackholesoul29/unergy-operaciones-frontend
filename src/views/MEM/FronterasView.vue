@@ -644,6 +644,7 @@ function estadoSeverity(e) {
 }
 
 function editFrontera(f) {
+  loadProyectosAll()
   editingFrontera.value = f
   editForm.value = {
     codigo_frontera: f.codigo_frontera,
