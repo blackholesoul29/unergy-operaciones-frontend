@@ -668,6 +668,27 @@
         />
       </TabPanel>
 
+      <!-- ══ FRONTERAS ══ -->
+      <TabPanel v-if="fronteras.length" header="Fronteras">
+        <div class="p-4">
+          <DataTable :value="fronteras" class="text-sm" stripedRows>
+            <Column field="codigo_frontera" header="Código">
+              <template #body="{ data }">{{ data.codigo_frontera || '—' }}</template>
+            </Column>
+            <Column field="nombre_frontera" header="Nombre" />
+            <Column field="tipo_frontera" header="Tipo" />
+            <Column header="Estado">
+              <template #body="{ data }">
+                <Tag :value="data.estado" :severity="FRONTERA_ESTADO_SEVERITY[data.estado] || 'info'" />
+              </template>
+            </Column>
+          </DataTable>
+          <p class="text-xs mt-3" style="color: #9b89b5;">
+            Ve a la pestaña Fronteras del menú si deseas reasignar el proyecto.
+          </p>
+        </div>
+      </TabPanel>
+
       <!-- ══ CROSS-DB ══ -->
       <TabPanel header="Datos Externos">
         <div v-if="crossLoading" class="flex justify-center py-8">
@@ -752,30 +773,6 @@
             <p class="text-sm">No se encontraron datos cruzados para este proyecto.</p>
             <Button label="Ejecutar sincronización" icon="pi pi-sync" size="small" outlined class="mt-3" @click="syncCross" :loading="syncing" />
           </div>
-        </div>
-      </TabPanel>
-
-      <!-- ══ FRONTERAS ══ -->
-      <TabPanel header="Fronteras">
-        <div class="p-4">
-          <DataTable :value="fronteras" class="text-sm" stripedRows>
-            <Column field="codigo_frontera" header="Código">
-              <template #body="{ data }">{{ data.codigo_frontera || '—' }}</template>
-            </Column>
-            <Column field="nombre_frontera" header="Nombre" />
-            <Column field="tipo_frontera" header="Tipo" />
-            <Column header="Estado">
-              <template #body="{ data }">
-                <Tag :value="data.estado" :severity="FRONTERA_ESTADO_SEVERITY[data.estado] || 'info'" />
-              </template>
-            </Column>
-          </DataTable>
-          <p v-if="!fronteras.length" class="text-sm text-center py-6" style="color: #9b89b5;">
-            Este proyecto no tiene fronteras asociadas.
-          </p>
-          <p class="text-xs mt-3" style="color: #9b89b5;">
-            Ve a la pestaña Fronteras del menú si deseas reasignar el proyecto.
-          </p>
         </div>
       </TabPanel>
 
@@ -868,20 +865,19 @@ const FRONTERA_ESTADO_SEVERITY = { activa: 'success', en_registro: 'warn', en_fa
 // ── Pestaña activa ──────────────────────────────────────────────────────────
 // Se puede abrir el detalle directo en una pestaña vía ?tab=... (ej. desde la
 // vista "IDs proyectos", que enlaza a las pestañas de IDs).
-const TAB_INDEX = {
-  'general': 0,
-  'tecnico': 1,
-  'simulacion': 2,
-  'inversionistas': 3,
-  'contactos': 4,
-  'servicios': 5,
-  'fronteras': 6,
-  'datos-externos': 7,
-  'id-liquidaciones': 8,
-}
+// La pestaña Fronteras solo se muestra si el proyecto tiene fronteras
+// asociadas -- los índices de las pestañas siguientes dependen de eso.
+const TAB_INDEX = computed(() => {
+  const idx = { general: 0, tecnico: 1, simulacion: 2, inversionistas: 3, contactos: 4, servicios: 5 }
+  let n = 6
+  if (fronteras.value.length) idx.fronteras = n++
+  idx['datos-externos'] = n++
+  idx['id-liquidaciones'] = n++
+  return idx
+})
 const activeTab = ref(0)
-watch(() => route.query.tab, (t) => {
-  if (t && TAB_INDEX[t] != null) activeTab.value = TAB_INDEX[t]
+watch([() => route.query.tab, fronteras], ([t]) => {
+  if (t && TAB_INDEX.value[t] != null) activeTab.value = TAB_INDEX.value[t]
 }, { immediate: true })
 
 // ── Estado base ───────────────────────────────────────────────────────────────
