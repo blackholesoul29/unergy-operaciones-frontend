@@ -1098,11 +1098,14 @@ watch(isEditMode, (entering) => {
 })
 
 function enterEditMode() {
-  router.push({ query: { edit: 'true' } })
+  // replace, no push -- entrar/salir de edicion es un cambio de estado de la
+  // UI, no una navegacion real; con push se acumulan entradas de historial y
+  // el boton "atras" cae en el modo edicion en vez de la pagina anterior.
+  router.replace({ query: { edit: 'true' } })
 }
 
 function cancelEdit() {
-  router.push({ query: {} })
+  router.replace({ query: {} })
 }
 
 async function saveEdit() {
@@ -1146,7 +1149,7 @@ async function saveEdit() {
       ...proyRes.data,
       inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
     }
-    router.push({ query: {} })
+    router.replace({ query: {} })
     toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
   } catch (e) {
     toast.add({

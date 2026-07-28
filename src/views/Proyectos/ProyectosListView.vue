@@ -371,8 +371,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
@@ -385,6 +385,7 @@ import ProyectoForm from './ProyectoForm.vue'
 import { formatearNombreProyecto } from './proyectosUi'
 
 const router = useRouter()
+const route  = useRoute()
 const toast  = useToast()
 
 // ── Backfill inversores típicos de minigranja ────────────────────────────────
@@ -534,7 +535,24 @@ const pendingInfoTecnica = ref(null)  // potencia_ac_kw/capacidad_instalada_kwp 
 const forzando = ref(false)
 const openSections = ref(new Set())    // reactive Set via full replacement
 
-const filters  = reactive({ q: '', estado: null, tipo_proyecto: null, departamento: null })
+// Los filtros se sincronizan con la URL (?q=&estado=&tipo_proyecto=&departamento=)
+// para que se sostengan al volver con el boton "atras" o al refrescar --
+// antes vivian solo en memoria local y se perdian en cada montaje del componente.
+const filters = reactive({
+  q: route.query.q || '',
+  estado: route.query.estado || null,
+  tipo_proyecto: route.query.tipo_proyecto || null,
+  departamento: route.query.departamento || null,
+})
+
+watch(filters, (f) => {
+  const query = {}
+  if (f.q) query.q = f.q
+  if (f.estado) query.estado = f.estado
+  if (f.tipo_proyecto) query.tipo_proyecto = f.tipo_proyecto
+  if (f.departamento) query.departamento = f.departamento
+  router.replace({ query })
+})
 
 // Departamentos presentes en los proyectos cargados, para el filtro (orden alfabético)
 const departamentoOptions = computed(() => {
