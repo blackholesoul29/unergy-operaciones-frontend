@@ -31,7 +31,7 @@
       <dl class="grid grid-cols-2 gap-y-2 text-sm">
         <dt style="color: #9b89b5;">Caso</dt><dd class="font-mono">{{ detalle.caso }}</dd>
         <dt style="color: #9b89b5;">Medidor usado</dt><dd class="font-mono">{{ etiquetaFuente(detalle.medidor_usado) }}</dd>
-        <dt style="color: #9b89b5;">Energía final</dt><dd class="font-mono">{{ fmtKwh(detalle.energia_final_kwh) }}</dd>
+        <dt style="color: #9b89b5;">Energía Total</dt><dd class="font-mono">{{ fmtKwh(detalle.energia_final_kwh) }}</dd>
         <template v-if="detalle.tipo === 'generacion'">
           <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
           <dd class="font-mono">{{ detalle.fp != null ? detalle.fp.toFixed(4) : '—' }}</dd>

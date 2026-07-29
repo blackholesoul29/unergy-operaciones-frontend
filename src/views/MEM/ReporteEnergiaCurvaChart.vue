@@ -1,11 +1,15 @@
 <template>
   <div>
     <div class="flex flex-wrap gap-2 mb-3 text-xs">
-      <span class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
+      <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
       <span v-if="medidor" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
       <span v-if="solenium" class="chip" style="border-color:#8B5CF6;color:#8B5CF6;">▬▬ Solenium</span>
       <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Rellenado (reconectador/Solenium/histórico)</span>
     </div>
+    <p v-if="finalVacia" class="text-xs mb-3" style="color: #9b89b5;">
+      Reporte válido -- se confirmó el total diario ante Quoia, no hay una curva horaria propia que mostrar.
+      La curva de abajo es solo la del medidor, de referencia.
+    </p>
     <svg :width="W" :height="H" :viewBox="`0 0 ${W} ${H}`" class="w-full">
       <line v-for="f in [0, 0.25, 0.5, 0.75, 1]" :key="f"
             :x1="padL" :x2="W - padR" :y1="y(maxV * f)" :y2="y(maxV * f)"
@@ -18,14 +22,16 @@
       <path v-if="medidorPath" :d="medidorPath" fill="none" stroke="#3B82F6" stroke-width="2" />
       <path v-if="soleniumPath" :d="soleniumPath" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-dasharray="5 4" />
 
-      <path :d="finalArea" fill="#915BD8" opacity="0.08" />
-      <path :d="finalPath" fill="none" stroke="#915BD8" stroke-width="3" />
-      <template v-for="h in 24" :key="'p' + h">
-        <rect v-if="horasRellenadas.has(h - 1)"
-              :x="x(h - 1) - 4" :y="y(val(finalCurve, h - 1)) - 4" width="8" height="8"
-              fill="#F0C040" stroke="white" stroke-width="1.5"
-              :transform="`rotate(45 ${x(h - 1)} ${y(val(finalCurve, h - 1))})`" />
-        <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
+      <template v-if="!finalVacia">
+        <path :d="finalArea" fill="#915BD8" opacity="0.08" />
+        <path :d="finalPath" fill="none" stroke="#915BD8" stroke-width="3" />
+        <template v-for="h in 24" :key="'p' + h">
+          <rect v-if="horasRellenadas.has(h - 1)"
+                :x="x(h - 1) - 4" :y="y(val(finalCurve, h - 1)) - 4" width="8" height="8"
+                fill="#F0C040" stroke="white" stroke-width="1.5"
+                :transform="`rotate(45 ${x(h - 1)} ${y(val(finalCurve, h - 1))})`" />
+          <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
+        </template>
       </template>
     </svg>
   </div>
@@ -50,6 +56,11 @@ const finalCurve = computed(() => props.final || Array(24).fill(null))
 const horasRellenadas = computed(() => new Set([
   ...(props.horasReconectador || []), ...(props.horasSolenium || []), ...(props.horasHistorico || []),
 ]))
+// Caso 1/CGM (reporte válido): se confía en el total diario que ya validó
+// Quoia -- no se reconstruye una curva horaria propia, así que 'final'
+// llega en 0 las 24 horas. Mostrar esa línea plana confunde (parece un
+// error); mejor ocultarla y dejar solo el medidor de referencia.
+const finalVacia = computed(() => finalCurve.value.every(v => v === null || v === undefined || Number(v) === 0))
 
 function val(arr, h) {
   const v = arr?.[h]
