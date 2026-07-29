@@ -201,7 +201,7 @@ const stats = computed(() => {
     { label: 'Total', value: all.length, color: '#2C2039', filtro: null },
     { label: 'Revisar', value: all.filter(f => f.revisar_manualmente).length, color: '#D64455', filtro: 'critical' },
     { label: 'Corregido automático', value: all.filter(f => semaforo(f) === 'warning').length, color: '#F0C040', filtro: 'warning' },
-    { label: 'Confiado', value: all.filter(f => semaforo(f) === 'success').length, color: '#10B981', filtro: 'success' },
+    { label: 'Reporte válido', value: all.filter(f => semaforo(f) === 'success').length, color: '#10B981', filtro: 'success' },
   ]
 })
 
