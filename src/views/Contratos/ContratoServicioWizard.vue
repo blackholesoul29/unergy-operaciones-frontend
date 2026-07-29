@@ -239,6 +239,82 @@
         </div>
       </template>
 
+      <!-- PASO 3: Arrendadores (solo ARRIENDO) -->
+      <template v-if="tipo === 'arriendo' && step === STEPS.length - 1">
+        <p class="step-title">Arrendadores</p>
+        <p class="text-xs text-gray-400 mb-3">
+          El contrato ya se creó. Agrega al menos un arrendador (persona/entidad que recibe el pago) antes de finalizar.
+        </p>
+        <div class="rounded-xl border" style="border-color:#ddd6fe">
+          <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
+            <span class="text-xs font-semibold flex items-center gap-1.5" style="color:#5b21b6">
+              <i class="pi pi-users text-xs" style="color:#8b5cf6" />Arrendadores
+            </span>
+            <Button icon="pi pi-plus" label="Agregar arrendador" size="small" text
+              style="color:#8b5cf6" @click="openArrendadorDialog('crear')" />
+          </div>
+          <div v-if="!arrendadores.length" class="px-4 py-6 text-center text-xs text-gray-400">
+            Sin arrendadores registrados.
+          </div>
+          <div v-else class="divide-y divide-gray-100">
+            <div v-for="a in arrendadores" :key="a.id"
+              class="flex items-center justify-between gap-3 px-4 py-3 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-semibold" style="color:#1c1917">{{ a.nombre }}</span>
+                <span class="text-sm font-mono tabular-nums" style="color:#7c3aed">{{ formatCOP(a.valor_base) }}</span>
+                <span v-if="a.responsable_iva" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
+                  style="background:#ede9fe;color:#7c3aed">Responsable IVA</span>
+              </div>
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <Button icon="pi pi-pencil" size="small" text severity="secondary"
+                  @click="openArrendadorDialog('editar', a)" />
+                <Button icon="pi pi-trash" size="small" text severity="danger"
+                  @click="eliminarArrendadorWizard(a)" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dialog Arrendador (crear/editar) -->
+        <Dialog v-model:visible="arrendadorDialog.visible" modal
+          :header="arrendadorDialog.modo === 'editar' ? 'Editar arrendador' : 'Agregar arrendador'"
+          style="width: 26rem">
+          <div class="flex flex-col gap-3 pt-2">
+            <div>
+              <label class="text-xs font-medium text-gray-600">Nombre <span class="text-red-400">*</span></label>
+              <InputText v-model="arrendadorDialog.form.nombre" class="w-full" placeholder="Nombre o razón social" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Valor base</label>
+              <InputNumber v-model="arrendadorDialog.form.valor_base" class="w-full" mode="currency"
+                currency="COP" locale="es-CO" :maxFractionDigits="0" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Responsable IVA</label>
+              <Select v-model="arrendadorDialog.form.responsable_iva"
+                :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+                optionLabel="label" optionValue="value" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Anticipo pagado desde</label>
+              <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_desde" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Anticipo pagado hasta</label>
+              <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_hasta" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Observaciones</label>
+              <Textarea v-model="arrendadorDialog.form.observaciones" rows="2" class="w-full" />
+            </div>
+          </div>
+          <template #footer>
+            <Button label="Cancelar" text severity="secondary" @click="arrendadorDialog.visible = false" />
+            <Button label="Guardar" :loading="arrendadorDialog.guardando" @click="guardarArrendadorWizard" />
+          </template>
+        </Dialog>
+      </template>
+
       <!-- PASO 3: CGM y Promotor (solo REPRESENTACIÓN) -->
       <template v-if="step === 3 && tipo === 'representacion'">
         <p class="step-title">CGM y Promotor <span class="normal-case font-normal text-gray-400">(opcional)</span></p>
@@ -295,11 +371,18 @@
 
     <!-- Footer -->
     <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
-      <Button v-if="step > 0" label="Anterior" icon="pi pi-arrow-left" severity="secondary" outlined @click="step--" />
+      <Button v-if="step > 0 && !contratoIdCreado" label="Anterior" icon="pi pi-arrow-left" severity="secondary" outlined @click="step--" />
       <span v-else />
       <div class="flex gap-2">
         <Button label="Cancelar" severity="secondary" text @click="$emit('cerrar')" />
-        <Button v-if="step < STEPS.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
+        <Button v-if="tipo === 'arriendo' && step === STEPS.length - 2" label="Crear y continuar" icon="pi pi-arrow-right" iconPos="right"
+          :loading="guardando"
+          :style="`background:${tipoColor}; border-color:${tipoColor}`"
+          @click="crearYContinuarArriendo" />
+        <Button v-else-if="tipo === 'arriendo' && step === STEPS.length - 1" label="Finalizar" icon="pi pi-check"
+          :style="`background:${tipoColor}; border-color:${tipoColor}`"
+          @click="finalizarArriendo" />
+        <Button v-else-if="step < STEPS.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
           :style="`background:${tipoColor}; border-color:${tipoColor}`"
           @click="step++" />
         <Button v-else label="Crear contrato" icon="pi pi-check" :loading="guardando"
@@ -362,6 +445,7 @@ const STEPS = computed(() => {
     { label: 'Términos' },
   ]
   if (props.tipo === 'representacion') return [...base, { label: 'CGM y Promotor' }]
+  if (props.tipo === 'arriendo') return [...base, { label: 'Arrendadores' }]
   return base
 })
 
@@ -458,10 +542,93 @@ function formatFecha(v) {
   return String(v).slice(0, 10)
 }
 
-async function guardar() {
-  guardando.value = true
+// ── Arrendadores (solo tipo === 'arriendo') ──────────────────────────────────
+const contratoIdCreado = ref(null)
+const arrendadores = ref([])
+const arrendadorDialog = reactive({
+  visible: false,
+  modo: 'crear',
+  editId: null,
+  guardando: false,
+  form: {
+    nombre: '', valor_base: null, responsable_iva: false, activo: true,
+    anticipo_pagado_desde: null, anticipo_pagado_hasta: null, observaciones: '',
+  },
+})
+
+function formatCOP(v) {
+  if (v == null) return '—'
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
+}
+
+async function cargarArrendadoresWizard() {
+  if (!contratoIdCreado.value) { arrendadores.value = []; return }
   try {
+    const { data } = await api.get(`/arriendos/contratos/${contratoIdCreado.value}/arrendadores`)
+    arrendadores.value = data || []
+  } catch {
+    arrendadores.value = []
+  }
+}
+
+function openArrendadorDialog(modo, arrendador = null) {
+  arrendadorDialog.modo = modo
+  arrendadorDialog.editId = arrendador?.id ?? null
+  arrendadorDialog.form.nombre = arrendador?.nombre || ''
+  arrendadorDialog.form.valor_base = arrendador?.valor_base ?? null
+  arrendadorDialog.form.responsable_iva = arrendador?.responsable_iva ?? false
+  arrendadorDialog.form.activo = arrendador?.activo ?? true
+  arrendadorDialog.form.anticipo_pagado_desde = arrendador?.anticipo_pagado_desde ? new Date(arrendador.anticipo_pagado_desde) : null
+  arrendadorDialog.form.anticipo_pagado_hasta = arrendador?.anticipo_pagado_hasta ? new Date(arrendador.anticipo_pagado_hasta) : null
+  arrendadorDialog.form.observaciones = arrendador?.observaciones || ''
+  arrendadorDialog.visible = true
+}
+
+async function guardarArrendadorWizard() {
+  if (!contratoIdCreado.value) return
+  if (!arrendadorDialog.form.nombre?.trim()) {
+    toast.add({ severity: 'error', summary: 'El nombre es obligatorio', life: 3000 })
+    return
+  }
+  arrendadorDialog.guardando = true
+  try {
+    const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
     const payload = {
+      nombre: arrendadorDialog.form.nombre.trim(),
+      valor_base: arrendadorDialog.form.valor_base,
+      responsable_iva: arrendadorDialog.form.responsable_iva ?? false,
+      activo: arrendadorDialog.form.activo ?? true,
+      anticipo_pagado_desde: toISO(arrendadorDialog.form.anticipo_pagado_desde),
+      anticipo_pagado_hasta: toISO(arrendadorDialog.form.anticipo_pagado_hasta),
+      observaciones: arrendadorDialog.form.observaciones?.trim() || null,
+    }
+    if (arrendadorDialog.modo === 'editar' && arrendadorDialog.editId) {
+      await api.put(`/arriendos/arrendadores/${arrendadorDialog.editId}`, payload)
+    } else {
+      await api.post(`/arriendos/contratos/${contratoIdCreado.value}/arrendadores`, payload)
+    }
+    arrendadorDialog.visible = false
+    await cargarArrendadoresWizard()
+    toast.add({ severity: 'success', summary: 'Arrendador guardado', life: 2500 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error al guardar arrendador', detail: e.response?.data?.detail, life: 3500 })
+  } finally {
+    arrendadorDialog.guardando = false
+  }
+}
+
+async function eliminarArrendadorWizard(arrendador) {
+  if (!confirm(`¿Eliminar al arrendador "${arrendador.nombre}"?`)) return
+  try {
+    await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
+    await cargarArrendadoresWizard()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error al eliminar', detail: e.response?.data?.detail, life: 3500 })
+  }
+}
+
+async function crearContrato() {
+  const payload = {
       servicio_aplica: props.tipo,
       proyecto_id: form.proyecto_id ?? null,
       numero_contrato: form.numero_contrato?.trim() || null,
@@ -496,7 +663,14 @@ async function guardar() {
       slas: form.slas?.trim() || null,
       responsibilities: form.responsibilities?.trim() || null,
     }
-    await api.post('/contratos-servicio', payload)
+  const { data } = await api.post('/contratos-servicio', payload)
+  return data
+}
+
+async function guardar() {
+  guardando.value = true
+  try {
+    await crearContrato()
     toast.add({ severity: 'success', summary: 'Contrato creado', life: 2500 })
     emit('creado')
     emit('cerrar')
@@ -505,6 +679,25 @@ async function guardar() {
   } finally {
     guardando.value = false
   }
+}
+
+async function crearYContinuarArriendo() {
+  guardando.value = true
+  try {
+    const data = await crearContrato()
+    contratoIdCreado.value = data.id
+    toast.add({ severity: 'success', summary: 'Contrato creado — agrega los arrendadores', life: 3000 })
+    step.value++
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail ?? e.message, life: 4000 })
+  } finally {
+    guardando.value = false
+  }
+}
+
+function finalizarArriendo() {
+  emit('creado')
+  emit('cerrar')
 }
 
 onMounted(async () => {
