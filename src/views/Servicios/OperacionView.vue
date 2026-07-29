@@ -644,6 +644,18 @@
                     :options="[{label:'Sí',value:true},{label:'No',value:false}]"
                     optionLabel="label" optionValue="value" class="w-full" />
                 </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-medium text-gray-600">Anticipo pagado desde</label>
+                  <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_desde" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-medium text-gray-600">Anticipo pagado hasta</label>
+                  <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_hasta" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-medium text-gray-600">Observaciones</label>
+                  <Textarea v-model="arrendadorDialog.form.observaciones" rows="2" class="w-full" />
+                </div>
               </div>
               <template #footer>
                 <Button label="Cancelar" text severity="secondary" @click="arrendadorDialog.visible = false" />
@@ -1150,6 +1162,7 @@ import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
+import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
@@ -1238,7 +1251,10 @@ const arrendadorDialog = reactive({
   modo: 'crear',
   editId: null,
   guardando: false,
-  form: { nombre: '', valor_base: null, responsable_iva: false, activo: true },
+  form: {
+    nombre: '', valor_base: null, responsable_iva: false, activo: true,
+    anticipo_pagado_desde: null, anticipo_pagado_hasta: null, observaciones: '',
+  },
 })
 
 const dialogMant = reactive({
@@ -1663,6 +1679,9 @@ function openArrendadorDialog(modo, arrendador = null) {
   arrendadorDialog.form.valor_base = arrendador?.valor_base ?? null
   arrendadorDialog.form.responsable_iva = arrendador?.responsable_iva ?? false
   arrendadorDialog.form.activo = arrendador?.activo ?? true
+  arrendadorDialog.form.anticipo_pagado_desde = arrendador?.anticipo_pagado_desde ? new Date(arrendador.anticipo_pagado_desde) : null
+  arrendadorDialog.form.anticipo_pagado_hasta = arrendador?.anticipo_pagado_hasta ? new Date(arrendador.anticipo_pagado_hasta) : null
+  arrendadorDialog.form.observaciones = arrendador?.observaciones || ''
   arrendadorDialog.visible = true
 }
 
@@ -1674,11 +1693,15 @@ async function guardarArrendador() {
   }
   arrendadorDialog.guardando = true
   try {
+    const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
     const payload = {
       nombre: arrendadorDialog.form.nombre.trim(),
       valor_base: arrendadorDialog.form.valor_base,
       responsable_iva: arrendadorDialog.form.responsable_iva ?? false,
       activo: arrendadorDialog.form.activo ?? true,
+      anticipo_pagado_desde: toISO(arrendadorDialog.form.anticipo_pagado_desde),
+      anticipo_pagado_hasta: toISO(arrendadorDialog.form.anticipo_pagado_hasta),
+      observaciones: arrendadorDialog.form.observaciones?.trim() || null,
     }
     if (arrendadorDialog.modo === 'editar' && arrendadorDialog.editId) {
       await api.put(`/arriendos/arrendadores/${arrendadorDialog.editId}`, payload)

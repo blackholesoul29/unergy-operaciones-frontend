@@ -4,12 +4,9 @@
     <!-- ── Barra superior ──────────────────────────────────────────────────── -->
     <div class="flex items-center justify-between flex-wrap gap-2">
       <p class="text-xs text-gray-400">
-        {{ filas.length }} proyectos · haz clic en
-        <i class="pi pi-pencil" style="font-size:10px" /> para editar cualquier campo
+        {{ filas.length }} proyectos · {{ periodoLabel }} ·
+        Edita estos datos en Proyecto&gt;Detalle&gt;Servicios&gt;Operación&gt;Arriendos (sección Arrendadores).
       </p>
-      <Button label="Agregar" icon="pi pi-plus" size="small" outlined
-        @click="agregarFila"
-        style="border-color:#915BD8;color:#915BD8" />
     </div>
 
     <!-- ── Tabla ──────────────────────────────────────────────────────────── -->
@@ -29,116 +26,44 @@
                 Próxima fecha por cobrar
               </th>
               <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500">Observaciones</th>
-              <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-500" style="width:80px">
-                Acciones
-              </th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(fila, i) in filas" :key="fila.id"
-              class="border-b border-gray-50 hover:bg-gray-50/40 group"
-              :class="fila._editando ? 'bg-purple-50/30' : ''">
+            <tr v-if="loading">
+              <td colspan="5" class="px-3 py-6 text-center text-xs text-gray-400">Cargando…</td>
+            </tr>
+            <tr v-else-if="!filas.length">
+              <td colspan="5" class="px-3 py-6 text-center text-xs text-gray-400">No hay proyectos para este período.</td>
+            </tr>
+            <tr v-for="fila in filas" v-else :key="fila.id"
+              class="border-b border-gray-50 hover:bg-gray-50/40">
 
-              <!-- ── MODO LECTURA ── -->
-              <template v-if="!fila._editando">
-                <td class="px-3 py-2.5 font-medium text-sm" style="color:#2C2039; white-space:nowrap">
-                  {{ fila.proyecto }}
-                  <span v-if="fila._custom"
-                    class="ml-1 text-[10px] px-1 py-0.5 rounded"
-                    style="background:#f1f5f9;color:#64748b">manual</span>
-                </td>
-                <td class="px-3 py-2.5">
-                  <span v-if="fila.tipo_pago"
-                    class="text-xs px-2 py-0.5 rounded-full font-medium"
-                    :style="tipoPagoStyle(fila.tipo_pago)">
-                    {{ fila.tipo_pago }}
+              <td class="px-3 py-2.5 font-medium text-sm" style="color:#2C2039">
+                <div class="flex flex-col gap-0.5">
+                  <span>{{ fila.proyecto }}</span>
+                  <span v-if="mostrarArrendador(fila)" class="text-[11px] text-gray-400">
+                    {{ fila.nombre_arrendador }}
                   </span>
-                  <span v-else class="text-xs text-gray-300">—</span>
-                </td>
-                <td class="px-3 py-2.5 text-xs text-gray-600">
-                  {{ fila.anticipo_hasta || '—' }}
-                </td>
-                <td class="px-3 py-2.5 text-xs text-gray-600">
-                  <span v-if="fila.proxima_fecha"
-                    :style="proximaFechaStyle(fila.proxima_fecha)"
-                    class="font-medium">
-                    {{ fmtFecha(fila.proxima_fecha) }}
-                  </span>
-                  <span v-else class="text-gray-300">—</span>
-                </td>
-                <td class="px-3 py-2.5 text-xs text-gray-500 max-w-xs truncate"
-                  :title="fila.observaciones">
-                  {{ fila.observaciones || '—' }}
-                </td>
-                <td class="px-3 py-2.5 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <button type="button"
-                      class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-purple-600"
-                      v-tooltip.top="'Editar'"
-                      @click="iniciarEdicion(i)">
-                      <i class="pi pi-pencil" style="font-size:12px" />
-                    </button>
-                    <button v-if="fila._custom" type="button"
-                      class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-red-500"
-                      v-tooltip.top="'Eliminar'"
-                      @click="eliminarFila(i)">
-                      <i class="pi pi-trash" style="font-size:11px" />
-                    </button>
-                  </div>
-                </td>
-              </template>
-
-              <!-- ── MODO EDICIÓN ── -->
-              <template v-else>
-                <td class="px-3 py-2">
-                  <input v-if="fila._custom"
-                    v-model="fila._draft.proyecto" type="text"
-                    class="input-cell w-full"
-                    placeholder="Nombre del proyecto" />
-                  <span v-else class="text-sm font-medium" style="color:#2C2039">
-                    {{ fila.proyecto }}
-                  </span>
-                </td>
-                <td class="px-3 py-2">
-                  <select v-model="fila._draft.tipo_pago" class="input-cell w-full">
-                    <option value="">— Seleccionar —</option>
-                    <option value="Mensual">Mensual</option>
-                    <option value="Trimestral">Trimestral</option>
-                    <option value="Semestral">Semestral</option>
-                    <option value="Anual">Anual</option>
-                  </select>
-                </td>
-                <td class="px-3 py-2">
-                  <input v-model="fila._draft.anticipo_hasta" type="text"
-                    class="input-cell w-full"
-                    placeholder="ej: marzo 2026" />
-                </td>
-                <td class="px-3 py-2">
-                  <input v-model="fila._draft.proxima_fecha" type="date"
-                    class="input-cell w-full" />
-                </td>
-                <td class="px-3 py-2">
-                  <input v-model="fila._draft.observaciones" type="text"
-                    class="input-cell w-full"
-                    placeholder="Observaciones…" />
-                </td>
-                <td class="px-3 py-2 text-center">
-                  <div class="flex items-center justify-center gap-1.5">
-                    <button type="button"
-                      class="text-purple-600 hover:text-purple-800 transition-colors"
-                      v-tooltip.top="'Guardar'"
-                      @click="guardarFila(i)">
-                      <i class="pi pi-check" style="font-size:13px" />
-                    </button>
-                    <button type="button"
-                      class="text-gray-400 hover:text-gray-600 transition-colors"
-                      v-tooltip.top="'Cancelar'"
-                      @click="cancelarEdicion(i)">
-                      <i class="pi pi-times" style="font-size:12px" />
-                    </button>
-                  </div>
-                </td>
-              </template>
+                </div>
+              </td>
+              <td class="px-3 py-2.5">
+                <span v-if="fila.periodicidad"
+                  class="text-xs px-2 py-0.5 rounded-full font-medium"
+                  :style="tipoPagoStyle(fila.periodicidad)">
+                  {{ capitalizar(fila.periodicidad) }}
+                </span>
+                <span v-else class="text-xs text-gray-300">—</span>
+              </td>
+              <td class="px-3 py-2.5 text-xs text-gray-600">
+                {{ fmtFecha(fila.anticipo_pagado_hasta) }}
+              </td>
+              <td class="px-3 py-2.5 text-xs text-gray-600">
+                {{ proximaFecha(fila.anticipo_pagado_hasta) }}
+              </td>
+              <td class="px-3 py-2.5 text-xs text-gray-500 max-w-xs truncate"
+                :title="fila.observaciones_arrendador">
+                {{ fila.observaciones_arrendador || '—' }}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -149,161 +74,68 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import Button from 'primevue/button'
-import arriendosRaw from '@/data/pagoarriendos.json'
+import { ref, computed, onMounted, watch } from 'vue'
+import api from '@/api/client'
 
-// ── Storage ────────────────────────────────────────────────────────────────────
-const INFO_KEY  = 'arriendos_info'
-const EXTRA_KEY = 'arriendos_proyectos_extra'
+// ── Período (mismo criterio de "período actual" que Panel, sin selector — vista informativa) ──
+const hoy = new Date()
+const periodoActual = computed(() => {
+  const yyyy = hoy.getFullYear()
+  const mm   = String(hoy.getMonth() + 1).padStart(2, '0')
+  return `${yyyy}-${mm}`
+})
+const periodoLabel = computed(() => {
+  const [yyyy, mm] = periodoActual.value.split('-')
+  const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  return `${MESES[parseInt(mm) - 1]} ${yyyy}`
+})
 
-// info guardada: { [id]: { tipo_pago, anticipo_hasta, proxima_fecha, observaciones } }
-const infoStore = ref({})
+// ── Datos (API — motor real de cálculo) ─────────────────────────────────────────
+const loading = ref(false)
+const filas   = ref([])
 
-function cargarInfo() {
+async function cargarDatos() {
+  loading.value = true
   try {
-    const raw = localStorage.getItem(INFO_KEY)
-    if (raw) infoStore.value = JSON.parse(raw)
-  } catch {}
-}
-
-function persistirInfo() {
-  // Guardar sólo los campos editables, no el estado de UI
-  const data = {}
-  filas.value.forEach(f => {
-    data[f.id] = {
-      tipo_pago:      f.tipo_pago,
-      anticipo_hasta: f.anticipo_hasta,
-      proxima_fecha:  f.proxima_fecha,
-      observaciones:  f.observaciones,
-      ...(f._custom ? { proyecto: f.proyecto, _custom: true } : {}),
-    }
-  })
-  try { localStorage.setItem(INFO_KEY, JSON.stringify(data)) } catch {}
-}
-
-// ── Filas ──────────────────────────────────────────────────────────────────────
-const filas = ref([])
-
-function construirFilas() {
-  // 1. Proyectos del JSON
-  const fuente = [...arriendosRaw]
-
-  // 2. Proyectos extras (agregados manualmente en el panel)
-  try {
-    const rawExtra = localStorage.getItem(EXTRA_KEY)
-    if (rawExtra) {
-      const extras = JSON.parse(rawExtra)
-      extras.forEach(e => fuente.push({ ...e, _extraId: e._extraId }))
-    }
-  } catch {}
-
-  // 3. Construir fila por cada proyecto
-  const resultado = fuente.map(p => {
-    const id      = p._extraId ?? (p.Codigo || p.Proyecto)
-    const saved   = infoStore.value[id] || {}
-    return {
-      id,
-      proyecto:       p.Proyecto,
-      tipo_pago:      saved.tipo_pago      ?? '',
-      anticipo_hasta: saved.anticipo_hasta ?? '',
-      proxima_fecha:  saved.proxima_fecha  ?? '',
-      observaciones:  saved.observaciones  ?? '',
-      _custom:        false,
-      _editando:      false,
-      _draft:         {},
-    }
-  })
-
-  // 4. Filas manuales (agregadas desde esta pestaña, no del panel)
-  Object.entries(infoStore.value).forEach(([id, data]) => {
-    if (!data._custom) return
-    if (resultado.some(f => f.id === id)) return
-    resultado.push({
-      id,
-      proyecto:       data.proyecto       ?? id,
-      tipo_pago:      data.tipo_pago      ?? '',
-      anticipo_hasta: data.anticipo_hasta ?? '',
-      proxima_fecha:  data.proxima_fecha  ?? '',
-      observaciones:  data.observaciones  ?? '',
-      _custom:        true,
-      _editando:      false,
-      _draft:         {},
-    })
-  })
-
-  filas.value = resultado
-}
-
-// ── Edición inline ─────────────────────────────────────────────────────────────
-function iniciarEdicion(i) {
-  const f = filas.value[i]
-  f._draft = {
-    proyecto:       f.proyecto,
-    tipo_pago:      f.tipo_pago,
-    anticipo_hasta: f.anticipo_hasta,
-    proxima_fecha:  f.proxima_fecha,
-    observaciones:  f.observaciones,
-  }
-  f._editando = true
-}
-
-function guardarFila(i) {
-  const f = filas.value[i]
-  if (f._custom && f._draft.proyecto) f.proyecto = f._draft.proyecto
-  f.tipo_pago      = f._draft.tipo_pago      ?? ''
-  f.anticipo_hasta = f._draft.anticipo_hasta ?? ''
-  f.proxima_fecha  = f._draft.proxima_fecha  ?? ''
-  f.observaciones  = f._draft.observaciones  ?? ''
-  f._editando = false
-  persistirInfo()
-}
-
-function cancelarEdicion(i) {
-  const f = filas.value[i]
-  // Si era una fila nueva sin datos, eliminarla
-  if (f._custom && !f.tipo_pago && !f.anticipo_hasta && !f.proxima_fecha && !f.observaciones && !f.proyecto.trim()) {
-    filas.value.splice(i, 1)
-  } else {
-    f._editando = false
+    const { data } = await api.get(`/arriendos/calculo/${periodoActual.value}`)
+    filas.value = data.filas || []
+  } catch {
+    filas.value = []
+  } finally {
+    loading.value = false
   }
 }
 
-function agregarFila() {
-  const newId = `info_custom_${Date.now()}`
-  filas.value.push({
-    id:             newId,
-    proyecto:       '',
-    tipo_pago:      '',
-    anticipo_hasta: '',
-    proxima_fecha:  '',
-    observaciones:  '',
-    _custom:        true,
-    _editando:      true,
-    _draft: { proyecto: '', tipo_pago: '', anticipo_hasta: '', proxima_fecha: '', observaciones: '' },
-  })
-}
-
-function eliminarFila(i) {
-  const f = filas.value[i]
-  filas.value.splice(i, 1)
-  if (infoStore.value[f.id]) {
-    delete infoStore.value[f.id]
-    persistirInfo()
-  }
+// Mostrar el arrendador como subtítulo solo cuando hay más de un arrendador
+// para el mismo proyecto (mismo patrón visual que ArriendosOperaciones.vue).
+const conteoPorProyecto = computed(() => {
+  const m = {}
+  filas.value.forEach(f => { m[f.proyecto] = (m[f.proyecto] || 0) + 1 })
+  return m
+})
+function mostrarArrendador(fila) {
+  return !!fila.nombre_arrendador && (conteoPorProyecto.value[fila.proyecto] || 0) > 1
 }
 
 // ── Helpers visuales ───────────────────────────────────────────────────────────
-function tipoPagoStyle(tipo) {
-  if (tipo === 'Mensual')    return 'background:#ede9fe;color:#6d28d9'
-  if (tipo === 'Trimestral') return 'background:#dbeafe;color:#1e40af'
-  if (tipo === 'Semestral')  return 'background:#dcfce7;color:#166534'
-  if (tipo === 'Anual')      return 'background:#fef3c7;color:#92400e'
+function capitalizar(s) {
+  if (!s) return ''
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
+
+function tipoPagoStyle(periodicidad) {
+  const p = (periodicidad || '').toLowerCase()
+  if (p === 'mensual')    return 'background:#ede9fe;color:#6d28d9'
+  if (p === 'bimestral')  return 'background:#e0e7ff;color:#3730a3'
+  if (p === 'trimestral') return 'background:#dbeafe;color:#1e40af'
+  if (p === 'semestral')  return 'background:#dcfce7;color:#166534'
+  if (p === 'anual')      return 'background:#fef3c7;color:#92400e'
   return 'background:#f3f4f6;color:#6b7280'
 }
 
 function fmtFecha(iso) {
-  if (!iso) return ''
+  if (!iso) return '—'
   try {
     const [y, m, d] = iso.split('-')
     const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
@@ -311,27 +143,17 @@ function fmtFecha(iso) {
   } catch { return iso }
 }
 
-function proximaFechaStyle(iso) {
-  if (!iso) return ''
-  const diff = (new Date(iso) - new Date()) / (1000 * 60 * 60 * 24)
-  if (diff < 0)   return 'color:#dc2626'   // vencida
-  if (diff < 15)  return 'color:#d97706'   // próxima (< 15 días)
-  return 'color:#2C2039'
+// Informativo: mes siguiente al anticipo pagado hasta (no calcula periodicidad exacta).
+function proximaFecha(iso) {
+  if (!iso) return '—'
+  try {
+    const [y, m] = iso.split('-').map(Number)
+    const d = new Date(y, m, 1) // m ya es "mes siguiente" en índice 0-based del mes original
+    const MESES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic']
+    return `${MESES[d.getMonth()]} ${d.getFullYear()}`
+  } catch { return '—' }
 }
 
-onMounted(() => { cargarInfo(); construirFilas() })
+watch(periodoActual, cargarDatos)
+onMounted(cargarDatos)
 </script>
-
-<style scoped>
-.input-cell {
-  font-size: 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 4px 8px;
-  background: #fff;
-  outline: none;
-  transition: border-color .15s;
-}
-.input-cell:focus { border-color: #915BD8; box-shadow: 0 0 0 2px #915BD820; }
-select.input-cell { cursor: pointer; }
-</style>
