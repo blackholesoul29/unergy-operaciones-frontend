@@ -101,15 +101,24 @@
           </div>
         </div>
         <div v-for="(f, i) in porFactura" :key="f.factura" class="fac-card"
-             :class="{ 'fac-emitida': f.emitida }">
+             :class="{ 'fac-emitida': f.emitida, 'fac-drag': dragIdx === i,
+                       'fac-drop-antes': dropIdx === i && dragIdx > i,
+                       'fac-drop-despues': dropIdx === i && dragIdx < i }"
+             @dragover.prevent="arrastrarSobre(i)" @drop.prevent="soltar(i)">
           <div class="fac-fac-head" @click="toggleFac(f.factura)">
-            <!-- Reordenar: flechas en vez de arrastrar, para que funcione igual en
-                 cualquier navegador y sin dependencias nuevas. -->
+            <!-- Reordenar: arrastrar por el asa para saltos largos, flechas para
+                 mover de a uno. DnD nativo, sin dependencias nuevas. -->
             <span class="fac-ord" @click.stop>
-              <button class="fac-ord-b" :disabled="i === 0" v-tooltip.top="'Subir'"
-                      @click="moverFactura(i, -1)"><i class="pi pi-chevron-up" /></button>
-              <button class="fac-ord-b" :disabled="i === porFactura.length - 1" v-tooltip.bottom="'Bajar'"
-                      @click="moverFactura(i, 1)"><i class="pi pi-chevron-down" /></button>
+              <span class="fac-grip" draggable="true" v-tooltip.top="'Arrastra para reordenar'"
+                    @dragstart="iniciarArrastre(i, $event)" @dragend="finArrastre">
+                <i class="pi pi-bars" />
+              </span>
+              <span class="fac-ord-arrows">
+                <button class="fac-ord-b" :disabled="i === 0" v-tooltip.top="'Subir'"
+                        @click="moverFactura(i, -1)"><i class="pi pi-chevron-up" /></button>
+                <button class="fac-ord-b" :disabled="i === porFactura.length - 1" v-tooltip.bottom="'Bajar'"
+                        @click="moverFactura(i, 1)"><i class="pi pi-chevron-down" /></button>
+              </span>
             </span>
             <input type="checkbox" :checked="f.emitida" @click.stop
                    v-tooltip.top="f.emitida ? tooltipEmitida(f) : 'Marcar como facturada'"
@@ -395,6 +404,33 @@ async function moverSeleccionados (k) {
 }
 
 // ── Orden manual, marca de facturada y mensaje ───────────────────────────────
+// Arrastrar y soltar para saltos largos (con 17 facturas, mover la última arriba
+// eran 16 clics de flecha). Las flechas quedan para mover de a una posición.
+const dragIdx = ref(null)
+const dropIdx = ref(null)
+
+function iniciarArrastre (i, ev) {
+  dragIdx.value = i
+  if (ev.dataTransfer) {
+    ev.dataTransfer.effectAllowed = 'move'
+    // Firefox no inicia el arrastre si no hay datos en el dataTransfer.
+    ev.dataTransfer.setData('text/plain', String(i))
+  }
+}
+function arrastrarSobre (i) { if (dragIdx.value !== null) dropIdx.value = i }
+function finArrastre () { dragIdx.value = null; dropIdx.value = null }
+
+function soltar (i) {
+  const from = dragIdx.value
+  if (from === null || from === i) { finArrastre(); return }
+  const arr = porFactura.value.slice()
+  const [item] = arr.splice(from, 1)
+  arr.splice(i, 0, item)          // toma el lugar de la factura sobre la que se suelta
+  porFactura.value = arr
+  ordenTocado.value = true
+  finArrastre()
+}
+
 function moverFactura (i, dir) {
   const j = i + dir
   if (j < 0 || j >= porFactura.value.length) return
@@ -532,8 +568,13 @@ onMounted(load)
 .fac-fac-body { border-top:1px solid #f0ebf6; padding:4px 0 0; }
 .fac-div-row { display:flex; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid #f7f3fc; background:#faf7ff; flex-wrap:wrap; }
 
-/* Reordenar: flechas apiladas, compactas para no crecer la fila. */
-.fac-ord { display:inline-flex; flex-direction:column; gap:1px; }
+/* Reordenar: asa de arrastre + flechas apiladas, compactas para no crecer la fila. */
+.fac-ord { display:inline-flex; align-items:center; gap:2px; }
+.fac-ord-arrows { display:inline-flex; flex-direction:column; gap:1px; }
+.fac-grip { display:flex; align-items:center; color:#c9bede; cursor:grab; padding:2px 1px; border-radius:3px; }
+.fac-grip:hover { color:#915BD8; background:#f1eaf9; }
+.fac-grip:active { cursor:grabbing; }
+.fac-grip i { font-size:11px; }
 .fac-ord-b { display:flex; align-items:center; justify-content:center; width:16px; height:11px;
   padding:0; border:none; background:none; color:#b9abcf; cursor:pointer; border-radius:3px; }
 .fac-ord-b i { font-size:9px; }
@@ -543,6 +584,12 @@ onMounted(load)
 .fac-msg { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px;
   border:1px solid #e5e2ec; background:#fff; color:#6E3FB8; font-size:11px; font-weight:700; cursor:pointer; }
 .fac-msg:hover { background:#f4f1fa; }
+
+/* Arrastre: la tarjeta que se mueve se atenúa y la de destino marca el borde por
+   donde va a entrar, para no soltar a ciegas. */
+.fac-drag { opacity:.45; }
+.fac-drop-antes { box-shadow:inset 0 3px 0 0 #915BD8; }
+.fac-drop-despues { box-shadow:inset 0 -3px 0 0 #915BD8; }
 
 /* Facturada: se atenúa sin ocultarla, y una barra lateral la hace evidente al barrer la lista. */
 .fac-emitida { border-left:3px solid #1f9d6b; }
