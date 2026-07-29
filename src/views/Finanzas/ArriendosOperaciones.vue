@@ -586,8 +586,17 @@ function tooltipDoc(doc) {
 }
 
 // ── Proyectos para el componente ZipUpload ─────────────────────────────────────
+// nombreArrendador/estadoContrato: necesarios para que ArriendosZipUpload pueda
+// detectar proyectos con varios arrendadores (varias filas con el mismo código)
+// y ofrecer el selector correspondiente al cargar cuentas de cobro.
 const filasParaZip = computed(() =>
-  filas.value.map(f => ({ id: f.id, proyecto: f.proyecto, codigo: f.codigo }))
+  filas.value.map(f => ({
+    id: f.id,
+    proyecto: f.proyecto,
+    codigo: f.codigo,
+    nombreArrendador: f.nombre_arrendador,
+    estadoContrato: f.estado_contrato,
+  }))
 )
 
 watch(periodoActual, (p) => { loadDocs(p); cargarDatos() })

@@ -111,6 +111,15 @@
                         {{ p.proyecto }}{{ p.codigo ? ` (${p.codigo})` : '' }}
                       </option>
                     </select>
+                    <!-- Selector de arrendador: solo cuando el proyecto tiene MÁS DE UNO -->
+                    <select v-if="predio.arrendadorOpciones && predio.arrendadorOpciones.length > 1"
+                      v-model="predio.arrArrendadorId"
+                      class="text-[11px] border border-purple-200 rounded px-1.5 py-0.5 mt-1 w-full bg-white"
+                      title="Este proyecto tiene varios arrendadores: elige a cuál corresponde esta cuenta de cobro">
+                      <option v-for="a in predio.arrendadorOpciones" :key="a.id" :value="a.id">
+                        {{ a.nombre }}
+                      </option>
+                    </select>
                   </td>
                   <td class="px-3 py-2 text-right font-mono text-xs text-gray-600">
                     {{ predio.valor != null ? formatCOP(predio.valor) : '—' }}
@@ -387,6 +396,27 @@ function matchPredio(short) {
   return props.proyectos.find(p => predioShort(p.codigo) === short) ?? null
 }
 
+// Todas las filas de props.proyectos que corresponden al mismo código de predio.
+// Cuando un proyecto de arriendo tiene varios arrendadores, /arriendos/calculo
+// entrega una fila por arrendador (mismo código, distinto id/nombreArrendador),
+// así que esto puede devolver más de un resultado.
+function matchesPredio(short) {
+  if (!short) return []
+  return props.proyectos.filter(p => predioShort(p.codigo) === short)
+}
+
+// Arrendador por defecto para un conjunto de filas ya matcheadas:
+// - Varias filas (varios arrendadores reales) → la primera, el usuario podrá cambiarla.
+// - Una sola fila y viene de un contrato real (estadoContrato !== 'sin_contrato') → su id
+//   ya es un arr_arrendador_id válido, se puede enviar sin pedir selección.
+// - Una sola fila "de respaldo" (proyecto sin contrato aún) → su id es sintético
+//   (no existe en la tabla de arrendadores), no se envía arr_arrendador_id.
+function arrendadorIdDefault(matches) {
+  if (matches.length > 1) return matches[0].id
+  if (matches.length === 1 && matches[0].estadoContrato !== 'sin_contrato') return matches[0].id
+  return null
+}
+
 // ── Encabezado: N° de cuenta + arrendatario (DEBE A) ───────────────────────────
 function extraerEncabezado(lineas) {
   const texto = lineas.join('\n')
@@ -563,7 +593,8 @@ async function onZipSelected(e) {
 
       const predios = (codigosPredio.length ? codigosPredio : [codigoExtraido]).map(codigo => {
         const short = predioShort(codigo) || codigo
-        const m = matchPredio(short)
+        const matches = matchesPredio(short)
+        const m = matches[0] ?? null
         return {
           uid: uid(),
           codigoPredio:   short,
@@ -572,6 +603,9 @@ async function onZipSelected(e) {
           proyectoNombre: m?.proyecto ?? null,
           conPago:        false,   // se calcula luego (predio repetido entre pagos)
           yaExiste:       false,
+          // Varios arrendadores para el mismo proyecto → selector; si no, null/valor único.
+          arrendadorOpciones: matches.map(p => ({ id: p.id, nombre: p.nombreArrendador || p.proyecto })),
+          arrArrendadorId: arrendadorIdDefault(matches),
         }
       })
 
@@ -614,6 +648,9 @@ async function onZipSelected(e) {
 function onProyectoSeleccionado(predio) {
   const p = props.proyectos.find(p => p.id === predio.proyectoId)
   predio.proyectoNombre = p?.proyecto ?? null
+  const matches = p ? props.proyectos.filter(x => x.codigo === p.codigo) : []
+  predio.arrendadorOpciones = matches.map(x => ({ id: x.id, nombre: x.nombreArrendador || x.proyecto }))
+  predio.arrArrendadorId = arrendadorIdDefault(matches)
 }
 
 // ── Confirmar y guardar ───────────────────────────────────────────────────────
@@ -644,6 +681,8 @@ async function confirmar() {
             codigo_predio:    p.codigoPredio,
             valor_individual: p.valor,
             nombre_resultante: nombrePredio(grupo, p),
+            // Solo se envía cuando es un arr_arrendador_id real conocido (ver arrendadorIdDefault).
+            ...(p.arrArrendadorId != null ? { arr_arrendador_id: p.arrArrendadorId } : {}),
           })),
         })
         for (const p of grupo.predios) {
