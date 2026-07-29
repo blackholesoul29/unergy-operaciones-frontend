@@ -231,15 +231,19 @@ async function ejecutarClasificacion() {
   }
 }
 
-// La corrida real vive en un hilo del backend (ver orquestador.ejecutar_dia_background) --
-// se sondea unos minutos para reflejar el avance sin que el usuario tenga que refrescar a mano.
+// La corrida real vive en un hilo del backend (ver orquestador.ejecutar_dia_background)
+// y guarda avance parcial cada 5 fronteras -- con ~100+ fronteras puede tardar bastante
+// más de lo que un límite fijo de intentos alcanzaría a cubrir. En vez de un tope de
+// tiempo, se sigue sondeando MIENTRAS el conteo de filas siga creciendo; solo se
+// rinde si pasan varios ciclos seguidos sin ver ninguna fila nueva (terminó o se colgó).
 function sondearResultado() {
   const fechaSondeada = fechaISO.value
-  let intentos = 0
-  const totalAntes = filas.value.length
+  let totalAntes = filas.value.length
+  let ciclosSinCambio = 0
+  const MAX_CICLOS_SIN_CAMBIO = 12 // ~2 minutos sin avance -- ahí sí se rinde
+
   const intervalo = setInterval(async () => {
-    intentos += 1
-    if (fechaISO.value !== fechaSondeada || intentos > 20) {
+    if (fechaISO.value !== fechaSondeada) {
       clearInterval(intervalo)
       ejecutando.value = false
       return
@@ -247,6 +251,12 @@ function sondearResultado() {
     await cargarResumen()
     await cargarLista(true)
     if (filas.value.length > totalAntes) {
+      totalAntes = filas.value.length
+      ciclosSinCambio = 0
+    } else {
+      ciclosSinCambio += 1
+    }
+    if (ciclosSinCambio >= MAX_CICLOS_SIN_CAMBIO) {
       clearInterval(intervalo)
       ejecutando.value = false
     }
