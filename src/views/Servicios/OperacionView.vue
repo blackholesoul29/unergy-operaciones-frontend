@@ -1010,6 +1010,11 @@
             optionLabel="label" optionValue="value" class="w-full" placeholder="Selecciona…" />
           <p class="text-xs text-gray-400">Define en qué meses se cobra en el panel de Costos.</p>
         </div>
+        <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-600">¿Responsable de IVA?</label>
+          <Select v-model="dialogEdit.form.responsable_iva" :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+            optionLabel="label" optionValue="value" class="w-full" />
+        </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Estado del pago</label>
           <Select v-model="dialogEdit.form.estado_pago" :options="ESTADO_PAGO_OPCIONES"
@@ -1196,7 +1201,7 @@ const wizardTipo    = ref('mantenimiento')
 const dialogEdit = reactive({
   visible: false,
   tipo: 'mantenimiento',
-  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual' },
+  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false },
 })
 
 const dialogPago = reactive({
@@ -1314,6 +1319,7 @@ function openEditContrato(tipo) {
   dialogEdit.form.estado_pago = c.estado_pago || null
   dialogEdit.form.periodicidad_pago = c.periodicidad_pago || 'mensual'
   dialogEdit.form.fecha_inicio_om = c.fecha_inicio_om ? new Date(c.fecha_inicio_om) : null
+  dialogEdit.form.responsable_iva = c.responsable_iva ?? false
   dialogEdit.visible = true
 }
 
@@ -1336,6 +1342,7 @@ async function saveContrato() {
     if (tipo === 'arriendo') {
       payload.periodicidad_pago = dialogEdit.form.periodicidad_pago
       payload.fecha_inicio_om = toISO(dialogEdit.form.fecha_inicio_om)
+      payload.responsable_iva = dialogEdit.form.responsable_iva ?? false
     }
     const { data } = await api.patch(`/contratos-servicio/${contratos[tipo].id}`, payload)
     contratos[tipo] = { ...contratos[tipo], ...data }
