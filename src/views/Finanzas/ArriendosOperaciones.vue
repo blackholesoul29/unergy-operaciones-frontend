@@ -98,7 +98,7 @@
 
       <div class="section-collapse" :class="{ open: openSections.has(sec.tipo) }">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse" style="min-width:980px; table-layout:fixed">
+        <table class="w-full text-sm border-collapse" style="min-width:1080px; table-layout:fixed">
           <thead>
             <tr class="bg-gray-50 border-t border-b border-gray-100">
               <th class="px-3 py-2.5 text-left" style="width:40px">
@@ -106,7 +106,7 @@
                   @change="toggleTodosSeccion(sec.items, $event.target.checked)"
                   class="accent-purple-600" />
               </th>
-              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:220px">Proyecto</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:320px">Proyecto</th>
               <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:120px">Estado contrato</th>
               <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:130px">Periodo a facturar</th>
               <th v-if="colsVisibles.n_indexaciones"
@@ -137,8 +137,8 @@
               <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
               <td class="px-3 py-2 font-medium" style="color:#2C2039; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
                 <div class="flex flex-col gap-0.5 max-w-full">
-                  <span class="inline-flex items-center gap-1.5 max-w-full" style="white-space:nowrap">
-                    <span class="truncate">{{ fila.proyecto }}</span>
+                  <span class="inline-flex flex-wrap items-center gap-1.5 max-w-full">
+                    <span style="white-space:normal">{{ fila.proyecto }}</span>
                     <span v-if="!fila.aplica_este_mes && conContrato(fila)"
                       class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
                       style="background:#e5e7eb; color:#4b5563"
