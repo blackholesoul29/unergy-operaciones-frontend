@@ -319,7 +319,9 @@ const facturables = computed(() => lineas.value.filter(l => l.estado === 'ok'))
 // Todo lo que no se puede facturar, con el motivo: si solo se listaran los "sin PPA",
 // un contrato sin tarifa o sin IPP base no aparecería en ninguna parte de la vista.
 const MOTIVOS = {
-  sin_ppa: 'Sin PPA marco (vende vía UNGC)',
+  // No siempre es venta por UNGC: p. ej. el contrato 90060 (La Reserva) es de
+  // SFEC y le falta asociarle su PPA de Santa Fe.
+  sin_ppa: 'Sin PPA marco asociado',
   sin_tarifa: 'Sin tarifa del PPA para el mes',
   sin_ipp_base: 'El PPA no tiene IPP base',
   sin_ipp_mes: 'Falta el IPP del mes',
