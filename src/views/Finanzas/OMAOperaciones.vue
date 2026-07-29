@@ -158,14 +158,14 @@
           </thead>
           <tbody>
             <tr v-for="fila in sec.items" :key="fila.contrato_id"
-              class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 row-hover"
-              :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
-              <td class="px-4 py-2 text-center">
+              class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 row-hover">
+              <td class="px-4 py-2 text-center" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 <input type="checkbox"
                   :disabled="!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)"
                   v-model="seleccion[fila.contrato_id]"
                   class="accent-purple-600" />
               </td>
+              <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
               <td class="px-4 py-2 font-medium" style="color:#2C2039; white-space:nowrap">
                 {{ fila.nombre_proyecto }}
                 <span v-if="!fila.habilitado && conContrato(fila)"
@@ -187,32 +187,33 @@
                   <i class="pi pi-comment text-[9px]" />excluido
                 </span>
               </td>
-              <td class="px-4 py-2 whitespace-nowrap">
+              <td class="px-4 py-2 whitespace-nowrap" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 <span class="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full"
                   :style="{ background: estadoContratoMeta(fila).bg, color: estadoContratoMeta(fila).fg }">
                   {{ estadoContratoMeta(fila).label }}
                 </span>
               </td>
-              <td class="px-4 py-2 text-xs text-gray-600 whitespace-nowrap">{{ fila.mes_año }}</td>
-              <td v-if="colsVisibles.n_indexaciones" class="px-4 py-2 text-right text-xs text-gray-500">
+              <td class="px-4 py-2 text-xs text-gray-600 whitespace-nowrap" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">{{ fila.mes_año }}</td>
+              <td v-if="colsVisibles.n_indexaciones" class="px-4 py-2 text-right text-xs text-gray-500" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 {{ fila.n_indexaciones }}
               </td>
-              <td class="px-4 py-2 text-right font-mono text-xs text-gray-600">
+              <td class="px-4 py-2 text-right font-mono text-xs text-gray-600" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 {{ fila.valor_base_anual != null ? formatCOP(fila.valor_base_anual) : '—' }}
               </td>
-              <td v-if="colsVisibles.factor_acumulado" class="px-4 py-2 text-right font-mono text-xs">
+              <td v-if="colsVisibles.factor_acumulado" class="px-4 py-2 text-right font-mono text-xs" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 {{ fila.habilitado ? fila.factor_acumulado.toFixed(6) : '—' }}
               </td>
-              <td v-if="colsVisibles.valor_anual_indexado" class="px-4 py-2 text-right font-mono text-xs">
+              <td v-if="colsVisibles.valor_anual_indexado" class="px-4 py-2 text-right font-mono text-xs" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 {{ fila.valor_anual_indexado != null ? formatCOP(fila.valor_anual_indexado) : '—' }}
               </td>
-              <td v-if="colsVisibles.valor_mes_completo" class="px-4 py-2 text-right font-mono text-xs">
+              <td v-if="colsVisibles.valor_mes_completo" class="px-4 py-2 text-right font-mono text-xs" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 {{ fila.valor_mes_completo != null ? formatCOP(fila.valor_mes_completo) : '—' }}
               </td>
-              <td v-if="colsVisibles.prorrateo" class="px-4 py-2 text-center text-xs text-gray-500">
+              <td v-if="colsVisibles.prorrateo" class="px-4 py-2 text-center text-xs text-gray-500" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 {{ fila.prorrateo_label }}
               </td>
               <td class="px-4 py-2 text-right bg-purple-50/30 group"
+                :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''"
                 style="position:relative; min-width:150px">
                 <!-- Valor a facturar: SOLO LECTURA (se edita en Proyecto>Detalle>Servicios) -->
                 <div class="flex items-center justify-end gap-1.5">
@@ -238,11 +239,12 @@
                 </div>
               </td>
               <td v-if="colsVisibles.historial" class="px-4 py-2 text-xs text-gray-400"
+                :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''"
                 style="white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis"
                 :title="fila.historial_indexaciones">
                 {{ fila.historial_indexaciones }}
               </td>
-              <td class="px-4 py-2 text-center">
+              <td class="px-4 py-2 text-center" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 <button v-if="conContrato(fila)" type="button" @click="toggleFacturado(fila)"
                   class="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium transition-colors"
                   :class="togglingFacturado[fila.contrato_id] ? 'opacity-50 pointer-events-none' : ''"
@@ -254,7 +256,7 @@
                 </button>
                 <span v-else class="text-xs text-gray-300">—</span>
               </td>
-              <td class="px-4 py-2 text-center">
+              <td class="px-4 py-2 text-center" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
                 <DocumentoIcon
                   :doc="fila.documento_disponible ? { nombre_archivo: fila.documento_nombre || fila.nombre_proyecto } : null"
                   :tooltip="fila.documento_disponible ? (fila.documento_nombre || fila.nombre_proyecto) : null"
