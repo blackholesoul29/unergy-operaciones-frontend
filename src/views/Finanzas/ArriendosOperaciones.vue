@@ -136,22 +136,27 @@
                   v-model="seleccion[fila.id]" class="accent-purple-600" />
               </td>
               <!-- Proyecto -->
-              <td class="px-3 py-2 font-medium" style="color:#2C2039; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
-                <span class="inline-flex items-center gap-1.5 max-w-full">
-                  <span class="truncate">{{ fila.proyecto }}</span>
-                  <span v-if="!fila.aplica_este_mes && conContrato(fila)"
-                    class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
-                    style="background:#e5e7eb; color:#4b5563"
-                    title="Según su periodicidad, a este arriendo no le corresponde cobro este mes.">
-                    <i class="pi pi-clock text-[9px]" />no aplica este mes
+              <td class="px-3 py-2 font-medium" style="color:#2C2039; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
+                <div class="flex flex-col gap-0.5 max-w-full">
+                  <span class="inline-flex items-center gap-1.5 max-w-full" style="white-space:nowrap">
+                    <span class="truncate">{{ fila.proyecto }}</span>
+                    <span v-if="!fila.aplica_este_mes && conContrato(fila)"
+                      class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      style="background:#e5e7eb; color:#4b5563"
+                      title="Según su periodicidad, a este arriendo no le corresponde cobro este mes.">
+                      <i class="pi pi-clock text-[9px]" />no aplica este mes
+                    </span>
+                    <span v-if="fila.motivo_exclusion"
+                      class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full cursor-help flex-shrink-0"
+                      style="background:#fee2e2; color:#991b1b"
+                      :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
+                      <i class="pi pi-comment text-[9px]" />excluido
+                    </span>
                   </span>
-                  <span v-if="fila.motivo_exclusion"
-                    class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full cursor-help flex-shrink-0"
-                    style="background:#fee2e2; color:#991b1b"
-                    :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
-                    <i class="pi pi-comment text-[9px]" />excluido
+                  <span v-if="fila.nombre_arrendador" class="text-[11px] text-gray-400 truncate" :title="fila.nombre_arrendador">
+                    {{ fila.nombre_arrendador }}
                   </span>
-                </span>
+                </div>
               </td>
               <!-- Estado contrato -->
               <td class="px-3 py-2 whitespace-nowrap">
@@ -551,7 +556,7 @@ async function _ejecutarGuardado(motivos) {
   guardando.value = true
   try {
     const items = filas.value.map(f => ({
-      proyecto_id: f.id,
+      arr_arrendador_id: f.id,
       incluido: !!(seleccion[f.id] && esFacturable(f)),
       motivo_exclusion: motivos[f.id] || null,
     }))
@@ -581,8 +586,17 @@ function tooltipDoc(doc) {
 }
 
 // ── Proyectos para el componente ZipUpload ─────────────────────────────────────
+// nombreArrendador/estadoContrato: necesarios para que ArriendosZipUpload pueda
+// detectar proyectos con varios arrendadores (varias filas con el mismo código)
+// y ofrecer el selector correspondiente al cargar cuentas de cobro.
 const filasParaZip = computed(() =>
-  filas.value.map(f => ({ id: f.id, proyecto: f.proyecto, codigo: f.codigo }))
+  filas.value.map(f => ({
+    id: f.id,
+    proyecto: f.proyecto,
+    codigo: f.codigo,
+    nombreArrendador: f.nombre_arrendador,
+    estadoContrato: f.estado_contrato,
+  }))
 )
 
 watch(periodoActual, (p) => { loadDocs(p); cargarDatos() })

@@ -371,15 +371,9 @@
               <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-user text-xs" style="color:#8b5cf6" />Contratante
+                    <i class="pi pi-user text-xs" style="color:#8b5cf6" />Arrendatario
                   </p>
                   <p class="text-sm font-semibold leading-snug" style="color:#1c1917">{{ contratos.arriendo.contratante_nombre || '—' }}</p>
-                </div>
-                <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-building text-xs" style="color:#8b5cf6" />Prestador
-                  </p>
-                  <p class="text-sm font-semibold leading-snug" style="color:#1c1917">{{ contratos.arriendo.prestador_nombre || '—' }}</p>
                 </div>
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
@@ -434,13 +428,48 @@
                   <span v-else class="text-sm text-gray-400">Sin enlace</span>
                 </div>
               </div>
-              <!-- Panel indexación ANUAL -->
-              <div :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.anual ? '800px' : '0px' }">
+
+              <!-- Sección Arrendadores -->
+              <div class="rounded-xl border mt-3" style="border-color:#ddd6fe">
+                <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
+                  <span class="text-xs font-semibold flex items-center gap-1.5" style="color:#5b21b6">
+                    <i class="pi pi-users text-xs" style="color:#8b5cf6" />Arrendadores
+                  </span>
+                  <Button icon="pi pi-plus" label="Agregar arrendador" size="small" text
+                    style="color:#8b5cf6" @click="openArrendadorDialog('crear')" />
+                </div>
+                <div v-if="!arrendadores.length" class="px-4 py-6 text-center text-xs text-gray-400">
+                  Sin arrendadores registrados.
+                </div>
+                <div v-else class="divide-y divide-gray-100">
+                  <div v-for="a in arrendadores" :key="a.id"
+                    class="flex items-center justify-between gap-3 px-4 py-3 flex-wrap">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="text-sm font-semibold" style="color:#1c1917">{{ a.nombre }}</span>
+                      <span class="text-sm font-mono tabular-nums" style="color:#7c3aed">{{ formatCOP(a.valor_base) }}</span>
+                      <span v-if="a.responsable_iva" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
+                        style="background:#ede9fe;color:#7c3aed">Responsable IVA</span>
+                      <span v-if="a.activo === false" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
+                        style="background:#f3f4f6;color:#9ca3af">Inactivo</span>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <Button icon="pi pi-pencil" size="small" text severity="secondary"
+                        @click="openArrendadorDialog('editar', a)" />
+                      <Button icon="pi pi-trash" size="small" text severity="danger"
+                        @click="eliminarArrendador(a)" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Panel indexación ANUAL por arrendador -->
+              <div v-for="a in arrendadores" :key="'anual-' + a.id"
+                :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.anual ? '800px' : '0px' }">
                 <div class="pt-3">
                   <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
                     <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
                       <span class="text-xs font-semibold" style="color:#5b21b6">
-                        <i class="pi pi-dollar text-xs mr-1.5" style="color:#8b5cf6" />Indexación anual de arriendo
+                        <i class="pi pi-dollar text-xs mr-1.5" style="color:#8b5cf6" />Indexación anual de arriendo — {{ a.nombre }}
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
@@ -454,12 +483,12 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-if="!contratos.arriendo.indexacion_anual?.length">
+                        <tr v-if="!a.indexacion_anual?.length">
                           <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
                             Sin indexación aún — el contrato todavía no cumple un año desde la Fecha de contrato (o falta esa fecha / el valor base).
                           </td>
                         </tr>
-                        <tr v-for="fila in (contratos.arriendo.indexacion_anual || [])" :key="fila.anio"
+                        <tr v-for="fila in (a.indexacion_anual || [])" :key="fila.anio"
                           class="border-b border-gray-50 hover:bg-violet-50/20 transition-colors"
                           :class="fila.anio === ANIO_ACTUAL ? 'bg-violet-50/40' : ''">
                           <td class="px-4 py-2.5">
@@ -510,13 +539,14 @@
                 </div>
               </div>
 
-              <!-- Panel indexación MENSUAL -->
-              <div :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.mensual ? '800px' : '0px' }">
+              <!-- Panel indexación MENSUAL por arrendador -->
+              <div v-for="a in arrendadores" :key="'mensual-' + a.id"
+                :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.mensual ? '800px' : '0px' }">
                 <div class="pt-3">
                   <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
                     <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
                       <span class="text-xs font-semibold" style="color:#5b21b6">
-                        <i class="pi pi-calculator text-xs mr-1.5" style="color:#8b5cf6" />Indexación mensual de arriendo
+                        <i class="pi pi-calculator text-xs mr-1.5" style="color:#8b5cf6" />Indexación mensual de arriendo — {{ a.nombre }}
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
@@ -530,12 +560,12 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-if="!contratos.arriendo.indexacion_mensual?.length">
+                        <tr v-if="!a.indexacion_mensual?.length">
                           <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
                             Sin indexación aún — el contrato todavía no cumple un año desde la Fecha de contrato (o falta esa fecha / el valor base).
                           </td>
                         </tr>
-                        <tr v-for="fila in (contratos.arriendo.indexacion_mensual || [])" :key="fila.anio"
+                        <tr v-for="fila in (a.indexacion_mensual || [])" :key="fila.anio"
                           class="border-b border-gray-50 hover:bg-violet-50/20 transition-colors"
                           :class="fila.anio === ANIO_ACTUAL ? 'bg-violet-50/40' : ''">
                           <td class="px-4 py-2.5">
@@ -587,6 +617,39 @@
               </div>
 
             </div>
+
+            <!-- Dialog Arrendador (crear/editar) -->
+            <Dialog v-model:visible="arrendadorDialog.visible" modal
+              :header="arrendadorDialog.modo === 'editar' ? 'Editar arrendador' : 'Agregar arrendador'"
+              style="width: 26rem">
+              <div class="flex flex-col gap-3 pt-2">
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Nombre <span class="text-red-400">*</span></label>
+                  <InputText v-model="arrendadorDialog.form.nombre" class="w-full" placeholder="Nombre o razón social" />
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Valor base</label>
+                  <InputNumber v-model="arrendadorDialog.form.valor_base" class="w-full" mode="currency"
+                    currency="COP" locale="es-CO" :maxFractionDigits="0" />
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Responsable IVA</label>
+                  <Select v-model="arrendadorDialog.form.responsable_iva"
+                    :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+                    optionLabel="label" optionValue="value" class="w-full" />
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Activo</label>
+                  <Select v-model="arrendadorDialog.form.activo"
+                    :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+                    optionLabel="label" optionValue="value" class="w-full" />
+                </div>
+              </div>
+              <template #footer>
+                <Button label="Cancelar" text severity="secondary" @click="arrendadorDialog.visible = false" />
+                <Button label="Guardar" :loading="arrendadorDialog.guardando" @click="guardarArrendador" />
+              </template>
+            </Dialog>
           </template>
           <template v-else>
             <!-- Datos estáticos desde JSON si existen -->
@@ -1168,6 +1231,16 @@ const showIndexacionArriendo  = reactive({ anual: false, mensual: false })
 const facturasCobradas   = ref([])
 const facturasEmitidas   = ref([])
 
+// ── Arrendadores (arriendo con múltiples arrendadores) ─────────────────────────
+const arrendadores = ref([])
+const arrendadorDialog = reactive({
+  visible: false,
+  modo: 'crear',
+  editId: null,
+  guardando: false,
+  form: { nombre: '', valor_base: null, responsable_iva: false, activo: true },
+})
+
 const dialogMant = reactive({
   visible: false,
   modo: 'crear',
@@ -1228,6 +1301,7 @@ onMounted(async () => {
     contratos.internet      = netRes.status  === 'fulfilled' && netRes.value.data.length  ? netRes.value.data[0]  : null
 
     await cargarIndexacionOM()
+    await cargarArrendadores()
     await cargarIndexacionArriendo()
     await loadPagos('mantenimiento')
   } catch (e) {
@@ -1368,6 +1442,10 @@ async function onContratoCreado() {
   try {
     const { data } = await api.get('/contratos-servicio', { params: { tipo, proyecto_id: proyId } })
     contratos[tipo] = data.length ? data[0] : null
+    if (tipo === 'arriendo') {
+      await cargarArrendadores()
+      await cargarIndexacionArriendo()
+    }
     await loadPagos(tipo)
   } catch { /* ignore */ }
 }
@@ -1551,6 +1629,87 @@ async function cargarIndexacionArriendo() {
   } catch {
     contratos.arriendo.indexacion_anual   = []
     contratos.arriendo.indexacion_mensual = []
+  }
+  // Indexación individual por cada arrendador (usa su propio valor_base)
+  await Promise.all(arrendadores.value.map(async (a) => {
+    try {
+      const { data } = await api.get(`/arriendos/indexacion/${contratos.arriendo.id}`, {
+        params: { arrendador_id: a.id },
+      })
+      a.indexacion_anual   = data.anual   || []
+      a.indexacion_mensual = data.mensual || []
+    } catch {
+      a.indexacion_anual   = []
+      a.indexacion_mensual = []
+    }
+  }))
+}
+
+// ── Arrendadores: CRUD ────────────────────────────────────────────────────────
+async function cargarArrendadores() {
+  if (!contratos.arriendo?.id) { arrendadores.value = []; return }
+  try {
+    const { data } = await api.get(`/arriendos/contratos/${contratos.arriendo.id}/arrendadores`)
+    arrendadores.value = data || []
+  } catch {
+    arrendadores.value = []
+  }
+}
+
+function openArrendadorDialog(modo, arrendador = null) {
+  arrendadorDialog.modo = modo
+  arrendadorDialog.editId = arrendador?.id ?? null
+  arrendadorDialog.form.nombre = arrendador?.nombre || ''
+  arrendadorDialog.form.valor_base = arrendador?.valor_base ?? null
+  arrendadorDialog.form.responsable_iva = arrendador?.responsable_iva ?? false
+  arrendadorDialog.form.activo = arrendador?.activo ?? true
+  arrendadorDialog.visible = true
+}
+
+async function guardarArrendador() {
+  if (!contratos.arriendo?.id) return
+  if (!arrendadorDialog.form.nombre?.trim()) {
+    toast.add({ severity: 'error', summary: 'El nombre es obligatorio', life: 3000 })
+    return
+  }
+  arrendadorDialog.guardando = true
+  try {
+    const payload = {
+      nombre: arrendadorDialog.form.nombre.trim(),
+      valor_base: arrendadorDialog.form.valor_base,
+      responsable_iva: arrendadorDialog.form.responsable_iva ?? false,
+      activo: arrendadorDialog.form.activo ?? true,
+    }
+    if (arrendadorDialog.modo === 'editar' && arrendadorDialog.editId) {
+      await api.put(`/arriendos/arrendadores/${arrendadorDialog.editId}`, payload)
+    } else {
+      await api.post(`/arriendos/contratos/${contratos.arriendo.id}/arrendadores`, payload)
+    }
+    arrendadorDialog.visible = false
+    await cargarArrendadores()
+    await cargarIndexacionArriendo()
+    toast.add({ severity: 'success', summary: 'Arrendador guardado', life: 2500 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error al guardar arrendador', detail: e.response?.data?.detail, life: 3500 })
+  } finally {
+    arrendadorDialog.guardando = false
+  }
+}
+
+async function eliminarArrendador(arrendador) {
+  if (!confirm(`¿Eliminar al arrendador "${arrendador.nombre}"?`)) return
+  try {
+    await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
+    await cargarArrendadores()
+    await cargarIndexacionArriendo()
+    toast.add({ severity: 'success', summary: 'Arrendador eliminado', life: 2500 })
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error al eliminar',
+      detail: e.response?.data?.detail || 'No se pudo eliminar el arrendador',
+      life: 3500,
+    })
   }
 }
 
