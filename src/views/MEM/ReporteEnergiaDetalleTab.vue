@@ -50,11 +50,11 @@
         <Button label="Validar y confiar" size="small" severity="success"
                 :loading="validando" @click="validar" />
       </div>
-      <div class="grid grid-cols-6 sm:grid-cols-8 gap-2">
+      <div class="edit-grid">
         <div v-for="h in 24" :key="h">
           <label class="text-[10px] font-mono block" style="color: #9b89b5;">{{ h - 1 }}h</label>
           <InputNumber v-model="curvaEditable[h - 1]" :minFractionDigits="2" :maxFractionDigits="2"
-                       inputClass="w-full text-xs"
+                       inputClass="w-full text-xs text-right"
                        :class="esHoraRellenada(h - 1) ? 'campo-rellenado' : ''" />
         </div>
       </div>
@@ -165,6 +165,14 @@ function fmtKwh(v) {
 </script>
 
 <style scoped>
+/* auto-fill con un mínimo de 76px en vez de un número fijo de columnas --
+   así la celda nunca queda más angosta de lo que necesita un número de
+   miles con decimales (ej. "1.234,56"), sea cual sea el ancho disponible. */
+.edit-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 8px;
+}
 :deep(.campo-rellenado input) {
   border-color: #F0C040 !important;
   background: rgba(240, 192, 64, 0.08);

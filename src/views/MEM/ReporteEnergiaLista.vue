@@ -1,10 +1,14 @@
 <template>
   <div class="list-pane bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style="border: 1px solid #e8e0f0;">
-    <div class="p-3" style="border-bottom: 1px solid #f1ecf7;">
+    <div class="p-3 space-y-2" style="border-bottom: 1px solid #f1ecf7;">
       <span class="p-input-icon-left w-full">
         <i class="pi pi-search" />
         <InputText v-model="search" placeholder="Buscar proyecto..." class="w-full" />
       </span>
+      <div class="flex gap-2">
+        <button class="filter-pill" :class="{ on: genOn }" @click="genOn = !genOn">Generación</button>
+        <button class="filter-pill" :class="{ on: conOn }" @click="conOn = !conOn">Consumo</button>
+      </div>
     </div>
     <ul class="list-scroll flex-1 overflow-y-auto" style="list-style: none; margin: 0; padding: 0;">
       <li v-for="f in filtradas" :key="f.frontera_id">
@@ -47,11 +51,21 @@ const props = defineProps({
 defineEmits(['seleccionar'])
 
 const search = ref('')
+const genOn = ref(true)
+const conOn = ref(true)
 
 const filtradas = computed(() => {
-  if (!search.value) return props.filas
-  const s = search.value.toLowerCase()
-  return props.filas.filter(f => (f.nombre_proyecto || '').toLowerCase().includes(s))
+  let list = props.filas
+  // Si se apagan las dos (o están las dos prendidas), no filtra por tipo --
+  // apagar ambas por error nunca debería dejar la lista vacía.
+  if (genOn.value !== conOn.value) {
+    list = list.filter(f => (f.tipo === 'generacion') === genOn.value)
+  }
+  if (search.value) {
+    const s = search.value.toLowerCase()
+    list = list.filter(f => (f.nombre_proyecto || '').toLowerCase().includes(s))
+  }
+  return list
 })
 
 function semaforo(f) {
@@ -94,6 +108,17 @@ function fmtKwh(v) {
 }
 .row:hover { background: #faf8fd; }
 .row-selected { background: #f5eefc; }
+.filter-pill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid #e8e0f0;
+  background: white;
+  color: #9b89b5;
+  cursor: pointer;
+}
+.filter-pill.on { background: #f5eefc; border-color: #915BD8; color: #6E3FB8; }
 .tipo-tag {
   font-size: 10px;
   font-weight: 700;
