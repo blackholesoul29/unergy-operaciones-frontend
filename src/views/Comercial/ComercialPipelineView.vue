@@ -51,6 +51,30 @@
       <Column field="precio_detalle" header="Precio">
         <template #body="{ data }">{{ data.precio_detalle || '—' }}</template>
       </Column>
+      <Column field="fecha_oferta" header="Enviada" sortable>
+        <template #body="{ data }">
+          <span v-if="data.fecha_oferta" :title="fmtFecha(data.fecha_oferta)">
+            hace {{ diasDesde(data.fecha_oferta) }} d
+          </span>
+          <span v-else-if="mesDelCodigo(data)" class="text-gray-400"
+                title="Aproximado: sale del mes que trae el propio código, no de una fecha registrada">
+            ≈ {{ mesDelCodigo(data) }}
+          </span>
+          <span v-else class="text-gray-300">—</span>
+        </template>
+      </Column>
+      <Column field="seguimientos" header="Seguim." sortable>
+        <template #body="{ data }">
+          <span :class="alarmante(data) ? 'text-red-600 font-semibold' : ''">{{ data.seguimientos || 0 }}</span>
+        </template>
+      </Column>
+      <Column field="fecha_ultima_respuesta" header="Última respuesta" sortable>
+        <template #body="{ data }">
+          <span v-if="data.fecha_ultima_respuesta">{{ fmtFecha(data.fecha_ultima_respuesta) }}</span>
+          <span v-else-if="data.fecha_oferta" class="text-red-600">sin respuesta</span>
+          <span v-else class="text-gray-300">—</span>
+        </template>
+      </Column>
       <Column field="updated_at" header="Última actividad" sortable>
         <template #body="{ data }">{{ fmtFecha(data.updated_at) }}</template>
       </Column>
@@ -195,6 +219,19 @@ function labelTipoOferta(v) { return TIPOS_OFERTA.find(t => t.value === v)?.labe
 function labelResultado(v) { return RESULTADOS[v] ?? v }
 function sevResultado(v) { return { aceptado: 'success', declinado: 'danger', pendiente: 'warn' }[v] ?? 'secondary' }
 function fmtFecha(v) { return v ? new Date(v).toLocaleDateString('es-CO', { dateStyle: 'medium' }) : '—' }
+function diasDesde(v) {
+  return Math.floor((Date.now() - new Date(`${String(v).slice(0, 10)}T00:00:00`).getTime()) / 86400000)
+}
+// Sin fecha registrada, el mes y el año viven dentro del propio código
+// (No.0103-6-2026). Se muestra como aproximado y no se guarda nada: una fecha
+// exacta inventada es peor que ninguna en una herramienta comercial.
+const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+function mesDelCodigo(row) {
+  const m = /No\.?\s*\d{1,4}\s*-\s*(\d{1,2})\s*-\s*(\d{4})/.exec(row.codigo_seguimiento || row.numero_oferta || '')
+  return m && MESES_CORTOS[Number(m[1]) - 1] ? `${MESES_CORTOS[Number(m[1]) - 1]} ${m[2]}` : null
+}
+// Cuatro toques sin una sola respuesta: el negocio se enfrió.
+function alarmante(row) { return (row.seguimientos || 0) >= 4 && !row.fecha_ultima_respuesta }
 // La oferta se gestiona dentro de su oportunidad (pestaña Ofertas del detalle).
 function irADetalle(of) { router.push(`/comercial/oportunidades/${of.oportunidad_id}`) }
 

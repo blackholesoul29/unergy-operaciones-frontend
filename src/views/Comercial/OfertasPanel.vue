@@ -33,6 +33,38 @@
           <Tag :value="labelResultado(data.resultado)" :severity="sevResultado(data.resultado)" />
         </template>
       </Column>
+      <Column header="Enviada">
+        <template #body="{ data }">
+          <span v-if="data.fecha_oferta">{{ fmtFecha(data.fecha_oferta) }}</span>
+          <span v-else class="text-gray-300">—</span>
+        </template>
+      </Column>
+      <Column header="Seguimientos">
+        <template #body="{ data }">
+          <div class="flex items-center gap-2">
+            <span :class="sinRespuesta(data) ? 'text-red-600 font-semibold' : ''">
+              {{ data.seguimientos || 0 }}
+            </span>
+            <Button icon="pi pi-send" text rounded size="small" :loading="tocando === data.id"
+                    title="Registrar un seguimiento (reenvío o llamada de insistencia)"
+                    @click="registrarSeguimiento(data)" />
+          </div>
+        </template>
+      </Column>
+      <Column header="Última respuesta">
+        <template #body="{ data }">
+          <span v-if="data.fecha_ultima_respuesta">{{ fmtFecha(data.fecha_ultima_respuesta) }}</span>
+          <span v-else-if="data.fecha_oferta" class="text-red-600 text-xs">sin respuesta</span>
+          <span v-else class="text-gray-300">—</span>
+        </template>
+      </Column>
+      <Column header="Documento">
+        <template #body="{ data }">
+          <a v-if="data.documento_url" :href="data.documento_url" target="_blank" rel="noopener"
+             class="text-primary underline text-xs">PDF</a>
+          <span v-else class="text-gray-300">—</span>
+        </template>
+      </Column>
       <Column header="" style="width:6rem">
         <template #body="{ data }">
           <Button icon="pi pi-pencil" text rounded size="small" @click="abrirEditar(data)" />
@@ -127,6 +159,27 @@ const form = reactive({
   tipo: null, planta_nombre: '', numero_oferta: '', resultado: 'pendiente',
   precio_detalle: '', fecha_oferta: null, fecha_tentativa_inicio: null, contrato_firmado: '',
 })
+
+const tocando = ref(null)
+
+function fmtFecha(v) {
+  return v ? new Date(`${String(v).slice(0, 10)}T00:00:00`).toLocaleDateString('es-CO', { dateStyle: 'medium' }) : '—'
+}
+// Se envió y el cliente nunca contestó: eso es lo que hay que mirar.
+function sinRespuesta(o) { return (o.seguimientos || 0) > 0 && !o.fecha_ultima_respuesta }
+
+async function registrarSeguimiento(oferta) {
+  tocando.value = oferta.id
+  try {
+    await api.post(`/comercial/ofertas/${oferta.id}/seguimiento`)
+    emit('changed')
+  } catch (err) {
+    toast.add({ severity: 'error', summary: 'No se pudo registrar el seguimiento',
+                detail: err.response?.data?.detail ?? '', life: 5000 })
+  } finally {
+    tocando.value = null
+  }
+}
 
 function labelTipo(v) { return TIPOS_OFERTA.find(t => t.value === v)?.label ?? v }
 function labelResultado(v) { return RESULTADOS.find(r => r.value === v)?.label ?? v }
