@@ -6,7 +6,6 @@
       <div class="flex items-center gap-2">
         <Button icon="pi pi-play" label="Ejecutar clasificación" severity="secondary" outlined
                 :loading="ejecutando"
-                v-tooltip.bottom="'Vuelve a correr Quoia/Solenium para este día -- puede interrogar medidores incompletos'"
                 @click="ejecutarClasificacion" />
         <Button icon="pi pi-file-excel" label="Generar Excel" severity="secondary" outlined
                 :loading="generandoExcel" @click="generarExcel" />
