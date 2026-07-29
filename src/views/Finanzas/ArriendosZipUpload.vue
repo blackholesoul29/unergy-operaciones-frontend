@@ -233,7 +233,9 @@ const EXTENSIONES_PERMITIDAS = ['pdf', 'jpg', 'jpeg', 'png', 'xml']
 const toast = useToast()
 
 const props = defineProps({
-  proyectos:    { type: Array,  required: true },   // [{ id, proyecto, codigo }]
+  // [{ id (arr_arrendador_id, o sintético -proyecto_id si no tiene contrato),
+  //   proyectoId (id real de Proyecto), proyecto, codigo, nombreArrendador, estadoContrato }]
+  proyectos:    { type: Array,  required: true },
   periodo:      { type: String, required: true },   // 'YYYY-MM'
   periodoLabel: { type: String, required: true },
 })
@@ -600,6 +602,9 @@ async function onZipSelected(e) {
           codigoPredio:   short,
           valor:          valorDe(short),
           proyectoId:     m?.id ?? null,
+          // Id real de Proyecto (para documentos, indexados por proyecto_id, no por
+          // arr_arrendador_id). Todos los matches del mismo predio comparten proyecto.
+          proyectoRealId: m?.proyectoId ?? null,
           proyectoNombre: m?.proyecto ?? null,
           conPago:        false,   // se calcula luego (predio repetido entre pagos)
           yaExiste:       false,
@@ -629,9 +634,9 @@ async function onZipSelected(e) {
     // Advertencia: documentos ya existentes en el período (mismo proyecto + pago)
     try {
       const existentes = await fetchDocsPeriodo(periodoZip.value || props.periodo)
-      const clave = new Set(existentes.map(d => `${d.arr_proyecto_id}|${d.pago_id}`))
+      const clave = new Set(existentes.map(d => `${d.proyecto_id}|${d.pago_id}`))
       for (const g of grupos) for (const p of g.predios) {
-        if (p.proyectoId && clave.has(`${p.proyectoId}|${g.pagoId}`)) p.yaExiste = true
+        if (p.proyectoRealId && clave.has(`${p.proyectoRealId}|${g.pagoId}`)) p.yaExiste = true
       }
     } catch { /* no bloquea */ }
 
@@ -648,6 +653,7 @@ async function onZipSelected(e) {
 function onProyectoSeleccionado(predio) {
   const p = props.proyectos.find(p => p.id === predio.proyectoId)
   predio.proyectoNombre = p?.proyecto ?? null
+  predio.proyectoRealId = p?.proyectoId ?? null
   const matches = p ? props.proyectos.filter(x => x.codigo === p.codigo) : []
   predio.arrendadorOpciones = matches.map(x => ({ id: x.id, nombre: x.nombreArrendador || x.proyecto }))
   predio.arrArrendadorId = arrendadorIdDefault(matches)
@@ -678,6 +684,7 @@ async function confirmar() {
           nombreArrendatario: grupo.nombreArrendatario,
           predios: grupo.predios.map(p => ({
             arr_proyecto_id:  p.proyectoId,
+            proyecto_id:      p.proyectoRealId,
             codigo_predio:    p.codigoPredio,
             valor_individual: p.valor,
             nombre_resultante: nombrePredio(grupo, p),

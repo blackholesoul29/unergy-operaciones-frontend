@@ -205,9 +205,9 @@
               <!-- Documento adjunto -->
               <td class="px-3 py-2 text-center">
                 <div class="inline-flex items-center gap-0.5 flex-wrap justify-center">
-                  <template v-if="docsPorProyecto[fila.id]?.length">
+                  <template v-if="docsPorProyecto[fila.proyecto_id]?.length">
                     <DocumentoIcon
-                      v-for="doc in docsPorProyecto[fila.id]"
+                      v-for="doc in docsPorProyecto[fila.proyecto_id]"
                       :key="doc.id"
                       :doc="doc"
                       :tooltip="tooltipDoc(doc)"
@@ -592,6 +592,7 @@ function tooltipDoc(doc) {
 const filasParaZip = computed(() =>
   filas.value.map(f => ({
     id: f.id,
+    proyectoId: f.proyecto_id,
     proyecto: f.proyecto,
     codigo: f.codigo,
     nombreArrendador: f.nombre_arrendador,
