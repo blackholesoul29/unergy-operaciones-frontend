@@ -1,13 +1,15 @@
 /**
  * Composable para documentos de Arriendos — persistencia en backend.
  *
- * docsPorProyecto: Map reactivo {arr_proyecto_id → ArrDocumento[]}
+ * docsPorProyecto: Map reactivo {proyecto_id → ArrDocumento[]}
  * Cargado desde GET /arriendos/documentos/{periodo} al llamar loadDocs(periodo).
+ * proyecto_id es el id real de Proyecto (el legado arr_proyecto_id sigue
+ * viniendo en la respuesta por compatibilidad, pero ya no se usa para agrupar).
  */
 import { ref } from 'vue'
 import api from '@/api/client'
 
-// Estado reactivo compartido: { [arr_proyecto_id]: ArrDocumento[] }
+// Estado reactivo compartido: { [proyecto_id]: ArrDocumento[] }
 export const docsPorProyecto = ref({})
 
 /**
@@ -18,8 +20,8 @@ export async function loadDocs(periodo) {
     const { data } = await api.get(`/arriendos/documentos/${periodo}`)
     const agrupado = {}
     for (const doc of data) {
-      if (!agrupado[doc.arr_proyecto_id]) agrupado[doc.arr_proyecto_id] = []
-      agrupado[doc.arr_proyecto_id].push(doc)
+      if (!agrupado[doc.proyecto_id]) agrupado[doc.proyecto_id] = []
+      agrupado[doc.proyecto_id].push(doc)
     }
     docsPorProyecto.value = agrupado
   } catch (err) {
