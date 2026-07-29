@@ -119,6 +119,7 @@
               <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 bg-purple-50" style="width:160px">
                 Canon Arrendamiento
               </th>
+              <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500">IVA</th>
               <th v-if="colsVisibles.historial"
                 class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:240px">Historial IPC</th>
               <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-500" style="width:100px">Documento</th>
@@ -187,6 +188,9 @@
                     @mouseenter="mostrarCanon($event, fila)"
                     @mouseleave="ocultarCanon()" />
                 </span>
+              </td>
+              <td class="px-3 py-2 text-right font-mono text-xs text-gray-500">
+                {{ fila.iva_calculado != null ? formatCOP(fila.iva_calculado) : '—' }}
               </td>
               <td v-if="colsVisibles.historial" class="px-3 py-2 text-xs text-gray-400"
                 style="white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis"
