@@ -89,25 +89,26 @@
             <span v-if="f.personalizada" class="tag" style="background:#e6f6ef;color:#1f9d6b">dividida</span>
             <span v-else class="tag">{{ f.ppa || '—' }}</span>
             <span class="ml-auto fac-fac-nums">
-              <span class="muted">{{ f.contratos }} proy</span>
+              <span class="muted">{{ f.contratos }} contr</span>
               <span class="muted">· {{ fmtMWh(f.kwh) }}</span>
-              <span class="muted">· tarifa {{ fmtNum(f.tarifa_indexada) }}</span>
+              <span class="muted">· tarifa {{ f.tarifa_mixta ? 'varía' : fmtNum(f.tarifa_indexada) }}</span>
               <b>{{ fmtCOP(f.facturacion) }}</b>
             </span>
           </div>
           <div v-if="abiertas.has(f.factura)" class="fac-fac-body">
             <div class="tblwrap">
               <table class="dt">
-                <thead><tr><th class="l" style="width:34px"></th><th class="l">Proyecto</th><th class="l">Contrato</th><th>Energía (kWh)</th><th>Facturación</th><th style="width:60px"></th></tr></thead>
+                <thead><tr><th class="l" style="width:34px"></th><th class="l">Proyecto</th><th class="l">Contrato</th><th>Tarifa</th><th>Energía (kWh)</th><th>Facturación</th><th style="width:60px"></th></tr></thead>
                 <tbody>
                   <tr v-for="p in f.proyectos" :key="p.contrato">
-                    <td class="l"><input type="checkbox" :disabled="!p.proyecto_id"
-                      :checked="selDe(f.factura).has(p.proyecto_id)" @change="toggleProy(f.factura, p.proyecto_id)" /></td>
+                    <td class="l"><input type="checkbox"
+                      :checked="selDe(f.factura).has(p.contrato)" @change="toggleProy(f.factura, p.contrato)" /></td>
                     <td class="l">{{ p.proyecto || '—' }}<span v-if="p.asignada" class="sub2">↳ movido aquí</span></td>
                     <td class="l muted">{{ p.contrato }}</td>
+                    <td>{{ fmtNum(p.tarifa_indexada) }}</td>
                     <td>{{ fmtNum(p.kwh) }}</td>
                     <td class="fw">{{ fmtCOP(p.facturacion) }}</td>
-                    <td class="l"><button v-if="p.asignada" class="fac-link" @click="quitarAsignacion(p.proyecto_id)">quitar</button></td>
+                    <td class="l"><button v-if="p.asignada" class="fac-link" @click="quitarAsignacion(p.contrato)">quitar</button></td>
                   </tr>
                 </tbody>
               </table>
@@ -303,25 +304,25 @@ async function subirDespacho (file) {
 // ── División de facturas ────────────────────────────────────────────────────
 function toggleFac (k) { abiertas.has(k) ? abiertas.delete(k) : abiertas.add(k) }
 function selDe (k) { if (!sel[k]) sel[k] = reactive(new Set()); return sel[k] }
-function toggleProy (k, pid) { const s = selDe(k); s.has(pid) ? s.delete(pid) : s.add(pid) }
+function toggleProy (k, contrato) { const s = selDe(k); s.has(contrato) ? s.delete(contrato) : s.add(contrato) }
 async function moverSeleccionados (k) {
   const s = selDe(k); const nombre = (nuevoNombre[k] || '').trim()
-  if (!s.size) { toast.add({ severity: 'warn', summary: 'Selecciona proyectos', life: 3000 }); return }
+  if (!s.size) { toast.add({ severity: 'warn', summary: 'Selecciona contratos', life: 3000 }); return }
   if (!nombre) { toast.add({ severity: 'warn', summary: 'Escribe el nombre de la factura', life: 3000 }); return }
   guardandoDiv.value = true
   try {
-    const rows = [...s].filter(Boolean).map(pid => ({ proyecto_id: pid, nombre }))
+    const rows = [...s].filter(Boolean).map(c => ({ codigo_sic_contrato: c, nombre }))
     await api.put('/facturacion/agrupaciones', rows)
-    toast.add({ severity: 'success', summary: 'Factura dividida', detail: `${rows.length} proyectos → "${nombre}"`, life: 3500 })
+    toast.add({ severity: 'success', summary: 'Factura dividida', detail: `${rows.length} contratos → "${nombre}"`, life: 3500 })
     s.clear(); nuevoNombre[k] = ''
     await load()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo dividir', detail: e?.response?.data?.detail || e.message, life: 6000 })
   } finally { guardandoDiv.value = false }
 }
-async function quitarAsignacion (pid) {
+async function quitarAsignacion (contrato) {
   try {
-    await api.put('/facturacion/agrupaciones', [{ proyecto_id: pid, nombre: '' }])
+    await api.put('/facturacion/agrupaciones', [{ codigo_sic_contrato: contrato, nombre: '' }])
     await load()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo quitar', detail: e?.response?.data?.detail || e.message, life: 5000 })
