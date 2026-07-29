@@ -1,18 +1,20 @@
 <template>
   <div class="space-y-5">
     <!-- Barra de acciones (el título ya lo pone el wrapper ReporteEnergiaView) -->
-    <div class="flex flex-wrap items-center justify-end gap-2">
+    <div class="flex items-center justify-between flex-wrap gap-3">
       <Calendar v-model="fecha" dateFormat="yy-mm-dd" class="w-40" :maxDate="maxFecha" showIcon />
-      <Button icon="pi pi-play" label="Ejecutar clasificación" severity="secondary" outlined
-              :loading="ejecutando"
-              v-tooltip.bottom="'Vuelve a correr Quoia/Solenium para este día -- puede interrogar medidores incompletos'"
-              @click="ejecutarClasificacion" />
-      <Button icon="pi pi-file-excel" label="Generar Excel" severity="secondary" outlined
-              :loading="generandoExcel" @click="generarExcel" />
-      <Button icon="pi pi-send" label="Enviar reporte"
-              :disabled="!resumen || !resumen.puede_enviar" :loading="enviando"
-              v-tooltip.bottom="!resumen?.puede_enviar ? 'Quedan fronteras con horas sin fuente por revisar' : null"
-              style="background: #915BD8; border-color: #915BD8;" @click="enviarReporte" />
+      <div class="flex items-center gap-2">
+        <Button icon="pi pi-play" label="Ejecutar clasificación" severity="secondary" outlined
+                :loading="ejecutando"
+                v-tooltip.bottom="'Vuelve a correr Quoia/Solenium para este día -- puede interrogar medidores incompletos'"
+                @click="ejecutarClasificacion" />
+        <Button icon="pi pi-file-excel" label="Generar Excel" severity="secondary" outlined
+                :loading="generandoExcel" @click="generarExcel" />
+        <Button icon="pi pi-send" label="Enviar reporte"
+                :disabled="!resumen || !resumen.puede_enviar" :loading="enviando"
+                v-tooltip.bottom="!resumen?.puede_enviar ? 'Quedan fronteras con horas sin fuente por revisar' : null"
+                style="background: #915BD8; border-color: #915BD8;" @click="enviarReporte" />
+      </div>
     </div>
 
     <!-- Stat cards -->
@@ -27,13 +29,6 @@
 
     <TabView v-model:activeIndex="activeTab">
       <TabPanel header="Revisión de hoy">
-        <div class="flex flex-wrap gap-3 mb-4">
-          <span class="p-input-icon-left flex-1 sm:flex-none">
-            <i class="pi pi-search" />
-            <InputText v-model="search" placeholder="Buscar proyecto..." class="w-full sm:w-64" />
-          </span>
-        </div>
-
         <div v-if="loadingLista" class="flex items-center justify-center py-12">
           <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
         </div>
@@ -41,33 +36,24 @@
           <p class="mb-3">Todavía no se ha corrido la clasificación para este día.</p>
           <Button icon="pi pi-play" label="Ejecutar clasificación" :loading="ejecutando" @click="ejecutarClasificacion" />
         </div>
-        <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
-          <DataTable :value="proyectosFiltrados" :paginator="true" :rows="20" :rowsPerPageOptions="[20, 50, 100]"
-                     responsiveLayout="scroll" stripedRows class="p-datatable-sm"
-                     @row-click="(e) => abrirDetalle(e.data, 'hoy')" selectionMode="single">
-            <Column header="" style="width: 8px" bodyStyle="padding:0">
-              <template #body="{ data }">
-                <div :style="{ background: semaforoColor(data), width: '4px', height: '100%' }" />
-              </template>
-            </Column>
-            <Column field="nombre_proyecto" header="Proyecto" sortable style="min-width: 220px">
-              <template #body="{ data }">
-                <span class="font-medium" style="color: #2C2039;">{{ data.nombre_proyecto }}</span>
-              </template>
-            </Column>
-            <Column header="Generación" style="min-width: 140px">
-              <template #body="{ data }">
-                <Tag v-if="tagTipo(data.generacion)" :value="tagTipo(data.generacion).value" :severity="tagTipo(data.generacion).severity" />
-                <span v-else style="color: #c9c0d9;">—</span>
-              </template>
-            </Column>
-            <Column header="Consumo" style="min-width: 140px">
-              <template #body="{ data }">
-                <Tag v-if="tagTipo(data.consumo)" :value="tagTipo(data.consumo).value" :severity="tagTipo(data.consumo).severity" />
-                <span v-else style="color: #c9c0d9;">—</span>
-              </template>
-            </Column>
-          </DataTable>
+        <div v-else class="workspace">
+          <ReporteEnergiaLista
+            :filas="filasFiltradas"
+            :seleccionada="seleccion?.frontera_id"
+            @seleccionar="(f) => seleccionar(f, 'hoy')"
+          />
+          <div class="detail-pane">
+            <p v-if="!seleccion" class="text-sm text-center py-16" style="color: #9b89b5;">
+              Elige una frontera de la lista para ver su detalle.
+            </p>
+            <ReporteEnergiaDetalleTab
+              v-else
+              :key="`${seleccion.frontera_id}-${fechaISO}`"
+              :frontera-id="seleccion.frontera_id"
+              :fecha="fechaISO"
+              @actualizado="cargarLista(true); cargarResumen()"
+            />
+          </div>
         </div>
       </TabPanel>
 
@@ -80,49 +66,30 @@
         <div v-if="loadingHistorial" class="flex items-center justify-center py-12">
           <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
         </div>
-        <div v-else-if="proyectosHistorial.length" class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
-          <DataTable :value="proyectosHistorial" :paginator="true" :rows="20" responsiveLayout="scroll"
-                     stripedRows class="p-datatable-sm" @row-click="(e) => abrirDetalle(e.data, 'historial')">
-            <Column field="nombre_proyecto" header="Proyecto" sortable style="min-width: 220px" />
-            <Column header="Generación" style="min-width: 140px">
-              <template #body="{ data }">
-                <Tag v-if="tagTipo(data.generacion)" :value="tagTipo(data.generacion).value" :severity="tagTipo(data.generacion).severity" />
-                <span v-else style="color: #c9c0d9;">—</span>
-              </template>
-            </Column>
-            <Column header="Consumo" style="min-width: 140px">
-              <template #body="{ data }">
-                <Tag v-if="tagTipo(data.consumo)" :value="tagTipo(data.consumo).value" :severity="tagTipo(data.consumo).severity" />
-                <span v-else style="color: #c9c0d9;">—</span>
-              </template>
-            </Column>
-          </DataTable>
+        <div v-else-if="filasHistorial.length" class="workspace">
+          <ReporteEnergiaLista
+            :filas="filasHistorial"
+            :seleccionada="seleccionHistorial?.frontera_id"
+            @seleccionar="(f) => seleccionar(f, 'historial')"
+          />
+          <div class="detail-pane">
+            <p v-if="!seleccionHistorial" class="text-sm text-center py-16" style="color: #9b89b5;">
+              Elige una frontera de la lista para ver su detalle.
+            </p>
+            <ReporteEnergiaDetalleTab
+              v-else
+              :key="`${seleccionHistorial.frontera_id}-${fechaHistorialISO}`"
+              :frontera-id="seleccionHistorial.frontera_id"
+              :fecha="fechaHistorialISO"
+              @actualizado="cargarHistorial()"
+            />
+          </div>
         </div>
         <p v-else class="text-sm text-center py-8" style="color: #9b89b5;">
           Elige una fecha y pulsa "Ver" para revisar ese día.
         </p>
       </TabPanel>
     </TabView>
-
-    <!-- Detalle -->
-    <Dialog v-model:visible="showDetalle" modal class="w-full max-w-3xl" :header="detalleProyecto?.nombre_proyecto || 'Detalle'">
-      <TabView v-if="detalleProyecto" v-model:activeIndex="detalleTab">
-        <TabPanel v-if="detalleProyecto.generacion" header="Generación">
-          <ReporteEnergiaDetalleTab
-            :frontera-id="detalleProyecto.generacion.frontera_id"
-            :fecha="detalleFecha"
-            @actualizado="refrescarTrasEdicion"
-          />
-        </TabPanel>
-        <TabPanel v-if="detalleProyecto.consumo" header="Consumo">
-          <ReporteEnergiaDetalleTab
-            :frontera-id="detalleProyecto.consumo.frontera_id"
-            :fecha="detalleFecha"
-            @actualizado="refrescarTrasEdicion"
-          />
-        </TabPanel>
-      </TabView>
-    </Dialog>
   </div>
 </template>
 
@@ -130,15 +97,11 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
-import InputText from 'primevue/inputtext'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
-import Dialog from 'primevue/dialog'
 import Calendar from 'primevue/calendar'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
+import ReporteEnergiaLista from './ReporteEnergiaLista.vue'
 import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
 
 const toast = useToast()
@@ -167,11 +130,11 @@ const fechaHistorial = ref(ayerColombia())
 const activeTab = ref(0)
 
 const fechaISO = computed(() => fecha.value.toISOString().slice(0, 10))
+const fechaHistorialISO = computed(() => fechaHistorial.value.toISOString().slice(0, 10))
 
 const resumen = ref(null)
 const filas = ref([])
 const loadingLista = ref(true)
-const search = ref('')
 const filtroSemaforo = ref(null)
 
 const filasHistorial = ref([])
@@ -208,7 +171,7 @@ async function cargarLista(silent = false) {
 async function cargarHistorial() {
   loadingHistorial.value = true
   try {
-    const f = fechaHistorial.value.toISOString().slice(0, 10)
+    const f = fechaHistorialISO.value
     const { data } = await api.get('/reporte-energia/fronteras', { params: { fecha: f } })
     filasHistorial.value = data
   } catch (e) {
@@ -218,93 +181,37 @@ async function cargarHistorial() {
   }
 }
 
-watch(fecha, () => { cargarResumen(); cargarLista() })
+watch(fecha, () => { seleccion.value = null; cargarResumen(); cargarLista() })
 onMounted(() => { cargarResumen(); cargarLista() })
 
-// ── Agrupar fronteras (Generación + Consumo) por proyecto ─────────────────
-// Cada proyecto reporta como máximo una frontera de Generación y una de
-// Consumo -- se agrupan en una sola fila para no repetir el nombre del
-// proyecto ni necesitar una columna/filtro de Tipo.
-function agruparPorProyecto(lista) {
-  const map = new Map()
-  for (const f of lista) {
-    const key = f.proyecto_id ?? `sin-proyecto-${f.frontera_id}`
-    if (!map.has(key)) {
-      map.set(key, { proyecto_id: f.proyecto_id, nombre_proyecto: f.nombre_proyecto, generacion: null, consumo: null })
-    }
-    const entry = map.get(key)
-    if (f.tipo === 'generacion') entry.generacion = f
-    else entry.consumo = f
-  }
-  return Array.from(map.values())
-}
-
-const proyectos = computed(() => agruparPorProyecto(filas.value))
-const proyectosHistorial = computed(() => agruparPorProyecto(filasHistorial.value))
-
-function estadoTipo(item) {
-  if (!item) return null
-  if (item.revisar_manualmente) return 'critical'
-  if (['1', 'CGM'].includes(String(item.caso))) return 'success'
+function semaforo(f) {
+  if (f.revisar_manualmente) return 'critical'
+  if (['1', 'CGM'].includes(String(f.caso))) return 'success'
   return 'warning'
 }
-function semaforo(p) {
-  const estados = [estadoTipo(p.generacion), estadoTipo(p.consumo)].filter(Boolean)
-  if (estados.includes('critical')) return 'critical'
-  if (estados.includes('warning')) return 'warning'
-  return estados.length ? 'success' : 'warning'
-}
-function semaforoColor(p) {
-  const map = { critical: '#D64455', warning: '#F0C040', success: '#10B981' }
-  return map[semaforo(p)]
-}
 
-function tagTipo(item) {
-  if (!item) return null
-  if (item.revisar_manualmente) return { value: 'Revisar', severity: 'danger' }
-  if (item.editado_manualmente) return { value: 'Editado', severity: 'warn' }
-  if (['1', 'CGM'].includes(String(item.caso))) return { value: 'Confiado', severity: 'success' }
-  return { value: 'Corregido', severity: 'warn' }
-}
-
-const proyectosFiltrados = computed(() => {
-  let list = proyectos.value
-  if (filtroSemaforo.value) list = list.filter(p => semaforo(p) === filtroSemaforo.value)
-  if (search.value) {
-    const s = search.value.toLowerCase()
-    list = list.filter(p => (p.nombre_proyecto || '').toLowerCase().includes(s))
-  }
-  return list
+const filasFiltradas = computed(() => {
+  if (!filtroSemaforo.value) return filas.value
+  return filas.value.filter(f => semaforo(f) === filtroSemaforo.value)
 })
 
 const stats = computed(() => {
-  const all = proyectos.value
+  const all = filas.value
   return [
     { label: 'Total', value: all.length, color: '#2C2039', filtro: null },
-    { label: 'Revisar', value: all.filter(p => semaforo(p) === 'critical').length, color: '#D64455', filtro: 'critical' },
-    { label: 'Corregido automático', value: all.filter(p => semaforo(p) === 'warning').length, color: '#F0C040', filtro: 'warning' },
-    { label: 'Confiado', value: all.filter(p => semaforo(p) === 'success').length, color: '#10B981', filtro: 'success' },
+    { label: 'Revisar', value: all.filter(f => f.revisar_manualmente).length, color: '#D64455', filtro: 'critical' },
+    { label: 'Corregido automático', value: all.filter(f => semaforo(f) === 'warning').length, color: '#F0C040', filtro: 'warning' },
+    { label: 'Confiado', value: all.filter(f => semaforo(f) === 'success').length, color: '#10B981', filtro: 'success' },
   ]
 })
 
-// ── Detalle ──────────────────────────────────────────────────────────────
-const showDetalle = ref(false)
-const detalleProyecto = ref(null)
-const detalleFecha = ref(null)
-const detalleTab = ref(0)
-const detalleOrigen = ref('hoy')
+// ── Selección (vista dividida: lista + detalle) ───────────────────────────
+const seleccion = ref(null)
+const seleccionHistorial = ref(null)
 
-function abrirDetalle(p, origen) {
-  detalleProyecto.value = p
-  detalleFecha.value = origen === 'historial' ? fechaHistorial.value.toISOString().slice(0, 10) : fechaISO.value
-  detalleOrigen.value = origen
-  detalleTab.value = 0
-  showDetalle.value = true
-}
-
-async function refrescarTrasEdicion() {
-  if (detalleOrigen.value === 'historial') await cargarHistorial()
-  else { await cargarLista(); await cargarResumen() }
+function seleccionar(fila, origen) {
+  if (origen === 'historial') seleccionHistorial.value = fila
+  else seleccion.value = fila
 }
 
 // ── Acciones globales ──────────────────────────────────────────────────
@@ -381,3 +288,22 @@ async function enviarReporte() {
   }
 }
 </script>
+
+<style scoped>
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(280px, 360px) 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .workspace { grid-template-columns: 1fr; }
+}
+.detail-pane {
+  background: white;
+  border: 1px solid #e8e0f0;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  min-height: 20rem;
+}
+</style>
