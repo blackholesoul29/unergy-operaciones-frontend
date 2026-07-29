@@ -76,6 +76,52 @@
         </div>
       </template>
 
+      <!-- ═══ 1b. FACTURAS (por comercializador, divisibles) ═══ -->
+      <template v-else-if="sub === 'facturas'">
+        <p class="text-[11px]" style="color:#9b8fb0">
+          Una fila por factura (contrato marco / PPA). Puedes <b>dividir</b> una en sub-facturas:
+          despliega, marca proyectos y ponles un nombre. La tarifa no cambia (sale del PPA). Se guarda y aplica cada mes.
+        </p>
+        <div v-for="f in porFactura" :key="f.factura" class="fac-card">
+          <div class="fac-fac-head" @click="toggleFac(f.factura)">
+            <i :class="abiertas.has(f.factura) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs" style="color:#9b8fb0" />
+            <span class="proj">{{ f.factura }}</span>
+            <span v-if="f.personalizada" class="tag" style="background:#e6f6ef;color:#1f9d6b">dividida</span>
+            <span v-else class="tag">{{ f.ppa || '—' }}</span>
+            <span class="ml-auto fac-fac-nums">
+              <span class="muted">{{ f.contratos }} proy</span>
+              <span class="muted">· {{ fmtMWh(f.kwh) }}</span>
+              <span class="muted">· tarifa {{ fmtNum(f.tarifa_indexada) }}</span>
+              <b>{{ fmtCOP(f.facturacion) }}</b>
+            </span>
+          </div>
+          <div v-if="abiertas.has(f.factura)" class="fac-fac-body">
+            <div class="tblwrap">
+              <table class="dt">
+                <thead><tr><th class="l" style="width:34px"></th><th class="l">Proyecto</th><th class="l">Contrato</th><th>Energía (kWh)</th><th>Facturación</th><th style="width:60px"></th></tr></thead>
+                <tbody>
+                  <tr v-for="p in f.proyectos" :key="p.contrato">
+                    <td class="l"><input type="checkbox" :disabled="!p.proyecto_id"
+                      :checked="selDe(f.factura).has(p.proyecto_id)" @change="toggleProy(f.factura, p.proyecto_id)" /></td>
+                    <td class="l">{{ p.proyecto || '—' }}<span v-if="p.asignada" class="sub2">↳ movido aquí</span></td>
+                    <td class="l muted">{{ p.contrato }}</td>
+                    <td>{{ fmtNum(p.kwh) }}</td>
+                    <td class="fw">{{ fmtCOP(p.facturacion) }}</td>
+                    <td class="l"><button v-if="p.asignada" class="fac-link" @click="quitarAsignacion(p.proyecto_id)">quitar</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="fac-div-row">
+              <input v-model="nuevoNombre[f.factura]" class="fac-in" style="width:220px" placeholder="Nombre de la nueva factura (ej. Terpel 2 PA)" />
+              <button class="fac-btn" :disabled="guardandoDiv" @click="moverSeleccionados(f.factura)">
+                <i :class="guardandoDiv ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-right'" class="text-xs" /> Mover seleccionados
+              </button>
+            </div>
+          </div>
+        </div>
+      </template>
+
       <!-- ═══ 2. POR CÓDIGO SIC ═══ -->
       <template v-else-if="sub === 'sic'">
         <div class="fac-card">
@@ -179,6 +225,7 @@ const toast = useToast()
 
 const SUBS = [
   { key: 'facturacion', label: 'Facturación', icon: 'pi pi-dollar' },
+  { key: 'facturas', label: 'Facturas', icon: 'pi pi-file' },
   { key: 'sic', label: 'Por código SIC', icon: 'pi pi-sitemap' },
   { key: 'despachos', label: 'Despachos', icon: 'pi pi-database' },
   { key: 'ipp', label: 'IPP', icon: 'pi pi-percentage' },
@@ -188,6 +235,11 @@ const loading = ref(false)
 const res = ref({})
 const lineas = ref([])
 const porSic = ref([])
+const porFactura = ref([])
+const abiertas = reactive(new Set())      // facturas expandidas
+const sel = reactive({})                   // factura key → Set(proyecto_id) seleccionados
+const nuevoNombre = reactive({})           // factura key → nombre de la nueva sub-factura
+const guardandoDiv = ref(false)
 const despacho = ref({ contratos: [], kwh_total: 0 })
 const ippHist = ref([])
 const ippInput = ref(null)
@@ -218,6 +270,7 @@ async function load () {
     res.value = fac.resumen || {}
     lineas.value = fac.lineas || []
     porSic.value = fac.por_codigo_sic || []
+    porFactura.value = fac.por_factura || []
     despacho.value = desp || { contratos: [] }
     ippHist.value = (ipp || []).slice().sort((a, b) => (b.año - a.año) || (b.mes - a.mes))
     ippInput.value = ippActual.value
@@ -245,6 +298,34 @@ async function subirDespacho (file) {
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo cargar', detail: e?.response?.data?.detail || e.message, life: 6000 })
   } finally { subiendo.value = false }
+}
+
+// ── División de facturas ────────────────────────────────────────────────────
+function toggleFac (k) { abiertas.has(k) ? abiertas.delete(k) : abiertas.add(k) }
+function selDe (k) { if (!sel[k]) sel[k] = reactive(new Set()); return sel[k] }
+function toggleProy (k, pid) { const s = selDe(k); s.has(pid) ? s.delete(pid) : s.add(pid) }
+async function moverSeleccionados (k) {
+  const s = selDe(k); const nombre = (nuevoNombre[k] || '').trim()
+  if (!s.size) { toast.add({ severity: 'warn', summary: 'Selecciona proyectos', life: 3000 }); return }
+  if (!nombre) { toast.add({ severity: 'warn', summary: 'Escribe el nombre de la factura', life: 3000 }); return }
+  guardandoDiv.value = true
+  try {
+    const rows = [...s].filter(Boolean).map(pid => ({ proyecto_id: pid, nombre }))
+    await api.put('/facturacion/agrupaciones', rows)
+    toast.add({ severity: 'success', summary: 'Factura dividida', detail: `${rows.length} proyectos → "${nombre}"`, life: 3500 })
+    s.clear(); nuevoNombre[k] = ''
+    await load()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo dividir', detail: e?.response?.data?.detail || e.message, life: 6000 })
+  } finally { guardandoDiv.value = false }
+}
+async function quitarAsignacion (pid) {
+  try {
+    await api.put('/facturacion/agrupaciones', [{ proyecto_id: pid, nombre: '' }])
+    await load()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo quitar', detail: e?.response?.data?.detail || e.message, life: 5000 })
+  }
 }
 
 async function guardarIpp () {
@@ -301,4 +382,9 @@ onMounted(load)
 .fac-in { width:140px; padding:6px 10px; border:1px solid #ddd6e8; border-radius:8px; font-size:13px;
   font-variant-numeric:tabular-nums; }
 .fac-link { background:none; border:none; color:#915BD8; font-weight:700; font-size:11px; cursor:pointer; text-decoration:underline; }
+.fac-fac-head { display:flex; align-items:center; gap:8px; padding:10px 14px; cursor:pointer; user-select:none; }
+.fac-fac-head:hover { background:#faf7ff; }
+.fac-fac-nums { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:#2C2039; font-variant-numeric:tabular-nums; }
+.fac-fac-body { border-top:1px solid #f0ebf6; padding:4px 0 0; }
+.fac-div-row { display:flex; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid #f7f3fc; background:#faf7ff; flex-wrap:wrap; }
 </style>
