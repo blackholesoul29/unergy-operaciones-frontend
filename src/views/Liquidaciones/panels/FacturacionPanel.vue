@@ -59,15 +59,21 @@
           </div>
         </div>
 
-        <!-- Sin PPA (no facturable por esta vía) -->
-        <div v-if="sinPpa.length" class="fac-card">
-          <p class="fac-note"><i class="pi pi-info-circle" /> Sin PPA marco — no facturable por esta vía (venden vía UNGC):</p>
+        <!-- No facturables: sin PPA marco, o con PPA pero sin tarifa/IPP. Antes solo
+             se listaban los "sin PPA" y los otros casos no aparecían en ninguna parte. -->
+        <div v-if="noFacturables.length" class="fac-card">
+          <p class="fac-note"><i class="pi pi-info-circle" /> No facturables por esta vía ({{ noFacturables.length }}):</p>
           <div class="tblwrap">
             <table class="dt">
-              <thead><tr><th class="l">Contrato</th><th class="l">Comerc.</th><th>Energía (kWh)</th></tr></thead>
+              <thead><tr><th class="l">Planta / Contrato</th><th class="l">Comerc.</th><th class="l">Motivo</th><th>Energía (kWh)</th></tr></thead>
               <tbody>
-                <tr v-for="l in sinPpa" :key="l.contrato">
-                  <td class="l">{{ l.contrato }}</td><td class="l"><span class="tag warn">{{ l.comprador || '—' }}</span></td>
+                <tr v-for="l in noFacturables" :key="l.contrato">
+                  <!-- Mismo formato que la tabla de arriba: la planta manda y el código
+                       queda debajo. Antes solo se veía el código y no se sabía qué planta era. -->
+                  <td class="l"><span class="proj">{{ l.proyecto || 'Planta sin identificar' }}</span>
+                    <span class="sub2">{{ l.contrato }}</span></td>
+                  <td class="l"><span class="tag warn">{{ l.comprador || '—' }}</span></td>
+                  <td class="l muted">{{ MOTIVOS[l.estado] || l.estado }}</td>
                   <td>{{ fmtNum(l.kwh) }}</td>
                 </tr>
               </tbody>
@@ -78,16 +84,46 @@
 
       <!-- ═══ 1b. FACTURAS (por comercializador, divisibles) ═══ -->
       <template v-else-if="sub === 'facturas'">
-        <p class="text-[11px]" style="color:#9b8fb0">
-          Una fila por factura (contrato marco / PPA). Puedes <b>dividir</b> una en sub-facturas:
-          despliega, marca proyectos y ponles un nombre. La tarifa no cambia (sale del PPA). Se guarda y aplica cada mes.
-        </p>
-        <div v-for="f in porFactura" :key="f.factura" class="fac-card">
+        <div class="flex items-start justify-between gap-3 flex-wrap">
+          <p class="text-[11px] flex-1" style="color:#9b8fb0; min-width:260px">
+            Una fila por factura (contrato marco / PPA). Puedes <b>dividir</b> una en sub-facturas:
+            despliega, marca proyectos y ponles un nombre (con un <b>%</b> si solo va una parte del
+            contrato). La tarifa no cambia (sale del PPA). Se guarda y aplica cada mes.
+          </p>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-[11px]" style="color:#6b5a8a">
+              {{ res.emitidas || 0 }}/{{ res.facturas || porFactura.length }} facturadas
+            </span>
+            <button v-if="ordenTocado" class="fac-btn" :disabled="guardandoOrden" @click="guardarOrden">
+              <i :class="guardandoOrden ? 'pi pi-spin pi-spinner' : 'pi pi-save'" class="text-xs" /> Guardar orden
+            </button>
+            <button class="fac-link" @click="restablecerOrden">Orden por valor</button>
+          </div>
+        </div>
+        <div v-for="(f, i) in porFactura" :key="f.factura" class="fac-card"
+             :class="{ 'fac-emitida': f.emitida }">
           <div class="fac-fac-head" @click="toggleFac(f.factura)">
+            <!-- Reordenar: flechas en vez de arrastrar, para que funcione igual en
+                 cualquier navegador y sin dependencias nuevas. -->
+            <span class="fac-ord" @click.stop>
+              <button class="fac-ord-b" :disabled="i === 0" v-tooltip.top="'Subir'"
+                      @click="moverFactura(i, -1)"><i class="pi pi-chevron-up" /></button>
+              <button class="fac-ord-b" :disabled="i === porFactura.length - 1" v-tooltip.bottom="'Bajar'"
+                      @click="moverFactura(i, 1)"><i class="pi pi-chevron-down" /></button>
+            </span>
+            <input type="checkbox" :checked="f.emitida" @click.stop
+                   v-tooltip.top="f.emitida ? tooltipEmitida(f) : 'Marcar como facturada'"
+                   @change="toggleEmitida(f)" />
             <i :class="abiertas.has(f.factura) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs" style="color:#9b8fb0" />
             <span class="proj">{{ f.factura }}</span>
             <span v-if="f.personalizada" class="tag" style="background:#e6f6ef;color:#1f9d6b">dividida</span>
             <span v-else class="tag">{{ f.ppa || '—' }}</span>
+            <span v-if="f.emitida" class="tag" style="background:#e6f6ef;color:#1f9d6b">facturada</span>
+            <button class="fac-msg" @click.stop="copiarMensaje(f)"
+                    v-tooltip.top="'Copiar el mensaje de la factura'">
+              <i :class="copiada === f.factura ? 'pi pi-check' : 'pi pi-copy'" class="text-xs" />
+              {{ copiada === f.factura ? 'Copiado' : 'Mensaje' }}
+            </button>
             <span class="ml-auto fac-fac-nums">
               <span class="muted">{{ f.contratos }} contr</span>
               <span class="muted">· {{ fmtMWh(f.kwh) }}</span>
@@ -103,7 +139,10 @@
                   <tr v-for="p in f.proyectos" :key="p.contrato">
                     <td class="l"><input type="checkbox"
                       :checked="selDe(f.factura).has(p.contrato)" @change="toggleProy(f.factura, p.contrato)" /></td>
-                    <td class="l">{{ p.proyecto || '—' }}<span v-if="p.asignada" class="sub2">↳ movido aquí</span></td>
+                    <td class="l">{{ p.proyecto || '—' }}
+                      <span v-if="p.asignada" class="sub2">↳ movido aquí</span>
+                      <span v-if="p.porcentaje != null" class="sub2">↳ {{ fmtPct(p.porcentaje) }} de este contrato</span>
+                    </td>
                     <td class="l muted">{{ p.contrato }}</td>
                     <td>{{ fmtNum(p.tarifa_indexada) }}</td>
                     <td>{{ fmtNum(p.kwh) }}</td>
@@ -115,9 +154,17 @@
             </div>
             <div class="fac-div-row">
               <input v-model="nuevoNombre[f.factura]" class="fac-in" style="width:220px" placeholder="Nombre de la nueva factura (ej. Terpel 2 PA)" />
+              <!-- % opcional: si va solo una parte del contrato, el resto queda en el
+                   PPA original. Es el caso de Uruaco → 22.8066% a la nueva factura. -->
+              <input v-model="nuevoPct[f.factura]" class="fac-in" style="width:110px"
+                     placeholder="% (opcional)" inputmode="decimal" />
               <button class="fac-btn" :disabled="guardandoDiv" @click="moverSeleccionados(f.factura)">
                 <i :class="guardandoDiv ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-right'" class="text-xs" /> Mover seleccionados
               </button>
+              <span class="text-[10px]" style="color:#9b8fb0">
+                Sin % se mueve el contrato completo. Con % (ej. <b>22.8066</b>) se mueve esa
+                parte y el resto queda en «{{ f.ppa || f.factura }}».
+              </span>
             </div>
           </div>
         </div>
@@ -225,13 +272,13 @@ const props = defineProps({ periodo: { type: String, required: true } })
 const toast = useToast()
 
 const SUBS = [
-  { key: 'facturacion', label: 'Facturación', icon: 'pi pi-dollar' },
   { key: 'facturas', label: 'Facturas', icon: 'pi pi-file' },
+  { key: 'facturacion', label: 'Detalle', icon: 'pi pi-dollar' },
   { key: 'sic', label: 'Por código SIC', icon: 'pi pi-sitemap' },
   { key: 'despachos', label: 'Despachos', icon: 'pi pi-database' },
   { key: 'ipp', label: 'IPP', icon: 'pi pi-percentage' },
 ]
-const sub = ref('facturacion')
+const sub = ref('facturas')
 const loading = ref(false)
 const res = ref({})
 const lineas = ref([])
@@ -240,7 +287,11 @@ const porFactura = ref([])
 const abiertas = reactive(new Set())      // facturas expandidas
 const sel = reactive({})                   // factura key → Set(proyecto_id) seleccionados
 const nuevoNombre = reactive({})           // factura key → nombre de la nueva sub-factura
+const nuevoPct = reactive({})              // factura key → % del contrato que se mueve
 const guardandoDiv = ref(false)
+const guardandoOrden = ref(false)
+const ordenTocado = ref(false)             // hay reordenamiento sin guardar
+const copiada = ref(null)                  // factura cuyo mensaje se acaba de copiar
 const despacho = ref({ contratos: [], kwh_total: 0 })
 const ippHist = ref([])
 const ippInput = ref(null)
@@ -254,10 +305,21 @@ const ippActual = computed(() => {
   return r ? r.valor : null
 })
 const facturables = computed(() => lineas.value.filter(l => l.estado === 'ok'))
-const sinPpa = computed(() => lineas.value.filter(l => l.estado === 'sin_ppa'))
+// Todo lo que no se puede facturar, con el motivo: si solo se listaran los "sin PPA",
+// un contrato sin tarifa o sin IPP base no aparecería en ninguna parte de la vista.
+const MOTIVOS = {
+  sin_ppa: 'Sin PPA marco (vende vía UNGC)',
+  sin_tarifa: 'Sin tarifa del PPA para el mes',
+  sin_ipp_base: 'El PPA no tiene IPP base',
+  sin_ipp_mes: 'Falta el IPP del mes',
+}
+const noFacturables = computed(() => lineas.value.filter(l => l.estado !== 'ok'))
 
 const fmtNum = (v) => v == null ? '—' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 2 })
 const fmtMWh = (kwh) => kwh == null ? '—' : (kwh / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' MWh'
+// Los % de división llevan 4 decimales (22,8066); no se redondean a 2 o el reparto
+// deja de cuadrar con el Excel.
+const fmtPct = (v) => v == null ? '—' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 4 }) + '%'
 
 async function load () {
   if (!per.value) return
@@ -309,16 +371,97 @@ async function moverSeleccionados (k) {
   const s = selDe(k); const nombre = (nuevoNombre[k] || '').trim()
   if (!s.size) { toast.add({ severity: 'warn', summary: 'Selecciona contratos', life: 3000 }); return }
   if (!nombre) { toast.add({ severity: 'warn', summary: 'Escribe el nombre de la factura', life: 3000 }); return }
+  // El % admite coma o punto (se escribe "22,8066" en teclado es-CO).
+  const crudo = (nuevoPct[k] || '').toString().trim().replace(',', '.')
+  let pct = null
+  if (crudo) {
+    pct = Number(crudo)
+    if (!Number.isFinite(pct) || pct <= 0 || pct > 100) {
+      toast.add({ severity: 'warn', summary: 'Porcentaje inválido', detail: 'Debe ser un número entre 0 y 100.', life: 4000 })
+      return
+    }
+  }
   guardandoDiv.value = true
   try {
-    const rows = [...s].filter(Boolean).map(c => ({ codigo_sic_contrato: c, nombre }))
+    const rows = [...s].filter(Boolean).map(c => ({ codigo_sic_contrato: c, nombre, porcentaje: pct }))
     await api.put('/facturacion/agrupaciones', rows)
-    toast.add({ severity: 'success', summary: 'Factura dividida', detail: `${rows.length} contratos → "${nombre}"`, life: 3500 })
-    s.clear(); nuevoNombre[k] = ''
+    const comoPct = pct != null ? ` (${fmtPct(pct)})` : ''
+    toast.add({ severity: 'success', summary: 'Factura dividida', detail: `${rows.length} contratos → "${nombre}"${comoPct}`, life: 3500 })
+    s.clear(); nuevoNombre[k] = ''; nuevoPct[k] = ''
     await load()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo dividir', detail: e?.response?.data?.detail || e.message, life: 6000 })
   } finally { guardandoDiv.value = false }
+}
+
+// ── Orden manual, marca de facturada y mensaje ───────────────────────────────
+function moverFactura (i, dir) {
+  const j = i + dir
+  if (j < 0 || j >= porFactura.value.length) return
+  const arr = porFactura.value.slice()
+  ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  porFactura.value = arr
+  ordenTocado.value = true
+}
+
+async function guardarOrden () {
+  guardandoOrden.value = true
+  try {
+    await api.put('/facturacion/orden', { nombres: porFactura.value.map(f => f.factura) })
+    ordenTocado.value = false
+    toast.add({ severity: 'success', summary: 'Orden guardado', detail: 'Se aplica también a los próximos meses.', life: 3500 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo guardar el orden', detail: e?.response?.data?.detail || e.message, life: 5000 })
+  } finally { guardandoOrden.value = false }
+}
+
+async function restablecerOrden () {
+  try {
+    await api.delete('/facturacion/orden')
+    ordenTocado.value = false
+    await load()
+    toast.add({ severity: 'success', summary: 'Orden restablecido', detail: 'Vuelve a ordenarse por valor.', life: 3000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo restablecer', detail: e?.response?.data?.detail || e.message, life: 5000 })
+  }
+}
+
+function tooltipEmitida (f) {
+  const quien = f.emitida_por ? ` por ${f.emitida_por}` : ''
+  const cuando = f.emitida_at ? ` el ${new Date(f.emitida_at).toLocaleDateString('es-CO')}` : ''
+  return `Facturada${quien}${cuando} · clic para desmarcar`
+}
+
+async function toggleEmitida (f) {
+  const nuevo = !f.emitida
+  f.emitida = nuevo                                  // optimista: el check responde ya
+  try {
+    await api.put('/facturacion/emitida', { nombre: f.factura, periodo: per.value, emitida: nuevo })
+    res.value = { ...res.value, emitidas: (res.value.emitidas || 0) + (nuevo ? 1 : -1) }
+  } catch (e) {
+    f.emitida = !nuevo                               // revertir si el backend falló
+    toast.add({ severity: 'error', summary: 'No se pudo marcar', detail: e?.response?.data?.detail || e.message, life: 5000 })
+  }
+}
+
+async function copiarMensaje (f) {
+  const texto = f.mensaje || ''
+  if (!texto) { toast.add({ severity: 'warn', summary: 'Sin datos para el mensaje', life: 3000 }); return }
+  try {
+    await navigator.clipboard.writeText(texto)
+  } catch {
+    // Fallback para navegadores/contextos sin permiso de clipboard.
+    const ta = document.createElement('textarea')
+    ta.value = texto; ta.style.position = 'fixed'; ta.style.opacity = '0'
+    document.body.appendChild(ta); ta.select()
+    document.execCommand('copy'); document.body.removeChild(ta)
+  }
+  copiada.value = f.factura
+  setTimeout(() => { if (copiada.value === f.factura) copiada.value = null }, 2500)
+  if (f.tarifa_mixta) {
+    toast.add({ severity: 'warn', summary: 'Copiado — revisa la tarifa', life: 5000,
+      detail: 'Esta factura mezcla contratos con tarifas distintas; el mensaje usa una sola.' })
+  }
 }
 async function quitarAsignacion (contrato) {
   try {
@@ -388,4 +531,20 @@ onMounted(load)
 .fac-fac-nums { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:#2C2039; font-variant-numeric:tabular-nums; }
 .fac-fac-body { border-top:1px solid #f0ebf6; padding:4px 0 0; }
 .fac-div-row { display:flex; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid #f7f3fc; background:#faf7ff; flex-wrap:wrap; }
+
+/* Reordenar: flechas apiladas, compactas para no crecer la fila. */
+.fac-ord { display:inline-flex; flex-direction:column; gap:1px; }
+.fac-ord-b { display:flex; align-items:center; justify-content:center; width:16px; height:11px;
+  padding:0; border:none; background:none; color:#b9abcf; cursor:pointer; border-radius:3px; }
+.fac-ord-b i { font-size:9px; }
+.fac-ord-b:hover:not(:disabled) { color:#915BD8; background:#f1eaf9; }
+.fac-ord-b:disabled { opacity:.3; cursor:default; }
+
+.fac-msg { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px;
+  border:1px solid #e5e2ec; background:#fff; color:#6E3FB8; font-size:11px; font-weight:700; cursor:pointer; }
+.fac-msg:hover { background:#f4f1fa; }
+
+/* Facturada: se atenúa sin ocultarla, y una barra lateral la hace evidente al barrer la lista. */
+.fac-emitida { border-left:3px solid #1f9d6b; }
+.fac-emitida .proj { color:#6b5a8a; }
 </style>
