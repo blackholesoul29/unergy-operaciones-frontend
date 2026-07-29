@@ -316,6 +316,9 @@ const ALL_GROUPS = [
       {
         label: 'Liquidaciones', icon: 'pi pi-dollar', roles: ['admin', 'liquidaciones'],
         children: [
+          // Entrada directa: antes solo se llegaba a la pestaña de Facturación
+          // entrando por Panel Contable → Minigranjas/Autoconsumo.
+          { to: '/liquidaciones?tab=facturacion', label: 'Facturación de energía' },
           { to: '/finanzas/ids-proyectos', label: 'IDs proyectos' },
           { to: '/finanzas/contratos-energia', label: 'Contratos de energía' },
           { to: '/finanzas/despachos-liquidados', label: 'Despachos liquidados' },

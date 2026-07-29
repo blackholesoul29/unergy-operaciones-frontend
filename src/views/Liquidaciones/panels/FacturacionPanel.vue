@@ -26,11 +26,13 @@
 
       <!-- ═══ 1. FACTURACIÓN ═══ -->
       <template v-if="sub === 'facturacion'">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div class="fac-kpi"><p class="k">Facturación total</p><p class="v">{{ fmtCOP(res.facturacion_total || 0) }}</p></div>
-          <div class="fac-kpi"><p class="k">Energía facturada</p><p class="v">{{ fmtMWh(res.kwh_total) }}</p></div>
-          <div class="fac-kpi"><p class="k">Contratos facturables</p><p class="v">{{ res.facturables || 0 }}</p></div>
-          <div class="fac-kpi"><p class="k">Sin PPA</p><p class="v" :style="{ color: (res.sin_ppa ? '#c0392b' : '#2C2039') }">{{ res.sin_ppa || 0 }}</p></div>
+        <!-- Los totales ya salen en el pie de la tabla; solo se deja el aviso de los
+             contratos sin PPA, que es lo que hay que accionar. -->
+        <div v-if="res.sin_ppa" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+             style="background:#fdecea; border:1px solid #f5c2bd; color:#a13527">
+          <i class="pi pi-exclamation-triangle" />
+          <b>{{ res.sin_ppa }}</b> contrato{{ res.sin_ppa === 1 ? '' : 's' }} sin PPA marco: no se factura
+          por esta vía hasta asociarle su PPA. Ver el detalle abajo.
         </div>
 
         <div class="fac-card">
@@ -530,9 +532,6 @@ onMounted(load)
 .fac-subtab.on { background:#915BD8; color:#FDFAF7; }
 .fac-subtab:focus-visible { outline:2px solid #915BD8; outline-offset:2px; }
 
-.fac-kpi { background:#fff; border:1px solid #e8e0f0; border-radius:12px; padding:12px 14px; }
-.fac-kpi .k { font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:#6b5a8a; font-weight:600; }
-.fac-kpi .v { font-size:18px; font-weight:800; color:#2C2039; margin-top:4px; font-variant-numeric:tabular-nums; }
 
 .fac-card { background:#fff; border:1px solid #e8e0f0; border-radius:14px; overflow:hidden; }
 .fac-note { font-size:11.5px; color:#6b5a8a; padding:10px 12px 2px; display:flex; align-items:center; gap:6px; }
