@@ -140,6 +140,30 @@ const busquedaDest = ref('')
 const filtroDesde = ref(null)
 const filtroHasta = ref(null)
 const batchesAbiertos = ref(new Set())
+// Nombres de Cliente/OperadorRed que existen HOY -- un destinatario del log
+// puede ser un contacto ya eliminado (ej. pruebas viejas); a esos no se les
+// marca "no recibio el envio mas reciente" porque nunca mas van a recibir
+// nada, la advertencia seria ruido permanente.
+const nombresVigentes = ref(new Set())
+
+function normalizarNombre(s) {
+  return (s || '').trim().toUpperCase()
+}
+
+async function cargarNombresVigentes() {
+  try {
+    const [clientes, operadores] = await Promise.all([
+      api.get('/clientes', { params: { size: 500 } }),
+      api.get('/operadores-red'),
+    ])
+    const set = new Set()
+    for (const c of clientes.data.items) set.add(normalizarNombre(c.razon_social_nombre))
+    for (const o of operadores.data) set.add(normalizarNombre(o.nombre_comercial || o.nombre_legal))
+    nombresVigentes.value = set
+  } catch (e) {
+    console.error('Error cargando destinatarios vigentes:', e)
+  }
+}
 
 function toggleBatch(key) {
   const next = new Set(batchesAbiertos.value)
@@ -252,10 +276,13 @@ const porDestinatario = computed(() => {
       if (d) d.batches.add(b.enviadoEn)
     }
   }
-  return [...mapa.values()].map(d => ({
-    ...d,
-    faltoUltimoEnvio: ultimoEnvioKey.value ? !d.batches.has(ultimoEnvioKey.value) : false,
-  }))
+  return [...mapa.values()].map(d => {
+    const existe = nombresVigentes.value.has(normalizarNombre(d.nombre))
+    return {
+      ...d,
+      faltoUltimoEnvio: existe && ultimoEnvioKey.value ? !d.batches.has(ultimoEnvioKey.value) : false,
+    }
+  })
 })
 
 const faltantesUltimoEnvio = computed(() => porDestinatario.value.filter(d => d.faltoUltimoEnvio))
@@ -272,7 +299,7 @@ const destinatariosFiltrados = computed(() => {
 })
 
 onMounted(async () => {
-  await cargar()
+  await Promise.all([cargar(), cargarNombresVigentes()])
   abrirMasReciente()
 })
 </script>
