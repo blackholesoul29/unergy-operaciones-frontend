@@ -116,7 +116,7 @@
               <td class="px-4 py-2.5">
                 <input type="checkbox" :checked="seleccionados.has(row.key)" :disabled="!row.correos.length"
                   @change="toggleSeleccion(row.key)"
-                  v-tooltip.top="!row.correos.length ? 'Sin correos, no se puede enviar' : ''"
+                  v-tooltip.left="!row.correos.length ? 'Sin correos, no se puede enviar' : ''"
                   style="accent-color: #915BD8; width: 14px; height: 14px;"
                   :style="!row.correos.length ? 'opacity:.35;cursor:not-allowed;' : 'cursor:pointer;'" />
               </td>
