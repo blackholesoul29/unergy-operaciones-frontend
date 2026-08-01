@@ -140,10 +140,13 @@ const busquedaDest = ref('')
 const filtroDesde = ref(null)
 const filtroHasta = ref(null)
 const batchesAbiertos = ref(new Set())
-// Nombres de Cliente/OperadorRed que existen HOY -- un destinatario del log
-// puede ser un contacto ya eliminado (ej. pruebas viejas); a esos no se les
-// marca "no recibio el envio mas reciente" porque nunca mas van a recibir
-// nada, la advertencia seria ruido permanente.
+// Nombres de quienes HOY realmente recibirian el reporte (mismo criterio que
+// la pestana Enviar: operador_comercial y clientes_cgm de las fronteras
+// vivas). Un destinatario del log puede ser un contacto de prueba ya
+// eliminado, o un inversionista que dejo de ser el punto de contacto CGM de
+// su proyecto (ej. reemplazado en ProyectoInversionista/ProyectoAreaContacto)
+// -- a esos no se les marca "no recibio el envio mas reciente" porque no van
+// a volver a recibir nada, la advertencia seria ruido permanente.
 const nombresVigentes = ref(new Set())
 
 function normalizarNombre(s) {
@@ -152,13 +155,12 @@ function normalizarNombre(s) {
 
 async function cargarNombresVigentes() {
   try {
-    const [clientes, operadores] = await Promise.all([
-      api.get('/clientes', { params: { size: 500 } }),
-      api.get('/operadores-red'),
-    ])
+    const { data } = await api.get('/fronteras', { params: { limit: 500 } })
     const set = new Set()
-    for (const c of clientes.data.items) set.add(normalizarNombre(c.razon_social_nombre))
-    for (const o of operadores.data) set.add(normalizarNombre(o.nombre_comercial || o.nombre_legal))
+    for (const f of data) {
+      if (f.operador_comercial) set.add(normalizarNombre(f.operador_comercial))
+      for (const c of f.clientes_cgm || []) set.add(normalizarNombre(c.nombre))
+    }
     nombresVigentes.value = set
   } catch (e) {
     console.error('Error cargando destinatarios vigentes:', e)
