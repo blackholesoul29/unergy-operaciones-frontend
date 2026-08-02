@@ -55,12 +55,17 @@
           <label class="text-[10px] font-mono block" style="color: #9b89b5;">{{ h - 1 }}h</label>
           <InputNumber v-model="curvaEditable[h - 1]" :minFractionDigits="2" :maxFractionDigits="2"
                        inputClass="w-full text-xs text-right"
-                       :class="esHoraRellenada(h - 1) ? 'campo-rellenado' : ''" />
+                       :class="esHoraRellenada(h - 1) ? 'campo-rellenado' : ''"
+                       @paste="onPasteHora($event, h - 1)" />
         </div>
       </div>
       <p class="text-xs mt-3" style="color: #9b89b5;">
         Las horas resaltadas se completaron con reconectador, Solenium o histórico -- corrígelas solo si tienes
         un valor real más confiable. La corrección queda registrada con tu nombre.
+      </p>
+      <p class="text-xs mt-1" style="color: #9b89b5;">
+        Tip: puedes pegar una columna o fila de 24 valores copiada de Excel directamente en cualquier celda -- se
+        distribuye sola en las horas siguientes.
       </p>
       <div class="flex justify-end mt-2">
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
@@ -105,6 +110,20 @@ async function cargar() {
 }
 onMounted(cargar)
 watch(() => [props.fronteraId, props.fecha], cargar)
+
+// Pegado tipo Excel: si lo pegado trae varios valores (columna o fila
+// copiada), se distribuyen empezando en la celda donde se pegó -- un solo
+// valor suelto no activa nada, se comporta como un input normal.
+function onPasteHora(event, indiceInicio) {
+  const texto = event.clipboardData?.getData('text') || ''
+  const valores = texto.split(/[\n\t,]+/).map(s => s.trim()).filter(Boolean).map(Number).filter(n => !isNaN(n))
+  if (valores.length <= 1) return
+  event.preventDefault()
+  valores.forEach((v, i) => {
+    const idx = indiceInicio + i
+    if (idx < 24) curvaEditable.value[idx] = v
+  })
+}
 
 function esHoraRellenada(h) {
   const d = detalle.value
