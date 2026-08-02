@@ -64,8 +64,8 @@
         un valor real más confiable. La corrección queda registrada con tu nombre.
       </p>
       <p class="text-xs mt-1" style="color: #9b89b5;">
-        Tip: puedes pegar una columna o fila de 24 valores copiada de Excel directamente en cualquier celda -- se
-        distribuye sola en las horas siguientes.
+        Tip: puedes pegar una columna o fila de 24 valores directamente en cualquier celda, se distribuye sola en
+        las horas siguientes.
       </p>
       <div class="flex justify-end mt-2">
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
