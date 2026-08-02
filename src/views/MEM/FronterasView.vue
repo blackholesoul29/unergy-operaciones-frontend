@@ -45,7 +45,7 @@
              border: stat.clave && soloGenerando ? '1.5px solid #3B82F6' : '1px solid #e8e0f0',
              background: stat.clave && soloGenerando ? 'rgba(59,130,246,0.06)' : '#fff',
            }"
-           v-tooltip.top="stat.clave ? 'Clic para filtrar solo estas' : undefined"
+           v-tooltip.top="stat.clave ? 'Clic para filtrar' : undefined"
            @click="stat.clave === 'generando' && (soloGenerando = !soloGenerando)">
         <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ stat.label }}</p>
         <p class="text-2xl font-bold mt-1" :style="{ color: stat.color }">{{ stat.value }}</p>
