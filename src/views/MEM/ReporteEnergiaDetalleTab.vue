@@ -71,6 +71,37 @@
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
       </div>
     </div>
+
+    <!-- Historial de ediciones (audit_log) -->
+    <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
+      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Historial de ediciones</p>
+      <p v-if="!ediciones.length" class="text-xs" style="color: #9b89b5;">
+        Sin ediciones manuales registradas para este día.
+      </p>
+      <div v-else class="space-y-3">
+        <div v-for="(ed, i) in ediciones" :key="i" class="pt-3 first:pt-0" :class="i > 0 ? 'border-t' : ''" style="border-color: #e8e0f0;">
+          <div class="flex items-baseline gap-2 flex-wrap">
+            <span class="text-sm font-bold" style="color: #2C2039;">{{ ed.usuario_nombre || 'Usuario desconocido' }}</span>
+            <span class="text-sm" style="color: #6b5a8a;">corrigió la curva</span>
+            <span class="text-xs font-mono ml-auto" style="color: #9b89b5;">{{ fmtFechaHora(ed.created_at) }}</span>
+          </div>
+          <div class="mt-2 space-y-1.5">
+            <div v-for="(c, j) in resumenCambios(ed.cambios)" :key="j"
+                 class="flex items-center gap-2 text-xs rounded-lg px-2.5 py-1.5" style="background: #f9f7ff;">
+              <span class="font-semibold w-32 flex-none" style="color: #6b5a8a;">{{ c.campo }}</span>
+              <template v-if="c.resumen">
+                <span style="color: #6b5a8a;">{{ c.resumen }}</span>
+              </template>
+              <template v-else>
+                <span class="font-mono" style="color: #D64455; text-decoration: line-through; opacity: .75;">{{ c.antes }}</span>
+                <span style="color: #9b89b5;">→</span>
+                <span class="font-mono font-semibold" style="color: #10B981;">{{ c.despues }}</span>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -95,6 +126,55 @@ const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
 const validando = ref(false)
+const ediciones = ref([])
+
+async function cargarEdiciones() {
+  try {
+    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/ediciones`, { params: { fecha: props.fecha } })
+    ediciones.value = data
+  } catch (e) {
+    ediciones.value = []
+  }
+}
+
+function fmtFechaHora(iso) {
+  return new Date(iso).toLocaleString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+}
+
+// 'curva_final' nunca se muestra como 24 numeros crudos -- se resume a
+// cuantas horas cambiaron. El resto de campos (ej. energia_final_kwh) se
+// muestra como antes -> despues.
+function resumenCambios(cambios) {
+  if (!cambios) return []
+  const partes = []
+  if (cambios.energia_final_kwh) {
+    partes.push({
+      campo: 'Energía Total',
+      antes: fmtKwh(cambios.energia_final_kwh.antes),
+      despues: fmtKwh(cambios.energia_final_kwh.despues),
+    })
+  }
+  if (cambios.curva_final) {
+    const antes = cambios.curva_final.antes || []
+    const despues = cambios.curva_final.despues || []
+    const horas = []
+    for (let h = 0; h < 24; h++) {
+      const a = antes[h] ?? null, d = despues[h] ?? null
+      if (Number(a) !== Number(d)) horas.push(h)
+    }
+    partes.push({
+      campo: 'Curva horaria',
+      resumen: horas.length
+        ? `${horas.length} de 24 horas modificadas (${horas.map(h => h + 'h').join(', ')})`
+        : 'Sin cambios en las horas',
+    })
+  }
+  for (const [campo, valores] of Object.entries(cambios)) {
+    if (campo === 'energia_final_kwh' || campo === 'curva_final') continue
+    partes.push({ campo, antes: String(valores.antes ?? '—'), despues: String(valores.despues ?? '—') })
+  }
+  return partes
+}
 
 async function cargar() {
   loading.value = true
@@ -108,8 +188,8 @@ async function cargar() {
     loading.value = false
   }
 }
-onMounted(cargar)
-watch(() => [props.fronteraId, props.fecha], cargar)
+onMounted(() => { cargar(); cargarEdiciones() })
+watch(() => [props.fronteraId, props.fecha], () => { cargar(); cargarEdiciones() })
 
 // Pegado tipo Excel: si lo pegado trae varios valores (columna o fila
 // copiada), se distribuyen empezando en la celda donde se pegó -- un solo
@@ -144,6 +224,7 @@ async function guardarCurva() {
     detalle.value = data
     toast.add({ severity: 'success', summary: 'Corrección guardada', life: 2500 })
     emit('actualizado')
+    cargarEdiciones()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la corrección.', life: 4000 })
   } finally {
