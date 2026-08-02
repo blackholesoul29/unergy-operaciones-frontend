@@ -2,8 +2,8 @@
   <div>
     <div class="flex flex-wrap gap-2 mb-3 text-xs">
       <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
-      <span v-if="medidor" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
-      <span v-if="solenium" class="chip" style="border-color:#8B5CF6;color:#8B5CF6;">▬▬ Solenium</span>
+      <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
+      <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
       <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Rellenado (reconectador/Solenium/histórico)</span>
     </div>
     <p v-if="finalVacia" class="text-xs mb-3" style="color: #9b89b5;">
@@ -20,7 +20,18 @@
             font-size="9" fill="#9b89b5" text-anchor="middle">{{ h }}h</text>
 
       <path v-if="medidorPath" :d="medidorPath" fill="none" stroke="#3B82F6" stroke-width="2" />
-      <path v-if="soleniumPath" :d="soleniumPath" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-dasharray="5 4" />
+      <template v-if="medidorPath">
+        <rect v-for="h in 24" :key="'m' + h" v-show="tieneValor(medidor, h - 1)"
+              :x="x(h - 1) - 3" :y="y(val(medidor, h - 1)) - 3" width="6" height="6"
+              fill="#3B82F6" stroke="white" stroke-width="1" />
+      </template>
+
+      <path v-if="soleniumPath" :d="soleniumPath" fill="none" stroke="#0D9488" stroke-width="2" stroke-dasharray="6 4" />
+      <template v-if="soleniumPath">
+        <polygon v-for="h in 24" :key="'s' + h" v-show="tieneValor(solenium, h - 1)"
+                 :points="trianguloPoints(x(h - 1), y(val(solenium, h - 1)))"
+                 fill="#0D9488" stroke="white" stroke-width="1" />
+      </template>
 
       <template v-if="!finalVacia">
         <path :d="finalArea" fill="#915BD8" opacity="0.08" />
@@ -65,6 +76,17 @@ const finalVacia = computed(() => finalCurve.value.every(v => v === null || v ==
 function val(arr, h) {
   const v = arr?.[h]
   return v === null || v === undefined ? 0 : Number(v)
+}
+function tieneValor(arr, h) {
+  const v = arr?.[h]
+  return v !== null && v !== undefined
+}
+// Triángulo pequeño centrado en (cx, cy) -- marcador propio de Solenium,
+// distinto del cuadrado de Medidor y el círculo de Final, para que la
+// diferencia no dependa solo del color.
+function trianguloPoints(cx, cy) {
+  const r = 4
+  return `${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`
 }
 
 const maxV = computed(() => {
