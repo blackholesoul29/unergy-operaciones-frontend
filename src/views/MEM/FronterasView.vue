@@ -45,9 +45,7 @@
              border: stat.clave && soloGenerando ? '1.5px solid #3B82F6' : '1px solid #e8e0f0',
              background: stat.clave && soloGenerando ? 'rgba(59,130,246,0.06)' : '#fff',
            }"
-           v-tooltip.top="stat.clave === 'generando'
-             ? 'Con comercialización ya iniciada'
-             : (stat.clave ? 'Clic para filtrar solo estas' : undefined)"
+           v-tooltip.top="stat.clave ? 'Clic para filtrar solo estas' : undefined"
            @click="stat.clave === 'generando' && (soloGenerando = !soloGenerando)">
         <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ stat.label }}</p>
         <p class="text-2xl font-bold mt-1" :style="{ color: stat.color }">{{ stat.value }}</p>
@@ -601,21 +599,18 @@ const filteredFronteras = computed(() => {
 })
 
 const TIPOS_GENERACION = ['generacion', 'generacion_consumo']
-const HOY_STR = new Date().toISOString().split('T')[0]
 
-// "Genera de verdad" = es una frontera de tipo Generacion Y su proyecto ya
-// tiene fecha_inicio_comercializacion cumplida (el primer dia real con
-// generacion, calculado por el backend contra la API de Unergy -- ver
-// scripts/backfill_fecha_comercializacion.py). Antes esto solo miraba
-// tipo_frontera, lo que marcaba como "generando" a proyectos recien
-// registrados que aun no habian generado nada.
-// Nota: si el proyecto no tiene esa fecha calculada todavia (dato faltante,
-// no necesariamente "no genera"), queda fuera del conteo -- ver memoria
-// pendiente_identificador_monitoreo_unergy.
+// "Genera de verdad" = tipo Generacion Y la corrida mas reciente del
+// pipeline Reporte Energia (reporte_energia_generacion, via
+// f.generando_actual) reporto energia real > 0. Reemplaza el criterio
+// anterior (fecha_inicio_comercializacion contra la API de Unergy): esa
+// fuente dejaba fuera fronteras sin identificador de monitoreo resuelto o
+// sin datos en Unergy (ej. San Pelayo, Chiriguana N1 -- ambas confirmadas
+// generando) aunque el pipeline propio ya las viera generar. f.generando_actual
+// es null si el pipeline todavia no ha corrido para esa frontera (no
+// implica que no genere) -- esas quedan fuera del conteo igual que antes.
 function generaDeVerdad(f) {
-  return TIPOS_GENERACION.includes(f.tipo_frontera) &&
-    !!f.proyecto_fecha_inicio_comercializacion &&
-    f.proyecto_fecha_inicio_comercializacion <= HOY_STR
+  return TIPOS_GENERACION.includes(f.tipo_frontera) && f.generando_actual === true
 }
 
 const stats = computed(() => {
@@ -624,7 +619,7 @@ const stats = computed(() => {
     { label: 'Total', value: all.length, color: '#2C2039' },
     { label: 'Activas', value: all.filter(f => f.estado === 'activa').length, color: '#10B981' },
     { label: 'En registro', value: all.filter(f => f.estado === 'en_registro').length, color: '#F0C040' },
-    { label: 'Que generan', value: all.filter(generaDeVerdad).length, color: '#3B82F6', clave: 'generando' },
+    { label: 'Generando actualmente', value: all.filter(generaDeVerdad).length, color: '#3B82F6', clave: 'generando' },
     { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.capacidad_efectiva_mw) || 0), 0).toFixed(1), color: '#915BD8' },
   ]
 })
