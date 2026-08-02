@@ -19,6 +19,22 @@
       <text v-for="h in [0, 6, 12, 18, 23]" :key="'h' + h" :x="x(h)" :y="H - 4"
             font-size="9" fill="#9b89b5" text-anchor="middle">{{ h }}h</text>
 
+      <!-- 'Final reportada' se dibuja primero, de fondo -- Medidor/Solenium
+           van despues, encima, para que sus marcadores sigan siendo visibles
+           incluso cuando coinciden casi exacto con el valor final (ej. Caso
+           1/2, donde el medidor validado ES la fuente del total). -->
+      <template v-if="!finalVacia">
+        <path :d="finalArea" fill="#915BD8" opacity="0.08" />
+        <path :d="finalPath" fill="none" stroke="#915BD8" stroke-width="3" />
+        <template v-for="h in 24" :key="'p' + h">
+          <rect v-if="horasRellenadas.has(h - 1)"
+                :x="x(h - 1) - 4" :y="y(val(finalCurve, h - 1)) - 4" width="8" height="8"
+                fill="#F0C040" stroke="white" stroke-width="1.5"
+                :transform="`rotate(45 ${x(h - 1)} ${y(val(finalCurve, h - 1))})`" />
+          <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
+        </template>
+      </template>
+
       <path v-if="medidorPath" :d="medidorPath" fill="none" stroke="#3B82F6" stroke-width="2" />
       <template v-if="medidorPath">
         <rect v-for="h in 24" :key="'m' + h" v-show="tieneValor(medidor, h - 1)"
@@ -31,18 +47,6 @@
         <polygon v-for="h in 24" :key="'s' + h" v-show="tieneValor(solenium, h - 1)"
                  :points="trianguloPoints(x(h - 1), y(val(solenium, h - 1)))"
                  fill="#0D9488" stroke="white" stroke-width="1" />
-      </template>
-
-      <template v-if="!finalVacia">
-        <path :d="finalArea" fill="#915BD8" opacity="0.08" />
-        <path :d="finalPath" fill="none" stroke="#915BD8" stroke-width="3" />
-        <template v-for="h in 24" :key="'p' + h">
-          <rect v-if="horasRellenadas.has(h - 1)"
-                :x="x(h - 1) - 4" :y="y(val(finalCurve, h - 1)) - 4" width="8" height="8"
-                fill="#F0C040" stroke="white" stroke-width="1.5"
-                :transform="`rotate(45 ${x(h - 1)} ${y(val(finalCurve, h - 1))})`" />
-          <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
-        </template>
       </template>
     </svg>
   </div>
