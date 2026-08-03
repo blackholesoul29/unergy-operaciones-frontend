@@ -115,7 +115,7 @@
                 </thead>
                 <tbody>
                   <tr v-for="(fila, i) in sec.items" :key="i"
-                    :style="i % 2 === 0 ? 'background:#fff' : 'background:#eaf3fb'">
+                    class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
                     <td class="px-3 py-2 text-xs font-medium" style="color:#2C2039">
                       <span v-if="fila.nombre_comercial">{{ fila.nombre_comercial }}</span>
                       <div v-else class="flex items-center gap-1.5">
