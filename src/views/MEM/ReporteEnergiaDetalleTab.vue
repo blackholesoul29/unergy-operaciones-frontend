@@ -357,7 +357,7 @@ const CASO_INFO_GENERACION = {
 }
 const CASO_INFO_CONSUMO = {
   'CGM': { nombre: 'Reporte CGM válido', descripcion: 'El reporte automático fue válido y el canal CGM trae dato real' },
-  'Medidor': { nombre: 'Medidor valida contra histórico', descripcion: 'CGM no válido; el medidor se comparó contra su propia mediana histórica' },
+  // 'Medidor' tampoco tiene una sola descripcion fija -- ver casoInfoMedidorConsumo() abajo.
   'Histórico': { nombre: 'Histórico propio', descripcion: 'Ni CGM ni medidor creíbles; se usa la mediana y forma horaria del histórico (propio o del vecino de predio)' },
   'Sin dato': { nombre: 'Sin dato', descripcion: 'Ninguna fuente disponible para este día' },
   'Error': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
@@ -373,6 +373,18 @@ function casoInfo3(d) {
     return { nombre: 'Sin Factor de Pérdida disponible', descripcion: 'Los medidores sub-reportan frente a los inversores, pero no hay suficiente histórico para calcular el Factor de Pérdida -- no se pudo generar ninguna curva automática' }
   }
   return { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores sub-reportan frente a los inversores; se corrige con el histórico de pérdida' }
+}
+
+// 'Medidor' (Consumo) junta el mismo tipo de conflacion que Caso 3/5 de
+// Generación: medidor_usado='revisar' (clasificador_consumo.py lineas 191 y
+// 200, dos rutas de codigo distintas) significa que sí había medidor con
+// dato, pero no había mediana histórica suficiente para compararlo --
+// energia_final_kwh queda en None, no se validó nada.
+function casoInfoMedidorConsumo(d) {
+  if (d.medidor_usado === 'revisar') {
+    return { nombre: 'Sin histórico para comparar', descripcion: 'CGM no válido; hay medidor con dato, pero no hay suficiente histórico para calcular su mediana -- no se pudo validar ni generar curva automática' }
+  }
+  return { nombre: 'Medidor valida contra histórico', descripcion: 'CGM no válido; el medidor se comparó contra su propia mediana histórica' }
 }
 
 // Caso 5 (Generación) junta 4 caminos reales del clasificador bajo un mismo
@@ -405,6 +417,7 @@ const casoInfo = computed(() => {
   if (!d) return { nombre: '', descripcion: '' }
   if (d.tipo === 'generacion' && String(d.caso) === '3') return casoInfo3(d)
   if (d.tipo === 'generacion' && String(d.caso) === '5') return casoInfo5(d)
+  if (d.tipo === 'consumo' && String(d.caso) === 'Medidor') return casoInfoMedidorConsumo(d)
   const mapa = d.tipo === 'generacion' ? CASO_INFO_GENERACION : CASO_INFO_CONSUMO
   return mapa[String(d.caso)] || { nombre: `Caso ${d.caso}`, descripcion: '' }
 })
