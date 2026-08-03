@@ -344,7 +344,7 @@ const CASO_INFO_GENERACION = {
   '0': { nombre: 'Reporta a otra empresa', descripcion: 'Frontera de terceros, fuera de este árbol de decisión' },
   '1': { nombre: 'Reporte CGM válido', descripcion: 'El envío automático de Quoia al ASIC fue válido hoy y coincide con los inversores' },
   '2': { nombre: 'Medidor valida', descripcion: 'El reporte automático no fue válido, pero un medidor coincide con los inversores' },
-  '3': { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores sub-reportan frente a los inversores; se corrige con el histórico de pérdida' },
+  // '3' tampoco tiene una sola descripcion fija -- ver casoInfo3() abajo.
   '4': { nombre: 'Medidor de mayor valor', descripcion: 'Los medidores sobre-reportan frente a los inversores; se usa el de mayor valor' },
   // '5' no tiene una sola descripcion fija -- el arbol real (clasificador.py)
   // tiene 4 caminos distintos que todos terminan en el mismo numero de Caso
@@ -362,6 +362,19 @@ const CASO_INFO_CONSUMO = {
   'Sin dato': { nombre: 'Sin dato', descripcion: 'Ninguna fuente disponible para este día' },
   'Error': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
 }
+// Caso 3 (Generación) junta 2 resultados muy distintos bajo el mismo numero:
+// medidor_usado='revisar' significa que no habia Factor de Perdida
+// disponible -- energia_final_kwh queda en None y la curva vacia, no se
+// corrigio nada (ver clasificador.py lineas 122 y 185, dos rutas de codigo
+// distintas que llegan a lo mismo). medidor_usado='inversores' es el caso
+// normal, con curva real corregida por FP.
+function casoInfo3(d) {
+  if (d.medidor_usado === 'revisar') {
+    return { nombre: 'Sin Factor de Pérdida disponible', descripcion: 'Los medidores sub-reportan frente a los inversores, pero no hay suficiente histórico para calcular el Factor de Pérdida -- no se pudo generar ninguna curva automática' }
+  }
+  return { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores sub-reportan frente a los inversores; se corrige con el histórico de pérdida' }
+}
+
 // Caso 5 (Generación) junta 4 caminos reales del clasificador bajo un mismo
 // numero -- distinguirlos por medidor_usado, que sí refleja cuál se tomó:
 //  - 'cgm': el reporte CGM ya era válido; el único motivo de no quedar en
@@ -390,6 +403,7 @@ function casoInfo5(d) {
 const casoInfo = computed(() => {
   const d = detalle.value
   if (!d) return { nombre: '', descripcion: '' }
+  if (d.tipo === 'generacion' && String(d.caso) === '3') return casoInfo3(d)
   if (d.tipo === 'generacion' && String(d.caso) === '5') return casoInfo5(d)
   const mapa = d.tipo === 'generacion' ? CASO_INFO_GENERACION : CASO_INFO_CONSUMO
   return mapa[String(d.caso)] || { nombre: `Caso ${d.caso}`, descripcion: '' }
