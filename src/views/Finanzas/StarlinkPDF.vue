@@ -2,22 +2,24 @@
   <div class="space-y-5 pt-3">
 
     <!-- ── Barra superior: navegación + upload + descarga ──────────────────── -->
-    <div class="flex items-center justify-between flex-wrap gap-2">
+    <div class="bg-white rounded-xl shadow-sm p-3 flex items-center justify-between flex-wrap gap-2 border" style="border-color:#ECE7F2">
 
       <!-- Navegación por período (solo si hay datos) -->
       <div class="flex items-center gap-3">
         <template v-if="periodos.length">
-          <button type="button" @click="irAnterior" :disabled="periodoIndex <= 0"
-            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
-            <i class="pi pi-chevron-left text-xs text-gray-500" />
-          </button>
-          <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
-            {{ periodoLabel }}
-          </span>
-          <button type="button" @click="irSiguiente" :disabled="periodoIndex >= periodos.length - 1"
-            class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
-            <i class="pi pi-chevron-right text-xs text-gray-500" />
-          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" @click="irAnterior" :disabled="periodoIndex <= 0"
+              class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+              <i class="pi pi-chevron-left text-xs text-gray-500" />
+            </button>
+            <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
+              {{ periodoLabel }}
+            </span>
+            <button type="button" @click="irSiguiente" :disabled="periodoIndex >= periodos.length - 1"
+              class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
+              <i class="pi pi-chevron-right text-xs text-gray-500" />
+            </button>
+          </div>
           <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
         </template>
         <span v-else class="text-sm text-gray-400">Sin facturas procesadas</span>
@@ -29,12 +31,24 @@
         <Button label="Subir PDF" icon="pi pi-upload" size="small"
           :loading="procesando"
           @click="fileInputRef.click()"
-          style="background:#915BD8;border-color:#915BD8" />
+          style="background:#06b6d4;border-color:#06b6d4" />
         <Button v-if="facturaActual" label="Descargar Excel" icon="pi pi-download" size="small" outlined
           :loading="descargando"
           @click="descargarExcel"
           style="border-color:#1F4E79;color:#1F4E79" />
       </div>
+    </div>
+
+    <!-- ── Filtros ──────────────────────────────────────────────────────────── -->
+    <div v-if="facturaActual" class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
+      <div>
+        <label class="field-label">Buscar</label>
+        <IconField>
+          <InputIcon class="pi pi-search" />
+          <InputText v-model="filtroTexto" placeholder="Nombre de la minigranja…" class="w-56" />
+        </IconField>
+      </div>
+      <div class="ml-auto pb-1.5 text-xs text-gray-400">{{ filasFiltradas.length }} de {{ lineas.length }}</div>
     </div>
 
     <!-- ── Estado vacío ─────────────────────────────────────────────────────── -->
@@ -76,7 +90,7 @@
       <!-- Tabla por proyecto, agrupada por tipo (igual que Arriendos) -->
       <template v-if="secciones.length">
         <div v-for="sec in secciones" :key="sec.tipo"
-          class="bg-white rounded-xl border overflow-hidden" style="border-color:#ECE7F2">
+          class="bg-white rounded-xl shadow-sm border overflow-hidden" style="border-color:#ECE7F2">
           <button type="button"
             class="w-full flex items-center gap-3 px-4 py-2.5 text-left select-none hover:bg-gray-50 transition-colors duration-150"
             @click="toggleSection(sec.tipo)">
@@ -125,13 +139,13 @@
         </div>
 
         <!-- Total general -->
-        <div class="bg-white rounded-xl border px-4 py-3 flex items-center justify-between" style="border-color:#ECE7F2">
+        <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center justify-between" style="border-color:#ECE7F2">
           <span class="text-xs font-semibold text-gray-600">Total del período</span>
-          <span class="text-base font-bold tabular-nums" style="color:#7c3aed">{{ formatCOP(totalGeneral) }}</span>
+          <span class="text-base font-bold tabular-nums" style="color:#06b6d4">{{ formatCOP(totalGeneral) }}</span>
         </div>
       </template>
       <div v-else class="bg-white rounded-xl shadow-sm p-10 text-center text-sm text-gray-400 border" style="border-color:#ECE7F2">
-        Sin líneas para este período.
+        {{ filtroTexto ? 'No se encontraron minigranjas con ese nombre.' : 'Sin líneas para este período.' }}
       </div>
     </template>
 
@@ -234,6 +248,9 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
+import IconField from 'primevue/iconfield'
+import InputIcon from 'primevue/inputicon'
+import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 
@@ -253,9 +270,17 @@ const TIPO_ORDER  = ['sin_asignar', 'minigranja', 'autoconsumo', 'gd', 'movilida
 const TIPO_LABELS_FULL = { sin_asignar: 'Sin asignar', minigranja: 'Minigranja', autoconsumo: 'Autoconsumo', gd: 'GD', movilidad_electrica: 'Movilidad', otro: 'Otro' }
 const TIPO_DOT_FULL    = { sin_asignar: '#F59E0B', minigranja: '#10B981', autoconsumo: '#6366F1', gd: '#3B82F6', movilidad_electrica: '#8B5CF6', otro: '#9CA3AF' }
 
+// ── Filtro de búsqueda por nombre de minigranja ────────────────────────────────
+const filtroTexto = ref('')
+const filasFiltradas = computed(() => {
+  const q = filtroTexto.value.trim().toLowerCase()
+  if (!q) return lineas.value
+  return lineas.value.filter(f => (f.nombre_comercial || f.descripcion || '').toLowerCase().includes(q))
+})
+
 const secciones = computed(() => {
   const groups = {}
-  for (const f of lineas.value) {
+  for (const f of filasFiltradas.value) {
     const t = f.proyecto_id == null ? 'sin_asignar' : (f.tipo_proyecto || 'otro')
     ;(groups[t] ||= []).push(f)
   }
@@ -480,6 +505,8 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+
 .mon-tab-empty {
   text-align: center;
   padding: 80px 20px;
