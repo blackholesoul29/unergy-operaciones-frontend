@@ -55,9 +55,6 @@
       <template v-if="capacidadKwh != null">
         <line :x1="padL" :x2="W - padR" :y1="y(capacidadKwh)" :y2="y(capacidadKwh)"
               stroke="#9b89b5" stroke-width="1.5" stroke-dasharray="4 3" />
-        <text :x="W - padR" :y="y(capacidadKwh) - 4" font-size="9" fill="#6b5a8a" text-anchor="end">
-          {{ capacidadMwFmt }} MW
-        </text>
       </template>
     </svg>
   </div>
