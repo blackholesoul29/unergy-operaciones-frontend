@@ -283,23 +283,19 @@
         <div class="fac-card p-4">
           <p class="text-sm font-bold mb-1" style="color:#2C2039">Precio de bolsa — {{ formatPeriodo(periodo) }}</p>
           <p class="text-[11px] mb-3" style="color:#9b8fb0">
-            Valoriza la energía de los contratos <b>sin PPA (UNGC / bolsa)</b>, que XM factura a precio de bolsa.
-            Déjalo vacío para usar el promedio sugerido.
+            Valoriza la energía de los contratos <b>sin PPA (UNGC / bolsa)</b>. <b>Lo calculas tú</b>
+            (promedio horario→diario del mes) y lo cargas cada mes; la plataforma no lo calcula.
           </p>
           <div class="flex items-end gap-2 flex-wrap">
             <div>
               <label class="fac-lbl">Precio bolsa ($/kWh)</label>
-              <input v-model.number="bolsaInput" type="number" step="0.01" class="fac-in"
-                     :placeholder="bolsa.sugerido != null ? String(bolsa.sugerido) : '$/kWh'" />
+              <input v-model.number="bolsaInput" type="number" step="0.01" class="fac-in" placeholder="$/kWh" />
             </div>
             <button class="fac-btn" :disabled="guardandoBolsa" @click="guardarBolsa">
               <i :class="guardandoBolsa ? 'pi pi-spin pi-spinner' : 'pi pi-save'" class="text-xs" /> Guardar
             </button>
-            <span v-if="bolsa.sugerido != null" class="text-[11px] ml-1" style="color:#6b5a8a">
-              Sugerido (prom. mes): {{ fmtNum(bolsa.sugerido) }}
-            </span>
             <span class="text-[11px] ml-1" :style="{ color: bolsa.vigente != null ? '#2C7a3f' : '#c0392b' }">
-              Vigente: {{ bolsa.vigente != null ? fmtNum(bolsa.vigente) + ' $/kWh' : 'sin precio' }}
+              {{ bolsa.vigente != null ? 'Cargado: ' + fmtNum(bolsa.vigente) + ' $/kWh' : 'Sin precio — cárgalo para valorizar la bolsa' }}
             </span>
           </div>
         </div>
