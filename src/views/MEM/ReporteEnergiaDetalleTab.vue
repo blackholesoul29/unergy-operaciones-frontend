@@ -12,6 +12,31 @@
       <Tag v-else value="OK" severity="success" />
     </div>
 
+    <!-- Detalle de la clasificación -->
+    <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
+      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de la clasificación</p>
+      <div class="flex items-start gap-3 mb-3">
+        <div class="flex-none rounded-lg w-9 h-9 flex items-center justify-center font-bold"
+             :style="{ background: casoColor.bg, color: casoColor.fg }">
+          {{ detalle.caso }}
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-bold" style="color: #2C2039;">{{ casoInfo.nombre }}</p>
+          <p class="text-xs" style="color: #6b5a8a;">{{ casoInfo.descripcion }}</p>
+        </div>
+      </div>
+      <dl class="grid grid-cols-2 gap-y-2 text-sm">
+        <dt style="color: #9b89b5;">Medidor usado</dt><dd class="font-mono">{{ etiquetaFuente(detalle.medidor_usado) }}</dd>
+        <dt style="color: #9b89b5;">Energía Total</dt><dd class="font-mono">{{ fmtKwh(detalle.energia_final_kwh) }}</dd>
+        <template v-if="detalle.tipo === 'generacion'">
+          <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
+          <dd class="font-mono">{{ detalle.fp != null ? detalle.fp.toFixed(4) : '—' }}</dd>
+        </template>
+        <dt style="color: #9b89b5;">Horas rellenadas (histórico)</dt>
+        <dd class="font-mono">{{ (detalle.horas_rellenadas_historico || []).join(', ') || '—' }}</dd>
+      </dl>
+    </div>
+
     <!-- Curva -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Curva reportada (24 h)</p>
@@ -25,22 +50,24 @@
       />
     </div>
 
-    <!-- Metadata -->
+    <!-- Detalle de las fuentes -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
-      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de la clasificación</p>
-      <dl class="grid grid-cols-2 gap-y-2 text-sm">
-        <dt style="color: #9b89b5;">Caso</dt><dd class="font-mono">{{ detalle.caso }}</dd>
-        <dt style="color: #9b89b5;">Medidor usado</dt><dd class="font-mono">{{ etiquetaFuente(detalle.medidor_usado) }}</dd>
-        <dt style="color: #9b89b5;">Energía Total</dt><dd class="font-mono">{{ fmtKwh(detalle.energia_final_kwh) }}</dd>
-        <template v-if="detalle.tipo === 'generacion'">
-          <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
-          <dd class="font-mono">{{ detalle.fp != null ? detalle.fp.toFixed(4) : '—' }}</dd>
-          <dt style="color: #9b89b5;">API Solenium</dt>
-          <dd>{{ detalle.nota_solenium || 'Registrado' }}</dd>
-        </template>
-        <dt style="color: #9b89b5;">Horas rellenadas (histórico)</dt>
-        <dd class="font-mono">{{ (detalle.horas_rellenadas_historico || []).join(', ') || '—' }}</dd>
-      </dl>
+      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de las fuentes</p>
+      <div class="space-y-0">
+        <div v-for="f in fuentes" :key="f.clave"
+             class="flex items-center gap-3 py-2.5 border-t first:border-t-0" style="border-color: #f0ecf6;">
+          <div class="flex-none rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
+               :style="fuenteIconStyle(f.estado)">
+            {{ f.estado === 'ok' ? '✓' : (f.estado === 'na' ? '–' : '✕') }}
+          </div>
+          <span class="text-sm font-semibold flex-none" style="color: #2C2039; width: 160px;">{{ f.nombre }}</span>
+          <span class="text-xs flex-1 min-w-0" style="color: #6b5a8a;">{{ f.detalle }}</span>
+          <span class="text-xs font-mono flex-none text-right" style="color: #2C2039; min-width: 90px;">
+            {{ f.valor != null ? fmtKwh(f.valor) : (f.estado === 'na' ? 'n/a' : '—') }}
+          </span>
+          <span v-if="f.usado" class="text-[10px] font-bold text-white rounded-full px-2 py-0.5 flex-none" style="background: #915BD8;">USADO</span>
+        </div>
+      </div>
     </div>
 
     <!-- Edición manual -->
@@ -106,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import Tag from 'primevue/tag'
@@ -247,6 +274,98 @@ async function validar() {
     validando.value = false
   }
 }
+
+// Nombre + descripcion de cada Caso, para no obligar a memorizar el arbol
+// de decision del clasificador (ver app/services/reporte_energia/clasificador.py
+// y clasificador_consumo.py en el backend).
+const CASO_INFO_GENERACION = {
+  '0': { nombre: 'Reporta a otra empresa', descripcion: 'Frontera de terceros, fuera de este árbol de decisión' },
+  '1': { nombre: 'Reporte CGM válido', descripcion: 'El envío automático de Quoia al ASIC fue válido hoy y coincide con los inversores' },
+  '2': { nombre: 'Medidor valida', descripcion: 'El reporte automático no fue válido, pero un medidor coincide con los inversores' },
+  '3': { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores sub-reportan frente a los inversores; se corrige con el histórico de pérdida' },
+  '4': { nombre: 'Medidor de mayor valor', descripcion: 'Los medidores sobre-reportan frente a los inversores; se usa el de mayor valor' },
+  '5': { nombre: 'Sin inversores registrados', descripcion: 'Hay medidor con dato, pero el proyecto no tiene inversores en Solenium contra qué validarlo' },
+  '6': { nombre: 'Apagado', descripcion: 'Ninguna fuente -- CGM, medidor, inversores ni reconectador -- registra generación hoy' },
+  '7': { nombre: 'Reconstruido con reconectador o crudos', descripcion: 'Sin reporte automático ni medidor; se reconstruye con reconectador, Solenium (power) o datos crudos completos' },
+  '8': { nombre: 'Datos crudos parciales', descripcion: 'Datos crudos incompletos; se rellenan las horas faltantes con reconectador, Solenium o histórico' },
+}
+const CASO_INFO_CONSUMO = {
+  'CGM': { nombre: 'Reporte CGM válido', descripcion: 'El reporte automático fue válido y el canal CGM trae dato real' },
+  'Medidor': { nombre: 'Medidor valida contra histórico', descripcion: 'CGM no válido; el medidor se comparó contra su propia mediana histórica' },
+  'Histórico': { nombre: 'Histórico propio', descripcion: 'Ni CGM ni medidor creíbles; se usa la mediana y forma horaria del histórico (propio o del vecino de predio)' },
+  'Sin dato': { nombre: 'Sin dato', descripcion: 'Ninguna fuente disponible para este día' },
+}
+const casoInfo = computed(() => {
+  const d = detalle.value
+  if (!d) return { nombre: '', descripcion: '' }
+  const mapa = d.tipo === 'generacion' ? CASO_INFO_GENERACION : CASO_INFO_CONSUMO
+  return mapa[String(d.caso)] || { nombre: `Caso ${d.caso}`, descripcion: '' }
+})
+const casoColor = computed(() => {
+  const d = detalle.value
+  if (!d) return { bg: '#f9f7ff', fg: '#9b89b5' }
+  if (d.revisar_manualmente) return { bg: 'rgba(199,119,0,0.1)', fg: '#A8590B' }
+  const casosOk = d.tipo === 'generacion' ? ['1', '2'] : ['CGM']
+  if (casosOk.includes(String(d.caso))) return { bg: 'rgba(16,185,129,0.1)', fg: '#10B981' }
+  return { bg: '#f9f7ff', fg: '#6b5a8a' }
+})
+
+// Suma una curva de 24h solo si trae al menos un valor real -- distingue
+// "0 kWh real" (curva con datos, todos en 0) de "sin lectura en absoluto"
+// (curva null o completamente vacía).
+function sumaCurva(arr) {
+  if (!arr || !arr.some((v) => v !== null && v !== undefined)) return null
+  return arr.reduce((s, v) => s + (Number(v) || 0), 0)
+}
+function fuenteIconStyle(estado) {
+  if (estado === 'ok') return { background: 'rgba(16,185,129,0.1)', color: '#10B981' }
+  if (estado === 'na') return { background: '#f9f7ff', color: '#9b89b5' }
+  return { background: 'rgba(214,68,85,0.08)', color: '#D64455' }
+}
+const fuentes = computed(() => {
+  const d = detalle.value
+  if (!d) return []
+  const lista = []
+
+  lista.push({
+    clave: 'cgm', nombre: 'Reporte CGM',
+    estado: d.energia_cgm_kwh != null ? 'ok' : 'no',
+    detalle: d.estado_reporte ? `Estado ${d.estado_reporte}` : 'Sin dato para hoy',
+    valor: d.energia_cgm_kwh,
+    usado: d.medidor_usado === 'cgm',
+  })
+
+  const medPpal = sumaCurva(d.curva_medidor_principal)
+  lista.push({
+    clave: 'principal', nombre: 'Medidor principal',
+    estado: medPpal !== null ? 'ok' : 'no',
+    detalle: medPpal !== null ? 'Lectura de referencia disponible' : 'Sin lectura',
+    valor: medPpal,
+    usado: d.medidor_usado === 'principal',
+  })
+
+  const medResp = sumaCurva(d.curva_medidor_respaldo)
+  lista.push({
+    clave: 'respaldo', nombre: 'Medidor respaldo',
+    estado: medResp !== null ? 'ok' : 'no',
+    detalle: medResp !== null ? 'Lectura de referencia disponible' : 'Sin lectura',
+    valor: medResp,
+    usado: d.medidor_usado === 'respaldo',
+  })
+
+  if (d.tipo === 'generacion') {
+    const sinRegistro = !!d.nota_solenium
+    lista.push({
+      clave: 'inversores', nombre: 'Inversores (Solenium)',
+      estado: sinRegistro ? 'na' : (d.energia_solenium_kwh != null ? 'ok' : 'no'),
+      detalle: sinRegistro ? d.nota_solenium : (d.solenium_completo ? 'Dato completo' : 'Dato incompleto'),
+      valor: sinRegistro ? null : d.energia_solenium_kwh,
+      usado: d.medidor_usado === 'inversores',
+    })
+  }
+
+  return lista
+})
 
 const ETIQUETAS_FUENTE = {
   cgm: 'CGM', principal: 'Medidor principal', respaldo: 'Medidor respaldo',
