@@ -16,8 +16,8 @@
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de la clasificación</p>
       <div class="flex items-start gap-3 mb-3">
-        <div class="flex-none rounded-lg w-9 h-9 flex items-center justify-center font-bold"
-             :style="{ background: casoColor.bg, color: casoColor.fg }">
+        <div class="flex-none rounded-lg px-2.5 py-1.5 flex items-center justify-center font-bold text-sm whitespace-nowrap"
+             :style="{ background: casoColor.bg, color: casoColor.fg, minWidth: '2.25rem' }">
           {{ detalle.caso }}
         </div>
         <div class="min-w-0">
