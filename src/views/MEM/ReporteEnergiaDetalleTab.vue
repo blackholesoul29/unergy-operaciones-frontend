@@ -59,7 +59,7 @@
              class="flex items-center gap-3 py-2.5 border-t first:border-t-0" style="border-color: #f0ecf6;">
           <div class="flex-none rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
                :style="fuenteIconStyle(f.estado)">
-            {{ f.estado === 'ok' ? '✓' : (f.estado === 'na' ? '–' : '✕') }}
+            {{ f.estado === 'ok' ? '✓' : (f.estado === 'na' ? '–' : (f.estado === 'error' ? '!' : '✕')) }}
           </div>
           <span class="text-sm font-semibold flex-none" style="color: #2C2039; width: 160px;">{{ f.nombre }}</span>
           <span class="text-xs flex-1 min-w-0" style="color: #6b5a8a;">{{ f.detalle }}</span>
@@ -321,20 +321,31 @@ function sumaCurva(arr) {
 function fuenteIconStyle(estado) {
   if (estado === 'ok') return { background: 'rgba(16,185,129,0.1)', color: '#10B981' }
   if (estado === 'na') return { background: '#f9f7ff', color: '#9b89b5' }
+  if (estado === 'error') return { background: 'rgba(240,192,64,0.15)', color: '#A8590B' }
   return { background: 'rgba(214,68,85,0.08)', color: '#D64455' }
+}
+// Agrupa el estado tecnico de Quoia en dos categorias que no requieren
+// conocer el detalle interno: OK/WARNING son parte del flujo automatico
+// normal (se confia en el dato); cualquier ERROR/ERRORn es una falla real
+// del envio automatico ese dia.
+function categoriaEstadoReporte(estado) {
+  if (!estado) return null
+  if (estado === 'OK' || estado === 'WARNING') return 'ok'
+  return 'error'
 }
 const fuentes = computed(() => {
   const d = detalle.value
   if (!d) return []
   const lista = []
 
+  // energia_cgm_kwh nunca es null (el backend lo deja en 0 por defecto,
+  // haya o no reporte real) -- la señal real de "hubo respuesta de Quoia"
+  // es estado_reporte, no la energía.
+  const catCgm = categoriaEstadoReporte(d.estado_reporte)
   lista.push({
-    // energia_cgm_kwh nunca es null (el backend lo deja en 0 por defecto,
-    // haya o no reporte real) -- la señal real de "hubo respuesta de Quoia"
-    // es estado_reporte, no la energía.
     clave: 'cgm', nombre: 'Reporte CGM (Quoia)',
-    estado: d.estado_reporte ? 'ok' : 'no',
-    detalle: d.estado_reporte ? `Estado ${d.estado_reporte}` : 'Sin dato para hoy',
+    estado: catCgm === 'ok' ? 'ok' : (catCgm === 'error' ? 'error' : 'no'),
+    detalle: catCgm === 'ok' ? 'Automático' : (catCgm === 'error' ? 'Error' : 'Sin dato para hoy'),
     valor: d.estado_reporte ? d.energia_cgm_kwh : null,
     usado: d.medidor_usado === 'cgm',
   })
@@ -343,7 +354,7 @@ const fuentes = computed(() => {
   lista.push({
     clave: 'principal', nombre: 'Medidor principal',
     estado: medPpal !== null ? 'ok' : 'no',
-    detalle: medPpal !== null ? 'Lectura de referencia disponible' : 'Sin lectura',
+    detalle: medPpal !== null ? 'Lectura disponible' : 'Sin lectura',
     valor: medPpal,
     usado: d.medidor_usado === 'principal',
   })
@@ -352,7 +363,7 @@ const fuentes = computed(() => {
   lista.push({
     clave: 'respaldo', nombre: 'Medidor respaldo',
     estado: medResp !== null ? 'ok' : 'no',
-    detalle: medResp !== null ? 'Lectura de referencia disponible' : 'Sin lectura',
+    detalle: medResp !== null ? 'Lectura disponible' : 'Sin lectura',
     valor: medResp,
     usado: d.medidor_usado === 'respaldo',
   })
