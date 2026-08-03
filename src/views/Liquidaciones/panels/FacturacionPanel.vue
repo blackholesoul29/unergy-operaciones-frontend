@@ -150,7 +150,8 @@
                    @change="toggleEmitida(f)" />
             <i :class="abiertas.has(f.factura) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs" style="color:#9b8fb0" />
             <span class="proj">{{ f.factura }}</span>
-            <span v-if="f.personalizada" class="tag" style="background:#e6f6ef;color:#1f9d6b">dividida</span>
+            <span v-if="f.sin_ppa" class="tag" style="background:#fbeede;color:#c9701a">sin PPA · XM (bolsa)</span>
+            <span v-else-if="f.personalizada" class="tag" style="background:#e6f6ef;color:#1f9d6b">dividida</span>
             <span v-else class="tag">{{ f.ppa || '—' }}</span>
             <span v-if="f.emitida" class="tag" style="background:#e6f6ef;color:#1f9d6b">facturada</span>
             <button class="fac-msg" @click.stop="copiarMensaje(f)"
@@ -161,8 +162,9 @@
             <span class="ml-auto fac-fac-nums">
               <span class="muted">{{ f.contratos }} contr</span>
               <span class="muted">· {{ fmtMWh(f.kwh) }}</span>
-              <span class="muted">· tarifa {{ f.tarifa_mixta ? 'varía' : fmtNum(f.tarifa_indexada) }}</span>
-              <b>{{ fmtCOP(f.facturacion) }}</b>
+              <span v-if="!f.sin_ppa" class="muted">· tarifa {{ f.tarifa_mixta ? 'varía' : fmtNum(f.tarifa_indexada) }}</span>
+              <b v-if="f.sin_ppa" class="muted" style="font-weight:600">factura XM (bolsa)</b>
+              <b v-else>{{ fmtCOP(f.facturacion) }}</b>
             </span>
           </div>
           <div v-if="abiertas.has(f.factura)" class="fac-fac-body">
