@@ -329,10 +329,13 @@ const fuentes = computed(() => {
   const lista = []
 
   lista.push({
-    clave: 'cgm', nombre: 'Reporte CGM',
-    estado: d.energia_cgm_kwh != null ? 'ok' : 'no',
+    // energia_cgm_kwh nunca es null (el backend lo deja en 0 por defecto,
+    // haya o no reporte real) -- la señal real de "hubo respuesta de Quoia"
+    // es estado_reporte, no la energía.
+    clave: 'cgm', nombre: 'Reporte CGM (Quoia)',
+    estado: d.estado_reporte ? 'ok' : 'no',
     detalle: d.estado_reporte ? `Estado ${d.estado_reporte}` : 'Sin dato para hoy',
-    valor: d.energia_cgm_kwh,
+    valor: d.estado_reporte ? d.energia_cgm_kwh : null,
     usado: d.medidor_usado === 'cgm',
   })
 
