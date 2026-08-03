@@ -151,9 +151,9 @@
          dos formas de guardar lo mismo. -->
     <div class="rounded-xl p-4 flex items-center justify-between gap-3" style="border: 1px solid #e8e0f0;">
       <div>
-        <p class="text-sm font-semibold" style="color: #2C2039;">¿Este día queda listo para reportar?</p>
+        <p class="text-sm font-semibold" style="color: #2C2039;">Confirmar revisión</p>
         <p class="text-xs" style="color: #9b89b5;">
-          Confirma que el resultado automático está bien tal cual, sin cambiar ningún valor.
+          Marca este día como revisado y listo para reportar.
         </p>
       </div>
       <Button label="Validar Frontera" severity="success" :loading="validando" @click="validar" />
