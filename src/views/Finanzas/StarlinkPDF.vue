@@ -130,6 +130,9 @@
           <span class="text-base font-bold tabular-nums" style="color:#7c3aed">{{ formatCOP(totalGeneral) }}</span>
         </div>
       </template>
+      <div v-else class="bg-white rounded-xl shadow-sm p-10 text-center text-sm text-gray-400 border" style="border-color:#ECE7F2">
+        Sin líneas para este período.
+      </div>
     </template>
 
     <!-- ── Dialog: confirmar período antes de guardar ────────────────────────── -->
@@ -246,11 +249,9 @@ const cargandoFactura = ref(false)
 const lineas = ref([])   // [{ descripcion, proyecto_id, nombre_comercial, tipo_proyecto, cantidad_total, precio_unitario_promedio, sin_iva, iva, monto_total }, ...]
 
 // Agrupación por tipo de proyecto (mismo patrón que ArriendosOperaciones.vue)
-const TIPO_LABELS = { minigranja: 'Minigranja', autoconsumo: 'Autoconsumo', gd: 'GD', movilidad_electrica: 'Movilidad', otro: 'Otro' }
-const TIPO_DOT    = { minigranja: '#10B981', autoconsumo: '#6366F1', gd: '#3B82F6', movilidad_electrica: '#8B5CF6', otro: '#9CA3AF' }
 const TIPO_ORDER  = ['sin_asignar', 'minigranja', 'autoconsumo', 'gd', 'movilidad_electrica', 'otro']
-const TIPO_LABELS_FULL = { sin_asignar: 'Sin asignar', ...TIPO_LABELS }
-const TIPO_DOT_FULL    = { sin_asignar: '#F59E0B', ...TIPO_DOT }
+const TIPO_LABELS_FULL = { sin_asignar: 'Sin asignar', minigranja: 'Minigranja', autoconsumo: 'Autoconsumo', gd: 'GD', movilidad_electrica: 'Movilidad', otro: 'Otro' }
+const TIPO_DOT_FULL    = { sin_asignar: '#F59E0B', minigranja: '#10B981', autoconsumo: '#6366F1', gd: '#3B82F6', movilidad_electrica: '#8B5CF6', otro: '#9CA3AF' }
 
 const secciones = computed(() => {
   const groups = {}
