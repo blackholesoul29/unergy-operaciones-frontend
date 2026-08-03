@@ -102,6 +102,29 @@
             <button class="fac-link" @click="restablecerOrden">Orden por valor</button>
           </div>
         </div>
+
+        <!-- Tarjetas informativas del mes -->
+        <div class="fac-kpis">
+          <div class="fac-kpi hero">
+            <p class="k">Vamos a facturar este mes</p>
+            <p class="v">{{ fmtCOP(res.facturacion_total || 0) }}</p>
+          </div>
+          <div class="fac-kpi">
+            <p class="k">Energía despachada</p>
+            <p class="v">{{ fmtMWh(despacho.kwh_total) }}</p>
+            <p class="sub2">{{ fmtMWh(res.kwh_total) }} facturables</p>
+          </div>
+          <div class="fac-kpi">
+            <p class="k">Tarifa promedio</p>
+            <p class="v">{{ tarifaPromedio != null ? fmtNum(tarifaPromedio) + ' $/kWh' : '—' }}</p>
+          </div>
+          <div class="fac-kpi">
+            <p class="k">Facturas</p>
+            <p class="v">{{ res.facturas || porFactura.length }}</p>
+            <p class="sub2">{{ res.emitidas || 0 }} facturadas</p>
+          </div>
+        </div>
+
         <div v-for="(f, i) in porFactura" :key="f.factura" class="fac-card"
              :class="{ 'fac-emitida': f.emitida, 'fac-drag': dragIdx === i,
                        'fac-drop-antes': dropIdx === i && dragIdx > i,
@@ -327,6 +350,11 @@ const MOTIVOS = {
   sin_ipp_mes: 'Falta el IPP del mes',
 }
 const noFacturables = computed(() => lineas.value.filter(l => l.estado !== 'ok'))
+// Tarifa promedio ponderada ($/kWh) sobre lo facturable del mes.
+const tarifaPromedio = computed(() => {
+  const k = res.value.kwh_total || 0
+  return k ? (res.value.facturacion_total || 0) / k : null
+})
 
 const fmtNum = (v) => v == null ? '—' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 2 })
 const fmtMWh = (kwh) => kwh == null ? '—' : (kwh / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' MWh'
@@ -536,6 +564,14 @@ onMounted(load)
 
 
 .fac-card { background:#fff; border:1px solid #e8e0f0; border-radius:14px; overflow:hidden; }
+.fac-kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:4px 0 6px; }
+.fac-kpi { background:#fff; border:1px solid #e8e0f0; border-radius:12px; padding:12px 14px; }
+.fac-kpi.hero { background:#f3ecfb; border-color:transparent; }
+.fac-kpi .k { font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:#6b5a8a; font-weight:600; }
+.fac-kpi.hero .k { color:#6E3FB8; }
+.fac-kpi .v { font-size:18px; font-weight:800; color:#2C2039; margin-top:4px; font-variant-numeric:tabular-nums; }
+.fac-kpi.hero .v { color:#6E3FB8; }
+.fac-kpi .sub2 { font-size:10.5px; color:#9b8fb0; margin-top:2px; }
 .fac-note { font-size:11.5px; color:#6b5a8a; padding:10px 12px 2px; display:flex; align-items:center; gap:6px; }
 .tblwrap { overflow-x:auto; }
 .dt { width:100%; border-collapse:collapse; font-size:12.5px; }
