@@ -896,10 +896,12 @@
               <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
                 <InfoIcon icon="pi pi-building" color="#06b6d4" label="Proveedor"
                   :value="contratos.internet.prestador_nombre" />
-                <InfoIcon icon="pi pi-dollar" color="#06b6d4" label="Valor facturado"
-                  :value="formatCOP(contratos.internet.tarifa_base)" />
-                <InfoBadge color="#06b6d4" label="Estado del pago"
-                  :estado="contratos.internet.estado_pago" />
+                <InfoIcon icon="pi pi-database" color="#06b6d4" label="Plan de datos"
+                  :value="contratos.internet.plan_datos_gb" />
+                <InfoIcon icon="pi pi-gauge" color="#06b6d4" label="Velocidad"
+                  :value="contratos.internet.velocidad_mbps ? `${contratos.internet.velocidad_mbps} Mbps` : null" />
+                <InfoIcon icon="pi pi-wifi" color="#06b6d4" label="Tipo de conexión"
+                  :value="contratos.internet.tipo_conexion" />
                 <InfoLink color="#06b6d4" label="Factura / Contrato en Drive"
                   :href="contratos.internet.enlace_drive" />
               </div>
@@ -918,17 +920,6 @@
                 @click="openWizard('internet')" />
             </div>
           </template>
-
-          <PagosTabla
-            tipo="internet"
-            color="#06b6d4"
-            :contrato-id="contratos.internet?.id ?? null"
-            :pagos="pagos.internet"
-            :loading-pagos="loadingPagos.internet"
-            :filtros="filtros.internet"
-            @open-pago="openNuevoPago('internet')"
-            @eliminar="(id) => eliminarPago('internet', id)"
-          />
         </div>
       </TabPanel>
 
@@ -1070,15 +1061,33 @@
               <p class="text-xs text-gray-400">Fecha base para la indexación en Costos.</p>
             </div>
           </template>
-          <div class="flex flex-col gap-1" :class="dialogEdit.tipo === 'internet' ? 'col-span-2 md:col-span-1' : ''">
+          <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-600">
-              {{ dialogEdit.tipo === 'mantenimiento' ? 'Valor O&M Anual BASE (COP)' : dialogEdit.tipo === 'arriendo' ? 'Valor anual BASE (COP)' : 'Valor facturado (COP)' }}
+              {{ dialogEdit.tipo === 'mantenimiento' ? 'Valor O&M Anual BASE (COP)' : 'Valor anual BASE (COP)' }}
             </label>
             <InputNumber v-model="dialogEdit.form.tarifa_base"
               mode="currency" currency="COP" locale="es-CO" :maxFractionDigits="0"
               class="w-full" placeholder="$ 0" />
           </div>
         </div>
+        <template v-if="dialogEdit.tipo === 'internet'">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Plan de datos</label>
+              <InputText v-model="dialogEdit.form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Velocidad contratada</label>
+              <InputNumber v-model="dialogEdit.form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">Tipo de conexión</label>
+            <Select v-model="dialogEdit.form.tipo_conexion"
+              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
+              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
+          </div>
+        </template>
         <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Periodicidad de cobro</label>
           <Select v-model="dialogEdit.form.periodicidad_pago" :options="PERIODICIDADES"
@@ -1090,7 +1099,7 @@
           <Select v-model="dialogEdit.form.responsable_iva" :options="[{label:'Sí',value:true},{label:'No',value:false}]"
             optionLabel="label" optionValue="value" class="w-full" />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Estado del pago</label>
           <Select v-model="dialogEdit.form.estado_pago" :options="ESTADO_PAGO_OPCIONES"
             optionLabel="label" optionValue="value" placeholder="Sin definir" showClear class="w-full" />
@@ -1290,7 +1299,7 @@ const wizardTipo    = ref('mantenimiento')
 const dialogEdit = reactive({
   visible: false,
   tipo: 'mantenimiento',
-  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false },
+  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false, plan_datos_gb: '', velocidad_mbps: null, tipo_conexion: null },
 })
 
 const dialogPago = reactive({
@@ -1410,6 +1419,9 @@ function openEditContrato(tipo) {
   dialogEdit.form.periodicidad_pago = c.periodicidad_pago || 'mensual'
   dialogEdit.form.fecha_inicio_om = c.fecha_inicio_om ? new Date(c.fecha_inicio_om) : null
   dialogEdit.form.responsable_iva = c.responsable_iva ?? false
+  dialogEdit.form.plan_datos_gb = c.plan_datos_gb || ''
+  dialogEdit.form.velocidad_mbps = c.velocidad_mbps ?? null
+  dialogEdit.form.tipo_conexion = c.tipo_conexion || null
   dialogEdit.visible = true
 }
 
@@ -1420,9 +1432,11 @@ async function saveContrato() {
   try {
     const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
     const payload = {
-      tarifa_base: dialogEdit.form.tarifa_base,
       enlace_drive: dialogEdit.form.enlace_drive?.trim() || null,
-      estado_pago: dialogEdit.form.estado_pago || null,
+    }
+    if (tipo !== 'internet') {
+      payload.tarifa_base = dialogEdit.form.tarifa_base
+      payload.estado_pago = dialogEdit.form.estado_pago || null
     }
     if (tipo === 'mantenimiento') {
       payload.fecha_inicio = toISO(dialogEdit.form.fecha_inicio)
@@ -1433,6 +1447,11 @@ async function saveContrato() {
       payload.periodicidad_pago = dialogEdit.form.periodicidad_pago
       payload.fecha_inicio_om = toISO(dialogEdit.form.fecha_inicio_om)
       payload.responsable_iva = dialogEdit.form.responsable_iva ?? false
+    }
+    if (tipo === 'internet') {
+      payload.plan_datos_gb = dialogEdit.form.plan_datos_gb?.trim() || null
+      payload.velocidad_mbps = dialogEdit.form.velocidad_mbps ?? null
+      payload.tipo_conexion = dialogEdit.form.tipo_conexion || null
     }
     const { data } = await api.patch(`/contratos-servicio/${contratos[tipo].id}`, payload)
     contratos[tipo] = { ...contratos[tipo], ...data }
