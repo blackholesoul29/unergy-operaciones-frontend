@@ -356,7 +356,7 @@ const CASO_INFO_GENERACION = {
   '-1': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
 }
 const CASO_INFO_CONSUMO = {
-  'CGM': { nombre: 'Reporte CGM válido', descripcion: 'El reporte automático fue válido y el canal CGM trae dato real' },
+  'CGM': { nombre: 'Reporte válido', descripcion: 'El reporte automático fue válido y el canal CGM trae dato real' },
   // 'Medidor' tampoco tiene una sola descripcion fija -- ver casoInfoMedidorConsumo() abajo.
   'Histórico': { nombre: 'Histórico propio', descripcion: 'Ni CGM ni medidor creíbles; se usa la mediana y forma horaria del histórico (propio o del vecino de predio)' },
   'Sin dato': { nombre: 'Sin dato', descripcion: 'Ninguna fuente disponible para este día' },
