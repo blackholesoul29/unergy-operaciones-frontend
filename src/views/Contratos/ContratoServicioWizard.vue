@@ -162,7 +162,7 @@
               <DatePicker v-model="form.fecha_fin" dateFormat="yy-mm-dd" showIcon class="w-full" />
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div v-if="tipo !== 'internet'" class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Tarifa base (COP/kWh)</label>
               <InputNumber v-model="form.tarifa_base" :minFractionDigits="2" :maxFractionDigits="4" class="w-full" />
@@ -172,6 +172,22 @@
               <Select v-model="form.periodicidad_pago" :options="PERIODICIDADES"
                 optionLabel="label" optionValue="value" showClear class="w-full" />
             </div>
+          </div>
+          <div v-else class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Plan de datos</label>
+              <InputText v-model="form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Velocidad contratada</label>
+              <InputNumber v-model="form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div v-if="tipo === 'internet'" class="flex flex-col gap-1">
+            <label class="field-label">Tipo de conexión</label>
+            <Select v-model="form.tipo_conexion"
+              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
+              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
@@ -496,6 +512,9 @@ const form = reactive({
   specific_service_terms: '',
   slas: '',
   responsibilities: '',
+  plan_datos_gb: '',
+  velocidad_mbps: null,
+  tipo_conexion: null,
 })
 
 function buscarCliente(event, rol) {
@@ -662,6 +681,9 @@ async function crearContrato() {
       specific_service_terms: form.specific_service_terms?.trim() || null,
       slas: form.slas?.trim() || null,
       responsibilities: form.responsibilities?.trim() || null,
+      plan_datos_gb: props.tipo === 'internet' ? (form.plan_datos_gb?.trim() || null) : null,
+      velocidad_mbps: props.tipo === 'internet' ? (form.velocidad_mbps ?? null) : null,
+      tipo_conexion: props.tipo === 'internet' ? (form.tipo_conexion || null) : null,
     }
   const { data } = await api.post('/contratos-servicio', payload)
   return data
