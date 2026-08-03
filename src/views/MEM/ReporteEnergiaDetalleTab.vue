@@ -47,6 +47,7 @@
         :horasReconectador="detalle.horas_rellenadas_reconectador"
         :horasSolenium="detalle.horas_rellenadas_solenium"
         :horasHistorico="detalle.horas_rellenadas_historico"
+        :capacidadMw="detalle.capacidad_efectiva_mw"
       />
     </div>
 

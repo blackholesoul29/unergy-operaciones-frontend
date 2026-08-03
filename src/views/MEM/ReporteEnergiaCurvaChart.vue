@@ -5,6 +5,7 @@
       <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
       <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Rellenado (reconectador/Solenium/histórico)</span>
+      <span v-if="capacidadKwh != null" class="chip" style="border-color:#9b89b5;color:#6b5a8a;">┅ Capacidad efectiva ({{ capacidadMwFmt }} MW)</span>
     </div>
     <p v-if="finalVacia" class="text-xs mb-3" style="color: #9b89b5;">
       Reporte válido -- se confirmó el total diario ante Quoia, no hay una curva horaria propia que mostrar.
@@ -48,6 +49,16 @@
                  :points="trianguloPoints(x(h - 1), y(val(solenium, h - 1)))"
                  fill="#0D9488" stroke="white" stroke-width="1" />
       </template>
+
+      <!-- Capacidad efectiva -- linea de referencia, no es una serie de datos --
+           encima de todo para que siempre se vea si alguna curva la cruza. -->
+      <template v-if="capacidadKwh != null">
+        <line :x1="padL" :x2="W - padR" :y1="y(capacidadKwh)" :y2="y(capacidadKwh)"
+              stroke="#9b89b5" stroke-width="1.5" stroke-dasharray="4 3" />
+        <text :x="W - padR" :y="y(capacidadKwh) - 4" font-size="9" fill="#6b5a8a" text-anchor="end">
+          {{ capacidadMwFmt }} MW
+        </text>
+      </template>
     </svg>
   </div>
 </template>
@@ -62,6 +73,9 @@ const props = defineProps({
   horasReconectador: { type: Array, default: () => [] },
   horasSolenium: { type: Array, default: () => [] },
   horasHistorico: { type: Array, default: () => [] },
+  // Capacidad efectiva de la frontera (MW) -- viene en MW, pero el chart
+  // grafica en kWh por hora, así que se convierte (1 MW sostenida 1h = 1.000 kWh).
+  capacidadMw: { type: Number, default: null },
 })
 
 const W = 700, H = 210, padL = 30, padR = 10, padT = 10, padB = 20
@@ -93,10 +107,17 @@ function trianguloPoints(cx, cy) {
   return `${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`
 }
 
+const capacidadKwh = computed(() => (props.capacidadMw != null ? props.capacidadMw * 1000 : null))
+const capacidadMwFmt = computed(() => (props.capacidadMw != null ? props.capacidadMw.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : ''))
+
 const maxV = computed(() => {
   const all = [...finalCurve.value, ...(props.medidor || []), ...(props.solenium || [])]
     .filter((v) => v !== null && v !== undefined)
     .map(Number)
+  // La linea de capacidad tambien entra en el calculo del eje -- si la
+  // generacion se queda muy por debajo, igual se ve la referencia completa;
+  // si la generacion la supera, se ve el cruce en vez de cortarse el chart.
+  if (capacidadKwh.value != null) all.push(capacidadKwh.value)
   return Math.max(1, ...all) * 1.15
 })
 
