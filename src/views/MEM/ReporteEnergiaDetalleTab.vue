@@ -410,7 +410,13 @@ const fuentes = computed(() => {
       detalle: sinRegistro
         ? d.nota_solenium
         : (sumaSolenium !== null ? (d.solenium_completo ? 'Dato completo' : 'Dato incompleto') : 'Solenium no respondió para esta fecha'),
-      valor: sinRegistro || sumaSolenium === null ? null : d.energia_solenium_kwh,
+      // Se muestra la suma de la curva EN VIVO (misma fuente que el icono y
+      // que la grafica de arriba), no energia_solenium_kwh -- ese es el total
+      // que quedo guardado al momento de la clasificacion, y puede no
+      // coincidir con lo que Solenium responde ahora mismo (ej. si esa vez
+      // fallo la consulta y quedo en 0, aunque la curva de referencia si
+      // tenga datos reales hoy).
+      valor: sinRegistro ? null : sumaSolenium,
       usado: d.medidor_usado === 'inversores',
     })
   }
