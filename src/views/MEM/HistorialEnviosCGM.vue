@@ -18,7 +18,7 @@
         <span class="text-sm font-medium" style="color: #A8590B;">
           <i class="pi pi-exclamation-triangle text-xs mr-1.5" />
           {{ faltantesUltimoEnvio.length }} destinatario{{ faltantesUltimoEnvio.length === 1 ? '' : 's' }}
-          no recibi{{ faltantesUltimoEnvio.length === 1 ? 'ó' : 'eron' }} el envío más reciente
+          no recibi{{ faltantesUltimoEnvio.length === 1 ? 'ó' : 'eron' }} el reporte del {{ ultimoPeriodo }}
         </span>
         <button type="button" class="text-xs font-semibold underline" style="color: #A8590B;"
           @click="subvista = 'destinatario'">Ver quiénes →</button>
@@ -104,7 +104,7 @@
                 Último intento falló — {{ d.ultima.error }}
               </p>
               <p v-if="d.faltoUltimoEnvio" class="text-xs font-semibold mt-0.5" style="color: #A8590B;">
-                <i class="pi pi-exclamation-triangle text-[10px] mr-1" />No recibió el envío más reciente ({{ fmtFecha(ultimoEnvio.enviadoEn) }})
+                <i class="pi pi-exclamation-triangle text-[10px] mr-1" />No recibió el reporte del {{ ultimoPeriodo }}
               </p>
             </div>
             <div class="text-right flex-shrink-0">
@@ -260,29 +260,29 @@ function abrirMasReciente() {
   if (batchesFiltrados.value.length) batchesAbiertos.value = new Set([batchesFiltrados.value[0].enviadoEn])
 }
 
-const ultimoEnvioKey = computed(() => batches.value[0]?.enviadoEn || null)
+// El "envio mas reciente" para efectos de la alerta es el PERIODO (fecha del
+// reporte) mas reciente, no el ultimo lote por hora de envio -- un reenvio
+// puntual a una sola persona (ej. corregir un correo que rebotó) es, por
+// hora, "el lote mas reciente", pero es del MISMO periodo que el lote
+// completo de esa manana. Comparar por lote marcaba como "faltante" a todo
+// el mundo que sí habia recibido el reporte de ese dia, solo porque el
+// envio puntual mas reciente no los incluyo a ellos.
+const ultimoPeriodo = computed(() => envios.value[0]?.periodo || null)
 
 const porDestinatario = computed(() => {
   const mapa = new Map()
   for (const item of envios.value) {
-    if (!mapa.has(item.nombre)) mapa.set(item.nombre, { nombre: item.nombre, total: 0, ultima: item, batches: new Set() })
+    if (!mapa.has(item.nombre)) mapa.set(item.nombre, { nombre: item.nombre, total: 0, ultima: item, periodos: new Set() })
     const d = mapa.get(item.nombre)
     d.total += 1
     if (new Date(item.enviadoEn) > new Date(d.ultima.enviadoEn)) d.ultima = item
-  }
-  // marcar a que batch pertenece cada envio, para saber si el destinatario
-  // aparece en el mas reciente
-  for (const b of batches.value) {
-    for (const item of b.items) {
-      const d = mapa.get(item.nombre)
-      if (d) d.batches.add(b.enviadoEn)
-    }
+    if (item.periodo) d.periodos.add(item.periodo)
   }
   return [...mapa.values()].map(d => {
     const existe = nombresVigentes.value.has(normalizarNombre(d.nombre))
     return {
       ...d,
-      faltoUltimoEnvio: existe && ultimoEnvioKey.value ? !d.batches.has(ultimoEnvioKey.value) : false,
+      faltoUltimoEnvio: existe && ultimoPeriodo.value ? !d.periodos.has(ultimoPeriodo.value) : false,
     }
   })
 })
