@@ -358,12 +358,20 @@ const fuentes = computed(() => {
   })
 
   if (d.tipo === 'generacion') {
+    // energia_solenium_kwh tampoco es nunca null (mismo patron que CGM --
+    // el backend lo deja en 0 por defecto si Solenium no respondio nada). La
+    // señal confiable de "¿hubo alguna lectura real?" es la curva de
+    // referencia (curva_solenium): si esta vacia, no hubo respuesta real,
+    // sin importar lo que diga el total.
     const sinRegistro = !!d.nota_solenium
+    const sumaSolenium = sumaCurva(d.curva_solenium)
     lista.push({
       clave: 'inversores', nombre: 'Inversores (Solenium)',
-      estado: sinRegistro ? 'na' : (d.energia_solenium_kwh != null ? 'ok' : 'no'),
-      detalle: sinRegistro ? d.nota_solenium : (d.solenium_completo ? 'Dato completo' : 'Dato incompleto'),
-      valor: sinRegistro ? null : d.energia_solenium_kwh,
+      estado: sinRegistro ? 'na' : (sumaSolenium !== null ? 'ok' : 'no'),
+      detalle: sinRegistro
+        ? d.nota_solenium
+        : (sumaSolenium !== null ? (d.solenium_completo ? 'Dato completo' : 'Dato incompleto') : 'Solenium no respondió para esta fecha'),
+      valor: sinRegistro || sumaSolenium === null ? null : d.energia_solenium_kwh,
       usado: d.medidor_usado === 'inversores',
     })
   }
