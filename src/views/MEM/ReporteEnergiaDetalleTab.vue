@@ -74,22 +74,40 @@
     <!-- Edición manual -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Corrección manual (kWh)</p>
-      <div class="edit-grid">
-        <div v-for="h in 24" :key="h">
-          <label class="text-[10px] font-mono block" style="color: #9b89b5;">{{ h - 1 }}h</label>
-          <InputNumber v-model="curvaEditable[h - 1]" :minFractionDigits="2" :maxFractionDigits="2"
-                       inputClass="w-full text-xs text-right"
-                       :class="esHoraRellenada(h - 1) ? 'campo-rellenado' : ''"
-                       @paste="onPasteHora($event, h - 1)" />
-        </div>
+      <div class="flex flex-wrap gap-4">
+        <table class="tabla-horas">
+          <thead><tr><th>Hora</th><th>kWh</th></tr></thead>
+          <tbody>
+            <tr v-for="h in 12" :key="h - 1" :class="esHoraRellenada(h - 1) ? 'fila-rellenada' : ''">
+              <td>{{ h - 1 }}h</td>
+              <td>
+                <InputNumber v-model="curvaEditable[h - 1]" :minFractionDigits="2" :maxFractionDigits="2"
+                             inputClass="w-full text-xs text-right celda-input"
+                             @paste="onPasteHora($event, h - 1)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="tabla-horas">
+          <thead><tr><th>Hora</th><th>kWh</th></tr></thead>
+          <tbody>
+            <tr v-for="h in 12" :key="h + 11" :class="esHoraRellenada(h + 11) ? 'fila-rellenada' : ''">
+              <td>{{ h + 11 }}h</td>
+              <td>
+                <InputNumber v-model="curvaEditable[h + 11]" :minFractionDigits="2" :maxFractionDigits="2"
+                             inputClass="w-full text-xs text-right celda-input"
+                             @paste="onPasteHora($event, h + 11)" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <p class="text-xs mt-3" style="color: #9b89b5;">
-        Las horas resaltadas se completaron con reconectador, Solenium o histórico -- corrígelas solo si tienes
-        un valor real más confiable. La corrección queda registrada con tu nombre.
-      </p>
+      <div class="flex items-center gap-1.5 text-xs mt-3" style="color: #9b89b5;">
+        <span class="inline-block rounded-sm" style="width: 12px; height: 12px; background: rgba(240, 192, 64, 0.35); border: 1px solid #F0C040;"></span>
+        Hora rellenada (reconectador/Solenium/histórico)
+      </div>
       <p class="text-xs mt-1" style="color: #9b89b5;">
-        Tip: puedes pegar una columna o fila de 24 valores directamente en cualquier celda, se distribuye sola en
-        las horas siguientes.
+        Tip: Puedes pegar una columna completa desde cualquier celda.
       </p>
       <div class="flex justify-end mt-2">
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
@@ -417,16 +435,43 @@ function fmtKwh(v) {
 </script>
 
 <style scoped>
-/* auto-fill con un mínimo de 76px en vez de un número fijo de columnas --
-   así la celda nunca queda más angosta de lo que necesita un número de
-   miles con decimales (ej. "1.234,56"), sea cual sea el ancho disponible. */
-.edit-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
-  gap: 8px;
+/* Tabla vertical estilo Excel (Hora | kWh) -- dos columnas de 12 horas cada
+   una, lado a lado, para no obligar a un scroll larguísimo de 24 filas. */
+.tabla-horas {
+  border-collapse: collapse;
 }
-:deep(.campo-rellenado input) {
-  border-color: #F0C040 !important;
-  background: rgba(240, 192, 64, 0.08);
+.tabla-horas th, .tabla-horas td {
+  border: 1px solid #e8e0f0;
+  padding: 0;
+}
+.tabla-horas th {
+  background: #f9f7ff;
+  color: #6b5a8a;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+  padding: 6px 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+.tabla-horas td:first-child {
+  font-family: ui-monospace, 'SF Mono', Consolas, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2C2039;
+  padding: 0 10px;
+  white-space: nowrap;
+  background: #f9f7ff;
+}
+.tabla-horas tr.fila-rellenada td:last-child { background: rgba(240, 192, 64, 0.14); }
+:deep(.celda-input) {
+  width: 110px;
+  height: 32px;
+  border: none !important;
+  background: transparent !important;
+}
+:deep(.celda-input:focus) {
+  outline: 2px solid #915BD8;
+  outline-offset: -2px;
 }
 </style>
