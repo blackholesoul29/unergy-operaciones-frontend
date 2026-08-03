@@ -102,8 +102,15 @@ watch(() => route.query, (q) => {
   else if (VALID.includes(q.tab) && q.tab !== tab.value) tab.value = q.tab
 })
 
-// Período + tipo compartidos por los 3 tabs (todos son espejo del Panel Contable)
-const periodo = ref(mesActualISO())
+// Período + tipo compartidos por los tabs (todos son espejo del Panel Contable).
+// Arranca en el MES ANTERIOR: la liquidación/facturación es mes vencido, así que el
+// mes actual casi siempre está vacío. El usuario puede avanzar con la flecha.
+function mesAnteriorISO() {
+  const [y, m] = mesActualISO().split('-').map(Number)
+  const d = new Date(y, m - 2, 1)   // m es 1-indexado → m-2 = mes anterior
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
+}
+const periodo = ref(mesAnteriorISO())
 const tipo = ref('preliquidacion')
 const esMesActual = computed(() => periodo.value === mesActualISO())
 function stepMes(delta) {
