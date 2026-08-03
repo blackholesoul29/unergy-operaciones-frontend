@@ -106,8 +106,9 @@
         <!-- Tarjetas informativas del mes -->
         <div class="fac-kpis">
           <div class="fac-kpi hero">
-            <p class="k">Vamos a facturar este mes</p>
-            <p class="v">{{ fmtCOP(res.facturacion_total || 0) }}</p>
+            <p class="k">Ingresos venta de energía</p>
+            <p class="v">{{ fmtCOP(res.ingreso_total || res.facturacion_total || 0) }}</p>
+            <p class="sub2">{{ fmtCOP(res.facturacion_total || 0) }} PPA + {{ fmtCOP(res.ingreso_bolsa || 0) }} bolsa</p>
           </div>
           <div class="fac-kpi">
             <p class="k">Energía despachada</p>
@@ -162,8 +163,8 @@
             <span class="ml-auto fac-fac-nums">
               <span class="muted">{{ f.contratos }} contr</span>
               <span class="muted">· {{ fmtMWh(f.kwh) }}</span>
-              <span v-if="!f.sin_ppa" class="muted">· tarifa {{ f.tarifa_mixta ? 'varía' : fmtNum(f.tarifa_indexada) }}</span>
-              <b v-if="f.sin_ppa" class="muted" style="font-weight:600">factura XM (bolsa)</b>
+              <span class="muted">· tarifa {{ tarifaFacturaTxt(f) }}</span>
+              <b v-if="f.sin_ppa && !f.facturacion" class="muted" style="font-weight:600">sin precio bolsa</b>
               <b v-else>{{ fmtCOP(f.facturacion) }}</b>
             </span>
           </div>
@@ -277,6 +278,31 @@
             <span v-if="ippActual" class="text-[11px] ml-1" style="color:#2C7a3f">Actual: {{ ippActual }}</span>
           </div>
         </div>
+
+        <!-- Precio de bolsa: valoriza la energía sin PPA (UNGC) -->
+        <div class="fac-card p-4">
+          <p class="text-sm font-bold mb-1" style="color:#2C2039">Precio de bolsa — {{ formatPeriodo(periodo) }}</p>
+          <p class="text-[11px] mb-3" style="color:#9b8fb0">
+            Valoriza la energía de los contratos <b>sin PPA (UNGC / bolsa)</b>, que XM factura a precio de bolsa.
+            Déjalo vacío para usar el promedio sugerido.
+          </p>
+          <div class="flex items-end gap-2 flex-wrap">
+            <div>
+              <label class="fac-lbl">Precio bolsa ($/kWh)</label>
+              <input v-model.number="bolsaInput" type="number" step="0.01" class="fac-in"
+                     :placeholder="bolsa.sugerido != null ? String(bolsa.sugerido) : '$/kWh'" />
+            </div>
+            <button class="fac-btn" :disabled="guardandoBolsa" @click="guardarBolsa">
+              <i :class="guardandoBolsa ? 'pi pi-spin pi-spinner' : 'pi pi-save'" class="text-xs" /> Guardar
+            </button>
+            <span v-if="bolsa.sugerido != null" class="text-[11px] ml-1" style="color:#6b5a8a">
+              Sugerido (prom. mes): {{ fmtNum(bolsa.sugerido) }}
+            </span>
+            <span class="text-[11px] ml-1" :style="{ color: bolsa.vigente != null ? '#2C7a3f' : '#c0392b' }">
+              Vigente: {{ bolsa.vigente != null ? fmtNum(bolsa.vigente) + ' $/kWh' : 'sin precio' }}
+            </span>
+          </div>
+        </div>
         <div class="fac-card">
           <p class="fac-note">Histórico</p>
           <div class="tblwrap">
@@ -333,6 +359,9 @@ const ippHist = ref([])
 const ippInput = ref(null)
 const subiendo = ref(false)
 const guardandoIpp = ref(false)
+const bolsa = ref({ manual: null, sugerido: null, vigente: null })
+const bolsaInput = ref(null)
+const guardandoBolsa = ref(false)
 
 const per = computed(() => (props.periodo || '').slice(0, 7))
 const añoMes = computed(() => { const [a, m] = per.value.split('-').map(Number); return { a, m } })
@@ -358,6 +387,10 @@ const tarifaPromedio = computed(() => {
   return k ? (res.value.facturacion_total || 0) / k : null
 })
 
+function tarifaFacturaTxt (f) {
+  if (f.sin_ppa) return f.tarifa_indexada != null ? fmtNum(f.tarifa_indexada) + ' (bolsa)' : 'bolsa —'
+  return f.tarifa_mixta ? 'varía' : fmtNum(f.tarifa_indexada)
+}
 const fmtNum = (v) => v == null ? '—' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 2 })
 const fmtMWh = (kwh) => kwh == null ? '—' : (kwh / 1000).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' MWh'
 // Los % de división llevan 4 decimales (22,8066); no se redondean a 2 o el reparto
@@ -368,10 +401,11 @@ async function load () {
   if (!per.value) return
   loading.value = true
   try {
-    const [fac, desp, ipp] = await Promise.all([
+    const [fac, desp, ipp, blz] = await Promise.all([
       api.get('/facturacion', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({})),
       api.get('/facturacion/despacho', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({ contratos: [] })),
       api.get('/ppa/ipp/mensual').then(r => r.data).catch(() => []),
+      api.get('/facturacion/bolsa', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({})),
     ])
     res.value = fac.resumen || {}
     lineas.value = fac.lineas || []
@@ -380,6 +414,8 @@ async function load () {
     despacho.value = desp || { contratos: [] }
     ippHist.value = (ipp || []).slice().sort((a, b) => (b.año - a.año) || (b.mes - a.mes))
     ippInput.value = ippActual.value
+    bolsa.value = blz || { manual: null, sugerido: null, vigente: null }
+    bolsaInput.value = bolsa.value.manual
   } finally {
     loading.value = false
   }
@@ -551,6 +587,17 @@ async function guardarIpp () {
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e?.response?.data?.detail || e.message, life: 6000 })
   } finally { guardandoIpp.value = false }
+}
+
+async function guardarBolsa () {
+  guardandoBolsa.value = true
+  try {
+    await api.put('/facturacion/bolsa', { periodo: per.value, valor: bolsaInput.value ? Number(bolsaInput.value) : null })
+    toast.add({ severity: 'success', summary: 'Precio de bolsa guardado', life: 3000 })
+    await load()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e?.response?.data?.detail || e.message, life: 6000 })
+  } finally { guardandoBolsa.value = false }
 }
 
 watch(() => props.periodo, load)
