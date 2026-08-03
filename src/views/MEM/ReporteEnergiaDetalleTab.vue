@@ -346,7 +346,10 @@ const CASO_INFO_GENERACION = {
   '2': { nombre: 'Medidor valida', descripcion: 'El reporte automático no fue válido, pero un medidor coincide con los inversores' },
   '3': { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores sub-reportan frente a los inversores; se corrige con el histórico de pérdida' },
   '4': { nombre: 'Medidor de mayor valor', descripcion: 'Los medidores sobre-reportan frente a los inversores; se usa el de mayor valor' },
-  '5': { nombre: 'Sin inversores registrados', descripcion: 'Hay medidor con dato, pero el proyecto no tiene inversores en Solenium contra qué validarlo' },
+  // '5' no tiene una sola descripcion fija -- el arbol real (clasificador.py)
+  // tiene 4 caminos distintos que todos terminan en el mismo numero de Caso
+  // (CGM ya valido sin inversores completos para cruzar, inversores parciales
+  // x FP, reconectador, o medidor sin inversores). Ver casoInfo5() abajo.
   '6': { nombre: 'Apagado', descripcion: 'Ninguna fuente -- CGM, medidor, inversores ni reconectador -- registra generación hoy' },
   '7': { nombre: 'Reconstruido con reconectador o crudos', descripcion: 'Sin reporte automático ni medidor; se reconstruye con reconectador, Solenium (power) o datos crudos completos' },
   '8': { nombre: 'Datos crudos parciales', descripcion: 'Datos crudos incompletos; se rellenan las horas faltantes con reconectador, Solenium o histórico' },
@@ -359,9 +362,35 @@ const CASO_INFO_CONSUMO = {
   'Sin dato': { nombre: 'Sin dato', descripcion: 'Ninguna fuente disponible para este día' },
   'Error': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
 }
+// Caso 5 (Generación) junta 4 caminos reales del clasificador bajo un mismo
+// numero -- distinguirlos por medidor_usado, que sí refleja cuál se tomó:
+//  - 'cgm': el reporte CGM ya era válido; el único motivo de no quedar en
+//    Caso 1 es que Solenium no tenía dato completo para cruzar ese día
+//    (o de plano no hay inversores registrados -- nota_solenium lo dice).
+//  - 'inversores': CGM no válido y medidor caído; se usa el total parcial
+//    de inversores corregido con el Factor de Pérdida.
+//  - 'reconectador': CGM no válido, medidor caído y sin FP; se reconstruye
+//    con el reconectador.
+//  - 'principal' / 'respaldo': el caso "clásico" -- sí hay medidor con
+//    dato, de verdad no hay inversores contra qué validarlo.
+function casoInfo5(d) {
+  if (d.medidor_usado === 'cgm') {
+    return d.nota_solenium
+      ? { nombre: 'Sin inversores registrados', descripcion: 'El reporte CGM fue válido; el proyecto no tiene inversores registrados en Solenium' }
+      : { nombre: 'CGM válido, Solenium incompleto', descripcion: 'El reporte CGM ya era válido; los inversores reportaron incompleto ese día y no se pudieron usar para validar cruzado' }
+  }
+  if (d.medidor_usado === 'inversores') {
+    return { nombre: 'Inversores parciales × Factor de Pérdida', descripcion: 'CGM no válido y el medidor está caído; se usa el total parcial de inversores corregido con el histórico de pérdida' }
+  }
+  if (d.medidor_usado === 'reconectador') {
+    return { nombre: 'Reconstruido con reconectador', descripcion: 'CGM no válido, el medidor está caído y Solenium no tiene dato completo; se reconstruye con el reconectador' }
+  }
+  return { nombre: 'Sin inversores registrados', descripcion: 'Hay medidor con dato, pero el proyecto no tiene inversores en Solenium contra qué validarlo' }
+}
 const casoInfo = computed(() => {
   const d = detalle.value
   if (!d) return { nombre: '', descripcion: '' }
+  if (d.tipo === 'generacion' && String(d.caso) === '5') return casoInfo5(d)
   const mapa = d.tipo === 'generacion' ? CASO_INFO_GENERACION : CASO_INFO_CONSUMO
   return mapa[String(d.caso)] || { nombre: `Caso ${d.caso}`, descripcion: '' }
 })
