@@ -25,6 +25,10 @@
           <p class="text-xs" style="color: #6b5a8a;">{{ casoInfo.descripcion }}</p>
         </div>
       </div>
+      <p v-if="detalle.error_clasificacion" class="text-xs rounded-lg px-2.5 py-1.5 mb-3 font-mono"
+         style="background: rgba(214,68,85,0.08); color: #D64455;">
+        {{ detalle.error_clasificacion }}
+      </p>
       <dl class="grid grid-cols-2 gap-y-2 text-sm">
         <dt style="color: #9b89b5;">Fuente usada</dt><dd class="font-mono">{{ etiquetaFuente(detalle.medidor_usado) }}</dd>
         <dt style="color: #9b89b5;">Energía Total</dt><dd class="font-mono">{{ fmtKwh(detalle.energia_final_kwh) }}</dd>
@@ -114,17 +118,17 @@
       </div>
     </div>
 
-    <!-- Historial de ediciones (audit_log) -->
+    <!-- Historial de actividad (audit_log): ediciones, validaciones, envíos a Quoia -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
-      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Historial de ediciones</p>
+      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Historial de actividad</p>
       <p v-if="!ediciones.length" class="text-xs" style="color: #9b89b5;">
-        Sin ediciones manuales registradas para este día.
+        Sin actividad registrada para este día.
       </p>
       <div v-else class="space-y-3">
         <div v-for="(ed, i) in ediciones" :key="i" class="pt-3 first:pt-0" :class="i > 0 ? 'border-t' : ''" style="border-color: #e8e0f0;">
           <div class="flex items-baseline gap-2 flex-wrap">
             <span class="text-sm font-bold" style="color: #2C2039;">{{ ed.usuario_nombre || 'Usuario desconocido' }}</span>
-            <span class="text-sm" style="color: #6b5a8a;">corrigió la curva</span>
+            <span class="text-sm" style="color: #6b5a8a;">{{ tituloEdicion(ed.cambios) }}</span>
             <span class="text-xs font-mono ml-auto" style="color: #9b89b5;">{{ fmtFechaHora(ed.created_at) }}</span>
           </div>
           <div class="mt-2 space-y-1.5">
@@ -197,6 +201,25 @@ function fmtFechaHora(iso) {
   return new Date(iso).toLocaleString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
+// Encabezado del evento: cada tipo de accion (corregir, validar, enviar a
+// Quoia) pasa por un endpoint distinto y cae en su propia fila de audit_log
+// -- nunca se mezclan en un mismo 'cambios', asi que un solo chequeo basta.
+function tituloEdicion(cambios) {
+  if (!cambios) return 'hizo un cambio'
+  if ('enviado_quoia_ok' in cambios) return 'envió el reporte a Quoia'
+  if ('curva_final' in cambios || 'energia_final_kwh' in cambios) return 'corrigió la curva'
+  if ('validado_en' in cambios) return 'validó la frontera'
+  return 'hizo un cambio'
+}
+
+// Campos que ya se resumen aparte (arriba) y por eso no deben repetirse en
+// el fallback generico de mas abajo.
+const CAMPOS_YA_RESUMIDOS = new Set([
+  'energia_final_kwh', 'curva_final',
+  'enviado_quoia_ok', 'enviado_quoia_en', 'enviado_quoia_error',
+  'validado_en', 'validado_por_id', 'revisar_manualmente',
+])
+
 // 'curva_final' nunca se muestra como 24 numeros crudos -- se resume a
 // cuantas horas cambiaron. El resto de campos (ej. energia_final_kwh) se
 // muestra como antes -> despues.
@@ -225,8 +248,18 @@ function resumenCambios(cambios) {
         : 'Sin cambios en las horas',
     })
   }
+  if (cambios.enviado_quoia_ok) {
+    const ok = cambios.enviado_quoia_ok.despues
+    partes.push({
+      campo: 'Envío a Quoia',
+      resumen: ok ? 'Enviado correctamente' : `Error — ${cambios.enviado_quoia_error?.despues || 'sin detalle'}`,
+    })
+  }
+  if (cambios.validado_en) {
+    partes.push({ campo: 'Validación', resumen: 'Confirmado sin cambios' })
+  }
   for (const [campo, valores] of Object.entries(cambios)) {
-    if (campo === 'energia_final_kwh' || campo === 'curva_final') continue
+    if (CAMPOS_YA_RESUMIDOS.has(campo)) continue
     partes.push({ campo, antes: String(valores.antes ?? '—'), despues: String(valores.despues ?? '—') })
   }
   return partes
@@ -317,12 +350,14 @@ const CASO_INFO_GENERACION = {
   '6': { nombre: 'Apagado', descripcion: 'Ninguna fuente -- CGM, medidor, inversores ni reconectador -- registra generación hoy' },
   '7': { nombre: 'Reconstruido con reconectador o crudos', descripcion: 'Sin reporte automático ni medidor; se reconstruye con reconectador, Solenium (power) o datos crudos completos' },
   '8': { nombre: 'Datos crudos parciales', descripcion: 'Datos crudos incompletos; se rellenan las horas faltantes con reconectador, Solenium o histórico' },
+  '-1': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
 }
 const CASO_INFO_CONSUMO = {
   'CGM': { nombre: 'Reporte CGM válido', descripcion: 'El reporte automático fue válido y el canal CGM trae dato real' },
   'Medidor': { nombre: 'Medidor valida contra histórico', descripcion: 'CGM no válido; el medidor se comparó contra su propia mediana histórica' },
   'Histórico': { nombre: 'Histórico propio', descripcion: 'Ni CGM ni medidor creíbles; se usa la mediana y forma horaria del histórico (propio o del vecino de predio)' },
   'Sin dato': { nombre: 'Sin dato', descripcion: 'Ninguna fuente disponible para este día' },
+  'Error': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
 }
 const casoInfo = computed(() => {
   const d = detalle.value

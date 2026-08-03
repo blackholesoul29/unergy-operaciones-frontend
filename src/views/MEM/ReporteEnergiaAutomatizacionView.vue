@@ -258,8 +258,31 @@ function sondearResultado() {
     if (ciclosSinCambio >= MAX_CICLOS_SIN_CAMBIO) {
       clearInterval(intervalo)
       ejecutando.value = false
+      avisarSiHuboFallidas(fechaSondeada)
     }
   }, 10000)
+}
+
+// Una vez el sondeo se rinde (dejó de crecer el conteo de filas), se asume
+// que la corrida terminó -- se consulta el resultado real guardado por
+// ejecutar_dia_background (ver GET /ejecutar/estado) para avisar si alguna
+// frontera falló, en vez del silencio actual donde eso solo queda en los
+// logs de Railway.
+async function avisarSiHuboFallidas(fechaSondeada) {
+  try {
+    const { data } = await api.get('/reporte-energia/ejecutar/estado', { params: { fecha: fechaSondeada } })
+    if (data.error_general) {
+      toast.add({ severity: 'error', summary: 'Clasificación interrumpida', detail: data.error_general, life: 8000 })
+    } else if (data.fallidas.length) {
+      toast.add({
+        severity: 'warn', summary: 'Clasificación terminada con errores',
+        detail: `${data.fallidas.length} fronteras fallaron y quedaron marcadas para revisar: ${data.fallidas.join(', ')}`,
+        life: 8000,
+      })
+    }
+  } catch (e) {
+    // silencioso -- esto es un aviso adicional, no debe interrumpir el flujo normal
+  }
 }
 
 async function generarExcel() {
@@ -287,6 +310,12 @@ async function enviarReporte() {
     const { data } = await api.post('/reporte-energia/enviar', null, { params: { fecha: fechaISO.value } })
     if (data.bloqueado) {
       toast.add({ severity: 'warn', summary: 'Envío bloqueado', detail: data.motivo_bloqueo, life: 5000 })
+    } else if (data.fallidos.length) {
+      toast.add({
+        severity: 'warn', summary: 'Reporte enviado con fallos',
+        detail: `${data.enviados} fronteras enviadas, ${data.fallidos.length} fallidas — ${data.fallidos.join('; ')}`,
+        life: 8000,
+      })
     } else {
       toast.add({ severity: 'success', summary: 'Reporte enviado', detail: `${data.enviados} fronteras enviadas`, life: 3000 })
     }
