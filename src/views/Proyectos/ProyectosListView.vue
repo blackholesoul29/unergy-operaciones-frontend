@@ -5,7 +5,7 @@
       <template #actions>
         <Button label="Inversores minigranja" icon="pi pi-bolt" size="small" severity="secondary" outlined
                 :loading="invBackfillLoading" @click="previewInversoresBackfill"
-                v-tooltip.bottom="'Crea los 5 inversores típicos (3×300+50+40 kW)'" />
+                v-tooltip.bottom="'Crea los 5 inversores típicos para minigranjas'" />
         <Button label="Nuevo proyecto" icon="pi pi-plus" size="small" @click="openNew" />
       </template>
     </PageHeader>
