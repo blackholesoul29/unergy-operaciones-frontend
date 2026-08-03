@@ -7,10 +7,6 @@
       <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Rellenado (reconectador/Solenium/histórico)</span>
       <span v-if="capacidadKwh != null" class="chip" style="border-color:#9b89b5;color:#6b5a8a;">┅ Capacidad efectiva ({{ capacidadMwFmt }} MW)</span>
     </div>
-    <p v-if="finalVacia" class="text-xs mb-3" style="color: #9b89b5;">
-      Reporte válido -- se confirmó el total diario ante Quoia, no hay una curva horaria propia que mostrar.
-      La curva de abajo es solo la del medidor, de referencia.
-    </p>
     <svg :width="W" :height="H" :viewBox="`0 0 ${W} ${H}`" class="w-full">
       <line v-for="f in [0, 0.25, 0.5, 0.75, 1]" :key="f"
             :x1="padL" :x2="W - padR" :y1="y(maxV * f)" :y2="y(maxV * f)"
