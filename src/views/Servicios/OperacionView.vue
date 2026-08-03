@@ -899,7 +899,7 @@
                 <InfoIcon icon="pi pi-database" color="#06b6d4" label="Plan de datos"
                   :value="contratos.internet.plan_datos_gb" />
                 <InfoIcon icon="pi pi-gauge" color="#06b6d4" label="Velocidad"
-                  :value="contratos.internet.velocidad_mbps ? `${contratos.internet.velocidad_mbps} Mbps` : null" />
+                  :value="contratos.internet.velocidad_mbps != null ? `${contratos.internet.velocidad_mbps} Mbps` : null" />
                 <InfoIcon icon="pi pi-wifi" color="#06b6d4" label="Tipo de conexión"
                   :value="contratos.internet.tipo_conexion" />
                 <InfoLink color="#06b6d4" label="Factura / Contrato en Drive"
@@ -1352,7 +1352,8 @@ async function loadPagos(tipo) {
 
 function onTabChange(e) {
   const tipo = TABS_TIPOS[e.index]
-  if (tipo) loadPagos(tipo)
+  // Internet no tiene tab de Pagos (PagosTabla no se renderiza para este tipo)
+  if (tipo && tipo !== 'internet') loadPagos(tipo)
 }
 
 function openNuevoPago(tipo) {
