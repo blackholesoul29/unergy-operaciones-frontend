@@ -67,16 +67,28 @@
             </span>
           </button>
           <div v-if="batchesAbiertos.has(batch.enviadoEn)" class="border-t" style="border-color: #e8e0f0;">
-            <div v-for="item in batch.items" :key="item.id" class="flex items-center justify-between gap-3 px-4 py-2.5 border-t first:border-t-0"
+            <div v-for="item in batch.items" :key="item.id" class="flex items-start justify-between gap-3 px-4 py-2.5 border-t first:border-t-0"
               style="border-color: #f0ecf6;">
-              <span class="text-sm font-medium" style="color: #2C2039;">{{ item.nombre }}</span>
-              <span class="text-right">
-                <span v-if="item.exitoso" class="text-xs font-bold px-2 py-0.5 rounded-full" style="background: rgba(16,185,129,0.1); color: #10B981;">Enviado</span>
-                <template v-else>
-                  <span class="text-xs font-bold px-2 py-0.5 rounded-full" style="background: rgba(214,68,85,0.1); color: #D64455;">Error</span>
-                  <span class="block text-xs mt-1" style="color: #D64455;">{{ item.error }}</span>
-                </template>
-              </span>
+              <div class="min-w-0">
+                <span class="text-sm font-medium block" style="color: #2C2039;">{{ item.nombre }}</span>
+                <span v-if="item.proyectosTotal != null && item.proyectos.length && !esParcial(item)" class="text-xs" style="color: #9b89b5;">
+                  {{ item.proyectosTotal }} proyecto{{ item.proyectosTotal === 1 ? '' : 's' }}
+                </span>
+                <div v-else-if="esParcial(item)" class="flex flex-wrap items-center gap-1 mt-0.5">
+                  <span v-for="p in item.proyectos" :key="p" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
+                    style="background: rgba(145,91,216,0.08); color: #6E3FB8;">{{ p }}</span>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <div class="flex flex-col items-end gap-1">
+                  <span v-if="item.exitoso" class="text-xs font-bold px-2 py-0.5 rounded-full" style="background: rgba(16,185,129,0.1); color: #10B981;">Enviado</span>
+                  <span v-else class="text-xs font-bold px-2 py-0.5 rounded-full" style="background: rgba(214,68,85,0.1); color: #D64455;">Error</span>
+                  <span v-if="esParcial(item)" class="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style="background: rgba(199,119,0,0.1); color: #A8590B;">
+                    Parcial · {{ item.proyectos.length }} de {{ item.proyectosTotal }}
+                  </span>
+                </div>
+                <span v-if="!item.exitoso" class="block text-xs mt-1" style="color: #D64455;">{{ item.error }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -192,6 +204,14 @@ function parsearAsunto(asunto) {
   return { periodo: null, nombre: asunto || '(sin asunto)' }
 }
 
+// Un envio es "parcial" cuando no incluyo todos los proyectos vigentes de ese
+// destinatario en ese momento (ej. reenvio puntual a un solo proyecto) --
+// proyectosTotal es null para envios de antes de esta migracion o de otros
+// tipos de correo, asi que no se muestra nada en esos casos.
+function esParcial(item) {
+  return item.proyectosTotal != null && item.proyectos.length > 0 && item.proyectos.length !== item.proyectosTotal
+}
+
 async function cargar() {
   loading.value = true
   try {
@@ -206,6 +226,8 @@ async function cargar() {
           exitoso: row.exitoso,
           error: row.error,
           enviadoEn: row.enviado_at,
+          proyectos: row.proyectos ? row.proyectos.split(',').filter(Boolean) : [],
+          proyectosTotal: row.proyectos_total ?? null,
         }
       })
       .sort((a, b) => new Date(b.enviadoEn) - new Date(a.enviadoEn))
