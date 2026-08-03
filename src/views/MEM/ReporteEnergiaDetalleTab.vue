@@ -73,11 +73,7 @@
 
     <!-- Edición manual -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
-      <div class="flex items-center justify-between mb-3">
-        <p class="text-xs font-semibold uppercase" style="color: #6b5a8a;">Corrección manual (kWh)</p>
-        <Button label="Validar y confiar" size="small" severity="success"
-                :loading="validando" @click="validar" />
-      </div>
+      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Corrección manual (kWh)</p>
       <div class="edit-grid">
         <div v-for="h in 24" :key="h">
           <label class="text-[10px] font-mono block" style="color: #9b89b5;">{{ h - 1 }}h</label>
@@ -129,6 +125,20 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Validar: accion final, independiente de la correccion manual --
+         confirma que el numero automatico esta bien tal cual, sin tocar
+         ningun valor. Separada de "Guardar correccion" para no parecer
+         dos formas de guardar lo mismo. -->
+    <div class="rounded-xl p-4 flex items-center justify-between gap-3" style="border: 1px solid #e8e0f0;">
+      <div>
+        <p class="text-sm font-semibold" style="color: #2C2039;">¿Este día queda listo para reportar?</p>
+        <p class="text-xs" style="color: #9b89b5;">
+          Confirma que el resultado automático está bien tal cual, sin cambiar ningún valor.
+        </p>
+      </div>
+      <Button label="Validar Frontera" severity="success" :loading="validando" @click="validar" />
     </div>
   </div>
 </template>
