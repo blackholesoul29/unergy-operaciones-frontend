@@ -103,6 +103,19 @@
           </div>
         </div>
 
+        <!-- Buscador: por planta / PPA o por número de factura (para ubicar una rápido) -->
+        <div class="fac-buscar">
+          <span style="position:relative; flex:1; min-width:240px">
+            <i class="pi pi-search" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#9b8fb0; font-size:12px" />
+            <input v-model="facFiltro" class="fac-in" style="width:100%; padding-left:32px"
+                   placeholder="Buscar por planta, PPA, contrato o N° de factura…" />
+          </span>
+          <button v-if="facFiltro" class="fac-link" @click="facFiltro = ''">Limpiar</button>
+          <span v-if="filtroActivo" class="text-[11px]" style="color:#9b8fb0">
+            {{ porFacturaMostradas.length }} de {{ porFactura.length }}
+          </span>
+        </div>
+
         <!-- Tarjetas informativas del mes -->
         <div class="fac-kpis">
           <div class="fac-kpi hero">
@@ -126,15 +139,16 @@
           </div>
         </div>
 
-        <div v-for="(f, i) in porFactura" :key="f.factura" class="fac-card"
+        <div v-for="(f, i) in porFacturaMostradas" :key="f.factura" class="fac-card"
              :class="{ 'fac-emitida': f.emitida, 'fac-drag': dragIdx === i,
                        'fac-drop-antes': dropIdx === i && dragIdx > i,
                        'fac-drop-despues': dropIdx === i && dragIdx < i }"
-             @dragover.prevent="arrastrarSobre(i)" @drop.prevent="soltar(i)">
+             @dragover.prevent="!filtroActivo && arrastrarSobre(i)" @drop.prevent="!filtroActivo && soltar(i)">
           <div class="fac-fac-head" @click="toggleFac(f.factura)">
             <!-- Reordenar: arrastrar por el asa para saltos largos, flechas para
-                 mover de a uno. DnD nativo, sin dependencias nuevas. -->
-            <span class="fac-ord" @click.stop>
+                 mover de a uno. DnD nativo, sin dependencias nuevas. Se oculta con el
+                 filtro activo (reordenar un subconjunto no tiene sentido). -->
+            <span v-if="!filtroActivo" class="fac-ord" @click.stop>
               <span class="fac-grip" draggable="true" v-tooltip.top="'Arrastra para reordenar'"
                     @dragstart="iniciarArrastre(i, $event)" @dragend="finArrastre">
                 <i class="pi pi-bars" />
@@ -148,30 +162,27 @@
             </span>
             <input type="checkbox" :checked="f.emitida" @click.stop
                    v-tooltip.top="f.emitida ? tooltipEmitida(f) : 'Marcar como facturada'"
-                   @change="toggleEmitida(f)" />
+                   @change="onCheck(f, $event)" />
             <i :class="abiertas.has(f.factura) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs" style="color:#9b8fb0" />
             <span class="proj">{{ f.factura }}</span>
             <span v-if="f.sin_ppa" class="tag" style="background:#fbeede;color:#c9701a">sin PPA · XM (bolsa)</span>
             <span v-else-if="f.personalizada" class="tag" style="background:#e6f6ef;color:#1f9d6b">dividida</span>
             <span v-else class="tag">{{ f.ppa || '—' }}</span>
-            <span v-if="f.emitida" class="tag" style="background:#e6f6ef;color:#1f9d6b">facturada</span>
-            <!-- Código de la factura emitida: aparece al marcarla; se guarda al salir del
-                 campo o con Enter (PUT /emitida con numero_factura, sin desmarcar). -->
-            <span v-if="f.emitida" class="fac-num" @click.stop>
-              <i class="pi pi-hashtag text-[10px]" style="color:#9b8fb0" />
-              <input v-model="numeroFactura[f.factura]" class="fac-num-in" placeholder="N° factura"
-                     @keyup.enter="guardarNumero(f)" @blur="guardarNumero(f)" />
+            <!-- Número de factura: etiqueta no editable; el lápiz abre la ventana para cambiarlo. -->
+            <span v-if="f.emitida && f.numero_factura" class="fac-numtag" @click.stop="abrirNumero(f)"
+                  v-tooltip.top="'Editar el N° de factura'">
+              <i class="pi pi-hashtag text-[9px]" /> {{ f.numero_factura }}
             </span>
-            <button class="fac-msg" @click.stop="copiarMensaje(f)"
-                    v-tooltip.top="'Copiar el mensaje de la factura'">
-              <i :class="copiada === f.factura ? 'pi pi-check' : 'pi pi-copy'" class="text-xs" />
-              {{ copiada === f.factura ? 'Copiado' : 'Mensaje' }}
-            </button>
-            <button class="fac-msg" @click.stop="copiarImagen(f)"
-                    v-tooltip.top="'Copiar la factura como imagen (o descargarla)'">
-              <i :class="imagenId === f.factura ? 'pi pi-check' : 'pi pi-image'" class="text-xs" />
-              {{ imagenId === f.factura ? 'Copiada' : 'Imagen' }}
-            </button>
+            <span v-else-if="f.emitida" class="tag" style="background:#e6f6ef;color:#1f9d6b; cursor:pointer" @click.stop="abrirNumero(f)"
+                  v-tooltip.top="'Agregar el N° de factura'">facturada · N°?</span>
+            <span class="fac-acts" @click.stop>
+              <button class="fac-icobtn" @click="copiarMensaje(f)" v-tooltip.top="'Copiar el mensaje'">
+                <i :class="copiada === f.factura ? 'pi pi-check' : 'pi pi-copy'" />
+              </button>
+              <button class="fac-icobtn" @click="copiarImagen(f)" v-tooltip.top="'Copiar como imagen'">
+                <i :class="imagenId === f.factura ? 'pi pi-check' : 'pi pi-image'" />
+              </button>
+            </span>
             <span class="ml-auto fac-fac-nums">
               <span class="muted">{{ f.contratos }} contr</span>
               <span class="muted">· {{ fmtMWh(f.kwh) }}</span>
@@ -361,12 +372,33 @@
         </div>
       </template>
     </template>
+
+    <!-- Ventana para el N° de factura al marcarla (o al editarlo) -->
+    <Dialog v-model:visible="numModal.open" modal :closable="!numModal.saving" :draggable="false"
+            :style="{ width: '380px' }" :header="numModal.modo === 'editar' ? 'N° de factura' : 'Marcar como facturada'">
+      <div class="space-y-3">
+        <p class="text-xs" style="color:#6b5a8a">
+          <b>{{ numModal.factura }}</b><br>
+          Escribe el número de la factura emitida (ej. <b>UESP2056</b>).
+        </p>
+        <input v-model="numModal.valor" class="fac-in" style="width:100%" placeholder="N° de factura"
+               @keyup.enter="confirmarNumero" autofocus />
+      </div>
+      <template #footer>
+        <button class="fac-link" :disabled="numModal.saving" @click="numModal.open = false">Cancelar</button>
+        <button class="fac-btn ml-2" :disabled="numModal.saving" @click="confirmarNumero">
+          <i :class="numModal.saving ? 'pi pi-spin pi-spinner' : 'pi pi-check'" class="text-xs" />
+          {{ numModal.modo === 'editar' ? 'Guardar' : 'Marcar facturada' }}
+        </button>
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
+import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import { fmtCOP, formatPeriodo } from '@/utils/liquidaciones'
@@ -396,7 +428,8 @@ const guardandoOrden = ref(false)
 const ordenTocado = ref(false)             // hay reordenamiento sin guardar
 const copiada = ref(null)                  // factura cuyo mensaje se acaba de copiar
 const imagenId = ref(null)                 // factura cuya imagen se acaba de copiar
-const numeroFactura = reactive({})         // factura key → código de la factura emitida
+const facFiltro = ref('')                  // buscador de facturas (planta / PPA / N° factura)
+const numModal = reactive({ open: false, modo: 'marcar', factura: null, ref: null, valor: '', saving: false })
 const despacho = ref({ contratos: [], kwh_total: 0 })
 const despFiltro = ref('')                 // filtro de búsqueda en Despachos
 const diasAbiertos = reactive(new Set())   // contratos con el día a día desplegado
@@ -427,6 +460,18 @@ const MOTIVOS = {
   sin_ipp_mes: 'Falta el IPP del mes',
 }
 const noFacturables = computed(() => lineas.value.filter(l => l.estado !== 'ok'))
+// Facturas: buscador por planta / PPA / contrato / N° de factura. Para ubicar una
+// rápido sin recorrer toda la lista.
+const filtroActivo = computed(() => facFiltro.value.trim() !== '')
+const porFacturaMostradas = computed(() => {
+  const q = facFiltro.value.trim().toLowerCase()
+  if (!q) return porFactura.value
+  return porFactura.value.filter(f => {
+    const campos = [f.factura, f.ppa, f.numero_factura,
+      ...(f.proyectos || []).flatMap(p => [p.proyecto, p.contrato])]
+    return campos.some(x => String(x || '').toLowerCase().includes(q))
+  })
+})
 // Despachos: filtro por contrato / vendedor / comprador.
 const despachoFiltrado = computed(() => {
   const q = despFiltro.value.trim().toLowerCase()
@@ -466,8 +511,6 @@ async function load () {
     lineas.value = fac.lineas || []
     porSic.value = fac.por_codigo_sic || []
     porFactura.value = fac.por_factura || []
-    // Precargar los códigos de factura ya guardados en los inputs.
-    for (const f of porFactura.value) if (f.numero_factura != null) numeroFactura[f.factura] = f.numero_factura
     despacho.value = desp || { contratos: [] }
     diasAbiertos.clear(); for (const k in dias) delete dias[k]   // el día a día es por mes
     ippHist.value = (ipp || []).slice().sort((a, b) => (b.año - a.año) || (b.mes - a.mes))
@@ -596,33 +639,50 @@ function tooltipEmitida (f) {
   return `Facturada${quien}${cuando} · clic para desmarcar`
 }
 
-async function toggleEmitida (f) {
-  const nuevo = !f.emitida
-  f.emitida = nuevo                                  // optimista: el check responde ya
-  if (!nuevo) numeroFactura[f.factura] = ''          // al desmarcar se limpia el código
-  try {
-    await api.put('/facturacion/emitida', {
-      nombre: f.factura, periodo: per.value, emitida: nuevo,
-      numero_factura: nuevo ? (numeroFactura[f.factura] || null) : null,
-    })
-    res.value = { ...res.value, emitidas: (res.value.emitidas || 0) + (nuevo ? 1 : -1) }
-  } catch (e) {
-    f.emitida = !nuevo                               // revertir si el backend falló
-    toast.add({ severity: 'error', summary: 'No se pudo marcar', detail: e?.response?.data?.detail || e.message, life: 5000 })
-  }
+// Clic en el chulito: si no está facturada, abre la ventana para el N° de factura;
+// si ya lo está, la desmarca (con confirmación mínima).
+function onCheck (f, ev) {
+  if (ev && ev.target) ev.target.checked = f.emitida   // el estado real lo decide el flujo, no el DOM
+  if (f.emitida) desmarcarEmitida(f)
+  else abrirNumero(f, 'marcar')
 }
 
-// Guardar/editar el código de la factura sin desmarcarla (Enter o al salir del campo).
-async function guardarNumero (f) {
-  if (!f.emitida) return
-  const num = (numeroFactura[f.factura] || '').trim() || null
-  if (num === (f.numero_factura || null)) return     // sin cambios, no molestar al backend
+function abrirNumero (f, modo = 'editar') {
+  numModal.factura = f.factura
+  numModal.ref = f
+  numModal.valor = f.numero_factura || ''
+  numModal.modo = f.emitida && modo !== 'marcar' ? 'editar' : 'marcar'
+  numModal.saving = false
+  numModal.open = true
+}
+
+async function confirmarNumero () {
+  const f = numModal.ref
+  if (!f) return
+  const num = (numModal.valor || '').trim() || null
+  const yaEmitida = f.emitida
+  numModal.saving = true
   try {
     await api.put('/facturacion/emitida', { nombre: f.factura, periodo: per.value, emitida: true, numero_factura: num })
+    f.emitida = true
     f.numero_factura = num
-    toast.add({ severity: 'success', summary: 'Código guardado', detail: num || 'Sin código', life: 2500 })
+    if (!yaEmitida) res.value = { ...res.value, emitidas: (res.value.emitidas || 0) + 1 }
+    numModal.open = false
+    toast.add({ severity: 'success', summary: yaEmitida ? 'N° actualizado' : 'Factura marcada', detail: num || 'Sin N°', life: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar el código', detail: e?.response?.data?.detail || e.message, life: 5000 })
+    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e?.response?.data?.detail || e.message, life: 5000 })
+  } finally { numModal.saving = false }
+}
+
+async function desmarcarEmitida (f) {
+  f.emitida = false
+  const num = f.numero_factura; f.numero_factura = null
+  try {
+    await api.put('/facturacion/emitida', { nombre: f.factura, periodo: per.value, emitida: false })
+    res.value = { ...res.value, emitidas: Math.max(0, (res.value.emitidas || 0) - 1) }
+  } catch (e) {
+    f.emitida = true; f.numero_factura = num                 // revertir si el backend falló
+    toast.add({ severity: 'error', summary: 'No se pudo desmarcar', detail: e?.response?.data?.detail || e.message, life: 5000 })
   }
 }
 
@@ -870,11 +930,20 @@ onMounted(load)
   border:1px solid #e5e2ec; background:#fff; color:#6E3FB8; font-size:11px; font-weight:700; cursor:pointer; }
 .fac-msg:hover { background:#f4f1fa; }
 
-/* Código de la factura emitida */
-.fac-num { display:inline-flex; align-items:center; gap:3px; }
-.fac-num-in { width:96px; padding:2px 6px; border:1px solid #cdeadd; border-radius:6px; font-size:11px;
-  color:#1f7a56; background:#f4fbf7; }
-.fac-num-in:focus { outline:none; border-color:#1f9d6b; }
+/* Buscador de facturas */
+.fac-buscar { display:flex; align-items:center; gap:10px; margin:2px 0 4px; flex-wrap:wrap; }
+
+/* N° de factura como etiqueta no editable (clic = editar en ventana) */
+.fac-numtag { display:inline-flex; align-items:center; gap:3px; font-size:11px; font-weight:700;
+  padding:1px 8px; border-radius:6px; background:#e6f6ef; color:#1f7a56; cursor:pointer; }
+.fac-numtag:hover { background:#d6efe2; }
+
+/* Acciones compactas (mensaje / imagen) como iconos, para descongestionar el header */
+.fac-acts { display:inline-flex; align-items:center; gap:2px; }
+.fac-icobtn { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
+  border-radius:7px; border:1px solid #e5e2ec; background:#fff; color:#6E3FB8; cursor:pointer; }
+.fac-icobtn:hover { background:#f4f1fa; }
+.fac-icobtn i { font-size:12px; }
 
 /* Despachos: filtro + día a día */
 .fac-desp-filtro { display:flex; align-items:center; justify-content:space-between; gap:10px;
