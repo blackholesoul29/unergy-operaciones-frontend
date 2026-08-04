@@ -384,6 +384,9 @@ function casoInfoMedidorConsumo(d) {
   if (d.medidor_usado === 'revisar') {
     return { nombre: 'Sin histórico para comparar', descripcion: 'CGM no válido; hay medidor con dato, pero no hay suficiente histórico para calcular su mediana -- no se pudo validar ni generar curva automática' }
   }
+  if (d.medidor_usado === 'principal_sin_historico' || d.medidor_usado === 'respaldo_sin_historico') {
+    return { nombre: 'Medidor sin histórico para validar', descripcion: 'CGM no válido; el medidor trae las 24 horas completas pero no hay mediana histórica para confirmar que el nivel es correcto -- se reporta igual, revisar a mano' }
+  }
   return { nombre: 'Medidor valida contra histórico', descripcion: 'CGM no válido; el medidor se comparó contra su propia mediana histórica' }
 }
 
@@ -521,6 +524,7 @@ const ETIQUETAS_FUENTE = {
   reconectador: 'Reconectador', solenium_power: 'Solenium (power)', ninguno: 'Apagado',
   revisar: 'Sin fuente', externo: 'Reporta otra empresa', historico: 'Histórico propio',
   historico_vecino: 'Histórico (vecino de predio)',
+  principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
 }
 function etiquetaFuente(v) {
   return ETIQUETAS_FUENTE[v] || v || '—'
