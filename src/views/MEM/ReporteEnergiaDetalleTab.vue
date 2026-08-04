@@ -121,6 +121,67 @@
       </div>
     </div>
 
+    <!-- Exclusion temporal: para cuando no se quiere reportar NADA mientras
+         se resuelve algo externo (ej. un CT en falla ya reportado a XM) --
+         no depende de Fallas (requiere monitoreo/representación, que no
+         todas las fronteras tienen). -->
+    <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
+      <template v-if="exclusionActiva && !editandoExclusion">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <p class="text-sm font-semibold" style="color: #A8590B;">
+              <i class="pi pi-ban text-xs mr-1.5" />Excluida temporalmente
+            </p>
+            <p class="text-xs mt-1" style="color: #6b5a8a;">
+              {{ exclusionActiva.motivo }}
+              <span v-if="exclusionActiva.fecha_fin_estimada"> -- hasta {{ exclusionActiva.fecha_fin_estimada }}</span>
+            </p>
+            <p class="text-xs mt-1" style="color: #9b89b5;">
+              Registrada por {{ exclusionActiva.creado_por || 'desconocido' }} el {{ fmtFechaHora(exclusionActiva.created_at) }}
+            </p>
+          </div>
+          <button type="button" class="text-xs font-semibold flex-none" style="color: #6E3FB8;" @click="iniciarEdicionExclusion">
+            <i class="pi pi-pencil text-[10px] mr-1" />Editar
+          </button>
+        </div>
+        <Button label="Marcar resuelta" severity="secondary" outlined size="small" class="mt-3"
+          :loading="resolviendoExclusion" @click="resolverExclusionActual" />
+      </template>
+      <template v-else-if="exclusionActiva && editandoExclusion">
+        <p class="text-sm font-semibold mb-2" style="color: #2C2039;">Editar exclusión</p>
+        <div class="flex flex-col gap-2 max-w-lg">
+          <div class="flex gap-2 items-start">
+            <Textarea v-model="nuevaExclusionMotivo" rows="2" class="text-xs flex-1" />
+            <div class="flex flex-col gap-1 flex-none">
+              <label class="text-xs" style="color: #6b5a8a;">Hasta</label>
+              <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-36" showIcon showClear />
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <Button label="Guardar" size="small" :disabled="!nuevaExclusionMotivo.trim()" :loading="editandoExclusionGuardando" @click="guardarEdicionExclusion" />
+            <Button label="Cancelar" severity="secondary" outlined size="small" @click="editandoExclusion = false" />
+          </div>
+        </div>
+      </template>
+      <template v-else>
+        <p class="text-sm font-semibold" style="color: #2C2039;">Excluir temporalmente</p>
+        <p class="text-xs mb-3" style="color: #9b89b5;">
+          No reporta ningún número automático mientras se resuelve el inconveniente/falla.
+        </p>
+        <div class="flex flex-col gap-2 max-w-lg">
+          <div class="flex gap-2 items-start">
+            <Textarea v-model="nuevaExclusionMotivo" rows="2" placeholder="Motivo" class="text-xs flex-1" />
+            <div class="flex flex-col gap-1 flex-none">
+              <label class="text-xs" style="color: #6b5a8a;">Hasta</label>
+              <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-36" showIcon />
+            </div>
+          </div>
+          <Button label="Excluir temporalmente" severity="danger" outlined size="small"
+            :disabled="!nuevaExclusionMotivo.trim()" :loading="creandoExclusion" @click="crearExclusionActual" />
+        </div>
+      </template>
+    </div>
+
     <!-- Historial de actividad (audit_log): ediciones, validaciones, envíos a Quoia -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Historial de actividad</p>
@@ -164,43 +225,6 @@
         </p>
       </div>
       <Button label="Validar Frontera" severity="success" :loading="validando" @click="validar" />
-    </div>
-
-    <!-- Exclusion temporal: para cuando no se quiere reportar NADA mientras
-         se resuelve algo externo (ej. un CT en falla ya reportado a XM) --
-         no depende de Fallas (requiere monitoreo/representación, que no
-         todas las fronteras tienen). -->
-    <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
-      <template v-if="exclusionActiva">
-        <p class="text-sm font-semibold" style="color: #A8590B;">
-          <i class="pi pi-ban text-xs mr-1.5" />Excluida temporalmente
-        </p>
-        <p class="text-xs mt-1" style="color: #6b5a8a;">
-          {{ exclusionActiva.motivo }}
-          <span v-if="exclusionActiva.fecha_fin_estimada"> -- hasta {{ exclusionActiva.fecha_fin_estimada }}</span>
-        </p>
-        <p class="text-xs mt-1" style="color: #9b89b5;">
-          Registrada por {{ exclusionActiva.creado_por || 'desconocido' }} el {{ fmtFechaHora(exclusionActiva.created_at) }}
-        </p>
-        <Button label="Marcar resuelta" severity="secondary" outlined size="small" class="mt-3"
-          :loading="resolviendoExclusion" @click="resolverExclusionActual" />
-      </template>
-      <template v-else>
-        <p class="text-sm font-semibold" style="color: #2C2039;">Excluir temporalmente</p>
-        <p class="text-xs mb-3" style="color: #9b89b5;">
-          No reporta ningún número automático mientras dure -- para cuando hay algo externo sin resolver
-          (ej. un CT en falla ya reportado a XM).
-        </p>
-        <div class="flex flex-col gap-2 max-w-sm">
-          <Textarea v-model="nuevaExclusionMotivo" rows="2" placeholder="Motivo (ej. CT en falla, reportado a XM el ...)" class="text-xs" />
-          <div class="flex items-center gap-2">
-            <label class="text-xs flex-none" style="color: #6b5a8a;">Hasta</label>
-            <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-40" showIcon />
-          </div>
-          <Button label="Excluir temporalmente" severity="danger" outlined size="small"
-            :disabled="!nuevaExclusionMotivo.trim()" :loading="creandoExclusion" @click="crearExclusionActual" />
-        </div>
-      </template>
     </div>
   </div>
 </template>
@@ -247,6 +271,8 @@ const nuevaExclusionMotivo = ref('')
 const nuevaExclusionFechaFin = ref(null)
 const creandoExclusion = ref(false)
 const resolviendoExclusion = ref(false)
+const editandoExclusion = ref(false)
+const editandoExclusionGuardando = ref(false)
 
 async function cargarExclusiones() {
   try {
@@ -295,6 +321,35 @@ async function resolverExclusionActual() {
     toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo resolver la exclusión.', life: 4000 })
   } finally {
     resolviendoExclusion.value = false
+  }
+}
+
+function iniciarEdicionExclusion() {
+  if (!exclusionActiva.value) return
+  nuevaExclusionMotivo.value = exclusionActiva.value.motivo
+  nuevaExclusionFechaFin.value = exclusionActiva.value.fecha_fin_estimada
+    ? new Date(exclusionActiva.value.fecha_fin_estimada + 'T00:00:00')
+    : null
+  editandoExclusion.value = true
+}
+
+async function guardarEdicionExclusion() {
+  if (!exclusionActiva.value) return
+  editandoExclusionGuardando.value = true
+  try {
+    await api.patch(`/reporte-energia/exclusiones/${exclusionActiva.value.id}`, {
+      motivo: nuevaExclusionMotivo.value.trim(),
+      fecha_fin_estimada: nuevaExclusionFechaFin.value ? nuevaExclusionFechaFin.value.toISOString().slice(0, 10) : null,
+    })
+    toast.add({ severity: 'success', summary: 'Exclusión actualizada', life: 2500 })
+    editandoExclusion.value = false
+    nuevaExclusionMotivo.value = ''
+    nuevaExclusionFechaFin.value = null
+    await cargarExclusiones()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo actualizar la exclusión.', life: 4000 })
+  } finally {
+    editandoExclusionGuardando.value = false
   }
 }
 
