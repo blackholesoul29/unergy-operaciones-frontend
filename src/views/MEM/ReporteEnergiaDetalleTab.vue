@@ -4,9 +4,12 @@
   </div>
   <div v-else-if="detalle" class="space-y-5">
     <div class="flex items-center justify-between flex-wrap gap-2">
-      <div class="text-xs font-mono" style="color: #9b89b5;">
-        {{ detalle.fecha }}
-        <span v-if="detalle.estado_reporte"> · Estado reporte {{ detalle.estado_reporte }}</span>
+      <div>
+        <p class="text-sm font-bold" style="color: #2C2039;">{{ detalle.nombre_proyecto }}</p>
+        <div class="text-xs font-mono" style="color: #9b89b5;">
+          {{ detalle.fecha }}
+          <span v-if="detalle.estado_reporte"> · Estado reporte {{ detalle.estado_reporte }}</span>
+        </div>
       </div>
       <Tag v-if="detalle.revisar_manualmente" value="Revisar manualmente" severity="danger" />
       <Tag v-else value="OK" severity="success" />
