@@ -672,7 +672,7 @@ function _renderFacturaCanvas (f) {
   const scale = 2
   const W = 720, padX = 34
   const proys = f.proyectos || []
-  const headerH = 92, tableHeadH = 28, rowH = 30, footerH = 46
+  const headerH = 92, tableHeadH = 28, rowH = 40, footerH = 46
   const bodyTop = headerH + tableHeadH
   const H = bodyTop + Math.max(proys.length, 1) * rowH + footerH
 
@@ -707,14 +707,15 @@ function _renderFacturaCanvas (f) {
   }
 
   // Cabecera de tabla
-  const colKwhR = W - padX - 150
-  const colValR = W - padX
+  const colValR = W - padX            // Facturación
+  const colKwhR = W - padX - 175      // Energía
+  const colTarR = W - padX - 320      // Tarifa
   let y = headerH + 18
   ctx.fillStyle = '#faf7ff'; ctx.fillRect(0, headerH, W, tableHeadH)
   ctx.fillStyle = '#9b8fb0'; ctx.font = 'bold 10px Inter, Arial, sans-serif'
   ctx.fillText('PROYECTO / CONTRATO', padX, y)
   ctx.textAlign = 'right'
-  ctx.fillText('ENERGÍA (kWh)', colKwhR, y); ctx.fillText('FACTURACIÓN', colValR, y)
+  ctx.fillText('TARIFA', colTarR, y); ctx.fillText('ENERGÍA (kWh)', colKwhR, y); ctx.fillText('FACTURACIÓN', colValR, y)
   ctx.textAlign = 'left'
 
   // Filas
@@ -722,15 +723,16 @@ function _renderFacturaCanvas (f) {
   ctx.font = '12.5px Inter, Arial, sans-serif'
   for (const p of proys) {
     ctx.fillStyle = DARK
-    ctx.fillText(trunc(p.proyecto || p.contrato || '—', colKwhR - padX - 100), padX, y)
+    ctx.fillText(trunc(p.proyecto || p.contrato || '—', colTarR - padX - 90), padX, y)
     ctx.fillStyle = GREY; ctx.font = '10.5px Inter, Arial, sans-serif'
-    ctx.fillText(String(p.contrato || ''), padX, y + 12)
+    ctx.fillText(String(p.contrato || ''), padX, y + 13)
     ctx.font = '12.5px Inter, Arial, sans-serif'; ctx.fillStyle = DARK
     ctx.textAlign = 'right'
+    ctx.fillText(p.tarifa_indexada != null ? fmtNum(p.tarifa_indexada) : '—', colTarR, y)
     ctx.fillText(fmtNum(p.kwh), colKwhR, y)
     ctx.fillText(fmtCOP(p.facturacion), colValR, y)
     ctx.textAlign = 'left'
-    ctx.strokeStyle = '#f2edf8'; ctx.beginPath(); ctx.moveTo(padX, y + 16); ctx.lineTo(W - padX, y + 16); ctx.stroke()
+    ctx.strokeStyle = '#f2edf8'; ctx.beginPath(); ctx.moveTo(padX, y + 22); ctx.lineTo(W - padX, y + 22); ctx.stroke()
     y += rowH
   }
 
