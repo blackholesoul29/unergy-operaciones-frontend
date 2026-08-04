@@ -155,10 +155,22 @@
             <span v-else-if="f.personalizada" class="tag" style="background:#e6f6ef;color:#1f9d6b">dividida</span>
             <span v-else class="tag">{{ f.ppa || '—' }}</span>
             <span v-if="f.emitida" class="tag" style="background:#e6f6ef;color:#1f9d6b">facturada</span>
+            <!-- Código de la factura emitida: aparece al marcarla; se guarda al salir del
+                 campo o con Enter (PUT /emitida con numero_factura, sin desmarcar). -->
+            <span v-if="f.emitida" class="fac-num" @click.stop>
+              <i class="pi pi-hashtag text-[10px]" style="color:#9b8fb0" />
+              <input v-model="numeroFactura[f.factura]" class="fac-num-in" placeholder="N° factura"
+                     @keyup.enter="guardarNumero(f)" @blur="guardarNumero(f)" />
+            </span>
             <button class="fac-msg" @click.stop="copiarMensaje(f)"
                     v-tooltip.top="'Copiar el mensaje de la factura'">
               <i :class="copiada === f.factura ? 'pi pi-check' : 'pi pi-copy'" class="text-xs" />
               {{ copiada === f.factura ? 'Copiado' : 'Mensaje' }}
+            </button>
+            <button class="fac-msg" @click.stop="copiarImagen(f)"
+                    v-tooltip.top="'Copiar la factura como imagen (o descargarla)'">
+              <i :class="imagenId === f.factura ? 'pi pi-check' : 'pi pi-image'" class="text-xs" />
+              {{ imagenId === f.factura ? 'Copiada' : 'Imagen' }}
             </button>
             <span class="ml-auto fac-fac-nums">
               <span class="muted">{{ f.contratos }} contr</span>
@@ -246,17 +258,50 @@
           </button>
         </div>
         <div v-if="despacho.contratos && despacho.contratos.length" class="fac-card">
+          <!-- Filtro: por contrato, vendedor o comprador. Despliega un contrato para ver
+               su energía día a día (GET /facturacion/despacho/dias). -->
+          <div class="fac-desp-filtro">
+            <span class="p-input-icon-left" style="position:relative">
+              <i class="pi pi-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#9b8fb0; font-size:12px" />
+              <input v-model="despFiltro" class="fac-in" style="width:280px; padding-left:30px"
+                     placeholder="Buscar contrato, vendedor o comprador…" />
+            </span>
+            <span class="text-[11px]" style="color:#9b8fb0">
+              {{ despachoFiltrado.length }} de {{ despacho.contratos.length }} contratos
+            </span>
+          </div>
           <div class="tblwrap">
             <table class="dt">
-              <thead><tr><th class="l">Contrato</th><th class="l">Vendedor</th><th class="l">Comprador</th><th>Energía (kWh)</th></tr></thead>
+              <thead><tr><th class="l" style="width:30px"></th><th class="l">Contrato</th><th class="l">Vendedor</th><th class="l">Comprador</th><th>Energía (kWh)</th></tr></thead>
               <tbody>
-                <tr v-for="d in despacho.contratos" :key="d.contrato">
-                  <td class="l">{{ d.contrato }}</td><td class="l muted">{{ d.vendedor || '—' }}</td>
-                  <td class="l"><span class="tag">{{ d.comprador || '—' }}</span></td>
-                  <td>{{ fmtNum(d.kwh) }}</td>
-                </tr>
+                <template v-for="d in despachoFiltrado" :key="d.contrato">
+                  <tr class="fac-desp-row" @click="toggleDias(d.contrato)">
+                    <td class="l"><i :class="diasAbiertos.has(d.contrato) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-[10px]" style="color:#9b8fb0" /></td>
+                    <td class="l">{{ d.contrato }}</td><td class="l muted">{{ d.vendedor || '—' }}</td>
+                    <td class="l"><span class="tag">{{ d.comprador || '—' }}</span></td>
+                    <td>{{ fmtNum(d.kwh) }}</td>
+                  </tr>
+                  <tr v-if="diasAbiertos.has(d.contrato)" class="fac-desp-dias">
+                    <td></td>
+                    <td class="l" colspan="4">
+                      <div v-if="dias[d.contrato] === 'loading'" class="text-[11px] muted py-1">
+                        <i class="pi pi-spin pi-spinner text-[10px]" /> Cargando días…
+                      </div>
+                      <div v-else-if="!dias[d.contrato] || !dias[d.contrato].length" class="text-[11px] muted py-1">
+                        Sin detalle diario. Vuelve a subir el despacho de este mes para poblarlo.
+                      </div>
+                      <div v-else class="fac-dias-grid">
+                        <div v-for="x in dias[d.contrato]" :key="x.fecha" class="fac-dia">
+                          <span class="fac-dia-f">{{ fmtDia(x.fecha) }}</span>
+                          <span class="fac-dia-k">{{ fmtNum(x.kwh) }}</span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                </template>
+                <tr v-if="!despachoFiltrado.length"><td class="l muted" colspan="5">Ningún contrato coincide con «{{ despFiltro }}».</td></tr>
               </tbody>
-              <tfoot><tr><td class="l" colspan="3">Total</td><td>{{ fmtNum(despacho.kwh_total) }}</td></tr></tfoot>
+              <tfoot><tr><td class="l" colspan="4">Total{{ despFiltro ? ' (filtrado)' : '' }}</td><td>{{ fmtNum(totalFiltrado) }}</td></tr></tfoot>
             </table>
           </div>
         </div>
@@ -350,7 +395,12 @@ const guardandoDiv = ref(false)
 const guardandoOrden = ref(false)
 const ordenTocado = ref(false)             // hay reordenamiento sin guardar
 const copiada = ref(null)                  // factura cuyo mensaje se acaba de copiar
+const imagenId = ref(null)                 // factura cuya imagen se acaba de copiar
+const numeroFactura = reactive({})         // factura key → código de la factura emitida
 const despacho = ref({ contratos: [], kwh_total: 0 })
+const despFiltro = ref('')                 // filtro de búsqueda en Despachos
+const diasAbiertos = reactive(new Set())   // contratos con el día a día desplegado
+const dias = reactive({})                  // contrato → [{fecha, kwh}] | 'loading'
 const ippHist = ref([])
 const ippInput = ref(null)
 const subiendo = ref(false)
@@ -377,6 +427,15 @@ const MOTIVOS = {
   sin_ipp_mes: 'Falta el IPP del mes',
 }
 const noFacturables = computed(() => lineas.value.filter(l => l.estado !== 'ok'))
+// Despachos: filtro por contrato / vendedor / comprador.
+const despachoFiltrado = computed(() => {
+  const q = despFiltro.value.trim().toLowerCase()
+  const arr = despacho.value.contratos || []
+  if (!q) return arr
+  return arr.filter(d => [d.contrato, d.vendedor, d.comprador]
+    .some(x => String(x || '').toLowerCase().includes(q)))
+})
+const totalFiltrado = computed(() => despachoFiltrado.value.reduce((s, d) => s + (Number(d.kwh) || 0), 0))
 // Tarifa promedio ponderada ($/kWh) sobre lo facturable del mes.
 const tarifaPromedio = computed(() => {
   const k = res.value.kwh_total || 0
@@ -407,7 +466,10 @@ async function load () {
     lineas.value = fac.lineas || []
     porSic.value = fac.por_codigo_sic || []
     porFactura.value = fac.por_factura || []
+    // Precargar los códigos de factura ya guardados en los inputs.
+    for (const f of porFactura.value) if (f.numero_factura != null) numeroFactura[f.factura] = f.numero_factura
     despacho.value = desp || { contratos: [] }
+    diasAbiertos.clear(); for (const k in dias) delete dias[k]   // el día a día es por mes
     ippHist.value = (ipp || []).slice().sort((a, b) => (b.año - a.año) || (b.mes - a.mes))
     ippInput.value = ippActual.value
     bolsa.value = blz || { manual: null, sugerido: null, vigente: null }
@@ -537,13 +599,49 @@ function tooltipEmitida (f) {
 async function toggleEmitida (f) {
   const nuevo = !f.emitida
   f.emitida = nuevo                                  // optimista: el check responde ya
+  if (!nuevo) numeroFactura[f.factura] = ''          // al desmarcar se limpia el código
   try {
-    await api.put('/facturacion/emitida', { nombre: f.factura, periodo: per.value, emitida: nuevo })
+    await api.put('/facturacion/emitida', {
+      nombre: f.factura, periodo: per.value, emitida: nuevo,
+      numero_factura: nuevo ? (numeroFactura[f.factura] || null) : null,
+    })
     res.value = { ...res.value, emitidas: (res.value.emitidas || 0) + (nuevo ? 1 : -1) }
   } catch (e) {
     f.emitida = !nuevo                               // revertir si el backend falló
     toast.add({ severity: 'error', summary: 'No se pudo marcar', detail: e?.response?.data?.detail || e.message, life: 5000 })
   }
+}
+
+// Guardar/editar el código de la factura sin desmarcarla (Enter o al salir del campo).
+async function guardarNumero (f) {
+  if (!f.emitida) return
+  const num = (numeroFactura[f.factura] || '').trim() || null
+  if (num === (f.numero_factura || null)) return     // sin cambios, no molestar al backend
+  try {
+    await api.put('/facturacion/emitida', { nombre: f.factura, periodo: per.value, emitida: true, numero_factura: num })
+    f.numero_factura = num
+    toast.add({ severity: 'success', summary: 'Código guardado', detail: num || 'Sin código', life: 2500 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo guardar el código', detail: e?.response?.data?.detail || e.message, life: 5000 })
+  }
+}
+
+// ── Día a día del despacho de un contrato ─────────────────────────────────────
+async function toggleDias (contrato) {
+  if (diasAbiertos.has(contrato)) { diasAbiertos.delete(contrato); return }
+  diasAbiertos.add(contrato)
+  if (dias[contrato] && dias[contrato] !== 'loading') return   // ya cargado
+  dias[contrato] = 'loading'
+  try {
+    const { data } = await api.get('/facturacion/despacho/dias', { params: { periodo: per.value, contrato } })
+    dias[contrato] = data.dias || []
+  } catch {
+    dias[contrato] = []
+  }
+}
+const fmtDia = (iso) => {
+  const s = String(iso || '')
+  return s.length >= 10 ? `${s.slice(8, 10)}/${s.slice(5, 7)}` : s
 }
 
 async function copiarMensaje (f) {
@@ -565,6 +663,109 @@ async function copiarMensaje (f) {
       detail: 'Esta factura mezcla contratos con tarifas distintas; el mensaje usa una sola.' })
   }
 }
+// ── Copiar la factura como imagen ─────────────────────────────────────────────
+// Mismo mecanismo que en Cumplimiento estrategia: se dibuja un canvas y se copia
+// al portapapeles (o se descarga si el navegador no lo permite). Se dibuja a mano
+// para no depender de html2canvas ni del DOM renderizado.
+function _renderFacturaCanvas (f) {
+  const DARK = '#2C2039', GREY = '#7a6e8a', PURPLE = '#915BD8'
+  const scale = 2
+  const W = 720, padX = 34
+  const proys = f.proyectos || []
+  const headerH = 92, tableHeadH = 28, rowH = 30, footerH = 46
+  const bodyTop = headerH + tableHeadH
+  const H = bodyTop + Math.max(proys.length, 1) * rowH + footerH
+
+  const canvas = document.createElement('canvas')
+  canvas.width = W * scale; canvas.height = H * scale
+  const ctx = canvas.getContext('2d')
+  ctx.scale(scale, scale)
+  ctx.textBaseline = 'alphabetic'
+
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H)
+  ctx.fillStyle = PURPLE; ctx.fillRect(0, 0, W, 6)
+
+  const trunc = (txt, max) => {
+    let s = String(txt || '')
+    if (ctx.measureText(s).width <= max) return s
+    while (s.length && ctx.measureText(s + '…').width > max) s = s.slice(0, -1)
+    return s + '…'
+  }
+
+  // Header: nombre + PPA/tipo + período
+  ctx.fillStyle = DARK; ctx.font = 'bold 20px Inter, Arial, sans-serif'
+  ctx.fillText(trunc(f.factura || 'Factura', W - padX * 2), padX, 40)
+  ctx.fillStyle = GREY; ctx.font = '13px Inter, Arial, sans-serif'
+  const etiqueta = f.sin_ppa ? 'Sin PPA · XM (bolsa)' : (f.ppa || '—')
+  ctx.fillText(trunc(etiqueta, W - padX * 2), padX, 60)
+  ctx.fillStyle = PURPLE; ctx.font = 'bold 11px Inter, Arial, sans-serif'
+  ctx.fillText(`Facturación de energía · ${formatPeriodo(props.periodo)}`, padX, 78)
+  if (f.numero_factura) {
+    ctx.font = 'bold 11px Inter, Arial, sans-serif'; ctx.fillStyle = '#1f9d6b'
+    const t = `N° ${f.numero_factura}`, w = ctx.measureText(t).width
+    ctx.fillText(t, W - padX - w, 40)
+  }
+
+  // Cabecera de tabla
+  const colKwhR = W - padX - 150
+  const colValR = W - padX
+  let y = headerH + 18
+  ctx.fillStyle = '#faf7ff'; ctx.fillRect(0, headerH, W, tableHeadH)
+  ctx.fillStyle = '#9b8fb0'; ctx.font = 'bold 10px Inter, Arial, sans-serif'
+  ctx.fillText('PROYECTO / CONTRATO', padX, y)
+  ctx.textAlign = 'right'
+  ctx.fillText('ENERGÍA (kWh)', colKwhR, y); ctx.fillText('FACTURACIÓN', colValR, y)
+  ctx.textAlign = 'left'
+
+  // Filas
+  y = bodyTop + 20
+  ctx.font = '12.5px Inter, Arial, sans-serif'
+  for (const p of proys) {
+    ctx.fillStyle = DARK
+    ctx.fillText(trunc(p.proyecto || p.contrato || '—', colKwhR - padX - 100), padX, y)
+    ctx.fillStyle = GREY; ctx.font = '10.5px Inter, Arial, sans-serif'
+    ctx.fillText(String(p.contrato || ''), padX, y + 12)
+    ctx.font = '12.5px Inter, Arial, sans-serif'; ctx.fillStyle = DARK
+    ctx.textAlign = 'right'
+    ctx.fillText(fmtNum(p.kwh), colKwhR, y)
+    ctx.fillText(fmtCOP(p.facturacion), colValR, y)
+    ctx.textAlign = 'left'
+    ctx.strokeStyle = '#f2edf8'; ctx.beginPath(); ctx.moveTo(padX, y + 16); ctx.lineTo(W - padX, y + 16); ctx.stroke()
+    y += rowH
+  }
+
+  // Footer: total
+  const fy = bodyTop + proys.length * rowH
+  ctx.fillStyle = 'rgba(145,91,216,.07)'; ctx.fillRect(0, fy, W, footerH)
+  ctx.strokeStyle = PURPLE; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, fy); ctx.lineTo(W, fy); ctx.stroke()
+  ctx.fillStyle = DARK; ctx.font = 'bold 13px Inter, Arial, sans-serif'
+  ctx.fillText(`Total · ${fmtMWh(f.kwh)}`, padX, fy + 29)
+  ctx.textAlign = 'right'; ctx.font = 'bold 15px Inter, Arial, sans-serif'
+  ctx.fillText(f.sin_ppa && !f.facturacion ? 'sin precio bolsa' : fmtCOP(f.facturacion), colValR, fy + 30)
+  ctx.textAlign = 'left'
+  return canvas
+}
+
+async function copiarImagen (f) {
+  let canvas
+  try { canvas = _renderFacturaCanvas(f) }
+  catch (e) { toast.add({ severity: 'error', summary: 'No se pudo generar la imagen', detail: e.message, life: 5000 }); return }
+  canvas.toBlob(async (blob) => {
+    if (!blob) return
+    try {
+      await navigator.clipboard.write([new window.ClipboardItem({ 'image/png': blob })])
+      imagenId.value = f.factura
+      setTimeout(() => { if (imagenId.value === f.factura) imagenId.value = null }, 2200)
+    } catch {
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = `factura-${String(f.factura || 'factura').replace(/[^\w-]+/g, '_')}.png`
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
+      toast.add({ severity: 'info', summary: 'Imagen descargada', detail: 'El navegador no permite copiarla al portapapeles.', life: 4000 })
+    }
+  }, 'image/png')
+}
+
 async function quitarAsignacion (contrato) {
   try {
     await api.put('/facturacion/agrupaciones', [{ codigo_sic_contrato: contrato, nombre: '' }])
@@ -666,6 +867,22 @@ onMounted(load)
 .fac-msg { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px;
   border:1px solid #e5e2ec; background:#fff; color:#6E3FB8; font-size:11px; font-weight:700; cursor:pointer; }
 .fac-msg:hover { background:#f4f1fa; }
+
+/* Código de la factura emitida */
+.fac-num { display:inline-flex; align-items:center; gap:3px; }
+.fac-num-in { width:96px; padding:2px 6px; border:1px solid #cdeadd; border-radius:6px; font-size:11px;
+  color:#1f7a56; background:#f4fbf7; }
+.fac-num-in:focus { outline:none; border-color:#1f9d6b; }
+
+/* Despachos: filtro + día a día */
+.fac-desp-filtro { display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px 12px; border-bottom:1px solid #f0ebf6; flex-wrap:wrap; }
+.fac-desp-row { cursor:pointer; }
+.fac-desp-dias td { background:#faf7ff; }
+.fac-dias-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:6px; padding:8px 2px; }
+.fac-dia { display:flex; flex-direction:column; background:#fff; border:1px solid #ece5f5; border-radius:7px; padding:5px 8px; }
+.fac-dia-f { font-size:10px; color:#9b8fb0; font-weight:600; }
+.fac-dia-k { font-size:12px; color:#2C2039; font-weight:600; font-variant-numeric:tabular-nums; }
 
 /* Arrastre: la tarjeta que se mueve se atenúa y la de destino marca el borde por
    donde va a entrar, para no soltar a ciegas. */
