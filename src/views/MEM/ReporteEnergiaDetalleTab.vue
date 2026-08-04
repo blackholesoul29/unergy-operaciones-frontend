@@ -151,11 +151,8 @@
         <p class="text-sm font-semibold mb-2" style="color: #2C2039;">Editar exclusión</p>
         <div class="flex flex-col gap-2 max-w-lg">
           <div class="flex gap-2 items-start">
-            <Textarea v-model="nuevaExclusionMotivo" rows="2" class="text-xs flex-1" />
-            <div class="flex flex-col gap-1 flex-none">
-              <label class="text-xs" style="color: #6b5a8a;">Hasta</label>
-              <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-48" showIcon showClear />
-            </div>
+            <Textarea v-model="nuevaExclusionMotivo" rows="1" placeholder="Motivo" class="text-xs flex-1" />
+            <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" placeholder="Hasta" class="w-48 text-xs" showIcon showClear />
           </div>
           <div class="flex gap-2">
             <Button label="Guardar" size="small" :disabled="!nuevaExclusionMotivo.trim()" :loading="editandoExclusionGuardando" @click="guardarEdicionExclusion" />
@@ -170,11 +167,8 @@
         </p>
         <div class="flex flex-col gap-2 max-w-lg">
           <div class="flex gap-2 items-start">
-            <Textarea v-model="nuevaExclusionMotivo" rows="2" placeholder="Motivo" class="text-xs flex-1" />
-            <div class="flex flex-col gap-1 flex-none">
-              <label class="text-xs" style="color: #6b5a8a;">Hasta</label>
-              <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-48" showIcon />
-            </div>
+            <Textarea v-model="nuevaExclusionMotivo" rows="1" placeholder="Motivo" class="text-xs flex-1" />
+            <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" placeholder="Hasta" class="w-48 text-xs" showIcon />
           </div>
           <Button label="Excluir temporalmente" severity="danger" outlined size="small"
             :disabled="!nuevaExclusionMotivo.trim()" :loading="creandoExclusion" @click="crearExclusionActual" />
