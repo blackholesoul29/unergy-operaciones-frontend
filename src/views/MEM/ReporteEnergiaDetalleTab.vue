@@ -116,7 +116,10 @@
       <p class="text-xs mt-1" style="color: #9b89b5;">
         Tip: Puedes pegar una columna completa desde cualquier celda.
       </p>
-      <div class="flex justify-end mt-2">
+      <div class="flex items-center justify-between mt-2">
+        <Button v-if="detalle.revisar_manualmente" label="Curva Típica" severity="secondary" outlined size="small"
+          :loading="cargandoCurvaTipica" @click="aplicarCurvaTipica" />
+        <span v-else></span>
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
       </div>
     </div>
@@ -245,6 +248,7 @@ const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
+const cargandoCurvaTipica = ref(false)
 const validando = ref(false)
 const ediciones = ref([])
 
@@ -450,6 +454,31 @@ function esHoraRellenada(h) {
   return (d.horas_rellenadas_reconectador || []).includes(h)
     || (d.horas_rellenadas_solenium || []).includes(h)
     || (d.horas_rellenadas_historico || []).includes(h)
+}
+
+// Mediana x forma horaria de los últimos días confiables (mismo mecanismo
+// que ya alimenta el relleno histórico automático) -- solo llena el editor,
+// no guarda nada; el usuario revisa/ajusta y confirma con "Guardar corrección".
+async function aplicarCurvaTipica() {
+  cargandoCurvaTipica.value = true
+  try {
+    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/curva-tipica`, {
+      params: { fecha: props.fecha },
+    })
+    curvaEditable.value = data.curva
+    toast.add({
+      severity: 'info', summary: 'Curva típica aplicada',
+      detail: `${fmtKwh(data.energia_total_kwh)} -- mediana de ${data.dias_usados} días. Revisa y guarda si está bien.`,
+      life: 5000,
+    })
+  } catch (e) {
+    toast.add({
+      severity: 'warn', summary: 'Sin histórico suficiente',
+      detail: 'No hay al menos 3 días confiables todavía para esta frontera.', life: 4000,
+    })
+  } finally {
+    cargandoCurvaTipica.value = false
+  }
 }
 
 async function guardarCurva() {
