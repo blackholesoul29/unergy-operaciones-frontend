@@ -413,6 +413,9 @@ function casoInfo5(d) {
   if (d.medidor_usado === 'reconectador') {
     return { nombre: 'Reconstruido con reconectador', descripcion: 'CGM no válido, el medidor está caído y Solenium no tiene dato completo; se reconstruye con el reconectador' }
   }
+  if (d.medidor_usado === 'principal_sin_cgm' || d.medidor_usado === 'respaldo_sin_cgm') {
+    return { nombre: 'Medidor sin CGM ni inversores', descripcion: 'CGM no reportó nada ese día y no hay inversores registrados; se usa el medidor directo -- más preciso que reconstruir de datos crudos' }
+  }
   return { nombre: 'Sin inversores registrados', descripcion: 'Hay medidor con dato, pero el proyecto no tiene inversores en Solenium contra qué validarlo' }
 }
 const casoInfo = computed(() => {
@@ -525,6 +528,7 @@ const ETIQUETAS_FUENTE = {
   revisar: 'Sin fuente', externo: 'Reporta otra empresa', historico: 'Histórico propio',
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
+  principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
 }
 function etiquetaFuente(v) {
   return ETIQUETAS_FUENTE[v] || v || '—'
