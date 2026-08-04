@@ -5,8 +5,10 @@
       <Calendar v-model="fecha" dateFormat="yy-mm-dd" class="w-40" :maxDate="maxFecha" showIcon />
       <div class="flex items-center gap-2">
         <Button icon="pi pi-play" label="Ejecutar clasificación" severity="secondary" outlined
-                :loading="ejecutando"
+                :loading="ejecutando" :disabled="ejecutando"
                 @click="ejecutarClasificacion" />
+        <Button v-if="ejecutando" icon="pi pi-stop-circle" label="Detener" severity="danger" outlined
+                :loading="deteniendo" @click="detenerClasificacion" />
         <Button icon="pi pi-file-excel" label="Generar Excel" severity="secondary" outlined
                 :loading="generandoExcel" @click="generarExcel" />
         <Button icon="pi pi-send" label="Enviar reporte"
@@ -150,6 +152,7 @@ const loadingHistorial = ref(false)
 const generandoExcel = ref(false)
 const enviando = ref(false)
 const ejecutando = ref(false)
+const deteniendo = ref(false)
 
 async function cargarResumen() {
   try {
@@ -238,6 +241,22 @@ async function ejecutarClasificacion() {
   }
 }
 
+// Cooperativo, no inmediato: el backend revisa esta señal entre frontera y
+// frontera (ver orquestador._CANCELAR), nunca corta a media frontera. El
+// sondeo ya en curso (sondearResultado) es el que detecta cuándo realmente
+// paró y apaga el spinner.
+async function detenerClasificacion() {
+  deteniendo.value = true
+  try {
+    await api.post('/reporte-energia/ejecutar/cancelar', null, { params: { fecha: fechaISO.value } })
+    toast.add({ severity: 'info', summary: 'Deteniendo…', detail: 'Se detiene después de terminar la frontera en curso, no de inmediato.', life: 5000 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo pedir la detención.', life: 4000 })
+  } finally {
+    deteniendo.value = false
+  }
+}
+
 // La corrida real vive en un hilo del backend (ver orquestador.ejecutar_dia_background)
 // y guarda avance parcial cada 5 fronteras -- con ~100+ fronteras puede tardar bastante
 // más de lo que un límite fijo de intentos alcanzaría a cubrir. En vez de un tope de
@@ -281,6 +300,14 @@ async function avisarSiHuboFallidas(fechaSondeada) {
     const { data } = await api.get('/reporte-energia/ejecutar/estado', { params: { fecha: fechaSondeada } })
     if (data.error_general) {
       toast.add({ severity: 'error', summary: 'Clasificación interrumpida', detail: data.error_general, life: 8000 })
+    } else if (data.cancelado) {
+      toast.add({
+        severity: 'warn', summary: 'Clasificación detenida',
+        detail: data.fallidas.length
+          ? `Se detuvo manualmente. Además, ${data.fallidas.length} fronteras fallaron antes de detenerse: ${data.fallidas.join(', ')}`
+          : 'Se detuvo manualmente antes de terminar todas las fronteras.',
+        life: 8000,
+      })
     } else if (data.fallidas.length) {
       toast.add({
         severity: 'warn', summary: 'Clasificación terminada con errores',
