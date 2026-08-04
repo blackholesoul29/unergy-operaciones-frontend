@@ -93,6 +93,27 @@ VALOR A PAGAR $ 2,011,510.00`
   assert(resBug.status === 'ok', `regresión: status = ${resBug.status} (esperado ok — valores iguales)`)
 }
 
+// 2c) Mantenimiento pagado al contratista vía cuenta de Administración (caso real
+//     Nestlé/Solenium): el monto SÍ está contabilizado, solo que en 28151020/21 con
+//     el contratista como Asociado en vez de 28151002/03 con la fiduciaria. Debe
+//     avisar "OTRA_CUENTA", no reportarlo como FALTANTE.
+{
+  const tagNestle = '[10002] PROYECTO-NESTLE'
+  const fiduciaria = 'PATRIMONIOS AUTONOMOS FIDUCIARIA BANCOLOMBIA S A SOCIEDAD FIDUCIARIA'
+  const lineasNestle = [
+    { asociado: 'SOLENIUM SAS', acc: '28151020', accDesc: 'COSTOS PARA TERCEROS - ADMINISTRACION DE PROYECTOS', debe: 6831500, haber: 0, etiqueta: 'Mantenimiento Preventivo - Nestle', proj: tagNestle },
+    { asociado: 'SOLENIUM SAS', acc: '28151021', accDesc: 'IVA ADMINISTRACION DE PROYECTOS - COSTOS PARA TERCEROS', debe: 1297985, haber: 0, etiqueta: 'Mantenimiento Preventivo - Nestle', proj: tagNestle },
+  ]
+  const mNestle = { mandante: fiduciaria, vals: { mant: 6831500, iva_mant: 1297985 }, total: 8129485 }
+  const resNestle = reconciliar(mNestle, lineasNestle, tagNestle)
+  const codes = new Set(resNestle.flags.map((f) => f.code))
+  assert(!codes.has('FALTANTE'), `Nestlé/Solenium: NO debe reportarse FALTANTE (flags: ${JSON.stringify(resNestle.flags)})`)
+  assert(codes.has('OTRA_CUENTA'), `Nestlé/Solenium: debe reportar OTRA_CUENTA (flags: ${JSON.stringify(resNestle.flags)})`)
+  const otra = resNestle.flags.filter((f) => f.code === 'OTRA_CUENTA')
+  assert(otra.some((f) => f.txt.includes('28151020') && f.txt.includes('SOLENIUM SAS')), `OTRA_CUENTA debe mencionar cuenta y asociado real: ${JSON.stringify(otra)}`)
+  assert(resNestle.status === 'warn', `Nestlé/Solenium: status = ${resNestle.status} (esperado warn, no bad — el dinero sí está)`)
+}
+
 // 3) parseAsientos + suggestTag.
 const rows = [
   ['Asiento contable', 'Asociado', 'Cuenta', 'Debe', 'Haber', 'Etiqueta', 'Cuenta analitica'],

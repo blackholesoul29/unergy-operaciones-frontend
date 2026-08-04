@@ -379,7 +379,13 @@ export function reconciliar(mandato, details, tag) {
   // Mandante por PALABRA COMPLETA (fix STRADA/ESTRADA) pero tolerando abreviaturas
   // del PA en el asiento (ver asociadoCoincideMandante).
   const mandTok = [...nameTokenSet(mandato.mandante)]
-  const lines = details.filter((d) => d.proj === tag && asociadoCoincideMandante(mandTok, d.asociado))
+  const tagLines = details.filter((d) => d.proj === tag)
+  const lines = tagLines.filter((d) => asociadoCoincideMandante(mandTok, d.asociado))
+  // Líneas del mismo proyecto que quedaron FUERA de `lines` (cuenta no mapeada al
+  // concepto esperado, o asociado que no calza con el mandante — p. ej. el
+  // mantenimiento pagado directo al contratista vía "Administración de proyectos"
+  // con el contratista como Asociado, en vez de la fiduciaria).
+  const unmatchedLines = tagLines.filter((d) => !lines.includes(d))
 
   // Sumar por concepto el DÉBITO de la cuenta de costo (NUNCA el neto debe − haber).
   // En arriendo el mandante (la fiduciaria) aparece en AMBOS lados del asiento, con el
@@ -412,8 +418,15 @@ export function reconciliar(mandato, details, tag) {
   Object.keys(mandato.vals || {}).forEach((c) => {
     const mv = mandato.vals[c] || 0
     const av = Math.round((sums[c] || 0) * 100) / 100
-    if (av === 0 && mv > 0)
-      flags.push({ lvl: 'bad', code: 'FALTANTE', txt: `${CONCEPTS[c]}: en el mandato (${fmt(mv)}) pero no aparece en el asiento para este mandante/proyecto.` })
+    if (av === 0 && mv > 0) {
+      const candidatos = unmatchedLines.filter((d) => Math.abs(d.debe - mv) <= TOL)
+      if (candidatos.length) {
+        const best = candidatos.reduce((a, b) => (Math.abs(b.debe - mv) < Math.abs(a.debe - mv) ? b : a))
+        flags.push({ lvl: 'warn', code: 'OTRA_CUENTA', txt: `${CONCEPTS[c]}: en el mandato (${fmt(mv)}) — registrado en el asiento pero en otra cuenta/asociado: cuenta ${best.acc} (${best.accDesc}), asociado "${best.asociado}" (${fmt(best.debe)}).` })
+      } else {
+        flags.push({ lvl: 'bad', code: 'FALTANTE', txt: `${CONCEPTS[c]}: en el mandato (${fmt(mv)}) pero no aparece en el asiento para este mandante/proyecto.` })
+      }
+    }
     else if (Math.abs(mv - av) > TOL)
       flags.push({ lvl: 'bad', code: 'DIFERENCIA', txt: `${CONCEPTS[c]}: mandato ${fmt(mv)} vs. asiento ${fmt(av)} · diferencia ${fmt(Math.abs(mv - av))}.` })
     else
