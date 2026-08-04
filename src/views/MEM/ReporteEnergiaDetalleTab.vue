@@ -165,6 +165,43 @@
       </div>
       <Button label="Validar Frontera" severity="success" :loading="validando" @click="validar" />
     </div>
+
+    <!-- Exclusion temporal: para cuando no se quiere reportar NADA mientras
+         se resuelve algo externo (ej. un CT en falla ya reportado a XM) --
+         no depende de Fallas (requiere monitoreo/representación, que no
+         todas las fronteras tienen). -->
+    <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
+      <template v-if="exclusionActiva">
+        <p class="text-sm font-semibold" style="color: #A8590B;">
+          <i class="pi pi-ban text-xs mr-1.5" />Excluida temporalmente
+        </p>
+        <p class="text-xs mt-1" style="color: #6b5a8a;">
+          {{ exclusionActiva.motivo }}
+          <span v-if="exclusionActiva.fecha_fin_estimada"> -- hasta {{ exclusionActiva.fecha_fin_estimada }}</span>
+        </p>
+        <p class="text-xs mt-1" style="color: #9b89b5;">
+          Registrada por {{ exclusionActiva.creado_por || 'desconocido' }} el {{ fmtFechaHora(exclusionActiva.created_at) }}
+        </p>
+        <Button label="Marcar resuelta" severity="secondary" outlined size="small" class="mt-3"
+          :loading="resolviendoExclusion" @click="resolverExclusionActual" />
+      </template>
+      <template v-else>
+        <p class="text-sm font-semibold" style="color: #2C2039;">Excluir temporalmente</p>
+        <p class="text-xs mb-3" style="color: #9b89b5;">
+          No reporta ningún número automático mientras dure -- para cuando hay algo externo sin resolver
+          (ej. un CT en falla ya reportado a XM).
+        </p>
+        <div class="flex flex-col gap-2 max-w-sm">
+          <Textarea v-model="nuevaExclusionMotivo" rows="2" placeholder="Motivo (ej. CT en falla, reportado a XM el ...)" class="text-xs" />
+          <div class="flex items-center gap-2">
+            <label class="text-xs flex-none" style="color: #6b5a8a;">Hasta</label>
+            <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-40" showIcon />
+          </div>
+          <Button label="Excluir temporalmente" severity="danger" outlined size="small"
+            :disabled="!nuevaExclusionMotivo.trim()" :loading="creandoExclusion" @click="crearExclusionActual" />
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -175,6 +212,8 @@ import api from '@/api/client'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
+import Calendar from 'primevue/calendar'
+import Textarea from 'primevue/textarea'
 import CurvaChart from './ReporteEnergiaCurvaChart.vue'
 
 const props = defineProps({
@@ -197,6 +236,65 @@ async function cargarEdiciones() {
     ediciones.value = data
   } catch (e) {
     ediciones.value = []
+  }
+}
+
+// Exclusion temporal (no depende de Fallas -- ver ReporteEnergiaExclusion en
+// el backend). El historial trae todas (activas y resueltas); "activa" es
+// la que aplica al día que se está viendo.
+const exclusiones = ref([])
+const nuevaExclusionMotivo = ref('')
+const nuevaExclusionFechaFin = ref(null)
+const creandoExclusion = ref(false)
+const resolviendoExclusion = ref(false)
+
+async function cargarExclusiones() {
+  try {
+    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/exclusiones`)
+    exclusiones.value = data
+  } catch (e) {
+    exclusiones.value = []
+  }
+}
+
+const exclusionActiva = computed(() => {
+  const fecha = props.fecha
+  return exclusiones.value.find((e) =>
+    !e.resuelta_en && e.fecha_inicio <= fecha && (!e.fecha_fin_estimada || e.fecha_fin_estimada >= fecha)
+  ) || null
+})
+
+async function crearExclusionActual() {
+  creandoExclusion.value = true
+  try {
+    await api.post(`/reporte-energia/fronteras/${props.fronteraId}/exclusiones`, {
+      frontera_id: props.fronteraId,
+      motivo: nuevaExclusionMotivo.value.trim(),
+      fecha_inicio: props.fecha,
+      fecha_fin_estimada: nuevaExclusionFechaFin.value ? nuevaExclusionFechaFin.value.toISOString().slice(0, 10) : null,
+    })
+    nuevaExclusionMotivo.value = ''
+    nuevaExclusionFechaFin.value = null
+    toast.add({ severity: 'success', summary: 'Frontera excluida', life: 2500 })
+    await cargarExclusiones()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear la exclusión.', life: 4000 })
+  } finally {
+    creandoExclusion.value = false
+  }
+}
+
+async function resolverExclusionActual() {
+  if (!exclusionActiva.value) return
+  resolviendoExclusion.value = true
+  try {
+    await api.post(`/reporte-energia/exclusiones/${exclusionActiva.value.id}/resolver`)
+    toast.add({ severity: 'success', summary: 'Exclusión resuelta', life: 2500 })
+    await cargarExclusiones()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo resolver la exclusión.', life: 4000 })
+  } finally {
+    resolviendoExclusion.value = false
   }
 }
 
@@ -280,8 +378,8 @@ async function cargar() {
     loading.value = false
   }
 }
-onMounted(() => { cargar(); cargarEdiciones() })
-watch(() => [props.fronteraId, props.fecha], () => { cargar(); cargarEdiciones() })
+onMounted(() => { cargar(); cargarEdiciones(); cargarExclusiones() })
+watch(() => [props.fronteraId, props.fecha], () => { cargar(); cargarEdiciones(); cargarExclusiones() })
 
 // Pegado tipo Excel: si lo pegado trae varios valores (columna o fila
 // copiada), se distribuyen empezando en la celda donde se pegó -- un solo
@@ -357,6 +455,7 @@ const CASO_INFO_GENERACION = {
   '7': { nombre: 'Reconstruido con reconectador o crudos', descripcion: 'Sin reporte automático ni medidor; se reconstruye con reconectador, Solenium (power) o datos crudos completos' },
   '8': { nombre: 'Datos crudos parciales', descripcion: 'Datos crudos incompletos; se rellenan las horas faltantes con reconectador, Solenium o histórico' },
   '-1': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
+  '-2': { nombre: 'Excluida temporalmente', descripcion: 'No se calculó nada -- ver el motivo de la exclusión abajo' },
 }
 const CASO_INFO_CONSUMO = {
   'CGM': { nombre: 'Reporte válido', descripcion: 'El reporte automático fue válido y el canal CGM trae dato real' },
@@ -364,6 +463,7 @@ const CASO_INFO_CONSUMO = {
   'Histórico': { nombre: 'Histórico propio', descripcion: 'Ni CGM ni medidor creíbles; se usa la mediana y forma horaria del histórico (propio o del vecino de predio)' },
   'Sin dato': { nombre: 'Sin dato', descripcion: 'Ninguna fuente disponible para este día' },
   'Error': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
+  'Excluida': { nombre: 'Excluida temporalmente', descripcion: 'No se calculó nada -- ver el motivo de la exclusión abajo' },
 }
 // Caso 3 (Generación) junta 2 resultados muy distintos bajo el mismo numero:
 // medidor_usado='revisar' significa que no habia Factor de Perdida
@@ -535,6 +635,7 @@ const ETIQUETAS_FUENTE = {
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
+  excluida: 'Excluida',
 }
 function etiquetaFuente(v) {
   return ETIQUETAS_FUENTE[v] || v || '—'
