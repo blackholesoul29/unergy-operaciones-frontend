@@ -154,7 +154,7 @@
             <Textarea v-model="nuevaExclusionMotivo" rows="2" class="text-xs flex-1" />
             <div class="flex flex-col gap-1 flex-none">
               <label class="text-xs" style="color: #6b5a8a;">Hasta</label>
-              <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-36" showIcon showClear />
+              <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-48" showIcon showClear />
             </div>
           </div>
           <div class="flex gap-2">
@@ -173,7 +173,7 @@
             <Textarea v-model="nuevaExclusionMotivo" rows="2" placeholder="Motivo" class="text-xs flex-1" />
             <div class="flex flex-col gap-1 flex-none">
               <label class="text-xs" style="color: #6b5a8a;">Hasta</label>
-              <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-36" showIcon />
+              <Calendar v-model="nuevaExclusionFechaFin" dateFormat="yy-mm-dd" class="w-48" showIcon />
             </div>
           </div>
           <Button label="Excluir temporalmente" severity="danger" outlined size="small"
