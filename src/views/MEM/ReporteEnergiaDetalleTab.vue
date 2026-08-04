@@ -379,16 +379,19 @@ function casoInfo3(d) {
 }
 
 // 'Medidor' (Consumo) junta el mismo tipo de conflacion que Caso 3/5 de
-// Generación: medidor_usado='revisar' (clasificador_consumo.py lineas 191 y
-// 200, dos rutas de codigo distintas) significa que sí había medidor con
-// dato, pero no había mediana histórica suficiente para compararlo --
-// energia_final_kwh queda en None, no se validó nada.
+// Generación. medidor_usado='revisar' es un valor heredado -- ya no lo
+// produce el clasificador actual, pero sigue vivo en filas viejas de la BD
+// clasificadas antes de este fix (energia_final_kwh en None, no se validó
+// nada). 'principal_sin_historico'/'respaldo_sin_historico' es el camino
+// vigente: sin mediana con qué comparar, se usa el dato disponible del
+// medidor esté completo o no (antes se vaciaba la curva entera por un
+// hueco parcial, ver GD Polaris 2 Consumo 2026-08-03).
 function casoInfoMedidorConsumo(d) {
   if (d.medidor_usado === 'revisar') {
     return { nombre: 'Sin histórico para comparar', descripcion: 'CGM no válido; hay medidor con dato, pero no hay suficiente histórico para calcular su mediana -- no se pudo validar ni generar curva automática' }
   }
   if (d.medidor_usado === 'principal_sin_historico' || d.medidor_usado === 'respaldo_sin_historico') {
-    return { nombre: 'Medidor sin histórico para validar', descripcion: 'CGM no válido; el medidor trae las 24 horas completas pero no hay mediana histórica para confirmar que el nivel es correcto -- se reporta igual, revisar a mano' }
+    return { nombre: 'Medidor sin histórico para validar', descripcion: 'CGM no válido; el medidor tiene dato pero no hay mediana histórica para confirmar que el nivel es correcto -- se reporta con lo disponible, revisar a mano' }
   }
   return { nombre: 'Medidor valida contra histórico', descripcion: 'CGM no válido; el medidor se comparó contra su propia mediana histórica' }
 }
