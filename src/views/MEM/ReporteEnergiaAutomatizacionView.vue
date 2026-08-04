@@ -105,11 +105,19 @@ import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
 
 const toast = useToast()
 
+// Bogotá (America/Bogota) es UTC-5 fijo, sin horario de verano -- pero
+// calcularlo restando 5h al epoch y leyendo el resultado con getters LOCALES
+// (getFullYear/getMonth/getDate) solo da la fecha correcta si el navegador
+// ya está en UTC. En un navegador configurado en hora de Bogotá (lo normal
+// para el equipo), esos getters locales vuelven a restar la offset -- la
+// resta se aplicaba dos veces, y entre medianoche y las 5 a.m. eso rodaba
+// "hoy" al día anterior (bug real: 2026-08-04, bloqueaba elegir el 3 de
+// agosto). Usar Intl con timeZone explícito da el día calendario correcto
+// sin importar en qué zona esté el navegador.
 function hoyColombia() {
-  // Colombia es UTC-5 fijo (sin horario de verano) -- se calcula así en vez
-  // de usar la hora local del navegador, que puede estar en cualquier zona.
-  const utc = new Date(Date.now())
-  return new Date(utc.getTime() - 5 * 60 * 60 * 1000)
+  const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota', year: 'numeric', month: '2-digit', day: '2-digit' })
+  const [y, m, d] = fmt.format(new Date()).split('-').map(Number)
+  return new Date(y, m - 1, d)
 }
 function ayerColombia() {
   // El reporte siempre es del día ANTERIOR (igual que el pipeline original
@@ -117,7 +125,7 @@ function ayerColombia() {
   // qué fecha traiga Quoia) -- ni el día por defecto ni el máximo
   // seleccionable deberían ser "hoy".
   const h = hoyColombia()
-  return new Date(h.getTime() - 24 * 60 * 60 * 1000)
+  return new Date(h.getFullYear(), h.getMonth(), h.getDate() - 1)
 }
 // La clasificación solo se dispara desde "Revisión de hoy", que ya limita
 // a "ayer" -- así que una fila con fecha = hoy nunca existe. Historial
