@@ -5,7 +5,7 @@
         <h1 class="text-xl font-semibold">Comercial — Ofertas</h1>
         <p class="text-sm text-gray-500">
           {{ ofertas.length }} ofertas
-          <span v-if="numAlertas" class="text-red-600 font-medium">· {{ numAlertas }} requieren atención (＞{{ alertaDias }} días sin respuesta)</span>
+          <span v-if="numAlertas" class="text-red-600 font-medium">· {{ numAlertas }} requieren atención (&gt;{{ alertaDias }} días sin respuesta)</span>
         </p>
       </div>
       <div class="flex items-center gap-2">
@@ -85,7 +85,7 @@
     </DataTable>
 
     <!-- ── Tablero kanban por etapa (tarjetas = ofertas) ─────────────────── -->
-    <div v-else class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-3">
+    <div v-else class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-7 gap-3">
       <div v-for="col in ESTADOS" :key="col.value"
            class="bg-gray-50 rounded-lg p-2 min-h-[300px]"
            @dragover.prevent @drop="onDrop(col.value)">
@@ -95,7 +95,7 @@
         </div>
         <div v-for="of in visiblesEnColumna(col.value)" :key="of.id" draggable="true"
              class="bg-white border rounded-md p-3 mb-2 cursor-pointer shadow-sm hover:shadow"
-             @dragstart="dragOpId = of.oportunidad_id" @click="irADetalle(of)">
+             @dragstart="dragOfertaId = of.id" @click="irADetalle(of)">
           <div class="flex items-start justify-between gap-2">
             <span class="font-mono text-[11px] text-gray-600">{{ of.codigo_seguimiento || of.numero_oferta || '—' }}</span>
             <Tag v-if="of.alerta" severity="danger" :value="`⚠ ${of.dias_sin_respuesta}d`" class="shrink-0" />
@@ -145,13 +145,15 @@ const ORDENES = [
   { label: 'Más reciente', value: 'reciente' },
   { label: 'Más antiguo', value: 'antiguo' },
 ]
-// Pipeline de 6 estados (vive en la oportunidad; la oferta lo hereda para mostrarlo).
+// Pipeline de 6 etapas. Desde 2026-08-02 la etapa es DE LA OFERTA: cada tarjeta
+// del tablero se mueve sola, sin arrastrar a las hermanas del mismo cliente.
 const ESTADOS = [
-  { label: 'Prospección', value: 'prospeccion', clase: 'text-blue-700' },
-  { label: 'Envío de oferta', value: 'envio_oferta', clase: 'text-amber-700' },
-  { label: 'Negociación del contrato', value: 'negociacion_contrato', clase: 'text-purple-700' },
+  { label: 'Oportunidad', value: 'oportunidad', clase: 'text-blue-700' },
+  { label: 'Oferta', value: 'oferta', clase: 'text-amber-700' },
+  { label: 'Contrato', value: 'contrato', clase: 'text-purple-700' },
   { label: 'Firmado', value: 'firmado', clase: 'text-teal-700' },
   { label: 'Operando', value: 'operando', clase: 'text-green-700' },
+  { label: 'Terminado', value: 'terminado', clase: 'text-gray-600' },
   { label: 'Declinado', value: 'declinado', clase: 'text-red-700' },
 ]
 const TIPOS_OFERTA = [
@@ -178,11 +180,11 @@ const filtroEstados = ref([])
 const filtroResultado = ref(null)
 const soloAlerta = ref(false)
 const showNueva = ref(false)
-const dragOpId = ref(null)
+const dragOfertaId = ref(null)
 
-// Alertas contadas por oportunidad (varias ofertas comparten la alerta del deal).
-const numAlertas = computed(() =>
-  new Set(ofertas.value.filter(o => o.alerta).map(o => o.oportunidad_id)).size)
+// La alerta ya es de cada oferta (cuenta desde que entró a SU etapa), así que
+// se cuentan ofertas, no clientes.
+const numAlertas = computed(() => ofertas.value.filter(o => o.alerta).length)
 
 function filtradas() {
   const q = filtroTexto.value.toLowerCase()
@@ -211,8 +213,8 @@ watch([ofertas, filtroTexto, filtroTipo, filtroEstados, filtroResultado, soloAle
 function labelEstado(v) { return ESTADOS.find(e => e.value === v)?.label ?? v }
 function severidadEstado(v) {
   return {
-    prospeccion: 'info', envio_oferta: 'warn', negociacion_contrato: 'secondary',
-    firmado: 'contrast', operando: 'success', declinado: 'danger',
+    oportunidad: 'info', oferta: 'warn', contrato: 'secondary',
+    firmado: 'contrast', operando: 'success', terminado: 'secondary', declinado: 'danger',
   }[v] ?? 'info'
 }
 function labelTipoOferta(v) { return TIPOS_OFERTA.find(t => t.value === v)?.label ?? v }
@@ -244,20 +246,22 @@ async function cargar() {
   alertaDias.value = cfg.alerta_dias
 }
 
+// Mueve SOLO la oferta arrastrada. Antes movía todo el cliente, que era el
+// problema: firmar Margaritas 1 arrastraba a Margaritas 2, que sigue abierta.
 async function onDrop(estadoDestino) {
-  const opId = dragOpId.value
-  dragOpId.value = null
-  if (!opId) return
-  const afectadas = ofertas.value.filter(o => o.oportunidad_id === opId)
-  if (!afectadas.length || afectadas[0].estado === estadoDestino) return
-  const previo = afectadas.map(o => [o, o.estado])
-  afectadas.forEach(o => { o.estado = estadoDestino })   // optimista (toda la oportunidad)
+  const ofertaId = dragOfertaId.value
+  dragOfertaId.value = null
+  if (!ofertaId) return
+  const oferta = ofertas.value.find(o => o.id === ofertaId)
+  if (!oferta || oferta.estado === estadoDestino) return
+  const previo = oferta.estado
+  oferta.estado = estadoDestino                          // optimista
   try {
-    await api.post(`/comercial/oportunidades/${opId}/estado`, { estado: estadoDestino })
+    await api.post(`/comercial/ofertas/${ofertaId}/estado`, { estado: estadoDestino })
     await cargar()
   } catch (err) {
-    previo.forEach(([o, e]) => { o.estado = e })
-    toast.add({ severity: 'error', summary: 'No se pudo cambiar el estado', detail: err.response?.data?.detail ?? '', life: 5000 })
+    oferta.estado = previo
+    toast.add({ severity: 'error', summary: 'No se pudo cambiar la etapa', detail: err.response?.data?.detail ?? '', life: 5000 })
   }
 }
 

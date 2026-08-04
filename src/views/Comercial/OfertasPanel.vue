@@ -28,9 +28,13 @@
       <Column field="precio_detalle" header="Precio">
         <template #body="{ data }">{{ data.precio_detalle || '—' }}</template>
       </Column>
-      <Column header="Resultado">
+      <!-- La etapa es de la oferta: cada una avanza sola. -->
+      <Column header="Etapa" style="min-width:11rem">
         <template #body="{ data }">
-          <Tag :value="labelResultado(data.resultado)" :severity="sevResultado(data.resultado)" />
+          <Dropdown :modelValue="data.estado" :options="ESTADOS" optionLabel="label"
+                    optionValue="value" class="w-full text-xs"
+                    :loading="moviendo === data.id"
+                    @update:modelValue="v => cambiarEtapa(data, v)" />
         </template>
       </Column>
       <Column header="Enviada">
@@ -89,9 +93,9 @@
             <label class="block text-sm font-medium mb-1">Código de seguimiento</label>
             <InputText v-model.trim="form.numero_oferta" class="w-full" placeholder="Se autogenera (OP.…) si lo dejas vacío" />
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Resultado</label>
-            <Dropdown v-model="form.resultado" :options="RESULTADOS" optionLabel="label" optionValue="value" class="w-full" />
+          <div v-if="!editId">
+            <label class="block text-sm font-medium mb-1">Etapa</label>
+            <Dropdown v-model="form.estado" :options="ESTADOS" optionLabel="label" optionValue="value" class="w-full" />
           </div>
         </div>
         <div>
@@ -130,7 +134,6 @@ import Dialog from 'primevue/dialog'
 import Dropdown from 'primevue/dropdown'
 import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
-import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 
@@ -146,17 +149,37 @@ const TIPOS_OFERTA = [
   { label: 'Compra de energía', value: 'compra_energia' },
   { label: 'Comunidad energética', value: 'comunidad_energetica' },
 ]
-const RESULTADOS = [
-  { label: 'Pendiente', value: 'pendiente' },
-  { label: 'Aceptado', value: 'aceptado' },
+const ESTADOS = [
+  { label: 'Oportunidad', value: 'oportunidad' },
+  { label: 'Oferta', value: 'oferta' },
+  { label: 'Contrato', value: 'contrato' },
+  { label: 'Firmado', value: 'firmado' },
+  { label: 'Operando', value: 'operando' },
+  { label: 'Terminado', value: 'terminado' },
   { label: 'Declinado', value: 'declinado' },
 ]
+
+const moviendo = ref(null)
+
+async function cambiarEtapa(oferta, estado) {
+  if (!estado || estado === oferta.estado) return
+  moviendo.value = oferta.id
+  try {
+    await api.post(`/comercial/ofertas/${oferta.id}/estado`, { estado })
+    emit('changed')
+  } catch (err) {
+    toast.add({ severity: 'error', summary: 'No se pudo cambiar la etapa',
+                detail: err.response?.data?.detail ?? '', life: 5000 })
+  } finally {
+    moviendo.value = null
+  }
+}
 
 const showDialog = ref(false)
 const editId = ref(null)
 const guardando = ref(false)
 const form = reactive({
-  tipo: null, planta_nombre: '', numero_oferta: '', resultado: 'pendiente',
+  tipo: null, planta_nombre: '', numero_oferta: '', estado: 'oferta',
   precio_detalle: '', fecha_oferta: null, fecha_tentativa_inicio: null, contrato_firmado: '',
 })
 
@@ -182,8 +205,6 @@ async function registrarSeguimiento(oferta) {
 }
 
 function labelTipo(v) { return TIPOS_OFERTA.find(t => t.value === v)?.label ?? v }
-function labelResultado(v) { return RESULTADOS.find(r => r.value === v)?.label ?? v }
-function sevResultado(v) { return { aceptado: 'success', declinado: 'danger', pendiente: 'warn' }[v] ?? 'secondary' }
 
 function aFecha(s) { return s ? new Date(`${String(s).slice(0, 10)}T00:00:00`) : null }
 function aFechaStr(v) {
@@ -195,7 +216,7 @@ function aFechaStr(v) {
 
 function reset() {
   Object.assign(form, {
-    tipo: null, planta_nombre: '', numero_oferta: '', resultado: 'pendiente',
+    tipo: null, planta_nombre: '', numero_oferta: '', estado: 'oferta',
     precio_detalle: '', fecha_oferta: null, fecha_tentativa_inicio: null, contrato_firmado: '',
   })
 }
@@ -204,7 +225,7 @@ function abrirEditar(o) {
   editId.value = o.id
   Object.assign(form, {
     tipo: o.tipo, planta_nombre: o.planta_nombre || '', numero_oferta: o.numero_oferta || '',
-    resultado: o.resultado || 'pendiente', precio_detalle: o.precio_detalle || '',
+    precio_detalle: o.precio_detalle || '',
     fecha_oferta: aFecha(o.fecha_oferta), fecha_tentativa_inicio: aFecha(o.fecha_tentativa_inicio),
     contrato_firmado: o.contrato_firmado || '',
   })
@@ -217,7 +238,6 @@ async function guardar() {
     tipo: form.tipo,
     planta_nombre: form.planta_nombre || null,
     numero_oferta: form.numero_oferta || null,
-    resultado: form.resultado,
     precio_detalle: form.precio_detalle || null,
     fecha_oferta: aFechaStr(form.fecha_oferta),
     fecha_tentativa_inicio: aFechaStr(form.fecha_tentativa_inicio),

@@ -14,20 +14,15 @@
       </div>
     </div>
 
-    <!-- Stepper de estado -->
-    <div class="flex items-center gap-1 mb-6 flex-wrap">
-      <template v-for="(e, i) in ESTADOS" :key="e.value">
-        <button
-          class="px-3 py-1.5 rounded-full text-sm border transition"
-          :class="e.value === op.estado
-            ? 'bg-primary text-white border-primary font-semibold'
-            : 'bg-white text-gray-600 hover:bg-gray-100'"
-          @click="cambiarEstado(e.value)">
-          {{ e.label }}
-        </button>
-        <i v-if="i < ESTADOS.length - 1" class="pi pi-angle-right text-gray-400 text-xs" />
-      </template>
-      <span class="text-xs text-gray-500 ml-2">en este estado desde {{ fmtFecha(op.estado_desde) }}</span>
+    <!-- Un cliente no tiene etapa: el negocio es la oferta. Se desglosa en qué
+         etapa está cada una — lo que las diferencia son sus plantas. -->
+    <div class="flex items-center gap-2 mb-6 flex-wrap">
+      <span class="text-sm text-gray-500">{{ totalOfertas }} oferta(s):</span>
+      <Tag v-for="e in etapasPresentes" :key="e.value" :value="`${e.n} ${e.label.toLowerCase()}`"
+           :severity="severidadEstado(e.value)" />
+      <span v-if="!totalOfertas" class="text-sm text-gray-400">
+        todavía sin ofertas — se crean en la pestaña Ofertas
+      </span>
     </div>
 
     <TabView>
@@ -201,14 +196,22 @@ import OfertasPanel from './OfertasPanel.vue'
 const route = useRoute()
 const toast = useToast()
 
+// La etapa vive en cada oferta (pestaña Ofertas); aquí solo se resumen.
 const ESTADOS = [
-  { label: 'Prospección', value: 'prospeccion' },
-  { label: 'Envío de oferta', value: 'envio_oferta' },
-  { label: 'Negociación del contrato', value: 'negociacion_contrato' },
+  { label: 'Oportunidad', value: 'oportunidad' },
+  { label: 'Oferta', value: 'oferta' },
+  { label: 'Contrato', value: 'contrato' },
   { label: 'Firmado', value: 'firmado' },
   { label: 'Operando', value: 'operando' },
+  { label: 'Terminado', value: 'terminado' },
   { label: 'Declinado', value: 'declinado' },
 ]
+function severidadEstado(v) {
+  return {
+    oportunidad: 'info', oferta: 'warn', contrato: 'secondary',
+    firmado: 'contrast', operando: 'success', terminado: 'secondary', declinado: 'danger',
+  }[v] ?? 'info'
+}
 const TIPOS_SERVICIO = [
   { label: 'Servicios operacionales', value: 'servicios_operacionales' },
   { label: 'Compra de energía', value: 'compra_energia' },
@@ -242,6 +245,13 @@ const ppaInitialData = computed(() => op.value ? {
 } : null)
 
 watch(op, (v) => { proyectosFilas.value = v?.proyectos ?? [] })
+
+// `etapas` viene del backend como {etapa: n}; se ordena según el pipeline.
+const totalOfertas = computed(() =>
+  Object.values(op.value?.etapas ?? {}).reduce((a, b) => a + b, 0))
+const etapasPresentes = computed(() => ESTADOS
+  .filter(e => (op.value?.etapas ?? {})[e.value])
+  .map(e => ({ ...e, n: op.value.etapas[e.value] })))
 
 function fmtFecha(v) { return v ? new Date(v).toLocaleDateString('es-CO', { dateStyle: 'medium' }) : '' }
 function docPorTipo(tipo) { return (op.value?.documentos ?? []).find(d => d.tipo === tipo) }
@@ -308,15 +318,6 @@ function autosave() {
   }, 800)
 }
 
-async function cambiarEstado(estado) {
-  if (estado === op.value.estado) return
-  try {
-    await api.post(`/comercial/oportunidades/${op.value.id}/estado`, { estado })
-    await recargar()
-  } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo cambiar el estado', detail: err.response?.data?.detail ?? '', life: 5000 })
-  }
-}
 
 async function patchCliente(payload) {
   try {
