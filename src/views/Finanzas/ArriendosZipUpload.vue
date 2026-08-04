@@ -111,6 +111,15 @@
                         {{ p.proyecto }}{{ p.codigo ? ` (${p.codigo})` : '' }}
                       </option>
                     </select>
+                    <!-- Selector de arrendador: solo cuando el proyecto tiene MÁS DE UNO -->
+                    <select v-if="predio.arrendadorOpciones && predio.arrendadorOpciones.length > 1"
+                      v-model="predio.arrArrendadorId"
+                      class="text-[11px] border border-purple-200 rounded px-1.5 py-0.5 mt-1 w-full bg-white"
+                      title="Este proyecto tiene varios arrendadores: elige a cuál corresponde esta cuenta de cobro">
+                      <option v-for="a in predio.arrendadorOpciones" :key="a.id" :value="a.id">
+                        {{ a.nombre }}
+                      </option>
+                    </select>
                   </td>
                   <td class="px-3 py-2 text-right font-mono text-xs text-gray-600">
                     {{ predio.valor != null ? formatCOP(predio.valor) : '—' }}
@@ -224,7 +233,9 @@ const EXTENSIONES_PERMITIDAS = ['pdf', 'jpg', 'jpeg', 'png', 'xml']
 const toast = useToast()
 
 const props = defineProps({
-  proyectos:    { type: Array,  required: true },   // [{ id, proyecto, codigo }]
+  // [{ id (arr_arrendador_id, o sintético -proyecto_id si no tiene contrato),
+  //   proyectoId (id real de Proyecto), proyecto, codigo, nombreArrendador, estadoContrato }]
+  proyectos:    { type: Array,  required: true },
   periodo:      { type: String, required: true },   // 'YYYY-MM'
   periodoLabel: { type: String, required: true },
 })
@@ -385,6 +396,27 @@ function prediosDeNombre(nombre) {
 function matchPredio(short) {
   if (!short) return null
   return props.proyectos.find(p => predioShort(p.codigo) === short) ?? null
+}
+
+// Todas las filas de props.proyectos que corresponden al mismo código de predio.
+// Cuando un proyecto de arriendo tiene varios arrendadores, /arriendos/calculo
+// entrega una fila por arrendador (mismo código, distinto id/nombreArrendador),
+// así que esto puede devolver más de un resultado.
+function matchesPredio(short) {
+  if (!short) return []
+  return props.proyectos.filter(p => predioShort(p.codigo) === short)
+}
+
+// Arrendador por defecto para un conjunto de filas ya matcheadas:
+// - Varias filas (varios arrendadores reales) → la primera, el usuario podrá cambiarla.
+// - Una sola fila y viene de un contrato real (estadoContrato !== 'sin_contrato') → su id
+//   ya es un arr_arrendador_id válido, se puede enviar sin pedir selección.
+// - Una sola fila "de respaldo" (proyecto sin contrato aún) → su id es sintético
+//   (no existe en la tabla de arrendadores), no se envía arr_arrendador_id.
+function arrendadorIdDefault(matches) {
+  if (matches.length > 1) return matches[0].id
+  if (matches.length === 1 && matches[0].estadoContrato !== 'sin_contrato') return matches[0].id
+  return null
 }
 
 // ── Encabezado: N° de cuenta + arrendatario (DEBE A) ───────────────────────────
@@ -563,15 +595,22 @@ async function onZipSelected(e) {
 
       const predios = (codigosPredio.length ? codigosPredio : [codigoExtraido]).map(codigo => {
         const short = predioShort(codigo) || codigo
-        const m = matchPredio(short)
+        const matches = matchesPredio(short)
+        const m = matches[0] ?? null
         return {
           uid: uid(),
           codigoPredio:   short,
           valor:          valorDe(short),
           proyectoId:     m?.id ?? null,
+          // Id real de Proyecto (para documentos, indexados por proyecto_id, no por
+          // arr_arrendador_id). Todos los matches del mismo predio comparten proyecto.
+          proyectoRealId: m?.proyectoId ?? null,
           proyectoNombre: m?.proyecto ?? null,
           conPago:        false,   // se calcula luego (predio repetido entre pagos)
           yaExiste:       false,
+          // Varios arrendadores para el mismo proyecto → selector; si no, null/valor único.
+          arrendadorOpciones: matches.map(p => ({ id: p.id, nombre: p.nombreArrendador || p.proyecto })),
+          arrArrendadorId: arrendadorIdDefault(matches),
         }
       })
 
@@ -595,9 +634,9 @@ async function onZipSelected(e) {
     // Advertencia: documentos ya existentes en el período (mismo proyecto + pago)
     try {
       const existentes = await fetchDocsPeriodo(periodoZip.value || props.periodo)
-      const clave = new Set(existentes.map(d => `${d.arr_proyecto_id}|${d.pago_id}`))
+      const clave = new Set(existentes.map(d => `${d.proyecto_id}|${d.pago_id}`))
       for (const g of grupos) for (const p of g.predios) {
-        if (p.proyectoId && clave.has(`${p.proyectoId}|${g.pagoId}`)) p.yaExiste = true
+        if (p.proyectoRealId && clave.has(`${p.proyectoRealId}|${g.pagoId}`)) p.yaExiste = true
       }
     } catch { /* no bloquea */ }
 
@@ -614,6 +653,10 @@ async function onZipSelected(e) {
 function onProyectoSeleccionado(predio) {
   const p = props.proyectos.find(p => p.id === predio.proyectoId)
   predio.proyectoNombre = p?.proyecto ?? null
+  predio.proyectoRealId = p?.proyectoId ?? null
+  const matches = p ? props.proyectos.filter(x => x.codigo === p.codigo) : []
+  predio.arrendadorOpciones = matches.map(x => ({ id: x.id, nombre: x.nombreArrendador || x.proyecto }))
+  predio.arrArrendadorId = arrendadorIdDefault(matches)
 }
 
 // ── Confirmar y guardar ───────────────────────────────────────────────────────
@@ -641,9 +684,12 @@ async function confirmar() {
           nombreArrendatario: grupo.nombreArrendatario,
           predios: grupo.predios.map(p => ({
             arr_proyecto_id:  p.proyectoId,
+            proyecto_id:      p.proyectoRealId,
             codigo_predio:    p.codigoPredio,
             valor_individual: p.valor,
             nombre_resultante: nombrePredio(grupo, p),
+            // Solo se envía cuando es un arr_arrendador_id real conocido (ver arrendadorIdDefault).
+            ...(p.arrArrendadorId != null ? { arr_arrendador_id: p.arrArrendadorId } : {}),
           })),
         })
         for (const p of grupo.predios) {

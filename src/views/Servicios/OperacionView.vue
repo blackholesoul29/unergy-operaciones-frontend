@@ -371,15 +371,9 @@
               <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-user text-xs" style="color:#8b5cf6" />Contratante
+                    <i class="pi pi-user text-xs" style="color:#8b5cf6" />Arrendatario
                   </p>
                   <p class="text-sm font-semibold leading-snug" style="color:#1c1917">{{ contratos.arriendo.contratante_nombre || '—' }}</p>
-                </div>
-                <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-building text-xs" style="color:#8b5cf6" />Prestador
-                  </p>
-                  <p class="text-sm font-semibold leading-snug" style="color:#1c1917">{{ contratos.arriendo.prestador_nombre || '—' }}</p>
                 </div>
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
@@ -434,13 +428,48 @@
                   <span v-else class="text-sm text-gray-400">Sin enlace</span>
                 </div>
               </div>
-              <!-- Panel indexación ANUAL -->
-              <div :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.anual ? '800px' : '0px' }">
+
+              <!-- Sección Arrendadores -->
+              <div class="rounded-xl border mt-3" style="border-color:#ddd6fe">
+                <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
+                  <span class="text-xs font-semibold flex items-center gap-1.5" style="color:#5b21b6">
+                    <i class="pi pi-users text-xs" style="color:#8b5cf6" />Arrendadores
+                  </span>
+                  <Button icon="pi pi-plus" label="Agregar arrendador" size="small" text
+                    style="color:#8b5cf6" @click="openArrendadorDialog('crear')" />
+                </div>
+                <div v-if="!arrendadores.length" class="px-4 py-6 text-center text-xs text-gray-400">
+                  Sin arrendadores registrados.
+                </div>
+                <div v-else class="divide-y divide-gray-100">
+                  <div v-for="a in arrendadores" :key="a.id"
+                    class="flex items-center justify-between gap-3 px-4 py-3 flex-wrap">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="text-sm font-semibold" style="color:#1c1917">{{ a.nombre }}</span>
+                      <span class="text-sm font-mono tabular-nums" style="color:#7c3aed">{{ formatCOP(a.valor_base) }}</span>
+                      <span v-if="a.responsable_iva" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
+                        style="background:#ede9fe;color:#7c3aed">Responsable IVA</span>
+                      <span v-if="a.activo === false" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
+                        style="background:#f3f4f6;color:#9ca3af">Inactivo</span>
+                    </div>
+                    <div class="flex items-center gap-1 flex-shrink-0">
+                      <Button icon="pi pi-pencil" size="small" text severity="secondary"
+                        @click="openArrendadorDialog('editar', a)" />
+                      <Button icon="pi pi-trash" size="small" text severity="danger"
+                        @click="eliminarArrendador(a)" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Panel indexación ANUAL por arrendador -->
+              <div v-for="a in arrendadores" :key="'anual-' + a.id"
+                :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.anual ? '800px' : '0px' }">
                 <div class="pt-3">
                   <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
                     <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
                       <span class="text-xs font-semibold" style="color:#5b21b6">
-                        <i class="pi pi-dollar text-xs mr-1.5" style="color:#8b5cf6" />Indexación anual de arriendo
+                        <i class="pi pi-dollar text-xs mr-1.5" style="color:#8b5cf6" />Indexación anual de arriendo — {{ a.nombre }}
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
@@ -454,12 +483,12 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-if="!contratos.arriendo.indexacion_anual?.length">
+                        <tr v-if="!a.indexacion_anual?.length">
                           <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
                             Sin indexación aún — el contrato todavía no cumple un año desde la Fecha de contrato (o falta esa fecha / el valor base).
                           </td>
                         </tr>
-                        <tr v-for="fila in (contratos.arriendo.indexacion_anual || [])" :key="fila.anio"
+                        <tr v-for="fila in (a.indexacion_anual || [])" :key="fila.anio"
                           class="border-b border-gray-50 hover:bg-violet-50/20 transition-colors"
                           :class="fila.anio === ANIO_ACTUAL ? 'bg-violet-50/40' : ''">
                           <td class="px-4 py-2.5">
@@ -510,13 +539,14 @@
                 </div>
               </div>
 
-              <!-- Panel indexación MENSUAL -->
-              <div :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.mensual ? '800px' : '0px' }">
+              <!-- Panel indexación MENSUAL por arrendador -->
+              <div v-for="a in arrendadores" :key="'mensual-' + a.id"
+                :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.mensual ? '800px' : '0px' }">
                 <div class="pt-3">
                   <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
                     <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
                       <span class="text-xs font-semibold" style="color:#5b21b6">
-                        <i class="pi pi-calculator text-xs mr-1.5" style="color:#8b5cf6" />Indexación mensual de arriendo
+                        <i class="pi pi-calculator text-xs mr-1.5" style="color:#8b5cf6" />Indexación mensual de arriendo — {{ a.nombre }}
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
@@ -530,12 +560,12 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-if="!contratos.arriendo.indexacion_mensual?.length">
+                        <tr v-if="!a.indexacion_mensual?.length">
                           <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
                             Sin indexación aún — el contrato todavía no cumple un año desde la Fecha de contrato (o falta esa fecha / el valor base).
                           </td>
                         </tr>
-                        <tr v-for="fila in (contratos.arriendo.indexacion_mensual || [])" :key="fila.anio"
+                        <tr v-for="fila in (a.indexacion_mensual || [])" :key="fila.anio"
                           class="border-b border-gray-50 hover:bg-violet-50/20 transition-colors"
                           :class="fila.anio === ANIO_ACTUAL ? 'bg-violet-50/40' : ''">
                           <td class="px-4 py-2.5">
@@ -587,6 +617,51 @@
               </div>
 
             </div>
+
+            <!-- Dialog Arrendador (crear/editar) -->
+            <Dialog v-model:visible="arrendadorDialog.visible" modal
+              :header="arrendadorDialog.modo === 'editar' ? 'Editar arrendador' : 'Agregar arrendador'"
+              style="width: 26rem">
+              <div class="flex flex-col gap-3 pt-2">
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Nombre <span class="text-red-400">*</span></label>
+                  <InputText v-model="arrendadorDialog.form.nombre" class="w-full" placeholder="Nombre o razón social" />
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Valor base</label>
+                  <InputNumber v-model="arrendadorDialog.form.valor_base" class="w-full" mode="currency"
+                    currency="COP" locale="es-CO" :maxFractionDigits="0" />
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Responsable IVA</label>
+                  <Select v-model="arrendadorDialog.form.responsable_iva"
+                    :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+                    optionLabel="label" optionValue="value" class="w-full" />
+                </div>
+                <div>
+                  <label class="text-xs font-medium text-gray-600">Activo</label>
+                  <Select v-model="arrendadorDialog.form.activo"
+                    :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+                    optionLabel="label" optionValue="value" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-medium text-gray-600">Anticipo pagado desde</label>
+                  <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_desde" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-medium text-gray-600">Anticipo pagado hasta</label>
+                  <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_hasta" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-xs font-medium text-gray-600">Observaciones</label>
+                  <Textarea v-model="arrendadorDialog.form.observaciones" rows="2" class="w-full" />
+                </div>
+              </div>
+              <template #footer>
+                <Button label="Cancelar" text severity="secondary" @click="arrendadorDialog.visible = false" />
+                <Button label="Guardar" :loading="arrendadorDialog.guardando" @click="guardarArrendador" />
+              </template>
+            </Dialog>
           </template>
           <template v-else>
             <!-- Datos estáticos desde JSON si existen -->
@@ -821,10 +896,12 @@
               <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
                 <InfoIcon icon="pi pi-building" color="#06b6d4" label="Proveedor"
                   :value="contratos.internet.prestador_nombre" />
-                <InfoIcon icon="pi pi-dollar" color="#06b6d4" label="Valor facturado"
-                  :value="formatCOP(contratos.internet.tarifa_base)" />
-                <InfoBadge color="#06b6d4" label="Estado del pago"
-                  :estado="contratos.internet.estado_pago" />
+                <InfoIcon icon="pi pi-database" color="#06b6d4" label="Plan de datos"
+                  :value="contratos.internet.plan_datos_gb" />
+                <InfoIcon icon="pi pi-gauge" color="#06b6d4" label="Velocidad"
+                  :value="contratos.internet.velocidad_mbps != null ? `${contratos.internet.velocidad_mbps} Mbps` : null" />
+                <InfoIcon icon="pi pi-wifi" color="#06b6d4" label="Tipo de conexión"
+                  :value="contratos.internet.tipo_conexion" />
                 <InfoLink color="#06b6d4" label="Factura / Contrato en Drive"
                   :href="contratos.internet.enlace_drive" />
               </div>
@@ -843,17 +920,6 @@
                 @click="openWizard('internet')" />
             </div>
           </template>
-
-          <PagosTabla
-            tipo="internet"
-            color="#06b6d4"
-            :contrato-id="contratos.internet?.id ?? null"
-            :pagos="pagos.internet"
-            :loading-pagos="loadingPagos.internet"
-            :filtros="filtros.internet"
-            @open-pago="openNuevoPago('internet')"
-            @eliminar="(id) => eliminarPago('internet', id)"
-          />
         </div>
       </TabPanel>
 
@@ -995,15 +1061,33 @@
               <p class="text-xs text-gray-400">Fecha base para la indexación en Costos.</p>
             </div>
           </template>
-          <div class="flex flex-col gap-1" :class="dialogEdit.tipo === 'internet' ? 'col-span-2 md:col-span-1' : ''">
+          <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-600">
-              {{ dialogEdit.tipo === 'mantenimiento' ? 'Valor O&M Anual BASE (COP)' : dialogEdit.tipo === 'arriendo' ? 'Valor anual BASE (COP)' : 'Valor facturado (COP)' }}
+              {{ dialogEdit.tipo === 'mantenimiento' ? 'Valor O&M Anual BASE (COP)' : 'Valor anual BASE (COP)' }}
             </label>
             <InputNumber v-model="dialogEdit.form.tarifa_base"
               mode="currency" currency="COP" locale="es-CO" :maxFractionDigits="0"
               class="w-full" placeholder="$ 0" />
           </div>
         </div>
+        <template v-if="dialogEdit.tipo === 'internet'">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Plan de datos</label>
+              <InputText v-model="dialogEdit.form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Velocidad contratada</label>
+              <InputNumber v-model="dialogEdit.form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">Tipo de conexión</label>
+            <Select v-model="dialogEdit.form.tipo_conexion"
+              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
+              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
+          </div>
+        </template>
         <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Periodicidad de cobro</label>
           <Select v-model="dialogEdit.form.periodicidad_pago" :options="PERIODICIDADES"
@@ -1015,7 +1099,7 @@
           <Select v-model="dialogEdit.form.responsable_iva" :options="[{label:'Sí',value:true},{label:'No',value:false}]"
             optionLabel="label" optionValue="value" class="w-full" />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Estado del pago</label>
           <Select v-model="dialogEdit.form.estado_pago" :options="ESTADO_PAGO_OPCIONES"
             optionLabel="label" optionValue="value" placeholder="Sin definir" showClear class="w-full" />
@@ -1087,6 +1171,7 @@ import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
+import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
@@ -1168,6 +1253,19 @@ const showIndexacionArriendo  = reactive({ anual: false, mensual: false })
 const facturasCobradas   = ref([])
 const facturasEmitidas   = ref([])
 
+// ── Arrendadores (arriendo con múltiples arrendadores) ─────────────────────────
+const arrendadores = ref([])
+const arrendadorDialog = reactive({
+  visible: false,
+  modo: 'crear',
+  editId: null,
+  guardando: false,
+  form: {
+    nombre: '', valor_base: null, responsable_iva: false, activo: true,
+    anticipo_pagado_desde: null, anticipo_pagado_hasta: null, observaciones: '',
+  },
+})
+
 const dialogMant = reactive({
   visible: false,
   modo: 'crear',
@@ -1201,7 +1299,7 @@ const wizardTipo    = ref('mantenimiento')
 const dialogEdit = reactive({
   visible: false,
   tipo: 'mantenimiento',
-  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false },
+  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false, plan_datos_gb: '', velocidad_mbps: null, tipo_conexion: null },
 })
 
 const dialogPago = reactive({
@@ -1228,6 +1326,7 @@ onMounted(async () => {
     contratos.internet      = netRes.status  === 'fulfilled' && netRes.value.data.length  ? netRes.value.data[0]  : null
 
     await cargarIndexacionOM()
+    await cargarArrendadores()
     await cargarIndexacionArriendo()
     await loadPagos('mantenimiento')
   } catch (e) {
@@ -1253,7 +1352,8 @@ async function loadPagos(tipo) {
 
 function onTabChange(e) {
   const tipo = TABS_TIPOS[e.index]
-  if (tipo) loadPagos(tipo)
+  // Internet no tiene tab de Pagos (PagosTabla no se renderiza para este tipo)
+  if (tipo && tipo !== 'internet') loadPagos(tipo)
 }
 
 function openNuevoPago(tipo) {
@@ -1320,6 +1420,9 @@ function openEditContrato(tipo) {
   dialogEdit.form.periodicidad_pago = c.periodicidad_pago || 'mensual'
   dialogEdit.form.fecha_inicio_om = c.fecha_inicio_om ? new Date(c.fecha_inicio_om) : null
   dialogEdit.form.responsable_iva = c.responsable_iva ?? false
+  dialogEdit.form.plan_datos_gb = c.plan_datos_gb || ''
+  dialogEdit.form.velocidad_mbps = c.velocidad_mbps ?? null
+  dialogEdit.form.tipo_conexion = c.tipo_conexion || null
   dialogEdit.visible = true
 }
 
@@ -1330,9 +1433,11 @@ async function saveContrato() {
   try {
     const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
     const payload = {
-      tarifa_base: dialogEdit.form.tarifa_base,
       enlace_drive: dialogEdit.form.enlace_drive?.trim() || null,
-      estado_pago: dialogEdit.form.estado_pago || null,
+    }
+    if (tipo !== 'internet') {
+      payload.tarifa_base = dialogEdit.form.tarifa_base
+      payload.estado_pago = dialogEdit.form.estado_pago || null
     }
     if (tipo === 'mantenimiento') {
       payload.fecha_inicio = toISO(dialogEdit.form.fecha_inicio)
@@ -1343,6 +1448,11 @@ async function saveContrato() {
       payload.periodicidad_pago = dialogEdit.form.periodicidad_pago
       payload.fecha_inicio_om = toISO(dialogEdit.form.fecha_inicio_om)
       payload.responsable_iva = dialogEdit.form.responsable_iva ?? false
+    }
+    if (tipo === 'internet') {
+      payload.plan_datos_gb = dialogEdit.form.plan_datos_gb?.trim() || null
+      payload.velocidad_mbps = dialogEdit.form.velocidad_mbps ?? null
+      payload.tipo_conexion = dialogEdit.form.tipo_conexion || null
     }
     const { data } = await api.patch(`/contratos-servicio/${contratos[tipo].id}`, payload)
     contratos[tipo] = { ...contratos[tipo], ...data }
@@ -1368,6 +1478,10 @@ async function onContratoCreado() {
   try {
     const { data } = await api.get('/contratos-servicio', { params: { tipo, proyecto_id: proyId } })
     contratos[tipo] = data.length ? data[0] : null
+    if (tipo === 'arriendo') {
+      await cargarArrendadores()
+      await cargarIndexacionArriendo()
+    }
     await loadPagos(tipo)
   } catch { /* ignore */ }
 }
@@ -1551,6 +1665,94 @@ async function cargarIndexacionArriendo() {
   } catch {
     contratos.arriendo.indexacion_anual   = []
     contratos.arriendo.indexacion_mensual = []
+  }
+  // Indexación individual por cada arrendador (usa su propio valor_base)
+  await Promise.all(arrendadores.value.map(async (a) => {
+    try {
+      const { data } = await api.get(`/arriendos/indexacion/${contratos.arriendo.id}`, {
+        params: { arrendador_id: a.id },
+      })
+      a.indexacion_anual   = data.anual   || []
+      a.indexacion_mensual = data.mensual || []
+    } catch {
+      a.indexacion_anual   = []
+      a.indexacion_mensual = []
+    }
+  }))
+}
+
+// ── Arrendadores: CRUD ────────────────────────────────────────────────────────
+async function cargarArrendadores() {
+  if (!contratos.arriendo?.id) { arrendadores.value = []; return }
+  try {
+    const { data } = await api.get(`/arriendos/contratos/${contratos.arriendo.id}/arrendadores`)
+    arrendadores.value = data || []
+  } catch {
+    arrendadores.value = []
+  }
+}
+
+function openArrendadorDialog(modo, arrendador = null) {
+  arrendadorDialog.modo = modo
+  arrendadorDialog.editId = arrendador?.id ?? null
+  arrendadorDialog.form.nombre = arrendador?.nombre || ''
+  arrendadorDialog.form.valor_base = arrendador?.valor_base ?? null
+  arrendadorDialog.form.responsable_iva = arrendador?.responsable_iva ?? false
+  arrendadorDialog.form.activo = arrendador?.activo ?? true
+  arrendadorDialog.form.anticipo_pagado_desde = arrendador?.anticipo_pagado_desde ? new Date(arrendador.anticipo_pagado_desde) : null
+  arrendadorDialog.form.anticipo_pagado_hasta = arrendador?.anticipo_pagado_hasta ? new Date(arrendador.anticipo_pagado_hasta) : null
+  arrendadorDialog.form.observaciones = arrendador?.observaciones || ''
+  arrendadorDialog.visible = true
+}
+
+async function guardarArrendador() {
+  if (!contratos.arriendo?.id) return
+  if (!arrendadorDialog.form.nombre?.trim()) {
+    toast.add({ severity: 'error', summary: 'El nombre es obligatorio', life: 3000 })
+    return
+  }
+  arrendadorDialog.guardando = true
+  try {
+    const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
+    const payload = {
+      nombre: arrendadorDialog.form.nombre.trim(),
+      valor_base: arrendadorDialog.form.valor_base,
+      responsable_iva: arrendadorDialog.form.responsable_iva ?? false,
+      activo: arrendadorDialog.form.activo ?? true,
+      anticipo_pagado_desde: toISO(arrendadorDialog.form.anticipo_pagado_desde),
+      anticipo_pagado_hasta: toISO(arrendadorDialog.form.anticipo_pagado_hasta),
+      observaciones: arrendadorDialog.form.observaciones?.trim() || null,
+    }
+    if (arrendadorDialog.modo === 'editar' && arrendadorDialog.editId) {
+      await api.put(`/arriendos/arrendadores/${arrendadorDialog.editId}`, payload)
+    } else {
+      await api.post(`/arriendos/contratos/${contratos.arriendo.id}/arrendadores`, payload)
+    }
+    arrendadorDialog.visible = false
+    await cargarArrendadores()
+    await cargarIndexacionArriendo()
+    toast.add({ severity: 'success', summary: 'Arrendador guardado', life: 2500 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error al guardar arrendador', detail: e.response?.data?.detail, life: 3500 })
+  } finally {
+    arrendadorDialog.guardando = false
+  }
+}
+
+async function eliminarArrendador(arrendador) {
+  if (!confirm(`¿Eliminar al arrendador "${arrendador.nombre}"?`)) return
+  try {
+    await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
+    await cargarArrendadores()
+    await cargarIndexacionArriendo()
+    toast.add({ severity: 'success', summary: 'Arrendador eliminado', life: 2500 })
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: 'Error al eliminar',
+      detail: e.response?.data?.detail || 'No se pudo eliminar el arrendador',
+      life: 3500,
+    })
   }
 }
 

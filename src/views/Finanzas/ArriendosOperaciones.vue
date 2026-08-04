@@ -98,7 +98,7 @@
 
       <div class="section-collapse" :class="{ open: openSections.has(sec.tipo) }">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse" style="min-width:980px; table-layout:fixed">
+        <table class="w-full text-sm border-collapse" style="min-width:1080px; table-layout:fixed">
           <thead>
             <tr class="bg-gray-50 border-t border-b border-gray-100">
               <th class="px-3 py-2.5 text-left" style="width:40px">
@@ -106,7 +106,7 @@
                   @change="toggleTodosSeccion(sec.items, $event.target.checked)"
                   class="accent-purple-600" />
               </th>
-              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:220px">Proyecto</th>
+              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:320px">Proyecto</th>
               <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:120px">Estado contrato</th>
               <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:130px">Periodo a facturar</th>
               <th v-if="colsVisibles.n_indexaciones"
@@ -128,53 +128,58 @@
           </thead>
           <tbody>
             <tr v-for="fila in sec.items" :key="fila.id"
-              class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 group"
-              :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 group">
               <!-- Checkbox — solo facturable (con contrato + aplica este mes) -->
-              <td class="px-3 py-2 text-center">
+              <td class="px-3 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 <input type="checkbox" :disabled="!esFacturable(fila)"
                   v-model="seleccion[fila.id]" class="accent-purple-600" />
               </td>
-              <!-- Proyecto -->
-              <td class="px-3 py-2 font-medium" style="color:#2C2039; white-space:nowrap; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
-                <span class="inline-flex items-center gap-1.5 max-w-full">
-                  <span class="truncate">{{ fila.proyecto }}</span>
-                  <span v-if="!fila.aplica_este_mes && conContrato(fila)"
-                    class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
-                    style="background:#e5e7eb; color:#4b5563"
-                    title="Según su periodicidad, a este arriendo no le corresponde cobro este mes.">
-                    <i class="pi pi-clock text-[9px]" />no aplica este mes
+              <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
+              <td class="px-3 py-2 font-medium" style="color:#2C2039; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
+                <div class="flex flex-col gap-0.5 max-w-full">
+                  <span class="inline-flex flex-wrap items-center gap-1.5 max-w-full">
+                    <span style="white-space:normal">{{ fila.proyecto }}</span>
+                    <span v-if="!fila.aplica_este_mes && conContrato(fila)"
+                      class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      style="background:#e5e7eb; color:#4b5563"
+                      title="Según su periodicidad, a este arriendo no le corresponde cobro este mes.">
+                      <i class="pi pi-clock text-[9px]" />no aplica este mes
+                    </span>
+                    <span v-if="fila.motivo_exclusion"
+                      class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full cursor-help flex-shrink-0"
+                      style="background:#fee2e2; color:#991b1b"
+                      :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
+                      <i class="pi pi-comment text-[9px]" />excluido
+                    </span>
                   </span>
-                  <span v-if="fila.motivo_exclusion"
-                    class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full cursor-help flex-shrink-0"
-                    style="background:#fee2e2; color:#991b1b"
-                    :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
-                    <i class="pi pi-comment text-[9px]" />excluido
+                  <span v-if="fila.nombre_arrendador" class="text-[11px] text-gray-400 truncate" :title="fila.nombre_arrendador">
+                    {{ fila.nombre_arrendador }}
                   </span>
-                </span>
+                </div>
               </td>
               <!-- Estado contrato -->
-              <td class="px-3 py-2 whitespace-nowrap">
+              <td class="px-3 py-2 whitespace-nowrap" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 <span class="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full"
                   :style="{ background: estadoContratoMeta(fila).bg, color: estadoContratoMeta(fila).fg }">
                   {{ estadoContratoMeta(fila).label }}
                 </span>
               </td>
-              <td class="px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{{ periodoLabel }}</td>
-              <td v-if="colsVisibles.n_indexaciones" class="px-3 py-2 text-right text-xs text-gray-500">
+              <td class="px-3 py-2 text-xs text-gray-600 whitespace-nowrap" :class="!esFacturable(fila) ? 'opacity-40' : ''">{{ periodoLabel }}</td>
+              <td v-if="colsVisibles.n_indexaciones" class="px-3 py-2 text-right text-xs text-gray-500" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.n_indexaciones ?? '—' }}
               </td>
-              <td class="px-3 py-2 text-right font-mono text-xs text-gray-600">
+              <td class="px-3 py-2 text-right font-mono text-xs text-gray-600" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.valor_base != null ? formatCOP(fila.valor_base) : '—' }}
               </td>
-              <td v-if="colsVisibles.factor_acumulado" class="px-3 py-2 text-right font-mono text-xs">
+              <td v-if="colsVisibles.factor_acumulado" class="px-3 py-2 text-right font-mono text-xs" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.factor_acumulado != null ? fila.factor_acumulado.toFixed(6) : '—' }}
               </td>
-              <td v-if="colsVisibles.valor_anual_indexado" class="px-3 py-2 text-right font-mono text-xs">
+              <td v-if="colsVisibles.valor_anual_indexado" class="px-3 py-2 text-right font-mono text-xs" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.valor_anual_indexado != null ? formatCOP(fila.valor_anual_indexado) : '—' }}
               </td>
               <!-- Canon calculado -->
               <td class="px-3 py-2 text-right tabular-nums bg-purple-50/30"
+                :class="!esFacturable(fila) ? 'opacity-40' : ''"
                 :style="seleccion[fila.id] ? 'color:#7c3aed' : 'color:#9ca3af'">
                 <span class="inline-flex items-center justify-end gap-1">
                   <span v-if="fila.canon_calculado != null" class="font-semibold">
@@ -189,20 +194,21 @@
                     @mouseleave="ocultarCanon()" />
                 </span>
               </td>
-              <td class="px-3 py-2 text-right font-mono text-xs text-gray-500">
+              <td class="px-3 py-2 text-right font-mono text-xs text-gray-500" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.iva_calculado != null ? formatCOP(fila.iva_calculado) : '—' }}
               </td>
               <td v-if="colsVisibles.historial" class="px-3 py-2 text-xs text-gray-400"
+                :class="!esFacturable(fila) ? 'opacity-40' : ''"
                 style="white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis"
                 :title="fila.historial_detalle">
                 {{ fila.historial_texto || '—' }}
               </td>
               <!-- Documento adjunto -->
-              <td class="px-3 py-2 text-center">
+              <td class="px-3 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 <div class="inline-flex items-center gap-0.5 flex-wrap justify-center">
-                  <template v-if="docsPorProyecto[fila.id]?.length">
+                  <template v-if="docsPorProyecto[fila.proyecto_id]?.length">
                     <DocumentoIcon
-                      v-for="doc in docsPorProyecto[fila.id]"
+                      v-for="doc in docsPorProyecto[fila.proyecto_id]"
                       :key="doc.id"
                       :doc="doc"
                       :tooltip="tooltipDoc(doc)"
@@ -211,7 +217,7 @@
                   <DocumentoIcon v-else :doc="null" />
                 </div>
               </td>
-              <td class="px-3 py-2 text-center">
+              <td class="px-3 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 <button type="button" @click="toggleFacturado(fila.id)">
                   <span v-if="facturadoActual[fila.id]"
                     class="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
@@ -551,7 +557,7 @@ async function _ejecutarGuardado(motivos) {
   guardando.value = true
   try {
     const items = filas.value.map(f => ({
-      proyecto_id: f.id,
+      arr_arrendador_id: f.id,
       incluido: !!(seleccion[f.id] && esFacturable(f)),
       motivo_exclusion: motivos[f.id] || null,
     }))
@@ -581,8 +587,18 @@ function tooltipDoc(doc) {
 }
 
 // ── Proyectos para el componente ZipUpload ─────────────────────────────────────
+// nombreArrendador/estadoContrato: necesarios para que ArriendosZipUpload pueda
+// detectar proyectos con varios arrendadores (varias filas con el mismo código)
+// y ofrecer el selector correspondiente al cargar cuentas de cobro.
 const filasParaZip = computed(() =>
-  filas.value.map(f => ({ id: f.id, proyecto: f.proyecto, codigo: f.codigo }))
+  filas.value.map(f => ({
+    id: f.id,
+    proyectoId: f.proyecto_id,
+    proyecto: f.proyecto,
+    codigo: f.codigo,
+    nombreArrendador: f.nombre_arrendador,
+    estadoContrato: f.estado_contrato,
+  }))
 )
 
 watch(periodoActual, (p) => { loadDocs(p); cargarDatos() })

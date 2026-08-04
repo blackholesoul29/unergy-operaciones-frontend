@@ -1,5 +1,17 @@
 <template>
   <div class="space-y-4">
+    <div class="flex gap-1 border-b" style="border-color: #e8e0f0;">
+      <button type="button" class="text-xs font-bold px-1 pb-2 mr-4"
+        :style="innerTab === 'enviar' ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
+        @click="innerTab = 'enviar'">Enviar</button>
+      <button type="button" class="text-xs font-bold px-1 pb-2"
+        :style="innerTab === 'historial' ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
+        @click="innerTab = 'historial'">Historial</button>
+    </div>
+
+    <HistorialEnviosCGM v-if="innerTab === 'historial'" />
+
+    <template v-else>
     <div class="flex flex-wrap items-center justify-between gap-3">
       <p class="text-xs flex-1 min-w-[200px]" style="color: #9b89b5;">
         Destinatarios del reporte CGM (operador de red + cliente). Por defecto a cada uno le llega el Excel de todas sus fronteras — despliega "Proyectos" para elegir solo uno o algunos en particular.
@@ -104,7 +116,7 @@
               <td class="px-4 py-2.5">
                 <input type="checkbox" :checked="seleccionados.has(row.key)" :disabled="!row.correos.length"
                   @change="toggleSeleccion(row.key)"
-                  v-tooltip.top="!row.correos.length ? 'Sin correos, no se puede enviar' : ''"
+                  v-tooltip.left="!row.correos.length ? 'Sin correos, no se puede enviar' : ''"
                   style="accent-color: #915BD8; width: 14px; height: 14px;"
                   :style="!row.correos.length ? 'opacity:.35;cursor:not-allowed;' : 'cursor:pointer;'" />
               </td>
@@ -141,6 +153,7 @@
         </table>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
@@ -152,8 +165,10 @@ import InputIcon from 'primevue/inputicon'
 import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
+import HistorialEnviosCGM from './HistorialEnviosCGM.vue'
 
 const toast = useToast()
+const innerTab = ref('enviar')
 const fronteras = ref([])
 const loading = ref(true)
 const enviando = ref(false)

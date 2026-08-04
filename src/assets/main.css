@@ -54,8 +54,13 @@
 .p-dialog .p-dialog-content { padding: 0 1.1rem 1.1rem; }
 
 /* Tooltips (v-tooltip): el texto no debe partirse letra por letra cuando
-   el elemento que lo dispara es angosto (ej. botones de ícono en tablas). */
+   el elemento que lo dispara es angosto (ej. botones de ícono en tablas).
+   El max-width por defecto del tema (12.5rem) es mucho más angosto que
+   varios textos reales de la app -- combinado con nowrap, el texto se
+   salía del recuadro en vez de partirse en líneas. Se amplía para que
+   los tooltips de una sola línea quepan sin desbordarse. */
 .p-tooltip .p-tooltip-text { white-space: nowrap; }
+.p-tooltip { max-width: 22rem !important; }
 
 /* ── Responsive ───────────────────────────────────────────────────────────
    Adaptación a pantallas pequeñas sin tocar la lógica de cada vista.
