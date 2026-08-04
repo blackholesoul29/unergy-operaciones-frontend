@@ -27,7 +27,7 @@ const root = ref(null)
 const GLOBAL_FNS = [
   'switchTab', 'setMode', 'updateAuditUI', 'loadExcel', 'setConcMode',
   'updateConcUI', 'startConciliation', 'renderConcTable', 'exportConcCSV',
-  'startAudit', 'setCostoTag',
+  'startAudit', 'setCostoTag', 'focusSinPdfOrEtiqueta',
 ]
 
 // Carga un <script> externo una sola vez (pdf.js / xlsx desde CDN, igual que el HTML original)
@@ -151,7 +151,7 @@ const MARKUP = `
       <div class="stat-card" style="color:var(--ok)"><span class="stat-val" id="csMatch">0</span><small>COINCIDEN</small></div>
       <div class="stat-card" style="color:var(--err)"><span class="stat-val" id="csDiff">0</span><small>DIFERENCIAS</small></div>
       <div class="stat-card" style="color:var(--warn)"><span class="stat-val" id="csNoCont">0</span><small>SIN CONTAB.</small></div>
-      <div class="stat-card" style="color:#6366f1"><span class="stat-val" id="csNoPdf">0</span><small>SIN PDF</small></div>
+      <div class="stat-card" style="color:#6366f1;cursor:pointer" title="Clic para ubicar el registro" onclick="focusSinPdfOrEtiqueta()"><span class="stat-val" id="csNoPdf">0</span><small id="csNoPdfLabel">SIN PDF</small></div>
     </div>
 
     <!-- Tabla resultados -->
@@ -323,6 +323,9 @@ function initValidador(el) {
     $('concTableContainer').style.display = 'none'
     $('concCostosContainer').style.display = 'none'
     $('concStatsBar').style.display = 'none'
+    // En COSTOS esta métrica cuenta mandatos SIN ETIQUETA ANALÍTICA asignada
+    // (no un registro contable sin PDF, que es lo que mide en INGRESOS).
+    $('csNoPdfLabel').textContent = m === 'costos' ? 'SIN ETIQUETA' : 'SIN PDF'
     updateConcBtn()
   }
 
@@ -504,7 +507,7 @@ function initValidador(el) {
         tagControl = `<span style="color:#64748b;font-size:12px">Etiqueta analítica: </span><select class="tol-input" style="width:auto;min-width:220px" onchange="setCostoTag(${idx}, this.value)">${opts}</select>`
       }
       const flagsHtml = r.flags.map(f => `<li style="color:${lvlColor[f.lvl]};font-size:12px;margin:2px 0">${f.txt}</li>`).join('')
-      return `<div style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px">
+      return `<div id="costoRow${idx}" style="border:1px solid #e2e8f0;border-radius:10px;padding:12px;margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:6px">
           <div><b style="color:var(--accent)">${r.mandato.cmu || '-'}</b>
             <span style="font-size:12px;margin-left:8px">${r.mandato.mandante || '<span style="color:var(--warn)">mandante no detectado</span>'}</span></div>
@@ -514,6 +517,28 @@ function initValidador(el) {
         <ul style="margin:0;padding-left:18px">${flagsHtml || '<li style="font-size:12px;color:#64748b">Sin detalle</li>'}</ul>
       </div>`
     }).join('')
+  }
+
+  // Ubica visualmente el/los registro(s) detrás de la métrica "SIN PDF"/"SIN
+  // ETIQUETA": en COSTOS son mandatos sin etiqueta analítica asignada (no se
+  // pudo verificar), en INGRESOS/AUTOCONSUMO son registros contables sin PDF.
+  function focusSinPdfOrEtiqueta() {
+    if (currentConcMode === 'costos') {
+      const idx = costosResults.findIndex(r => !r.tag)
+      if (idx === -1) return
+      if ($('costosOnlyProblem')) $('costosOnlyProblem').checked = false
+      renderConcCostos()
+      requestAnimationFrame(() => {
+        const row = document.getElementById('costoRow' + idx)
+        if (!row) return
+        row.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        row.classList.add('flash-highlight')
+        setTimeout(() => row.classList.remove('flash-highlight'), 2000)
+      })
+    } else {
+      const sec = $('sinPdfSection')
+      if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 
   function setCostoTag(idx, tag) {
@@ -908,6 +933,7 @@ function initValidador(el) {
   window.exportConcCSV = exportConcCSV
   window.startAudit = startAudit
   window.setCostoTag = setCostoTag
+  window.focusSinPdfOrEtiqueta = focusSinPdfOrEtiqueta
 }
 
 onMounted(async () => {
@@ -987,6 +1013,12 @@ onBeforeUnmount(() => {
 
 .vm-root :deep(.spinner) { border: 3px solid #f3f3f3; border-top: 3px solid var(--accent); border-radius: 50%; width: 18px; height: 18px; animation: vm-spin 1s linear infinite; display:inline-block; }
 @keyframes vm-spin { to { transform: rotate(360deg); } }
+
+.vm-root :deep(.flash-highlight) { animation: vm-flash 2s ease-out; }
+@keyframes vm-flash {
+  0%, 40% { background-color: #ede9fe; border-color: #6366f1; }
+  100% { background-color: transparent; }
+}
 
 .vm-root :deep(.step-badge) { display:inline-block; background:var(--accent); color:white; border-radius:50%; width:22px; height:22px; line-height:22px; text-align:center; font-size:12px; font-weight:700; margin-right:8px; flex-shrink:0; }
 .vm-root :deep(.step-row) { display:flex; align-items:flex-start; gap:0; margin-bottom:14px; }
