@@ -117,7 +117,7 @@
         Tip: Puedes pegar una columna completa desde cualquier celda.
       </p>
       <div class="flex items-center justify-between mt-2">
-        <Button v-if="detalle.revisar_manualmente" label="Curva Típica" severity="secondary" outlined size="small"
+        <Button v-if="detalle.revisar_manualmente" label="Reportar con curva típica" severity="warning" size="small"
           :loading="cargandoCurvaTipica" @click="aplicarCurvaTipica" />
         <span v-else></span>
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
