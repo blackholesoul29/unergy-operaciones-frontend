@@ -579,7 +579,7 @@ const CASO_INFO_GENERACION = {
   '1': { nombre: 'Reporte CGM válido', descripcion: 'El envío automático de Quoia al ASIC fue válido hoy y coincide con los inversores' },
   '2': { nombre: 'Medidor valida', descripcion: 'El reporte automático no fue válido, pero un medidor coincide con los inversores' },
   // '3' tampoco tiene una sola descripcion fija -- ver casoInfo3() abajo.
-  '4': { nombre: 'Medidor de mayor valor', descripcion: 'Los medidores sobre-reportan frente a los inversores; se usa el de mayor valor' },
+  '4': { nombre: 'Medidor de mayor valor', descripcion: 'Los medidores registran más energía que los inversores; se usa el de mayor valor' },
   // '5' no tiene una sola descripcion fija -- el arbol real (clasificador.py)
   // tiene 4 caminos distintos que todos terminan en el mismo numero de Caso
   // (CGM ya valido sin inversores completos para cruzar, inversores parciales
@@ -610,11 +610,18 @@ function casoInfo0(d) {
   }
   return { nombre: 'Esperando Excel de terceros', descripcion: 'El CGM de esta frontera lo maneja otra empresa; falta subir su Excel para este día' }
 }
+// medidor_usado='revisar' junta 2 caminos reales del clasificador
+// (clasificador.py:137-141 y :216-219) que no se distinguen entre sí --
+// solenium_completo sí los diferencia: es False solo en el segundo (por eso
+// e_inv se trató como incompleto y se cayó a esa rama, ver :349-353).
 function casoInfo3(d) {
   if (d.medidor_usado === 'revisar') {
-    return { nombre: 'Sin Factor de Pérdida disponible', descripcion: 'Los medidores sub-reportan frente a los inversores, pero no hay suficiente histórico para calcular el Factor de Pérdida -- no se pudo generar ninguna curva automática' }
+    if (d.solenium_completo === false) {
+      return { nombre: 'Inversores parciales, sin más fuentes', descripcion: 'Los inversores solo reportaron parcial ese día y ni CGM ni el medidor tienen dato -- no se pudo construir ninguna curva automática' }
+    }
+    return { nombre: 'Sin Factor de Pérdida disponible', descripcion: 'Los medidores registran menos energía que los inversores, pero no hay suficiente histórico para calcular el Factor de Pérdida -- no se pudo generar ninguna curva automática' }
   }
-  return { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores sub-reportan frente a los inversores; se corrige con el histórico de pérdida' }
+  return { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores registran menos energía que los inversores; se corrige con el histórico de pérdida' }
 }
 
 // 'Medidor' (Consumo) junta el mismo tipo de conflacion que Caso 3/5 de
