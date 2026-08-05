@@ -615,6 +615,13 @@ function casoInfo0(d) {
 // solenium_completo sí los diferencia: es False solo en el segundo (por eso
 // e_inv se trató como incompleto y se cayó a esa rama, ver :349-353).
 function casoInfo3(d) {
+  // 'relleno_horario': _decidir_caso() no encontró ninguna fuente y devolvió
+  // curva vacía, pero el relleno horario centralizado (después, con
+  // reconectador/Solenium×FP/histórico) sí logró llenar horas -- ver
+  // clasificador.py, comentario sobre Granja Solar Uruaco 2026-08-03.
+  if (d.medidor_usado === 'relleno_horario') {
+    return { nombre: 'Reconstruido con relleno horario', descripcion: 'Sin inversores completos, CGM ni medidor ese día -- se reconstruyó hora por hora con reconectador, Solenium × Factor de Pérdida o histórico (ver abajo qué horas)' }
+  }
   if (d.medidor_usado === 'revisar') {
     if (d.solenium_completo === false) {
       return { nombre: 'Inversores parciales, sin más fuentes', descripcion: 'Los inversores solo reportaron parcial ese día y ni CGM ni el medidor tienen dato -- no se pudo construir ninguna curva automática' }
@@ -778,7 +785,8 @@ const ETIQUETAS_FUENTE = {
   cgm: 'CGM', principal: 'Medidor principal', respaldo: 'Medidor respaldo',
   inversores: 'Inversores × FP', crudos: 'Datos crudos', crudos_parcial: 'Datos crudos (parcial)',
   reconectador: 'Reconectador', solenium_power: 'Solenium (power)', ninguno: 'Apagado',
-  revisar: 'Sin fuente', externo: 'Reporta otra empresa', historico: 'Histórico propio',
+  revisar: 'Sin fuente', relleno_horario: 'Relleno horario (reconectador/Solenium/histórico)',
+  externo: 'Reporta otra empresa', historico: 'Histórico propio',
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
