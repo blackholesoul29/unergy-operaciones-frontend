@@ -703,6 +703,29 @@ function sumaCurva(arr) {
   if (!arr || !arr.some((v) => v !== null && v !== undefined)) return null
   return arr.reduce((s, v) => s + (Number(v) || 0), 0)
 }
+// Comprime horas en rangos legibles: [0,1,2,3,19,20] -> "0-3h, 19-20h".
+function formatearRangosHoras(horas) {
+  if (!horas.length) return ''
+  const rangos = []
+  let inicio = horas[0], fin = horas[0]
+  for (let i = 1; i <= horas.length; i++) {
+    if (i < horas.length && horas[i] === fin + 1) {
+      fin = horas[i]
+    } else {
+      rangos.push(inicio === fin ? `${inicio}h` : `${inicio}-${fin}h`)
+      if (i < horas.length) { inicio = horas[i]; fin = horas[i] }
+    }
+  }
+  return rangos.join(', ')
+}
+function horasFaltantes(arr) {
+  if (!arr) return []
+  const faltan = []
+  for (let h = 0; h < 24; h++) {
+    if (arr[h] === null || arr[h] === undefined) faltan.push(h)
+  }
+  return faltan
+}
 function fuenteIconStyle(estado) {
   if (estado === 'ok') return { background: 'rgba(16,185,129,0.1)', color: '#10B981' }
   if (estado === 'na') return { background: '#f9f7ff', color: '#9b89b5' }
@@ -766,7 +789,11 @@ const fuentes = computed(() => {
       estado: sinRegistro ? 'na' : (sumaSolenium !== null ? 'ok' : 'no'),
       detalle: sinRegistro
         ? d.nota_solenium
-        : (sumaSolenium !== null ? (d.solenium_completo ? 'Dato completo' : 'Dato incompleto') : 'Solenium no respondió para esta fecha'),
+        : (sumaSolenium !== null
+            ? (d.solenium_completo
+                ? 'Dato completo'
+                : `Dato incompleto (sin dato: ${formatearRangosHoras(horasFaltantes(d.curva_solenium))})`)
+            : 'Solenium no respondió para esta fecha'),
       // Se muestra la suma de la curva EN VIVO (misma fuente que el icono y
       // que la grafica de arriba), no energia_solenium_kwh -- ese es el total
       // que quedo guardado al momento de la clasificacion, y puede no
