@@ -537,7 +537,7 @@ const totalSeleccionado = computed(() =>
 
 // ── Filtros de la tabla (Task 7a) ────────────────────────────────────────────
 const filtroTexto  = ref('')
-const filtroAplica = ref('todos')   // 'todos' | 'aplica' | 'no'
+const filtroAplica = ref('aplica')   // 'todos' | 'aplica' | 'no'
 const filtroPeriodicidad = ref('todos')
 const filtroEstadoContrato = ref('todos')   // 'todos' | 'con_contrato' | 'en_tramite' | 'sin_contrato'
 

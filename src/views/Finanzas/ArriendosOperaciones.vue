@@ -77,6 +77,14 @@
           <option value="anual">Anual</option>
         </select>
       </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-600">Aplica este mes</label>
+        <select v-model="filtroAplica" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white w-48">
+          <option value="todos">Todos</option>
+          <option value="aplica">Aplican este mes</option>
+          <option value="no">No aplican este mes</option>
+        </select>
+      </div>
       <div class="ml-auto pb-1.5 text-xs text-gray-400">{{ filasFiltradas.length }} de {{ filas.length }}</div>
     </div>
 
@@ -468,12 +476,15 @@ const estadoContratoMeta = (f) => ESTADO_CONTRATO_META[f.estado_contrato] || EST
 const filtroTexto        = ref('')
 const filtroEstado       = ref('todos')   // todos | con_contrato | en_tramite | sin_contrato
 const filtroPeriodicidad = ref('todos')   // todos | mensual | ... | anual
+const filtroAplica       = ref('aplica')  // todos | aplica | no
 const filasFiltradas = computed(() => {
   const q = filtroTexto.value.trim().toLowerCase()
   return filas.value.filter(f => {
     if (q && !(f.proyecto || '').toLowerCase().includes(q)) return false
     if (filtroEstado.value !== 'todos' && (f.estado_contrato || 'con_contrato') !== filtroEstado.value) return false
     if (filtroPeriodicidad.value !== 'todos' && (f.periodicidad || 'mensual') !== filtroPeriodicidad.value) return false
+    if (filtroAplica.value === 'aplica' && !f.aplica_este_mes) return false
+    if (filtroAplica.value === 'no' && f.aplica_este_mes) return false
     return true
   })
 })
