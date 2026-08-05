@@ -807,7 +807,7 @@ const fuentes = computed(() => {
             ? (d.solenium_completo
                 ? 'Dato completo'
                 : `Dato incompleto (${formatearRangosHoras(horasFaltantes(d.curva_solenium))})`)
-            : 'Solenium no respondió para esta fecha'),
+            : 'Solenium respondió sin dato para esta fecha'),
       // Se muestra la suma de la curva EN VIVO (misma fuente que el icono y
       // que la grafica de arriba), no energia_solenium_kwh -- ese es el total
       // que quedo guardado al momento de la clasificacion, y puede no
