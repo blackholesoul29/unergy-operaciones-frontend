@@ -15,6 +15,31 @@
       <Tag v-else value="OK" severity="success" />
     </div>
 
+    <!-- Frontera de terceros: el CGM lo maneja otra empresa (ej. Cedillanos);
+         se reporta con el Excel que ellos envían, no con este árbol de
+         Casos -- ver FRONTERAS_TERCEROS en clasificador.py. -->
+    <div v-if="String(detalle.caso) === '0'" class="rounded-xl p-4"
+         style="border: 1px solid #e8e0f0; background: #f9f7ff;">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <p class="text-sm font-semibold" style="color: #2C2039;">
+            <i class="pi pi-file-excel text-xs mr-1.5" />
+            {{ detalle.medidor_usado === 'excel_terceros' ? 'Cargado desde Excel de terceros' : 'Esperando Excel de terceros' }}
+          </p>
+          <p class="text-xs mt-1" style="color: #6b5a8a;">
+            El CGM de esta frontera lo maneja otra empresa; sube su Excel (Primary/Backup ×
+            ENERGIA EXPORTADA ACTIVA) para reportar este día.
+          </p>
+        </div>
+        <div>
+          <input ref="fileInputExcelTerceros" type="file" accept=".xlsx,.xls" class="hidden"
+                 @change="onArchivoExcelTercerosSeleccionado" />
+          <Button label="Cargar Excel" size="small" icon="pi pi-upload"
+                  :loading="subiendoExcelTerceros" @click="fileInputExcelTerceros?.click()" />
+        </div>
+      </div>
+    </div>
+
     <!-- Detalle de la clasificación -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de la clasificación</p>
@@ -39,8 +64,22 @@
           <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
           <dd class="font-mono">{{ detalle.fp != null ? detalle.fp.toFixed(4) : '—' }}</dd>
         </template>
-        <dt style="color: #9b89b5;">Horas rellenadas (histórico)</dt>
-        <dd class="font-mono">{{ (detalle.horas_rellenadas_historico || []).join(', ') || '—' }}</dd>
+        <template v-if="(detalle.horas_rellenadas_reconectador || []).length">
+          <dt style="color: #9b89b5;">Horas rellenadas (reconectador)</dt>
+          <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_reconectador) }}</dd>
+        </template>
+        <template v-if="(detalle.horas_rellenadas_solenium || []).length">
+          <dt style="color: #9b89b5;">Horas rellenadas (Solenium × FP)</dt>
+          <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_solenium) }}</dd>
+        </template>
+        <template v-if="(detalle.horas_rellenadas_historico || []).length">
+          <dt style="color: #9b89b5;">Horas rellenadas (histórico)</dt>
+          <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_historico) }}</dd>
+        </template>
+        <template v-if="!(detalle.horas_rellenadas_reconectador || []).length && !(detalle.horas_rellenadas_solenium || []).length && !(detalle.horas_rellenadas_historico || []).length">
+          <dt style="color: #9b89b5;">Horas rellenadas</dt>
+          <dd class="font-mono">—</dd>
+        </template>
       </dl>
     </div>
 
@@ -116,7 +155,11 @@
       <p class="text-xs mt-1" style="color: #9b89b5;">
         Tip: Puedes pegar una columna completa desde cualquier celda.
       </p>
-      <div class="flex justify-end mt-2">
+      <div class="flex items-center justify-between mt-2">
+        <Button v-if="detalle.revisar_manualmente" label="Reportar con curva típica" size="small"
+          style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
+          :loading="cargandoCurvaTipica" @click="aplicarCurvaTipica" />
+        <span v-else></span>
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
       </div>
     </div>
@@ -245,8 +288,11 @@ const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
+const cargandoCurvaTipica = ref(false)
 const validando = ref(false)
 const ediciones = ref([])
+const subiendoExcelTerceros = ref(false)
+const fileInputExcelTerceros = ref(null)
 
 async function cargarEdiciones() {
   try {
@@ -430,6 +476,32 @@ async function cargar() {
 onMounted(() => { cargar(); cargarEdiciones(); cargarExclusiones() })
 watch(() => [props.fronteraId, props.fecha], () => { cargar(); cargarEdiciones(); cargarExclusiones() })
 
+// Frontera de terceros (caso=0, ver FRONTERAS_TERCEROS en clasificador.py) --
+// el Excel puede traer varios días; recargamos el detalle del día actual
+// para reflejar si quedó incluido en la carga.
+async function onArchivoExcelTercerosSeleccionado(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  subiendoExcelTerceros.value = true
+  try {
+    const fd = new FormData()
+    fd.append('archivo', file)
+    const { data } = await api.post(`/reporte-energia/fronteras/${props.fronteraId}/cargar-excel-terceros`, fd)
+    toast.add({
+      severity: 'success', summary: 'Excel cargado',
+      detail: `Se cargaron ${data.fechas_cargadas.length} día(s): ${data.fechas_cargadas.join(', ')}`,
+      life: 4000,
+    })
+    await Promise.all([cargar(), cargarEdiciones()])
+    emit('actualizado')
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo cargar el Excel.', life: 5000 })
+  } finally {
+    subiendoExcelTerceros.value = false
+  }
+}
+
 // Pegado tipo Excel: si lo pegado trae varios valores (columna o fila
 // copiada), se distribuyen empezando en la celda donde se pegó -- un solo
 // valor suelto no activa nada, se comporta como un input normal.
@@ -450,6 +522,31 @@ function esHoraRellenada(h) {
   return (d.horas_rellenadas_reconectador || []).includes(h)
     || (d.horas_rellenadas_solenium || []).includes(h)
     || (d.horas_rellenadas_historico || []).includes(h)
+}
+
+// Mediana x forma horaria de los últimos días confiables (mismo mecanismo
+// que ya alimenta el relleno histórico automático) -- solo llena el editor,
+// no guarda nada; el usuario revisa/ajusta y confirma con "Guardar corrección".
+async function aplicarCurvaTipica() {
+  cargandoCurvaTipica.value = true
+  try {
+    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/curva-tipica`, {
+      params: { fecha: props.fecha },
+    })
+    curvaEditable.value = data.curva
+    toast.add({
+      severity: 'info', summary: 'Curva típica aplicada',
+      detail: `${fmtKwh(data.energia_total_kwh)} -- mediana de ${data.dias_usados} días. Revisa y guarda si está bien.`,
+      life: 5000,
+    })
+  } catch (e) {
+    toast.add({
+      severity: 'warn', summary: 'Sin histórico suficiente',
+      detail: 'No hay al menos 3 días confiables todavía para esta frontera.', life: 4000,
+    })
+  } finally {
+    cargandoCurvaTipica.value = false
+  }
 }
 
 async function guardarCurva() {
@@ -491,11 +588,12 @@ async function validar() {
 // de decision del clasificador (ver app/services/reporte_energia/clasificador.py
 // y clasificador_consumo.py en el backend).
 const CASO_INFO_GENERACION = {
+  // '0' no tiene una sola descripcion fija -- ver casoInfo0() abajo.
   '0': { nombre: 'Reporta a otra empresa', descripcion: 'Frontera de terceros, fuera de este árbol de decisión' },
   '1': { nombre: 'Reporte CGM válido', descripcion: 'El envío automático de Quoia al ASIC fue válido hoy y coincide con los inversores' },
   '2': { nombre: 'Medidor valida', descripcion: 'El reporte automático no fue válido, pero un medidor coincide con los inversores' },
   // '3' tampoco tiene una sola descripcion fija -- ver casoInfo3() abajo.
-  '4': { nombre: 'Medidor de mayor valor', descripcion: 'Los medidores sobre-reportan frente a los inversores; se usa el de mayor valor' },
+  '4': { nombre: 'Medidor de mayor valor', descripcion: 'Los medidores registran más energía que los inversores; se usa el de mayor valor' },
   // '5' no tiene una sola descripcion fija -- el arbol real (clasificador.py)
   // tiene 4 caminos distintos que todos terminan en el mismo numero de Caso
   // (CGM ya valido sin inversores completos para cruzar, inversores parciales
@@ -520,11 +618,31 @@ const CASO_INFO_CONSUMO = {
 // corrigio nada (ver clasificador.py lineas 122 y 185, dos rutas de codigo
 // distintas que llegan a lo mismo). medidor_usado='inversores' es el caso
 // normal, con curva real corregida por FP.
-function casoInfo3(d) {
-  if (d.medidor_usado === 'revisar') {
-    return { nombre: 'Sin Factor de Pérdida disponible', descripcion: 'Los medidores sub-reportan frente a los inversores, pero no hay suficiente histórico para calcular el Factor de Pérdida -- no se pudo generar ninguna curva automática' }
+function casoInfo0(d) {
+  if (d.medidor_usado === 'excel_terceros') {
+    return { nombre: 'Cargado desde Excel de terceros', descripcion: 'El CGM de esta frontera lo maneja otra empresa; se reportó con el Excel que subieron para este día' }
   }
-  return { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores sub-reportan frente a los inversores; se corrige con el histórico de pérdida' }
+  return { nombre: 'Esperando Excel de terceros', descripcion: 'El CGM de esta frontera lo maneja otra empresa; falta subir su Excel para este día' }
+}
+// medidor_usado='revisar' junta 2 caminos reales del clasificador
+// (clasificador.py:137-141 y :216-219) que no se distinguen entre sí --
+// solenium_completo sí los diferencia: es False solo en el segundo (por eso
+// e_inv se trató como incompleto y se cayó a esa rama, ver :349-353).
+function casoInfo3(d) {
+  // 'relleno_horario': _decidir_caso() no encontró ninguna fuente y devolvió
+  // curva vacía, pero el relleno horario centralizado (después, con
+  // reconectador/Solenium×FP/histórico) sí logró llenar horas -- ver
+  // clasificador.py, comentario sobre Granja Solar Uruaco 2026-08-03.
+  if (d.medidor_usado === 'relleno_horario') {
+    return { nombre: 'Reconstruido con relleno horario', descripcion: 'Sin inversores completos, CGM ni medidor ese día -- se reconstruyó hora por hora con reconectador, Solenium × Factor de Pérdida o histórico (ver abajo qué horas)' }
+  }
+  if (d.medidor_usado === 'revisar') {
+    if (d.solenium_completo === false) {
+      return { nombre: 'Inversores parciales, sin más fuentes', descripcion: 'Los inversores solo reportaron parcial ese día y ni CGM ni el medidor tienen dato -- no se pudo construir ninguna curva automática' }
+    }
+    return { nombre: 'Sin Factor de Pérdida disponible', descripcion: 'Los medidores registran menos energía que los inversores, pero no hay suficiente histórico para calcular el Factor de Pérdida -- no se pudo generar ninguna curva automática' }
+  }
+  return { nombre: 'Inversores × Factor de Pérdida', descripcion: 'Los medidores registran menos energía que los inversores; se corrige con el histórico de pérdida' }
 }
 
 // 'Medidor' (Consumo) junta el mismo tipo de conflacion que Caso 3/5 de
@@ -576,6 +694,7 @@ function casoInfo5(d) {
 const casoInfo = computed(() => {
   const d = detalle.value
   if (!d) return { nombre: '', descripcion: '' }
+  if (d.tipo === 'generacion' && String(d.caso) === '0') return casoInfo0(d)
   if (d.tipo === 'generacion' && String(d.caso) === '3') return casoInfo3(d)
   if (d.tipo === 'generacion' && String(d.caso) === '5') return casoInfo5(d)
   if (d.tipo === 'consumo' && String(d.caso) === 'Medidor') return casoInfoMedidorConsumo(d)
@@ -597,6 +716,29 @@ const casoColor = computed(() => {
 function sumaCurva(arr) {
   if (!arr || !arr.some((v) => v !== null && v !== undefined)) return null
   return arr.reduce((s, v) => s + (Number(v) || 0), 0)
+}
+// Comprime horas en rangos legibles: [0,1,2,3,19,20] -> "0-3h, 19-20h".
+function formatearRangosHoras(horas) {
+  if (!horas.length) return ''
+  const rangos = []
+  let inicio = horas[0], fin = horas[0]
+  for (let i = 1; i <= horas.length; i++) {
+    if (i < horas.length && horas[i] === fin + 1) {
+      fin = horas[i]
+    } else {
+      rangos.push(inicio === fin ? `${inicio}h` : `${inicio}-${fin}h`)
+      if (i < horas.length) { inicio = horas[i]; fin = horas[i] }
+    }
+  }
+  return rangos.join(', ')
+}
+function horasFaltantes(arr) {
+  if (!arr) return []
+  const faltan = []
+  for (let h = 0; h < 24; h++) {
+    if (arr[h] === null || arr[h] === undefined) faltan.push(h)
+  }
+  return faltan
 }
 function fuenteIconStyle(estado) {
   if (estado === 'ok') return { background: 'rgba(16,185,129,0.1)', color: '#10B981' }
@@ -661,7 +803,11 @@ const fuentes = computed(() => {
       estado: sinRegistro ? 'na' : (sumaSolenium !== null ? 'ok' : 'no'),
       detalle: sinRegistro
         ? d.nota_solenium
-        : (sumaSolenium !== null ? (d.solenium_completo ? 'Dato completo' : 'Dato incompleto') : 'Solenium no respondió para esta fecha'),
+        : (sumaSolenium !== null
+            ? (d.solenium_completo
+                ? 'Dato completo'
+                : `Dato incompleto (${formatearRangosHoras(horasFaltantes(d.curva_solenium))})`)
+            : 'Solenium respondió sin dato para esta fecha'),
       // Se muestra la suma de la curva EN VIVO (misma fuente que el icono y
       // que la grafica de arriba), no energia_solenium_kwh -- ese es el total
       // que quedo guardado al momento de la clasificacion, y puede no
@@ -680,11 +826,12 @@ const ETIQUETAS_FUENTE = {
   cgm: 'CGM', principal: 'Medidor principal', respaldo: 'Medidor respaldo',
   inversores: 'Inversores × FP', crudos: 'Datos crudos', crudos_parcial: 'Datos crudos (parcial)',
   reconectador: 'Reconectador', solenium_power: 'Solenium (power)', ninguno: 'Apagado',
-  revisar: 'Sin fuente', externo: 'Reporta otra empresa', historico: 'Histórico propio',
+  revisar: 'Sin fuente', relleno_horario: 'Relleno horario (reconectador/Solenium/histórico)',
+  externo: 'Reporta otra empresa', historico: 'Histórico propio',
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
-  excluida: 'Excluida',
+  excluida: 'Excluida', excel_terceros: 'Excel de terceros',
 }
 function etiquetaFuente(v) {
   return ETIQUETAS_FUENTE[v] || v || '—'

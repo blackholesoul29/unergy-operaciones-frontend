@@ -150,6 +150,12 @@
               <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed">
                 Valor a Facturar
               </th>
+              <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed">
+                IVA (19%)
+              </th>
+              <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed">
+                Total
+              </th>
               <th v-if="colsVisibles.historial"
                 class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Historial IPC</th>
               <th class="px-4 py-2.5 text-center font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Facturado</th>
@@ -238,6 +244,15 @@
                   </span>
                 </div>
               </td>
+              <td class="px-4 py-2 text-right bg-purple-50/30 font-mono text-xs"
+                :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
+                {{ valorEfectivo(fila) != null ? formatCOP(valorEfectivo(fila) * IVA_TASA) : '—' }}
+              </td>
+              <td class="px-4 py-2 text-right bg-purple-50/30 font-semibold tabular-nums"
+                :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''"
+                style="color:#7c3aed">
+                {{ valorEfectivo(fila) != null ? formatCOP(valorEfectivo(fila) * (1 + IVA_TASA)) : '—' }}
+              </td>
               <td v-if="colsVisibles.historial" class="px-4 py-2 text-xs text-gray-400"
                 :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''"
                 style="white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis"
@@ -270,14 +285,25 @@
      </div>
 
       <!-- Total general (todas las secciones) -->
-      <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center justify-between"
+      <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center flex-wrap gap-x-8 gap-y-2 justify-between"
         style="border-color:#ECE7F2">
         <span class="text-xs font-semibold text-gray-600">
-          Total ({{ filasSeleccionadas }} proyectos seleccionados)
+          {{ filasSeleccionadas }} proyectos seleccionados
         </span>
-        <span class="text-base font-bold tabular-nums" style="color:#7c3aed">
-          {{ formatCOP(totalSeleccionado) }}
-        </span>
+        <div class="flex items-center gap-6 ml-auto">
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Subtotal Facturado</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalSeleccionado) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">IVA (19%)</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalIVASeleccionado) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Total</p>
+            <p class="text-base font-bold tabular-nums" style="color:#7c3aed">{{ formatCOP(totalConIVASeleccionado) }}</p>
+          </div>
+        </div>
       </div>
     </template>
 
@@ -534,10 +560,13 @@ const totalSeleccionado = computed(() =>
     .filter(f => f.habilitado && conContrato(f) && seleccion[f.contrato_id])
     .reduce((s, f) => s + (valorEfectivo(f) || 0), 0)
 )
+const IVA_TASA = 0.19
+const totalIVASeleccionado    = computed(() => totalSeleccionado.value * IVA_TASA)
+const totalConIVASeleccionado = computed(() => totalSeleccionado.value + totalIVASeleccionado.value)
 
 // ── Filtros de la tabla (Task 7a) ────────────────────────────────────────────
 const filtroTexto  = ref('')
-const filtroAplica = ref('todos')   // 'todos' | 'aplica' | 'no'
+const filtroAplica = ref('aplica')   // 'todos' | 'aplica' | 'no'
 const filtroPeriodicidad = ref('todos')
 const filtroEstadoContrato = ref('todos')   // 'todos' | 'con_contrato' | 'en_tramite' | 'sin_contrato'
 

@@ -105,18 +105,18 @@
               <table class="w-full text-sm border-collapse" style="min-width:760px; table-layout:fixed">
                 <thead>
                   <tr class="bg-gray-50 border-t border-b border-gray-100">
-                    <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500">Minigranja</th>
-                    <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-500" style="width:90px">Cantidad</th>
-                    <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:140px">Precio unit. prom.</th>
-                    <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:130px">Sin IVA</th>
-                    <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:120px">IVA</th>
-                    <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:140px">Monto total</th>
+                    <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Minigranja</th>
+                    <th class="px-4 py-2.5 text-center font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:90px">Cantidad</th>
+                    <th class="px-4 py-2.5 text-right font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:140px">Precio unit. prom.</th>
+                    <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed; width:130px">Sin IVA</th>
+                    <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed; width:120px">IVA</th>
+                    <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed; width:140px">Monto total</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="(fila, i) in sec.items" :key="i"
                     class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
-                    <td class="px-3 py-2 text-xs font-medium" style="color:#2C2039">
+                    <td class="px-4 py-2 font-medium" style="color:#2C2039">
                       <span v-if="fila.nombre_comercial">{{ fila.nombre_comercial }}</span>
                       <div v-else class="flex items-center gap-1.5">
                         <Tag severity="warn" value="Sin asignar" />
@@ -126,11 +126,11 @@
                         </button>
                       </div>
                     </td>
-                    <td class="px-3 py-2 text-xs text-center text-gray-600">{{ fila.cantidad_total }}</td>
-                    <td class="px-3 py-2 text-xs text-right font-mono text-gray-600">{{ formatCOP(fila.precio_unitario_promedio) }}</td>
-                    <td class="px-3 py-2 text-xs text-right font-mono text-gray-600">{{ formatCOP(fila.sin_iva) }}</td>
-                    <td class="px-3 py-2 text-xs text-right font-mono text-gray-600">{{ formatCOP(fila.iva) }}</td>
-                    <td class="px-3 py-2 text-xs text-right font-semibold tabular-nums" style="color:#7c3aed">{{ formatCOP(fila.monto_total) }}</td>
+                    <td class="px-4 py-2 text-xs text-center text-gray-600">{{ fila.cantidad_total }}</td>
+                    <td class="px-4 py-2 text-right font-mono text-xs text-gray-600">{{ formatCOP(fila.precio_unitario_promedio) }}</td>
+                    <td class="px-4 py-2 text-right font-mono text-xs bg-purple-50/30">{{ formatCOP(fila.sin_iva) }}</td>
+                    <td class="px-4 py-2 text-right font-mono text-xs bg-purple-50/30">{{ formatCOP(fila.iva) }}</td>
+                    <td class="px-4 py-2 text-right font-semibold tabular-nums bg-purple-50/30" style="color:#7c3aed">{{ formatCOP(fila.monto_total) }}</td>
                   </tr>
                 </tbody>
               </table>
