@@ -338,6 +338,33 @@ VALOR A PAGAR $ 1,699,529.00`
   assert(resIVA.status === 'ok', `BUG4c: status = ${resIVA.status} (esperado ok)`)
 }
 
+// 11d) BUG 4d — caso real CMU1264/1265/1266: el mandato solo lista "Arriendo"
+//      genérico (un único arrendador, no responsable de IVA, sin línea de IVA
+//      arriendo) y ese único arrendador cae en la cuenta 28151025. Reclasificar
+//      esa cuenta a arr_cc SIEMPRE (fix anterior) rompía este caso: el mandato
+//      decía 'arr' pero el asiento sumaba 'arr_cc' — nunca coincidían (FALTANTE
+//      + SOBRANTE simultáneos). Solo debe dividirse cuando el mandato realmente
+//      separa (BUG4b/4c).
+{
+  const pdfGen = `CMU1264
+en calidad de mandatario, y SUNO ACTIVOS SOSTENIBLES S.A.S., con NIT. 900.777.666-2, en calidad de mandante, relacionado con el proyecto MINIGRANJA EL SON.
+ARRIENDO $ 874,490.00
+VALOR A PAGAR $ 874,490.00`
+  const mGen = extractMandate(pdfGen, 'x-CMU1264.pdf')
+  assert(mGen.vals.arr === 874490, `BUG4d: vals.arr = ${mGen.vals.arr} (esperado 874490)`)
+  assert(mGen.vals.arr_cc === undefined, 'BUG4d: no debe aparecer arr_cc en el mandato genérico')
+
+  const MANDGEN = 'SUNO ACTIVOS SOSTENIBLES S A S'
+  const TAGGEN = 'MINIGRANJA EL SON'
+  const genLineas = [
+    { asociado: MANDGEN, acc: '28151025', accDesc: '', debe: 874490, haber: 0, etiqueta: 'ARRIENDO JULIO', proj: TAGGEN },
+  ]
+  const resGenIVA = reconciliar(mGen, genLineas, TAGGEN)
+  assert(resGenIVA.sums.arr === 874490, `BUG4d: sums.arr = ${resGenIVA.sums.arr} (esperado 874490, NO dividido en arr_cc)`)
+  assert(resGenIVA.sums.arr_cc === undefined, 'BUG4d: no debe aparecer arr_cc cuando el mandato no divide')
+  assert(resGenIVA.status === 'ok', `BUG4d: status = ${resGenIVA.status} (esperado ok)`)
+}
+
 // 12) BUG 5 — Administración e IVA administración: cuentas 28151020/28151021
 //     que antes se ignoraban (ni se sumaban del asiento ni se buscaban en el PDF).
 {

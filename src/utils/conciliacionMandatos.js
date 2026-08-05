@@ -27,10 +27,12 @@ export const ACC2CONCEPT = {
   '28151010': 'iva_int',  '28151016': 'iva_int',
   '28150515': 'arr',      '28150517': 'arr',
   '28150516': 'iva_arr',  '28150518': 'iva_arr',
-  // Arrendamiento para terceros con arrendador NO responsable de IVA. Cuenta
-  // dedicada e inequívoca (nunca lleva IVA) → mapea DIRECTO a arr_cc, sin
-  // depender de la etiqueta del asiento (que cambia de redacción cada mes).
-  '28151025': 'arr_cc',
+  // Arrendamiento para terceros con arrendador NO responsable de IVA. Se
+  // mapea a 'arr' genérico como base: SOLO se reclasifica a arr_cc cuando el
+  // mandato realmente separa el arriendo en dos conceptos (ver reconciliar);
+  // si el mandato solo dice "Arriendo" (un único arrendador, sin IVA, caso
+  // normal), debe seguir cayendo en el mismo 'arr' genérico del mandato.
+  '28151025': 'arr',
   // Póliza todo riesgo y lucrocesante (antes sin mapear: el verificador la
   // ignoraba tanto en el asiento como en el mandato).
   '28151004': 'poliza',   '28151007': 'iva_poliza',
@@ -405,19 +407,29 @@ export function reconciliar(mandato, details, tag) {
   //  5 contratos × 368.513,81 de débito Bancolombia = 1.842.569 = arriendo del mandato.
   //  Los créditos a los arrendadores —p. ej. personas naturales— quedan fuera porque su
   //  asociado no es el mandante y, además, son crédito, no débito.)
+  // El mandato solo separa arriendo en arr_cc/arr_fact cuando el proyecto tiene
+  // DOS arrendadores (uno responsable de IVA y otro no) y así lo lista. Si el
+  // mandato solo trae el 'arr' genérico (un único arrendador, sea o no
+  // responsable de IVA), NINGUNA cuenta debe reclasificarse: todo cae junto en
+  // 'arr', sin importar si contablemente quedó en 28150517 o en 28151025.
+  const arriendoDividido = 'arr_cc' in (mandato.vals || {}) || 'arr_fact' in (mandato.vals || {})
+
   const sums = {}; const wrongAcc = []
   lines.forEach((d) => {
     let c = ACC2CONCEPT[d.acc]
-    // Si la cuenta es de arriendo genérico, se afina el concepto según la
-    // ETIQUETA del asiento — algunos proyectos (ej. La Reserva) dividen el
-    // arriendo en dos facturas que comparten cuenta contable pero se distinguen
-    // por la etiqueta: "...CC..." (Cuenta de Cobro) o "...FACT..." (Factura). Si
-    // la etiqueta no trae ninguna de las dos, se queda como 'arr' genérico y no
-    // rompe los proyectos que no dividen el arriendo.
-    if (c === 'arr') {
-      const etq = norm(d.etiqueta || '')
-      if (/\bCC\b/.test(etq)) c = 'arr_cc'
-      else if (/\bFACT\b/.test(etq)) c = 'arr_fact'
+    if (c === 'arr' && arriendoDividido) {
+      // La cuenta 28151025 es inequívoca (arrendador no responsable de IVA) →
+      // arr_cc directo. Las demás cuentas de arriendo, cuando el mandato divide,
+      // se afinan por la ETIQUETA del asiento ("...CC..."/"...FACT..."; algunos
+      // proyectos como La Reserva comparten cuenta pero distinguen por etiqueta).
+      // Si la etiqueta no trae ninguna pista, se asume que es la contraparte
+      // responsable de IVA (arr_fact), ya que 28151025 ya cubrió el caso "no
+      // responsable".
+      if (d.acc === '28151025') c = 'arr_cc'
+      else {
+        const etq = norm(d.etiqueta || '')
+        c = /\bCC\b/.test(etq) ? 'arr_cc' : 'arr_fact'
+      }
     }
     if (c) sums[c] = (sums[c] || 0) + d.debe
     else if (NON_COST_ACCOUNTS[d.acc] && (d.debe - d.haber) > 0) wrongAcc.push(d)
