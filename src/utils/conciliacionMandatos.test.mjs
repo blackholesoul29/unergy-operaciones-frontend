@@ -281,6 +281,63 @@ VALOR A PAGAR $ 159,411.00`
   assert(resGen.sums.arr === 100, `BUG4: etiqueta sin CC/FACT sigue en 'arr' genérico = ${resGen.sums.arr}`)
 }
 
+// 11b) BUG 4b — la CC migró a cuenta dedicada 28151025 (no responsable de IVA);
+//      antes no estaba en ACC2CONCEPT y la línea se descartaba en silencio, sin
+//      generar ninguna alerta (el mandato reportaba FALTANTE aunque sí estaba).
+{
+  const pdfLR = `CMU1136
+en calidad de mandatario, y STRADA ASOCIADOS S.A.S., con NIT. 900.123.456-7, en calidad de mandante, relacionado con el proyecto MINIGRANJA SOLAR LA RESERVA.
+ARRIENDO CUENTA DE COBRO $ 79,705.00
+ARRIENDO FACTURA ELECTRONICA $ 79,706.00
+VALOR A PAGAR $ 159,411.00`
+  const mLR = extractMandate(pdfLR, 'x-CMU1136.pdf')
+  const TAGLR = 'MINIGRANJA SOLAR LA RESERVA'
+  const MANDLR = 'STRADA ASOCIADOS S A S'
+  const lrLineas = [
+    { asociado: MANDLR, acc: '28151025', accDesc: '', debe: 79705, haber: 0, etiqueta: 'ARRIENDO CC JULIO LA RESERVA', proj: TAGLR },
+    { asociado: MANDLR, acc: '28150517', accDesc: '', debe: 79706, haber: 0, etiqueta: 'ARRIENDO FACT JULIO LA RESERVA', proj: TAGLR },
+  ]
+  const resLR = reconciliar(mLR, lrLineas, TAGLR)
+  assert(resLR.sums.arr_cc === 79705, `BUG4b: arr_cc (cuenta 28151025) = ${resLR.sums.arr_cc} (esperado 79705)`)
+  assert(resLR.sums.arr_fact === 79706, `BUG4b: arr_fact = ${resLR.sums.arr_fact} (esperado 79706)`)
+  assert(resLR.status === 'ok', `BUG4b: status = ${resLR.status} (esperado ok)`)
+}
+
+// 11c) BUG 4c — caso real CMU1284 (jul-2026): el mandato dejó de decir "Cuenta de
+//      Cobro"/"Factura Electrónica" y pasó a decir "Arriendo No Responsable de
+//      IVA" / "Arriendo Responsable de IVA". Antes del fix, el chequeo que evita
+//      que "IVA MANTENIMIENTO" caiga en 'mant' también disparaba aquí (la frase
+//      nueva contiene la palabra IVA) y AMBOS montos se descartaban en silencio.
+{
+  const pdfIVA = `CMU1284
+en calidad de mandatario, y SOLENIUM S.A.S., con NIT. 900.999.888-1, en calidad de mandante, relacionado con el proyecto Minigranja Solar Sabana de Torres.
+Arriendo No Responsable de IVA $ 673,757.00
+Arriendo Responsable de IVA $ 673,757.00
+Iva Arriendo $ 128,014.00
+Servicio de Internet $ 188,236.00
+Iva Internet $ 35,765.00
+VALOR A PAGAR $ 1,699,529.00`
+  const mIVA = extractMandate(pdfIVA, 'x-CMU1284.pdf')
+  assert(mIVA.vals.arr_cc === 673757, `BUG4c: arr_cc = ${mIVA.vals.arr_cc} (esperado 673757)`)
+  assert(mIVA.vals.arr_fact === 673757, `BUG4c: arr_fact = ${mIVA.vals.arr_fact} (esperado 673757)`)
+  assert(mIVA.vals.iva_arr === 128014, `BUG4c: iva_arr = ${mIVA.vals.iva_arr} (esperado 128014)`)
+  assert(mIVA.vals.arr === undefined, 'BUG4c: no debe quedar "arr" genérico (se habría descartado, no reclasificado)')
+
+  const MANDIVA = 'SOLENIUM S A S'
+  const TAGIVA = 'MINIGRANJA SOLAR SABANA DE TORRES'
+  const lrIVALineas = [
+    { asociado: MANDIVA, acc: '28151025', accDesc: '', debe: 673757, haber: 0, etiqueta: 'ARRIENDO JULIO', proj: TAGIVA },
+    { asociado: MANDIVA, acc: '28150517', accDesc: '', debe: 673757, haber: 0, etiqueta: 'ARRIENDO FACT JULIO', proj: TAGIVA },
+    { asociado: MANDIVA, acc: '28150518', accDesc: '', debe: 128014, haber: 0, etiqueta: 'ARRIENDO FACT JULIO', proj: TAGIVA },
+    { asociado: MANDIVA, acc: '28151009', accDesc: '', debe: 188236, haber: 0, etiqueta: 'INTERNET JULIO', proj: TAGIVA },
+    { asociado: MANDIVA, acc: '28151010', accDesc: '', debe: 35765, haber: 0, etiqueta: 'INTERNET JULIO', proj: TAGIVA },
+  ]
+  const resIVA = reconciliar(mIVA, lrIVALineas, TAGIVA)
+  assert(resIVA.sums.arr_cc === 673757, `BUG4c: sums.arr_cc = ${resIVA.sums.arr_cc} (esperado 673757)`)
+  assert(resIVA.sums.arr_fact === 673757, `BUG4c: sums.arr_fact = ${resIVA.sums.arr_fact} (esperado 673757)`)
+  assert(resIVA.status === 'ok', `BUG4c: status = ${resIVA.status} (esperado ok)`)
+}
+
 // 12) BUG 5 — Administración e IVA administración: cuentas 28151020/28151021
 //     que antes se ignoraban (ni se sumaban del asiento ni se buscaban en el PDF).
 {
