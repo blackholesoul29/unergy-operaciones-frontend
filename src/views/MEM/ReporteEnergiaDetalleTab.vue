@@ -64,8 +64,22 @@
           <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
           <dd class="font-mono">{{ detalle.fp != null ? detalle.fp.toFixed(4) : '—' }}</dd>
         </template>
-        <dt style="color: #9b89b5;">Horas rellenadas (histórico)</dt>
-        <dd class="font-mono">{{ (detalle.horas_rellenadas_historico || []).join(', ') || '—' }}</dd>
+        <template v-if="(detalle.horas_rellenadas_reconectador || []).length">
+          <dt style="color: #9b89b5;">Horas rellenadas (reconectador)</dt>
+          <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_reconectador) }}</dd>
+        </template>
+        <template v-if="(detalle.horas_rellenadas_solenium || []).length">
+          <dt style="color: #9b89b5;">Horas rellenadas (Solenium × FP)</dt>
+          <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_solenium) }}</dd>
+        </template>
+        <template v-if="(detalle.horas_rellenadas_historico || []).length">
+          <dt style="color: #9b89b5;">Horas rellenadas (histórico)</dt>
+          <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_historico) }}</dd>
+        </template>
+        <template v-if="!(detalle.horas_rellenadas_reconectador || []).length && !(detalle.horas_rellenadas_solenium || []).length && !(detalle.horas_rellenadas_historico || []).length">
+          <dt style="color: #9b89b5;">Horas rellenadas</dt>
+          <dd class="font-mono">—</dd>
+        </template>
       </dl>
     </div>
 
