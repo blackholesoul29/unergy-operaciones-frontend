@@ -15,6 +15,31 @@
       <Tag v-else value="OK" severity="success" />
     </div>
 
+    <!-- Frontera de terceros: el CGM lo maneja otra empresa (ej. Cedillanos);
+         se reporta con el Excel que ellos envían, no con este árbol de
+         Casos -- ver FRONTERAS_TERCEROS en clasificador.py. -->
+    <div v-if="String(detalle.caso) === '0'" class="rounded-xl p-4"
+         style="border: 1px solid #e8e0f0; background: #f9f7ff;">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <p class="text-sm font-semibold" style="color: #2C2039;">
+            <i class="pi pi-file-excel text-xs mr-1.5" />
+            {{ detalle.medidor_usado === 'excel_terceros' ? 'Cargado desde Excel de terceros' : 'Esperando Excel de terceros' }}
+          </p>
+          <p class="text-xs mt-1" style="color: #6b5a8a;">
+            El CGM de esta frontera lo maneja otra empresa; sube su Excel (Primary/Backup ×
+            ENERGIA EXPORTADA ACTIVA) para reportar este día.
+          </p>
+        </div>
+        <div>
+          <input ref="fileInputExcelTerceros" type="file" accept=".xlsx,.xls" class="hidden"
+                 @change="onArchivoExcelTercerosSeleccionado" />
+          <Button label="Cargar Excel" size="small" icon="pi pi-upload"
+                  :loading="subiendoExcelTerceros" @click="fileInputExcelTerceros?.click()" />
+        </div>
+      </div>
+    </div>
+
     <!-- Detalle de la clasificación -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de la clasificación</p>
@@ -252,6 +277,8 @@ const guardando = ref(false)
 const cargandoCurvaTipica = ref(false)
 const validando = ref(false)
 const ediciones = ref([])
+const subiendoExcelTerceros = ref(false)
+const fileInputExcelTerceros = ref(null)
 
 async function cargarEdiciones() {
   try {
@@ -435,6 +462,32 @@ async function cargar() {
 onMounted(() => { cargar(); cargarEdiciones(); cargarExclusiones() })
 watch(() => [props.fronteraId, props.fecha], () => { cargar(); cargarEdiciones(); cargarExclusiones() })
 
+// Frontera de terceros (caso=0, ver FRONTERAS_TERCEROS en clasificador.py) --
+// el Excel puede traer varios días; recargamos el detalle del día actual
+// para reflejar si quedó incluido en la carga.
+async function onArchivoExcelTercerosSeleccionado(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  subiendoExcelTerceros.value = true
+  try {
+    const fd = new FormData()
+    fd.append('archivo', file)
+    const { data } = await api.post(`/reporte-energia/fronteras/${props.fronteraId}/cargar-excel-terceros`, fd)
+    toast.add({
+      severity: 'success', summary: 'Excel cargado',
+      detail: `Se cargaron ${data.fechas_cargadas.length} día(s): ${data.fechas_cargadas.join(', ')}`,
+      life: 4000,
+    })
+    await Promise.all([cargar(), cargarEdiciones()])
+    emit('actualizado')
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo cargar el Excel.', life: 5000 })
+  } finally {
+    subiendoExcelTerceros.value = false
+  }
+}
+
 // Pegado tipo Excel: si lo pegado trae varios valores (columna o fila
 // copiada), se distribuyen empezando en la celda donde se pegó -- un solo
 // valor suelto no activa nada, se comporta como un input normal.
@@ -521,6 +574,7 @@ async function validar() {
 // de decision del clasificador (ver app/services/reporte_energia/clasificador.py
 // y clasificador_consumo.py en el backend).
 const CASO_INFO_GENERACION = {
+  // '0' no tiene una sola descripcion fija -- ver casoInfo0() abajo.
   '0': { nombre: 'Reporta a otra empresa', descripcion: 'Frontera de terceros, fuera de este árbol de decisión' },
   '1': { nombre: 'Reporte CGM válido', descripcion: 'El envío automático de Quoia al ASIC fue válido hoy y coincide con los inversores' },
   '2': { nombre: 'Medidor valida', descripcion: 'El reporte automático no fue válido, pero un medidor coincide con los inversores' },
@@ -550,6 +604,12 @@ const CASO_INFO_CONSUMO = {
 // corrigio nada (ver clasificador.py lineas 122 y 185, dos rutas de codigo
 // distintas que llegan a lo mismo). medidor_usado='inversores' es el caso
 // normal, con curva real corregida por FP.
+function casoInfo0(d) {
+  if (d.medidor_usado === 'excel_terceros') {
+    return { nombre: 'Cargado desde Excel de terceros', descripcion: 'El CGM de esta frontera lo maneja otra empresa; se reportó con el Excel que subieron para este día' }
+  }
+  return { nombre: 'Esperando Excel de terceros', descripcion: 'El CGM de esta frontera lo maneja otra empresa; falta subir su Excel para este día' }
+}
 function casoInfo3(d) {
   if (d.medidor_usado === 'revisar') {
     return { nombre: 'Sin Factor de Pérdida disponible', descripcion: 'Los medidores sub-reportan frente a los inversores, pero no hay suficiente histórico para calcular el Factor de Pérdida -- no se pudo generar ninguna curva automática' }
@@ -606,6 +666,7 @@ function casoInfo5(d) {
 const casoInfo = computed(() => {
   const d = detalle.value
   if (!d) return { nombre: '', descripcion: '' }
+  if (d.tipo === 'generacion' && String(d.caso) === '0') return casoInfo0(d)
   if (d.tipo === 'generacion' && String(d.caso) === '3') return casoInfo3(d)
   if (d.tipo === 'generacion' && String(d.caso) === '5') return casoInfo5(d)
   if (d.tipo === 'consumo' && String(d.caso) === 'Medidor') return casoInfoMedidorConsumo(d)
@@ -714,7 +775,7 @@ const ETIQUETAS_FUENTE = {
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
-  excluida: 'Excluida',
+  excluida: 'Excluida', excel_terceros: 'Excel de terceros',
 }
 function etiquetaFuente(v) {
   return ETIQUETAS_FUENTE[v] || v || '—'
