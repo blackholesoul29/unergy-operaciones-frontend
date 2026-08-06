@@ -773,6 +773,20 @@ function horasFaltantes(arr) {
   }
   return faltan
 }
+// Mismo criterio que HORAS_SOLARES en utils.py (backend) -- de noche no hay
+// generacion posible, asi que un hueco ahi no es información útil para el
+// usuario. Sin este filtro, 'Dato incompleto' mostraba TODAS las horas sin
+// dato (ej. 0h-7h) cuando lo que de verdad importaba eran solo 2 (6h-7h).
+const HORAS_SOLARES_FRONT = new Set([6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17])
+function horasFaltantesSolares(arr) {
+  const faltan = horasFaltantes(arr)
+  const enVentana = faltan.filter(h => HORAS_SOLARES_FRONT.has(h))
+  // Si por algún motivo las horas sin dato caen TODAS fuera de la ventana
+  // (ej. dejó de reportar justo a las 17h -- 'faltan' 18h-23h, ninguna
+  // dentro de la ventana), mejor mostrar la lista completa que un texto
+  // vacío después de 'faltan'.
+  return enVentana.length ? enVentana : faltan
+}
 function fuenteIconStyle(estado) {
   if (estado === 'ok') return { background: 'rgba(16,185,129,0.1)', color: '#10B981' }
   if (estado === 'na') return { background: '#f9f7ff', color: '#9b89b5' }
@@ -839,7 +853,7 @@ const fuentes = computed(() => {
         : (sumaSolenium !== null
             ? (d.solenium_completo
                 ? 'Dato completo'
-                : `Dato incompleto (${formatearRangosHoras(horasFaltantes(d.curva_solenium))})`)
+                : `Dato incompleto -- faltan ${formatearRangosHoras(horasFaltantesSolares(d.curva_solenium))}`)
             : 'Solenium respondió sin dato para esta fecha'),
       // Se muestra la suma de la curva EN VIVO (misma fuente que el icono y
       // que la grafica de arriba), no energia_solenium_kwh -- ese es el total
