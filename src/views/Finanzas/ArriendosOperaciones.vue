@@ -145,6 +145,10 @@
               <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
               <td class="px-4 py-2 font-medium" style="color:#2C2039; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
                 <div class="flex flex-col gap-0.5 max-w-full">
+                  <span class="block text-[11px] leading-tight"
+                        :class="fila.codigo ? 'text-gray-400' : 'text-gray-300'">
+                    {{ fila.codigo || '—' }}
+                  </span>
                   <span class="inline-flex flex-wrap items-center gap-1.5 max-w-full">
                     <span style="white-space:normal">{{ fila.proyecto }}</span>
                     <span v-if="!fila.aplica_este_mes && conContrato(fila)"
@@ -243,14 +247,25 @@
      </div>
 
       <!-- Total general (todas las secciones) -->
-      <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center justify-between"
+      <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center flex-wrap gap-x-8 gap-y-2 justify-between"
         style="border-color:#ECE7F2">
         <span class="text-xs font-semibold text-gray-600">
-          Total ({{ filasSeleccionadas }} proyectos seleccionados)
+          {{ filasSeleccionadas }} proyectos seleccionados
         </span>
-        <span class="text-base font-bold tabular-nums" style="color:#7c3aed">
-          {{ formatCOP(totalSeleccionado) }}
-        </span>
+        <div class="flex items-center gap-6 ml-auto">
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Subtotal Facturado</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalSeleccionado) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">IVA</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalIVASeleccionado) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Total</p>
+            <p class="text-base font-bold tabular-nums" style="color:#7c3aed">{{ formatCOP(totalConIVASeleccionado) }}</p>
+          </div>
+        </div>
       </div>
     </template>
     <div v-else class="bg-white rounded-xl shadow-sm p-10 text-center text-sm text-gray-400 border" style="border-color:#ECE7F2">
@@ -528,6 +543,9 @@ const todosMarcados      = computed(() =>
 const filasSeleccionadas = computed(() => filasHabilitadas.value.filter(f => seleccion[f.id]).length)
 const totalSeleccionado  = computed(() =>
   filas.value.filter(f => esFacturable(f) && seleccion[f.id]).reduce((s, f) => s + (f.canon_a_facturar || 0), 0))
+const totalIVASeleccionado    = computed(() =>
+  filas.value.filter(f => esFacturable(f) && seleccion[f.id]).reduce((s, f) => s + (f.iva_calculado || 0), 0))
+const totalConIVASeleccionado = computed(() => totalSeleccionado.value + totalIVASeleccionado.value)
 
 // IPC faltante no lo expone el backend → notificación deshabilitada
 // Proyectos con indexación incompleta por falta de tasa IPC de algún año.

@@ -117,7 +117,13 @@
                   <tr v-for="(fila, i) in sec.items" :key="i"
                     class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
                     <td class="px-4 py-2 font-medium" style="color:#2C2039">
-                      <span v-if="fila.nombre_comercial">{{ fila.nombre_comercial }}</span>
+                      <span v-if="fila.nombre_comercial">
+                        <span class="block text-[11px] leading-tight"
+                              :class="fila.codigo_tsf ? 'text-gray-400' : 'text-gray-300'">
+                          {{ fila.codigo_tsf || '—' }}
+                        </span>
+                        {{ fila.nombre_comercial }}
+                      </span>
                       <div v-else class="flex items-center gap-1.5">
                         <Tag severity="warn" value="Sin asignar" />
                         <button type="button" class="mn-asignar-btn" title="Asignar minigranja"
@@ -139,9 +145,22 @@
         </div>
 
         <!-- Total general -->
-        <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center justify-between" style="border-color:#ECE7F2">
+        <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center flex-wrap gap-x-8 gap-y-2 justify-between" style="border-color:#ECE7F2">
           <span class="text-xs font-semibold text-gray-600">Total del período</span>
-          <span class="text-base font-bold tabular-nums" style="color:#06b6d4">{{ formatCOP(totalGeneral) }}</span>
+          <div class="flex items-center gap-6 ml-auto">
+            <div class="text-right">
+              <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Subtotal (Sin IVA)</p>
+              <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalSinIVAGeneral) }}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">IVA</p>
+              <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalIVAGeneral) }}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Total</p>
+              <p class="text-base font-bold tabular-nums" style="color:#06b6d4">{{ formatCOP(totalGeneral) }}</p>
+            </div>
+          </div>
         </div>
       </template>
       <div v-else class="bg-white rounded-xl shadow-sm p-10 text-center text-sm text-gray-400 border" style="border-color:#ECE7F2">
@@ -298,6 +317,8 @@ watch(secciones, (s) => {
 }, { immediate: true })
 
 const totalGeneral = computed(() => lineas.value.reduce((s, f) => s + (f.monto_total || 0), 0))
+const totalSinIVAGeneral = computed(() => lineas.value.reduce((s, f) => s + (f.sin_iva || 0), 0))
+const totalIVAGeneral    = computed(() => lineas.value.reduce((s, f) => s + (f.iva || 0), 0))
 
 const periodoActual = computed(() => periodos.value[periodoIndex.value] ?? null)
 const periodoLabel  = computed(() => periodoLabelFrom(periodoActual.value))

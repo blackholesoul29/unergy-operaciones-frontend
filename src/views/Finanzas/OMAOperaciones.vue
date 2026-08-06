@@ -173,6 +173,10 @@
               </td>
               <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
               <td class="px-4 py-2 font-medium" style="color:#2C2039; white-space:nowrap">
+                <span class="block text-[11px] leading-tight"
+                      :class="fila.codigo_tsf ? 'text-gray-400' : 'text-gray-300'">
+                  {{ fila.codigo_tsf || '—' }}
+                </span>
                 {{ fila.nombre_proyecto }}
                 <span v-if="!fila.habilitado && conContrato(fila)"
                   class="inline-flex items-center gap-1 ml-1.5 text-[10px] font-normal px-1.5 py-0.5 rounded-full align-middle"
