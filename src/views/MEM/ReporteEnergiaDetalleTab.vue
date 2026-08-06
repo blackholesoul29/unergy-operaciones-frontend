@@ -31,11 +31,14 @@
             ENERGIA EXPORTADA ACTIVA) para reportar este día.
           </p>
         </div>
-        <div>
+        <div class="flex items-center gap-2">
           <input ref="fileInputExcelTerceros" type="file" accept=".xlsx,.xls" class="hidden"
                  @change="onArchivoExcelTercerosSeleccionado" />
           <Button label="Cargar Excel" size="small" icon="pi pi-upload"
                   :loading="subiendoExcelTerceros" @click="fileInputExcelTerceros?.click()" />
+          <Button v-if="detalle.medidor_usado === 'excel_terceros'" label="Eliminar carga" size="small"
+                  icon="pi pi-trash" severity="danger" outlined
+                  :loading="eliminandoExcelTerceros" @click="eliminarExcelTerceros" />
         </div>
       </div>
     </div>
@@ -302,6 +305,7 @@ const cargandoCurvaTipica = ref(false)
 const validando = ref(false)
 const ediciones = ref([])
 const subiendoExcelTerceros = ref(false)
+const eliminandoExcelTerceros = ref(false)
 const fileInputExcelTerceros = ref(null)
 
 async function cargarEdiciones() {
@@ -509,6 +513,25 @@ async function onArchivoExcelTercerosSeleccionado(event) {
     toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo cargar el Excel.', life: 5000 })
   } finally {
     subiendoExcelTerceros.value = false
+  }
+}
+
+// Sin confirmación a propósito -- volver a cargar el archivo correcto ya
+// sobrescribe (mismo endpoint hace upsert), así que esto es solo para el
+// caso más raro de querer dejar el día vacío otra vez.
+async function eliminarExcelTerceros() {
+  eliminandoExcelTerceros.value = true
+  try {
+    await api.delete(`/reporte-energia/fronteras/${props.fronteraId}/cargar-excel-terceros`, {
+      params: { fecha: props.fecha },
+    })
+    toast.add({ severity: 'success', summary: 'Carga eliminada', life: 2500 })
+    await Promise.all([cargar(), cargarEdiciones()])
+    emit('actualizado')
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo eliminar la carga.', life: 5000 })
+  } finally {
+    eliminandoExcelTerceros.value = false
   }
 }
 
