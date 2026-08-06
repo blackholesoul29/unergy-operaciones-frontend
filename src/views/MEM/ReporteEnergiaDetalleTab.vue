@@ -740,7 +740,7 @@ const CASO_INFO_CONSUMO = {
   'Histórico': { nombre: 'Histórico propio', descripcion: 'Ni CGM ni medidor creíbles; se usa la mediana y forma horaria del histórico' },
   'Sin dato': { nombre: 'Sin dato', descripcion: 'Ninguna fuente disponible para este día' },
   'Error': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
-  'Excluida': { nombre: 'Excluida temporalmente', descripcion: 'No se calculó nada -- ver el motivo de la exclusión abajo' },
+  'Excluida': { nombre: 'Excluida temporalmente', descripcion: '' },
 }
 // Caso 3 (Generación) junta 2 resultados muy distintos bajo el mismo numero:
 // medidor_usado='revisar' significa que no habia Factor de Perdida
