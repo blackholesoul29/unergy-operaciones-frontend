@@ -189,6 +189,74 @@
               :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
               optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
           </div>
+
+          <!-- Detalles técnicos del servicio de Internet -->
+          <div v-if="tipo === 'internet'" class="border-t border-gray-100 pt-3">
+            <p class="text-xs font-semibold uppercase tracking-wide mb-3" :style="`color:${tipoColor}`">
+              Detalles técnicos del servicio
+              <span class="normal-case font-normal text-gray-400">(opcional)</span>
+            </p>
+            <div class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Línea de servicio</label>
+                  <InputText v-model="form.linea_servicio" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">ID del router</label>
+                  <InputText v-model="form.id_router" class="w-full" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Número de kit</label>
+                  <InputText v-model="form.numero_kit" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Latencia</label>
+                  <InputNumber v-model="form.latencia_ms" suffix=" ms" :useGrouping="false" class="w-full" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Seguridad del wifi</label>
+                  <Select v-model="form.wifi_seguridad" :options="WIFI_SEGURIDAD_OPTS"
+                    optionLabel="label" optionValue="value" showClear placeholder="Selecciona…" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Contraseña wifi</label>
+                  <InputText v-model="form.wifi_password" class="w-full" />
+                </div>
+              </div>
+
+              <!-- Ubicación del servicio -->
+              <div class="rounded-lg border border-gray-200 p-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div>
+                    <p class="text-xs font-semibold text-gray-500">Ubicación del servicio</p>
+                    <p class="text-sm text-gray-700">Ubicación: {{ ubicacionLabel }}</p>
+                  </div>
+                  <Button type="button" :label="editandoUbicacion ? 'Listo' : 'Editar'" text size="small"
+                    @click="editandoUbicacion = !editandoUbicacion" />
+                </div>
+                <div v-if="editandoUbicacion" class="grid grid-cols-2 gap-4 mb-2">
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Latitud</label>
+                    <InputNumber v-model="form.ubicacion_lat" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Longitud</label>
+                    <InputNumber v-model="form.ubicacion_lng" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
+                  </div>
+                </div>
+                <p v-if="editandoUbicacion" class="text-xs text-gray-400 mb-2">
+                  Haz clic en el mapa para ubicar el servicio.
+                </p>
+                <div ref="ubicacionMapEl" class="rounded-md overflow-hidden" style="height:220px; background:#1a1a1a"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Índice de indexación</label>
@@ -411,7 +479,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
@@ -515,6 +583,95 @@ const form = reactive({
   plan_datos_gb: '',
   velocidad_mbps: null,
   tipo_conexion: null,
+  linea_servicio: '',
+  id_router: '',
+  numero_kit: '',
+  latencia_ms: null,
+  wifi_seguridad: null,
+  wifi_password: '',
+  ubicacion_lat: null,
+  ubicacion_lng: null,
+})
+
+const WIFI_SEGURIDAD_OPTS = [
+  { label: 'WPA2',            value: 'WPA2' },
+  { label: 'WPA3',            value: 'WPA3' },
+  { label: 'WPA2/WPA3',       value: 'WPA2/WPA3' },
+  { label: 'WPA3-OWE',        value: 'WPA3-OWE' },
+  { label: 'Remoto RADIUS',   value: 'Remoto RADIUS' },
+  { label: 'A bordo RADIUS',  value: 'A bordo RADIUS' },
+  { label: 'Abierta',         value: 'Abierta' },
+]
+
+// ── Mapa de ubicación (solo servicio de internet) ─────────────────────────────
+const editandoUbicacion = ref(false)
+const ubicacionMapEl = ref(null)
+let ubicacionMap = null
+let ubicacionMarker = null
+
+const ubicacionLabel = computed(() => {
+  if (form.ubicacion_lat == null || form.ubicacion_lng == null) return 'Sin definir'
+  return `${form.ubicacion_lat},${form.ubicacion_lng}`
+})
+
+async function initUbicacionMap() {
+  if (!ubicacionMapEl.value || ubicacionMap) return
+  const { default: maplibregl } = await import('maplibre-gl')
+  await import('maplibre-gl/dist/maplibre-gl.css')
+  if (!ubicacionMapEl.value || ubicacionMap) return   // pudo cerrarse el diálogo mientras cargaba
+
+  const centro = (form.ubicacion_lat != null && form.ubicacion_lng != null)
+    ? [form.ubicacion_lng, form.ubicacion_lat]
+    : [-74.297, 4.571]   // centro de Colombia por defecto
+
+  ubicacionMap = new maplibregl.Map({
+    container: ubicacionMapEl.value,
+    style: {
+      version: 8,
+      sources: {
+        dark: {
+          type: 'raster',
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
+          tileSize: 256,
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+        },
+      },
+      layers: [{ id: 'dark', type: 'raster', source: 'dark' }],
+    },
+    center: centro,
+    zoom: (form.ubicacion_lat != null && form.ubicacion_lng != null) ? 12 : 5,
+    attributionControl: false,
+  })
+
+  if (form.ubicacion_lat != null && form.ubicacion_lng != null) {
+    ubicacionMarker = new maplibregl.Marker({ color: '#ffffff' })
+      .setLngLat([form.ubicacion_lng, form.ubicacion_lat])
+      .addTo(ubicacionMap)
+  }
+
+  ubicacionMap.on('click', (e) => {
+    if (!editandoUbicacion.value) return
+    const { lng, lat } = e.lngLat
+    form.ubicacion_lat = Number(lat.toFixed(6))
+    form.ubicacion_lng = Number(lng.toFixed(6))
+    if (ubicacionMarker) {
+      ubicacionMarker.setLngLat([lng, lat])
+    } else {
+      ubicacionMarker = new maplibregl.Marker({ color: '#ffffff' }).setLngLat([lng, lat]).addTo(ubicacionMap)
+    }
+  })
+}
+
+watch(step, async (s) => {
+  if (s === 2 && props.tipo === 'internet') {
+    await nextTick()
+    await initUbicacionMap()
+  }
+})
+
+onBeforeUnmount(() => {
+  ubicacionMap?.remove()
+  ubicacionMap = null
 })
 
 function buscarCliente(event, rol) {
@@ -684,6 +841,14 @@ async function crearContrato() {
       plan_datos_gb: props.tipo === 'internet' ? (form.plan_datos_gb?.trim() || null) : null,
       velocidad_mbps: props.tipo === 'internet' ? (form.velocidad_mbps ?? null) : null,
       tipo_conexion: props.tipo === 'internet' ? (form.tipo_conexion || null) : null,
+      linea_servicio: props.tipo === 'internet' ? (form.linea_servicio?.trim() || null) : null,
+      id_router: props.tipo === 'internet' ? (form.id_router?.trim() || null) : null,
+      numero_kit: props.tipo === 'internet' ? (form.numero_kit?.trim() || null) : null,
+      latencia_ms: props.tipo === 'internet' ? (form.latencia_ms ?? null) : null,
+      wifi_seguridad: props.tipo === 'internet' ? (form.wifi_seguridad || null) : null,
+      wifi_password: props.tipo === 'internet' ? (form.wifi_password?.trim() || null) : null,
+      ubicacion_lat: props.tipo === 'internet' ? (form.ubicacion_lat ?? null) : null,
+      ubicacion_lng: props.tipo === 'internet' ? (form.ubicacion_lng ?? null) : null,
     }
   const { data } = await api.post('/contratos-servicio', payload)
   return data
