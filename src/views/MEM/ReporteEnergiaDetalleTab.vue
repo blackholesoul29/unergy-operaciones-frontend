@@ -170,8 +170,8 @@
       </p>
       <div class="flex items-center justify-between mt-2">
         <div v-if="detalle.revisar_manualmente" class="relative">
-          <Button label="Reportar con..." icon="pi pi-angle-down" iconPos="right" size="small"
-            style="background: #f9f7ff; border-color: #e8e0f0; color: #6E3FB8;"
+          <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
+            style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
             :loading="cargandoCurvaTipica" @click="mostrarMenuReportar = !mostrarMenuReportar" />
           <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
           <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
