@@ -270,8 +270,13 @@
                                          @change="renombrarFuente(p, ln, $event.target.value)" />
                                   <button class="fuente-x" title="Quitar fuente" @click="quitarFuente(p, ln)">✕</button>
                                 </div>
-                                <div v-else class="cpt">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span></div>
-                                <div v-if="!ln.derivada" class="origen-wrap">
+                                <div v-else class="cpt">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span><span v-if="ln.fuente" class="fuente-tag" :title="fuenteTitle(ln.fuente)">{{ fuenteLabel(ln.fuente) }}</span></div>
+                                <!-- Valor de módulo (O&M / Arriendos): no viene de una celda del ER, así que
+                                     no se edita la celda de origen; se indica de dónde sale. -->
+                                <div v-if="!ln.derivada && ln.fuente" class="origen-wrap">
+                                  <span class="origen-mod">↳ del módulo de {{ fuenteTitle(ln.fuente) }}</span>
+                                </div>
+                                <div v-else-if="!ln.derivada" class="origen-wrap">
                                   <button class="origen-link" :title="origenOpen[ln.id] ? 'Ocultar origen' : 'Editar celda de origen'"
                                           @click="toggleOrigen(ln.id)">⚙ origen: {{ ln.origen || '—' }}</button>
                                   <input v-if="origenOpen[ln.id]" class="celda-origen" :value="ln.origen" placeholder="hoja!celda"
@@ -370,7 +375,7 @@
                           <tbody>
                             <tr v-for="(ln, i) in lineas100Sec(p, sec.key)" :key="'100' + sec.key + i"
                                 :class="{ derivada: ln.derivada }">
-                              <td class="l">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span></td>
+                              <td class="l">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span><span v-if="ln.fuente" class="fuente-tag" :title="fuenteTitle(ln.fuente)">{{ fuenteLabel(ln.fuente) }}</span></td>
                               <td :class="{ neg: ln.valor_cop < 0 }">{{ fmt(ln.valor_cop) }}</td>
                               <td class="l">{{ ln.comprobante_contable || '' }}</td>
                               <td class="l">
@@ -621,6 +626,11 @@ const savedAt = reactive({})
 // Toggle por fila para revelar el input editable de celda de origen (colapsado por defecto).
 const origenOpen = reactive({})
 const toggleOrigen = (id) => { origenOpen[id] = !origenOpen[id] }
+
+// Costos que vienen de un módulo (no del ER): O&M / Arriendos. Etiqueta y tooltip.
+const FUENTES = { om: { label: 'O&M', title: 'O&M' }, arriendos: { label: 'Arriendos', title: 'Arriendos' } }
+const fuenteLabel = (f) => (FUENTES[f]?.label) || f
+const fuenteTitle = (f) => (FUENTES[f]?.title) || f
 const loading = ref(false)
 const cargaError = ref(false)   // distingue "falló la carga" de "no hay paneles"
 const uploading = ref(0)
@@ -1283,6 +1293,10 @@ tr.derivada .cpt, tr.derivada td { color:#8a7fa6; font-style:italic; }
 .val-ro.neg { color:#c0392b; }
 .imp-tag { margin-left:6px; font-size:9px; font-style:normal; text-transform:uppercase; letter-spacing:.03em;
   background:#efe7fb; color:#7a5bbf; padding:1px 5px; border-radius:4px; vertical-align:middle; }
+/* Costo que viene de un módulo (O&M / Arriendos), no del ER. */
+.fuente-tag { margin-left:6px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+  background:#e6f6ef; color:#1f7a56; padding:1px 5px; border-radius:4px; vertical-align:middle; }
+.origen-mod { display:inline-block; margin-top:3px; font-size:10px; color:#1f9d6b; }
 .celda-origen { display:block; width:95px; margin-top:3px; font-size:10.5px; color:#9a93a8;
   padding:2px 5px; border:1px solid #ddd6e8; border-radius:5px; text-align:left;
   font-variant-numeric:tabular-nums; background:transparent; }
