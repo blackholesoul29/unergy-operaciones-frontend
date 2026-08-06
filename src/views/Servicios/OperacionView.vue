@@ -924,7 +924,7 @@
                 <p class="text-xs font-medium mb-2" style="color:#9b89b5">
                   Ubicación: {{ contratos.internet.ubicacion_lat }},{{ contratos.internet.ubicacion_lng }}
                 </p>
-                <div ref="internetMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#1a1a1a"></div>
+                <div ref="internetMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#e5e3df"></div>
               </div>
             </div>
           </template>
@@ -1145,7 +1145,7 @@
               Ubicación del servicio
               <span class="text-gray-400 font-normal">— haz clic en el mapa para ubicarlo</span>
             </label>
-            <div ref="dialogEditMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#1a1a1a"></div>
+            <div ref="dialogEditMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#e5e3df"></div>
           </div>
         </template>
         <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
@@ -1350,6 +1350,7 @@ const pagos     = reactive({ mantenimiento: [],   arriendo: [],   internet: [] }
 // ── Mapa de ubicación del servicio de Internet (solo lectura) ─────────────────
 const internetMapEl = ref(null)
 let internetMap = null
+let internetMapRO = null
 
 async function initInternetMap(c) {
   if (!c || c.ubicacion_lat == null || c.ubicacion_lng == null) return
@@ -1364,27 +1365,34 @@ async function initInternetMap(c) {
     style: {
       version: 8,
       sources: {
-        dark: {
+        osm: {
           type: 'raster',
-          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
           tileSize: 256,
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         },
       },
-      layers: [{ id: 'dark', type: 'raster', source: 'dark' }],
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
     },
     center: [c.ubicacion_lng, c.ubicacion_lat],
     zoom: 12,
     attributionControl: false,
     interactive: false,
   })
-  new maplibregl.Marker({ color: '#ffffff' }).setLngLat([c.ubicacion_lng, c.ubicacion_lat]).addTo(internetMap)
+  new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([c.ubicacion_lng, c.ubicacion_lat]).addTo(internetMap)
+
+  // El contenedor puede tener tamaño 0 si la pestaña Internet no está visible
+  // todavía al crear el mapa (p.ej. TabView oculto con display:none); sin este
+  // observer el canvas queda en blanco aunque luego se muestre la pestaña.
+  internetMapRO = new ResizeObserver(() => internetMap?.resize())
+  internetMapRO.observe(internetMapEl.value)
 }
 
 // Mapa editable dentro del diálogo "Editar" (clic para mover el marcador)
 const dialogEditMapEl = ref(null)
 let dialogEditMap = null
 let dialogEditMarker = null
+let dialogEditMapRO = null
 
 async function initDialogEditMap() {
   if (!dialogEditMapEl.value || dialogEditMap) return
@@ -1401,14 +1409,14 @@ async function initDialogEditMap() {
     style: {
       version: 8,
       sources: {
-        dark: {
+        osm: {
           type: 'raster',
-          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
           tileSize: 256,
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         },
       },
-      layers: [{ id: 'dark', type: 'raster', source: 'dark' }],
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
     },
     center: centro,
     zoom: (dialogEdit.form.ubicacion_lat != null) ? 12 : 5,
@@ -1417,7 +1425,7 @@ async function initDialogEditMap() {
 
   dialogEditMarker = null
   if (dialogEdit.form.ubicacion_lat != null && dialogEdit.form.ubicacion_lng != null) {
-    dialogEditMarker = new maplibregl.Marker({ color: '#ffffff' }).setLngLat(centro).addTo(dialogEditMap)
+    dialogEditMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat(centro).addTo(dialogEditMap)
   }
 
   dialogEditMap.on('click', (e) => {
@@ -1425,13 +1433,18 @@ async function initDialogEditMap() {
     dialogEdit.form.ubicacion_lat = Number(lat.toFixed(6))
     dialogEdit.form.ubicacion_lng = Number(lng.toFixed(6))
     if (dialogEditMarker) dialogEditMarker.setLngLat([lng, lat])
-    else dialogEditMarker = new maplibregl.Marker({ color: '#ffffff' }).setLngLat([lng, lat]).addTo(dialogEditMap)
+    else dialogEditMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([lng, lat]).addTo(dialogEditMap)
   })
+
+  dialogEditMapRO = new ResizeObserver(() => dialogEditMap?.resize())
+  dialogEditMapRO.observe(dialogEditMapEl.value)
 }
 
 onBeforeUnmount(() => {
+  internetMapRO?.disconnect()
   internetMap?.remove()
   internetMap = null
+  dialogEditMapRO?.disconnect()
   dialogEditMap?.remove()
   dialogEditMap = null
 })
@@ -1585,6 +1598,7 @@ function openEditContrato(tipo) {
   dialogEdit.form.ubicacion_lng = c.ubicacion_lng ?? null
   dialogEdit.visible = true
   if (tipo === 'internet') {
+    dialogEditMapRO?.disconnect(); dialogEditMapRO = null
     dialogEditMap?.remove(); dialogEditMap = null
     nextTick().then(initDialogEditMap)
   }
@@ -1630,6 +1644,7 @@ async function saveContrato() {
     contratos[tipo] = { ...contratos[tipo], ...data }
     if (tipo === 'arriendo') await cargarIndexacionArriendo()
     if (tipo === 'internet') {
+      internetMapRO?.disconnect(); internetMapRO = null
       internetMap?.remove(); internetMap = null
       await initInternetMap(contratos.internet)
     }

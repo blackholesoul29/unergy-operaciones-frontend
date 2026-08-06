@@ -106,7 +106,7 @@
             <p v-if="editandoUbicacion" class="text-xs text-gray-400 mb-2">
               Haz clic en el mapa para ubicar el servicio.
             </p>
-            <div ref="ubicacionMapEl" class="rounded-md overflow-hidden" style="height:220px; background:#1a1a1a"></div>
+            <div ref="ubicacionMapEl" class="rounded-md overflow-hidden" style="height:220px; background:#e5e3df"></div>
           </div>
         </div>
       </template>
@@ -606,6 +606,7 @@ const editandoUbicacion = ref(false)
 const ubicacionMapEl = ref(null)
 let ubicacionMap = null
 let ubicacionMarker = null
+let ubicacionMapRO = null
 
 const ubicacionLabel = computed(() => {
   if (form.ubicacion_lat == null || form.ubicacion_lng == null) return 'Sin definir'
@@ -627,14 +628,14 @@ async function initUbicacionMap() {
     style: {
       version: 8,
       sources: {
-        dark: {
+        osm: {
           type: 'raster',
-          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
           tileSize: 256,
-          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
         },
       },
-      layers: [{ id: 'dark', type: 'raster', source: 'dark' }],
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
     },
     center: centro,
     zoom: (form.ubicacion_lat != null && form.ubicacion_lng != null) ? 12 : 5,
@@ -642,7 +643,7 @@ async function initUbicacionMap() {
   })
 
   if (form.ubicacion_lat != null && form.ubicacion_lng != null) {
-    ubicacionMarker = new maplibregl.Marker({ color: '#ffffff' })
+    ubicacionMarker = new maplibregl.Marker({ color: '#06b6d4' })
       .setLngLat([form.ubicacion_lng, form.ubicacion_lat])
       .addTo(ubicacionMap)
   }
@@ -655,9 +656,12 @@ async function initUbicacionMap() {
     if (ubicacionMarker) {
       ubicacionMarker.setLngLat([lng, lat])
     } else {
-      ubicacionMarker = new maplibregl.Marker({ color: '#ffffff' }).setLngLat([lng, lat]).addTo(ubicacionMap)
+      ubicacionMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([lng, lat]).addTo(ubicacionMap)
     }
   })
+
+  ubicacionMapRO = new ResizeObserver(() => ubicacionMap?.resize())
+  ubicacionMapRO.observe(ubicacionMapEl.value)
 }
 
 watch(step, async (s) => {
@@ -668,6 +672,7 @@ watch(step, async (s) => {
 })
 
 onBeforeUnmount(() => {
+  ubicacionMapRO?.disconnect()
   ubicacionMap?.remove()
   ubicacionMap = null
 })
