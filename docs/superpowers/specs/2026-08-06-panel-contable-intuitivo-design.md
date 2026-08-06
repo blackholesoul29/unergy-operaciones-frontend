@@ -49,6 +49,17 @@ línea de costo), conexión de ingresos/comercialización a datos crudos. Son pa
 - **Columnas sin dato en el modelo actual** (`Referencia Factura`, `Contrato`): se dejan
   **vacías** por ahora (decisión de la usuaria), hasta que se agreguen esos campos.
 
+### 4. Detalle plano + filtros (ampliación aprobada por la usuaria)
+- **Filtros** de la lista de proyectos (barra arriba, en Preliquidación/Oficial/Selección):
+  buscar por nombre, tipo de liquidación (normal/NEU/NITRO vía `/clasificacion`), estado
+  (liquida/no/solo ingresos/solo costos/genera) y marcadores (con/sin costos, bolsa).
+- **Detalle plano**: cada proyecto muestra por defecto el **100% en una sola tabla**
+  agrupada por bloques contables (MANDATO = ingresos+comercialización, COSTOS, FACTURA),
+  con la fuente marcada, "Valor a pagar" por bloque y RESULTADO al final. Reemplaza los
+  acordeones anidados (Proyecto→Inversionista→Sección→tabla).
+- **Desglose por inversionista**: expandible por proyecto (botón "Ver desglose"); ahí se
+  editan valores y comprobante (la tabla plana 100% es de solo lectura).
+
 ## Datos disponibles hoy (para el export)
 El serializer del panel ya entrega, por inversionista: `grupo`, `concepto`, `valor_cop`,
 `comprobante_contable`, consecutivos, `fuente`. De ahí salen todas las columnas menos

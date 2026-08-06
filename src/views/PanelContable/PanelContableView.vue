@@ -279,15 +279,7 @@
         <template v-if="tab === 'preliquidacion' || tab === 'oficial'">
         <div class="sec-title-row">
           <div class="sec-title">Detalle contable por proyecto</div>
-          <div class="vista-toggle">
-            <span>Ver:</span>
-            <label class="vt-opt" :class="{ on: !vista100 }">
-              <input type="radio" :value="false" v-model="vista100" /> Por inversionista
-            </label>
-            <label class="vt-opt" :class="{ on: vista100 }">
-              <input type="radio" :value="true" v-model="vista100" /> 100% total
-            </label>
-          </div>
+          <span class="hint" style="padding:0">Muestra el 100% del proyecto; expande cada uno para el desglose por inversionista.</span>
         </div>
         <div v-if="!panelesFiltrados.length" class="empty sm">Ningún proyecto coincide con los filtros.</div>
         <div v-for="p in panelesFiltrados" :key="'d' + p.id" class="proj" :class="{ off: !esActivo(p), open: open[p.id] }">
@@ -307,8 +299,59 @@
           </div>
 
           <div class="body" v-show="open[p.id]">
-            <!-- Vista por inversionista (comportamiento por defecto) -->
-            <template v-if="!vista100">
+            <!-- Tabla plana 100% (vista por defecto) -->
+            <div class="tbl-wrap">
+              <table class="dt flat">
+                <thead><tr>
+                  <th class="l">Concepto</th><th class="l">Fuente</th><th>Valor</th>
+                  <th class="l">Comprobante</th><th class="l">Soporte</th>
+                </tr></thead>
+                <tbody>
+                  <template v-for="blk in bloquesPlano" :key="blk.key">
+                    <tr class="blk-h"><td colspan="5">{{ blk.label }}</td></tr>
+                    <tr v-for="(ln, i) in lineas100Bloque(p, blk)" :key="blk.key + i" :class="{ derivada: ln.derivada }">
+                      <td class="l">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span></td>
+                      <td class="l">
+                        <span v-if="ln.fuente" class="fuente-tag" :title="fuenteTitle(ln.fuente)">{{ fuenteLabel(ln.fuente) }}</span>
+                        <span v-else-if="!ln.derivada" class="muted" style="font-size:11px">ER</span>
+                      </td>
+                      <td :class="{ neg: ln.valor_cop < 0 }">{{ fmt(ln.valor_cop) }}</td>
+                      <td class="l muted">{{ ln.comprobante_contable || '' }}</td>
+                      <td class="l">
+                        <template v-if="ln.derivada"></template>
+                        <template v-else-if="ln.soporte">
+                          <a class="sop-link" :href="ln.soporte.archivo_url" target="_blank" rel="noopener"
+                             :title="ln.soporte.archivo_nombre || 'Ver soporte'">📎 ver</a>
+                          <button class="sop-x" title="Quitar soporte" @click="eliminarSoporte(p, ln)">✕</button>
+                        </template>
+                        <button v-else class="sop-up" :disabled="subiendoSoporte === sopKey(ln)"
+                                title="Subir soporte" @click="pickSoporte(p, ln)">
+                          {{ subiendoSoporte === sopKey(ln) ? '…' : '📎 subir' }}
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="blk-tot">
+                      <td class="l" colspan="2">Valor a pagar</td>
+                      <td :class="{ neg: total100Bloque(p, blk) < 0 }">{{ fmt(total100Bloque(p, blk)) }}</td>
+                      <td colspan="2"></td>
+                    </tr>
+                  </template>
+                  <tr class="blk-res">
+                    <td class="l" colspan="2">RESULTADO · Valor a pagar (100%)</td>
+                    <td :class="{ neg: utilidad100(p) < 0 }">{{ fmt(utilidad100(p)) }}</td>
+                    <td colspan="2"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Desglose por inversionista (expandible; aquí se editan valores/comprobante) -->
+            <button class="expand-inv" @click="toggleInv(p.id)">
+              <span class="chev" :class="{ op: invOpen[p.id] }">▶</span>
+              {{ invOpen[p.id] ? 'Ocultar' : 'Ver' }} desglose por inversionista ({{ p.inversionistas.length }})
+            </button>
+
+            <template v-if="invOpen[p.id]">
               <div v-for="inv in p.inversionistas" :key="invKeyOf(inv)" class="inv-block">
                 <div class="inv-head">
                   <div class="inv-name">{{ inv.nombre }} · {{ (inv.porcentaje ?? 0).toFixed(2) }}%</div>
@@ -408,84 +451,6 @@
                   <div class="sec-resultado">
                     <span class="sec-lbl">RESULTADO · Valor a pagar</span>
                     <span class="sec-tot" :class="{ neg: utilidad(inv) < 0 }">{{ fmt(utilidad(inv)) }}</span>
-                  </div>
-                </div>
-              </div>
-            </template>
-
-            <!-- Vista 100%: total del proyecto (sin dividir), mismas secciones -->
-            <template v-else>
-              <div class="inv-block">
-                <div class="inv-head">
-                  <div class="inv-name">100% — Total proyecto</div>
-                  <div class="inv-cons">
-                    <span>Ing: <b>{{ tab === 'oficial' && p.liquidar_ingresos ? (p.consecutivo_ingresos ?? '—') : '—' }}</b></span>
-                    <span>Cost: <b>{{ tab === 'oficial' && p.liquidar_costos ? (p.consecutivo_costos ?? '—') : '—' }}</b></span>
-                  </div>
-                </div>
-
-                <div class="secs">
-                  <template v-for="sec in secciones" :key="'100' + sec.key">
-                  <div v-show="lineas100Sec(p, sec.key).length"
-                       class="sec-acc" :class="{ open: secOpen[secKey(p.id, '100', sec.key)] }">
-                    <div class="sec-bar" @click="toggleSec(p.id, '100', sec.key)">
-                      <span class="chev">▶</span>
-                      <span class="sec-lbl">{{ sec.label }}</span>
-                      <span class="sec-tot" :class="{ neg: total100Sec(p, sec.key) < 0 }">{{ fmt(total100Sec(p, sec.key)) }}</span>
-                    </div>
-                    <div class="sec-body" v-show="secOpen[secKey(p.id, '100', sec.key)]">
-                      <div class="tbl-wrap">
-                        <table class="dt">
-                          <thead><tr>
-                            <th class="l">Concepto</th>
-                            <th>Valor</th>
-                            <th class="l">Comprobante</th>
-                            <th class="l">Soporte</th>
-                          </tr></thead>
-                          <tbody>
-                            <tr v-for="(ln, i) in lineas100Sec(p, sec.key)" :key="'100' + sec.key + i"
-                                :class="{ derivada: ln.derivada }">
-                              <td class="l">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span><span v-if="ln.fuente" class="fuente-tag" :title="fuenteTitle(ln.fuente)">{{ fuenteLabel(ln.fuente) }}</span></td>
-                              <td :class="{ neg: ln.valor_cop < 0 }">{{ fmt(ln.valor_cop) }}</td>
-                              <td class="l">{{ ln.comprobante_contable || '' }}</td>
-                              <td class="l">
-                                <template v-if="ln.derivada"></template>
-                                <template v-else-if="ln.soporte">
-                                  <a class="sop-link" :href="ln.soporte.archivo_url" target="_blank" rel="noopener"
-                                     :title="ln.soporte.archivo_nombre || 'Ver soporte'">📎 ver</a>
-                                  <button class="sop-x" title="Quitar soporte" @click="eliminarSoporte(p, ln)">✕</button>
-                                </template>
-                                <button v-else class="sop-up" :disabled="subiendoSoporte === sopKey(ln)"
-                                        title="Subir soporte" @click="pickSoporte(p, ln)">
-                                  {{ subiendoSoporte === sopKey(ln) ? '…' : '📎 subir' }}
-                                </button>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Subtotales "Valor a pagar" por bloque contable (Mandato/Costos/Facturas) -->
-                  <div v-if="sec.key === 'comercializacion'" class="sec-subtotal">
-                    <span class="sec-lbl">Valor a pagar (Ingresos − Comercialización)</span>
-                    <span class="sec-tot" :class="{ neg: (total100Sec(p, 'ingresos') + total100Sec(p, 'comercializacion')) < 0 }">{{ fmt(total100Sec(p, 'ingresos') + total100Sec(p, 'comercializacion')) }}</span>
-                  </div>
-                  <div v-else-if="sec.key === 'costos'" class="sec-subtotal">
-                    <span class="sec-lbl">Valor a pagar (Costos Operativos)</span>
-                    <span class="sec-tot" :class="{ neg: total100Sec(p, 'costos') < 0 }">{{ fmt(total100Sec(p, 'costos')) }}</span>
-                  </div>
-                  <div v-else-if="sec.key === 'facturas'" class="sec-subtotal">
-                    <span class="sec-lbl">Valor a pagar (Facturas de Servicio)</span>
-                    <span class="sec-tot" :class="{ neg: total100Sec(p, 'facturas') < 0 }">{{ fmt(total100Sec(p, 'facturas')) }}</span>
-                  </div>
-                  </template>
-
-                  <!-- RESULTADO · valor a pagar: siempre visible -->
-                  <div class="sec-resultado">
-                    <span class="sec-lbl">RESULTADO · Valor a pagar (100%)</span>
-                    <span class="sec-tot" :class="{ neg: utilidad100(p) < 0 }">{{ fmt(utilidad100(p)) }}</span>
                   </div>
                 </div>
               </div>
@@ -845,6 +810,19 @@ const lineas100 = (p, grupo) => {
 }
 const total100Grupo = (p, grupo) => lineas100(p, grupo).reduce((s, l) => s + (Number(l.valor_cop) || 0), 0)
 const utilidad100 = (p) => (p.total_100 || []).reduce((s, l) => s + (Number(l.valor_cop) || 0), 0)
+
+// ── Tabla plana 100% (vista por defecto del detalle) ──
+// Bloques contables: Mandato (ingresos+comercialización), Costos, Factura (Repr/CGM/Admin).
+const bloquesPlano = [
+  { key: 'mandato', keys: ['ingresos', 'comercializacion'], label: 'MANDATO' },
+  { key: 'costos', keys: ['costos'], label: 'COSTOS' },
+  { key: 'factura', keys: ['facturas'], label: 'FACTURA' },
+]
+const lineas100Bloque = (p, blk) => (p.total_100 || []).filter(l => blk.keys.includes(l.grupo))
+const total100Bloque = (p, blk) => lineas100Bloque(p, blk).reduce((s, l) => s + (Number(l.valor_cop) || 0), 0)
+// Desglose por inversionista, expandible por proyecto (colapsado por defecto).
+const invOpen = reactive({})
+const toggleInv = (id) => { invOpen[id] = !invOpen[id] }
 
 // ── Acordeones del detalle por proyecto (un nivel más de colapso) ──
 // Resolución de claves específica de `secciones` (FACTURAS separado de COSTOS).
@@ -1385,6 +1363,23 @@ onMounted(cargarPaneles)
   border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--txt2); background:#fff; transition:all .12s; }
 .vista-toggle .vt-opt.on { border-color:#915BD8; background:#eee7fb; color:#2C2039; font-weight:600; }
 .vista-toggle .vt-opt input { accent-color:#915BD8; cursor:pointer; }
+
+/* Tabla plana del detalle (vista por defecto) */
+.dt.flat { width:100%; border-collapse:collapse; font-size:13px; }
+.dt.flat th { text-align:right; padding:8px 14px; font-weight:500; color:var(--txt2); border-bottom:0.5px solid var(--line); background:var(--sec); }
+.dt.flat th.l { text-align:left; }
+.dt.flat td { padding:8px 14px; text-align:right; border-bottom:0.5px solid var(--line); font-variant-numeric:tabular-nums; }
+.dt.flat td.l { text-align:left; }
+.dt.flat tr.derivada td { color:var(--txt2); font-size:12px; }
+.dt.flat td.neg, .dt.flat .neg { color:var(--red); }
+.blk-h td { background:var(--info); color:var(--p2); font-weight:600; font-size:11px; letter-spacing:.04em;
+  text-transform:uppercase; padding:6px 14px !important; text-align:left !important; }
+.blk-tot td { background:#fbfaff; font-weight:500; }
+.blk-res td { background:var(--sec); font-weight:600; color:var(--p1); border-top:2px solid var(--p2); }
+.expand-inv { display:inline-flex; align-items:center; gap:7px; margin:12px 0 4px; background:none; border:none;
+  color:var(--p2); font-size:12px; font-weight:500; cursor:pointer; padding:4px 0; }
+.expand-inv .chev { font-size:9px; color:var(--txt3); transition:transform .12s; }
+.expand-inv .chev.op { transform:rotate(90deg); }
 
 /* Barra de filtros de la lista de proyectos */
 .filtros { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
