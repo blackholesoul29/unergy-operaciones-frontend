@@ -602,7 +602,7 @@ const CASO_INFO_GENERACION = {
   '7': { nombre: 'Reconstruido con reconectador o crudos', descripcion: 'Sin reporte automático ni medidor; se reconstruye con reconectador, Solenium (power) o datos crudos completos' },
   '8': { nombre: 'Datos crudos parciales', descripcion: 'Datos crudos incompletos; se rellenan las horas faltantes con reconectador, Solenium o histórico' },
   '-1': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
-  '-2': { nombre: 'Excluida temporalmente', descripcion: 'No se calculó nada -- ver el motivo de la exclusión abajo' },
+  '-2': { nombre: 'Excluida temporalmente', descripcion: '' },
 }
 const CASO_INFO_CONSUMO = {
   'CGM': { nombre: 'Reporte válido', descripcion: 'El reporte automático fue válido y el canal CGM trae dato real' },

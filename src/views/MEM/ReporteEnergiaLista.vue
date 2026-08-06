@@ -82,8 +82,12 @@ const ETIQUETAS_FUENTE = {
   cgm: 'CGM', principal: 'Medidor principal', respaldo: 'Medidor respaldo',
   inversores: 'Inversores × FP', crudos: 'Datos crudos', crudos_parcial: 'Datos crudos (parcial)',
   reconectador: 'Reconectador', solenium_power: 'Solenium (power)', ninguno: 'Apagado',
-  revisar: 'Sin fuente', externo: 'Reporta otra empresa', historico: 'Histórico propio',
+  revisar: 'Sin fuente', relleno_horario: 'Relleno horario (reconectador/Solenium/histórico)',
+  externo: 'Reporta otra empresa', historico: 'Histórico propio',
   historico_vecino: 'Histórico (vecino de predio)',
+  principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
+  principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
+  excluida: 'Excluida', excel_terceros: 'Excel de terceros',
 }
 function etiquetaFuente(f) {
   return ETIQUETAS_FUENTE[f.medidor_usado] || f.medidor_usado || '—'
