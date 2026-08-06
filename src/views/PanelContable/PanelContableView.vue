@@ -123,6 +123,36 @@
       <div v-if="loading" class="empty"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
 
       <template v-else>
+        <!-- Filtros de la lista de proyectos -->
+        <div v-if="paneles.length" class="filtros">
+          <span class="filtro-busca">
+            <i class="pi pi-search" />
+            <input v-model="fProyecto" placeholder="Buscar proyecto…" />
+          </span>
+          <select v-model="fTipo" class="filtro-sel">
+            <option value="">Tipo: todos</option>
+            <option value="normal">Normal</option>
+            <option value="neu">NEU</option>
+            <option value="nitro">NITRO</option>
+          </select>
+          <select v-model="fEstado" class="filtro-sel">
+            <option value="">Estado: todos</option>
+            <option value="liquida">Liquida</option>
+            <option value="no">No liquida</option>
+            <option value="solo_ing">Solo ingresos</option>
+            <option value="solo_cost">Solo costos</option>
+            <option value="genera">Genera mandatos</option>
+          </select>
+          <select v-model="fMarcador" class="filtro-sel">
+            <option value="">Marcador: todos</option>
+            <option value="con_costos">Con costos</option>
+            <option value="sin_costos">Sin costos</option>
+            <option value="bolsa">Con bolsa</option>
+          </select>
+          <span class="filtro-count">{{ panelesFiltrados.length }} / {{ paneles.length }}</span>
+          <button v-if="hayFiltro" class="mini" @click="limpiarFiltros">Limpiar</button>
+        </div>
+
         <!-- Selección + consecutivos (solo pestaña Selección) -->
         <div v-if="tab === 'seleccion'" class="card">
           <div class="card-h">
@@ -167,7 +197,7 @@
                 <th>Generar mandatos</th>
               </tr></thead>
               <tbody>
-                <tr v-for="p in paneles" :key="p.id">
+                <tr v-for="p in panelesFiltrados" :key="p.id">
                   <td class="l">
                     <span class="pname">{{ p.proyecto }}</span>
                     <span v-if="!p.tiene_costos" class="pill pill-warn">sin costos</span>
@@ -224,7 +254,7 @@
             <h3>Mapeo de celdas del ER</h3>
             <span class="hint" style="padding:0">Corrige a qué celda del ER apunta un concepto de Ingresos / Comercialización.</span>
           </div>
-          <div v-for="p in paneles" :key="'m' + p.id" class="mapeo-proy">
+          <div v-for="p in panelesFiltrados" :key="'m' + p.id" class="mapeo-proy">
             <div class="mapeo-h" @click="toggleMapeo(p.id)">
               <span class="chev" :class="{ op: mapeoOpen[p.id] }">▶</span>
               <b>{{ p.proyecto }}</b>
@@ -259,7 +289,8 @@
             </label>
           </div>
         </div>
-        <div v-for="p in paneles" :key="'d' + p.id" class="proj" :class="{ off: !esActivo(p), open: open[p.id] }">
+        <div v-if="!panelesFiltrados.length" class="empty sm">Ningún proyecto coincide con los filtros.</div>
+        <div v-for="p in panelesFiltrados" :key="'d' + p.id" class="proj" :class="{ off: !esActivo(p), open: open[p.id] }">
           <div class="phead" @click="toggle(p.id)">
             <span class="chev">▶</span>
             <div class="pn">{{ p.proyecto }}</div>
@@ -731,6 +762,35 @@ const nLiqCost = computed(() => paneles.value.filter(p => p.liquidar_costos).len
 const nGeneran = computed(() => paneles.value.filter(p => p.generar_mandatos).length)
 const esActivo = (p) => p.liquidar_ingresos || p.liquidar_costos
 
+// ── Filtros de la lista de proyectos ──────────────────────────────────────────
+const fProyecto = ref('')     // texto
+const fTipo = ref('')         // '' | normal | neu | nitro
+const fEstado = ref('')       // '' | liquida | no | solo_ing | solo_cost | genera
+const fMarcador = ref('')     // '' | con_costos | sin_costos | bolsa
+const clasMap = reactive({})  // proyecto_id → tipo de liquidación del período
+const hayFiltro = computed(() => !!(fProyecto.value || fTipo.value || fEstado.value || fMarcador.value))
+function limpiarFiltros () { fProyecto.value = ''; fTipo.value = ''; fEstado.value = ''; fMarcador.value = '' }
+
+const panelesFiltrados = computed(() => {
+  const q = fProyecto.value.trim().toLowerCase()
+  return paneles.value.filter(p => {
+    if (q && !(p.proyecto || '').toLowerCase().includes(q)) return false
+    if (fTipo.value && (clasMap[p.proyecto_id] || 'normal') !== fTipo.value) return false
+    if (fEstado.value) {
+      const liq = p.liquidar_ingresos || p.liquidar_costos
+      if (fEstado.value === 'liquida' && !liq) return false
+      if (fEstado.value === 'no' && liq) return false
+      if (fEstado.value === 'solo_ing' && !(p.liquidar_ingresos && !p.liquidar_costos)) return false
+      if (fEstado.value === 'solo_cost' && !(!p.liquidar_ingresos && p.liquidar_costos)) return false
+      if (fEstado.value === 'genera' && !p.generar_mandatos) return false
+    }
+    if (fMarcador.value === 'con_costos' && !p.tiene_costos) return false
+    if (fMarcador.value === 'sin_costos' && p.tiene_costos) return false
+    if (fMarcador.value === 'bolsa' && !p.tiene_bolsa) return false
+    return true
+  })
+})
+
 const fmt = (n) => {
   const r = Math.round(Number(n) || 0)
   if (r === 0) return '–'
@@ -867,6 +927,7 @@ async function cargarPaneles () {
     const { data } = await api.get('/panel-contable', { params: { periodo: periodo.value, tipo: tipoDatos.value } })
     paneles.value = data.paneles || []
     paneles.value.forEach((p, i) => { if (open[p.id] === undefined) open[p.id] = (i === 0 && esActivo(p)) })
+    cargarClasMap()   // para el filtro por tipo de liquidación (no bloquea el render)
     // Consecutivos SOLO en oficial (la preliquidación no lleva). Al cargar el oficial:
     // traer los usados globalmente (para avisar/sugerir) y numerar solo los faltantes.
     if (tipoDatos.value === 'oficial') {
@@ -882,6 +943,15 @@ async function cargarPaneles () {
   } finally {
     loading.value = false
   }
+}
+
+async function cargarClasMap () {
+  if (!periodo.value) return
+  try {
+    const { data } = await api.get('/panel-contable/clasificacion', { params: { periodo: periodo.value } })
+    for (const k in clasMap) delete clasMap[k]
+    for (const c of (data.proyectos || [])) clasMap[c.proyecto_id] = c.tipo
+  } catch { /* el filtro por tipo queda inactivo si falla */ }
 }
 
 async function cargarDiferencia () {
@@ -1315,6 +1385,17 @@ onMounted(cargarPaneles)
   border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--txt2); background:#fff; transition:all .12s; }
 .vista-toggle .vt-opt.on { border-color:#915BD8; background:#eee7fb; color:#2C2039; font-weight:600; }
 .vista-toggle .vt-opt input { accent-color:#915BD8; cursor:pointer; }
+
+/* Barra de filtros de la lista de proyectos */
+.filtros { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.filtro-busca { position:relative; flex:1; min-width:220px; display:inline-flex; align-items:center; }
+.filtro-busca i { position:absolute; left:11px; color:var(--txt3); font-size:13px; }
+.filtro-busca input { width:100%; padding:8px 10px 8px 32px; border:1px solid var(--line2); border-radius:9px;
+  font-size:13px; color:var(--p1); background:#fff; }
+.filtro-sel { padding:8px 10px; border:1px solid var(--line2); border-radius:9px; font-size:13px; color:var(--p1);
+  background:#fff; cursor:pointer; }
+.filtro-busca input:focus, .filtro-sel:focus { outline:none; border-color:#915BD8; }
+.filtro-count { font-size:12px; color:var(--txt3); }
 
 /* Switch preliq/oficial dentro de la pestaña Selección (reusa el look de vt-opt). */
 .sel-tipo { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--txt2); }
