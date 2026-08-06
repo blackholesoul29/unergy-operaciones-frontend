@@ -169,9 +169,28 @@
         Tip: Puedes pegar una columna completa desde cualquier celda.
       </p>
       <div class="flex items-center justify-between mt-2">
-        <Button v-if="detalle.revisar_manualmente" label="Reportar con curva típica" size="small"
-          style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
-          :loading="cargandoCurvaTipica" @click="aplicarCurvaTipica" />
+        <div v-if="detalle.revisar_manualmente" class="relative">
+          <Button label="Reportar con..." icon="pi pi-angle-down" iconPos="right" size="small"
+            style="background: #f9f7ff; border-color: #e8e0f0; color: #6E3FB8;"
+            :loading="cargandoCurvaTipica" @click="mostrarMenuReportar = !mostrarMenuReportar" />
+          <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
+          <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
+               style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
+            <div v-for="op in opcionesReportarCon" :key="op.key"
+                 class="flex items-center justify-between gap-3 px-3 py-2.5"
+                 :class="op.disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-[#f9f7ff]'"
+                 style="border-bottom: 1px solid #e8e0f0;"
+                 @click="!op.disabled && elegirFuenteReportar(op)">
+              <div class="min-w-0">
+                <div class="text-xs font-semibold" style="color: #2C2039;">{{ op.nombre }}</div>
+                <div v-if="op.nota" class="text-[10.5px]" style="color: #9b89b5;">{{ op.nota }}</div>
+              </div>
+              <div class="text-xs font-mono flex-none" style="color: #2C2039;">
+                {{ op.valor != null ? fmtKwh(op.valor) : 'Sin dato' }}
+              </div>
+            </div>
+          </div>
+        </div>
         <span v-else></span>
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
       </div>
@@ -302,6 +321,7 @@ const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
 const cargandoCurvaTipica = ref(false)
+const mostrarMenuReportar = ref(false)
 const validando = ref(false)
 const ediciones = ref([])
 const subiendoExcelTerceros = ref(false)
@@ -555,6 +575,41 @@ function esHoraRellenada(h) {
   return (d.horas_rellenadas_reconectador || []).includes(h)
     || (d.horas_rellenadas_solenium || []).includes(h)
     || (d.horas_rellenadas_historico || []).includes(h)
+}
+
+// Alternativas manuales para cuando quien revisa decide que el resultado
+// automático no fue el correcto -- usan las mismas curvas que ya se cargan
+// para 'Detalle de las fuentes' (medidor principal/respaldo/Solenium + fp),
+// no piden nada nuevo al backend. 'Curva típica' es la excepción: ya vivía
+// como su propio endpoint/botón, así que solo se reusa aquí.
+const opcionesReportarCon = computed(() => {
+  const d = detalle.value
+  if (!d) return []
+  const conFp = (curva) => (curva || []).map(v => (v == null || d.fp == null) ? null : v * d.fp)
+  const suma = (curva) => {
+    const vals = (curva || []).filter(v => v != null)
+    return vals.length ? vals.reduce((a, b) => a + b, 0) : null
+  }
+  const curvaInversoresFp = conFp(d.curva_solenium)
+  return [
+    { key: 'tipica', nombre: 'Curva típica (histórico)', nota: 'mediana de días confiables', valor: null, disabled: false },
+    { key: 'principal', nombre: 'Medidor principal', curva: d.curva_medidor_principal, valor: suma(d.curva_medidor_principal), disabled: suma(d.curva_medidor_principal) == null },
+    { key: 'respaldo', nombre: 'Medidor respaldo', curva: d.curva_medidor_respaldo, valor: suma(d.curva_medidor_respaldo), disabled: suma(d.curva_medidor_respaldo) == null },
+    { key: 'inversores', nombre: 'Inversores × FP', curva: curvaInversoresFp, valor: suma(curvaInversoresFp), disabled: suma(curvaInversoresFp) == null },
+  ]
+})
+
+async function elegirFuenteReportar(op) {
+  mostrarMenuReportar.value = false
+  if (op.key === 'tipica') {
+    await aplicarCurvaTipica()
+    return
+  }
+  curvaEditable.value = [...op.curva]
+  toast.add({
+    severity: 'info', summary: `${op.nombre} aplicado`,
+    detail: `${fmtKwh(op.valor)} -- revisa y guarda si está bien.`, life: 4000,
+  })
 }
 
 // Mediana x forma horaria de los últimos días confiables (mismo mecanismo
