@@ -632,6 +632,7 @@ const toggleOrigen = (id) => { origenOpen[id] = !origenOpen[id] }
 const FUENTES = {
   om:         { label: 'O&M',       title: 'O&M',                     origen: 'del módulo O&M' },
   arriendos:  { label: 'Arriendos', title: 'Arriendos',               origen: 'del módulo Arriendos' },
+  internet:   { label: 'Internet',  title: 'Internet',                origen: 'tarifa mensual del contrato' },
   servicios:  { label: 'Tarifa app', title: 'Representación / CGM',   origen: 'tarifa de la app × kWh del ER' },
 }
 const fuenteLabel = (f) => (FUENTES[f]?.label) || f
