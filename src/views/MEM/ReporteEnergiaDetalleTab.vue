@@ -325,6 +325,11 @@ const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
 const cargandoCurvaTipica = ref(false)
 const mostrarMenuReportar = ref(false)
+// Cuál opción de 'Reportar con otra fuente' llenó el editor por última vez
+// -- se manda al guardar para que 'Fuente usada' diga esa fuente específica
+// en vez de un genérico "Editado manualmente". Null si la persona edita
+// celdas a mano sin pasar por ese desplegable.
+const fuenteManualElegida = ref(null)
 const validando = ref(false)
 const ediciones = ref([])
 const subiendoExcelTerceros = ref(false)
@@ -504,6 +509,7 @@ async function cargar() {
     const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}`, { params: { fecha: props.fecha } })
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    fuenteManualElegida.value = null
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el detalle.', life: 4000 })
   } finally {
@@ -637,9 +643,11 @@ async function elegirFuenteReportar(op) {
   mostrarMenuReportar.value = false
   if (op.key === 'tipica') {
     await aplicarCurvaTipica()
+    fuenteManualElegida.value = 'historico'
     return
   }
   curvaEditable.value = [...op.curva]
+  fuenteManualElegida.value = op.key
   toast.add({
     severity: 'info', summary: `${op.nombre} aplicado`,
     detail: `${fmtKwh(op.valor)} -- revisa y guarda si está bien.`, life: 4000,
@@ -676,7 +684,7 @@ async function guardarCurva() {
   try {
     const { data } = await api.patch(
       `/reporte-energia/fronteras/${props.fronteraId}`,
-      { curva_final: curvaEditable.value },
+      { curva_final: curvaEditable.value, fuente: fuenteManualElegida.value },
       { params: { fecha: props.fecha } },
     )
     detalle.value = data
