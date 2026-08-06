@@ -29,6 +29,13 @@
       </div>
     </div>
 
+    <!-- Falla de carga: se distingue de "no hay ofertas" a propósito -->
+    <div v-if="errorCarga" class="rounded-lg p-4 text-center space-y-2 mb-4"
+         style="background:#FEF2F2;border:1px solid rgba(214,68,85,0.2)">
+      <p class="text-sm" style="color:#D64455">No se pudieron cargar las ofertas: {{ errorCarga }}</p>
+      <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined @click="cargar()" />
+    </div>
+
     <!-- ── Tabla plana de ofertas (la oferta es la unidad) ───────────────── -->
     <DataTable v-if="vista === 'tabla'" :value="filas" paginator :rows="30" dataKey="id" class="text-sm"
                removableSort selectionMode="single" @row-click="irADetalle($event.data)">
@@ -174,6 +181,7 @@ const orden = ref('reciente')
 const ofertas = ref([])
 const filas = ref([])
 const alertaDias = ref(null)
+const errorCarga = ref('')
 const filtroTexto = ref('')
 const filtroTipo = ref(null)
 const filtroEstados = ref([])
@@ -238,12 +246,20 @@ function alarmante(row) { return (row.seguimientos || 0) >= 4 && !row.fecha_ulti
 function irADetalle(of) { router.push(`/comercial/oportunidades/${of.oportunidad_id}`) }
 
 async function cargar() {
-  const [{ data: ofs }, { data: cfg }] = await Promise.all([
-    api.get('/comercial/ofertas'),
-    api.get('/comercial/config'),
-  ])
-  ofertas.value = ofs
-  alertaDias.value = cfg.alerta_dias
+  // Sin este try/catch la vista mentía: si /comercial/ofertas fallaba, la lista
+  // quedaba vacía y la tabla decía "no hay ofertas con esos filtros", que se lee
+  // como "no hay datos" y no como "el servidor se cayó".
+  errorCarga.value = ''
+  try {
+    const [{ data: ofs }, { data: cfg }] = await Promise.all([
+      api.get('/comercial/ofertas'),
+      api.get('/comercial/config'),
+    ])
+    ofertas.value = ofs
+    alertaDias.value = cfg.alerta_dias
+  } catch (err) {
+    errorCarga.value = err.response?.data?.detail || err.message || 'Error desconocido'
+  }
 }
 
 // Mueve SOLO la oferta arrastrada. Antes movía todo el cliente, que era el

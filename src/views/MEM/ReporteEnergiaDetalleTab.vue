@@ -31,11 +31,14 @@
             ENERGIA EXPORTADA ACTIVA) para reportar este día.
           </p>
         </div>
-        <div>
+        <div class="flex items-center gap-2">
           <input ref="fileInputExcelTerceros" type="file" accept=".xlsx,.xls" class="hidden"
                  @change="onArchivoExcelTercerosSeleccionado" />
           <Button label="Cargar Excel" size="small" icon="pi pi-upload"
                   :loading="subiendoExcelTerceros" @click="fileInputExcelTerceros?.click()" />
+          <Button v-if="detalle.medidor_usado === 'excel_terceros'" label="Eliminar carga" size="small"
+                  icon="pi pi-trash" severity="danger" outlined
+                  :loading="eliminandoExcelTerceros" @click="eliminarExcelTerceros" />
         </div>
       </div>
     </div>
@@ -58,7 +61,7 @@
         {{ detalle.error_clasificacion }}
       </p>
       <dl class="grid grid-cols-2 gap-y-2 text-sm">
-        <dt style="color: #9b89b5;">Fuente usada</dt><dd class="font-mono">{{ etiquetaFuente(detalle.medidor_usado) }}</dd>
+        <dt style="color: #9b89b5;">Fuente usada</dt><dd class="font-mono">{{ etiquetaFuente(detalle.medidor_usado, detalle) }}</dd>
         <dt style="color: #9b89b5;">Energía Total</dt><dd class="font-mono">{{ fmtKwh(detalle.energia_final_kwh) }}</dd>
         <template v-if="detalle.tipo === 'generacion'">
           <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
@@ -100,6 +103,16 @@
     <!-- Detalle de las fuentes -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de las fuentes</p>
+      <div v-if="detalle.medidor_actualizado_en_quoia" class="flex items-start gap-2.5 rounded-lg px-3 py-2.5 mb-3"
+           style="background: rgba(37,124,214,0.08); border: 1px solid #257CD6;">
+        <span class="flex-none rounded-full w-[18px] h-[18px] flex items-center justify-center text-[11px] font-bold text-white"
+              style="background: #257CD6; margin-top: 1px;">i</span>
+        <p class="text-xs" style="color: #1B5DA3; line-height: 1.5;">
+          El medidor muestra un valor distinto en Quoia
+          (<strong style="color: #2C2039;">{{ fmtKwh(detalle.energia_actual_kwh) }}</strong> ahora
+          vs. <strong style="color: #2C2039;">{{ fmtKwh(detalle.energia_final_kwh) }}</strong> al momento de clasificar).
+        </p>
+      </div>
       <div class="space-y-0">
         <div v-for="f in fuentes" :key="f.clave"
              class="flex items-center gap-3 py-2.5 border-t first:border-t-0" style="border-color: #f0ecf6;">
@@ -292,6 +305,7 @@ const cargandoCurvaTipica = ref(false)
 const validando = ref(false)
 const ediciones = ref([])
 const subiendoExcelTerceros = ref(false)
+const eliminandoExcelTerceros = ref(false)
 const fileInputExcelTerceros = ref(null)
 
 async function cargarEdiciones() {
@@ -502,6 +516,25 @@ async function onArchivoExcelTercerosSeleccionado(event) {
   }
 }
 
+// Sin confirmación a propósito -- volver a cargar el archivo correcto ya
+// sobrescribe (mismo endpoint hace upsert), así que esto es solo para el
+// caso más raro de querer dejar el día vacío otra vez.
+async function eliminarExcelTerceros() {
+  eliminandoExcelTerceros.value = true
+  try {
+    await api.delete(`/reporte-energia/fronteras/${props.fronteraId}/cargar-excel-terceros`, {
+      params: { fecha: props.fecha },
+    })
+    toast.add({ severity: 'success', summary: 'Carga eliminada', life: 2500 })
+    await Promise.all([cargar(), cargarEdiciones()])
+    emit('actualizado')
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo eliminar la carga.', life: 5000 })
+  } finally {
+    eliminandoExcelTerceros.value = false
+  }
+}
+
 // Pegado tipo Excel: si lo pegado trae varios valores (columna o fila
 // copiada), se distribuyen empezando en la celda donde se pegó -- un solo
 // valor suelto no activa nada, se comporta como un input normal.
@@ -602,7 +635,7 @@ const CASO_INFO_GENERACION = {
   '7': { nombre: 'Reconstruido con reconectador o crudos', descripcion: 'Sin reporte automático ni medidor; se reconstruye con reconectador, Solenium (power) o datos crudos completos' },
   '8': { nombre: 'Datos crudos parciales', descripcion: 'Datos crudos incompletos; se rellenan las horas faltantes con reconectador, Solenium o histórico' },
   '-1': { nombre: 'Error de clasificación', descripcion: 'El clasificador falló para esta frontera' },
-  '-2': { nombre: 'Excluida temporalmente', descripcion: 'No se calculó nada -- ver el motivo de la exclusión abajo' },
+  '-2': { nombre: 'Excluida temporalmente', descripcion: '' },
 }
 const CASO_INFO_CONSUMO = {
   'CGM': { nombre: 'Reporte válido', descripcion: 'El reporte automático fue válido y el canal CGM trae dato real' },
@@ -826,14 +859,24 @@ const ETIQUETAS_FUENTE = {
   cgm: 'CGM', principal: 'Medidor principal', respaldo: 'Medidor respaldo',
   inversores: 'Inversores × FP', crudos: 'Datos crudos', crudos_parcial: 'Datos crudos (parcial)',
   reconectador: 'Reconectador', solenium_power: 'Solenium (power)', ninguno: 'Apagado',
-  revisar: 'Sin fuente', relleno_horario: 'Relleno horario (reconectador/Solenium/histórico)',
+  revisar: 'Sin fuente', relleno_horario: 'Relleno horario',
   externo: 'Reporta otra empresa', historico: 'Histórico propio',
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
   excluida: 'Excluida', excel_terceros: 'Excel de terceros',
 }
-function etiquetaFuente(v) {
+function etiquetaFuente(v, d) {
+  if (v === 'relleno_horario' && d) {
+    // El label generico no decia CUAL de las tres fuentes de relleno se usó
+    // de verdad -- ver MGS 0022 La Cumbia 2026-08-05, donde solo entró el
+    // reconectador pero el texto sugería que podían ser las tres.
+    const partes = []
+    if ((d.horas_rellenadas_reconectador || []).length) partes.push('reconectador')
+    if ((d.horas_rellenadas_solenium || []).length) partes.push('Solenium × FP')
+    if ((d.horas_rellenadas_historico || []).length) partes.push('histórico')
+    if (partes.length) return `Relleno horario (${partes.join(' + ')})`
+  }
   return ETIQUETAS_FUENTE[v] || v || '—'
 }
 function fmtKwh(v) {

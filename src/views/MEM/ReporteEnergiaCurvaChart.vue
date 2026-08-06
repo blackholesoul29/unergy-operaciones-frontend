@@ -4,7 +4,7 @@
       <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
       <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
-      <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Rellenado (reconectador/Solenium/histórico)</span>
+      <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ {{ etiquetaRellenado }}</span>
       <span v-if="capacidadKwh != null" class="chip" style="border-color:#9b89b5;color:#6b5a8a;">┅ Capacidad efectiva ({{ capacidadMwFmt }} MW)</span>
     </div>
     <svg :width="W" :height="H" :viewBox="`0 0 ${W} ${H}`" class="w-full">
@@ -78,6 +78,16 @@ const finalCurve = computed(() => props.final || Array(24).fill(null))
 const horasRellenadas = computed(() => new Set([
   ...(props.horasReconectador || []), ...(props.horasSolenium || []), ...(props.horasHistorico || []),
 ]))
+// El label decia siempre las 3 fuentes posibles aunque solo una haya
+// participado (ver MGS 0022 La Cumbia 2026-08-05: 0-23h solo via
+// reconectador, pero la leyenda sugería que podían ser las tres).
+const etiquetaRellenado = computed(() => {
+  const partes = []
+  if ((props.horasReconectador || []).length) partes.push('reconectador')
+  if ((props.horasSolenium || []).length) partes.push('Solenium × FP')
+  if ((props.horasHistorico || []).length) partes.push('histórico')
+  return `Rellenado (${partes.join(' + ')})`
+})
 // Caso 1/CGM (reporte válido): se confía en el total diario que ya validó
 // Quoia -- no se reconstruye una curva horaria propia, así que 'final'
 // llega en 0 las 24 horas. Mostrar esa línea plana confunde (parece un
