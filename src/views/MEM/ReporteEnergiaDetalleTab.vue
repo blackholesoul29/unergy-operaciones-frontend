@@ -169,7 +169,7 @@
         Tip: Puedes pegar una columna completa desde cualquier celda.
       </p>
       <div class="flex items-center justify-between mt-2">
-        <div v-if="detalle.revisar_manualmente" class="relative">
+        <div v-if="!esCasoConfiado" class="relative">
           <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
             style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
             :loading="cargandoCurvaTipica" @click="mostrarMenuReportar = !mostrarMenuReportar" />
@@ -576,6 +576,20 @@ function esHoraRellenada(h) {
     || (d.horas_rellenadas_solenium || []).includes(h)
     || (d.horas_rellenadas_historico || []).includes(h)
 }
+
+// Mismo criterio que separa 'confiado' de 'corregido_automatico' en el
+// resumen del día (ver reporte_energia.py) -- Caso 1 (Generación) / 'CGM'
+// (Consumo) sin Revisar Manualmente es la única combinación 100% automática
+// sin ninguna corrección de por medio. Todo lo demás (revisar_manualmente=
+// True, o un Caso distinto de 1/CGM aunque haya quedado automático) sí pasó
+// por alguna decisión del clasificador que quien revisa podría querer
+// cambiar -- por eso el botón de 'Reportar con otra fuente' aparece ahí
+// también, no solo cuando queda marcado para revisar.
+const esCasoConfiado = computed(() => {
+  const d = detalle.value
+  if (!d) return true
+  return !d.revisar_manualmente && (String(d.caso) === '1' || d.caso === 'CGM')
+})
 
 // Alternativas manuales para cuando quien revisa decide que el resultado
 // automático no fue el correcto -- usan las mismas curvas que ya se cargan
