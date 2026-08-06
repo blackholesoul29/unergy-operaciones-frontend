@@ -177,7 +177,14 @@
                       :class="fila.codigo_tsf ? 'text-gray-400' : 'text-gray-300'">
                   {{ fila.codigo_tsf || '—' }}
                 </span>
-                {{ fila.nombre_proyecto }}
+                <button v-if="fila.proyecto_id" type="button"
+                        class="text-left hover:underline"
+                        style="color:#2C2039"
+                        @click="irADetalleProyecto(fila)"
+                        v-tooltip.bottom="'Ver detalle del proyecto'">
+                  {{ fila.nombre_proyecto }}
+                </button>
+                <span v-else>{{ fila.nombre_proyecto }}</span>
                 <span v-if="!fila.habilitado && conContrato(fila)"
                   class="inline-flex items-center gap-1 ml-1.5 text-[10px] font-normal px-1.5 py-0.5 rounded-full align-middle"
                   style="background:#fef3c7; color:#92400e"
@@ -479,6 +486,7 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRouter }  from 'vue-router'
 import Button        from 'primevue/button'
 import Tag           from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
@@ -500,6 +508,13 @@ const toast = useToast()
 
 // Autofocus para el input de edición inline (expuesto como v-focus)
 const vFocus = { mounted: (el) => el.focus() }
+
+const router = useRouter()
+
+function irADetalleProyecto(fila) {
+  if (!fila.proyecto_id) return
+  router.push(`/proyectos/${fila.proyecto_id}/operacion?subtab=mantenimiento`)
+}
 
 const hoy = new Date()
 const periodoOffset = ref(0)

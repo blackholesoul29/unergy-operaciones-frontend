@@ -25,7 +25,7 @@
     </div>
 
     <!-- ── Tabs ──────────────────────────────────────────────────────────────── -->
-    <TabView v-else @tab-change="onTabChange">
+    <TabView v-else v-model:activeIndex="activeIndex" @tab-change="onTabChange">
 
       <!-- ══════════ MANTENIMIENTO ══════════ -->
       <TabPanel>
@@ -1235,6 +1235,7 @@ const PERIODICIDADES = [
 ]
 
 const TABS_TIPOS = ['mantenimiento', 'arriendo', 'internet']
+const activeIndex = ref(Math.max(0, TABS_TIPOS.indexOf(route.query.subtab)))
 
 const DIALOG_EDIT_COLOR = { mantenimiento: '#f59e0b', arriendo: '#8b5cf6', internet: '#06b6d4' }
 const DIALOG_EDIT_LABEL = { mantenimiento: 'Mantenimiento', arriendo: 'Arriendo', internet: 'Internet' }

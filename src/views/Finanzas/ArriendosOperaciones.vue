@@ -150,7 +150,13 @@
                     {{ fila.codigo || '—' }}
                   </span>
                   <span class="inline-flex flex-wrap items-center gap-1.5 max-w-full">
-                    <span style="white-space:normal">{{ fila.proyecto }}</span>
+                    <button v-if="fila.proyecto_id" type="button"
+                            class="text-left hover:underline" style="white-space:normal"
+                            @click="irADetalleProyecto(fila)"
+                            v-tooltip.bottom="'Ver detalle del proyecto'">
+                      {{ fila.proyecto }}
+                    </button>
+                    <span v-else style="white-space:normal">{{ fila.proyecto }}</span>
                     <span v-if="!fila.aplica_este_mes && conContrato(fila)"
                       class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
                       style="background:#e5e7eb; color:#4b5563"
@@ -363,6 +369,7 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Button      from 'primevue/button'
 import Tag         from 'primevue/tag'
 import Dialog      from 'primevue/dialog'
@@ -378,6 +385,12 @@ import { docsPorProyecto, loadDocs, downloadDoc } from '@/composables/useArriend
 import DocumentoIcon from '@/components/DocumentoIcon.vue'
 
 const toast = useToast()
+const router = useRouter()
+
+function irADetalleProyecto(fila) {
+  if (!fila.proyecto_id) return
+  router.push(`/proyectos/${fila.proyecto_id}/operacion?subtab=arriendo`)
+}
 
 // ── Tooltip de cálculo del canon (mismo diseño que Mantenimiento) ──────────────
 const canonPopover = ref(null)
