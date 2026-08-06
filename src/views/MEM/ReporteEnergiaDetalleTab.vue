@@ -100,6 +100,16 @@
     <!-- Detalle de las fuentes -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de las fuentes</p>
+      <div v-if="detalle.medidor_actualizado_en_quoia" class="flex items-start gap-2.5 rounded-lg px-3 py-2.5 mb-3"
+           style="background: rgba(37,124,214,0.08); border: 1px solid #257CD6;">
+        <span class="flex-none rounded-full w-[18px] h-[18px] flex items-center justify-center text-[11px] font-bold text-white"
+              style="background: #257CD6; margin-top: 1px;">i</span>
+        <p class="text-xs" style="color: #1B5DA3; line-height: 1.5;">
+          El medidor muestra un valor distinto en Quoia
+          (<strong style="color: #2C2039;">{{ fmtKwh(detalle.energia_actual_kwh) }}</strong> ahora
+          vs. <strong style="color: #2C2039;">{{ fmtKwh(detalle.energia_final_kwh) }}</strong> al momento de clasificar).
+        </p>
+      </div>
       <div class="space-y-0">
         <div v-for="f in fuentes" :key="f.clave"
              class="flex items-center gap-3 py-2.5 border-t first:border-t-0" style="border-color: #f0ecf6;">
