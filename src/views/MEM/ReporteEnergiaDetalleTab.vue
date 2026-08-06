@@ -61,7 +61,7 @@
         {{ detalle.error_clasificacion }}
       </p>
       <dl class="grid grid-cols-2 gap-y-2 text-sm">
-        <dt style="color: #9b89b5;">Fuente usada</dt><dd class="font-mono">{{ etiquetaFuente(detalle.medidor_usado) }}</dd>
+        <dt style="color: #9b89b5;">Fuente usada</dt><dd class="font-mono">{{ etiquetaFuente(detalle.medidor_usado, detalle) }}</dd>
         <dt style="color: #9b89b5;">Energía Total</dt><dd class="font-mono">{{ fmtKwh(detalle.energia_final_kwh) }}</dd>
         <template v-if="detalle.tipo === 'generacion'">
           <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
@@ -859,14 +859,24 @@ const ETIQUETAS_FUENTE = {
   cgm: 'CGM', principal: 'Medidor principal', respaldo: 'Medidor respaldo',
   inversores: 'Inversores × FP', crudos: 'Datos crudos', crudos_parcial: 'Datos crudos (parcial)',
   reconectador: 'Reconectador', solenium_power: 'Solenium (power)', ninguno: 'Apagado',
-  revisar: 'Sin fuente', relleno_horario: 'Relleno horario (reconectador/Solenium/histórico)',
+  revisar: 'Sin fuente', relleno_horario: 'Relleno horario',
   externo: 'Reporta otra empresa', historico: 'Histórico propio',
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
   excluida: 'Excluida', excel_terceros: 'Excel de terceros',
 }
-function etiquetaFuente(v) {
+function etiquetaFuente(v, d) {
+  if (v === 'relleno_horario' && d) {
+    // El label generico no decia CUAL de las tres fuentes de relleno se usó
+    // de verdad -- ver MGS 0022 La Cumbia 2026-08-05, donde solo entró el
+    // reconectador pero el texto sugería que podían ser las tres.
+    const partes = []
+    if ((d.horas_rellenadas_reconectador || []).length) partes.push('reconectador')
+    if ((d.horas_rellenadas_solenium || []).length) partes.push('Solenium × FP')
+    if ((d.horas_rellenadas_historico || []).length) partes.push('histórico')
+    if (partes.length) return `Relleno horario (${partes.join(' + ')})`
+  }
   return ETIQUETAS_FUENTE[v] || v || '—'
 }
 function fmtKwh(v) {
