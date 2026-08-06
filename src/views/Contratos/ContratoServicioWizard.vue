@@ -31,8 +31,88 @@
     <!-- Content -->
     <div class="px-6 py-5 min-h-72">
 
+      <!-- PASO 0 (internet): solo los datos técnicos del servicio -->
+      <template v-if="step === 0 && tipo === 'internet'">
+        <p class="step-title">Datos del servicio</p>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Plan de datos</label>
+              <InputText v-model="form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Velocidad contratada</label>
+              <InputNumber v-model="form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="field-label">Tipo de conexión</label>
+            <Select v-model="form.tipo_conexion"
+              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
+              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Línea de servicio</label>
+              <InputText v-model="form.linea_servicio" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">ID del router</label>
+              <InputText v-model="form.id_router" class="w-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Número de kit</label>
+              <InputText v-model="form.numero_kit" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Latencia</label>
+              <InputNumber v-model="form.latencia_ms" suffix=" ms" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Seguridad del wifi</label>
+              <Select v-model="form.wifi_seguridad" :options="WIFI_SEGURIDAD_OPTS"
+                optionLabel="label" optionValue="value" showClear placeholder="Selecciona…" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Contraseña wifi</label>
+              <InputText v-model="form.wifi_password" class="w-full" />
+            </div>
+          </div>
+
+          <!-- Ubicación del servicio -->
+          <div class="rounded-lg border border-gray-200 p-3">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <p class="text-xs font-semibold text-gray-500">Ubicación del servicio</p>
+                <p class="text-sm text-gray-700">Ubicación: {{ ubicacionLabel }}</p>
+              </div>
+              <Button type="button" :label="editandoUbicacion ? 'Listo' : 'Editar'" text size="small"
+                @click="editandoUbicacion = !editandoUbicacion" />
+            </div>
+            <div v-if="editandoUbicacion" class="grid grid-cols-2 gap-4 mb-2">
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Latitud</label>
+                <InputNumber v-model="form.ubicacion_lat" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Longitud</label>
+                <InputNumber v-model="form.ubicacion_lng" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
+              </div>
+            </div>
+            <p v-if="editandoUbicacion" class="text-xs text-gray-400 mb-2">
+              Haz clic en el mapa para ubicar el servicio.
+            </p>
+            <div ref="ubicacionMapEl" class="rounded-md overflow-hidden" style="height:220px; background:#1a1a1a"></div>
+          </div>
+        </div>
+      </template>
+
       <!-- PASO 0: Identificación -->
-      <template v-if="step === 0">
+      <template v-if="step === 0 && tipo !== 'internet'">
         <p class="step-title">Identificación del contrato</p>
         <div class="space-y-4">
           <div class="flex flex-col gap-1">
@@ -78,7 +158,7 @@
       </template>
 
       <!-- PASO 1: Partes -->
-      <template v-if="step === 1">
+      <template v-if="step === 1 && tipo !== 'internet'">
         <p class="step-title">Partes del contrato</p>
         <div class="grid grid-cols-2 gap-1 mb-1 px-1">
           <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Contratante</span>
@@ -149,7 +229,7 @@
       </template>
 
       <!-- PASO 2: Términos económicos -->
-      <template v-if="step === 2">
+      <template v-if="step === 2 && tipo !== 'internet'">
         <p class="step-title">Términos económicos</p>
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
@@ -162,7 +242,7 @@
               <DatePicker v-model="form.fecha_fin" dateFormat="yy-mm-dd" showIcon class="w-full" />
             </div>
           </div>
-          <div v-if="tipo !== 'internet'" class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Tarifa base (COP/kWh)</label>
               <InputNumber v-model="form.tarifa_base" :minFractionDigits="2" :maxFractionDigits="4" class="w-full" />
@@ -171,89 +251,6 @@
               <label class="field-label">Periodicidad de pago</label>
               <Select v-model="form.periodicidad_pago" :options="PERIODICIDADES"
                 optionLabel="label" optionValue="value" showClear class="w-full" />
-            </div>
-          </div>
-          <div v-else class="grid grid-cols-2 gap-4">
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Plan de datos</label>
-              <InputText v-model="form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Velocidad contratada</label>
-              <InputNumber v-model="form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
-            </div>
-          </div>
-          <div v-if="tipo === 'internet'" class="flex flex-col gap-1">
-            <label class="field-label">Tipo de conexión</label>
-            <Select v-model="form.tipo_conexion"
-              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
-              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
-          </div>
-
-          <!-- Detalles técnicos del servicio de Internet -->
-          <div v-if="tipo === 'internet'" class="border-t border-gray-100 pt-3">
-            <p class="text-xs font-semibold uppercase tracking-wide mb-3" :style="`color:${tipoColor}`">
-              Detalles técnicos del servicio
-              <span class="normal-case font-normal text-gray-400">(opcional)</span>
-            </p>
-            <div class="space-y-4">
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Línea de servicio</label>
-                  <InputText v-model="form.linea_servicio" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">ID del router</label>
-                  <InputText v-model="form.id_router" class="w-full" />
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Número de kit</label>
-                  <InputText v-model="form.numero_kit" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Latencia</label>
-                  <InputNumber v-model="form.latencia_ms" suffix=" ms" :useGrouping="false" class="w-full" />
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Seguridad del wifi</label>
-                  <Select v-model="form.wifi_seguridad" :options="WIFI_SEGURIDAD_OPTS"
-                    optionLabel="label" optionValue="value" showClear placeholder="Selecciona…" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Contraseña wifi</label>
-                  <InputText v-model="form.wifi_password" class="w-full" />
-                </div>
-              </div>
-
-              <!-- Ubicación del servicio -->
-              <div class="rounded-lg border border-gray-200 p-3">
-                <div class="flex items-center justify-between mb-2">
-                  <div>
-                    <p class="text-xs font-semibold text-gray-500">Ubicación del servicio</p>
-                    <p class="text-sm text-gray-700">Ubicación: {{ ubicacionLabel }}</p>
-                  </div>
-                  <Button type="button" :label="editandoUbicacion ? 'Listo' : 'Editar'" text size="small"
-                    @click="editandoUbicacion = !editandoUbicacion" />
-                </div>
-                <div v-if="editandoUbicacion" class="grid grid-cols-2 gap-4 mb-2">
-                  <div class="flex flex-col gap-1">
-                    <label class="field-label">Latitud</label>
-                    <InputNumber v-model="form.ubicacion_lat" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
-                  </div>
-                  <div class="flex flex-col gap-1">
-                    <label class="field-label">Longitud</label>
-                    <InputNumber v-model="form.ubicacion_lng" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
-                  </div>
-                </div>
-                <p v-if="editandoUbicacion" class="text-xs text-gray-400 mb-2">
-                  Haz clic en el mapa para ubicar el servicio.
-                </p>
-                <div ref="ubicacionMapEl" class="rounded-md overflow-hidden" style="height:220px; background:#1a1a1a"></div>
-              </div>
             </div>
           </div>
 
@@ -523,6 +520,7 @@ const tipoColor = computed(() => TIPO_CONFIG[props.tipo]?.color ?? '#6b7280')
 const tipoLabel = computed(() => TIPO_CONFIG[props.tipo]?.label ?? props.tipo)
 
 const STEPS = computed(() => {
+  if (props.tipo === 'internet') return [{ label: 'Datos del servicio' }]
   const base = [
     { label: 'Identificación' },
     { label: 'Partes' },
@@ -663,7 +661,7 @@ async function initUbicacionMap() {
 }
 
 watch(step, async (s) => {
-  if (s === 2 && props.tipo === 'internet') {
+  if (s === 0 && props.tipo === 'internet') {
     await nextTick()
     await initUbicacionMap()
   }
@@ -895,6 +893,10 @@ onMounted(async () => {
   todosProyectos.value = proyectos
   todosClientes.value = clientes
   if (props.proyectoIdDefault) form.proyecto_id = props.proyectoIdDefault
+  if (props.tipo === 'internet') {
+    await nextTick()
+    await initUbicacionMap()
+  }
 })
 </script>
 
