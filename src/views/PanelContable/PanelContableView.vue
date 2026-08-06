@@ -14,6 +14,9 @@
           <label>Ver período</label>
           <input type="month" v-model="periodo" class="month-in" @change="setTab(tab)" />
         </div>
+        <button v-if="tab === 'preliquidacion' || tab === 'oficial'" class="btn-o" :disabled="loading || !paneles.length" @click="exportarExcel">
+          <i class="pi pi-file-excel" /> Exportar Excel
+        </button>
         <button v-if="tab !== 'diferencia' && tab !== 'clasificacion'" class="btn-o" :disabled="loading" @click="abrirDialogoPeriodo">
           <i class="pi pi-upload" /> Cargar ER
         </button>
@@ -94,6 +97,7 @@
     <div class="tabs">
       <div class="tab" :class="{ act: tab === 'preliquidacion' }" @click="setTab('preliquidacion')">Preliquidación</div>
       <div class="tab" :class="{ act: tab === 'oficial' }" @click="setTab('oficial')">Oficial</div>
+      <div class="tab" :class="{ act: tab === 'seleccion' }" @click="setTab('seleccion')">Selección</div>
       <div class="tab" :class="{ act: tab === 'diferencia' }" @click="setTab('diferencia')">Diferencia</div>
       <div class="tab" :class="{ act: tab === 'clasificacion' }" @click="setTab('clasificacion')">Clasificación</div>
     </div>
@@ -114,15 +118,27 @@
       </ul>
     </div>
 
-    <!-- ── PRELIQUIDACIÓN / OFICIAL ── -->
-    <template v-if="tab === 'preliquidacion' || tab === 'oficial'">
+    <!-- ── PRELIQUIDACIÓN / OFICIAL / SELECCIÓN ── -->
+    <template v-if="tab === 'preliquidacion' || tab === 'oficial' || tab === 'seleccion'">
       <div v-if="loading" class="empty"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
 
       <template v-else>
-        <!-- Selección + consecutivos -->
-        <div class="card">
+        <!-- Selección + consecutivos (solo pestaña Selección) -->
+        <div v-if="tab === 'seleccion'" class="card">
           <div class="card-h">
             <h3>Selección de liquidación</h3>
+            <div class="sel-tipo">
+              <span>Tipo:</span>
+              <label class="vt-opt" :class="{ on: selTipo === 'preliquidacion' }">
+                <input type="radio" value="preliquidacion" v-model="selTipo" @change="cargarPaneles" /> Preliquidación
+              </label>
+              <label class="vt-opt" :class="{ on: selTipo === 'oficial' }">
+                <input type="radio" value="oficial" v-model="selTipo" @change="cargarPaneles" /> Oficial
+              </label>
+            </div>
+          </div>
+          <div class="card-h" style="border-top:1px solid var(--line); padding-top:10px;">
+            <span class="hint" style="padding:0">Marca qué liquidar; el detalle contable está en las pestañas Preliquidación / Oficial.</span>
             <div class="pool-actions">
               <button class="mini" @click="selAll('liquidar_ingresos', true)">Liq. ingresos todos</button>
               <button class="mini" @click="selAll('liquidar_costos', true)">Liq. costos todos</button>
@@ -170,7 +186,7 @@
 
           <!-- Consecutivos: SOLO en oficial (la preliquidación no lleva; el mandato
                oficial = la diferencia). Únicos globalmente por cadena. -->
-          <div v-if="tab === 'oficial'" class="cons-pool">
+          <div v-if="tipoDatos === 'oficial'" class="cons-pool">
             <div class="fld">
               <label>Consecutivo Ingresos inicial</label>
               <input type="number" v-model.number="consIngIni" @change="reasignarTodo" />
@@ -201,7 +217,36 @@
           </div>
         </div>
 
-        <!-- Detalle por proyecto -->
+        <!-- Mapeo de celdas del ER: se movió aquí desde el detalle para no estorbar.
+             Solo aplica a Ingresos / Comercialización (lo que aún viene del ER). -->
+        <div v-if="tab === 'seleccion' && paneles.length" class="card" style="margin-top:14px">
+          <div class="card-h">
+            <h3>Mapeo de celdas del ER</h3>
+            <span class="hint" style="padding:0">Corrige a qué celda del ER apunta un concepto de Ingresos / Comercialización.</span>
+          </div>
+          <div v-for="p in paneles" :key="'m' + p.id" class="mapeo-proy">
+            <div class="mapeo-h" @click="toggleMapeo(p.id)">
+              <span class="chev" :class="{ op: mapeoOpen[p.id] }">▶</span>
+              <b>{{ p.proyecto }}</b>
+            </div>
+            <div v-show="mapeoOpen[p.id]" class="tbl-wrap" style="padding:0 12px 10px">
+              <table class="dt">
+                <thead><tr><th class="l">Concepto</th><th class="l">Celda (hoja!celda)</th></tr></thead>
+                <tbody>
+                  <tr v-for="ln in lineasMapeables(p)" :key="ln.grupo + '|' + ln.concepto">
+                    <td class="l">{{ ln.concepto }}</td>
+                    <td class="l"><input class="celda-origen" :value="ln.origen" placeholder="hoja!celda"
+                                         @change="cambiarCelda(p, ln, $event.target.value)" /></td>
+                  </tr>
+                  <tr v-if="!lineasMapeables(p).length"><td class="l muted" colspan="2">Sin conceptos mapeables.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detalle por proyecto (solo Preliquidación / Oficial) -->
+        <template v-if="tab === 'preliquidacion' || tab === 'oficial'">
         <div class="sec-title-row">
           <div class="sec-title">Detalle contable por proyecto</div>
           <div class="vista-toggle">
@@ -275,12 +320,6 @@
                                      no se edita la celda de origen; se indica de dónde sale. -->
                                 <div v-if="!ln.derivada && ln.fuente" class="origen-wrap">
                                   <span class="origen-mod">↳ {{ fuenteOrigen(ln.fuente) }}</span>
-                                </div>
-                                <div v-else-if="!ln.derivada" class="origen-wrap">
-                                  <button class="origen-link" :title="origenOpen[ln.id] ? 'Ocultar origen' : 'Editar celda de origen'"
-                                          @click="toggleOrigen(ln.id)">⚙ origen: {{ ln.origen || '—' }}</button>
-                                  <input v-if="origenOpen[ln.id]" class="celda-origen" :value="ln.origen" placeholder="hoja!celda"
-                                         @change="cambiarCelda(p, ln, $event.target.value)" />
                                 </div>
                               </td>
                               <td>
@@ -429,6 +468,7 @@
             </div>
           </div>
         </div>
+        </template>
       </template>
     </template>
 
@@ -574,6 +614,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import * as XLSX from 'xlsx'
 import api from '@/api/client'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
@@ -606,6 +647,10 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const ANIOS = [2025, 2026]
 
 const tab = ref('preliquidacion')
+// En la pestaña "Selección" se gestionan los flags de un tipo (preliq/oficial) con
+// este switch; en las pestañas de detalle el tipo es la propia pestaña.
+const selTipo = ref('oficial')
+const tipoDatos = computed(() => (tab.value === 'seleccion' ? selTipo.value : tab.value))
 // El período nunca se asume: se confirma siempre en el diálogo antes de cargar ER.
 const periodo = ref('')
 
@@ -623,9 +668,12 @@ const diff = ref({})
 const open = reactive({})
 const dirty = reactive({})
 const savedAt = reactive({})
-// Toggle por fila para revelar el input editable de celda de origen (colapsado por defecto).
-const origenOpen = reactive({})
-const toggleOrigen = (id) => { origenOpen[id] = !origenOpen[id] }
+// Mapeo de celdas del ER (pestaña Selección): despliegue por proyecto + qué líneas
+// son mapeables (las que aún vienen del ER: Ingresos / Comercialización).
+const mapeoOpen = reactive({})
+const toggleMapeo = (id) => { mapeoOpen[id] = !mapeoOpen[id] }
+const lineasMapeables = (p) => (p.total_100 || []).filter(
+  l => (l.grupo === 'ingresos' || l.grupo === 'comercializacion') && !l.derivada)
 
 // Valores que vienen de un módulo/tarifa de la app (no del ER). Etiqueta, tooltip y
 // texto de origen que se muestra debajo del concepto.
@@ -634,6 +682,7 @@ const FUENTES = {
   arriendos:  { label: 'Arriendos', title: 'Arriendos',               origen: 'del módulo Arriendos' },
   internet:   { label: 'Internet',  title: 'Internet',                origen: 'tarifa mensual del contrato' },
   servicios:  { label: 'Tarifa app', title: 'Representación / CGM',   origen: 'tarifa de la app × kWh del ER' },
+  operacion:  { label: 'Operación',  title: 'Administración (operación)', origen: 'tarifa admin × ingreso del ER' },
 }
 const fuenteLabel = (f) => (FUENTES[f]?.label) || f
 const fuenteTitle = (f) => (FUENTES[f]?.title) || f
@@ -815,12 +864,12 @@ async function cargarPaneles () {
   loading.value = true
   cargaError.value = false
   try {
-    const { data } = await api.get('/panel-contable', { params: { periodo: periodo.value, tipo: tab.value } })
+    const { data } = await api.get('/panel-contable', { params: { periodo: periodo.value, tipo: tipoDatos.value } })
     paneles.value = data.paneles || []
     paneles.value.forEach((p, i) => { if (open[p.id] === undefined) open[p.id] = (i === 0 && esActivo(p)) })
     // Consecutivos SOLO en oficial (la preliquidación no lleva). Al cargar el oficial:
     // traer los usados globalmente (para avisar/sugerir) y numerar solo los faltantes.
-    if (tab.value === 'oficial') {
+    if (tipoDatos.value === 'oficial') {
       await cargarConsInfo()
       if (paneles.value.some(p => p.liquidar_ingresos || p.liquidar_costos)) {
         await reasignar(true)
@@ -1009,7 +1058,7 @@ async function reasignar (soloFaltantes = true) {
     // triple round-trip al entrar/cambiar de pestaña).
     const { data } = await api.post('/panel-contable/reasignar-consecutivos', {
       periodo: periodo.value,
-      tipo: tab.value,
+      tipo: tipoDatos.value,
       consecutivo_ingresos_inicial: Number(consIngIni.value) || 0,
       consecutivo_costos_inicial: Number(consCosIni.value) || 0,
       solo_faltantes: soloFaltantes,
@@ -1045,7 +1094,7 @@ async function cambiarCelda (p, ln, texto) {
     const { data } = await api.post('/panel-contable/mapeo-celda', {
       proyecto_id: p.proyecto_id,
       periodo: periodo.value,
-      tipo: tab.value,
+      tipo: tipoDatos.value,
       concepto: ln.concepto,
       hoja: hoja.trim(),
       celda: celda.trim().toUpperCase(),
@@ -1140,6 +1189,43 @@ async function guardar (p) {
   }
 }
 
+// ── Exportar a Excel (tabla plana, formato del Excel maestro "Ajustes") ──────────
+// Una fila por (proyecto, inversionista, documento contable, concepto). Referencia
+// Factura y Contrato van vacías por ahora (no existen en el modelo aún).
+const _DOC_CONTABLE = { ingresos: 'Mandato', comercializacion: 'Mandato', costos: 'Costos', facturas: 'Factura' }
+function exportarExcel () {
+  const rows = []
+  for (const p of paneles.value) {
+    for (const inv of (p.inversionistas || [])) {
+      for (const l of (inv.lineas || [])) {
+        const esMandato = l.grupo === 'ingresos' || l.grupo === 'comercializacion'
+        rows.push({
+          'Proyecto': p.proyecto,
+          'Inversionista': inv.nombre,
+          'Documento contable': _DOC_CONTABLE[l.grupo] || l.grupo,
+          'Contrato': '',
+          'Concepto': l.concepto,
+          'Total': Math.round(Number(l.valor_cop) || 0),
+          'Referencia Factura': '',
+          'Consecutivo': esMandato ? (p.consecutivo_ingresos ?? '')
+                       : (l.grupo === 'costos' ? (p.consecutivo_costos ?? '') : ''),
+          'Comprobante': l.comprobante_contable || '',
+        })
+      }
+    }
+  }
+  if (!rows.length) {
+    toast.add({ severity: 'warn', summary: 'Nada que exportar', detail: 'No hay paneles cargados', life: 3000 })
+    return
+  }
+  const ws = XLSX.utils.json_to_sheet(rows)
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Panel')
+  const mes = (periodoLabel.value || periodo.value || 'periodo').replace(/\s+/g, '_')
+  XLSX.writeFile(wb, `Panel_${mes}_${tipoDatos.value}.xlsx`)
+  toast.add({ severity: 'success', summary: 'Excel exportado', detail: `${rows.length} filas`, life: 2500 })
+}
+
 onMounted(cargarPaneles)
 </script>
 
@@ -1229,6 +1315,21 @@ onMounted(cargarPaneles)
   border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--txt2); background:#fff; transition:all .12s; }
 .vista-toggle .vt-opt.on { border-color:#915BD8; background:#eee7fb; color:#2C2039; font-weight:600; }
 .vista-toggle .vt-opt input { accent-color:#915BD8; cursor:pointer; }
+
+/* Switch preliq/oficial dentro de la pestaña Selección (reusa el look de vt-opt). */
+.sel-tipo { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--txt2); }
+.sel-tipo .vt-opt { display:inline-flex; align-items:center; gap:5px; font-size:12px; padding:5px 12px;
+  border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--txt2); background:#fff; }
+.sel-tipo .vt-opt.on { border-color:#915BD8; background:#eee7fb; color:#2C2039; font-weight:600; }
+.sel-tipo .vt-opt input { accent-color:#915BD8; cursor:pointer; }
+
+/* Mapeo de celdas por proyecto (pestaña Selección) */
+.mapeo-proy { border-top:1px solid var(--line); }
+.mapeo-h { display:flex; align-items:center; gap:8px; padding:10px 18px; cursor:pointer; user-select:none; }
+.mapeo-h:hover { background:var(--sec); }
+.mapeo-h .chev { font-size:9px; color:var(--txt3); transition:transform .12s; }
+.mapeo-h .chev.op { transform:rotate(90deg); }
+
 .origen-wrap { margin-top:3px; }
 .origen-link { display:inline-block; background:none; border:none; padding:0; font-size:10px; color:#9a93a8;
   cursor:pointer; text-align:left; font-variant-numeric:tabular-nums; }
