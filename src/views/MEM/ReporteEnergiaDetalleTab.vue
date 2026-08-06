@@ -292,8 +292,11 @@
         <p class="text-xs" style="color: #9b89b5;">
           Marca este día como revisado y listo para reportar.
         </p>
+        <p v-if="hayCambiosSinGuardar" class="text-xs mt-1" style="color: #D64455;">
+          Hay cambios sin guardar en la curva -- guarda la corrección primero, o se validaría el número anterior.
+        </p>
       </div>
-      <Button label="Validar Frontera" severity="success" :loading="validando" @click="validar" />
+      <Button label="Validar Frontera" severity="success" :loading="validando" :disabled="hayCambiosSinGuardar" @click="validar" />
     </div>
   </div>
 </template>
@@ -576,6 +579,23 @@ function esHoraRellenada(h) {
     || (d.horas_rellenadas_solenium || []).includes(h)
     || (d.horas_rellenadas_historico || []).includes(h)
 }
+
+// 'Validar Frontera' confirma el numero YA GUARDADO tal cual, sin tocar
+// nada (a proposito, ver comentario en el template) -- pero si la persona
+// eligio una fuente en 'Reportar con otra fuente' (o edito una celda) y le
+// da a Validar SIN pasar por 'Guardar corrección' primero, ese cambio nunca
+// llega al backend y queda validado el valor anterior sin que se note.
+// Comparar contra curva_final (lo persistido) detecta ese caso y bloquea
+// Validar hasta que se guarde.
+const hayCambiosSinGuardar = computed(() => {
+  const persistida = detalle.value?.curva_final || Array(24).fill(null)
+  for (let h = 0; h < 24; h++) {
+    const a = curvaEditable.value[h] ?? null
+    const b = persistida[h] ?? null
+    if (Number(a || 0).toFixed(2) !== Number(b || 0).toFixed(2)) return true
+  }
+  return false
+})
 
 // Mismo criterio que separa 'confiado' de 'corregido_automatico' en el
 // resumen del día (ver reporte_energia.py) -- Caso 1 (Generación) / 'CGM'
@@ -947,7 +967,7 @@ const ETIQUETAS_FUENTE = {
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
-  excluida: 'Excluida', excel_terceros: 'Excel de terceros',
+  excluida: 'Excluida', excel_terceros: 'Excel de terceros', editado_manualmente: 'Editado manualmente',
 }
 function etiquetaFuente(v, d) {
   if (v === 'relleno_horario' && d) {

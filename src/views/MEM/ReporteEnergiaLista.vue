@@ -87,7 +87,7 @@ const ETIQUETAS_FUENTE = {
   historico_vecino: 'Histórico (vecino de predio)',
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
-  excluida: 'Excluida', excel_terceros: 'Excel de terceros',
+  excluida: 'Excluida', excel_terceros: 'Excel de terceros', editado_manualmente: 'Editado manualmente',
 }
 function etiquetaFuente(f) {
   return ETIQUETAS_FUENTE[f.medidor_usado] || f.medidor_usado || '—'
