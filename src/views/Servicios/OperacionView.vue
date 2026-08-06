@@ -902,8 +902,29 @@
                   :value="contratos.internet.velocidad_mbps != null ? `${contratos.internet.velocidad_mbps} Mbps` : null" />
                 <InfoIcon icon="pi pi-wifi" color="#06b6d4" label="Tipo de conexión"
                   :value="contratos.internet.tipo_conexion" />
+                <InfoIcon icon="pi pi-sitemap" color="#06b6d4" label="Línea de servicio"
+                  :value="contratos.internet.linea_servicio" />
+                <InfoIcon icon="pi pi-desktop" color="#06b6d4" label="ID del router"
+                  :value="contratos.internet.id_router" />
+                <InfoIcon icon="pi pi-box" color="#06b6d4" label="Número de kit"
+                  :value="contratos.internet.numero_kit" />
+                <InfoIcon icon="pi pi-bolt" color="#06b6d4" label="Latencia"
+                  :value="contratos.internet.latencia_ms != null ? `${contratos.internet.latencia_ms} ms` : null" />
+                <InfoIcon icon="pi pi-shield" color="#06b6d4" label="Seguridad del wifi"
+                  :value="contratos.internet.wifi_seguridad" />
+                <InfoSecret color="#06b6d4" label="Contraseña wifi"
+                  :value="contratos.internet.wifi_password" />
                 <InfoLink color="#06b6d4" label="Factura / Contrato en Drive"
                   :href="contratos.internet.enlace_drive" />
+              </div>
+
+              <!-- Ubicación del servicio -->
+              <div v-if="contratos.internet.ubicacion_lat != null && contratos.internet.ubicacion_lng != null"
+                class="mt-5 pt-4 border-t border-gray-100">
+                <p class="text-xs font-medium mb-2" style="color:#9b89b5">
+                  Ubicación: {{ contratos.internet.ubicacion_lat }},{{ contratos.internet.ubicacion_lng }}
+                </p>
+                <div ref="internetMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#1a1a1a"></div>
               </div>
             </div>
           </template>
@@ -1087,6 +1108,45 @@
               :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
               optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
           </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Línea de servicio</label>
+              <InputText v-model="dialogEdit.form.linea_servicio" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">ID del router</label>
+              <InputText v-model="dialogEdit.form.id_router" class="w-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Número de kit</label>
+              <InputText v-model="dialogEdit.form.numero_kit" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Latencia</label>
+              <InputNumber v-model="dialogEdit.form.latencia_ms" suffix=" ms" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Seguridad del wifi</label>
+              <Select v-model="dialogEdit.form.wifi_seguridad"
+                :options="[{label:'WPA2',value:'WPA2'},{label:'WPA3',value:'WPA3'},{label:'WPA2/WPA3',value:'WPA2/WPA3'},{label:'WPA3-OWE',value:'WPA3-OWE'},{label:'Remoto RADIUS',value:'Remoto RADIUS'},{label:'A bordo RADIUS',value:'A bordo RADIUS'},{label:'Abierta',value:'Abierta'}]"
+                optionLabel="label" optionValue="value" showClear placeholder="Selecciona…" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Contraseña wifi</label>
+              <InputText v-model="dialogEdit.form.wifi_password" class="w-full" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">
+              Ubicación del servicio
+              <span class="text-gray-400 font-normal">— haz clic en el mapa para ubicarlo</span>
+            </label>
+            <div ref="dialogEditMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#1a1a1a"></div>
+          </div>
         </template>
         <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Periodicidad de cobro</label>
@@ -1159,7 +1219,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
 import TabView from 'primevue/tabview'
@@ -1286,6 +1346,95 @@ const dialogMant = reactive({
 
 const contratos = reactive({ mantenimiento: null, arriendo: null, internet: null })
 const pagos     = reactive({ mantenimiento: [],   arriendo: [],   internet: [] })
+
+// ── Mapa de ubicación del servicio de Internet (solo lectura) ─────────────────
+const internetMapEl = ref(null)
+let internetMap = null
+
+async function initInternetMap(c) {
+  if (!c || c.ubicacion_lat == null || c.ubicacion_lng == null) return
+  await nextTick()
+  if (!internetMapEl.value || internetMap) return
+  const { default: maplibregl } = await import('maplibre-gl')
+  await import('maplibre-gl/dist/maplibre-gl.css')
+  if (!internetMapEl.value || internetMap) return
+
+  internetMap = new maplibregl.Map({
+    container: internetMapEl.value,
+    style: {
+      version: 8,
+      sources: {
+        dark: {
+          type: 'raster',
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
+          tileSize: 256,
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+        },
+      },
+      layers: [{ id: 'dark', type: 'raster', source: 'dark' }],
+    },
+    center: [c.ubicacion_lng, c.ubicacion_lat],
+    zoom: 12,
+    attributionControl: false,
+    interactive: false,
+  })
+  new maplibregl.Marker({ color: '#ffffff' }).setLngLat([c.ubicacion_lng, c.ubicacion_lat]).addTo(internetMap)
+}
+
+// Mapa editable dentro del diálogo "Editar" (clic para mover el marcador)
+const dialogEditMapEl = ref(null)
+let dialogEditMap = null
+let dialogEditMarker = null
+
+async function initDialogEditMap() {
+  if (!dialogEditMapEl.value || dialogEditMap) return
+  const { default: maplibregl } = await import('maplibre-gl')
+  await import('maplibre-gl/dist/maplibre-gl.css')
+  if (!dialogEditMapEl.value || dialogEditMap) return
+
+  const centro = (dialogEdit.form.ubicacion_lat != null && dialogEdit.form.ubicacion_lng != null)
+    ? [dialogEdit.form.ubicacion_lng, dialogEdit.form.ubicacion_lat]
+    : [-74.297, 4.571]
+
+  dialogEditMap = new maplibregl.Map({
+    container: dialogEditMapEl.value,
+    style: {
+      version: 8,
+      sources: {
+        dark: {
+          type: 'raster',
+          tiles: ['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'],
+          tileSize: 256,
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
+        },
+      },
+      layers: [{ id: 'dark', type: 'raster', source: 'dark' }],
+    },
+    center: centro,
+    zoom: (dialogEdit.form.ubicacion_lat != null) ? 12 : 5,
+    attributionControl: false,
+  })
+
+  dialogEditMarker = null
+  if (dialogEdit.form.ubicacion_lat != null && dialogEdit.form.ubicacion_lng != null) {
+    dialogEditMarker = new maplibregl.Marker({ color: '#ffffff' }).setLngLat(centro).addTo(dialogEditMap)
+  }
+
+  dialogEditMap.on('click', (e) => {
+    const { lng, lat } = e.lngLat
+    dialogEdit.form.ubicacion_lat = Number(lat.toFixed(6))
+    dialogEdit.form.ubicacion_lng = Number(lng.toFixed(6))
+    if (dialogEditMarker) dialogEditMarker.setLngLat([lng, lat])
+    else dialogEditMarker = new maplibregl.Marker({ color: '#ffffff' }).setLngLat([lng, lat]).addTo(dialogEditMap)
+  })
+}
+
+onBeforeUnmount(() => {
+  internetMap?.remove()
+  internetMap = null
+  dialogEditMap?.remove()
+  dialogEditMap = null
+})
 const loadingPagos = reactive({ mantenimiento: false, arriendo: false, internet: false })
 
 const filtros = reactive({
@@ -1300,7 +1449,8 @@ const wizardTipo    = ref('mantenimiento')
 const dialogEdit = reactive({
   visible: false,
   tipo: 'mantenimiento',
-  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false, plan_datos_gb: '', velocidad_mbps: null, tipo_conexion: null },
+  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false, plan_datos_gb: '', velocidad_mbps: null, tipo_conexion: null,
+    linea_servicio: '', id_router: '', numero_kit: '', latencia_ms: null, wifi_seguridad: null, wifi_password: '', ubicacion_lat: null, ubicacion_lng: null },
 })
 
 const dialogPago = reactive({
@@ -1325,6 +1475,7 @@ onMounted(async () => {
     contratos.mantenimiento = mantRes.status === 'fulfilled' && mantRes.value.data.length ? mantRes.value.data[0] : null
     contratos.arriendo      = arrRes.status  === 'fulfilled' && arrRes.value.data.length  ? arrRes.value.data[0]  : null
     contratos.internet      = netRes.status  === 'fulfilled' && netRes.value.data.length  ? netRes.value.data[0]  : null
+    await initInternetMap(contratos.internet)
 
     await cargarIndexacionOM()
     await cargarArrendadores()
@@ -1424,7 +1575,19 @@ function openEditContrato(tipo) {
   dialogEdit.form.plan_datos_gb = c.plan_datos_gb || ''
   dialogEdit.form.velocidad_mbps = c.velocidad_mbps ?? null
   dialogEdit.form.tipo_conexion = c.tipo_conexion || null
+  dialogEdit.form.linea_servicio = c.linea_servicio || ''
+  dialogEdit.form.id_router = c.id_router || ''
+  dialogEdit.form.numero_kit = c.numero_kit || ''
+  dialogEdit.form.latencia_ms = c.latencia_ms ?? null
+  dialogEdit.form.wifi_seguridad = c.wifi_seguridad || null
+  dialogEdit.form.wifi_password = c.wifi_password || ''
+  dialogEdit.form.ubicacion_lat = c.ubicacion_lat ?? null
+  dialogEdit.form.ubicacion_lng = c.ubicacion_lng ?? null
   dialogEdit.visible = true
+  if (tipo === 'internet') {
+    dialogEditMap?.remove(); dialogEditMap = null
+    nextTick().then(initDialogEditMap)
+  }
 }
 
 async function saveContrato() {
@@ -1454,10 +1617,22 @@ async function saveContrato() {
       payload.plan_datos_gb = dialogEdit.form.plan_datos_gb?.trim() || null
       payload.velocidad_mbps = dialogEdit.form.velocidad_mbps ?? null
       payload.tipo_conexion = dialogEdit.form.tipo_conexion || null
+      payload.linea_servicio = dialogEdit.form.linea_servicio?.trim() || null
+      payload.id_router = dialogEdit.form.id_router?.trim() || null
+      payload.numero_kit = dialogEdit.form.numero_kit?.trim() || null
+      payload.latencia_ms = dialogEdit.form.latencia_ms ?? null
+      payload.wifi_seguridad = dialogEdit.form.wifi_seguridad || null
+      payload.wifi_password = dialogEdit.form.wifi_password?.trim() || null
+      payload.ubicacion_lat = dialogEdit.form.ubicacion_lat ?? null
+      payload.ubicacion_lng = dialogEdit.form.ubicacion_lng ?? null
     }
     const { data } = await api.patch(`/contratos-servicio/${contratos[tipo].id}`, payload)
     contratos[tipo] = { ...contratos[tipo], ...data }
     if (tipo === 'arriendo') await cargarIndexacionArriendo()
+    if (tipo === 'internet') {
+      internetMap?.remove(); internetMap = null
+      await initInternetMap(contratos.internet)
+    }
     dialogEdit.visible = false
     toast.add({ severity: 'success', summary: 'Contrato actualizado', life: 2500 })
   } catch (e) {
@@ -1483,6 +1658,7 @@ async function onContratoCreado() {
       await cargarArrendadores()
       await cargarIndexacionArriendo()
     }
+    if (tipo === 'internet') await initInternetMap(contratos.internet)
     await loadPagos(tipo)
   } catch { /* ignore */ }
 }
@@ -1827,6 +2003,30 @@ const InfoBadge = {
         <p class="text-xs font-medium leading-none mb-1" style="color:#9b89b5">{{ label }}</p>
         <Tag v-if="estado" :value="ESTADO_PAGO_LABELS_S[estado]" :severity="ESTADO_PAGO_SEVERITY_S[estado]" />
         <span v-else class="text-sm" style="color:#9ca3af">—</span>
+      </div>
+    </div>
+  `,
+}
+
+// Contraseña wifi enmascarada, con botón para revelarla
+const InfoSecret = {
+  props: { color: String, label: String, value: String },
+  data() { return { visible: false } },
+  template: `
+    <div class="flex items-start gap-2.5 min-w-0">
+      <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+        :style="'background:' + color + '18'">
+        <i class="pi pi-lock text-xs" :style="'color:' + color" />
+      </div>
+      <div class="min-w-0">
+        <p class="text-xs font-medium leading-none mb-0.5" style="color:#9b89b5">{{ label }}</p>
+        <p v-if="!value" class="text-sm font-medium" style="color:#2C2039">—</p>
+        <button v-else type="button" class="text-sm font-medium inline-flex items-center gap-1"
+          style="background:none;border:none;cursor:pointer;padding:0;color:#2C2039"
+          @click="visible = !visible">
+          {{ visible ? value : '••••••••' }}
+          <i :class="visible ? 'pi pi-eye-slash' : 'pi pi-eye'" class="text-xs" style="color:#9b89b5" />
+        </button>
       </div>
     </div>
   `,
