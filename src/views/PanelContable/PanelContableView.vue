@@ -274,7 +274,7 @@
                                 <!-- Valor de módulo (O&M / Arriendos): no viene de una celda del ER, así que
                                      no se edita la celda de origen; se indica de dónde sale. -->
                                 <div v-if="!ln.derivada && ln.fuente" class="origen-wrap">
-                                  <span class="origen-mod">↳ del módulo de {{ fuenteTitle(ln.fuente) }}</span>
+                                  <span class="origen-mod">↳ {{ fuenteOrigen(ln.fuente) }}</span>
                                 </div>
                                 <div v-else-if="!ln.derivada" class="origen-wrap">
                                   <button class="origen-link" :title="origenOpen[ln.id] ? 'Ocultar origen' : 'Editar celda de origen'"
@@ -627,10 +627,16 @@ const savedAt = reactive({})
 const origenOpen = reactive({})
 const toggleOrigen = (id) => { origenOpen[id] = !origenOpen[id] }
 
-// Costos que vienen de un módulo (no del ER): O&M / Arriendos. Etiqueta y tooltip.
-const FUENTES = { om: { label: 'O&M', title: 'O&M' }, arriendos: { label: 'Arriendos', title: 'Arriendos' } }
+// Valores que vienen de un módulo/tarifa de la app (no del ER). Etiqueta, tooltip y
+// texto de origen que se muestra debajo del concepto.
+const FUENTES = {
+  om:         { label: 'O&M',       title: 'O&M',                     origen: 'del módulo O&M' },
+  arriendos:  { label: 'Arriendos', title: 'Arriendos',               origen: 'del módulo Arriendos' },
+  servicios:  { label: 'Tarifa app', title: 'Representación / CGM',   origen: 'tarifa de la app × kWh del ER' },
+}
 const fuenteLabel = (f) => (FUENTES[f]?.label) || f
 const fuenteTitle = (f) => (FUENTES[f]?.title) || f
+const fuenteOrigen = (f) => (FUENTES[f]?.origen) || 'de un módulo'
 const loading = ref(false)
 const cargaError = ref(false)   // distingue "falló la carga" de "no hay paneles"
 const uploading = ref(0)
