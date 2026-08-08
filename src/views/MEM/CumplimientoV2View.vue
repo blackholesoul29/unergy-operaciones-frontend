@@ -7,6 +7,21 @@
         <div class="cv-icon-tile"><i class="pi pi-bolt" /></div>
       </template>
       <template #actions>
+        <button @click="abrirResponsables"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+          style="border: 1px solid rgba(145,91,216,0.3); color: #915BD8; background: rgba(145,91,216,0.05);"
+          v-tooltip.bottom="'Empresa responsable de cada PPA. Los contratos de un responsable no relevante se ocultan en toda esta página.'">
+          <i class="pi pi-building text-xs" />
+          Responsables
+        </button>
+        <label class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer"
+          :style="verOcultos
+            ? 'border: 1px solid rgba(214,68,85,0.35); color: #b03446; background: rgba(214,68,85,0.07);'
+            : 'border: 1px solid rgba(44,32,57,0.12); color: #7a6e8a;'"
+          v-tooltip.bottom="'Muestra en TODAS las pestañas los contratos cuyo responsable está marcado como no relevante'">
+          <Checkbox v-model="verOcultos" :binary="true" />
+          Ver ocultos
+        </label>
         <span v-if="cacheSize" class="text-xs font-mono px-2 py-1 rounded" style="background: rgba(145,91,216,0.08); color: #915BD8;">
           caché: {{ cacheSize }}
         </span>
@@ -258,7 +273,7 @@
           <Column header="Contrato" style="min-width: 200px;">
             <template #body="{ data: row }">
               <div class="font-semibold text-sm" style="color: #2C2039;">{{ row.nombre_interno || row.numero_codigo_contrato }}</div>
-              <div class="text-xs mt-0.5" style="color: #7a6e8a;">{{ row.comprador_nombre }}</div>
+              <div class="text-xs mt-0.5" style="color: #7a6e8a;">{{ row.comprador_nombre }}<span v-if="esOculto(row)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded ml-1.5" style="background: rgba(214,68,85,0.12); color: #b03446;" v-tooltip.top="'Responsable: ' + row.responsable + ' — normalmente oculto en Cumplimiento'">{{ row.responsable }}</span></div>
             </template>
           </Column>
           <Column header="Vigencia" style="width: 190px;">
@@ -447,7 +462,7 @@
                         :style="estadoBadge(simResults[c.id].estado)"
                       >{{ Math.round(simResults[c.id].pct) }}%</span>
                     </div>
-                    <div class="text-xs mt-0.5 truncate" style="color: #7a6e8a;">{{ c.comprador_nombre }}</div>
+                    <div class="text-xs mt-0.5 truncate" style="color: #7a6e8a;">{{ c.comprador_nombre }}<span v-if="esOculto(c)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded ml-1.5" style="background: rgba(214,68,85,0.12); color: #b03446;" v-tooltip.top="'Responsable: ' + c.responsable + ' — normalmente oculto en Cumplimiento'">{{ c.responsable }}</span></div>
                   </div>
                 </div>
                 <div class="flex items-center gap-0.5 flex-shrink-0">
@@ -769,7 +784,7 @@
               v-tooltip.right="'Ver detalle del contrato (PPA + GESCON)'">
               <div>
                 <span class="font-bold text-sm" style="color: #2C2039;">{{ c.nombre }}</span>
-                <span class="ml-2 text-xs" style="color: #7a6e8a;">{{ c.comprador_nombre }}</span>
+                <span class="ml-2 text-xs" style="color: #7a6e8a;">{{ c.comprador_nombre }}</span><span v-if="esOculto(c)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded ml-1.5" style="background: rgba(214,68,85,0.12); color: #b03446;" v-tooltip.top="'Responsable: ' + c.responsable + ' — normalmente oculto en Cumplimiento'">{{ c.responsable }}</span>
                 <i class="pi pi-info-circle ml-1.5" style="font-size: 11px; color: #9b89b5;" />
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
@@ -1199,14 +1214,9 @@
           <MultiSelect v-model="matrizOfftakersSel" :options="matrizOfftakerOpts"
                        filter :showToggleAll="false" placeholder="Todos los offtakers"
                        :maxSelectedLabels="2" selectedItemsLabel="{0} offtakers" class="text-sm" style="min-width:12rem;" />
-          <label class="flex items-center gap-1.5 text-sm" style="color:#7a6e8a;"
-                 v-tooltip.top="'Muestra también los contratos cuyo responsable está marcado como no relevante'">
-            <Checkbox v-model="matrizVerOcultos" :binary="true" @change="loadAnualMatriz" /> Ver ocultos
-          </label>
         </div>
         <div class="flex items-center gap-2">
           <span v-if="matrizFilasCargando" class="text-xs" style="color:#7a6e8a;">Cargando contratos…</span>
-          <Button label="Responsables" icon="pi pi-building" size="small" outlined @click="abrirResponsables" />
           <Button label="Exportar Excel" icon="pi pi-download" size="small" outlined
                   :disabled="!anualMatrizData || matrizFilasCargando" @click="exportarMatrizExcel" />
         </div>
@@ -2186,6 +2196,16 @@ function cacheGetSize() {
   return mb >= 1 ? `${mb.toFixed(1)} MB (${count})` : `${(bytes / 1024).toFixed(0)} KB (${count})`
 }
 
+// ── Empresa responsable: interruptor global de la página ──────────────────────
+// El backend oculta por defecto los contratos de un responsable marcado como no
+// relevante en TODAS las vistas de /mem/cumplimiento. Este check los trae de vuelta
+// (para reclasificar o auditar) y aplica a todas las pestañas a la vez, así ninguna
+// queda contando un universo distinto que otra.
+const verOcultos = ref(false)
+// Se pasa como param a cada endpoint (no dentro de cachedGet) para que también
+// entre en la llave de caché: la vista filtrada y la completa no deben pisarse.
+const incluirTodos = () => verOcultos.value
+
 async function cachedGet(endpoint, params = {}) {
   const cached = cacheGet(endpoint, params)
   if (cached) return cached
@@ -2220,6 +2240,31 @@ async function clearCacheAndReload() {
     updateCacheSize()
   }
 }
+
+// Recarga las seis pestañas tras un cambio de universo (interruptor "Ver ocultos"
+// o reclasificación de responsables). No borra la caché: el param incluir_todos
+// ya forma parte de la llave, así que cada universo tiene su propia entrada.
+// Lo que está fuera de la pestaña activa se descarta y se recarga al abrirla.
+async function recargarPorResponsables() {
+  contratos.value = []
+  anualData.value = null
+  simData.value   = null
+  pcData.value    = null
+  etData.value    = null
+  beData.value    = null
+  tableData.value = []
+  anualMatrizData.value = null
+  await loadContratos()
+  await Promise.all([loadAnnualData(), loadTableData()])
+  if (activeTab.value === 0) await loadSimulator()
+  if (activeTab.value === 2) await loadPlantasContratos()
+  if (activeTab.value === 3) await loadEnergiaTransada()
+  if (activeTab.value === 4) await loadAnualMatriz()
+  if (activeTab.value === 5) await loadBalance()
+  updateCacheSize()
+}
+
+watch(verOcultos, () => { recargarPorResponsables() })
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
 const TABS      = ['Estrategia', 'Cumplimiento', 'Proyectos', 'Energía transada', 'Matriz anual', 'Balance de energía']
@@ -2739,7 +2784,8 @@ function etCacheSet(y, m, data) {
 }
 
 async function etFetch(y, m) {
-  const res = await client.get('/cumplimiento/energia-transada', { params: { year: y, month: m }, timeout: 180000 })
+  const res = await client.get('/cumplimiento/energia-transada',
+    { params: { year: y, month: m, incluir_todos: incluirTodos() }, timeout: 180000 })
   etCacheSet(y, m, res.data)
   return res.data
 }
@@ -2810,9 +2856,6 @@ const matrizSoloNoCumple = ref(false)
 const matrizBusqueda     = ref('')
 const matrizContratosSel = ref([])   // ids de contratos elegidos (vacío = todos)
 const matrizOfftakersSel = ref([])   // nombres de offtaker elegidos (vacío = todos)
-// El backend ya excluye los contratos de responsables no relevantes (y así se ahorra
-// sus llamadas a la API de Unergy); esto los vuelve a pedir para poder reclasificar.
-const matrizVerOcultos   = ref(false)
 
 // Carga progresiva: primero la lista de contratos (instantánea, sin generación) para pintar la
 // tabla, y luego el detalle de cada contrato en peticiones independientes con concurrencia limitada.
@@ -2830,7 +2873,7 @@ async function loadAnualMatriz() {
   const loadId = ++matrizLoadId
   try {
     const { data } = await client.get('/cumplimiento/anual-matriz/contratos',
-      { params: { year, incluir_todos: matrizVerOcultos.value } })
+      { params: { year, incluir_todos: incluirTodos() } })
     const contratos = (data.contratos || []).map(c => ({
       ...c,
       meses: [], proyectos: [],
@@ -2997,6 +3040,13 @@ const respSel        = ref([])
 const respAsignarA   = ref(null)
 const respBusqueda   = ref('')
 
+// Fila que normalmente NO se vería: solo aparece con "Ver ocultos" encendido, y se
+// marca para que quede claro por qué está ahí. Las filas de responsable relevante o
+// sin responsable no llevan chip, para no ensuciar el uso diario.
+function esOculto(c) {
+  return !!c && c.responsable_relevante === false
+}
+
 function responsableChip(c) {
   if (!c.responsable) return 'background: rgba(44,32,57,0.06); color: #7a6e8a;'
   return c.responsable_relevante === false
@@ -3108,9 +3158,9 @@ async function asignarSeleccionados() {
   }
 }
 
-// Tras cualquier cambio: refrescar catálogo y lista del diálogo. La matriz NO se
-// recarga aquí — hacerlo por clic dispararía una tanda de llamadas a Unergy cada
-// vez; se recarga una sola vez al cerrar (ver cerrarResponsables).
+// Tras cualquier cambio: refrescar catálogo y lista del diálogo. Las pestañas NO
+// se recargan aquí — hacerlo por clic dispararía una tanda de llamadas a Unergy
+// cada vez; se recargan una sola vez al cerrar (ver cerrarResponsables).
 async function refrescarTrasCambio() {
   respDirty.value = true
   await cargarResponsables()
@@ -3123,7 +3173,8 @@ function cerrarResponsables() {
   respAbierto.value = false
   if (respDirty.value) {
     respDirty.value = false
-    loadAnualMatriz()
+    // Reclasificar cambia el universo de TODAS las pestañas, no solo la matriz.
+    recargarPorResponsables()
   }
 }
 
@@ -4043,7 +4094,7 @@ const CONSOLIDADO_ID = '__consolidado__'
 
 async function loadContratos() {
   try {
-    const res = await client.get('/cumplimiento/ppa')
+    const res = await client.get('/cumplimiento/ppa', { params: { incluir_todos: incluirTodos() } })
     const mapped = res.data.map(c => ({
       ...c,
       label: c.nombre_interno || c.numero_codigo_contrato || `Contrato ${c.id}`,
@@ -4182,7 +4233,8 @@ async function loadConsolidado() {
 async function loadTableData() {
   tableLoading.value = true
   try {
-    tableData.value = await cachedGet('/cumplimiento/ppa/resumen-anual', { year: selectedYear.value })
+    tableData.value = await cachedGet('/cumplimiento/ppa/resumen-anual',
+      { year: selectedYear.value, incluir_todos: incluirTodos() })
     updateCacheSize()
   } catch (e) {
     console.error('Error loading table data', e)
@@ -4438,7 +4490,8 @@ async function loadSimulator(retry = true) {
   simLoading.value = true
   simError.value   = null
   try {
-    const data = await cachedGet('/cumplimiento/simulador', { year: simYear.value, month: simMonth.value })
+    const data = await cachedGet('/cumplimiento/simulador',
+      { year: simYear.value, month: simMonth.value, incluir_todos: incluirTodos() })
     simData.value = data
     initAssignments(data)
     updateCacheSize()
@@ -4463,7 +4516,8 @@ async function loadPlantasContratos() {
   pcLoading.value = true
   pcError.value   = null
   try {
-    pcData.value = await cachedGet('/cumplimiento/plantas-contratos', { year: pcYear.value, month: pcMonth.value })
+    pcData.value = await cachedGet('/cumplimiento/plantas-contratos',
+      { year: pcYear.value, month: pcMonth.value, incluir_todos: incluirTodos() })
     updateCacheSize()
   } catch (e) {
     pcError.value = e.response?.data?.detail || 'Error al cargar plantas y contratos.'
@@ -4602,6 +4656,7 @@ async function loadBalance() {
     year: beYear.value,
     month: beMonth.value,
     excluir_compra_externa: beExcluirExterna.value,
+    incluir_todos: incluirTodos(),
   }
   // El mes en curso cambia todos los días (avanza el real, se encoge la
   // proyección): se consulta fresco. Los meses cerrados sí van a caché.
