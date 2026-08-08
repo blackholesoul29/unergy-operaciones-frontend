@@ -44,6 +44,12 @@
         <Select v-model="filters.departamento" :options="departamentoOptions" filter
                 class="w-48" placeholder="Todos" showClear />
       </div>
+      <div>
+        <label class="field-label">PPA</label>
+        <MultiSelect v-model="filters.ppa" :options="ppaOptions" optionLabel="label" optionValue="value"
+                     filter display="chip" class="w-64" placeholder="Todos"
+                     :maxSelectedLabels="1" selectedItemsLabel="{0} PPAs" showClear />
+      </div>
     </div>
 
     <!-- Loading -->
@@ -102,6 +108,13 @@
                               whitespace-nowrap align-bottom">Tipo</th>
                   <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
                               whitespace-nowrap align-bottom">Ubicación</th>
+                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
+                              whitespace-nowrap align-bottom" style="min-width:130px">
+                    <span class="block text-[10px] text-gray-400 font-normal normal-case tracking-normal">
+                      1er día con generación
+                    </span>
+                    <span>Inicio comercialización</span>
+                  </th>
                   <th class="text-right px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
                               whitespace-nowrap align-bottom">
                     <span class="block text-[10px] text-gray-400 font-normal normal-case tracking-normal">kWp</span>
@@ -114,6 +127,8 @@
                   </th>
                   <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
                               whitespace-nowrap align-bottom" style="min-width:140px">Servicios</th>
+                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
+                              whitespace-nowrap align-bottom" style="min-width:150px">PPA</th>
                   <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
                               whitespace-nowrap align-bottom" style="min-width:110px">Inversionistas</th>
                   <th class="px-4 py-2.5 align-bottom" style="width:116px"></th>
@@ -163,6 +178,17 @@
                     <span v-else class="text-gray-300">—</span>
                   </td>
 
+                  <!-- Inicio de comercialización (autoderivada del 1er día con generación) -->
+                  <td class="px-4 py-2 whitespace-nowrap">
+                    <span v-if="row.fecha_inicio_comercializacion"
+                          class="font-mono text-xs text-gray-600">
+                      {{ fmtFecha(row.fecha_inicio_comercializacion) }}
+                      <span v-if="row.fecha_comercializacion_editada_manual"
+                            class="ml-1 text-[10px] text-gray-400 font-sans">manual</span>
+                    </span>
+                    <span v-else class="text-gray-300 text-xs">—</span>
+                  </td>
+
                   <!-- Capacidad instalada (pestaña Técnico) -->
                   <td class="px-4 py-2 text-right font-mono text-xs text-gray-500">
                     {{ row.info_tecnica?.capacidad_instalada_kwp ?? '—' }}
@@ -185,6 +211,20 @@
                         </span>
                       </template>
                     </div>
+                  </td>
+
+                  <!-- PPA asociado (un proyecto puede estar en varios contratos) -->
+                  <td class="px-4 py-2">
+                    <div v-if="row.ppa_contratos?.length" class="flex gap-1 flex-wrap">
+                      <button v-for="c in row.ppa_contratos" :key="c.id"
+                              type="button"
+                              class="ppa-chip"
+                              v-tooltip.bottom="ppaTooltip(c)"
+                              @click="goPPA(row)">
+                        {{ ppaLabel(c) }}
+                      </button>
+                    </div>
+                    <span v-else class="text-gray-300 text-xs">—</span>
                   </td>
 
                   <!-- Inversionistas (avatares) -->
@@ -377,6 +417,7 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
@@ -535,7 +576,12 @@ const pendingInfoTecnica = ref(null)  // potencia_ac_kw/capacidad_instalada_kwp 
 const forzando = ref(false)
 const openSections = ref(new Set())    // reactive Set via full replacement
 
-// Los filtros se sincronizan con la URL (?q=&estado=&tipo_proyecto=&departamento=)
+// Valor centinela del filtro de PPA: "proyectos sin ningún PPA asociado".
+// Ningún contrato real tiene id negativo, así que puede convivir con los ids
+// reales en la misma lista de opciones.
+const PPA_SIN = -1
+
+// Los filtros se sincronizan con la URL (?q=&estado=&tipo_proyecto=&departamento=&ppa=)
 // para que se sostengan al volver con el boton "atras" o al refrescar --
 // antes vivian solo en memoria local y se perdian en cada montaje del componente.
 const filters = reactive({
@@ -543,7 +589,17 @@ const filters = reactive({
   estado: route.query.estado || null,
   tipo_proyecto: route.query.tipo_proyecto || null,
   departamento: route.query.departamento || null,
+  ppa: parsePpaQuery(route.query.ppa),
 })
+
+// ?ppa=12,45 -> [12, 45] (el centinela "sin PPA" viaja como -1)
+function parsePpaQuery(raw) {
+  if (!raw) return []
+  return String(raw)
+    .split(',')
+    .map(v => Number(v))
+    .filter(v => Number.isInteger(v))
+}
 
 watch(filters, (f) => {
   const query = {}
@@ -551,6 +607,7 @@ watch(filters, (f) => {
   if (f.estado) query.estado = f.estado
   if (f.tipo_proyecto) query.tipo_proyecto = f.tipo_proyecto
   if (f.departamento) query.departamento = f.departamento
+  if (f.ppa?.length) query.ppa = f.ppa.join(',')
   router.replace({ query })
 })
 
@@ -559,6 +616,48 @@ const departamentoOptions = computed(() => {
   const set = new Set(allItems.value.map(p => p.departamento).filter(Boolean))
   return [...set].sort((a, b) => a.localeCompare(b))
 })
+
+// ── PPA ────────────────────────────────────────────────────────────────────────
+// Un proyecto puede estar en varios contratos PPA a la vez (relación N a N), así
+// que el filtro es "tiene al menos uno de los PPA seleccionados".
+
+function ppaLabel(c) {
+  return c?.nombre_interno || c?.numero_codigo_contrato || `PPA ${c?.id}`
+}
+
+function ppaTooltip(c) {
+  const partes = []
+  if (c?.nombre_interno && c?.numero_codigo_contrato) partes.push(c.numero_codigo_contrato)
+  if (c?.comprador_nombre) partes.push(`Comprador: ${c.comprador_nombre}`)
+  const desde = c?.fecha_inicio ? fmtFecha(c.fecha_inicio) : null
+  const hasta = c?.fecha_fin ? fmtFecha(c.fecha_fin) : null
+  if (desde || hasta) partes.push(`${desde || '—'} → ${hasta || '—'}`)
+  return partes.length ? `${ppaLabel(c)} · ${partes.join(' · ')}` : ppaLabel(c)
+}
+
+// Contratos presentes en los proyectos cargados, deduplicados por id
+const ppaOptions = computed(() => {
+  const porId = new Map()
+  let sinPpa = 0
+  for (const p of allItems.value) {
+    if (!p.ppa_contratos?.length) { sinPpa++; continue }
+    for (const c of p.ppa_contratos) {
+      if (!porId.has(c.id)) porId.set(c.id, c)
+    }
+  }
+  const opciones = [...porId.values()]
+    .map(c => ({ value: c.id, label: ppaLabel(c) }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+  if (sinPpa) opciones.unshift({ value: PPA_SIN, label: `Sin PPA (${sinPpa})` })
+  return opciones
+})
+
+function goPPA(row) { router.push(`/proyectos/${row.id}/ppa`) }
+
+// ── Fechas ─────────────────────────────────────────────────────────────────────
+function fmtFecha(v) {
+  return v ? String(v).slice(0, 10) : '—'
+}
 
 // ── Filtrado + agrupación ──────────────────────────────────────────────────────
 const filteredItems = computed(() => {
@@ -570,6 +669,14 @@ const filteredItems = computed(() => {
   if (filters.estado)        list = list.filter(p => p.estado === filters.estado)
   if (filters.tipo_proyecto) list = list.filter(p => p.tipo_proyecto === filters.tipo_proyecto)
   if (filters.departamento)  list = list.filter(p => p.departamento === filters.departamento)
+  if (filters.ppa?.length) {
+    const sel = new Set(filters.ppa)
+    list = list.filter(p => {
+      const suyos = p.ppa_contratos || []
+      if (!suyos.length) return sel.has(PPA_SIN)
+      return suyos.some(c => sel.has(c.id))
+    })
+  }
   return list
 })
 
@@ -855,6 +962,26 @@ thead .sticky-col {
 /* ── Service badges ──────────────────────────────────────────────────────────── */
 .srv-badge {
   @apply bg-green-100 text-green-800 text-[10px] font-semibold px-1.5 py-0.5 rounded cursor-default;
+}
+
+/* ── PPA chips (abren la pestaña PPA del proyecto) ───────────────────────────── */
+.ppa-chip {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #EEEDFE;
+  color: #3C3489;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.ppa-chip:hover {
+  background: #915BD8;
+  color: #ffffff;
 }
 
 /* ── Avatar stack ────────────────────────────────────────────────────────────── */
