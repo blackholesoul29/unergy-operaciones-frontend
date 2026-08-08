@@ -1199,9 +1199,14 @@
           <MultiSelect v-model="matrizOfftakersSel" :options="matrizOfftakerOpts"
                        filter :showToggleAll="false" placeholder="Todos los offtakers"
                        :maxSelectedLabels="2" selectedItemsLabel="{0} offtakers" class="text-sm" style="min-width:12rem;" />
+          <label class="flex items-center gap-1.5 text-sm" style="color:#7a6e8a;"
+                 v-tooltip.top="'Muestra también los contratos cuyo responsable está marcado como no relevante'">
+            <Checkbox v-model="matrizVerOcultos" :binary="true" @change="loadAnualMatriz" /> Ver ocultos
+          </label>
         </div>
         <div class="flex items-center gap-2">
           <span v-if="matrizFilasCargando" class="text-xs" style="color:#7a6e8a;">Cargando contratos…</span>
+          <Button label="Responsables" icon="pi pi-building" size="small" outlined @click="abrirResponsables" />
           <Button label="Exportar Excel" icon="pi pi-download" size="small" outlined
                   :disabled="!anualMatrizData || matrizFilasCargando" @click="exportarMatrizExcel" />
         </div>
@@ -1227,6 +1232,13 @@
                   <i class="pi text-xs mr-1" :class="expandedMatriz.includes(c.id) ? 'pi-chevron-down' : 'pi-chevron-right'" />
                   <span class="font-semibold">{{ c.nombre_interno || c.numero_codigo_contrato }}</span>
                   <span class="text-xs ml-1" style="color:#7a6e8a;">{{ c.comprador_nombre }}<span v-if="c.n_plantas != null"> · {{ c.n_plantas }} pl.</span></span>
+                  <span v-if="c.responsable" class="text-[10px] font-semibold px-1.5 py-0.5 rounded ml-1.5 align-middle"
+                        :style="responsableChip(c)"
+                        v-tooltip.top="c.responsable_relevante === false
+                          ? `Responsable: ${c.responsable} — normalmente oculto en esta matriz`
+                          : `Responsable: ${c.responsable}`">
+                    {{ c.responsable }}
+                  </span>
                   <i v-if="c._loading" class="pi pi-spin pi-spinner text-xs ml-1" style="color:#915BD8;" />
                 </td>
                 <td v-for="i in 12" :key="i" class="px-2 py-1.5 text-right font-mono"
@@ -2020,6 +2032,93 @@
       </template>
     </Teleport>
 
+    <!-- Floating: empresas responsables de PPA (catálogo + asignación) -->
+    <Teleport to="body">
+      <template v-if="respAbierto">
+        <div class="fixed inset-0" style="z-index: 60; background: rgba(44,32,57,0.28);" @click="cerrarResponsables" />
+        <div
+          class="fixed shadow-2xl"
+          style="z-index: 61; background: #ffffff; width: 760px; max-width: 94vw; max-height: 88vh; overflow-y: auto; border-radius: 16px; border: 1px solid rgba(44,32,57,0.12); top: 50%; left: 50%; transform: translate(-50%, -50%);"
+          @click.stop
+        >
+          <div style="height: 6px; background: #915BD8; border-radius: 16px 16px 0 0;" />
+          <div class="px-6 pt-4 pb-3 flex items-start justify-between gap-3" style="border-bottom: 1px solid rgba(44,32,57,0.08);">
+            <div>
+              <div class="font-bold text-lg" style="color: #2C2039;">Empresas responsables de PPA</div>
+              <div class="text-xs mt-0.5" style="color: #7a6e8a;">
+                Los contratos de un responsable marcado como <b>no relevante</b> no aparecen en la Matriz anual.
+                Un contrato sin responsable siempre aparece.
+              </div>
+            </div>
+            <button class="text-sm px-2 py-1 rounded" style="color:#7a6e8a;" @click="cerrarResponsables"><i class="pi pi-times" /></button>
+          </div>
+
+          <div class="px-6 py-4 space-y-5">
+            <Message v-if="respError" severity="error" :closable="false">{{ respError }}</Message>
+
+            <!-- Catálogo -->
+            <div>
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #915BD8;">Catálogo</p>
+              <div class="rounded-lg border divide-y" style="border-color: rgba(44,32,57,0.10);">
+                <div v-for="r in responsables" :key="r.id" class="px-3 py-2 flex items-center gap-3">
+                  <InputText v-model="r.nombre" class="text-sm flex-1" @change="guardarResponsable(r)" />
+                  <label class="flex items-center gap-1.5 text-xs whitespace-nowrap" style="color:#7a6e8a;"
+                         v-tooltip.top="'Destildado = sus contratos se ocultan de la Matriz anual'">
+                    <Checkbox v-model="r.incluir_en_cumplimiento" :binary="true" @change="guardarResponsable(r)" /> Relevante
+                  </label>
+                  <span class="text-xs font-mono w-20 text-right" style="color:#7a6e8a;">{{ r.n_contratos }} contr.</span>
+                  <button class="text-xs px-2 py-1 rounded" :style="r.n_contratos ? 'color:#c9c0d8; cursor:not-allowed;' : 'color:#D64455;'"
+                          :disabled="!!r.n_contratos" @click="borrarResponsable(r)"
+                          v-tooltip.top="r.n_contratos ? 'Reasigna sus contratos primero' : 'Eliminar'">
+                    <i class="pi pi-trash" />
+                  </button>
+                </div>
+                <div v-if="!responsables.length" class="px-3 py-4 text-sm text-center" style="color: rgba(44,32,57,0.35);">Sin responsables todavía</div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <InputText v-model="respNuevo" placeholder="Nueva empresa responsable…" class="text-sm flex-1"
+                           @keyup.enter="crearResponsable" />
+                <Button label="Agregar" icon="pi pi-plus" size="small" outlined
+                        :disabled="!respNuevo.trim()" @click="crearResponsable" />
+              </div>
+            </div>
+
+            <!-- Asignación -->
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <p class="text-xs font-bold uppercase tracking-widest" style="color: #915BD8;">
+                  Asignar contratos ({{ respContratos.length }})
+                </p>
+                <div class="flex items-center gap-2">
+                  <Select v-model="respAsignarA" :options="respOpcionesAsignar" optionLabel="label" optionValue="value"
+                          placeholder="Asignar seleccionados a…" class="text-sm" style="min-width:14rem;" />
+                  <Button label="Aplicar" size="small" :disabled="!respSel.length || !respAsignarA || respGuardando"
+                          @click="asignarSeleccionados" />
+                </div>
+              </div>
+              <InputText v-model="respBusqueda" placeholder="Buscar contrato…" class="text-sm w-full mb-2" />
+              <div class="rounded-lg border divide-y overflow-y-auto" style="border-color: rgba(44,32,57,0.10); max-height: 300px;">
+                <label v-for="c in respContratosFiltrados" :key="c.id"
+                       class="px-3 py-1.5 flex items-center gap-2.5 text-sm cursor-pointer hover:bg-[#faf8fd]">
+                  <Checkbox v-model="respSel" :value="c.id" />
+                  <span class="flex-1 truncate" style="color:#2C2039;">
+                    {{ c.nombre_interno || c.numero_codigo_contrato }}
+                    <span class="text-xs ml-1" style="color:#7a6e8a;">{{ c.comprador_nombre }}</span>
+                  </span>
+                  <span class="text-xs px-1.5 py-0.5 rounded" :style="responsableChip(c)">
+                    {{ c.responsable || 'sin responsable' }}
+                  </span>
+                </label>
+                <div v-if="!respContratosFiltrados.length" class="px-3 py-4 text-sm text-center" style="color: rgba(44,32,57,0.35);">
+                  {{ respCargando ? 'Cargando…' : 'Sin contratos' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </template>
+    </Teleport>
+
   </div>
 </template>
 
@@ -2711,10 +2810,14 @@ const matrizSoloNoCumple = ref(false)
 const matrizBusqueda     = ref('')
 const matrizContratosSel = ref([])   // ids de contratos elegidos (vacío = todos)
 const matrizOfftakersSel = ref([])   // nombres de offtaker elegidos (vacío = todos)
+// El backend ya excluye los contratos de responsables no relevantes (y así se ahorra
+// sus llamadas a la API de Unergy); esto los vuelve a pedir para poder reclasificar.
+const matrizVerOcultos   = ref(false)
 
 // Carga progresiva: primero la lista de contratos (instantánea, sin generación) para pintar la
 // tabla, y luego el detalle de cada contrato en peticiones independientes con concurrencia limitada.
 // Evita el timeout de una sola petición agregada que golpea la API de Unergy por todos los contratos.
+let matrizLoadId = 0
 async function loadAnualMatriz() {
   anualMatrizLoading.value = true
   anualMatrizError.value = ''
@@ -2722,8 +2825,12 @@ async function loadAnualMatriz() {
   matrizContratosSel.value = []
   matrizOfftakersSel.value = []
   const year = anualMatrizYear.value
+  // Token de carga: el año ya no basta como guarda (cambiar "Ver ocultos" recarga
+  // sin cambiarlo), y sin esto los workers de la carga anterior siguen pidiendo.
+  const loadId = ++matrizLoadId
   try {
-    const { data } = await client.get('/cumplimiento/anual-matriz/contratos', { params: { year } })
+    const { data } = await client.get('/cumplimiento/anual-matriz/contratos',
+      { params: { year, incluir_todos: matrizVerOcultos.value } })
     const contratos = (data.contratos || []).map(c => ({
       ...c,
       meses: [], proyectos: [],
@@ -2745,13 +2852,13 @@ async function loadAnualMatriz() {
   const CONC = 4
   const worker = async () => {
     while (queue.length) {
-      if (anualMatrizYear.value !== year) return  // cambió el año: abortar carga vieja
+      if (matrizLoadId !== loadId) return  // llegó otra carga: abortar la vieja
       const idx = queue.shift()
       const row = rows[idx]
       try {
         const { data: det } = await client.get(`/cumplimiento/anual-matriz/contrato/${row.id}`,
           { params: { year }, timeout: 90000 })
-        if (anualMatrizYear.value !== year) return
+        if (matrizLoadId !== loadId) return
         Object.assign(row, det, { _loading: false, _error: false })
       } catch (e) {
         Object.assign(row, { _loading: false, _error: true })
@@ -2873,6 +2980,152 @@ function fmtNum(v) {
 const matrizFilasCargando = computed(() =>
   (anualMatrizData.value?.contratos || []).some(c => c._loading)
 )
+
+// ── Empresas responsables de PPA ──────────────────────────────────────────────
+// El responsable es un catálogo (no texto libre) para que los filtros de la
+// plataforma trabajen sobre valores consistentes. `incluir_en_cumplimiento=false`
+// esconde sus contratos de la Matriz anual; sin responsable = siempre visible.
+const respAbierto    = ref(false)
+const respDirty      = ref(false)   // hubo cambios → recargar la matriz al cerrar
+const respError      = ref('')
+const respCargando   = ref(false)
+const respGuardando  = ref(false)
+const responsables   = ref([])
+const respNuevo      = ref('')
+const respContratos  = ref([])   // TODOS los contratos, incluidos los ocultos
+const respSel        = ref([])
+const respAsignarA   = ref(null)
+const respBusqueda   = ref('')
+
+function responsableChip(c) {
+  if (!c.responsable) return 'background: rgba(44,32,57,0.06); color: #7a6e8a;'
+  return c.responsable_relevante === false
+    ? 'background: rgba(214,68,85,0.12); color: #b03446;'   // oculto de la matriz
+    : 'background: rgba(145,91,216,0.10); color: #915BD8;'
+}
+
+// Sentinel en vez de null: con optionValue=null el Select vuelve a mostrar el
+// placeholder al elegir "Sin responsable" y parece que no se seleccionó nada.
+const SIN_RESPONSABLE = '__sin__'
+const respOpcionesAsignar = computed(() => [
+  { value: SIN_RESPONSABLE, label: 'Sin responsable' },
+  ...responsables.value.map(r => ({
+    value: r.id,
+    label: r.incluir_en_cumplimiento ? r.nombre : `${r.nombre} (oculto)`,
+  })),
+])
+
+const respContratosFiltrados = computed(() => {
+  const q = respBusqueda.value.trim().toLowerCase()
+  if (!q) return respContratos.value
+  return respContratos.value.filter(c =>
+    (c.nombre_interno || c.numero_codigo_contrato || '').toLowerCase().includes(q) ||
+    (c.comprador_nombre || '').toLowerCase().includes(q) ||
+    (c.responsable || '').toLowerCase().includes(q)
+  )
+})
+
+async function cargarResponsables() {
+  const { data } = await client.get('/ppa/responsables')
+  responsables.value = data
+}
+
+async function abrirResponsables() {
+  respAbierto.value = true
+  respDirty.value = false
+  respError.value = ''
+  respSel.value = []
+  respAsignarA.value = null
+  respBusqueda.value = ''
+  respCargando.value = true
+  try {
+    // incluir_todos: para reclasificar hay que ver también los que están ocultos.
+    const [, contratos] = await Promise.all([
+      cargarResponsables(),
+      client.get('/cumplimiento/anual-matriz/contratos',
+        { params: { year: anualMatrizYear.value, incluir_todos: true } }),
+    ])
+    respContratos.value = contratos.data.contratos || []
+  } catch (e) {
+    respError.value = e.response?.data?.detail || e.message
+  } finally {
+    respCargando.value = false
+  }
+}
+
+async function crearResponsable() {
+  const nombre = respNuevo.value.trim()
+  if (!nombre) return
+  respError.value = ''
+  try {
+    await client.post('/ppa/responsables', { nombre, incluir_en_cumplimiento: true })
+    respNuevo.value = ''
+    await cargarResponsables()
+  } catch (e) {
+    respError.value = e.response?.data?.detail || e.message
+  }
+}
+
+async function guardarResponsable(r) {
+  respError.value = ''
+  try {
+    await client.patch(`/ppa/responsables/${r.id}`, {
+      nombre: r.nombre,
+      incluir_en_cumplimiento: r.incluir_en_cumplimiento,
+    })
+    await refrescarTrasCambio()
+  } catch (e) {
+    respError.value = e.response?.data?.detail || e.message
+    await cargarResponsables()   // revierte el input al valor real
+  }
+}
+
+async function borrarResponsable(r) {
+  respError.value = ''
+  try {
+    await client.delete(`/ppa/responsables/${r.id}`)
+    await cargarResponsables()
+  } catch (e) {
+    respError.value = e.response?.data?.detail || e.message
+  }
+}
+
+async function asignarSeleccionados() {
+  if (!respSel.value.length || !respAsignarA.value) return
+  respGuardando.value = true
+  respError.value = ''
+  try {
+    await client.post('/ppa/responsables/asignar', {
+      contrato_ids: respSel.value,
+      responsable_id: respAsignarA.value === SIN_RESPONSABLE ? null : respAsignarA.value,
+    })
+    respSel.value = []
+    await refrescarTrasCambio()
+  } catch (e) {
+    respError.value = e.response?.data?.detail || e.message
+  } finally {
+    respGuardando.value = false
+  }
+}
+
+// Tras cualquier cambio: refrescar catálogo y lista del diálogo. La matriz NO se
+// recarga aquí — hacerlo por clic dispararía una tanda de llamadas a Unergy cada
+// vez; se recarga una sola vez al cerrar (ver cerrarResponsables).
+async function refrescarTrasCambio() {
+  respDirty.value = true
+  await cargarResponsables()
+  const { data } = await client.get('/cumplimiento/anual-matriz/contratos',
+    { params: { year: anualMatrizYear.value, incluir_todos: true } })
+  respContratos.value = data.contratos || []
+}
+
+function cerrarResponsables() {
+  respAbierto.value = false
+  if (respDirty.value) {
+    respDirty.value = false
+    loadAnualMatriz()
+  }
+}
 
 const allContratos = computed(() => {
   if (!simData.value) return []
