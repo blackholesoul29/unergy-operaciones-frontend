@@ -23,10 +23,15 @@
       <div class="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p class="text-sm font-semibold" style="color: #2C2039;">
-            <i class="pi pi-file-excel text-xs mr-1.5" />
+            <i :class="detalle.medidor_usado === 'excel_terceros' ? 'pi pi-check-circle' : 'pi pi-file-excel'"
+               class="text-xs mr-1.5" :style="detalle.medidor_usado === 'excel_terceros' ? 'color: #059669;' : ''" />
             {{ detalle.medidor_usado === 'excel_terceros' ? 'Cargado desde Excel de terceros' : 'Esperando Excel de terceros' }}
           </p>
-          <p class="text-xs mt-1" style="color: #6b5a8a;">
+          <p v-if="detalle.medidor_usado === 'excel_terceros'" class="text-xs mt-1" style="color: #6b5a8a;">
+            Ya hay un Excel cargado para este día -- {{ fmtKwh(detalle.energia_final_kwh) }}. Puedes
+            reemplazarlo subiendo otro, o quitarlo con "Eliminar carga".
+          </p>
+          <p v-else class="text-xs mt-1" style="color: #6b5a8a;">
             El CGM de esta frontera lo maneja otra empresa; sube su Excel (Primary/Backup ×
             ENERGIA EXPORTADA ACTIVA) para reportar este día.
           </p>
