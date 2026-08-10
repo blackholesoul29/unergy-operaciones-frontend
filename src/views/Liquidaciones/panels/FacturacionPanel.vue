@@ -185,7 +185,7 @@
             </span>
             <span class="ml-auto fac-fac-nums">
               <span class="muted">{{ f.contratos }} contr</span>
-              <span class="muted">· {{ fmtMWh(f.kwh) }}</span>
+              <span class="muted">· {{ fmtNum(f.kwh) }} kWh</span>
               <span class="muted">· tarifa {{ tarifaFacturaTxt(f) }}</span>
               <b v-if="f.sin_ppa && !f.facturacion" class="muted" style="font-weight:600">sin precio bolsa</b>
               <b v-else>{{ fmtCOP(f.facturacion) }}</b>
@@ -801,7 +801,7 @@ function _renderFacturaCanvas (f) {
   ctx.fillStyle = 'rgba(145,91,216,.07)'; ctx.fillRect(0, fy, W, footerH)
   ctx.strokeStyle = PURPLE; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, fy); ctx.lineTo(W, fy); ctx.stroke()
   ctx.fillStyle = DARK; ctx.font = 'bold 13px Inter, Arial, sans-serif'
-  ctx.fillText(`Total · ${fmtMWh(f.kwh)}`, padX, fy + 29)
+  ctx.fillText(`Total · ${fmtNum(f.kwh)} kWh`, padX, fy + 29)
   ctx.textAlign = 'right'; ctx.font = 'bold 15px Inter, Arial, sans-serif'
   ctx.fillText(f.sin_ppa && !f.facturacion ? 'sin precio bolsa' : fmtCOP(f.facturacion), colValR, fy + 30)
   ctx.textAlign = 'left'
