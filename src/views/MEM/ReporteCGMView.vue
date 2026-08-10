@@ -236,7 +236,24 @@ const destinatarios = computed(() => {
     }
   }
 
-  return [...grupos.values()].sort((a, b) => (a.nombre || 'zzz').localeCompare(b.nombre || 'zzz'))
+  // 'Operaciones Unergy' (cliente id=157) es un caso especial del backend
+  // (CLIENTES_TODAS_LAS_FRONTERAS en reporte_cgm.py): en vez de resolver sus
+  // fronteras por vínculo real (como cualquier otro Cliente), recibe TODAS
+  // las fronteras del sistema -- a propósito no está vinculado a ninguna,
+  // así que nunca aparecería en la construcción de arriba (que solo mira
+  // clientes_cgm de cada frontera). Se agrega acá como fila fija; el correo
+  // (operaciones@unergy.io) coincide con el contacto CGM ya creado para
+  // este cliente en la BD -- si cambia, hay que actualizarlo en los dos lados.
+  const filas = [...grupos.values()]
+  filas.push({
+    key: 'cliente-157', refTipo: 'cliente', refId: 157, tipo: 'Cliente',
+    nombre: 'Operaciones Unergy', sinVinculo: null,
+    correos: ['operaciones@unergy.io'],
+    linkCorregir: '/clientes/157?tab=contactos', textoCorregir: 'Sin correos CGM — corregir',
+    proyectos: [], etiquetaProyectos: 'Todas las fronteras',
+  })
+
+  return filas.sort((a, b) => (a.nombre || 'zzz').localeCompare(b.nombre || 'zzz'))
 })
 
 const destinatariosFiltrados = computed(() => {
@@ -308,6 +325,7 @@ function limpiarProyectos(rowKey) {
 }
 
 function labelProyectos(row) {
+  if (row.etiquetaProyectos) return row.etiquetaProyectos
   const total = row.proyectos.length
   const numSeleccionados = proyectosDeFila(row.key).size
   if (!numSeleccionados) return `${total} proyecto${total === 1 ? '' : 's'}`
