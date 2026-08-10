@@ -172,7 +172,7 @@
         <div v-if="!esCasoConfiado" class="relative">
           <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
             style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
-            :loading="cargandoCurvaTipica" @click="mostrarMenuReportar = !mostrarMenuReportar" />
+            @click="mostrarMenuReportar = !mostrarMenuReportar" />
           <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
           <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
                style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
@@ -323,13 +323,17 @@ const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
-const cargandoCurvaTipica = ref(false)
 const mostrarMenuReportar = ref(false)
 // Cuál opción de 'Reportar con otra fuente' llenó el editor por última vez
 // -- se manda al guardar para que 'Fuente usada' diga esa fuente específica
 // en vez de un genérico "Editado manualmente". Null si la persona edita
 // celdas a mano sin pasar por ese desplegable.
 const fuenteManualElegida = ref(null)
+// { curva, energia_total_kwh, dias_usados } | null si no hay histórico
+// confiable todavía -- se precarga para que el desplegable "Reportar con
+// otra fuente" muestre el valor real de Curva típica en vez de "Sin dato"
+// fijo (era un placeholder, no reflejaba si de verdad había histórico).
+const curvaTipicaPreview = ref(null)
 const validando = ref(false)
 const ediciones = ref([])
 const subiendoExcelTerceros = ref(false)
@@ -516,8 +520,21 @@ async function cargar() {
     loading.value = false
   }
 }
-onMounted(() => { cargar(); cargarEdiciones(); cargarExclusiones() })
-watch(() => [props.fronteraId, props.fecha], () => { cargar(); cargarEdiciones(); cargarExclusiones() })
+async function cargarCurvaTipicaPreview() {
+  curvaTipicaPreview.value = null
+  try {
+    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/curva-tipica`, {
+      params: { fecha: props.fecha },
+    })
+    curvaTipicaPreview.value = data
+  } catch (e) {
+    curvaTipicaPreview.value = null
+  }
+}
+onMounted(() => { cargar(); cargarEdiciones(); cargarExclusiones(); cargarCurvaTipicaPreview() })
+watch(() => [props.fronteraId, props.fecha], () => {
+  cargar(); cargarEdiciones(); cargarExclusiones(); cargarCurvaTipicaPreview()
+})
 
 // Frontera de terceros (caso=0, ver FRONTERAS_TERCEROS en clasificador.py) --
 // el Excel puede traer varios días; recargamos el detalle del día actual
@@ -631,52 +648,27 @@ const opcionesReportarCon = computed(() => {
     return vals.length ? vals.reduce((a, b) => a + b, 0) : null
   }
   const curvaInversoresFp = conFp(d.curva_solenium)
+  const tipica = curvaTipicaPreview.value
   return [
-    { key: 'tipica', nombre: 'Curva típica (histórico)', nota: 'mediana de días confiables', valor: null, disabled: false },
+    {
+      key: 'tipica', nombre: 'Curva típica (histórico)', curva: tipica?.curva,
+      nota: tipica ? `mediana de ${tipica.dias_usados} días` : 'sin histórico suficiente',
+      valor: tipica ? tipica.energia_total_kwh : null, disabled: !tipica,
+    },
     { key: 'principal', nombre: 'Medidor principal', curva: d.curva_medidor_principal, valor: suma(d.curva_medidor_principal), disabled: suma(d.curva_medidor_principal) == null },
     { key: 'respaldo', nombre: 'Medidor respaldo', curva: d.curva_medidor_respaldo, valor: suma(d.curva_medidor_respaldo), disabled: suma(d.curva_medidor_respaldo) == null },
     { key: 'inversores', nombre: 'Inversores × FP', curva: curvaInversoresFp, valor: suma(curvaInversoresFp), disabled: suma(curvaInversoresFp) == null },
   ]
 })
 
-async function elegirFuenteReportar(op) {
+function elegirFuenteReportar(op) {
   mostrarMenuReportar.value = false
-  if (op.key === 'tipica') {
-    await aplicarCurvaTipica()
-    fuenteManualElegida.value = 'historico'
-    return
-  }
   curvaEditable.value = [...op.curva]
-  fuenteManualElegida.value = op.key
+  fuenteManualElegida.value = op.key === 'tipica' ? 'historico' : op.key
   toast.add({
     severity: 'info', summary: `${op.nombre} aplicado`,
     detail: `${fmtKwh(op.valor)} -- revisa y guarda si está bien.`, life: 4000,
   })
-}
-
-// Mediana x forma horaria de los últimos días confiables (mismo mecanismo
-// que ya alimenta el relleno histórico automático) -- solo llena el editor,
-// no guarda nada; el usuario revisa/ajusta y confirma con "Guardar corrección".
-async function aplicarCurvaTipica() {
-  cargandoCurvaTipica.value = true
-  try {
-    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/curva-tipica`, {
-      params: { fecha: props.fecha },
-    })
-    curvaEditable.value = data.curva
-    toast.add({
-      severity: 'info', summary: 'Curva típica aplicada',
-      detail: `${fmtKwh(data.energia_total_kwh)} -- mediana de ${data.dias_usados} días. Revisa y guarda si está bien.`,
-      life: 5000,
-    })
-  } catch (e) {
-    toast.add({
-      severity: 'warn', summary: 'Sin histórico suficiente',
-      detail: 'No hay al menos 3 días confiables todavía para esta frontera.', life: 4000,
-    })
-  } finally {
-    cargandoCurvaTipica.value = false
-  }
 }
 
 async function guardarCurva() {
