@@ -265,12 +265,9 @@
             <p class="v" :style="{ color: (cumpl.resumen.bajo_minimo || 0) ? '#c0392b' : undefined }">{{ cumpl.resumen.bajo_minimo || 0 }}</p>
           </div>
           <div class="fac-kpi">
-            <p class="k">Energía faltante</p>
-            <p class="v">{{ fmtNum(cumpl.resumen.faltante_mwh) }} MWh</p>
-          </div>
-          <div class="fac-kpi">
-            <p class="k">Sin compromiso</p>
-            <p class="v">{{ cumpl.resumen.sin_compromiso || 0 }}</p>
+            <p class="k">Energía incumplida</p>
+            <p class="v" :style="{ color: (cumpl.resumen.faltante_kwh || 0) ? '#c0392b' : undefined }">{{ fmtNum(cumpl.resumen.faltante_kwh) }} kWh</p>
+            <p class="sub2">{{ fmtNum(cumpl.resumen.faltante_mwh) }} MWh</p>
           </div>
         </div>
         <div class="fac-card">
@@ -278,7 +275,7 @@
             <table class="dt">
               <thead><tr>
                 <th class="l">Contrato (PPA)</th><th class="l">Comerc.</th>
-                <th>Mínimo (MWh)</th><th>Máximo</th><th>Despachado (MWh)</th><th>Cumpl.</th><th class="l">Estado</th>
+                <th>Mínimo (MWh)</th><th>Despachado (MWh)</th><th>Cumpl.</th><th>Incumplido (kWh)</th><th class="l">Estado</th>
               </tr></thead>
               <tbody>
                 <tr v-for="f in cumpl.filas" :key="f.ppa || f.numero_contrato">
@@ -286,10 +283,12 @@
                     <span class="sub2">{{ f.proyecto || '' }}</span></td>
                   <td class="l"><span class="tag">{{ f.comprador || '—' }}</span></td>
                   <td>{{ f.minimo_mwh != null ? fmtNum(f.minimo_mwh) : '—' }}</td>
-                  <td>{{ f.maximo_mwh != null ? fmtNum(f.maximo_mwh) : '—' }}</td>
                   <td class="fw">{{ fmtNum(f.despachado_mwh) }}</td>
                   <td :style="{ color: f.estado === 'bajo_minimo' ? '#c0392b' : '#2C2039', fontWeight: 600 }">
                     {{ f.pct != null ? f.pct + '%' : '—' }}
+                  </td>
+                  <td :style="{ color: f.faltante_kwh > 0 ? '#c0392b' : '#9b8fb0', fontWeight: f.faltante_kwh > 0 ? 600 : 400 }">
+                    {{ f.faltante_kwh > 0 ? fmtNum(f.faltante_kwh) : '—' }}
                   </td>
                   <td class="l">
                     <span class="tag" :style="cumplEstiloEstado(f.estado)">{{ MOTIVOS_CUMPL[f.estado] || f.estado }}</span>
