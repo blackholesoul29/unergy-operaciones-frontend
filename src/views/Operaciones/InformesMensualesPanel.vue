@@ -603,6 +603,7 @@ const CAUSA_POR_CATEGORIA = {
   red: 'Ausencia o anomalía en el suministro eléctrico externo (operador de red)',
   frontera: 'Falla en el sistema de medición / comunicación de la frontera comercial',
   inversores: 'Falla o anomalía en inversor(es) del sistema fotovoltaico',
+  generando_sin_datos: 'Ausencia de datos de generación: no hay registro de monitoreo del período',
   eventos_adversos: 'Evento adverso externo, no atribuible a la infraestructura del proyecto',
 }
 function autoCause(f) {
@@ -1132,9 +1133,9 @@ function calcSLA(f) {
   let slaRevision = 2, slaLabel = 'Crítico (≥90%)'
   const cat = f?.clasificacion?.categoria
   if (cat) {
-    // red = desconexión de suministro → crítico; frontera/inversores → grave;
-    // eventos adversos externos → medio.
-    if (cat === 'frontera' || cat === 'inversores') { slaRevision = 3; slaLabel = 'Grave (66-90%)' }
+    // red = desconexión de suministro → crítico; frontera/inversores y falta de
+    // datos de generación → grave; eventos adversos externos → medio.
+    if (cat === 'frontera' || cat === 'inversores' || cat === 'generando_sin_datos') { slaRevision = 3; slaLabel = 'Grave (66-90%)' }
     else if (cat === 'eventos_adversos') { slaRevision = 4; slaLabel = 'Medio (<66%)' }
   } else {
     const pre = String(f.tipo?.codigo || '').charAt(0)

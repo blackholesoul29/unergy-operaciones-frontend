@@ -7,6 +7,7 @@ const COLOR_CAT = {
   red: '#F59E0B',
   frontera: '#0EA5E9',
   inversores: '#915BD8',
+  generando_sin_datos: '#64748B',
   eventos_adversos: '#EF4444',
 }
 
@@ -15,6 +16,7 @@ const ICONO_CAT = {
   red: 'pi pi-bolt',
   frontera: 'pi pi-gauge',
   inversores: 'pi pi-server',
+  generando_sin_datos: 'pi pi-question-circle',
   eventos_adversos: 'pi pi-exclamation-triangle',
 }
 
