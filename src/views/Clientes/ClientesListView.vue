@@ -166,8 +166,8 @@ function openNew() {
   dialogVisible.value = true
 }
 
-function descargarExcel() {
-  exportarExcel(filtrados.value, [
+async function descargarExcel() {
+  await exportarExcel(filtrados.value, [
     { header: 'Razón social', value: c => formatearNombre(c.razon_social_nombre) },
     { header: 'NIT', value: c => c.nit_cedula || '' },
     { header: 'Plantas', value: c => c.num_plantas ?? 0 },

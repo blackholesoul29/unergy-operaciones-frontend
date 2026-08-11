@@ -641,8 +641,8 @@ function estadoSeverity(e) {
   return map[e] || 'info'
 }
 
-function descargarExcel() {
-  exportarExcel(filteredFronteras.value, [
+async function descargarExcel() {
+  await exportarExcel(filteredFronteras.value, [
     { header: 'Código', value: f => f.codigo_frontera || '' },
     { header: 'Nombre', value: f => formatearNombre(f.nombre_frontera) },
     { header: 'Proyecto', value: f => f.proyecto_nombre || '' },

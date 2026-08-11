@@ -309,8 +309,8 @@ const lastSyncLabel = computed(() => {
   return lastSync.value.toLocaleString('es-CO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 })
 
-function descargarExcel() {
-  exportarExcel(filteredProjects.value, [
+async function descargarExcel() {
+  await exportarExcel(filteredProjects.value, [
     { header: 'Código', value: p => p.name || '' },
     { header: 'Proyecto', value: p => p.commercialName || '' },
     { header: 'Estado', value: p => p.status || '' },

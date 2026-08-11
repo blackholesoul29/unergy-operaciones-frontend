@@ -730,8 +730,8 @@ function goDetail(row) { router.push(`/proyectos/${row.id}`) }
 function goEdit(row)   { router.push(`/proyectos/${row.id}?edit=true`) }
 function openNew()     { dialogVisible.value = true }
 
-function descargarExcel() {
-  exportarExcel(filteredItems.value, [
+async function descargarExcel() {
+  await exportarExcel(filteredItems.value, [
     { header: 'Cód. TSF', value: p => p.codigo_tsf || '' },
     { header: 'Nombre comercial', value: p => formatearNombreProyecto(p.nombre_comercial) },
     { header: 'Estado', value: p => ESTADO_LABELS[p.estado] || p.estado || '' },
