@@ -350,7 +350,7 @@ async function enviarSeleccionados() {
           proyectos: proyectos.size ? [...proyectos] : null,
         }
       }),
-    })
+    }, { timeout: 120000 }) // destinatarios como "Operaciones Unergy" piden TODAS las fronteras (~300) -- el default de 30s no basta
     const ok = data.resultados.filter(r => r.ok)
     const conError = data.resultados.filter(r => !r.ok)
     toast.add({
