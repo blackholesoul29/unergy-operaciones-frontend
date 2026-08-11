@@ -803,9 +803,21 @@ function casoInfoMedidorConsumo(d) {
 //    dato, de verdad no hay inversores contra qué validarlo.
 function casoInfo5(d) {
   if (d.medidor_usado === 'cgm') {
-    return d.nota_solenium
-      ? { nombre: 'Sin inversores registrados', descripcion: 'El reporte CGM fue válido; el proyecto no tiene inversores registrados en Solenium' }
-      : { nombre: 'CGM válido, Solenium incompleto', descripcion: 'El reporte CGM ya era válido; los inversores reportaron incompleto ese día y no se pudieron usar para validar cruzado' }
+    if (d.nota_solenium) {
+      return { nombre: 'Sin inversores registrados', descripcion: 'El reporte CGM fue válido; el proyecto no tiene inversores registrados en Solenium' }
+    }
+    // Solenium incompleto no significa "no se pudo usar" -- si SÍ se
+    // comparó contra las horas que reportó (error_final_pct presente), la
+    // descripción vieja decía lo contrario de lo que en realidad pasó (ver
+    // Minigranja 0018 La Paz Leyenda 2026-08-10: 1,53% de diferencia, sí se
+    // cruzó y coincidió).
+    if (d.error_final_pct != null) {
+      return {
+        nombre: 'CGM válido, Solenium incompleto',
+        descripcion: `El reporte CGM ya era válido; se comparó contra los inversores en las horas que sí reportaron ese día (${Math.abs(d.error_final_pct).toFixed(1)}% de diferencia)`,
+      }
+    }
+    return { nombre: 'CGM válido, Solenium incompleto', descripcion: 'El reporte CGM ya era válido; los inversores no reportaron nada ese día, no hubo con qué cruzar' }
   }
   if (d.medidor_usado === 'inversores') {
     return { nombre: 'Inversores parciales × Factor de Pérdida', descripcion: 'CGM no válido y el medidor está caído; se usa el total parcial de inversores corregido con el histórico de pérdida' }
@@ -814,7 +826,13 @@ function casoInfo5(d) {
     return { nombre: 'Reconstruido con reconectador', descripcion: 'CGM no válido, el medidor está caído y Solenium no tiene dato completo; se reconstruye con el reconectador' }
   }
   if (d.medidor_usado === 'principal_sin_cgm' || d.medidor_usado === 'respaldo_sin_cgm') {
-    return { nombre: 'Medidor sin CGM ni inversores', descripcion: 'CGM no reportó nada ese día y no hay inversores registrados; se usa el medidor directo' }
+    if (d.error_final_pct != null) {
+      return {
+        nombre: 'Medidor sin CGM, validado contra inversores',
+        descripcion: `CGM no reportó nada ese día; se usa el medidor directo, comparado contra los inversores en las horas que sí reportaron (${Math.abs(d.error_final_pct).toFixed(1)}% de diferencia)`,
+      }
+    }
+    return { nombre: 'Medidor sin CGM ni inversores', descripcion: 'CGM no reportó nada ese día y no hay inversores con qué comparar; se usa el medidor directo' }
   }
   return { nombre: 'Sin inversores registrados', descripcion: 'Hay medidor con dato, pero el proyecto no tiene inversores en Solenium contra qué validarlo' }
 }
