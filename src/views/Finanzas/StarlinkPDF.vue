@@ -124,6 +124,10 @@
                         </span>
                         {{ fila.nombre_comercial }}
                       </span>
+                      <div v-else-if="fila.excluido" class="flex items-center gap-1.5">
+                        <Tag severity="secondary" value="No aplica" />
+                        <span class="text-[11px] text-gray-400">{{ fila.descripcion }}</span>
+                      </div>
                       <div v-else class="flex items-center gap-1.5">
                         <Tag severity="warn" value="Sin asignar" />
                         <button type="button" class="mn-asignar-btn" title="Asignar minigranja"
@@ -247,11 +251,18 @@
           />
         </div>
 
+        <p class="text-[11px] text-gray-400">
+          Si el sitio no corresponde a un proyecto nuestro (ej. tema contable, oficina),
+          márcalo como "No aplica" en vez de asignarle una minigranja.
+        </p>
+
         <div class="flex gap-2 justify-end pt-1">
+          <Button label="No aplica" size="small" outlined severity="secondary"
+            :disabled="asignando" :loading="excluyendo" @click="confirmarExcluirSitio" />
           <Button label="Cancelar" size="small" outlined severity="secondary"
-            :disabled="asignando" @click="showAsignarDialog = false" />
+            :disabled="asignando || excluyendo" @click="showAsignarDialog = false" />
           <Button label="Asignar" icon="pi pi-check" size="small"
-            :loading="asignando" :disabled="!proyectoParaAsignar"
+            :loading="asignando" :disabled="!proyectoParaAsignar || excluyendo"
             @click="confirmarAsignarMinigranja"
             style="background:#915BD8;border-color:#915BD8" />
         </div>
@@ -285,9 +296,9 @@ const cargandoFactura = ref(false)
 const lineas = ref([])   // [{ descripcion, proyecto_id, nombre_comercial, tipo_proyecto, cantidad_total, precio_unitario_promedio, sin_iva, iva, monto_total }, ...]
 
 // Agrupación por tipo de proyecto (mismo patrón que ArriendosOperaciones.vue)
-const TIPO_ORDER  = ['sin_asignar', 'minigranja', 'autoconsumo', 'gd', 'movilidad_electrica', 'otro']
-const TIPO_LABELS_FULL = { sin_asignar: 'Sin asignar', minigranja: 'Minigranja', autoconsumo: 'Autoconsumo', gd: 'GD', movilidad_electrica: 'Movilidad', otro: 'Otro' }
-const TIPO_DOT_FULL    = { sin_asignar: '#F59E0B', minigranja: '#10B981', autoconsumo: '#6366F1', gd: '#3B82F6', movilidad_electrica: '#8B5CF6', otro: '#9CA3AF' }
+const TIPO_ORDER  = ['sin_asignar', 'minigranja', 'autoconsumo', 'gd', 'movilidad_electrica', 'otro', 'excluido']
+const TIPO_LABELS_FULL = { sin_asignar: 'Sin asignar', minigranja: 'Minigranja', autoconsumo: 'Autoconsumo', gd: 'GD', movilidad_electrica: 'Movilidad', otro: 'Otro', excluido: 'No aplica' }
+const TIPO_DOT_FULL    = { sin_asignar: '#F59E0B', minigranja: '#10B981', autoconsumo: '#6366F1', gd: '#3B82F6', movilidad_electrica: '#8B5CF6', otro: '#9CA3AF', excluido: '#D1D5DB' }
 
 // ── Filtro de búsqueda por nombre de minigranja ────────────────────────────────
 const filtroTexto = ref('')
@@ -300,7 +311,8 @@ const filasFiltradas = computed(() => {
 const secciones = computed(() => {
   const groups = {}
   for (const f of filasFiltradas.value) {
-    const t = f.proyecto_id == null ? 'sin_asignar' : (f.tipo_proyecto || 'otro')
+    const t = f.proyecto_id != null ? (f.tipo_proyecto || 'otro')
+      : (f.excluido ? 'excluido' : 'sin_asignar')
     ;(groups[t] ||= []).push(f)
   }
   return TIPO_ORDER.filter(t => groups[t]?.length)
@@ -459,6 +471,7 @@ const showAsignarDialog     = ref(false)
 const descripcionParaAsignar = ref('')
 const proyectoParaAsignar   = ref(null)
 const asignando             = ref(false)
+const excluyendo            = ref(false)
 
 function _normSitio(s) {
   return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
@@ -501,6 +514,27 @@ async function confirmarAsignarMinigranja() {
       detail: err.response?.data?.detail ?? err.message, life: 4000 })
   } finally {
     asignando.value = false
+  }
+}
+
+async function confirmarExcluirSitio() {
+  if (!descripcionParaAsignar.value) return
+  excluyendo.value = true
+  try {
+    await api.put('/starlink/mapeo', {
+      patron:      _normSitio(descripcionParaAsignar.value),
+      proyecto_id: null,
+      excluido:    true,
+      activo:      true,
+    })
+    toast.add({ severity: 'success', summary: 'Sitio marcado como "No aplica"', life: 3000 })
+    showAsignarDialog.value = false
+    await cargarFactura(periodoActual.value)
+  } catch (err) {
+    toast.add({ severity: 'error', summary: 'Error al excluir el sitio',
+      detail: err.response?.data?.detail ?? err.message, life: 4000 })
+  } finally {
+    excluyendo.value = false
   }
 }
 

@@ -335,7 +335,7 @@ async function onExportExcel() {
       if (err?.response?.status !== 404) throw err
       // 404 = sin factura ese mes, estado normal — no bloquea el export
     }
-    const sinAsignar = (starlinkData?.lineas ?? []).filter(l => l.proyecto_id == null)
+    const sinAsignar = (starlinkData?.lineas ?? []).filter(l => l.proyecto_id == null && !l.excluido)
     if (sinAsignar.length) {
       const nombres = sinAsignar.map(l => l.descripcion)
       const detalle = nombres.length > 5
