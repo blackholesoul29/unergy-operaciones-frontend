@@ -223,16 +223,16 @@
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ubicación</p>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="flex flex-col gap-1">
-                  <label class="field-label">Dirección</label>
-                  <InputText v-model="editForm.direccion_vereda" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
                   <label class="field-label">Latitud</label>
                   <InputNumber v-model="editForm.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Longitud</label>
                   <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Dirección</label>
+                  <InputText v-model="editForm.direccion_vereda" class="w-full" />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Link Google Maps</label>
