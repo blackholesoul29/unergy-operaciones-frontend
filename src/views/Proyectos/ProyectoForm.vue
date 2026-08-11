@@ -11,7 +11,7 @@
       </div>
       <div>
         <label class="field-label">Estado</label>
-        <Select v-model="f.estado" :options="estados" class="w-full" />
+        <Select v-model="f.estado" :options="estados" optionLabel="label" optionValue="value" class="w-full" />
       </div>
       <div>
         <label class="field-label">Potencia AC (kW)</label>
@@ -209,7 +209,12 @@ const emit = defineEmits(['save', 'cancel'])
 
 const editMode = computed(() => !!props.proyecto)
 
-const estados = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const estados = [
+  { label: 'En desarrollo', value: 'en_desarrollo' },
+  { label: 'En operacion', value: 'en_operacion' },
+  { label: 'Suspendido', value: 'suspendido' },
+  { label: 'Cancelado', value: 'cancelado' },
+]
 const tipos = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
 const tecnologias = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const clasificaciones = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
