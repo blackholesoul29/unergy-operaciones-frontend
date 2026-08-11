@@ -10,7 +10,7 @@
         </div>
         <div v-else class="flex flex-col gap-2 mt-1">
           <InputText v-model="editForm.nombre_comercial" class="text-base font-semibold w-80" />
-          <Select v-model="editForm.estado" :options="ESTADOS" class="w-48" />
+          <Select v-model="editForm.estado" :options="ESTADOS" optionLabel="label" optionValue="value" class="w-48" />
         </div>
       </div>
       <div class="flex gap-2">
@@ -842,7 +842,12 @@ const router = useRouter()
 const toast = useToast()
 
 // ── Constantes (sin hardcode en template) ────────────────────────────────────
-const ESTADOS = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const ESTADOS = [
+  { label: 'En desarrollo', value: 'en_desarrollo' },
+  { label: 'En operacion', value: 'en_operacion' },
+  { label: 'Suspendido', value: 'suspendido' },
+  { label: 'Cancelado', value: 'cancelado' },
+]
 const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
 const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
