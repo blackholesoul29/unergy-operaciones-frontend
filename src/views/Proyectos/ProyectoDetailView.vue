@@ -44,7 +44,7 @@
               :value="proyecto.fecha_inicio_comercializacion ? (fmtFecha(proyecto.fecha_inicio_comercializacion) + (proyecto.fecha_comercializacion_editada_manual ? ' (manual)' : ' (auto)')) : '—'" />
             <InfoField label="Fecha fin de representación" :value="proyecto.fecha_fin_representacion ? fmtFecha(proyecto.fecha_fin_representacion) : '—'" />
             <div class="flex flex-col gap-1">
-              <label class="field-label">Comunidad energética</label>
+              <p class="text-xs text-gray-400 uppercase tracking-wide">Comunidad energética</p>
               <div>
                 <Tag v-if="proyecto.es_comunidad_energetica" severity="success"
                      :value="proyecto.nombre_comunidad ? ('🏘 ' + proyecto.nombre_comunidad) : '🏘 Sí'" />
