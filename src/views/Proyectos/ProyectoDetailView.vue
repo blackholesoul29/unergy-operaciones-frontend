@@ -260,6 +260,14 @@
                   <label class="field-label">Producción específica (kWh/kWp)</label>
                   <InputNumber v-model="editForm.produccion_especifica_kwh_kwp" :maxFractionDigits="2" locale="en-US" class="w-full" />
                 </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Latitud</label>
+                  <InputNumber v-model="editForm.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Longitud</label>
+                  <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
               </div>
             </div>
             <!-- Paneles -->
@@ -934,6 +942,8 @@ const editForm = reactive({
   potencia_instalada_kwp: null,
   departamento: null,
   municipio: null,
+  latitud: null,
+  longitud: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
   carpeta_drive_codigo: null,
@@ -1094,6 +1104,15 @@ function populateEditForm() {
 
 watch(isEditMode, (entering) => {
   if (entering && proyecto.value) populateEditForm()
+})
+
+// Autocompleta el link de Google Maps con las coordenadas en cuanto haya
+// latitud y longitud -- solo si el campo está vacío, nunca pisa un link
+// ya cargado a mano.
+watch([() => editForm.latitud, () => editForm.longitud], ([lat, lon]) => {
+  if (lat != null && lon != null && !editInfoTecnica.url_ubicacion) {
+    editInfoTecnica.url_ubicacion = `https://www.google.com/maps?q=${lat},${lon}`
+  }
 })
 
 function enterEditMode() {
