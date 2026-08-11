@@ -10,7 +10,7 @@
       </template>
     </PageHeader>
 
-    <!-- Aviso: proyectos pendientes de Sun Factory / Quoia / Solenium -->
+    <!-- Aviso: proyectos pendientes de Sun Factory / Quoia -->
     <div v-if="pendientes.length" class="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
          style="background: rgba(214,68,85,0.06); border: 1.5px solid rgba(214,68,85,0.25);">
       <span class="text-sm font-medium" style="color: #D64455;">
@@ -339,10 +339,10 @@
       </div>
     </Dialog>
 
-    <!-- Dialog: Proyectos pendientes (Sun Factory / Quoia / Solenium) -->
+    <!-- Dialog: Proyectos pendientes (Sun Factory / Quoia) -->
     <Dialog v-model:visible="pendientesVisible" header="Proyectos pendientes" modal class="w-full max-w-3xl">
       <p class="text-sm mb-4" style="color: #6b5a8a;">
-        Sun Factory, Quoia y Solenium reportan estos proyectos. Confirma para crearlos o
+        Sun Factory y Quoia reportan estos proyectos. Confirma para crearlos o
         actualizar el registro existente, o ignóralos si no aplican.
       </p>
       <div v-if="loadingPendientes" class="flex items-center justify-center py-8">
@@ -795,7 +795,7 @@ async function doDelete() {
   }
 }
 
-// ── Proyectos pendientes (Sun Factory + Quoia + Solenium) ──────────────────────
+// ── Proyectos pendientes (Sun Factory + Quoia) ──────────────────────────────
 const pendientes = ref([])
 const loadingPendientes = ref(false)
 const pendientesVisible = ref(false)
@@ -810,7 +810,7 @@ async function loadPendientes() {
       _loading: null,
     }))
   } catch {
-    // Sun Factory/Quoia/Solenium sin configurar u otro error -- no bloquea la vista.
+    // Sun Factory/Quoia sin configurar u otro error -- no bloquea la vista.
     pendientes.value = []
   }
 }

@@ -87,7 +87,7 @@
               Ningún proyecto en construcción tiene frontera asignada todavía.
             </template>
             <template v-else>
-              Aún no hay proyectos en el pipeline. Revisa «Proyectos pendientes» en la pestaña Proyectos para traer nuevos desde TSF/Solenium.
+              Aún no hay proyectos en el pipeline. Revisa «Proyectos pendientes» en la pestaña Proyectos para traer nuevos desde Sun Factory/Quoia.
             </template>
           </div>
         </template>
