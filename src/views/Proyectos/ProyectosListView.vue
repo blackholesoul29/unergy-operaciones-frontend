@@ -6,6 +6,8 @@
         <Button label="Inversores minigranja" icon="pi pi-bolt" size="small" severity="secondary" outlined
                 :loading="invBackfillLoading" @click="previewInversoresBackfill"
                 v-tooltip.bottom="'Crea los 5 inversores típicos para minigranjas'" />
+        <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" severity="secondary" outlined
+                @click="descargarExcel" />
         <Button label="Nuevo proyecto" icon="pi pi-plus" size="small" @click="openNew" />
       </template>
     </PageHeader>
@@ -424,6 +426,7 @@ import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import ProyectoForm from './ProyectoForm.vue'
 import { formatearNombreProyecto } from './proyectosUi'
+import { exportarExcel } from '@/utils/exportarExcel'
 
 const router = useRouter()
 const route  = useRoute()
@@ -726,6 +729,22 @@ onMounted(() => {
 function goDetail(row) { router.push(`/proyectos/${row.id}`) }
 function goEdit(row)   { router.push(`/proyectos/${row.id}?edit=true`) }
 function openNew()     { dialogVisible.value = true }
+
+function descargarExcel() {
+  exportarExcel(filteredItems.value, [
+    { header: 'Cód. TSF', value: p => p.codigo_tsf || '' },
+    { header: 'Nombre comercial', value: p => formatearNombreProyecto(p.nombre_comercial) },
+    { header: 'Estado', value: p => ESTADO_LABELS[p.estado] || p.estado || '' },
+    { header: 'Tipo', value: p => TIPO_LABELS[p.tipo_proyecto] || p.tipo_proyecto || '' },
+    { header: 'Municipio', value: p => p.municipio || '' },
+    { header: 'Departamento', value: p => p.departamento || '' },
+    { header: 'Inicio comercialización', value: p => p.fecha_inicio_comercializacion ? fmtFecha(p.fecha_inicio_comercializacion) : '' },
+    { header: 'Capacidad instalada (kWp)', value: p => p.info_tecnica?.capacidad_instalada_kwp ?? '' },
+    { header: 'Potencia AC (kW)', value: p => p.info_tecnica?.potencia_ac_kw ?? '' },
+    { header: 'PPA', value: p => (p.ppa_contratos || []).map(ppaLabel).join(', ') },
+    { header: 'Inversionistas', value: p => (p.inversionistas || []).map(i => i.cliente_nombre).join(', ') },
+  ], `proyectos_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Proyectos')
+}
 
 function confirmDelete(row) {
   deleteProyecto.value = row

@@ -5,6 +5,8 @@
       <template #actions>
         <Button icon="pi pi-chart-scatter" label="Diagrama Fasorial" size="small" severity="secondary" outlined
                 @click="showFasorial = true" />
+        <Button icon="pi pi-file-excel" label="Descargar Excel" size="small" severity="secondary" outlined
+                @click="descargarExcel" />
         <Button icon="pi pi-plus" label="Nueva Frontera" size="small"
                 @click="abrirCrear" />
       </template>
@@ -357,6 +359,7 @@ import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { formatearNombre } from '@/utils/nombreFormato'
+import { exportarExcel } from '@/utils/exportarExcel'
 
 // ── Fasorial ──────────────────────────────────────────────────────────────────
 const fasColors  = ['#E84040', '#2ECC71', '#3B82F6']
@@ -636,6 +639,22 @@ function tipoSeverity(t) {
 function estadoSeverity(e) {
   const map = { activa: 'success', en_registro: 'warn', en_falla: 'danger', cancelada: 'secondary' }
   return map[e] || 'info'
+}
+
+function descargarExcel() {
+  exportarExcel(filteredFronteras.value, [
+    { header: 'Código', value: f => f.codigo_frontera || '' },
+    { header: 'Nombre', value: f => formatearNombre(f.nombre_frontera) },
+    { header: 'Proyecto', value: f => f.proyecto_nombre || '' },
+    { header: 'Tipo', value: f => tipoLabel(f.tipo_frontera) },
+    { header: 'Estado', value: f => f.estado || '' },
+    { header: 'Fecha Registro ASIC', value: f => f.fecha_registro_asic || '' },
+    { header: 'Serial Medidor Principal', value: f => f.nro_serie_med_ppal || '' },
+    { header: 'Serial Medidor Respaldo', value: f => f.nro_serie_med_resp || '' },
+    { header: 'Operador', value: f => f.operador_comercial || f.operador_red || '' },
+    { header: 'Cap. MW', value: f => f.capacidad_efectiva_mw ? Number(f.capacidad_efectiva_mw).toFixed(3) : '' },
+    { header: 'Municipio', value: f => f.municipio || '' },
+  ], `fronteras_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Fronteras')
 }
 
 function editFrontera(f) {

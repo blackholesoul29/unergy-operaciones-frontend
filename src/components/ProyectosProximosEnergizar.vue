@@ -38,6 +38,14 @@
           @click="onSync"
           v-tooltip.bottom="'Trae de nuevo % de obra, estado y fecha estimada desde Sun Factory'"
         />
+        <Button
+          icon="pi pi-file-excel"
+          label="Descargar Excel"
+          size="small"
+          severity="secondary"
+          outlined
+          @click="descargarExcel"
+        />
       </div>
       <p class="text-xs" style="color: #7a6e8a;">
         <template v-if="lastSync">última sincronización {{ lastSyncLabel }}</template>
@@ -243,6 +251,7 @@ import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import { useEnergizationProjects } from '@/composables/useEnergizationProjects'
+import { exportarExcel } from '@/utils/exportarExcel'
 
 const {
   projects, loading, warning, syncing, lastSync,
@@ -299,6 +308,19 @@ const lastSyncLabel = computed(() => {
   if (hours < 24) return `hace ${hours} h`
   return lastSync.value.toLocaleString('es-CO', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
 })
+
+function descargarExcel() {
+  exportarExcel(filteredProjects.value, [
+    { header: 'Código', value: p => p.name || '' },
+    { header: 'Proyecto', value: p => p.commercialName || '' },
+    { header: 'Estado', value: p => p.status || '' },
+    { header: 'Energización', value: p => formatDate(p.energizationDate) },
+    { header: '% Obra', value: p => p.avancePct ?? '' },
+    { header: 'Frontera asignada', value: p => p.tieneFrontera ? (p.codigoFrontera || 'Sí') : '' },
+    { header: 'Contratos', value: p => (p.contracts || []).join(', ') },
+    { header: 'MWh/mes', value: p => p.monthlyMwh ?? 0 },
+  ], `proximos_a_energizar_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Próximos a energizar')
+}
 
 async function onSync() {
   const r = await syncNow()
