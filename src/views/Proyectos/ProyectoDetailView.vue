@@ -1108,11 +1108,21 @@ function cancelEdit() {
 }
 
 async function saveEdit() {
+  if (!editForm.nombre_comercial?.trim()) {
+    toast.add({ severity: 'error', summary: 'Falta el nombre', detail: 'El nombre comercial no puede quedar vacío.', life: 4000 })
+    return
+  }
   guardando.value = true
   try {
+    // Siempre se envían todas las claves (no solo las no-vacías): editForm ya
+    // viene pre-poblado con el estado actual del proyecto (populateEditForm),
+    // así que reenviarlas sin filtrar preserva lo que no se tocó Y permite
+    // limpiar un campo a null -- filtrar por "!= ''" (como antes) hacía que
+    // borrar un valor y guardar nunca lo limpiara de verdad (bug real
+    // encontrado con "Capacidad instalada" en Bayunca, 2026-08-11).
     const payload = {}
     for (const [k, v] of Object.entries(editForm)) {
-      if (v !== null && v !== undefined && v !== '') payload[k] = v
+      payload[k] = v === '' ? null : v
     }
     const p90json = serializeMonthArray(editP90.value)
     const p50json = serializeMonthArray(editP50.value)
@@ -1135,11 +1145,13 @@ async function saveEdit() {
     payload.nombre_comunidad = editForm.es_comunidad_energetica ? (editForm.nombre_comunidad || null) : null
 
     await api.patch(`/proyectos/${route.params.id}`, payload)
+    // Mismo criterio que arriba -- sin filtrar, para poder limpiar un campo
+    // (ver comentario en el payload de editForm).
     const itPayload = {}
     for (const [k, v] of Object.entries(editInfoTecnica)) {
-      if (v !== null && v !== undefined && v !== '') itPayload[k] = v
+      itPayload[k] = v === '' ? null : v
     }
-    if (Object.keys(itPayload).length) await api.put(`/proyectos/${route.params.id}/info-tecnica`, itPayload)
+    await api.put(`/proyectos/${route.params.id}/info-tecnica`, itPayload)
     const [proyRes, invRes] = await Promise.all([
       api.get(`/proyectos/${route.params.id}`),
       api.get(`/proyectos/${route.params.id}/inversionistas`),
