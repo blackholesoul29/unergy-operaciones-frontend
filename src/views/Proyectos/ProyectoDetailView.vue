@@ -227,6 +227,14 @@
                   <InputText v-model="editForm.direccion_vereda" class="w-full" />
                 </div>
                 <div class="flex flex-col gap-1">
+                  <label class="field-label">Latitud</label>
+                  <InputNumber v-model="editForm.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Longitud</label>
+                  <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
                   <label class="field-label">Link Google Maps</label>
                   <InputText v-model="editInfoTecnica.url_ubicacion" class="w-full" placeholder="https://maps.app.goo.gl/..." />
                 </div>
@@ -259,14 +267,6 @@
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Producción específica (kWh/kWp)</label>
                   <InputNumber v-model="editForm.produccion_especifica_kwh_kwp" :maxFractionDigits="2" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Latitud</label>
-                  <InputNumber v-model="editForm.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Longitud</label>
-                  <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
                 </div>
               </div>
             </div>
