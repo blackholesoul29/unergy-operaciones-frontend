@@ -83,7 +83,7 @@
           <template v-for="row in destinatariosFiltrados" :key="row.key">
             <tr class="border-t" style="border-color: #f0ecf6;">
               <td class="px-4 py-2.5">
-                <p v-if="row.nombre" class="font-medium" style="color: #2C2039;">{{ row.nombre }}</p>
+                <p v-if="row.nombre" class="font-medium" style="color: #2C2039;">{{ formatearNombre(row.nombre) }}</p>
                 <p v-else class="text-xs italic" style="color: #c4b8d4;">{{ row.sinVinculo }}</p>
               </td>
               <td class="px-4 py-2.5">
@@ -138,7 +138,7 @@
                       : proyectosDeFila(row.key).size
                         ? 'background:#fff; border:1px solid #e8e0f0; color:#c4b8d4;'
                         : 'background:#fff; border:1px solid #e8e0f0; color:#6b5a8a;'">
-                    {{ p.nombre }}
+                    {{ formatearNombre(p.nombre) }}
                   </button>
                 </div>
               </td>
@@ -165,6 +165,7 @@ import InputIcon from 'primevue/inputicon'
 import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
+import { formatearNombre } from '@/utils/nombreFormato'
 import HistorialEnviosCGM from './HistorialEnviosCGM.vue'
 
 const toast = useToast()

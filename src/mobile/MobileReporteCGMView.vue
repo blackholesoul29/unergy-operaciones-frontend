@@ -50,7 +50,7 @@
                 {{ labelProyectos(row) }}
               </span>
             </div>
-            <div class="cgm-nombre" :class="{ 'cgm-nombre--muted': !row.nombre }">{{ row.nombre || row.sinVinculo }}</div>
+            <div class="cgm-nombre" :class="{ 'cgm-nombre--muted': !row.nombre }">{{ row.nombre ? formatearNombre(row.nombre) : row.sinVinculo }}</div>
 
             <RouterLink v-if="row.linkCorregir && row.correos.length" :to="row.linkCorregir"
               class="cgm-correos" @click.stop>
@@ -73,7 +73,7 @@
                     'cgm-chip--dim': proyectosDeFila(row.key).size && !proyectosDeFila(row.key).has(p.id),
                   }"
                   @click.stop="toggleProyecto(row.key, p.id)">
-                  {{ p.nombre }}
+                  {{ formatearNombre(p.nombre) }}
                 </button>
               </div>
             </div>
@@ -99,6 +99,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
+import { formatearNombre } from '@/utils/nombreFormato'
 import MobileTabBar from '@/mobile/components/MobileTabBar.vue'
 
 const toast = useToast()
