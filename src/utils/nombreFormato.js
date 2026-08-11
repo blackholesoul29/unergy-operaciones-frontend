@@ -13,17 +13,33 @@ const SIGLAS = [
   'MGS', 'GD', 'COX', 'S.A.S.', 'E.S.P.',
   'MDM', 'IML', 'AMC', 'IX', 'VIII', 'PSF', 'CSCI', 'FMO', 'FEM', 'BBVA', 'S.A', 'E2E', 'CGM',
   'AGGE', 'AGPE', 'MVA', 'X', 'I',
+  'CEDENAR', 'CENS', 'EPM', 'ESSA', 'ENERCA',
 ]
 const SIGLAS_POR_CLAVE = new Map(SIGLAS.map(s => [s.replace(/\./g, '').toUpperCase(), s]))
 
+// Palabras completas con capitalización fija que no siguen el patrón general
+// de siglas por fragmento -- ej. el operador de red "Air-e", con guion y solo
+// la primera letra de cada lado en mayúscula (no una sigla en mayúscula total).
+// Clave: la palabra sin guion, en mayúscula, para reconocerla venga como venga
+// ("AIR-E", "air-e", "Air-E"...).
+const PALABRAS_FIJAS = new Map([
+  ['AIRE', 'Air-e'],
+])
+
+// Conectores que siempre van en minúscula (nunca al inicio de una sigla ni
+// capitalizados), ej. "Ingeniería de Energía" -> "de", "Ayura y Cía" -> "y".
+const CONECTORES = new Set(['DE', 'Y'])
+
 // Dá formato a un fragmento sin guiones (solo letras/dígitos/puntos): si es
 // una sigla conocida la devuelve tal cual estaba definida (con sus puntos),
-// si no, capitaliza solo la primera letra y deja números/puntos como estaban.
+// si es un conector siempre va en minúscula, si no, capitaliza solo la
+// primera letra y deja números/puntos como estaban.
 function formatearFragmento(frag) {
   if (!frag) return ''
   const clave = frag.replace(/\./g, '').toUpperCase()
   const sigla = SIGLAS_POR_CLAVE.get(clave)
   if (sigla) return sigla
+  if (CONECTORES.has(clave)) return frag.toLowerCase()
   let vistaLetra = false
   return frag.replace(/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, (c) => {
     const out = vistaLetra ? c.toLowerCase() : c.toUpperCase()
@@ -39,6 +55,9 @@ export function formatearNombre(nombre) {
     .split(/\s+/)
     .map(palabra => {
       if (!palabra) return ''
+      const claveFija = palabra.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '').toUpperCase()
+      const fija = PALABRAS_FIJAS.get(claveFija)
+      if (fija) return fija
       if (!palabra.includes('-')) {
         // Quita comas y cualquier símbolo suelto que no sea letra/dígito/punto.
         const limpio = palabra.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ.]/g, '')
