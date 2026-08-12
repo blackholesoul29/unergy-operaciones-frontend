@@ -1026,31 +1026,25 @@ const fuentes = computed(() => {
     usado: d.medidor_usado === 'cgm',
   })
 
-  // Si Quoia ya muestra otro valor para el medidor USADO (medidor_
-  // actualizado_en_quoia + curva_actual), esa fila muestra directo el valor
-  // en vivo en vez del persistido al clasificar, con la etiqueta
-  // "(actualizado)" -- el otro medidor (el que no se usó) sigue mostrando
-  // lo persistido normal, no hay curva en vivo calculada para ese.
-  const mu = d.medidor_usado || ''
-  const tieneActualizado = d.medidor_actualizado_en_quoia && d.curva_actual != null
-
-  const ppalActualizado = tieneActualizado && mu.startsWith('principal')
-  const medPpal = ppalActualizado ? sumaCurva(d.curva_actual) : sumaCurva(d.curva_medidor_principal)
+  // 'Detalle de las fuentes' muestra SIEMPRE lo persistido al clasificar --
+  // lo que de verdad informa 'Energía Total' de hoy -- sin importar si
+  // Quoia ya cambió el valor en vivo (eso es el aviso azul de arriba, y la
+  // opción "(actualizado)" en 'Reportar con otra fuente'; mezclarlo acá
+  // hacía parecer que el valor actualizado YA era el reportado, sin que la
+  // persona lo hubiera elegido -- ver Detalle de las fuentes 2026-08-12).
   lista.push({
-    clave: 'principal', nombre: ppalActualizado ? 'Medidor principal (actualizado)' : 'Medidor principal',
-    estado: medPpal !== null ? 'ok' : 'no',
-    detalle: medPpal !== null ? 'Lectura disponible' : 'Sin lectura',
-    valor: medPpal,
+    clave: 'principal', nombre: 'Medidor principal',
+    estado: sumaCurva(d.curva_medidor_principal) !== null ? 'ok' : 'no',
+    detalle: sumaCurva(d.curva_medidor_principal) !== null ? 'Lectura disponible' : 'Sin lectura',
+    valor: sumaCurva(d.curva_medidor_principal),
     usado: d.medidor_usado === 'principal',
   })
 
-  const respActualizado = tieneActualizado && mu.startsWith('respaldo')
-  const medResp = respActualizado ? sumaCurva(d.curva_actual) : sumaCurva(d.curva_medidor_respaldo)
   lista.push({
-    clave: 'respaldo', nombre: respActualizado ? 'Medidor respaldo (actualizado)' : 'Medidor respaldo',
-    estado: medResp !== null ? 'ok' : 'no',
-    detalle: medResp !== null ? 'Lectura disponible' : 'Sin lectura',
-    valor: medResp,
+    clave: 'respaldo', nombre: 'Medidor respaldo',
+    estado: sumaCurva(d.curva_medidor_respaldo) !== null ? 'ok' : 'no',
+    detalle: sumaCurva(d.curva_medidor_respaldo) !== null ? 'Lectura disponible' : 'Sin lectura',
+    valor: sumaCurva(d.curva_medidor_respaldo),
     usado: d.medidor_usado === 'respaldo',
   })
 
