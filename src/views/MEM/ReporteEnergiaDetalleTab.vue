@@ -145,7 +145,7 @@
             <tr v-for="h in 12" :key="h - 1" :class="esHoraRellenada(h - 1) ? 'fila-rellenada' : ''">
               <td>{{ h - 1 }}h</td>
               <td>
-                <InputNumber v-model="curvaEditable[h - 1]" :minFractionDigits="2" :maxFractionDigits="2"
+                <InputNumber v-model="curvaEditable[h - 1]" :minFractionDigits="2" :maxFractionDigits="2" locale="en-US"
                              inputClass="w-full text-xs text-right celda-input"
                              @paste="onPasteHora($event, h - 1)" />
               </td>
@@ -158,7 +158,7 @@
             <tr v-for="h in 12" :key="h + 11" :class="esHoraRellenada(h + 11) ? 'fila-rellenada' : ''">
               <td>{{ h + 11 }}h</td>
               <td>
-                <InputNumber v-model="curvaEditable[h + 11]" :minFractionDigits="2" :maxFractionDigits="2"
+                <InputNumber v-model="curvaEditable[h + 11]" :minFractionDigits="2" :maxFractionDigits="2" locale="en-US"
                              inputClass="w-full text-xs text-right celda-input"
                              @paste="onPasteHora($event, h + 11)" />
               </td>
@@ -174,14 +174,9 @@
         <p class="text-xs" style="color: #9b89b5;">
           Tip: Puedes pegar una columna completa desde cualquier celda.
         </p>
-        <div class="flex items-center gap-3 flex-none">
-          <button type="button" class="text-xs font-semibold" style="color: #6E3FB8;" @click="copiarCurva">
-            <i class="pi pi-copy text-[10px] mr-1" />Copiar
-          </button>
-          <button type="button" class="text-xs font-semibold" style="color: #D64455;" @click="limpiarCurva">
-            <i class="pi pi-eraser text-[10px] mr-1" />Limpiar
-          </button>
-        </div>
+        <button type="button" class="text-xs font-semibold flex-none" style="color: #D64455;" @click="limpiarCurva">
+          <i class="pi pi-eraser text-[10px] mr-1" />Limpiar
+        </button>
       </div>
       <div class="flex items-center justify-between mt-2">
         <div v-if="!esCasoConfiado" class="relative">
@@ -608,18 +603,6 @@ function onPasteHora(event, indiceInicio) {
     const idx = indiceInicio + i
     if (idx < 24) curvaEditable.value[idx] = v
   })
-}
-
-// Copia las 24 horas en el mismo formato que onPasteHora acepta (una por
-// línea) -- para llevarlas a Excel, o pegarlas en otra frontera.
-async function copiarCurva() {
-  const texto = curvaEditable.value.map(v => (v ?? '')).join('\n')
-  try {
-    await navigator.clipboard.writeText(texto)
-    toast.add({ severity: 'success', summary: 'Curva copiada', detail: '24 horas al portapapeles', life: 2000 })
-  } catch {
-    toast.add({ severity: 'error', summary: 'No se pudo copiar', detail: 'El navegador bloqueó el acceso al portapapeles.', life: 4000 })
-  }
 }
 
 function limpiarCurva() {
