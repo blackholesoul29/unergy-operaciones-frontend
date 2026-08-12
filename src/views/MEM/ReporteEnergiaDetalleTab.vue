@@ -672,6 +672,7 @@ const opcionesReportarCon = computed(() => {
     { key: 'principal', nombre: 'Medidor principal', curva: d.curva_medidor_principal, valor: suma(d.curva_medidor_principal), disabled: suma(d.curva_medidor_principal) == null },
     { key: 'respaldo', nombre: 'Medidor respaldo', curva: d.curva_medidor_respaldo, valor: suma(d.curva_medidor_respaldo), disabled: suma(d.curva_medidor_respaldo) == null },
     { key: 'inversores', nombre: 'Inversores × FP', curva: curvaInversoresFp, valor: suma(curvaInversoresFp), disabled: suma(curvaInversoresFp) == null },
+    { key: 'ceros', nombre: 'Matriz de ceros', curva: Array(24).fill(0), valor: 0 },
   ]
 })
 
@@ -1009,6 +1010,7 @@ const ETIQUETAS_FUENTE = {
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
   excluida: 'Excluida', excel_terceros: 'Excel de terceros', editado_manualmente: 'Editado manualmente',
+  ceros: 'Matriz de ceros',
 }
 function etiquetaFuente(v, d) {
   if (v === 'relleno_horario' && d) {
