@@ -255,6 +255,14 @@
 
       <!-- ═══ CUMPLIMIENTO (compromiso vs despacho) ═══ -->
       <template v-else-if="sub === 'cumplimiento'">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="text-[11px]" style="color:#9b8fb0">
+            Compromiso (mínimo mensual del PPA) vs energía despachada · {{ formatPeriodo(periodo) }}
+          </span>
+          <button class="fac-upload" :disabled="!cumpl.filas.length" @click="exportarCumplimiento">
+            <i class="pi pi-file-excel text-xs" /> Exportar Excel
+          </button>
+        </div>
         <div class="fac-kpis">
           <div class="fac-kpi">
             <p class="k">Cumplen el mínimo</p>
@@ -452,6 +460,7 @@ import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import { fmtCOP, formatPeriodo } from '@/utils/liquidaciones'
+import { exportarExcel } from '@/utils/exportarExcel'
 
 const props = defineProps({ periodo: { type: String, required: true } })
 const toast = useToast()
@@ -522,6 +531,24 @@ const cumplEstiloEstado = (e) => ({
   sobre_maximo: 'background:#fbeede;color:#c9701a',
   sin_compromiso: 'background:#f0edf6;color:#6b5a8a',
 }[e] || '')
+
+const r2 = (v) => v == null ? null : Math.round(Number(v) * 100) / 100
+async function exportarCumplimiento () {
+  if (!cumpl.value.filas.length) return
+  const cols = [
+    { header: 'Contrato (PPA)', value: f => f.ppa || f.numero_contrato || '' },
+    { header: 'Comercializador', value: f => f.comprador || '' },
+    { header: 'Proyecto', value: f => f.proyecto || '' },
+    { header: 'Mínimo (MWh)', value: f => r2(f.minimo_mwh) },
+    { header: 'Máximo (MWh)', value: f => r2(f.maximo_mwh) },
+    { header: 'Despachado (MWh)', value: f => r2(f.despachado_mwh) },
+    { header: '% Cumplimiento', value: f => f.pct },
+    { header: 'Incumplido (kWh)', value: f => f.faltante_kwh > 0 ? r2(f.faltante_kwh) : 0 },
+    { header: 'Estado', value: f => MOTIVOS_CUMPL[f.estado] || f.estado },
+  ]
+  const mes = (formatPeriodo(props.periodo) || per.value).replace(/\s+/g, '_')
+  await exportarExcel(cumpl.value.filas, cols, `Cumplimiento_${mes}.xlsx`, 'Cumplimiento')
+}
 // Facturas: buscador por planta / PPA / contrato / N° de factura. Para ubicar una
 // rápido sin recorrer toda la lista.
 const filtroActivo = computed(() => facFiltro.value.trim() !== '')
