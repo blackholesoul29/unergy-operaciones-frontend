@@ -145,9 +145,9 @@
             <tr v-for="h in 12" :key="h - 1" :class="esHoraRellenada(h - 1) ? 'fila-rellenada' : ''">
               <td>{{ h - 1 }}h</td>
               <td>
-                <InputNumber v-model="curvaEditable[h - 1]" :minFractionDigits="2" :maxFractionDigits="2" locale="en-US"
-                             inputClass="w-full text-xs text-right celda-input"
-                             @paste="onPasteHora($event, h - 1)" />
+                <InputText v-model="curvaEditable[h - 1]" inputmode="decimal"
+                           class="w-full text-xs text-right celda-input"
+                           @paste="onPasteHora($event, h - 1)" />
               </td>
             </tr>
           </tbody>
@@ -158,9 +158,9 @@
             <tr v-for="h in 12" :key="h + 11" :class="esHoraRellenada(h + 11) ? 'fila-rellenada' : ''">
               <td>{{ h + 11 }}h</td>
               <td>
-                <InputNumber v-model="curvaEditable[h + 11]" :minFractionDigits="2" :maxFractionDigits="2" locale="en-US"
-                             inputClass="w-full text-xs text-right celda-input"
-                             @paste="onPasteHora($event, h + 11)" />
+                <InputText v-model="curvaEditable[h + 11]" inputmode="decimal"
+                           class="w-full text-xs text-right celda-input"
+                           @paste="onPasteHora($event, h + 11)" />
               </td>
             </tr>
           </tbody>
@@ -317,7 +317,7 @@ import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
-import InputNumber from 'primevue/inputnumber'
+import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
 import Textarea from 'primevue/textarea'
 import CurvaChart from './ReporteEnergiaCurvaChart.vue'
@@ -688,9 +688,18 @@ function elegirFuenteReportar(op) {
 async function guardarCurva() {
   guardando.value = true
   try {
+    // Las celdas son InputText (texto libre, no InputNumber) para que el
+    // cursor no salte al editar un dígito del medio -- así que acá pueden
+    // llegar strings ("45.6"), vacías (""), o numeros ya normales (paste,
+    // carga inicial). Se normaliza a float | null justo antes de enviar.
+    const curvaNormalizada = curvaEditable.value.map(v => {
+      if (v === null || v === undefined || v === '') return null
+      const n = Number(v)
+      return Number.isNaN(n) ? null : n
+    })
     const { data } = await api.patch(
       `/reporte-energia/fronteras/${props.fronteraId}`,
-      { curva_final: curvaEditable.value, fuente: fuenteManualElegida.value },
+      { curva_final: curvaNormalizada, fuente: fuenteManualElegida.value },
       { params: { fecha: props.fecha } },
     )
     detalle.value = data
