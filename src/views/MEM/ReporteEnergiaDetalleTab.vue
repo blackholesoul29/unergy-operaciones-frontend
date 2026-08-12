@@ -115,7 +115,7 @@
         <p class="text-xs" style="color: #1B5DA3; line-height: 1.5;">
           El medidor muestra un valor distinto en Quoia
           (<strong style="color: #2C2039;">{{ fmtKwh(detalle.energia_actual_kwh) }}</strong> ahora
-          vs. <strong style="color: #2C2039;">{{ fmtKwh(detalle.energia_final_kwh) }}</strong> al momento de clasificar).
+          vs. <strong style="color: #2C2039;">{{ fmtKwh(energiaMedidorClasificacion) }}</strong> al momento de clasificar).
         </p>
       </div>
       <div class="space-y-0">
@@ -895,6 +895,18 @@ function sumaCurva(arr) {
   if (!arr || !arr.some((v) => v !== null && v !== undefined)) return null
   return arr.reduce((s, v) => s + (Number(v) || 0), 0)
 }
+
+// Total del medidor TAL COMO QUEDÓ AL CLASIFICAR -- distinto de energia_
+// final_kwh, que puede ya haber sido corregido a mano con el valor en vivo
+// (ver 'Reportar con otra fuente' -> 'Medidor X (actualizado)'). El aviso de
+// abajo necesita este original, si no la comparación se vuelve redundante
+// contra sí misma justo después de aplicar esa corrección.
+const energiaMedidorClasificacion = computed(() => {
+  const d = detalle.value
+  if (!d) return null
+  const curva = (d.medidor_usado || '').startsWith('respaldo') ? d.curva_medidor_respaldo : d.curva_medidor_principal
+  return sumaCurva(curva)
+})
 // Comprime horas en rangos legibles: [0,1,2,3,19,20] -> "0-3h, 19-20h".
 function formatearRangosHoras(horas) {
   if (!horas.length) return ''
@@ -964,18 +976,28 @@ const fuentes = computed(() => {
     usado: d.medidor_usado === 'cgm',
   })
 
-  const medPpal = sumaCurva(d.curva_medidor_principal)
+  // Si Quoia ya muestra otro valor para el medidor USADO (medidor_
+  // actualizado_en_quoia + curva_actual), esa fila muestra directo el valor
+  // en vivo en vez del persistido al clasificar, con la etiqueta
+  // "(actualizado)" -- el otro medidor (el que no se usó) sigue mostrando
+  // lo persistido normal, no hay curva en vivo calculada para ese.
+  const mu = d.medidor_usado || ''
+  const tieneActualizado = d.medidor_actualizado_en_quoia && d.curva_actual != null
+
+  const ppalActualizado = tieneActualizado && mu.startsWith('principal')
+  const medPpal = ppalActualizado ? sumaCurva(d.curva_actual) : sumaCurva(d.curva_medidor_principal)
   lista.push({
-    clave: 'principal', nombre: 'Medidor principal',
+    clave: 'principal', nombre: ppalActualizado ? 'Medidor principal (actualizado)' : 'Medidor principal',
     estado: medPpal !== null ? 'ok' : 'no',
     detalle: medPpal !== null ? 'Lectura disponible' : 'Sin lectura',
     valor: medPpal,
     usado: d.medidor_usado === 'principal',
   })
 
-  const medResp = sumaCurva(d.curva_medidor_respaldo)
+  const respActualizado = tieneActualizado && mu.startsWith('respaldo')
+  const medResp = respActualizado ? sumaCurva(d.curva_actual) : sumaCurva(d.curva_medidor_respaldo)
   lista.push({
-    clave: 'respaldo', nombre: 'Medidor respaldo',
+    clave: 'respaldo', nombre: respActualizado ? 'Medidor respaldo (actualizado)' : 'Medidor respaldo',
     estado: medResp !== null ? 'ok' : 'no',
     detalle: medResp !== null ? 'Lectura disponible' : 'Sin lectura',
     valor: medResp,
