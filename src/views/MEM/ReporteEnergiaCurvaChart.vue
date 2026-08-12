@@ -4,6 +4,7 @@
       <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
       <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
+      <span v-if="reconectadorPath" class="chip" style="border-color:#EA580C;color:#EA580C;">⬥ Reconectador</span>
       <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ {{ etiquetaRellenado }}</span>
       <span v-if="capacidadKwh != null" class="chip" style="border-color:#9b89b5;color:#6b5a8a;">┅ Capacidad efectiva ({{ capacidadMwFmt }} MW)</span>
     </div>
@@ -46,6 +47,19 @@
                  fill="#0D9488" stroke="white" stroke-width="1" />
       </template>
 
+      <!-- Reconectador -- casi nunca presente (solo cuando medidor e
+           inversores ya dejaron huecos ese día), por eso su marcador va
+           hueco (relleno blanco) en vez de sólido: se distingue del
+           diamante dorado de 'Rellenado', que marca horas puntuales sobre
+           la curva final, no una serie propia. -->
+      <path v-if="reconectadorPath" :d="reconectadorPath" fill="none" stroke="#EA580C" stroke-width="2" stroke-dasharray="2 3" />
+      <template v-if="reconectadorPath">
+        <rect v-for="h in 24" :key="'r' + h" v-show="tieneValor(reconectador, h - 1)"
+              :x="x(h - 1) - 3.5" :y="y(val(reconectador, h - 1)) - 3.5" width="7" height="7"
+              fill="white" stroke="#EA580C" stroke-width="1.5"
+              :transform="`rotate(45 ${x(h - 1)} ${y(val(reconectador, h - 1))})`" />
+      </template>
+
       <!-- Capacidad efectiva -- linea de referencia, no es una serie de datos --
            encima de todo para que siempre se vea si alguna curva la cruza. -->
       <template v-if="capacidadKwh != null">
@@ -63,6 +77,7 @@ const props = defineProps({
   final: { type: Array, default: () => Array(24).fill(null) },
   medidor: { type: Array, default: null },
   solenium: { type: Array, default: null },
+  reconectador: { type: Array, default: null },
   horasReconectador: { type: Array, default: () => [] },
   horasSolenium: { type: Array, default: () => [] },
   horasHistorico: { type: Array, default: () => [] },
@@ -114,7 +129,7 @@ const capacidadKwh = computed(() => (props.capacidadMw != null ? props.capacidad
 const capacidadMwFmt = computed(() => (props.capacidadMw != null ? props.capacidadMw.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : ''))
 
 const maxV = computed(() => {
-  const all = [...finalCurve.value, ...(props.medidor || []), ...(props.solenium || [])]
+  const all = [...finalCurve.value, ...(props.medidor || []), ...(props.solenium || []), ...(props.reconectador || [])]
     .filter((v) => v !== null && v !== undefined)
     .map(Number)
   // La linea de capacidad tambien entra en el calculo del eje -- si la
@@ -148,6 +163,7 @@ const finalArea = computed(() => {
 })
 const medidorPath = computed(() => pathDe(props.medidor))
 const soleniumPath = computed(() => pathDe(props.solenium))
+const reconectadorPath = computed(() => pathDe(props.reconectador))
 </script>
 
 <style scoped>

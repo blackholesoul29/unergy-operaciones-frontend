@@ -98,6 +98,7 @@
         :final="detalle.curva_final"
         :medidor="detalle.curva_medidor_principal || detalle.curva_medidor_respaldo"
         :solenium="detalle.curva_solenium"
+        :reconectador="detalle.curva_reconectador"
         :horasReconectador="detalle.horas_rellenadas_reconectador"
         :horasSolenium="detalle.horas_rellenadas_solenium"
         :horasHistorico="detalle.horas_rellenadas_historico"
