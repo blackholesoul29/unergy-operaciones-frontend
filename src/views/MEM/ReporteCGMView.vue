@@ -350,7 +350,7 @@ async function enviarSeleccionados() {
           proyectos: proyectos.size ? [...proyectos] : null,
         }
       }),
-    }, { timeout: 120000 }) // destinatarios como "Operaciones Unergy" piden TODAS las fronteras (~300) -- el default de 30s no basta
+    }, { timeout: 300000 }) // "Operaciones Unergy" (todas las fronteras) puede tardar >150s el ultimo dia del mes (se adjunta ademas el resumen mensual) -- medido en produccion 2026-08-12
     const ok = data.resultados.filter(r => r.ok)
     const conError = data.resultados.filter(r => !r.ok)
     toast.add({
