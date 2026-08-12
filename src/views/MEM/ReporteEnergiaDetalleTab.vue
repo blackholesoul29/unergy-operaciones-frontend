@@ -663,26 +663,31 @@ const opcionesReportarCon = computed(() => {
   }
   const curvaInversoresFp = conFp(d.curva_solenium)
   const tipica = curvaTipicaPreview.value
-  // Cuál medidor (principal/respaldo) es el que quedó "desactualizado" --
-  // mismo criterio que usa el backend para energia_actual_kwh/curva_actual,
-  // así la opción de abajo guarda con la misma clave que ya usan 'Medidor
-  // principal'/'respaldo' (no una fuente aparte -- es el mismo medidor,
-  // solo con el dato más fresco).
+  // Cuál medidor (principal/respaldo) es el que se usó realmente -- si
+  // Quoia ya muestra otro valor para ESE medidor (medidor_actualizado_en_
+  // quoia + curva_actual), esa opción usa directo el valor en vivo en vez
+  // del persistido al clasificar, con nota -- no un item aparte: sigue
+  // siendo el mismo medidor, solo con el dato más fresco.
   const mu = d.medidor_usado || ''
   const fuenteActualKey = mu.startsWith('respaldo') ? 'respaldo' : 'principal'
+  const tieneActualizado = d.medidor_actualizado_en_quoia && d.curva_actual != null
+  const opcionMedidor = (key, nombre, curvaPersistida) => {
+    if (tieneActualizado && key === fuenteActualKey) {
+      return {
+        key, nombre: `${nombre} (actualizado en Quoia)`, curva: d.curva_actual,
+        nota: 'Quoia ya reporta otro valor -- ver aviso arriba', valor: d.energia_actual_kwh,
+      }
+    }
+    return { key, nombre, curva: curvaPersistida, valor: suma(curvaPersistida), disabled: suma(curvaPersistida) == null }
+  }
   return [
-    {
-      key: 'actualizado', fuente: fuenteActualKey, nombre: `Medidor ${fuenteActualKey} (actualizado en Quoia)`,
-      curva: d.curva_actual, nota: 'Quoia ya reporta otro valor -- ver aviso arriba', valor: d.energia_actual_kwh,
-      disabled: !d.medidor_actualizado_en_quoia || !d.curva_actual,
-    },
     {
       key: 'tipica', nombre: 'Curva típica (histórico)', curva: tipica?.curva,
       nota: tipica ? `mediana de ${tipica.dias_usados} días` : 'sin histórico suficiente',
       valor: tipica ? tipica.energia_total_kwh : null, disabled: !tipica,
     },
-    { key: 'principal', nombre: 'Medidor principal', curva: d.curva_medidor_principal, valor: suma(d.curva_medidor_principal), disabled: suma(d.curva_medidor_principal) == null },
-    { key: 'respaldo', nombre: 'Medidor respaldo', curva: d.curva_medidor_respaldo, valor: suma(d.curva_medidor_respaldo), disabled: suma(d.curva_medidor_respaldo) == null },
+    opcionMedidor('principal', 'Medidor principal', d.curva_medidor_principal),
+    opcionMedidor('respaldo', 'Medidor respaldo', d.curva_medidor_respaldo),
     { key: 'inversores', nombre: 'Inversores × FP', curva: curvaInversoresFp, valor: suma(curvaInversoresFp), disabled: suma(curvaInversoresFp) == null },
     { key: 'ceros', nombre: 'Matriz de ceros', curva: Array(24).fill(0), valor: 0 },
   ]
@@ -691,7 +696,7 @@ const opcionesReportarCon = computed(() => {
 function elegirFuenteReportar(op) {
   mostrarMenuReportar.value = false
   curvaEditable.value = [...op.curva]
-  fuenteManualElegida.value = op.fuente || (op.key === 'tipica' ? 'historico' : op.key)
+  fuenteManualElegida.value = op.key === 'tipica' ? 'historico' : op.key
   toast.add({
     severity: 'info', summary: `${op.nombre} aplicado`,
     detail: `${fmtKwh(op.valor)} -- revisa y guarda si está bien.`, life: 4000,
