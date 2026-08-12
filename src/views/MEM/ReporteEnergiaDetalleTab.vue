@@ -1010,7 +1010,6 @@ const ETIQUETAS_FUENTE = {
   principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
   excluida: 'Excluida', excel_terceros: 'Excel de terceros', editado_manualmente: 'Editado manualmente',
-  ceros: 'Matriz de ceros',
 }
 function etiquetaFuente(v, d) {
   if (v === 'relleno_horario' && d) {
