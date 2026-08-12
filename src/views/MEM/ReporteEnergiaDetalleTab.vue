@@ -166,18 +166,18 @@
           </tbody>
         </table>
       </div>
-      <div class="flex items-center gap-1.5 text-xs mt-3" style="color: #9b89b5;">
-        <span class="inline-block rounded-sm" style="width: 12px; height: 12px; background: rgba(240, 192, 64, 0.35); border: 1px solid #F0C040;"></span>
-        Hora rellenada (reconectador/Solenium/histórico)
-      </div>
-      <div class="flex items-center justify-between mt-1">
-        <p class="text-xs" style="color: #9b89b5;">
-          Tip: Puedes pegar una columna completa desde cualquier celda.
-        </p>
+      <div class="flex justify-end mt-2">
         <button type="button" class="text-xs font-semibold flex-none" style="color: #D64455;" @click="limpiarCurva">
           <i class="pi pi-eraser text-[10px] mr-1" />Limpiar
         </button>
       </div>
+      <div class="flex items-center gap-1.5 text-xs mt-2" style="color: #9b89b5;">
+        <span class="inline-block rounded-sm" style="width: 12px; height: 12px; background: rgba(240, 192, 64, 0.35); border: 1px solid #F0C040;"></span>
+        Hora rellenada (reconectador/Solenium/histórico)
+      </div>
+      <p class="text-xs mt-1" style="color: #9b89b5;">
+        Tip: Puedes pegar una columna completa desde cualquier celda.
+      </p>
       <div class="flex items-center justify-between mt-2">
         <div v-if="!esCasoConfiado" class="relative">
           <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
