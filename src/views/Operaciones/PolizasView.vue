@@ -108,6 +108,11 @@
                     <p><strong>Paneles:</strong> {{ fila.marca_paneles || '—' }} ({{ fila.cantidad_total_paneles ?? '—' }})</p>
                     <p><strong>Inversores:</strong> {{ fila.marca_inversores || '—' }} ({{ fila.cantidad_inversores ?? '—' }})</p>
                     <p><strong>Capacidad:</strong> {{ fila.capacidad_instalada_kwp != null ? fila.capacidad_instalada_kwp + ' kWp' : '—' }}</p>
+                    <p><strong>Operador de red:</strong> {{ fila.operador_red || '—' }}</p>
+                    <p><strong>Voltaje de red:</strong> {{ fila.voltaje_red || '—' }}</p>
+                    <p><strong>Potencia panel:</strong> {{ fila.potencia_panel_kwp || '—' }}</p>
+                    <p><strong>Potencia inversores:</strong> {{ fila.potencia_inversores_kwp || '—' }}</p>
+                    <p><strong>Potencia AC:</strong> {{ fila.potencia_ac_kw != null ? fila.potencia_ac_kw + ' kW' : '—' }}</p>
                   </div>
                   <div class="pz-card">
                     <h4>Presupuesto</h4>
