@@ -210,7 +210,7 @@
             </div>
           </div>
         </div>
-        <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
+        <Button label="Guardar corrección" size="small" :loading="guardando" :disabled="!hayCambiosSinGuardar" @click="guardarCurva" />
       </div>
     </div>
 
