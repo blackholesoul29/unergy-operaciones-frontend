@@ -674,7 +674,7 @@ const opcionesReportarCon = computed(() => {
   const opcionMedidor = (key, nombre, curvaPersistida) => {
     if (tieneActualizado && key === fuenteActualKey) {
       return {
-        key, nombre: `${nombre} (actualizado en Quoia)`, curva: d.curva_actual,
+        key, nombre: `${nombre} (actualizado)`, curva: d.curva_actual,
         nota: 'Quoia ya reporta otro valor -- ver aviso arriba', valor: d.energia_actual_kwh,
       }
     }
