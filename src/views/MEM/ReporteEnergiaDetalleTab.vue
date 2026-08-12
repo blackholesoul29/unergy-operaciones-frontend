@@ -166,7 +166,7 @@
           </tbody>
         </table>
       </div>
-      <div class="flex justify-end mt-2">
+      <div class="flex justify-start mt-2">
         <button type="button" class="text-xs font-semibold flex-none" style="color: #D64455;" @click="limpiarCurva">
           <i class="pi pi-eraser text-[10px] mr-1" />Limpiar
         </button>
