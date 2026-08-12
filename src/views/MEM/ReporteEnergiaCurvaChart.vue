@@ -87,6 +87,9 @@ const props = defineProps({
   // Capacidad efectiva de la frontera (MW) -- viene en MW, pero el chart
   // grafica en kWh por hora, así que se convierte (1 MW sostenida 1h = 1.000 kWh).
   capacidadMw: { type: Number, default: null },
+  // Ver finalVacia -- una curva en 0 puede ser el placeholder de Caso 1/CGM
+  // (ocultar) o una corrección manual real con 'Matriz de ceros' (mostrar).
+  editadoManualmente: { type: Boolean, default: false },
 })
 
 const W = 700, H = 210, padL = 30, padR = 10, padT = 10, padB = 20
@@ -110,7 +113,15 @@ const etiquetaRellenado = computed(() => {
 // Quoia -- no se reconstruye una curva horaria propia, así que 'final'
 // llega en 0 las 24 horas. Mostrar esa línea plana confunde (parece un
 // error); mejor ocultarla y dejar solo el medidor de referencia.
-const finalVacia = computed(() => finalCurve.value.every(v => v === null || v === undefined || Number(v) === 0))
+// PERO si la curva en 0 es una corrección manual real ('Matriz de ceros'),
+// sí hay que mostrarla -- ahí el 0 es justo lo que la persona quiso
+// reportar y confirmar visualmente (ver MGS 0081 Galeras Occidente
+// 2026-08-12: corregida con Matriz de ceros, pero la línea desaparecía
+// igual que en el placeholder de CGM).
+const finalVacia = computed(() =>
+  !props.editadoManualmente
+  && finalCurve.value.every(v => v === null || v === undefined || Number(v) === 0)
+)
 
 function val(arr, h) {
   const v = arr?.[h]
