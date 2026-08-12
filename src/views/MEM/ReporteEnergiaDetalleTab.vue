@@ -636,9 +636,17 @@ function esHoraRellenada(h) {
 const hayCambiosSinGuardar = computed(() => {
   const persistida = detalle.value?.curva_final || Array(24).fill(null)
   for (let h = 0; h < 24; h++) {
-    const a = curvaEditable.value[h] ?? null
-    const b = persistida[h] ?? null
-    if (Number(a || 0).toFixed(2) !== Number(b || 0).toFixed(2)) return true
+    const a = curvaEditable.value[h]
+    const b = persistida[h]
+    // 'sin dato' (null/undefined/'') y un cero explícito NO son lo mismo --
+    // Number(a || 0) los volvía indistinguibles (Number(null || 0) ===
+    // Number('0' || 0) === 0), así que editar una hora vacía poniéndole 0
+    // no se detectaba como cambio y dejaba 'Validar Frontera' habilitado
+    // sin haber guardado (ver Uruaco 2026-08-10).
+    const aVacio = a === null || a === undefined || a === ''
+    const bVacio = b === null || b === undefined
+    if (aVacio !== bVacio) return true
+    if (!aVacio && Number(a).toFixed(2) !== Number(b).toFixed(2)) return true
   }
   return false
 })
