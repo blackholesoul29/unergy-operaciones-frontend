@@ -72,6 +72,10 @@
           <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
           <dd class="font-mono">{{ detalle.fp != null ? detalle.fp.toFixed(4) : '—' }}</dd>
         </template>
+        <template v-if="(detalle.horas_rellenadas_medidor_cruzado || []).length">
+          <dt style="color: #9b89b5;">Rellenado (Medidor cruzado)</dt>
+          <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_medidor_cruzado) }}</dd>
+        </template>
         <template v-if="(detalle.horas_rellenadas_reconectador || []).length">
           <dt style="color: #9b89b5;">Horas rellenadas (reconectador)</dt>
           <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_reconectador) }}</dd>
@@ -84,7 +88,7 @@
           <dt style="color: #9b89b5;">Horas rellenadas (histórico)</dt>
           <dd class="font-mono">{{ formatearRangosHoras(detalle.horas_rellenadas_historico) }}</dd>
         </template>
-        <template v-if="!(detalle.horas_rellenadas_reconectador || []).length && !(detalle.horas_rellenadas_solenium || []).length && !(detalle.horas_rellenadas_historico || []).length">
+        <template v-if="!(detalle.horas_rellenadas_medidor_cruzado || []).length && !(detalle.horas_rellenadas_reconectador || []).length && !(detalle.horas_rellenadas_solenium || []).length && !(detalle.horas_rellenadas_historico || []).length">
           <dt style="color: #9b89b5;">Horas rellenadas</dt>
           <dd class="font-mono">—</dd>
         </template>
@@ -102,6 +106,7 @@
         :horasReconectador="detalle.horas_rellenadas_reconectador"
         :horasSolenium="detalle.horas_rellenadas_solenium"
         :horasHistorico="detalle.horas_rellenadas_historico"
+        :horasMedidorCruzado="detalle.horas_rellenadas_medidor_cruzado"
         :capacidadMw="detalle.capacidad_efectiva_mw"
         :editadoManualmente="detalle.editado_manualmente"
       />
@@ -182,10 +187,11 @@
       </p>
       <div class="flex items-center justify-between mt-2">
         <div class="flex items-center gap-2">
-          <!-- El relleno horario (reconectador/Solenium × FP/histórico) ya
-               no aplica solo durante la clasificación -- queda a criterio
-               de la persona: reportar la curva tal como está (con el hueco)
-               o rellenarla con este botón. Solo aplica a Generación. -->
+          <!-- El relleno horario (medidor cruzado / reconectador / Solenium
+               × FP / histórico) ya no aplica solo durante la clasificación
+               -- queda a criterio de la persona: reportar la curva tal como
+               está (con el hueco) o rellenarla con este botón. Generación y
+               Consumo. -->
           <Button v-if="hayHuecosSinRellenar" label="Rellenar horas" size="small" severity="secondary" outlined
             :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
           <div v-if="!esCasoConfiado" class="relative">
@@ -625,6 +631,7 @@ function esHoraRellenada(h) {
   return (d.horas_rellenadas_reconectador || []).includes(h)
     || (d.horas_rellenadas_solenium || []).includes(h)
     || (d.horas_rellenadas_historico || []).includes(h)
+    || (d.horas_rellenadas_medidor_cruzado || []).includes(h)
 }
 
 // 'Validar Frontera' confirma el numero YA GUARDADO tal cual, sin tocar
@@ -652,13 +659,13 @@ const hayCambiosSinGuardar = computed(() => {
   return false
 })
 
-// Solo Generación -- el backend rechaza Consumo (histórico ahí sigue siendo
-// automático). Se basa en lo YA PERSISTIDO (curva_final), no en curvaEditable,
-// porque 'Rellenar horas' actúa sobre lo guardado en el backend -- por eso
-// además se deshabilita con cambios sin guardar (mismo motivo que Validar).
+// Generación y Consumo -- se basa en lo YA PERSISTIDO (curva_final), no en
+// curvaEditable, porque 'Rellenar horas' actúa sobre lo guardado en el
+// backend -- por eso además se deshabilita con cambios sin guardar (mismo
+// motivo que Validar).
 const hayHuecosSinRellenar = computed(() => {
   const d = detalle.value
-  if (!d || d.tipo !== 'generacion') return false
+  if (!d) return false
   return (d.curva_final || []).some(v => v === null || v === undefined)
 })
 

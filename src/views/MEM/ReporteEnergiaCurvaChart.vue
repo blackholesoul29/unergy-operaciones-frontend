@@ -5,7 +5,7 @@
       <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
       <span v-if="reconectadorPath" class="chip" style="border-color:#EA580C;color:#EA580C;">⬥ Reconectador</span>
-      <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ {{ etiquetaRellenado }}</span>
+      <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Hora rellenada</span>
       <span v-if="capacidadKwh != null" class="chip" style="border-color:#9b89b5;color:#6b5a8a;">┅ Capacidad efectiva ({{ capacidadMwFmt }} MW)</span>
     </div>
     <svg :width="W" :height="H" :viewBox="`0 0 ${W} ${H}`" class="w-full">
@@ -84,6 +84,7 @@ const props = defineProps({
   horasReconectador: { type: Array, default: () => [] },
   horasSolenium: { type: Array, default: () => [] },
   horasHistorico: { type: Array, default: () => [] },
+  horasMedidorCruzado: { type: Array, default: () => [] },
   // Capacidad efectiva de la frontera (MW) -- viene en MW, pero el chart
   // grafica en kWh por hora, así que se convierte (1 MW sostenida 1h = 1.000 kWh).
   capacidadMw: { type: Number, default: null },
@@ -96,19 +97,15 @@ const W = 700, H = 210, padL = 30, padR = 10, padT = 10, padB = 20
 const plotW = W - padL - padR, plotH = H - padT - padB
 
 const finalCurve = computed(() => props.final || Array(24).fill(null))
+// Antes el chip enumeraba las fuentes ("Rellenado (reconectador + Solenium
+// × FP)") -- con medidor cruzado suman ya 5 fuentes posibles entre los dos
+// árboles, así que se simplifica a un solo rótulo genérico "Hora
+// rellenada" (2026-08-12): el detalle de cuál fuente fue cada hora vive en
+// 'Detalle de la clasificación', no hace falta repetirlo en la leyenda.
 const horasRellenadas = computed(() => new Set([
-  ...(props.horasReconectador || []), ...(props.horasSolenium || []), ...(props.horasHistorico || []),
+  ...(props.horasReconectador || []), ...(props.horasSolenium || []),
+  ...(props.horasHistorico || []), ...(props.horasMedidorCruzado || []),
 ]))
-// El label decia siempre las 3 fuentes posibles aunque solo una haya
-// participado (ver MGS 0022 La Cumbia 2026-08-05: 0-23h solo via
-// reconectador, pero la leyenda sugería que podían ser las tres).
-const etiquetaRellenado = computed(() => {
-  const partes = []
-  if ((props.horasReconectador || []).length) partes.push('reconectador')
-  if ((props.horasSolenium || []).length) partes.push('Solenium × FP')
-  if ((props.horasHistorico || []).length) partes.push('histórico')
-  return `Rellenado (${partes.join(' + ')})`
-})
 // Caso 1/CGM (reporte válido): se confía en el total diario que ya validó
 // Quoia -- no se reconstruye una curva horaria propia, así que 'final'
 // llega en 0 las 24 horas. Mostrar esa línea plana confunde (parece un
