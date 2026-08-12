@@ -180,29 +180,36 @@
         Tip: Puedes pegar una columna completa desde cualquier celda.
       </p>
       <div class="flex items-center justify-between mt-2">
-        <div v-if="!esCasoConfiado" class="relative">
-          <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
-            style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
-            @click="mostrarMenuReportar = !mostrarMenuReportar" />
-          <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
-          <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
-               style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
-            <div v-for="op in opcionesReportarCon" :key="op.key"
-                 class="flex items-center justify-between gap-3 px-3 py-2.5"
-                 :class="op.disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-[#f9f7ff]'"
-                 style="border-bottom: 1px solid #e8e0f0;"
-                 @click="!op.disabled && elegirFuenteReportar(op)">
-              <div class="min-w-0">
-                <div class="text-xs font-semibold" style="color: #2C2039;">{{ op.nombre }}</div>
-                <div v-if="op.nota" class="text-[10.5px]" style="color: #9b89b5;">{{ op.nota }}</div>
-              </div>
-              <div class="text-xs font-mono flex-none" style="color: #2C2039;">
-                {{ op.valor != null ? fmtKwh(op.valor) : 'Sin dato' }}
+        <div class="flex items-center gap-2">
+          <!-- El relleno horario (reconectador/Solenium × FP/histórico) ya
+               no aplica solo durante la clasificación -- queda a criterio
+               de la persona: reportar la curva tal como está (con el hueco)
+               o rellenarla con este botón. Solo aplica a Generación. -->
+          <Button v-if="hayHuecosSinRellenar" label="Rellenar horas" size="small" severity="secondary" outlined
+            :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
+          <div v-if="!esCasoConfiado" class="relative">
+            <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
+              style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
+              @click="mostrarMenuReportar = !mostrarMenuReportar" />
+            <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
+            <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
+                 style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
+              <div v-for="op in opcionesReportarCon" :key="op.key"
+                   class="flex items-center justify-between gap-3 px-3 py-2.5"
+                   :class="op.disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-[#f9f7ff]'"
+                   style="border-bottom: 1px solid #e8e0f0;"
+                   @click="!op.disabled && elegirFuenteReportar(op)">
+                <div class="min-w-0">
+                  <div class="text-xs font-semibold" style="color: #2C2039;">{{ op.nombre }}</div>
+                  <div v-if="op.nota" class="text-[10.5px]" style="color: #9b89b5;">{{ op.nota }}</div>
+                </div>
+                <div class="text-xs font-mono flex-none" style="color: #2C2039;">
+                  {{ op.valor != null ? fmtKwh(op.valor) : 'Sin dato' }}
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <span v-else></span>
         <Button label="Guardar corrección" size="small" :loading="guardando" @click="guardarCurva" />
       </div>
     </div>
@@ -334,6 +341,7 @@ const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
+const rellenando = ref(false)
 const mostrarMenuReportar = ref(false)
 // Cuál opción de 'Reportar con otra fuente' llenó el editor por última vez
 // -- se manda al guardar para que 'Fuente usada' diga esa fuente específica
@@ -634,6 +642,38 @@ const hayCambiosSinGuardar = computed(() => {
   }
   return false
 })
+
+// Solo Generación -- el backend rechaza Consumo (histórico ahí sigue siendo
+// automático). Se basa en lo YA PERSISTIDO (curva_final), no en curvaEditable,
+// porque 'Rellenar horas' actúa sobre lo guardado en el backend -- por eso
+// además se deshabilita con cambios sin guardar (mismo motivo que Validar).
+const hayHuecosSinRellenar = computed(() => {
+  const d = detalle.value
+  if (!d || d.tipo !== 'generacion') return false
+  return (d.curva_final || []).some(v => v === null || v === undefined)
+})
+
+async function rellenarHorario() {
+  rellenando.value = true
+  try {
+    const { data } = await api.post(
+      `/reporte-energia/fronteras/${props.fronteraId}/rellenar-horario`, null,
+      { params: { fecha: props.fecha } },
+    )
+    detalle.value = data
+    curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    toast.add({ severity: 'success', summary: 'Horas rellenadas', life: 2500 })
+    emit('actualizado')
+    cargarEdiciones()
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo rellenar',
+      detail: e?.response?.data?.detail || 'Ninguna fuente tenía dato para las horas faltantes.', life: 4000,
+    })
+  } finally {
+    rellenando.value = false
+  }
+}
 
 // Mismo criterio que separa 'confiado' de 'corregido_automatico' en el
 // resumen del día (ver reporte_energia.py) -- Caso 1 (Generación) / 'CGM'

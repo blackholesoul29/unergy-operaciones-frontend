@@ -29,7 +29,10 @@
                 :x="x(h - 1) - 4" :y="y(val(finalCurve, h - 1)) - 4" width="8" height="8"
                 fill="#F0C040" stroke="white" stroke-width="1.5"
                 :transform="`rotate(45 ${x(h - 1)} ${y(val(finalCurve, h - 1))})`" />
-          <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
+          <!-- Sin marcador en un hueco real (null, sin rellenar) -- antes
+               'val()' lo mostraba en 0 igual, un círculo morado sentado en
+               cero se veía como un dato real. -->
+          <circle v-else-if="tieneValor(finalCurve, h - 1)" :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
         </template>
       </template>
 
@@ -155,11 +158,35 @@ function pathDe(arr) {
   return d || null
 }
 
-const finalPath = computed(() => pathDe(finalCurve.value.map((v) => (v === null ? 0 : v))) || '')
+// Antes se mapeaba null -> 0 para que la línea nunca se cortara -- pero eso
+// hacía indistinguible un hueco real sin dato (pendiente de rellenar a
+// mano, ver botón 'Rellenar horas') de una hora con generación real en
+// cero (ej. de noche). Ahora se corta igual que Medidor/Solenium/
+// Reconectador -- un hueco se ve como hueco, no como un cero engañoso.
+const finalPath = computed(() => pathDe(finalCurve.value) || '')
+// Un solo 'L bottom, L bottom, Z' pegado al final del path ya no alcanza
+// ahora que la línea se corta en los huecos (puede haber varios tramos
+// separados) -- cerraría solo el último tramo hasta el borde de TODO el
+// gráfico, generando un relleno gigante y equivocado. Cada tramo cierra su
+// propia área contra la base, solo en su propio rango de horas.
 const finalArea = computed(() => {
-  const base = finalPath.value
-  if (!base) return ''
-  return base + ` L${x(23).toFixed(1)},${(padT + plotH).toFixed(1)} L${x(0).toFixed(1)},${(padT + plotH).toFixed(1)} Z`
+  const curva = finalCurve.value
+  let d = ''
+  let tramo = []
+  const cerrarTramo = () => {
+    if (!tramo.length) return
+    tramo.forEach((p, i) => { d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ' ' })
+    const base = (padT + plotH).toFixed(1)
+    d += `L${tramo[tramo.length - 1].x.toFixed(1)},${base} L${tramo[0].x.toFixed(1)},${base} Z `
+    tramo = []
+  }
+  for (let h = 0; h < 24; h++) {
+    const v = curva[h]
+    if (v === null || v === undefined) { cerrarTramo(); continue }
+    tramo.push({ x: x(h), y: y(Number(v)) })
+  }
+  cerrarTramo()
+  return d
 })
 const medidorPath = computed(() => pathDe(props.medidor))
 const soleniumPath = computed(() => pathDe(props.solenium))
