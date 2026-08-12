@@ -279,6 +279,10 @@ async function cargar() {
   try {
     const { data } = await api.get('/polizas')
     filas.value = data
+  } catch {
+    if (typeof window.__primeToast === 'function') {
+      window.__primeToast({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las pólizas', life: 4000 })
+    }
   } finally {
     loading.value = false
   }
@@ -293,7 +297,7 @@ function ciudad(fila) {
 function diasHastaVencimiento(fechaVencimiento) {
   const hoy = new Date()
   hoy.setHours(0, 0, 0, 0)
-  const venc = new Date(fechaVencimiento)
+  const venc = new Date(fechaVencimiento + 'T00:00:00')
   return Math.round((venc - hoy) / (1000 * 60 * 60 * 24))
 }
 
@@ -315,7 +319,7 @@ function estiloEstado(estado) {
 }
 
 function formatFecha(f) {
-  return new Date(f).toLocaleDateString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  return new Date(f + 'T00:00:00').toLocaleDateString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit' })
 }
 
 const conDatos = computed(() => filas.value.filter(f => f.fecha_vencimiento))
@@ -438,6 +442,10 @@ async function guardar() {
     await api.put(`/polizas/${edicion.value.proyecto_id}`, body)
     await cargar()
     cerrarEdicion()
+  } catch {
+    if (typeof window.__primeToast === 'function') {
+      window.__primeToast({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la póliza', life: 4000 })
+    }
   } finally {
     guardando.value = false
   }
