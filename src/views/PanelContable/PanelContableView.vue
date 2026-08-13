@@ -12,7 +12,15 @@
       <div class="top-actions">
         <div class="fld">
           <label>Ver período</label>
-          <input type="month" v-model="periodo" class="month-in" @change="setTab(tab)" />
+          <div class="pc-period">
+            <button class="pc-period-btn" @click="stepMes(-1)" v-tooltip.bottom="'Mes anterior'">
+              <i class="pi pi-chevron-left" />
+            </button>
+            <span class="pc-period-label">{{ periodoLabel || '—' }}</span>
+            <button class="pc-period-btn" :disabled="esMesActual" @click="stepMes(1)" v-tooltip.bottom="'Mes siguiente'">
+              <i class="pi pi-chevron-right" />
+            </button>
+          </div>
         </div>
         <button v-if="tab === 'preliquidacion' || tab === 'oficial'" class="btn-o" :disabled="loading || !paneles.length" @click="exportarExcel">
           <i class="pi pi-file-excel" /> Exportar Excel
@@ -657,8 +665,25 @@ const tab = ref('preliquidacion')
 // este switch; en las pestañas de detalle el tipo es la propia pestaña.
 const selTipo = ref('oficial')
 const tipoDatos = computed(() => (tab.value === 'seleccion' ? selTipo.value : tab.value))
-// El período nunca se asume: se confirma siempre en el diálogo antes de cargar ER.
-const periodo = ref('')
+// Período visible en formato "YYYY-MM" (lo que esperan las llamadas del Panel).
+// Arranca en el MES ANTERIOR: el panel es de mes vencido, el mes en curso suele
+// estar vacío. Se navega con las flechas ‹ › (mismo patrón que Facturación).
+function mesPanelISO (delta = 0) {
+  const n = new Date()
+  const d = new Date(n.getFullYear(), n.getMonth() + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+const periodo = ref(mesPanelISO(-1))
+const esMesActual = computed(() => periodo.value === mesPanelISO(0))
+// Navega un mes; no deja pasar del mes actual. Recarga igual que el antiguo @change.
+function stepMes (delta) {
+  const [y, m] = (periodo.value || mesPanelISO(0)).split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  if (delta > 0 && next > mesPanelISO(0)) return
+  periodo.value = next
+  setTab(tab.value)
+}
 
 // Diálogo de período previo a la carga de ER.
 const showPeriodoDialog = ref(false)
@@ -1358,7 +1383,11 @@ onMounted(cargarPaneles)
 .periodo-chip { display:inline-block; background:var(--info); color:var(--p2); font-weight:600; padding:2px 9px; border-radius:7px; }
 .top-actions { display:flex; gap:10px; align-items:flex-end; }
 .req { color:var(--p2); }
-.month-in { font-size:13px; padding:8px 10px; border:1px solid var(--line2); border-radius:9px; color:var(--p1); }
+.pc-period { display:inline-flex; align-items:center; gap:6px; }
+.pc-period-btn { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid #ddd6e8; background:#fff; color:#915BD8; cursor:pointer; transition:background .12s; }
+.pc-period-btn:hover:not(:disabled) { background:#f5f2fa; }
+.pc-period-btn:disabled { opacity:.4; cursor:not-allowed; }
+.pc-period-label { font-size:13px; font-weight:700; color:var(--p1); min-width:104px; text-align:center; }
 /* Colores de marca en hex literal: estos botones también se usan dentro del
    Dialog de PrimeVue, que se teletransporta a <body> fuera de .pc-wrap donde
    las variables --p2/--line2/--sec no existen (por eso salían en blanco). */
