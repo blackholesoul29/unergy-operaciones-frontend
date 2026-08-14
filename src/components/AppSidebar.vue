@@ -265,6 +265,7 @@ const ALL_GROUPS = [
       { to: '/proyectos',       label: 'Proyectos',        icon: 'pi pi-bolt' },
       { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
       { to: '/servicios',       label: 'Servicios',        icon: 'pi pi-file-edit' },
+      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
     ],
   },
   {
@@ -290,7 +291,6 @@ const ALL_GROUPS = [
     items: [
       { to: '/mem/fronteras',         label: 'General',            icon: 'pi pi-globe',      roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/mem/reporte-energia',   label: 'Reporte de Energía', icon: 'pi pi-file-edit',  roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/mem/operadores-red',    label: 'Operadores de Red',  icon: 'pi pi-sitemap',    roles: ['admin', 'operaciones', 'monitoreo'] },
     ],
   },
   {
