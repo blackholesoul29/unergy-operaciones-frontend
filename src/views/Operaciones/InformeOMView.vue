@@ -52,6 +52,9 @@
             <button class="om-pdf" :disabled="exportandoPdf" @click="descargarPdf" title="Descargar PDF">
               <i :class="exportandoPdf ? 'pi pi-spin pi-spinner' : 'pi pi-file-pdf'" /> {{ exportandoPdf ? 'Generando…' : 'Descargar PDF' }}
             </button>
+            <button class="om-generar" :disabled="generandoInforme" @click="generarInforme" title="Generar informe editable y enviarlo a revisión">
+              <i :class="generandoInforme ? 'pi pi-spin pi-spinner' : 'pi pi-file-edit'" /> {{ generandoInforme ? 'Generando…' : 'Generar informe' }}
+            </button>
             <button class="om-save" :disabled="guardando || !dirty" @click="guardar">
               <i :class="guardando ? 'pi pi-spin pi-spinner' : 'pi pi-check'" /> {{ guardando ? 'Guardando…' : 'Guardar' }}
             </button>
@@ -495,9 +498,12 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '@/api/client'
 import EvidenciaUploader from '@/components/EvidenciaUploader.vue'
 import ListaEditable from '@/components/ListaEditable.vue'
+
+const router = useRouter()
 
 const proyectos = ref([])
 const loadingLista = ref(false)
@@ -514,6 +520,7 @@ const ficha = reactive(fichaVacia())
 const loadingFicha = ref(false)
 const guardando = ref(false)
 const exportandoPdf = ref(false)
+const generandoInforme = ref(false)
 const dirty = ref(false)
 const abierto = reactive({
   objetivo: true, generales: true, inversores: false, sistemas: false, arquitectura: false,
@@ -780,6 +787,143 @@ async function descargarPdf() {
   }
 }
 
+// ── Generar informe (documento editable, mismo flujo que Informes Mensuales) ─
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+function unergyLogoSVG() {
+  return '<svg width="38" height="31" viewBox="0 0 44 36" fill="none"><circle cx="22" cy="4" r="3" fill="white"/><path d="M8 10 L8 24 Q8 34 22 34 Q36 34 36 24 L36 10" stroke="white" stroke-width="5" fill="none" stroke-linecap="round"/></svg>'
+}
+function rmeta(lbl, val) { return `<div class="rpt-meta-item"><div class="rpt-meta-lbl">${esc(lbl)}</div><div class="rpt-meta-val">${esc(val ?? '—')}</div></div>` }
+function rkpi(ico, lbl, val, col) { return `<div class="rpt-kpi"><div class="rpt-kpi-ico">${ico}</div><div class="rpt-kpi-lbl">${esc(lbl)}</div><div class="rpt-kpi-val"${col ? ` style="color:${col}"` : ''}>${esc(val)}</div></div>` }
+function rTabla(head, rows, vacio) {
+  if (!rows.length) return `<div class="rpt-chart-empty">${esc(vacio)}</div>`
+  return '<table class="rpt-table"><thead><tr>' + head.map((h) => `<th>${esc(h)}</th>`).join('') + '</tr></thead><tbody>' +
+    rows.map((r) => '<tr>' + r.map((c) => `<td>${esc(c ?? '—')}</td>`).join('') + '</tr>').join('') + '</tbody></table>'
+}
+function rSeccion(n, titulo, contenido) {
+  return `<div class="rpt-section"><div class="rpt-section-title">▌ ${n}. ${esc(titulo)}</div>${contenido}</div>`
+}
+function rParrafo(texto) {
+  return texto ? `<p style="font-size:12px;color:#333;line-height:1.5;margin:4px 0">${esc(texto)}</p>` : ''
+}
+function rLista(items) {
+  const list = (items || []).filter(Boolean)
+  if (!list.length) return ''
+  return '<ul style="margin:4px 0;padding-left:18px;font-size:12px;color:#333;line-height:1.6">' + list.map((i) => `<li>${esc(i)}</li>`).join('') + '</ul>'
+}
+
+function construirHtmlInforme() {
+  const k = detalle.kpis
+  const estLbl = (v) => v === 'aprobado' ? 'Aprobado' : 'Pendiente'
+  const semColor = k.estado_global === 'atencion' ? '#F97316' : '#4ADE80'
+
+  let html = '<div class="rpt-page">'
+  html += '<div class="rpt-header">'
+  html += '<div style="display:flex;align-items:center;gap:13px">' + unergyLogoSVG() +
+    '<div><div style="color:#fff;font-size:14px;font-weight:800;letter-spacing:.8px">INFORME DE PUESTA EN MARCHA · UNERGY ENERGÍA DIGITAL S.A.S ESP</div>' +
+    '<div style="color:#6B5F80;font-size:10px;letter-spacing:.6px;margin-top:2px">Sistema de monitoreo y adquisición de datos</div></div></div>'
+  html += `<div class="rpt-meta-grid">${rmeta('PROYECTO', detalle.proyecto.nombre_comercial)}${rmeta('CLIENTE', detalle.proyecto.nombre_clientes)}${rmeta('UBICACIÓN', ubicacion.value)}${rmeta('CAPACIDAD INSTALADA', fmtCapacidad(detalle.proyecto.potencia_instalada_kwp))}</div>`
+  html += '</div>'
+
+  html += '<div class="rpt-kpi-row">' +
+    rkpi('✅', 'Pruebas ejecutadas', k.pruebas_ejecutadas, null) +
+    rkpi('🏆', 'Conformes', k.pruebas_conformes, '#4ADE80') +
+    rkpi('⚠️', 'No conformidades', k.pruebas_no_conformes, k.pruebas_no_conformes > 0 ? '#FF5757' : null) +
+    rkpi('⚡', 'Eventos registrados', k.eventos_total, k.eventos_total > 0 ? '#F97316' : null) +
+    '</div>'
+
+  html += `<div class="rpt-status-box" style="margin-top:10px"><div class="rpt-status-row" style="font-weight:800;color:${semColor}">${k.estado_global === 'atencion' ? '⚠️ ATENCIÓN' : '✅ OPERATIVO'} — Con seguimiento activo</div>` +
+    `<div class="rpt-status-row">Pruebas: ${k.pruebas_conformes}/${k.pruebas_ejecutadas} conformes</div>` +
+    `<div class="rpt-status-row">Eventos: ${k.eventos_total} (${k.eventos_cerrados} cerrado(s), ${k.eventos_en_gestion} en gestión)</div></div>`
+
+  html += rSeccion(1, 'Objetivo y Alcance', rParrafo(ficha.objetivo_alcance.objetivo) + rLista(ficha.objetivo_alcance.alcance_items))
+
+  html += rSeccion(2, 'Datos Generales',
+    rParrafo(`Fecha de energización: ${fmtFecha(detalle.fecha_energizacion) || '—'}   ·   Empresa contratista: ${detalle.empresa_contratista || '—'}`) +
+    rParrafo(`Seguidores solares: ${ficha.datos_generales.seguidores_marca || '—'}   ·   Medida comercial: ${[ficha.datos_generales.medida_comercial_marca, ficha.datos_generales.medida_comercial_modelo].filter(Boolean).join(' ') || '—'}`) +
+    rParrafo(`Plataformas de monitoreo: ${(ficha.datos_generales.plataformas_monitoreo || []).filter(Boolean).join(', ') || '—'}`) +
+    rParrafo(`Responsable: ${ficha.datos_generales.responsable_nombre || '—'} (${ficha.datos_generales.responsable_email || '—'})`))
+
+  html += rSeccion(3, 'Configuración de Inversores',
+    rTabla(['Inversor', 'Potencia', 'Estado'], detalle.inversores.map((i) => [i.nombre, fmtCapacidad(i.potencia_nominal_kw), i.state]), 'Sin inversores.'))
+
+  html += rSeccion(4, 'Estado de Sistemas',
+    rParrafo(`Fusion Solar: ${estLbl(detalle.fusion_solar_estado)}   ·   Frontera: ${estLbl(detalle.frontera_estado)}   ·   Estación meteo: ${estLbl(detalle.estacion_meteo_estado)}   ·   Reconectador: ${estLbl(detalle.reconectador_estado)}`))
+
+  const ac = ficha.arquitectura_comunicacion
+  html += rSeccion(5, 'Arquitectura de Comunicación',
+    rParrafo(`Enlace principal: ${ac.enlace_principal || '—'}   ·   Enlaces celulares: ${ac.enlaces_celulares || '—'}`) +
+    rParrafo(`Concentrador de datos: ${ac.concentrador_datos || '—'}   ·   Destino de los datos: ${ac.destino_datos || '—'}`) +
+    rParrafo(`Sincronización horaria: ${ac.sincronizacion_horaria || '—'}`))
+
+  html += rSeccion(6, 'Equipos Integrados',
+    rTabla(['Descripción', 'Marca', 'Cant.', 'Ubicación', 'N.º serie'], ficha.equipos.map((e) => [e.descripcion, e.marca, e.cantidad, e.ubicacion, e.numero_serie]), 'Sin equipos registrados.'))
+
+  html += rSeccion(7, 'Variables Monitoreadas',
+    rTabla(['Variable', 'Unidad', 'Fuente', 'Registro', 'Plataforma'], ficha.variables_monitoreadas.map((v) => [v.variable, v.unidad, v.fuente, v.registro, v.plataforma]), 'Sin variables registradas.'))
+
+  html += rSeccion(8, 'Configuración del Monitoreo',
+    '<div style="font-size:11px;font-weight:700;color:#555;margin:6px 0 2px">Usuarios y destinatarios de notificación</div>' +
+    rTabla(['Rol', 'Nombre', 'Canal', 'Alcance'], ficha.configuracion_monitoreo.notificaciones.map((n) => [n.rol, n.nombre, n.canal, n.alcance]), 'Sin destinatarios.') +
+    '<div style="font-size:11px;font-weight:700;color:#555;margin:10px 0 2px">Umbrales de alarma</div>' +
+    rTabla(['Evento', 'Condición', 'Notificación', 'Destinatarios'], ficha.configuracion_monitoreo.umbrales_alarma.map((u) => [u.evento, u.condicion, u.notificacion, u.destinatarios]), 'Sin umbrales.') +
+    rLista(ficha.configuracion_monitoreo.politicas_datos))
+
+  html += rSeccion(9, 'Protocolo de Pruebas y Resultados',
+    rTabla(['Código', 'Prueba', 'Criterio', 'Resultado', 'Observación'], ficha.protocolo_pruebas.map((p) => [
+      p.codigo, p.prueba, p.criterio_aceptacion,
+      p.resultado === 'conforme' ? 'Conforme' : p.resultado === 'no_conforme' ? 'No conforme' : (p.resultado || '—'),
+      p.observacion,
+    ]), 'Sin pruebas registradas.'))
+
+  html += rSeccion(10, 'Eventos Operativos y Acciones Correctivas',
+    rTabla(['Código', 'Descripción', 'Causa raíz', 'Acción correctiva', 'Estado'], ficha.eventos_operativos.map((e) => [e.codigo, e.descripcion, e.causa_raiz, e.accion_correctiva, e.estado]), 'Sin eventos operativos registrados.'))
+
+  html += rSeccion(11, 'Pendientes',
+    rTabla(['Descripción', 'Responsable', 'Estado'], detalle.pendientes.map((p) => [p.descripcion, p.responsable, p.estado || 'abierto']), 'Sin pendientes.'))
+
+  html += rSeccion(12, 'Observaciones y Estado del Sistema',
+    '<div class="rpt-obs-title">OBSERVACIONES GENERALES <span class="rpt-edit-hint">✏️ clic para editar</span></div>' +
+    `<div class="rpt-obs-text rpt-obs-editable" contenteditable="true" data-obs="generales">${esc(ficha.observaciones.generales || '')}</div>` +
+    (ficha.observaciones.factor_pendiente ? rParrafo('Factor pendiente: ' + ficha.observaciones.factor_pendiente) : ''))
+
+  html += rSeccion(13, 'Recomendaciones de Operación y Mantenimiento', rLista(ficha.recomendaciones))
+  html += rSeccion(14, 'Conclusión', rParrafo(ficha.conclusion))
+  html += rSeccion(15, 'Aceptación y Firmas',
+    rTabla(['Nombre', 'Cargo', 'Fecha'], ficha.firmas.map((f) => [f.nombre, f.cargo, fmtFecha(f.fecha)]), 'Sin firmantes.'))
+
+  html += rSeccion(16, 'Anexos — Evidencia',
+    detalle.evidencia_relacionada.length
+      ? '<ul style="margin:4px 0;padding-left:18px;font-size:12px;line-height:1.7">' +
+        detalle.evidencia_relacionada.map((ev) => `<li><b>${esc(ev.seccion)}:</b> <a href="${ev.url}" target="_blank" rel="noopener">${esc(ev.nombre)}</a></li>`).join('') +
+        '</ul>'
+      : '<div class="rpt-chart-empty">Sin evidencia subida todavía.</div>')
+
+  html += '</div>'
+  return html
+}
+
+async function generarInforme() {
+  generandoInforme.value = true
+  try {
+    const html_content = construirHtmlInforme()
+    const payload = {
+      tipo: 'pm',
+      sub_project: detalle.proyecto.sub_project || detalle.proyecto.nombre_comercial,
+      periodo_desde: '2000-01-01',
+      periodo_hasta: '2099-12-31',
+      periodo_display: 'Puesta en marcha',
+      proyecto_nombre: detalle.proyecto.nombre_comercial,
+      html_content,
+    }
+    const { data } = await api.post('/informes/', payload)
+    router.push(`/informes/${data.id}`)
+  } catch (e) {
+    window.__primeToast?.({ severity: 'error', summary: 'No se pudo generar el informe', detail: e.response?.data?.detail, life: 3500 })
+  } finally {
+    generandoInforme.value = false
+  }
+}
+
 function marcar() { dirty.value = true }
 function toggle(k) { abierto[k] = !abierto[k] }
 function mostrarError(msg) { window.__primeToast?.({ severity: 'error', summary: msg, life: 3500 }) }
@@ -841,6 +985,9 @@ onMounted(cargarLista)
 .om-dirty { font-size: 12px; color: #d97706; font-weight: 600; }
 .om-save { display: flex; align-items: center; gap: 8px; border: none; background: #915BD8; color: #fff; font-size: 14px; font-weight: 700; padding: 9px 18px; border-radius: 10px; cursor: pointer; }
 .om-save:disabled { opacity: .45; cursor: default; }
+.om-pdf, .om-generar { display: flex; align-items: center; gap: 8px; border: 1.5px solid #d9cdf0; background: #fff; color: #6E3FB8; font-size: 14px; font-weight: 700; padding: 9px 16px; border-radius: 10px; cursor: pointer; }
+.om-pdf:hover, .om-generar:hover { background: #f3edfb; }
+.om-pdf:disabled, .om-generar:disabled { opacity: .5; cursor: default; }
 
 .om-hero { background: #2C2039; color: #fff; border-radius: 16px; padding: 18px 20px; margin-bottom: 14px; }
 .om-hero-title h1 { font-size: 20px; font-weight: 800; margin: 0; }
