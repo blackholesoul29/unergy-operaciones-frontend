@@ -327,6 +327,7 @@ const ALL_GROUPS = [
           { to: '/finanzas/facturas-xm', label: 'Facturas de XM' },
           { to: '/finanzas/verificacion-costos', label: 'Verificación de costos' },
           { to: '/finanzas/estados-resultados', label: 'Estados de resultados' },
+          { to: '/finanzas/mandatos', label: 'Mandatos' },
         ],
       },
       {
