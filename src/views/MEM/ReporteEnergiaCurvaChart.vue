@@ -29,23 +29,20 @@
                 :x="x(h - 1) - 4" :y="y(val(finalCurve, h - 1)) - 4" width="8" height="8"
                 fill="#F0C040" stroke="white" stroke-width="1.5"
                 :transform="`rotate(45 ${x(h - 1)} ${y(val(finalCurve, h - 1))})`" />
-          <!-- Sin marcador en un hueco real (null, sin rellenar) -- antes
-               'val()' lo mostraba en 0 igual, un círculo morado sentado en
-               cero se veía como un dato real. -->
-          <circle v-else-if="tieneValor(finalCurve, h - 1)" :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
+          <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
         </template>
       </template>
 
       <path v-if="medidorPath" :d="medidorPath" fill="none" stroke="#3B82F6" stroke-width="2" />
       <template v-if="medidorPath">
-        <rect v-for="h in 24" :key="'m' + h" v-show="tieneValor(medidor, h - 1)"
+        <rect v-for="h in 24" :key="'m' + h"
               :x="x(h - 1) - 3" :y="y(val(medidor, h - 1)) - 3" width="6" height="6"
               fill="#3B82F6" stroke="white" stroke-width="1" />
       </template>
 
       <path v-if="soleniumPath" :d="soleniumPath" fill="none" stroke="#0D9488" stroke-width="2" stroke-dasharray="6 4" />
       <template v-if="soleniumPath">
-        <polygon v-for="h in 24" :key="'s' + h" v-show="tieneValor(solenium, h - 1)"
+        <polygon v-for="h in 24" :key="'s' + h"
                  :points="trianguloPoints(x(h - 1), y(val(solenium, h - 1)))"
                  fill="#0D9488" stroke="white" stroke-width="1" />
       </template>
@@ -57,7 +54,7 @@
            la curva final, no una serie propia. -->
       <path v-if="reconectadorPath" :d="reconectadorPath" fill="none" stroke="#EA580C" stroke-width="2" stroke-dasharray="2 3" />
       <template v-if="reconectadorPath">
-        <rect v-for="h in 24" :key="'r' + h" v-show="tieneValor(reconectador, h - 1)"
+        <rect v-for="h in 24" :key="'r' + h"
               :x="x(h - 1) - 3.5" :y="y(val(reconectador, h - 1)) - 3.5" width="7" height="7"
               fill="white" stroke="#EA580C" stroke-width="1.5"
               :transform="`rotate(45 ${x(h - 1)} ${y(val(reconectador, h - 1))})`" />
@@ -124,10 +121,6 @@ function val(arr, h) {
   const v = arr?.[h]
   return v === null || v === undefined ? 0 : Number(v)
 }
-function tieneValor(arr, h) {
-  const v = arr?.[h]
-  return v !== null && v !== undefined
-}
 // Triángulo pequeño centrado en (cx, cy) -- marcador propio de Solenium,
 // distinto del cuadrado de Medidor y el círculo de Final, para que la
 // diferencia no dependa solo del color.
@@ -166,39 +159,25 @@ function pathDe(arr) {
   return d || null
 }
 
-// Antes se mapeaba null -> 0 para que la línea nunca se cortara -- pero eso
-// hacía indistinguible un hueco real sin dato (pendiente de rellenar a
-// mano, ver botón 'Rellenar horas') de una hora con generación real en
-// cero (ej. de noche). Ahora se corta igual que Medidor/Solenium/
-// Reconectador -- un hueco se ve como hueco, no como un cero engañoso.
-const finalPath = computed(() => pathDe(finalCurve.value) || '')
-// Un solo 'L bottom, L bottom, Z' pegado al final del path ya no alcanza
-// ahora que la línea se corta en los huecos (puede haber varios tramos
-// separados) -- cerraría solo el último tramo hasta el borde de TODO el
-// gráfico, generando un relleno gigante y equivocado. Cada tramo cierra su
-// propia área contra la base, solo en su propio rango de horas.
+// Un hueco horario (null) se dibuja como 0 en las 4 curvas -- decisión
+// visual explícita del usuario (2026-08-12): la línea nunca se corta,
+// aunque eso signifique que "sin dato" y "generó/consumió 0 de verdad" se
+// vean igual en el chart (esa distinción vive en 'Detalle de la
+// clasificación'/'Horas rellenadas', no hace falta repetirla acá).
+function conCeros(arr) {
+  if (!arr) return null
+  return arr.map((v) => (v === null || v === undefined ? 0 : v))
+}
+
+const finalPath = computed(() => pathDe(conCeros(finalCurve.value)) || '')
 const finalArea = computed(() => {
-  const curva = finalCurve.value
-  let d = ''
-  let tramo = []
-  const cerrarTramo = () => {
-    if (!tramo.length) return
-    tramo.forEach((p, i) => { d += (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ' ' })
-    const base = (padT + plotH).toFixed(1)
-    d += `L${tramo[tramo.length - 1].x.toFixed(1)},${base} L${tramo[0].x.toFixed(1)},${base} Z `
-    tramo = []
-  }
-  for (let h = 0; h < 24; h++) {
-    const v = curva[h]
-    if (v === null || v === undefined) { cerrarTramo(); continue }
-    tramo.push({ x: x(h), y: y(Number(v)) })
-  }
-  cerrarTramo()
-  return d
+  const base = finalPath.value
+  if (!base) return ''
+  return base + ` L${x(23).toFixed(1)},${(padT + plotH).toFixed(1)} L${x(0).toFixed(1)},${(padT + plotH).toFixed(1)} Z`
 })
-const medidorPath = computed(() => pathDe(props.medidor))
-const soleniumPath = computed(() => pathDe(props.solenium))
-const reconectadorPath = computed(() => pathDe(props.reconectador))
+const medidorPath = computed(() => pathDe(conCeros(props.medidor)))
+const soleniumPath = computed(() => pathDe(conCeros(props.solenium)))
+const reconectadorPath = computed(() => pathDe(conCeros(props.reconectador)))
 </script>
 
 <style scoped>
