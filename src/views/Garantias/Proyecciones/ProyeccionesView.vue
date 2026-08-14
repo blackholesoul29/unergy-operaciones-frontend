@@ -44,6 +44,18 @@
             <dt>Plantas nuevas</dt><dd>{{ fmtCOP(v.valor_plantas_nuevas) }}</dd></div>
           <div class="flex justify-between"><dt>Costo regulatorio</dt><dd>{{ fmtCOP(v.costo_regulatorio) }}</dd></div>
         </dl>
+        <div class="mt-3 pt-3 border-t" style="border-color:rgba(44,32,57,0.10)">
+          <div class="flex items-center gap-2 mb-2">
+            <label class="text-xs font-medium" style="color:#6b5a8a">Pagado</label>
+            <InputNumber v-model="v.pagado" :min="0" mode="currency" currency="COP" locale="es-CO"
+              :maxFractionDigits="0" size="small" style="width:11rem"
+              @blur="guardarPagado(v)" />
+          </div>
+          <div v-if="v.saldo != null" class="text-sm font-semibold"
+            :style="v.saldo >= 0 ? 'color:#059669' : 'color:#DC2626'">
+            Saldo: {{ fmtCOP(v.saldo) }} {{ v.saldo >= 0 ? '· a favor' : '· falta' }}
+          </div>
+        </div>
       </div>
     </div>
 
@@ -85,7 +97,7 @@ import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import { fmtCOP } from '../AjustesXM/utils/formatters.js'
-import { getProyecciones, guardarSnapshot, getHistorial } from '@/api/garantiasProyecciones.js'
+import { getProyecciones, guardarSnapshot, getHistorial, setPagado } from '@/api/garantiasProyecciones.js'
 
 const toast = useToast()
 const MESES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -130,6 +142,16 @@ async function cargarHistorial() {
     historial.value = r.snapshots || []
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo cargar el histórico',
+      detail: e.response?.data?.detail || e.message, life: 5000 })
+  }
+}
+
+async function guardarPagado(v) {
+  try {
+    await setPagado({ anio: v.anio, mes: v.mes, valor: v.pagado || 0 })
+    await cargar()  // recalcula el saldo
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo guardar el pagado',
       detail: e.response?.data?.detail || e.message, life: 5000 })
   }
 }
