@@ -58,9 +58,66 @@
         </div>
 
         <!-- ── Tab: Servicios ── -->
-        <div v-if="activeTab === 'servicios'" class="space-y-4">
+        <div v-if="activeTab === 'servicios'" class="space-y-6">
+
+          <!-- Servicios contratados (derivados de los contratos de las plantas) -->
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wide mb-2" style="color: #9b89b5;">
+              Servicios contratados
+            </h3>
+            <div v-if="loadingServiciosContratos" class="flex justify-center py-6">
+              <i class="pi pi-spin pi-spinner text-xl" style="color: #915BD8;" />
+            </div>
+            <div v-else-if="serviciosContratos.length === 0"
+              class="text-sm text-center py-4 rounded-xl" style="color:#bba8d4; border: 1.5px dashed #e8e0f0;">
+              Este cliente no tiene contratos de servicio en sus plantas.
+            </div>
+            <div v-else class="space-y-3">
+              <div v-for="g in serviciosContratos" :key="g.servicio"
+                class="rounded-xl overflow-hidden" style="border: 1.5px solid #e8e0f0;">
+                <div class="flex items-center gap-2 px-4 py-2.5" style="background: #faf8fd;">
+                  <span class="text-sm font-bold" style="color: #2C2039;">{{ servicioAplicaLabel(g.servicio) }}</span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:#f0ebfd;color:#915BD8;">
+                    {{ g.num_plantas }} {{ g.num_plantas === 1 ? 'planta' : 'plantas' }}
+                  </span>
+                  <span v-if="g.semaforo && g.semaforo !== 'vigente'"
+                    class="text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-auto"
+                    :style="{ color: SEMAFORO[g.semaforo].color, background: SEMAFORO[g.semaforo].bg }">
+                    {{ SEMAFORO[g.semaforo].label }}
+                  </span>
+                </div>
+                <div class="divide-y" style="border-color: #f3eefa;">
+                  <div v-for="c in g.contratos" :key="c.contrato_id"
+                    class="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
+                    <div class="min-w-0">
+                      <p class="text-sm font-semibold truncate" style="color: #2C2039;">
+                        {{ c.proyecto_nombre || 'Sin planta' }}
+                      </p>
+                      <p class="text-xs" style="color: #6b5a8a;">
+                        {{ c.numero_contrato ? 'N° ' + c.numero_contrato + ' · ' : '' }}{{ formatDate(c.fecha_inicio) || '—' }} → {{ formatDate(c.fecha_fin) || '—' }}
+                        <span v-if="c.tarifa !== null"> · tarifa {{ c.tarifa }}</span>
+                      </p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span v-if="c.semaforo" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                        :style="{ color: SEMAFORO[c.semaforo].color, background: SEMAFORO[c.semaforo].bg }">
+                        {{ SEMAFORO[c.semaforo].label }}
+                      </span>
+                      <a v-if="c.enlace_drive" :href="c.enlace_drive" target="_blank" rel="noopener"
+                        class="text-xs font-semibold flex items-center gap-1 hover:underline" style="color: #915BD8;">
+                        <i class="pi pi-external-link text-xs" /> Abrir contrato
+                      </a>
+                      <span v-else class="text-xs italic" style="color:#bba8d4;">Sin link</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Servicios registrados manualmente -->
           <div class="flex items-center justify-between">
-            <p class="text-sm" style="color: #6b5a8a;">Servicios que Unergy presta a este cliente.</p>
+            <p class="text-sm" style="color: #6b5a8a;">Servicios registrados manualmente.</p>
             <button @click="abrirDialogoServicio"
               class="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5"
               style="background: #915BD8;">
@@ -478,6 +535,7 @@ import ClienteForm from './ClienteForm.vue'
 import ClienteResumen from './ClienteResumen.vue'
 import ContactosPanel from '@/components/ContactosPanel.vue'
 import { formatearNombre } from '@/utils/nombreFormato'
+import { SEMAFORO, servicioLabel as servicioAplicaLabel } from './clientesUi'
 
 const route = useRoute()
 const router = useRouter()
@@ -504,6 +562,9 @@ const clienteProyectos = ref([])
 const clienteFronteras = ref([])
 const clientePPA = ref([])
 const loadingRelated = ref(false)
+
+const serviciosContratos = ref([])
+const loadingServiciosContratos = ref(false)
 
 const SERVICIOS = [
   { value: 'operacion',      label: 'Operación & Mantenimiento' },
@@ -798,5 +859,20 @@ watch(activeTab, (tab) => {
   }
 })
 
-onMounted(cargar)
+async function loadServiciosContratos() {
+  loadingServiciosContratos.value = true
+  try {
+    const { data } = await api.get(`/clientes/${route.params.id}/servicios-contratos`)
+    serviciosContratos.value = Array.isArray(data) ? data : []
+  } catch {
+    serviciosContratos.value = []
+  } finally {
+    loadingServiciosContratos.value = false
+  }
+}
+
+onMounted(() => {
+  cargar()
+  loadServiciosContratos()
+})
 </script>
