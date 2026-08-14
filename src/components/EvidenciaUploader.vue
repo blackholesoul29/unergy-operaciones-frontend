@@ -29,6 +29,7 @@ const props = defineProps({
   proyectoId: { type: [Number, String], required: true },
   seccion: { type: String, required: true },
   modelValue: { type: Array, default: () => [] },
+  basePath: { type: String, default: 'inicio-operacion' },
 })
 const emit = defineEmits(['update:modelValue', 'error'])
 
@@ -48,7 +49,7 @@ async function subir(event) {
   const fd = new FormData()
   fd.append('archivo', file)
   try {
-    const { data } = await api.post(`/inicio-operacion/${props.proyectoId}/archivos/${props.seccion}`, fd)
+    const { data } = await api.post(`/${props.basePath}/${props.proyectoId}/archivos/${props.seccion}`, fd)
     emit('update:modelValue', [...(props.modelValue || []), data])
   } catch (e) {
     emit('error', e?.response?.data?.detail || 'No se pudo subir el archivo')
@@ -60,7 +61,7 @@ async function subir(event) {
 async function eliminar(archivoId) {
   eliminando.value = archivoId
   try {
-    await api.delete(`/inicio-operacion/${props.proyectoId}/archivos/${props.seccion}/${archivoId}`)
+    await api.delete(`/${props.basePath}/${props.proyectoId}/archivos/${props.seccion}/${archivoId}`)
     emit('update:modelValue', (props.modelValue || []).filter((a) => a.id !== archivoId))
   } catch (e) {
     emit('error', e?.response?.data?.detail || 'No se pudo eliminar el archivo')

@@ -7,11 +7,15 @@
       <button :class="['cvt-tab', tab === 'inicio' && 'cvt-tab--on']" @click="tab = 'inicio'">
         <i class="pi pi-flag" /> Inicio de Operación
       </button>
+      <button :class="['cvt-tab', tab === 'informe' && 'cvt-tab--on']" @click="tab = 'informe'">
+        <i class="pi pi-file-pdf" /> Informe
+      </button>
     </div>
 
     <div class="cvt-body">
       <CostosVariablesView v-show="tab === 'costos'" />
       <InicioOperacionView v-if="inicioCargado" v-show="tab === 'inicio'" />
+      <InformeOMView v-if="informeCargado" v-show="tab === 'informe'" />
     </div>
   </div>
 </template>
@@ -20,11 +24,16 @@
 import { ref, watch } from 'vue'
 import CostosVariablesView from '@/views/Operaciones/CostosVariablesView.vue'
 import InicioOperacionView from '@/views/Operaciones/InicioOperacionView.vue'
+import InformeOMView from '@/views/Operaciones/InformeOMView.vue'
 
 const tab = ref('costos')
-// Monta Inicio de Operación solo cuando se entra a su pestaña la primera vez.
+// Monta cada pestaña pesada solo cuando se entra a ella la primera vez.
 const inicioCargado = ref(false)
-watch(tab, (t) => { if (t === 'inicio') inicioCargado.value = true }, { immediate: false })
+const informeCargado = ref(false)
+watch(tab, (t) => {
+  if (t === 'inicio') inicioCargado.value = true
+  if (t === 'informe') informeCargado.value = true
+}, { immediate: false })
 </script>
 
 <style scoped>
