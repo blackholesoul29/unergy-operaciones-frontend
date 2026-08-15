@@ -264,6 +264,7 @@ const ALL_GROUPS = [
       { to: '/clientes',        label: 'Clientes',         icon: 'pi pi-building' },
       { to: '/proyectos',       label: 'Proyectos',        icon: 'pi pi-bolt' },
       { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
+      { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
       { to: '/servicios',       label: 'Servicios',        icon: 'pi pi-file-edit' },
     ],
   },

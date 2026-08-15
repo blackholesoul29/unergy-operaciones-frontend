@@ -30,6 +30,8 @@ const routes = [
   { path: '/servicios',    name: 'Servicios',    component: () => import('@/views/Contratos/ContratosListView.vue') },
   { path: '/contratos/:id',name: 'ContratoDetalle', component: () => import('@/views/Contratos/ContratoDetailView.vue') },
   { path: '/general/proximos-energizar', name: 'ProximosEnergizar', component: () => import('@/views/General/ProximosEnergizarView.vue') },
+  { path: '/general/retos',     name: 'Retos',        component: () => import('@/views/Retos/RetosListView.vue') },
+  { path: '/general/retos/:id', name: 'RetoDetalle',  component: () => import('@/views/Retos/RetoDetailView.vue') },
 
   // ── Comercial ────────────────────────────────────────────────────
   { path: '/comercial', name: 'Comercial', component: () => import('@/views/Comercial/ComercialPipelineView.vue'), meta: { roles: ['admin', 'comercial'] } },
