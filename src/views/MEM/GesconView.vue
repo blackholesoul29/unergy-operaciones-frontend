@@ -28,7 +28,15 @@
       <Select v-model="filtroTipo" :options="opcionesTipo" optionLabel="label" optionValue="value"
         placeholder="Tipo" showClear class="min-w-[160px]" />
 
-      <Button v-if="filtroTexto || filtroTipo" label="Limpiar" icon="pi pi-times"
+      <Select v-model="filtroMes" :options="opcionesMes" optionLabel="label" optionValue="value"
+        placeholder="Mes" showClear class="min-w-[130px]"
+        v-tooltip.bottom="'Vigencia en ese mes'" />
+
+      <Select v-model="filtroAnio" :options="opcionesAnio" optionLabel="label" optionValue="value"
+        placeholder="Año" showClear class="min-w-[100px]"
+        v-tooltip.bottom="'Vigencia en ese año'" />
+
+      <Button v-if="filtroTexto || filtroTipo || filtroMes || filtroAnio" label="Limpiar" icon="pi pi-times"
         severity="secondary" size="small" @click="limpiar" />
     </div>
 
@@ -508,6 +516,8 @@ const total = ref(0)
 const filtroTexto = ref('')
 const filtroEstado = ref('vigentes')
 const filtroTipo = ref(null)
+const filtroMes = ref(null)
+const filtroAnio = ref(null)
 const hoy = new Date().toISOString().slice(0, 10)
 
 const opcionesEstado = [
@@ -520,6 +530,18 @@ const opcionesTipo = [
   { label: 'Terminación', value: 'terminacion' },
   { label: 'Desistimiento', value: 'desistimiento' },
 ]
+
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const opcionesMes = MESES.map((label, i) => ({ label, value: i + 1 }))
+
+const opcionesAnio = computed(() => {
+  const seen = new Set()
+  for (const x of rows.value) {
+    if (x.fecha_inicio) seen.add(Number(x.fecha_inicio.slice(0, 4)))
+    if (x.fecha_fin) seen.add(Number(x.fecha_fin.slice(0, 4)))
+  }
+  return [...seen].sort((a, b) => b - a).map(v => ({ label: String(v), value: v }))
+})
 
 // Fin EFECTIVO de la fila: si un relevo/modificación posterior en su SIC la
 // superó, el backend manda fecha_fin_efectiva (< fecha_fin cruda). Una fila
@@ -537,6 +559,22 @@ function filtrar() {
     r = r.filter(x => finEfectivo(x) && finEfectivo(x) >= hoy)
   if (filtroTipo.value)
     r = r.filter(x => x.tipo_solicitud === filtroTipo.value)
+  if (filtroMes.value || filtroAnio.value) {
+    // Vigencia en el mes/año elegido, no fecha_inicio exacta: si solo se
+    // elige año, cubre el año completo; si solo se elige mes, usa el año
+    // actual. Igual criterio de "vigente" que el filtro Estado (requiere
+    // finEfectivo, ver comentario en esa función).
+    const anio = filtroAnio.value || new Date().getFullYear()
+    const mesDesde = filtroMes.value || 1
+    const mesHasta = filtroMes.value || 12
+    const desde = `${anio}-${String(mesDesde).padStart(2, '0')}-01`
+    const ultimoDia = new Date(anio, mesHasta, 0).getDate()
+    const hasta = `${anio}-${String(mesHasta).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`
+    r = r.filter(x => {
+      const fin = finEfectivo(x)
+      return !!fin && x.fecha_inicio <= hasta && fin >= desde
+    })
+  }
   const q = filtroTexto.value.trim().toLowerCase()
   if (q) r = r.filter(x =>
     (x.codigo_sic_contrato || '').toLowerCase().includes(q) ||
@@ -548,7 +586,7 @@ function filtrar() {
   rowsMostrar.value = r
   total.value = r.length
 }
-watch([rows, filtroEstado, filtroTipo, filtroTexto], filtrar)
+watch([rows, filtroEstado, filtroTipo, filtroMes, filtroAnio, filtroTexto], filtrar)
 
 async function cargar() {
   loading.value = true
@@ -559,7 +597,7 @@ async function cargar() {
     loading.value = false
   }
 }
-function limpiar() { filtroTexto.value = ''; filtroTipo.value = null }
+function limpiar() { filtroTexto.value = ''; filtroTipo.value = null; filtroMes.value = null; filtroAnio.value = null }
 
 // ── Exportar a Excel (identidad de marca Unergy) ──────────────────
 const exportando = ref(false)

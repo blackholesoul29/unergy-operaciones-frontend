@@ -36,6 +36,16 @@
         <Dropdown v-model="operadorFilter" :options="operadorOptions" optionLabel="label" optionValue="value"
                   class="w-40" placeholder="Todos" showClear />
       </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Mes registro ASIC</label>
+        <Dropdown v-model="mesFilter" :options="mesOptions" optionLabel="label" optionValue="value"
+                  class="w-36" placeholder="Todos" showClear />
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Año registro ASIC</label>
+        <Dropdown v-model="anioFilter" :options="anioOptions" optionLabel="label" optionValue="value"
+                  class="w-28" placeholder="Todos" showClear />
+      </div>
     </div>
 
     <!-- Resumen Card -->
@@ -567,20 +577,24 @@ const fronteras = ref([])
 const loading = ref(true)
 const saving = ref(false)
 
-// Filtros sincronizados con la URL (?q=&estado=&proyecto=&operador=&generando=)
+// Filtros sincronizados con la URL (?q=&estado=&proyecto=&operador=&mes=&anio=&generando=)
 // para que se sostengan al volver con el boton "atras" o al refrescar.
 const search = ref(route.query.q || '')
 const estadoFilter = ref(route.query.estado || null)
 const proyectoFilter = ref(route.query.proyecto ? Number(route.query.proyecto) : null)
 const operadorFilter = ref(route.query.operador || null)
+const mesFilter = ref(route.query.mes ? Number(route.query.mes) : null)
+const anioFilter = ref(route.query.anio ? Number(route.query.anio) : null)
 const soloGenerando = ref(route.query.generando === '1')
 
-watch([search, estadoFilter, proyectoFilter, operadorFilter, soloGenerando], ([q, estado, proyecto, operador, generando]) => {
+watch([search, estadoFilter, proyectoFilter, operadorFilter, mesFilter, anioFilter, soloGenerando], ([q, estado, proyecto, operador, mes, anio, generando]) => {
   const query = {}
   if (q) query.q = q
   if (estado) query.estado = estado
   if (proyecto) query.proyecto = proyecto
   if (operador) query.operador = operador
+  if (mes) query.mes = mes
+  if (anio) query.anio = anio
   if (generando) query.generando = '1'
   router.replace({ query })
 })
@@ -644,11 +658,34 @@ const operadorOptions = computed(() => {
   return [...seen].sort().map(v => ({ label: v, value: v }))
 })
 
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const mesOptions = MESES.map((label, i) => ({ label, value: i + 1 }))
+
+const anioOptions = computed(() => {
+  const seen = new Set()
+  for (const f of fronteras.value) {
+    if (!f.fecha_registro_asic) continue
+    const anio = new Date(f.fecha_registro_asic).getFullYear()
+    if (!isNaN(anio)) seen.add(anio)
+  }
+  return [...seen].sort((a, b) => b - a).map(v => ({ label: String(v), value: v }))
+})
+
 const filteredFronteras = computed(() => {
   let list = fronteras.value
   if (estadoFilter.value) list = list.filter(f => f.estado === estadoFilter.value)
   if (proyectoFilter.value) list = list.filter(f => f.proyecto_id === proyectoFilter.value)
   if (operadorFilter.value) list = list.filter(f => (f.operador_comercial || f.operador_red) === operadorFilter.value)
+  if (mesFilter.value || anioFilter.value) {
+    list = list.filter(f => {
+      if (!f.fecha_registro_asic) return false
+      const d = new Date(f.fecha_registro_asic)
+      if (isNaN(d.getTime())) return false
+      if (mesFilter.value && d.getMonth() + 1 !== mesFilter.value) return false
+      if (anioFilter.value && d.getFullYear() !== anioFilter.value) return false
+      return true
+    })
+  }
   if (soloGenerando.value) list = list.filter(generaDeVerdad)
   if (search.value) {
     const s = search.value.toLowerCase()
