@@ -13,12 +13,12 @@
     </PageHeader>
 
     <!-- Filtros -->
-    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
+    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-2 items-end border" style="border-color:#ECE7F2">
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
         <span class="p-input-icon-left">
           <i class="pi pi-search" />
-          <InputText v-model="search" placeholder="Buscar frontera..." class="w-56" />
+          <InputText v-model="search" placeholder="Buscar frontera..." class="w-48" />
         </span>
       </div>
       <div>
@@ -37,14 +37,13 @@
                   class="w-40" placeholder="Todos" showClear />
       </div>
       <div>
-        <label class="block text-xs font-medium text-gray-600 mb-1">Mes registro ASIC</label>
-        <Dropdown v-model="mesFilter" :options="mesOptions" optionLabel="label" optionValue="value"
-                  class="w-44" placeholder="Todos" showClear />
-      </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-600 mb-1">Año registro ASIC</label>
-        <Dropdown v-model="anioFilter" :options="anioOptions" optionLabel="label" optionValue="value"
-                  class="w-32" placeholder="Todos" showClear />
+        <label class="block text-xs font-medium text-gray-600 mb-1">Registro ASIC</label>
+        <div class="flex gap-2">
+          <Dropdown v-model="mesFilter" :options="mesOptions" optionLabel="label" optionValue="value"
+                    class="w-44" placeholder="Mes" showClear />
+          <Dropdown v-model="anioFilter" :options="anioOptions" optionLabel="label" optionValue="value"
+                    class="w-32" placeholder="Año" showClear />
+        </div>
       </div>
     </div>
 
