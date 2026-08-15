@@ -155,11 +155,11 @@
     <ConfirmDialog />
 
     <!-- ── Dialog Registro ─────────────────────────────────────── -->
-    <Dialog v-model:visible="dialogVisible" :header="editandoId ? 'Editar contrato ASIC' : 'Registrar contrato ASIC'" modal
+    <Dialog v-model:visible="dialogVisible" :header="tituloDialogo" modal
       :style="{ width: '700px' }" :breakpoints="{ '768px': '95vw' }">
-      <form @submit.prevent="guardar" class="space-y-5 pt-1">
+      <div class="space-y-5 pt-1">
 
-        <!-- Fila 1: Tipo + Estado -->
+        <!-- Fila 1: Tipo + Estado (comunes a todos los modos) -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
             <label class="text-xs font-medium" style="color:#6b5a8a;">Tipo solicitud *</label>
@@ -176,6 +176,15 @@
             <small v-if="errores.estado_solicitud" class="text-red-500 text-xs">{{ errores.estado_solicitud }}</small>
           </div>
         </div>
+
+        <!-- Modificación: formulario asistido. Solo pide lo que cambia (fecha
+             de fin, planta, % y modalidad) + la fecha en que entra en vigencia;
+             el resto lo hereda el backend de la versión vigente del SIC. -->
+        <GesconModificacionForm v-if="modoModificacionAsistida"
+          :rows="rows" :proyectos="proyectos" :estado="form.estado_solicitud"
+          @cancelar="dialogVisible = false" @guardado="onModificacionGuardada" />
+
+        <form v-else @submit.prevent="guardar" class="space-y-5">
 
         <!-- ── Terminación: solo los datos que XM exige ─────────────── -->
         <template v-if="esTerminacion">
@@ -419,7 +428,8 @@
             v-tooltip.top="conflictoNoResuelto ? 'Resuelve el solapamiento de fechas antes de guardar' : ''"
             style="background:#915BD8; border-color:#915BD8;" />
         </div>
-      </form>
+        </form>
+      </div>
     </Dialog>
 
     <!-- Diálogo: completar nombres internos faltantes (backfill) -->
@@ -468,6 +478,7 @@
 import { ref, watch, computed, onMounted } from 'vue'
 import api from '@/api/client.js'
 import { conflictosAtribucion } from '@/utils/validacionContratos.js'
+import GesconModificacionForm from './GesconModificacionForm.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -797,6 +808,35 @@ const modalidadSuministro = computed({
 // Una terminación solo necesita: SIC del contrato a terminar, fecha de terminación,
 // cédulas de los agentes y el link del archivo. El resto de campos se ocultan.
 const esTerminacion = computed(() => form.value.tipo_solicitud === 'terminacion')
+
+// Registrar una modificación NO es capturar un contrato nuevo: es otra versión
+// del mismo SIC, y el formulario asistido solo pide lo que cambia. Editar una
+// fila ya existente (lápiz) sí usa el formulario completo: ahí se corrigen
+// datos de ese registro puntual, no se registra una modificación ante XM.
+const modoModificacionAsistida = computed(() =>
+  form.value.tipo_solicitud === 'modificacion' && !editandoId.value)
+
+// Solo las solicitudes publicadas cuentan para la vigencia y para Cumplimiento:
+// una modificación guardada "en proceso" no cambiaría nada y el usuario no
+// tendría cómo notarlo. Se propone Publicado (el selector queda editable).
+watch(modoModificacionAsistida, asistida => {
+  if (asistida && form.value.estado_solicitud === 'en_proceso') {
+    form.value.estado_solicitud = 'publicado'
+  }
+})
+
+const tituloDialogo = computed(() => {
+  if (editandoId.value) return 'Editar contrato ASIC'
+  if (modoModificacionAsistida.value) return 'Registrar modificación'
+  return 'Registrar contrato ASIC'
+})
+
+function onModificacionGuardada() {
+  dialogVisible.value = false
+  // Recarga completa: la modificación puede haber cerrado la planta saliente y
+  // recalculado la vigencia efectiva de otras filas del mismo SIC.
+  cargar()
+}
 
 // ── Validación de solapamiento (integridad de atribución de generación) ──
 // Contratos ACTIVOS de la MISMA planta cuya ventana de fechas se cruza con la que
