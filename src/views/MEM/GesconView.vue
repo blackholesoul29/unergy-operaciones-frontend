@@ -29,11 +29,11 @@
         placeholder="Tipo" showClear class="min-w-[160px]" />
 
       <Select v-model="filtroMes" :options="opcionesMes" optionLabel="label" optionValue="value"
-        placeholder="Mes" showClear class="min-w-[130px]"
+        placeholder="Mes" showClear class="min-w-[150px]"
         v-tooltip.bottom="'Vigencia en ese mes'" />
 
       <Select v-model="filtroAnio" :options="opcionesAnio" optionLabel="label" optionValue="value"
-        placeholder="Año" showClear class="min-w-[100px]"
+        placeholder="Año" showClear class="min-w-[110px]"
         v-tooltip.bottom="'Vigencia en ese año'" />
 
       <Button v-if="filtroTexto || filtroTipo || filtroMes || filtroAnio" label="Limpiar" icon="pi pi-times"

@@ -39,12 +39,12 @@
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Mes registro ASIC</label>
         <Dropdown v-model="mesFilter" :options="mesOptions" optionLabel="label" optionValue="value"
-                  class="w-36" placeholder="Todos" showClear />
+                  class="w-44" placeholder="Todos" showClear />
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-600 mb-1">Año registro ASIC</label>
         <Dropdown v-model="anioFilter" :options="anioOptions" optionLabel="label" optionValue="value"
-                  class="w-28" placeholder="Todos" showClear />
+                  class="w-32" placeholder="Todos" showClear />
       </div>
     </div>
 
