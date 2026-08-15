@@ -12,7 +12,15 @@
       <div class="top-actions">
         <div class="fld">
           <label>Ver período</label>
-          <input type="month" v-model="periodo" class="month-in" @change="setTab(tab)" />
+          <div class="pc-period">
+            <button class="pc-period-btn" @click="stepMes(-1)" v-tooltip.bottom="'Mes anterior'">
+              <i class="pi pi-chevron-left" />
+            </button>
+            <span class="pc-period-label">{{ periodoLabel || '—' }}</span>
+            <button class="pc-period-btn" :disabled="esMesActual" @click="stepMes(1)" v-tooltip.bottom="'Mes siguiente'">
+              <i class="pi pi-chevron-right" />
+            </button>
+          </div>
         </div>
         <button v-if="tab === 'preliquidacion' || tab === 'oficial'" class="btn-o" :disabled="loading || !paneles.length" @click="exportarExcel">
           <i class="pi pi-file-excel" /> Exportar Excel
@@ -148,6 +156,16 @@
             <option value="con_costos">Con costos</option>
             <option value="sin_costos">Sin costos</option>
             <option value="bolsa">Con bolsa</option>
+          </select>
+          <select v-model="fInv" class="filtro-sel">
+            <option value="">Inversionista: todos</option>
+            <option v-for="nom in inversionistasLista" :key="nom" :value="nom">{{ nom }}</option>
+          </select>
+          <select v-model="fBloque" class="filtro-sel">
+            <option value="">Documento: todos</option>
+            <option value="mandato">Mandato (ingresos)</option>
+            <option value="costos">Costos</option>
+            <option value="factura">Factura (Repr/CGM/Admin)</option>
           </select>
           <span class="filtro-count">{{ panelesFiltrados.length }} / {{ paneles.length }}</span>
           <button v-if="hayFiltro" class="mini" @click="limpiarFiltros">Limpiar</button>
@@ -307,7 +325,7 @@
                   <th class="l">Comprobante</th><th class="l">Soporte</th>
                 </tr></thead>
                 <tbody>
-                  <template v-for="blk in bloquesPlano" :key="blk.key">
+                  <template v-for="blk in bloquesMostrados()" :key="blk.key">
                     <tr class="blk-h"><td colspan="5">{{ blk.label }}</td></tr>
                     <tr v-for="(ln, i) in lineas100Bloque(p, blk)" :key="blk.key + i" :class="{ derivada: ln.derivada }">
                       <td class="l">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span></td>
@@ -610,7 +628,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
-import * as XLSX from 'xlsx'
+import XLSX from 'xlsx-js-style'
 import api from '@/api/client'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
@@ -647,8 +665,25 @@ const tab = ref('preliquidacion')
 // este switch; en las pestañas de detalle el tipo es la propia pestaña.
 const selTipo = ref('oficial')
 const tipoDatos = computed(() => (tab.value === 'seleccion' ? selTipo.value : tab.value))
-// El período nunca se asume: se confirma siempre en el diálogo antes de cargar ER.
-const periodo = ref('')
+// Período visible en formato "YYYY-MM" (lo que esperan las llamadas del Panel).
+// Arranca en el MES ANTERIOR: el panel es de mes vencido, el mes en curso suele
+// estar vacío. Se navega con las flechas ‹ › (mismo patrón que Facturación).
+function mesPanelISO (delta = 0) {
+  const n = new Date()
+  const d = new Date(n.getFullYear(), n.getMonth() + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+const periodo = ref(mesPanelISO(-1))
+const esMesActual = computed(() => periodo.value === mesPanelISO(0))
+// Navega un mes; no deja pasar del mes actual. Recarga igual que el antiguo @change.
+function stepMes (delta) {
+  const [y, m] = (periodo.value || mesPanelISO(0)).split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  if (delta > 0 && next > mesPanelISO(0)) return
+  periodo.value = next
+  setTab(tab.value)
+}
 
 // Diálogo de período previo a la carga de ER.
 const showPeriodoDialog = ref(false)
@@ -732,14 +767,26 @@ const fProyecto = ref('')     // texto
 const fTipo = ref('')         // '' | normal | neu | nitro
 const fEstado = ref('')       // '' | liquida | no | solo_ing | solo_cost | genera
 const fMarcador = ref('')     // '' | con_costos | sin_costos | bolsa
+const fInv = ref('')          // nombre de inversionista
+const fBloque = ref('')       // '' | mandato | costos | factura (documento contable)
 const clasMap = reactive({})  // proyecto_id → tipo de liquidación del período
-const hayFiltro = computed(() => !!(fProyecto.value || fTipo.value || fEstado.value || fMarcador.value))
-function limpiarFiltros () { fProyecto.value = ''; fTipo.value = ''; fEstado.value = ''; fMarcador.value = '' }
+const hayFiltro = computed(() => !!(fProyecto.value || fTipo.value || fEstado.value || fMarcador.value || fInv.value || fBloque.value))
+function limpiarFiltros () { fProyecto.value = ''; fTipo.value = ''; fEstado.value = ''; fMarcador.value = ''; fInv.value = ''; fBloque.value = '' }
+
+// Lista de inversionistas para el filtro (únicos entre todos los paneles).
+const inversionistasLista = computed(() => {
+  const s = new Set()
+  for (const p of paneles.value) for (const inv of (p.inversionistas || [])) if (inv.nombre) s.add(inv.nombre)
+  return [...s].sort((a, b) => a.localeCompare(b))
+})
+// Bloques a mostrar en la tabla plana según el filtro de documento contable.
+const bloquesMostrados = () => (fBloque.value ? bloquesPlano.filter(b => b.key === fBloque.value) : bloquesPlano)
 
 const panelesFiltrados = computed(() => {
   const q = fProyecto.value.trim().toLowerCase()
   return paneles.value.filter(p => {
     if (q && !(p.proyecto || '').toLowerCase().includes(q)) return false
+    if (fInv.value && !(p.inversionistas || []).some(i => (i.nombre || '') === fInv.value)) return false
     if (fTipo.value && (clasMap[p.proyecto_id] || 'normal') !== fTipo.value) return false
     if (fEstado.value) {
       const liq = p.liquidar_ingresos || p.liquidar_costos
@@ -1241,11 +1288,21 @@ async function guardar (p) {
 // Una fila por (proyecto, inversionista, documento contable, concepto). Referencia
 // Factura y Contrato van vacías por ahora (no existen en el modelo aún).
 const _DOC_CONTABLE = { ingresos: 'Mandato', comercializacion: 'Mandato', costos: 'Costos', facturas: 'Factura' }
+// Documento contable → grupo (para el filtro fBloque) y color de la celda en el Excel.
+const _DOC_DE_BLOQUE = { mandato: ['ingresos', 'comercializacion'], costos: ['costos'], factura: ['facturas'] }
+const _TINTE_DOC = {
+  Mandato: { fill: 'E6F1FB', text: '0C447C' },
+  Costos:  { fill: 'FAEEDA', text: '854F0B' },
+  Factura: { fill: 'EEEDFE', text: '3C3489' },
+}
 function exportarExcel () {
+  const gruposBloque = fBloque.value ? _DOC_DE_BLOQUE[fBloque.value] : null
   const rows = []
-  for (const p of paneles.value) {
+  for (const p of panelesFiltrados.value) {
     for (const inv of (p.inversionistas || [])) {
+      if (fInv.value && inv.nombre !== fInv.value) continue
       for (const l of (inv.lineas || [])) {
+        if (gruposBloque && !gruposBloque.includes(l.grupo)) continue
         const esMandato = l.grupo === 'ingresos' || l.grupo === 'comercializacion'
         rows.push({
           'Proyecto': p.proyecto,
@@ -1263,10 +1320,44 @@ function exportarExcel () {
     }
   }
   if (!rows.length) {
-    toast.add({ severity: 'warn', summary: 'Nada que exportar', detail: 'No hay paneles cargados', life: 3000 })
+    toast.add({ severity: 'warn', summary: 'Nada que exportar', detail: 'No hay filas con los filtros actuales', life: 3000 })
     return
   }
-  const ws = XLSX.utils.json_to_sheet(rows)
+  const headers = ['Proyecto', 'Inversionista', 'Documento contable', 'Contrato', 'Concepto',
+                   'Total', 'Referencia Factura', 'Consecutivo', 'Comprobante']
+  const aoa = [headers, ...rows.map(r => headers.map(h => r[h]))]
+  const ws = XLSX.utils.aoa_to_sheet(aoa)
+
+  const borde = { style: 'thin', color: { rgb: 'E5E2EC' } }
+  const bordes = { top: borde, bottom: borde, left: borde, right: borde }
+  headers.forEach((_, c) => {
+    const ref = XLSX.utils.encode_cell({ r: 0, c })
+    ws[ref].s = {
+      fill: { fgColor: { rgb: '915BD8' } },
+      font: { color: { rgb: 'FFFFFF' }, bold: true },
+      alignment: { horizontal: 'center', vertical: 'center' }, border: bordes,
+    }
+  })
+  rows.forEach((r, i) => {
+    const rr = i + 1
+    for (let c = 0; c < headers.length; c++) {
+      const ref = XLSX.utils.encode_cell({ r: rr, c })
+      if (!ws[ref]) continue
+      ws[ref].s = { border: bordes, alignment: { vertical: 'center' } }
+    }
+    const tinte = _TINTE_DOC[r['Documento contable']]
+    if (tinte) {
+      const ref = XLSX.utils.encode_cell({ r: rr, c: 2 })
+      ws[ref].s = { ...ws[ref].s, fill: { fgColor: { rgb: tinte.fill } }, font: { color: { rgb: tinte.text }, bold: true } }
+    }
+    const tref = XLSX.utils.encode_cell({ r: rr, c: 5 })
+    ws[tref].s = { ...ws[tref].s, alignment: { horizontal: 'right' }, font: { color: { rgb: r.Total < 0 ? 'C0392B' : '2C2039' } } }
+    ws[tref].z = '#,##0'
+  })
+  ws['!cols'] = [{ wch: 26 }, { wch: 26 }, { wch: 18 }, { wch: 12 }, { wch: 24 },
+                 { wch: 16 }, { wch: 16 }, { wch: 12 }, { wch: 22 }]
+  ws['!freeze'] = { xSplit: 0, ySplit: 1 }
+
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, 'Panel')
   const mes = (periodoLabel.value || periodo.value || 'periodo').replace(/\s+/g, '_')
@@ -1292,7 +1383,11 @@ onMounted(cargarPaneles)
 .periodo-chip { display:inline-block; background:var(--info); color:var(--p2); font-weight:600; padding:2px 9px; border-radius:7px; }
 .top-actions { display:flex; gap:10px; align-items:flex-end; }
 .req { color:var(--p2); }
-.month-in { font-size:13px; padding:8px 10px; border:1px solid var(--line2); border-radius:9px; color:var(--p1); }
+.pc-period { display:inline-flex; align-items:center; gap:6px; }
+.pc-period-btn { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid #ddd6e8; background:#fff; color:#915BD8; cursor:pointer; transition:background .12s; }
+.pc-period-btn:hover:not(:disabled) { background:#f5f2fa; }
+.pc-period-btn:disabled { opacity:.4; cursor:not-allowed; }
+.pc-period-label { font-size:13px; font-weight:700; color:var(--p1); min-width:104px; text-align:center; }
 /* Colores de marca en hex literal: estos botones también se usan dentro del
    Dialog de PrimeVue, que se teletransporta a <body> fuera de .pc-wrap donde
    las variables --p2/--line2/--sec no existen (por eso salían en blanco). */

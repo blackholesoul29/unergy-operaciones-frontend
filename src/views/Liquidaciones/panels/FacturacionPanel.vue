@@ -185,7 +185,7 @@
             </span>
             <span class="ml-auto fac-fac-nums">
               <span class="muted">{{ f.contratos }} contr</span>
-              <span class="muted">· {{ fmtMWh(f.kwh) }}</span>
+              <span class="muted">· {{ fmtNum(f.kwh) }} kWh</span>
               <span class="muted">· tarifa {{ tarifaFacturaTxt(f) }}</span>
               <b v-if="f.sin_ppa && !f.facturacion" class="muted" style="font-weight:600">sin precio bolsa</b>
               <b v-else>{{ fmtCOP(f.facturacion) }}</b>
@@ -250,6 +250,64 @@
               </tr></tfoot>
             </table>
           </div>
+        </div>
+      </template>
+
+      <!-- ═══ CUMPLIMIENTO (compromiso vs despacho) ═══ -->
+      <template v-else-if="sub === 'cumplimiento'">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <span class="text-[11px]" style="color:#9b8fb0">
+            Compromiso (mínimo mensual del PPA) vs energía despachada · {{ formatPeriodo(periodo) }}
+          </span>
+          <button class="fac-upload" :disabled="!cumpl.filas.length" @click="exportarCumplimiento">
+            <i class="pi pi-file-excel text-xs" /> Exportar Excel
+          </button>
+        </div>
+        <div class="fac-kpis">
+          <div class="fac-kpi">
+            <p class="k">Cumplen el mínimo</p>
+            <p class="v">{{ cumpl.resumen.cumplen || 0 }} / {{ cumpl.resumen.ppas || 0 }}</p>
+          </div>
+          <div class="fac-kpi">
+            <p class="k">Por debajo del mínimo</p>
+            <p class="v" :style="{ color: (cumpl.resumen.bajo_minimo || 0) ? '#c0392b' : undefined }">{{ cumpl.resumen.bajo_minimo || 0 }}</p>
+          </div>
+          <div class="fac-kpi">
+            <p class="k">Energía incumplida</p>
+            <p class="v" :style="{ color: (cumpl.resumen.faltante_kwh || 0) ? '#c0392b' : undefined }">{{ fmtNum(cumpl.resumen.faltante_kwh) }} kWh</p>
+            <p class="sub2">{{ fmtNum(cumpl.resumen.faltante_mwh) }} MWh</p>
+          </div>
+        </div>
+        <div class="fac-card">
+          <div class="tblwrap">
+            <table class="dt">
+              <thead><tr>
+                <th class="l">Contrato (PPA)</th><th class="l">Comerc.</th>
+                <th>Mínimo (MWh)</th><th>Despachado (MWh)</th><th>Cumpl.</th><th>Incumplido (kWh)</th><th class="l">Estado</th>
+              </tr></thead>
+              <tbody>
+                <tr v-for="f in cumpl.filas" :key="f.ppa || f.numero_contrato">
+                  <td class="l"><span class="proj">{{ f.ppa || f.numero_contrato || '—' }}</span>
+                    <span class="sub2">{{ f.proyecto || '' }}</span></td>
+                  <td class="l"><span class="tag">{{ f.comprador || '—' }}</span></td>
+                  <td>{{ f.minimo_mwh != null ? fmtNum(f.minimo_mwh) : '—' }}</td>
+                  <td class="fw">{{ fmtNum(f.despachado_mwh) }}</td>
+                  <td :style="{ color: f.estado === 'bajo_minimo' ? '#c0392b' : '#2C2039', fontWeight: 600 }">
+                    {{ f.pct != null ? f.pct + '%' : '—' }}
+                  </td>
+                  <td :style="{ color: f.faltante_kwh > 0 ? '#c0392b' : '#9b8fb0', fontWeight: f.faltante_kwh > 0 ? 600 : 400 }">
+                    {{ f.faltante_kwh > 0 ? fmtNum(f.faltante_kwh) : '—' }}
+                  </td>
+                  <td class="l">
+                    <span class="tag" :style="cumplEstiloEstado(f.estado)">{{ MOTIVOS_CUMPL[f.estado] || f.estado }}</span>
+                    <span v-if="f.unidad_sospechosa" class="tag" style="background:#fdecea;color:#a13527" title="La escala mínimo vs despacho se ve rara; revisa unidades (kWh vs MWh)">⚠ revisar unidad</span>
+                  </td>
+                </tr>
+                <tr v-if="!cumpl.filas.length"><td class="l muted" colspan="7">Sin datos de cumplimiento para {{ formatPeriodo(periodo) }} (¿hay despacho cargado?).</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="fac-note"><i class="pi pi-info-circle" /> Compromiso por contrato marco (PPA), en MWh; despacho convertido de kWh. La energía sin PPA (bolsa/UNGC) no entra aquí.</p>
         </div>
       </template>
 
@@ -402,6 +460,7 @@ import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import { fmtCOP, formatPeriodo } from '@/utils/liquidaciones'
+import { exportarExcel } from '@/utils/exportarExcel'
 
 const props = defineProps({ periodo: { type: String, required: true } })
 const toast = useToast()
@@ -410,6 +469,7 @@ const SUBS = [
   { key: 'facturas', label: 'Facturas', icon: 'pi pi-file' },
   { key: 'facturacion', label: 'Detalle', icon: 'pi pi-dollar' },
   { key: 'sic', label: 'Por código SIC', icon: 'pi pi-sitemap' },
+  { key: 'cumplimiento', label: 'Cumplimiento', icon: 'pi pi-check-circle' },
   { key: 'despachos', label: 'Despachos', icon: 'pi pi-database' },
   { key: 'ipp', label: 'IPP', icon: 'pi pi-percentage' },
 ]
@@ -418,6 +478,7 @@ const loading = ref(false)
 const res = ref({})
 const lineas = ref([])
 const porSic = ref([])
+const cumpl = ref({ resumen: {}, filas: [] })   // compromiso vs cumplimiento
 const porFactura = ref([])
 const abiertas = reactive(new Set())      // facturas expandidas
 const sel = reactive({})                   // factura key → Set(proyecto_id) seleccionados
@@ -460,6 +521,34 @@ const MOTIVOS = {
   sin_ipp_mes: 'Falta el IPP del mes',
 }
 const noFacturables = computed(() => lineas.value.filter(l => l.estado !== 'ok'))
+// Cumplimiento: etiqueta y color del estado.
+const MOTIVOS_CUMPL = {
+  cumple: 'Cumple', bajo_minimo: 'Por debajo', sobre_maximo: 'Sobre máximo', sin_compromiso: 'Sin compromiso',
+}
+const cumplEstiloEstado = (e) => ({
+  cumple: 'background:#e6f6ef;color:#1f9d6b',
+  bajo_minimo: 'background:#fdecea;color:#c0392b',
+  sobre_maximo: 'background:#fbeede;color:#c9701a',
+  sin_compromiso: 'background:#f0edf6;color:#6b5a8a',
+}[e] || '')
+
+const r2 = (v) => v == null ? null : Math.round(Number(v) * 100) / 100
+async function exportarCumplimiento () {
+  if (!cumpl.value.filas.length) return
+  const cols = [
+    { header: 'Contrato (PPA)', value: f => f.ppa || f.numero_contrato || '' },
+    { header: 'Comercializador', value: f => f.comprador || '' },
+    { header: 'Proyecto', value: f => f.proyecto || '' },
+    { header: 'Mínimo (MWh)', value: f => r2(f.minimo_mwh) },
+    { header: 'Máximo (MWh)', value: f => r2(f.maximo_mwh) },
+    { header: 'Despachado (MWh)', value: f => r2(f.despachado_mwh) },
+    { header: '% Cumplimiento', value: f => f.pct },
+    { header: 'Incumplido (kWh)', value: f => f.faltante_kwh > 0 ? r2(f.faltante_kwh) : 0 },
+    { header: 'Estado', value: f => MOTIVOS_CUMPL[f.estado] || f.estado },
+  ]
+  const mes = (formatPeriodo(props.periodo) || per.value).replace(/\s+/g, '_')
+  await exportarExcel(cumpl.value.filas, cols, `Cumplimiento_${mes}.xlsx`, 'Cumplimiento')
+}
 // Facturas: buscador por planta / PPA / contrato / N° de factura. Para ubicar una
 // rápido sin recorrer toda la lista.
 const filtroActivo = computed(() => facFiltro.value.trim() !== '')
@@ -501,11 +590,12 @@ async function load () {
   if (!per.value) return
   loading.value = true
   try {
-    const [fac, desp, ipp, blz] = await Promise.all([
+    const [fac, desp, ipp, blz, cmp] = await Promise.all([
       api.get('/facturacion', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({})),
       api.get('/facturacion/despacho', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({ contratos: [] })),
       api.get('/ppa/ipp/mensual').then(r => r.data).catch(() => []),
       api.get('/facturacion/bolsa', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({})),
+      api.get('/facturacion/cumplimiento', { params: { periodo: per.value } }).then(r => r.data).catch(() => ({ resumen: {}, filas: [] })),
     ])
     res.value = fac.resumen || {}
     lineas.value = fac.lineas || []
@@ -517,6 +607,7 @@ async function load () {
     ippInput.value = ippActual.value
     bolsa.value = blz || { manual: null, sugerido: null, vigente: null }
     bolsaInput.value = bolsa.value.manual
+    cumpl.value = cmp || { resumen: {}, filas: [] }
   } finally {
     loading.value = false
   }
@@ -801,7 +892,7 @@ function _renderFacturaCanvas (f) {
   ctx.fillStyle = 'rgba(145,91,216,.07)'; ctx.fillRect(0, fy, W, footerH)
   ctx.strokeStyle = PURPLE; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, fy); ctx.lineTo(W, fy); ctx.stroke()
   ctx.fillStyle = DARK; ctx.font = 'bold 13px Inter, Arial, sans-serif'
-  ctx.fillText(`Total · ${fmtMWh(f.kwh)}`, padX, fy + 29)
+  ctx.fillText(`Total · ${fmtNum(f.kwh)} kWh`, padX, fy + 29)
   ctx.textAlign = 'right'; ctx.font = 'bold 15px Inter, Arial, sans-serif'
   ctx.fillText(f.sin_ppa && !f.facturacion ? 'sin precio bolsa' : fmtCOP(f.facturacion), colValR, fy + 30)
   ctx.textAlign = 'left'

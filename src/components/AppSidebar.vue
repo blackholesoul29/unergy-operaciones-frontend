@@ -266,6 +266,7 @@ const ALL_GROUPS = [
       { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
       { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
       { to: '/servicios',       label: 'Servicios',        icon: 'pi pi-file-edit' },
+      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
     ],
   },
   {
@@ -283,6 +284,7 @@ const ALL_GROUPS = [
       { to: '/fallas', label: 'Gestión de Fallas', icon: 'pi pi-wrench', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/alertas/monitoreo', label: 'Alarmas MGS', icon: 'pi pi-bell', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/operaciones/costos-variables', label: 'Costos Variables', icon: 'pi pi-receipt', roles: ['admin', 'operaciones'] },
+      { to: '/operaciones/polizas', label: 'Pólizas', icon: 'pi pi-shield', roles: ['admin', 'operaciones'] },
     ],
   },
   {
@@ -290,7 +292,6 @@ const ALL_GROUPS = [
     items: [
       { to: '/mem/fronteras',         label: 'General',            icon: 'pi pi-globe',      roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/mem/reporte-energia',   label: 'Reporte de Energía', icon: 'pi pi-file-edit',  roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/mem/operadores-red',    label: 'Operadores de Red',  icon: 'pi pi-sitemap',    roles: ['admin', 'operaciones', 'monitoreo'] },
     ],
   },
   {
@@ -327,6 +328,7 @@ const ALL_GROUPS = [
           { to: '/finanzas/facturas-xm', label: 'Facturas de XM' },
           { to: '/finanzas/verificacion-costos', label: 'Verificación de costos' },
           { to: '/finanzas/estados-resultados', label: 'Estados de resultados' },
+          { to: '/finanzas/mandatos', label: 'Mandatos' },
         ],
       },
       {

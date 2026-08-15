@@ -10,7 +10,7 @@
         </div>
         <div v-else class="flex flex-col gap-2 mt-1">
           <InputText v-model="editForm.nombre_comercial" class="text-base font-semibold w-80" />
-          <Select v-model="editForm.estado" :options="ESTADOS" class="w-48" />
+          <Select v-model="editForm.estado" :options="ESTADOS" optionLabel="label" optionValue="value" class="w-48" />
         </div>
       </div>
       <div class="flex gap-2">
@@ -44,7 +44,7 @@
               :value="proyecto.fecha_inicio_comercializacion ? (fmtFecha(proyecto.fecha_inicio_comercializacion) + (proyecto.fecha_comercializacion_editada_manual ? ' (manual)' : ' (auto)')) : '—'" />
             <InfoField label="Fecha fin de representación" :value="proyecto.fecha_fin_representacion ? fmtFecha(proyecto.fecha_fin_representacion) : '—'" />
             <div class="flex flex-col gap-1">
-              <label class="field-label">Comunidad energética</label>
+              <p class="text-xs text-gray-400 uppercase tracking-wide">Comunidad energética</p>
               <div>
                 <Tag v-if="proyecto.es_comunidad_energetica" severity="success"
                      :value="proyecto.nombre_comunidad ? ('🏘 ' + proyecto.nombre_comunidad) : '🏘 Sí'" />
@@ -222,6 +222,14 @@
             <div>
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ubicación</p>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Latitud</label>
+                  <InputNumber v-model="editForm.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Longitud</label>
+                  <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Dirección</label>
                   <InputText v-model="editForm.direccion_vereda" class="w-full" />
@@ -842,7 +850,12 @@ const router = useRouter()
 const toast = useToast()
 
 // ── Constantes (sin hardcode en template) ────────────────────────────────────
-const ESTADOS = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const ESTADOS = [
+  { label: 'En desarrollo', value: 'en_desarrollo' },
+  { label: 'En operacion', value: 'en_operacion' },
+  { label: 'Suspendido', value: 'suspendido' },
+  { label: 'Cancelado', value: 'cancelado' },
+]
 const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
 const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
@@ -929,6 +942,8 @@ const editForm = reactive({
   potencia_instalada_kwp: null,
   departamento: null,
   municipio: null,
+  latitud: null,
+  longitud: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
   carpeta_drive_codigo: null,
@@ -1091,6 +1106,15 @@ watch(isEditMode, (entering) => {
   if (entering && proyecto.value) populateEditForm()
 })
 
+// Autocompleta el link de Google Maps con las coordenadas en cuanto haya
+// latitud y longitud -- solo si el campo está vacío, nunca pisa un link
+// ya cargado a mano.
+watch([() => editForm.latitud, () => editForm.longitud], ([lat, lon]) => {
+  if (lat != null && lon != null && !editInfoTecnica.url_ubicacion) {
+    editInfoTecnica.url_ubicacion = `https://www.google.com/maps?q=${lat},${lon}`
+  }
+})
+
 function enterEditMode() {
   // replace, no push -- entrar/salir de edicion es un cambio de estado de la
   // UI, no una navegacion real; con push se acumulan entradas de historial y
@@ -1103,11 +1127,21 @@ function cancelEdit() {
 }
 
 async function saveEdit() {
+  if (!editForm.nombre_comercial?.trim()) {
+    toast.add({ severity: 'error', summary: 'Falta el nombre', detail: 'El nombre comercial no puede quedar vacío.', life: 4000 })
+    return
+  }
   guardando.value = true
   try {
+    // Siempre se envían todas las claves (no solo las no-vacías): editForm ya
+    // viene pre-poblado con el estado actual del proyecto (populateEditForm),
+    // así que reenviarlas sin filtrar preserva lo que no se tocó Y permite
+    // limpiar un campo a null -- filtrar por "!= ''" (como antes) hacía que
+    // borrar un valor y guardar nunca lo limpiara de verdad (bug real
+    // encontrado con "Capacidad instalada" en Bayunca, 2026-08-11).
     const payload = {}
     for (const [k, v] of Object.entries(editForm)) {
-      if (v !== null && v !== undefined && v !== '') payload[k] = v
+      payload[k] = v === '' ? null : v
     }
     const p90json = serializeMonthArray(editP90.value)
     const p50json = serializeMonthArray(editP50.value)
@@ -1130,11 +1164,13 @@ async function saveEdit() {
     payload.nombre_comunidad = editForm.es_comunidad_energetica ? (editForm.nombre_comunidad || null) : null
 
     await api.patch(`/proyectos/${route.params.id}`, payload)
+    // Mismo criterio que arriba -- sin filtrar, para poder limpiar un campo
+    // (ver comentario en el payload de editForm).
     const itPayload = {}
     for (const [k, v] of Object.entries(editInfoTecnica)) {
-      if (v !== null && v !== undefined && v !== '') itPayload[k] = v
+      itPayload[k] = v === '' ? null : v
     }
-    if (Object.keys(itPayload).length) await api.put(`/proyectos/${route.params.id}/info-tecnica`, itPayload)
+    await api.put(`/proyectos/${route.params.id}/info-tecnica`, itPayload)
     const [proyRes, invRes] = await Promise.all([
       api.get(`/proyectos/${route.params.id}`),
       api.get(`/proyectos/${route.params.id}/inversionistas`),

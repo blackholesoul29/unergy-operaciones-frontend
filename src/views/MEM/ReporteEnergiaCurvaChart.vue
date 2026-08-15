@@ -4,7 +4,8 @@
       <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
       <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
-      <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ {{ etiquetaRellenado }}</span>
+      <span v-if="reconectadorPath" class="chip" style="border-color:#EA580C;color:#EA580C;">⬥ Reconectador</span>
+      <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Hora rellenada</span>
       <span v-if="capacidadKwh != null" class="chip" style="border-color:#9b89b5;color:#6b5a8a;">┅ Capacidad efectiva ({{ capacidadMwFmt }} MW)</span>
     </div>
     <svg :width="W" :height="H" :viewBox="`0 0 ${W} ${H}`" class="w-full">
@@ -34,16 +35,29 @@
 
       <path v-if="medidorPath" :d="medidorPath" fill="none" stroke="#3B82F6" stroke-width="2" />
       <template v-if="medidorPath">
-        <rect v-for="h in 24" :key="'m' + h" v-show="tieneValor(medidor, h - 1)"
+        <rect v-for="h in 24" :key="'m' + h"
               :x="x(h - 1) - 3" :y="y(val(medidor, h - 1)) - 3" width="6" height="6"
               fill="#3B82F6" stroke="white" stroke-width="1" />
       </template>
 
       <path v-if="soleniumPath" :d="soleniumPath" fill="none" stroke="#0D9488" stroke-width="2" stroke-dasharray="6 4" />
       <template v-if="soleniumPath">
-        <polygon v-for="h in 24" :key="'s' + h" v-show="tieneValor(solenium, h - 1)"
+        <polygon v-for="h in 24" :key="'s' + h"
                  :points="trianguloPoints(x(h - 1), y(val(solenium, h - 1)))"
                  fill="#0D9488" stroke="white" stroke-width="1" />
+      </template>
+
+      <!-- Reconectador -- casi nunca presente (solo cuando medidor e
+           inversores ya dejaron huecos ese día), por eso su marcador va
+           hueco (relleno blanco) en vez de sólido: se distingue del
+           diamante dorado de 'Rellenado', que marca horas puntuales sobre
+           la curva final, no una serie propia. -->
+      <path v-if="reconectadorPath" :d="reconectadorPath" fill="none" stroke="#EA580C" stroke-width="2" stroke-dasharray="2 3" />
+      <template v-if="reconectadorPath">
+        <rect v-for="h in 24" :key="'r' + h"
+              :x="x(h - 1) - 3.5" :y="y(val(reconectador, h - 1)) - 3.5" width="7" height="7"
+              fill="white" stroke="#EA580C" stroke-width="1.5"
+              :transform="`rotate(45 ${x(h - 1)} ${y(val(reconectador, h - 1))})`" />
       </template>
 
       <!-- Capacidad efectiva -- linea de referencia, no es una serie de datos --
@@ -63,44 +77,49 @@ const props = defineProps({
   final: { type: Array, default: () => Array(24).fill(null) },
   medidor: { type: Array, default: null },
   solenium: { type: Array, default: null },
+  reconectador: { type: Array, default: null },
   horasReconectador: { type: Array, default: () => [] },
   horasSolenium: { type: Array, default: () => [] },
   horasHistorico: { type: Array, default: () => [] },
+  horasMedidorCruzado: { type: Array, default: () => [] },
   // Capacidad efectiva de la frontera (MW) -- viene en MW, pero el chart
   // grafica en kWh por hora, así que se convierte (1 MW sostenida 1h = 1.000 kWh).
   capacidadMw: { type: Number, default: null },
+  // Ver finalVacia -- una curva en 0 puede ser el placeholder de Caso 1/CGM
+  // (ocultar) o una corrección manual real con 'Matriz de ceros' (mostrar).
+  editadoManualmente: { type: Boolean, default: false },
 })
 
 const W = 700, H = 210, padL = 30, padR = 10, padT = 10, padB = 20
 const plotW = W - padL - padR, plotH = H - padT - padB
 
 const finalCurve = computed(() => props.final || Array(24).fill(null))
+// Antes el chip enumeraba las fuentes ("Rellenado (reconectador + Solenium
+// × FP)") -- con medidor cruzado suman ya 5 fuentes posibles entre los dos
+// árboles, así que se simplifica a un solo rótulo genérico "Hora
+// rellenada" (2026-08-12): el detalle de cuál fuente fue cada hora vive en
+// 'Detalle de la clasificación', no hace falta repetirlo en la leyenda.
 const horasRellenadas = computed(() => new Set([
-  ...(props.horasReconectador || []), ...(props.horasSolenium || []), ...(props.horasHistorico || []),
+  ...(props.horasReconectador || []), ...(props.horasSolenium || []),
+  ...(props.horasHistorico || []), ...(props.horasMedidorCruzado || []),
 ]))
-// El label decia siempre las 3 fuentes posibles aunque solo una haya
-// participado (ver MGS 0022 La Cumbia 2026-08-05: 0-23h solo via
-// reconectador, pero la leyenda sugería que podían ser las tres).
-const etiquetaRellenado = computed(() => {
-  const partes = []
-  if ((props.horasReconectador || []).length) partes.push('reconectador')
-  if ((props.horasSolenium || []).length) partes.push('Solenium × FP')
-  if ((props.horasHistorico || []).length) partes.push('histórico')
-  return `Rellenado (${partes.join(' + ')})`
-})
 // Caso 1/CGM (reporte válido): se confía en el total diario que ya validó
 // Quoia -- no se reconstruye una curva horaria propia, así que 'final'
 // llega en 0 las 24 horas. Mostrar esa línea plana confunde (parece un
 // error); mejor ocultarla y dejar solo el medidor de referencia.
-const finalVacia = computed(() => finalCurve.value.every(v => v === null || v === undefined || Number(v) === 0))
+// PERO si la curva en 0 es una corrección manual real ('Matriz de ceros'),
+// sí hay que mostrarla -- ahí el 0 es justo lo que la persona quiso
+// reportar y confirmar visualmente (ver MGS 0081 Galeras Occidente
+// 2026-08-12: corregida con Matriz de ceros, pero la línea desaparecía
+// igual que en el placeholder de CGM).
+const finalVacia = computed(() =>
+  !props.editadoManualmente
+  && finalCurve.value.every(v => v === null || v === undefined || Number(v) === 0)
+)
 
 function val(arr, h) {
   const v = arr?.[h]
   return v === null || v === undefined ? 0 : Number(v)
-}
-function tieneValor(arr, h) {
-  const v = arr?.[h]
-  return v !== null && v !== undefined
 }
 // Triángulo pequeño centrado en (cx, cy) -- marcador propio de Solenium,
 // distinto del cuadrado de Medidor y el círculo de Final, para que la
@@ -114,7 +133,7 @@ const capacidadKwh = computed(() => (props.capacidadMw != null ? props.capacidad
 const capacidadMwFmt = computed(() => (props.capacidadMw != null ? props.capacidadMw.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : ''))
 
 const maxV = computed(() => {
-  const all = [...finalCurve.value, ...(props.medidor || []), ...(props.solenium || [])]
+  const all = [...finalCurve.value, ...(props.medidor || []), ...(props.solenium || []), ...(props.reconectador || [])]
     .filter((v) => v !== null && v !== undefined)
     .map(Number)
   // La linea de capacidad tambien entra en el calculo del eje -- si la
@@ -140,14 +159,25 @@ function pathDe(arr) {
   return d || null
 }
 
-const finalPath = computed(() => pathDe(finalCurve.value.map((v) => (v === null ? 0 : v))) || '')
+// Un hueco horario (null) se dibuja como 0 en las 4 curvas -- decisión
+// visual explícita del usuario (2026-08-12): la línea nunca se corta,
+// aunque eso signifique que "sin dato" y "generó/consumió 0 de verdad" se
+// vean igual en el chart (esa distinción vive en 'Detalle de la
+// clasificación'/'Horas rellenadas', no hace falta repetirla acá).
+function conCeros(arr) {
+  if (!arr) return null
+  return arr.map((v) => (v === null || v === undefined ? 0 : v))
+}
+
+const finalPath = computed(() => pathDe(conCeros(finalCurve.value)) || '')
 const finalArea = computed(() => {
   const base = finalPath.value
   if (!base) return ''
   return base + ` L${x(23).toFixed(1)},${(padT + plotH).toFixed(1)} L${x(0).toFixed(1)},${(padT + plotH).toFixed(1)} Z`
 })
-const medidorPath = computed(() => pathDe(props.medidor))
-const soleniumPath = computed(() => pathDe(props.solenium))
+const medidorPath = computed(() => pathDe(conCeros(props.medidor)))
+const soleniumPath = computed(() => pathDe(conCeros(props.solenium)))
+const reconectadorPath = computed(() => pathDe(conCeros(props.reconectador)))
 </script>
 
 <style scoped>

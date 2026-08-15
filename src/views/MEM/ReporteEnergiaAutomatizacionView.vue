@@ -206,7 +206,11 @@ const filasFiltradas = computed(() => {
 })
 
 const stats = computed(() => {
-  const all = filas.value
+  // Las tarjetas deben reflejar el día que se está viendo -- 'Revisión de
+  // hoy' usa `filas` (fecha), 'Historial' usa `filasHistorial`
+  // (fechaHistorial). Antes siempre mostraban `filas`, así que al cambiar
+  // de día en Historial las tarjetas se quedaban con el conteo de 'hoy'.
+  const all = activeTab.value === 1 ? filasHistorial.value : filas.value
   return [
     { label: 'Total', value: all.length, color: '#2C2039', filtro: null },
     { label: 'Revisar', value: all.filter(f => f.revisar_manualmente).length, color: '#D64455', filtro: 'critical' },

@@ -83,7 +83,7 @@
           <template v-for="row in destinatariosFiltrados" :key="row.key">
             <tr class="border-t" style="border-color: #f0ecf6;">
               <td class="px-4 py-2.5">
-                <p v-if="row.nombre" class="font-medium" style="color: #2C2039;">{{ row.nombre }}</p>
+                <p v-if="row.nombre" class="font-medium" style="color: #2C2039;">{{ formatearNombre(row.nombre) }}</p>
                 <p v-else class="text-xs italic" style="color: #c4b8d4;">{{ row.sinVinculo }}</p>
               </td>
               <td class="px-4 py-2.5">
@@ -138,7 +138,7 @@
                       : proyectosDeFila(row.key).size
                         ? 'background:#fff; border:1px solid #e8e0f0; color:#c4b8d4;'
                         : 'background:#fff; border:1px solid #e8e0f0; color:#6b5a8a;'">
-                    {{ p.nombre }}
+                    {{ formatearNombre(p.nombre) }}
                   </button>
                 </div>
               </td>
@@ -165,6 +165,7 @@ import InputIcon from 'primevue/inputicon'
 import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
+import { formatearNombre } from '@/utils/nombreFormato'
 import HistorialEnviosCGM from './HistorialEnviosCGM.vue'
 
 const toast = useToast()
@@ -236,7 +237,24 @@ const destinatarios = computed(() => {
     }
   }
 
-  return [...grupos.values()].sort((a, b) => (a.nombre || 'zzz').localeCompare(b.nombre || 'zzz'))
+  // 'Operaciones Unergy' (cliente id=157) es un caso especial del backend
+  // (CLIENTES_TODAS_LAS_FRONTERAS en reporte_cgm.py): en vez de resolver sus
+  // fronteras por vínculo real (como cualquier otro Cliente), recibe TODAS
+  // las fronteras del sistema -- a propósito no está vinculado a ninguna,
+  // así que nunca aparecería en la construcción de arriba (que solo mira
+  // clientes_cgm de cada frontera). Se agrega acá como fila fija; el correo
+  // (operaciones@unergy.io) coincide con el contacto CGM ya creado para
+  // este cliente en la BD -- si cambia, hay que actualizarlo en los dos lados.
+  const filas = [...grupos.values()]
+  filas.push({
+    key: 'cliente-157', refTipo: 'cliente', refId: 157, tipo: 'Cliente',
+    nombre: 'Operaciones Unergy', sinVinculo: null,
+    correos: ['operaciones@unergy.io'],
+    linkCorregir: '/clientes/157?tab=contactos', textoCorregir: 'Sin correos CGM — corregir',
+    proyectos: [], etiquetaProyectos: 'Todas las fronteras',
+  })
+
+  return filas.sort((a, b) => (a.nombre || 'zzz').localeCompare(b.nombre || 'zzz'))
 })
 
 const destinatariosFiltrados = computed(() => {
@@ -308,6 +326,7 @@ function limpiarProyectos(rowKey) {
 }
 
 function labelProyectos(row) {
+  if (row.etiquetaProyectos) return row.etiquetaProyectos
   const total = row.proyectos.length
   const numSeleccionados = proyectosDeFila(row.key).size
   if (!numSeleccionados) return `${total} proyecto${total === 1 ? '' : 's'}`
@@ -331,7 +350,7 @@ async function enviarSeleccionados() {
           proyectos: proyectos.size ? [...proyectos] : null,
         }
       }),
-    })
+    }, { timeout: 300000 }) // "Operaciones Unergy" (todas las fronteras) puede tardar >150s el ultimo dia del mes (se adjunta ademas el resumen mensual) -- medido en produccion 2026-08-12
     const ok = data.resultados.filter(r => r.ok)
     const conError = data.resultados.filter(r => !r.ok)
     toast.add({
