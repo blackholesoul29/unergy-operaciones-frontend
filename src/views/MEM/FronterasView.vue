@@ -226,7 +226,7 @@
 
     <!-- Edit Dialog -->
     <Dialog v-model:visible="showEdit" :header="editingFrontera ? 'Editar Frontera' : 'Frontera'"
-      modal class="w-full max-w-lg">
+      modal class="w-full max-w-2xl">
       <div v-if="editForm" class="space-y-4 pt-2">
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -250,6 +250,68 @@
             <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Proyecto</label>
             <Dropdown v-model="editForm.proyecto_id" :options="proyectosAll" optionLabel="nombre_comercial"
               optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
+          </div>
+        </div>
+
+        <!-- Ficha técnica medidor/módem (2026-08-14) -- antes solo vivía la
+             marca a nivel de proyecto (un valor para las 4 combinaciones
+             posibles ppal/resp x generación/consumo), acá sí se distingue
+             cada medidor/módem real de esta frontera. -->
+        <div class="pt-2" style="border-top: 1px solid #e8e0f0;">
+          <p class="text-xs font-semibold uppercase mb-2" style="color: #6b5a8a;">Medidor principal</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Tipo de extracción</label>
+              <InputText v-model="editForm.tipo_extraccion_ppal" class="w-full" placeholder="Ej. DLMS" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Contraseña del medidor</label>
+              <InputText v-model="editForm.password_medidor_ppal" class="w-full" />
+            </div>
+          </div>
+          <p class="text-xs font-semibold uppercase mt-3 mb-2" style="color: #6b5a8a;">Módem asociado</p>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Dirección IP</label>
+              <InputText v-model="editForm.ip_modem_ppal" class="w-full" placeholder="10.10.10.1" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Puerto</label>
+              <InputNumber v-model="editForm.puerto_modem_ppal" class="w-full" :useGrouping="false" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Canal de comunicación</label>
+              <InputText v-model="editForm.canal_comunicacion_ppal" class="w-full" placeholder="Ej. IPsec" />
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2" style="border-top: 1px solid #e8e0f0;">
+          <p class="text-xs font-semibold uppercase mb-2" style="color: #6b5a8a;">Medidor respaldo</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Tipo de extracción</label>
+              <InputText v-model="editForm.tipo_extraccion_resp" class="w-full" placeholder="Ej. DLMS" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Contraseña del medidor</label>
+              <InputText v-model="editForm.password_medidor_resp" class="w-full" />
+            </div>
+          </div>
+          <p class="text-xs font-semibold uppercase mt-3 mb-2" style="color: #6b5a8a;">Módem asociado</p>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Dirección IP</label>
+              <InputText v-model="editForm.ip_modem_resp" class="w-full" placeholder="10.10.10.1" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Puerto</label>
+              <InputNumber v-model="editForm.puerto_modem_resp" class="w-full" :useGrouping="false" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Canal de comunicación</label>
+              <InputText v-model="editForm.canal_comunicacion_resp" class="w-full" placeholder="Ej. IPsec" />
+            </div>
           </div>
         </div>
       </div>
@@ -354,6 +416,7 @@ import api from '@/api/client'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
 import Dropdown from 'primevue/dropdown'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
@@ -666,6 +729,16 @@ function editFrontera(f) {
     estado: f.estado,
     operador_red_id: f.operador_red_id || null,
     proyecto_id: f.proyecto_id || null,
+    tipo_extraccion_ppal: f.tipo_extraccion_ppal || null,
+    password_medidor_ppal: f.password_medidor_ppal || null,
+    ip_modem_ppal: f.ip_modem_ppal || null,
+    puerto_modem_ppal: f.puerto_modem_ppal || null,
+    canal_comunicacion_ppal: f.canal_comunicacion_ppal || null,
+    tipo_extraccion_resp: f.tipo_extraccion_resp || null,
+    password_medidor_resp: f.password_medidor_resp || null,
+    ip_modem_resp: f.ip_modem_resp || null,
+    puerto_modem_resp: f.puerto_modem_resp || null,
+    canal_comunicacion_resp: f.canal_comunicacion_resp || null,
   }
   showEdit.value = true
 }
