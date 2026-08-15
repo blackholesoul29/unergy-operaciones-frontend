@@ -180,6 +180,10 @@ import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
+import {
+  opcionesSicVigentes, plantasInscritas,
+  toIso, parseIso, fmtFecha as fmt, pctTexto, modalidadTexto,
+} from './gesconVigencia.js'
 
 const props = defineProps({
   rows: { type: Array, default: () => [] },
@@ -209,46 +213,12 @@ const observaciones = ref('')
 const guardando = ref(false)
 const errores = ref({})
 
-const TIPOS_CONTRATO = ['registro', 'modificacion']
-const esVersionDeContrato = r => TIPOS_CONTRATO.includes(r.tipo_solicitud) && r.es_version_vigente
+const opcionesSic = computed(() => opcionesSicVigentes(props.rows))
 
-// Contratos elegibles: los que tienen al menos una versión vigente.
-const opcionesSic = computed(() => {
-  const porSic = new Map()
-  for (const r of props.rows) {
-    if (!r.codigo_sic_contrato || !esVersionDeContrato(r)) continue
-    const acc = porSic.get(r.codigo_sic_contrato) || {
-      sic: r.codigo_sic_contrato,
-      contrato_interno: r.contrato_interno,
-      nombre_interno: r.nombre_interno,
-      _plantas: [],
-    }
-    if (r.planta_nombre && !acc._plantas.includes(r.planta_nombre)) acc._plantas.push(r.planta_nombre)
-    porSic.set(r.codigo_sic_contrato, acc)
-  }
-  return [...porSic.values()]
-    .map(o => ({
-      ...o,
-      plantas: o._plantas.join(' · ') || 'sin planta',
-      _label: `${o.sic} — ${o.contrato_interno || ''} ${o.nombre_interno || ''} ${o._plantas.join(' ')}`.trim(),
-    }))
-    .sort((a, b) => a.sic.localeCompare(b.sic, undefined, { numeric: true }))
-})
-
-// Plantas inscritas en el SIC a la fecha de entrada. Espeja la regla del
-// backend: `es_version_vigente` dice "última versión de su SIC", no "en curso",
-// así que hay que descartar por fecha o una planta que ya salió reaparece.
-const inscritas = computed(() => {
-  if (!codigoSic.value) return []
-  const vigentes = props.rows.filter(r => r.codigo_sic_contrato === codigoSic.value && esVersionDeContrato(r))
-  const corte = toIso(fechaEntrada.value)
-  if (!corte) return vigentes
-  const enVigor = vigentes.filter(r => {
-    const fin = r.fecha_fin_efectiva || r.fecha_fin
-    return !fin || fin >= corte
-  })
-  return enVigor.length ? enVigor : vigentes
-})
+// Plantas inscritas en el SIC a la fecha de entrada (ver gesconVigencia.js:
+// hay que descartar por fecha o una planta que ya salió reaparece inscrita).
+const inscritas = computed(() =>
+  plantasInscritas(props.rows, codigoSic.value, toIso(fechaEntrada.value)))
 
 // Fila base: la versión que esta modificación releva.
 const baseContrato = computed(() => {
@@ -348,29 +318,6 @@ async function guardar() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-function toIso(v) {
-  if (!v) return null
-  if (typeof v === 'string') return v.slice(0, 10)
-  if (v instanceof Date) {
-    const mes = String(v.getMonth() + 1).padStart(2, '0')
-    const dia = String(v.getDate()).padStart(2, '0')
-    return `${v.getFullYear()}-${mes}-${dia}`
-  }
-  return null
-}
-function parseIso(v) { return v ? new Date(v + 'T12:00:00') : null }
-function fmt(d) {
-  if (!d) return 'sin fecha'
-  const [y, m, day] = String(d).slice(0, 10).split('-')
-  return `${day}/${m}/${y}`
-}
-function pctTexto(v) {
-  const n = Number(v) * 100
-  return Number.isNaN(n) ? '—' : `${Number.isInteger(n) ? n : Number(n.toFixed(2))}%`
-}
-function modalidadTexto(r) {
-  return r.uso_del_recurso ? 'Uso del recurso' : r.es_duplicado ? 'Compra en bolsa' : 'Normal'
-}
 function etiquetaModalidad(v) { return MODALIDADES.find(m => m.value === v)?.label || v }
 function nombrePlanta(id) {
   return props.proyectos.find(p => p.id === id)?.nombre_comercial || 'la planta nueva'

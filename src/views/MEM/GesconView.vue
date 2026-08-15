@@ -6,6 +6,10 @@
           @click="previewBackfill" :loading="backfillLoading"
           v-tooltip.bottom="'Rellena el nombre interno de los registros que lo tengan vacío, tomándolo del contrato PPA'"
           style="color:#6b5a8a; border-color:#d8cfe8;" />
+        <Button label="Completar terminaciones" icon="pi pi-flag" size="small" outlined
+          @click="previewBackfillTerm" :loading="backfillTermLoading"
+          v-tooltip.bottom="'Rellena contrato, nombre interno y demás datos de las terminaciones registradas antes, tomándolos de los registros del mismo código SIC'"
+          style="color:#6b5a8a; border-color:#d8cfe8;" />
         <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" outlined
           @click="descargarGesconExcel" :loading="exportando"
           style="color:#915BD8; border-color:#915BD8;" />
@@ -190,7 +194,13 @@
              el resto lo hereda el backend de la versión vigente del SIC. -->
         <GesconModificacionForm v-if="modoModificacionAsistida"
           :rows="rows" :proyectos="proyectos" :estado="form.estado_solicitud"
-          @cancelar="dialogVisible = false" @guardado="onModificacionGuardada" />
+          @cancelar="dialogVisible = false" @guardado="onAsistidoGuardado" />
+
+        <!-- Terminación: misma dinámica. Hereda la identidad del contrato en vez
+             de guardarla vacía, que era lo que pasaba antes. -->
+        <GesconTerminacionForm v-else-if="modoTerminacionAsistida"
+          :rows="rows" :estado="form.estado_solicitud"
+          @cancelar="dialogVisible = false" @guardado="onAsistidoGuardado" />
 
         <form v-else @submit.prevent="guardar" class="space-y-5">
 
@@ -440,6 +450,50 @@
       </div>
     </Dialog>
 
+    <!-- Diálogo: completar la identidad de las terminaciones viejas -->
+    <Dialog v-model:visible="backfillTermDialog" modal header="Completar terminaciones" :style="{ width: '46rem' }">
+      <div v-if="backfillTermReport" class="space-y-3 text-sm">
+        <p style="color:#5a5168;">
+          Las terminaciones registradas antes se guardaban solo con el código SIC y la fecha,
+          sin contrato ni nombre interno. Esto los rellena tomándolos de los registros del
+          <b>mismo código SIC</b>. No se les asigna planta: una terminación se guarda sin planta
+          a propósito.
+        </p>
+        <div class="flex gap-6">
+          <span><b>{{ backfillTermReport.a_actualizar }}</b> se completarán</span>
+          <span style="color:#9a6700;"><b>{{ backfillTermReport.sin_resolver }}</b> sin resolver</span>
+          <span style="color:#7a6e8a;">{{ backfillTermReport.total_terminaciones }} terminaciones en total</span>
+        </div>
+        <div v-if="backfillTermReport.resueltos.length" class="max-h-60 overflow-y-auto border rounded-lg" style="border-color:#eee;">
+          <table class="w-full text-xs border-collapse">
+            <thead><tr style="background:#faf8fd;">
+              <th class="text-left p-1.5">SIC</th><th class="text-left p-1.5">Termina</th><th class="text-left p-1.5">Datos a completar</th>
+            </tr></thead>
+            <tbody>
+              <tr v-for="r in backfillTermReport.resueltos" :key="r.id" class="border-t" style="border-color:#f0f0f0;">
+                <td class="p-1.5 font-mono">{{ r.codigo_sic_contrato }}</td>
+                <td class="p-1.5">{{ fmt(r.fecha_fin) }}</td>
+                <td class="p-1.5" style="color:#6b5a8a;">{{ Object.values(r.cambios).join(' · ') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <details v-if="backfillTermReport.no_resueltos.length" class="text-xs">
+          <summary class="cursor-pointer" style="color:#9a6700;">{{ backfillTermReport.no_resueltos.length }} sin resolver (ver)</summary>
+          <ul class="mt-1 pl-4 list-disc" style="color:#7a6e8a;">
+            <li v-for="r in backfillTermReport.no_resueltos" :key="r.id">SIC {{ r.codigo_sic_contrato }} — {{ r.motivo }}</li>
+          </ul>
+        </details>
+        <p v-if="!backfillTermReport.a_actualizar" class="text-xs" style="color:#7a6e8a;">No hay nada para completar.</p>
+      </div>
+      <template #footer>
+        <Button label="Cancelar" text @click="backfillTermDialog = false" :disabled="backfillTermExecuting" />
+        <Button label="Aplicar" icon="pi pi-check" :loading="backfillTermExecuting"
+          :disabled="!backfillTermReport || !backfillTermReport.a_actualizar" @click="applyBackfillTerm"
+          style="background:#915BD8; border-color:#915BD8;" />
+      </template>
+    </Dialog>
+
     <!-- Diálogo: completar nombres internos faltantes (backfill) -->
     <Dialog v-model:visible="backfillDialog" modal header="Completar nombres internos" :style="{ width: '46rem' }">
       <div v-if="backfillReport" class="space-y-3 text-sm">
@@ -487,6 +541,7 @@ import { ref, watch, computed, onMounted } from 'vue'
 import api from '@/api/client.js'
 import { conflictosAtribucion } from '@/utils/validacionContratos.js'
 import GesconModificacionForm from './GesconModificacionForm.vue'
+import GesconTerminacionForm from './GesconTerminacionForm.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -853,12 +908,15 @@ const esTerminacion = computed(() => form.value.tipo_solicitud === 'terminacion'
 // datos de ese registro puntual, no se registra una modificación ante XM.
 const modoModificacionAsistida = computed(() =>
   form.value.tipo_solicitud === 'modificacion' && !editandoId.value)
+const modoTerminacionAsistida = computed(() =>
+  form.value.tipo_solicitud === 'terminacion' && !editandoId.value)
+const modoAsistido = computed(() => modoModificacionAsistida.value || modoTerminacionAsistida.value)
 
 // Solo las solicitudes publicadas cuentan para la vigencia y para Cumplimiento:
-// una modificación guardada "en proceso" no cambiaría nada y el usuario no
-// tendría cómo notarlo. Se propone Publicado (el selector queda editable).
-watch(modoModificacionAsistida, asistida => {
-  if (asistida && form.value.estado_solicitud === 'en_proceso') {
+// una guardada "en proceso" no cambiaría nada y el usuario no tendría cómo
+// notarlo. Se propone Publicado (el selector queda editable).
+watch(modoAsistido, asistido => {
+  if (asistido && form.value.estado_solicitud === 'en_proceso') {
     form.value.estado_solicitud = 'publicado'
   }
 })
@@ -866,13 +924,14 @@ watch(modoModificacionAsistida, asistida => {
 const tituloDialogo = computed(() => {
   if (editandoId.value) return 'Editar contrato ASIC'
   if (modoModificacionAsistida.value) return 'Registrar modificación'
+  if (modoTerminacionAsistida.value) return 'Registrar terminación'
   return 'Registrar contrato ASIC'
 })
 
-function onModificacionGuardada() {
+function onAsistidoGuardado() {
   dialogVisible.value = false
-  // Recarga completa: la modificación puede haber cerrado la planta saliente y
-  // recalculado la vigencia efectiva de otras filas del mismo SIC.
+  // Recarga completa: la solicitud puede haber cerrado filas del mismo SIC y
+  // recalculado la vigencia efectiva de otras.
   cargar()
 }
 
@@ -1006,24 +1065,19 @@ async function guardar() {
         ? Number((form.value.porcentaje_despacho / 100).toFixed(4)) : null,
     }
 
-    // Una terminación solo lleva SIC, fecha de terminación, requerimiento, cédulas y link.
-    // Los demás campos se limpian para no arrastrar datos sin sentido.
+    // Invariantes de una terminación (las mismas que aplica POST /asic/terminacion):
+    // sin planta —con proyecto_id, Cumplimiento borra la planta del mes de la
+    // terminación en vez de prorratearla hasta la fecha— y sin porcentajes, que
+    // no aplican a una fila que no aporta energía.
+    // La identidad del contrato (contrato interno, nombre interno, vendedor,
+    // comprador, prioridad, PPA) SÍ se conserva: antes se borraba aquí y por eso
+    // las terminaciones salían en blanco en la tabla y en el Excel.
     if (esTerminacion.value) {
       Object.assign(payload, {
-        contrato_interno: null,
-        nombre_interno: null,
-        codigo_sic_vendedor: null,
-        codigo_sic_comprador: null,
-        prioridad_limitacion: null,
         proyecto_id: null,
-        fecha_solicitud: null,
         fecha_inicio: null,
-        tipo_mercado: null,
-        tipo_asignacion: null,
         porcentaje_fncer: null,
         porcentaje_despacho: null,
-        nombre_contacto_solicitante: null,
-        observaciones: null,
         reemplaza_anterior: true,
         es_duplicado: false,
         uso_del_recurso: false,
@@ -1115,6 +1169,43 @@ async function applyBackfill() {
       detail: e.response?.data?.detail || e.message, life: 7000 })
   } finally {
     backfillExecuting.value = false
+  }
+}
+
+// ── Backfill de la identidad de las terminaciones viejas ──────────────────
+const backfillTermDialog    = ref(false)
+const backfillTermReport    = ref(null)
+const backfillTermLoading   = ref(false)
+const backfillTermExecuting = ref(false)
+
+async function previewBackfillTerm() {
+  backfillTermLoading.value = true
+  try {
+    const { data } = await api.post('/asic/backfill-terminaciones', null, { params: { dry_run: true } })
+    backfillTermReport.value = data
+    backfillTermDialog.value = true
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo previsualizar',
+      detail: e.response?.data?.detail || e.message, life: 5000 })
+  } finally {
+    backfillTermLoading.value = false
+  }
+}
+
+async function applyBackfillTerm() {
+  backfillTermExecuting.value = true
+  try {
+    const { data } = await api.post('/asic/backfill-terminaciones', null, { params: { dry_run: false } })
+    toast.add({ severity: 'success', summary: 'Terminaciones completadas',
+      detail: `${data.a_actualizar} terminación(es) actualizadas.`, life: 4000 })
+    backfillTermDialog.value = false
+    backfillTermReport.value = null
+    await cargar()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'El backfill falló (se revirtió)',
+      detail: e.response?.data?.detail || e.message, life: 7000 })
+  } finally {
+    backfillTermExecuting.value = false
   }
 }
 
