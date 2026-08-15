@@ -13,30 +13,33 @@
     </PageHeader>
 
     <!-- Filtros -->
-    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-2 items-end border" style="border-color:#ECE7F2">
-      <div>
+    <!-- flex-nowrap + overflow-x-auto en vez de flex-wrap: si no caben los 5
+         grupos en el ancho disponible, se desplaza horizontal en vez de
+         partirse en dos líneas o truncar el texto de los dropdowns. -->
+    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-nowrap gap-3 items-end border overflow-x-auto" style="border-color:#ECE7F2">
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
         <span class="p-input-icon-left">
           <i class="pi pi-search" />
           <InputText v-model="search" placeholder="Buscar frontera..." class="w-48" />
         </span>
       </div>
-      <div>
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Estado</label>
         <Dropdown v-model="estadoFilter" :options="estadoOptions" optionLabel="label" optionValue="value"
                   class="w-40" placeholder="Todos" showClear />
       </div>
-      <div>
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Proyecto</label>
         <Dropdown v-model="proyectoFilter" :options="proyectoOptions" optionLabel="label" optionValue="value"
                   class="w-48" placeholder="Todos" showClear filter />
       </div>
-      <div>
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Operador</label>
         <Dropdown v-model="operadorFilter" :options="operadorOptions" optionLabel="label" optionValue="value"
                   class="w-40" placeholder="Todos" showClear />
       </div>
-      <div>
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Registro ASIC</label>
         <div class="flex gap-2">
           <Dropdown v-model="mesFilter" :options="mesOptions" optionLabel="label" optionValue="value"
