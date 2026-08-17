@@ -459,13 +459,35 @@
         <p style="color:#5a5168;">
           Las terminaciones registradas antes se guardaban solo con el código SIC y la fecha,
           sin contrato ni nombre interno. Esto los rellena tomándolos de los registros del
-          <b>mismo código SIC</b>. No se les asigna planta: una terminación se guarda sin planta
-          a propósito.
+          <b>mismo código SIC</b>, y de paso estampa la fecha de terminación en los registros
+          que quedaron sin recortar. No se les asigna planta: una terminación se guarda sin
+          planta a propósito.
         </p>
-        <div class="flex gap-6">
-          <span><b>{{ backfillTermReport.a_actualizar }}</b> se completarán</span>
+        <div class="flex flex-wrap gap-x-6 gap-y-1">
+          <span><b>{{ backfillTermReport.a_actualizar }}</b> con datos por completar</span>
+          <span v-if="backfillTermReport.a_recortar" style="color:#D64455;">
+            <b>{{ backfillTermReport.a_recortar }}</b> registro(s) con fecha por recortar
+          </span>
           <span style="color:#9a6700;"><b>{{ backfillTermReport.sin_resolver }}</b> sin resolver</span>
           <span style="color:#7a6e8a;">{{ backfillTermReport.total_terminaciones }} terminaciones en total</span>
+        </div>
+
+        <!-- Registros que una terminación publicada debió cerrar y no cerró -->
+        <div v-if="backfillTermReport.sin_recortar?.length" class="rounded-lg px-3 py-2"
+          style="background:#FEF2F2; border:1px solid #FECACA;">
+          <p class="text-xs" style="color:#991B1B;">
+            Estas terminaciones no alcanzaron a estampar su fecha en los registros de su SIC.
+            El cálculo de Cumplimiento <b>ya sale bien igual</b> —la vigencia efectiva se resuelve
+            sola—, pero la fecha que se ve en la tabla y en el Excel sigue diciendo la vieja.
+          </p>
+          <ul class="mt-1.5 pl-4 list-disc text-xs" style="color:#7a2020;">
+            <li v-for="s in backfillTermReport.sin_recortar" :key="s.id">
+              SIC <b>{{ s.codigo_sic_contrato }}</b>
+              <span v-if="s.requerimiento_asic"> · req. {{ s.requerimiento_asic }}</span>
+              — termina {{ fmt(s.termina) }}:
+              {{ s.registros.map(r => `${r.planta} (${fmt(r.fecha_fin_actual)})`).join(', ') }}
+            </li>
+          </ul>
         </div>
         <div v-if="backfillTermReport.resueltos.length" class="max-h-60 overflow-y-auto border rounded-lg" style="border-color:#eee;">
           <table class="w-full text-xs border-collapse">
@@ -487,12 +509,12 @@
             <li v-for="r in backfillTermReport.no_resueltos" :key="r.id">SIC {{ r.codigo_sic_contrato }} — {{ r.motivo }}</li>
           </ul>
         </details>
-        <p v-if="!backfillTermReport.a_actualizar" class="text-xs" style="color:#7a6e8a;">No hay nada para completar.</p>
+        <p v-if="!backfillTermPendiente" class="text-xs" style="color:#7a6e8a;">No hay nada para completar.</p>
       </div>
       <template #footer>
         <Button label="Cancelar" text @click="backfillTermDialog = false" :disabled="backfillTermExecuting" />
         <Button label="Aplicar" icon="pi pi-check" :loading="backfillTermExecuting"
-          :disabled="!backfillTermReport || !backfillTermReport.a_actualizar" @click="applyBackfillTerm"
+          :disabled="!backfillTermPendiente" @click="applyBackfillTerm"
           style="background:#915BD8; border-color:#915BD8;" />
       </template>
     </Dialog>
@@ -1181,6 +1203,11 @@ const backfillTermReport    = ref(null)
 const backfillTermLoading   = ref(false)
 const backfillTermExecuting = ref(false)
 
+// Hay algo que aplicar si faltan datos de identidad O fechas por estampar.
+const backfillTermPendiente = computed(() =>
+  !!backfillTermReport.value
+  && ((backfillTermReport.value.a_actualizar || 0) + (backfillTermReport.value.a_recortar || 0)) > 0)
+
 async function previewBackfillTerm() {
   backfillTermLoading.value = true
   try {
@@ -1200,7 +1227,8 @@ async function applyBackfillTerm() {
   try {
     const { data } = await api.post('/asic/backfill-terminaciones', null, { params: { dry_run: false } })
     toast.add({ severity: 'success', summary: 'Terminaciones completadas',
-      detail: `${data.a_actualizar} terminación(es) actualizadas.`, life: 4000 })
+      detail: `${data.a_actualizar} terminación(es) con datos completados · `
+            + `${data.a_recortar || 0} registro(s) con la fecha estampada.`, life: 5000 })
     backfillTermDialog.value = false
     backfillTermReport.value = null
     await cargar()
