@@ -1622,6 +1622,11 @@
           Al {{ revData.fecha_corte }}. Las filas en <span :style="`color:${ROJO_FIN}; font-weight:600;`">rojo</span>
           son tramos que ya terminaron dentro del mes: la bolsa se calcula por días, así que una misma
           planta puede aparecer en más de una fila.
+          <span class="block mt-1">
+            <b>Duplicada</b> = compromete más del 100% <b>al mismo tiempo</b> (se suman los % de los
+            contratos que se solapan día a día), o está marcada como compra en bolsa / uso del recurso.
+            Repartir 50% y 50% entre dos contratos <b>no</b> es duplicar, y sucederse en el tiempo tampoco.
+          </span>
         </p>
 
         <!-- 1 · Plantas duplicadas -->
@@ -1629,27 +1634,34 @@
           <div class="px-4 py-2.5" style="background: rgba(240,192,64,0.14);">
             <span class="font-semibold text-sm" style="color: #2C2039;">Plantas duplicadas en el mes</span>
             <span class="text-xs ml-2" style="color: #7a6e8a;">
-              En más de un contrato de venta, o marcadas como compra en bolsa / uso del recurso.
-              El aporte extra se cubre comprando en bolsa.
+              Duplicada es la que compromete <b>más del 100% a la vez</b>: ese excedente se cubre
+              comprando en bolsa. Estar en varios contratos no basta —repartir 50% y 50% sigue
+              siendo su 100%—. También entran las marcadas como compra en bolsa / uso del recurso.
             </span>
           </div>
           <table class="w-full text-sm">
             <thead>
               <tr style="background: #faf8fd; color: #7a6e8a;">
                 <th class="text-left px-4 py-2 font-medium">Planta</th>
+                <th class="text-right px-4 py-2 font-medium" style="width: 110px;">% a la vez</th>
                 <th class="text-left px-4 py-2 font-medium">Aparece en</th>
-                <th class="text-left px-4 py-2 font-medium" style="width: 190px;">Motivo</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 230px;">Motivo</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="p in revDuplicadas" :key="p.id" class="border-t" style="border-color: rgba(44,32,57,0.06);">
                 <td class="px-4 py-2 font-medium" style="color: #2C2039;">{{ p.nombre }}</td>
+                <td class="px-4 py-2 text-right font-mono font-semibold"
+                    :style="revPct(p.maxPct) > 100 ? 'color:#9a6700;' : 'color:#7a6e8a;'">
+                  {{ p.escalaRota || p.sinPct ? '—' : revPct(p.maxPct) + '%' }}
+                </td>
                 <td class="px-4 py-2">
                   <div v-for="(a, i) in p.apariciones" :key="i" class="flex flex-wrap items-center gap-1.5 py-0.5">
                     <span :style="a.estado === 'terminado' ? `color:${ROJO_FIN};` : 'color:#2C2039;'">{{ a.contrato }}</span>
                     <span v-if="a.codigo_sic" class="font-mono text-[11px] px-1 rounded"
                           style="background: rgba(44,32,57,0.06); color: #5b3fa6;">{{ a.codigo_sic }}</span>
-                    <span v-if="a.pct != null" class="text-[11px]" style="color: #7a6e8a;">{{ Math.round(a.pct * 100) }}%</span>
+                    <span v-if="a.pct" class="text-[11px] font-semibold" style="color: #7a6e8a;">{{ revPct(a.pct) }}%</span>
+                    <span v-else class="text-[11px]" style="color: #c0a0a0;">sin %</span>
                     <span v-if="a.marca" class="text-[10px] font-semibold px-1.5 py-0.5 rounded"
                           style="background: rgba(240,192,64,0.22); color: #9a6700;">{{ a.marca }}</span>
                     <span class="text-[11px]" style="color: #9b89b5;">{{ fmtFechaDia(a.desde) }} → {{ fmtFechaDia(a.hasta) }}</span>
@@ -1662,6 +1674,27 @@
           <div v-if="!revDuplicadas.length" class="px-4 py-8 text-sm text-center" style="color: rgba(44,32,57,0.35);">
             Ninguna planta duplicada este mes
           </div>
+          <!-- Repartidas: la contraprueba de que la regla es por % y no por nº de contratos -->
+          <details v-if="revRepartidas.length" class="px-4 py-2.5 text-xs"
+                   style="border-top: 1px solid rgba(44,32,57,0.06); background: #faf8fd;">
+            <summary class="cursor-pointer select-none" style="color: #7a6e8a;">
+              {{ revRepartidas.length }} planta(s) repartidas entre varios contratos sumando 100% o menos
+              — no son duplicados
+            </summary>
+            <table class="w-full mt-2">
+              <tbody>
+                <tr v-for="p in revRepartidas" :key="p.id" class="border-t" style="border-color: rgba(44,32,57,0.06);">
+                  <td class="py-1.5 pr-4 font-medium" style="color: #2C2039; width: 220px;">{{ p.nombre }}</td>
+                  <td class="py-1.5 pr-4 font-mono text-right" style="color: #2e7d32; width: 70px;">{{ revPct(p.maxPct) }}%</td>
+                  <td class="py-1.5" style="color: #7a6e8a;">
+                    <span v-for="(a, i) in p.apariciones" :key="i">
+                      <span v-if="i"> + </span>{{ revPct(a.pct) }}% {{ a.contrato }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </details>
         </div>
 
         <!-- 2 · Plantas sin contrato -->
@@ -1669,8 +1702,13 @@
           <div class="px-4 py-2.5" style="background: rgba(44,32,57,0.06);">
             <span class="font-semibold text-sm" style="color: #2C2039;">Plantas sin contrato asignado</span>
             <span class="text-xs ml-2" style="color: #7a6e8a;">
-              Sin PPA y sin registro SIC vigente: venden en bolsa desde UNGG (piscina e).
+              Sin PPA <b>y sin registro GESCON vigente</b> sobre el tramo: venden en bolsa desde UNGG.
             </span>
+          </div>
+          <div v-if="revAsicError" class="px-4 py-2 text-xs"
+               style="background: rgba(214,68,85,0.07); color: #D64455;">
+            No se pudo consultar GESCON para contrastar: puede haber plantas listadas aquí que sí
+            tengan un contrato con código SIC vigente.
           </div>
           <table class="w-full text-sm">
             <thead>
@@ -1697,6 +1735,45 @@
           <div v-if="!revSinContrato.length" class="px-4 py-8 text-sm text-center" style="color: rgba(44,32,57,0.35);">
             Todas las plantas tienen contrato este mes
           </div>
+        </div>
+
+        <!-- 2b · Tienen SIC vigente pero el mes no las cuenta en ningún contrato -->
+        <div v-if="revSicSinPpa.length" class="rounded-xl border overflow-hidden" style="border-color: rgba(214,68,85,0.28);">
+          <div class="px-4 py-2.5" style="background: rgba(214,68,85,0.07);">
+            <span class="font-semibold text-sm" style="color: #2C2039;">Con contrato GESCON, pero fuera del cálculo del mes</span>
+            <span class="text-xs ml-2" style="color: #7a6e8a;">
+              Tienen un registro con código SIC vigente en el tramo, pero Cumplimiento no las asignó
+              a ningún contrato y las contó como bolsa. Suele ser que el registro no cruza con un PPA
+              (contrato interno vacío o distinto) o que el contrato es de un responsable oculto —
+              prueba con <b>Ver ocultos</b>. No son plantas libres.
+            </span>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr style="background: #faf8fd; color: #7a6e8a;">
+                <th class="text-left px-4 py-2 font-medium">Planta</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 90px;">SIC</th>
+                <th class="text-left px-4 py-2 font-medium">Contrato en GESCON</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 120px;">Vigente hasta</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 230px;">Tramo contado como bolsa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in revSicSinPpa" :key="filaKey(p)" class="border-t" style="border-color: rgba(44,32,57,0.06);">
+                <td class="px-4 py-2 font-medium" style="color: #2C2039;">{{ p.nombre }}</td>
+                <td class="px-4 py-2 font-mono text-xs" style="color: #5b3fa6;">{{ p._sic.codigo_sic_contrato || '—' }}</td>
+                <td class="px-4 py-2 text-xs" style="color: #7a6e8a;">
+                  {{ p._sic.contrato_interno || p._sic.nombre_interno || 'sin contrato interno' }}
+                </td>
+                <td class="px-4 py-2 text-xs" style="color: #7a6e8a;">
+                  {{ fmtFechaDia(p._sic.fecha_fin_efectiva || p._sic.fecha_fin) }}
+                </td>
+                <td class="px-4 py-2 text-xs" style="color: #9b89b5;">
+                  {{ fmtFechaDia(p.segmento_inicio) }} → {{ fmtFechaDia(p.segmento_fin) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
         <!-- 3 · Plantas con UNGC -->
@@ -2295,6 +2372,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { proyectoActivoEnMes } from '@/utils/proyectoActivo'
+import { maxConcurrente, aPorcentaje, motivoDuplicada, esRepartida } from './cumplimientoRevision.js'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 import InputText from 'primevue/inputtext'
@@ -4701,18 +4779,56 @@ const revLoading = ref(false)
 const revError   = ref(null)
 const revBusqueda = ref('')
 
+// Registros GESCON crudos. Hacen falta para no llamar "sin contrato" a una
+// planta que sí tiene SIC vigente: la piscina e del backend agrupa las dos
+// cosas (ver revTramosLibres). null = no se pudo cruzar.
+const revAsic = ref(null)
+const revAsicError = ref(false)
+
 async function loadRevision() {
   revLoading.value = true
   revError.value   = null
   try {
     revData.value = await cachedGet('/cumplimiento/plantas-contratos',
       { year: revYear.value, month: revMonth.value, incluir_todos: incluirTodos() })
+    try {
+      revAsic.value = await cachedGet('/asic', {})
+      revAsicError.value = false
+    } catch {
+      revAsic.value = null
+      revAsicError.value = true
+    }
     updateCacheSize()
   } catch (e) {
     revError.value = e.response?.data?.detail || 'Error al cargar la revisión del mes.'
   } finally {
     revLoading.value = false
   }
+}
+
+// Registros de contrato (registro/modificación publicados) por planta. Se usa
+// fecha_fin_efectiva: una versión superada por un relevo ya viene recortada, así
+// que no reclama una ventana que ya no le corresponde.
+const revAsicPorProyecto = computed(() => {
+  const mapa = new Map()
+  for (const r of revAsic.value || []) {
+    if (!r.proyecto_id) continue
+    if (r.estado_solicitud !== 'publicado') continue
+    if (r.tipo_solicitud !== 'registro' && r.tipo_solicitud !== 'modificacion') continue
+    if (!mapa.has(r.proyecto_id)) mapa.set(r.proyecto_id, [])
+    mapa.get(r.proyecto_id).push(r)
+  }
+  return mapa
+})
+
+function revSicVigenteEnTramo(proyectoId, desde, hasta) {
+  if (!revAsic.value) return null
+  for (const r of revAsicPorProyecto.value.get(proyectoId) || []) {
+    const ini = r.fecha_inicio
+    const fin = r.fecha_fin_efectiva || r.fecha_fin
+    if ((!ini || !hasta || ini <= hasta) && (!fin || !desde || fin >= desde)) return r
+  }
+  return null
 }
 
 function revCoincide(...campos) {
@@ -4725,13 +4841,14 @@ function revMarca(p) {
   return p.uso_del_recurso ? 'Uso del recurso' : p.es_duplicado ? 'Compra en bolsa' : null
 }
 
-// 1 · Duplicadas: la misma planta comprometida en varios contratos de VENTA, o
-// marcada explícitamente. Solo se miran los contratos de venta a propósito: una
-// planta que además aparece en un contrato de compra UNGC es la MISMA energía
-// vista desde el otro lado, no un duplicado (eso se lista en la sección 3).
-// Los tramos se cuentan por contrato distinto: una planta relevada y reingresada
-// al mismo contrato genera dos filas y no es un duplicado.
-const revDuplicadas = computed(() => {
+// Las reglas de duplicación viven en cumplimientoRevision.js: son la parte que
+// se puede razonar sola y ahí están documentadas y verificadas.
+const revPct = aPorcentaje
+
+// Agrupa por planta las apariciones en contratos de VENTA. Solo venta a
+// propósito: una planta que además aparece en un contrato de compra UNGC es la
+// MISMA energía vista desde el otro lado, no un duplicado (va en la sección 3).
+const revPorPlantaVenta = computed(() => {
   const d = revData.value
   if (!d) return []
   const porPlanta = new Map()
@@ -4751,22 +4868,41 @@ const revDuplicadas = computed(() => {
       porPlanta.set(p.id, acc)
     }
   }
-  return [...porPlanta.values()]
-    .map(p => ({ ...p, nContratos: new Set(p.apariciones.map(a => a.contrato)).size }))
-    .filter(p => p.nContratos > 1 || p.marcada)
-    .map(p => ({
-      ...p,
-      motivo: p.nContratos > 1
-        ? (p.marcada ? `En ${p.nContratos} contratos y marcada` : `En ${p.nContratos} contratos`)
-        : 'Marcada en su contrato',
-    }))
-    .filter(p => revCoincide(p.nombre, ...p.apariciones.map(a => a.contrato), ...p.apariciones.map(a => a.codigo_sic)))
-    .sort((a, b) => b.nContratos - a.nContratos || (a.nombre || '').localeCompare(b.nombre || ''))
+  return [...porPlanta.values()].map(p => ({
+    ...p,
+    nContratos: new Set(p.apariciones.map(a => a.contrato)).size,
+  }))
 })
 
-// 2 · Sin contrato: el remanente sin SIC vigente (piscina e). Son TRAMOS de días,
-// no plantas: una que salió de contrato a mitad de mes aporta su tramo aquí.
-const revSinContrato = computed(() => {
+// 1 · Duplicadas. El motivo lo decide motivoDuplicada(): pasa del 100% a la vez,
+// está marcada, o está en varios contratos sin % verificable.
+const revDuplicadas = computed(() =>
+  revPorPlantaVenta.value
+    .map(p => {
+      const veredicto = motivoDuplicada(p)
+      return veredicto ? { ...p, ...veredicto } : null
+    })
+    .filter(Boolean)
+    .filter(p => revCoincide(p.nombre, ...p.apariciones.map(a => a.contrato), ...p.apariciones.map(a => a.codigo_sic)))
+    .sort((a, b) => b.maxPct - a.maxPct || (a.nombre || '').localeCompare(b.nombre || ''))
+)
+
+// Repartidas: en varios contratos pero sumando 100% o menos. NO son duplicados
+// — se listan aparte justamente para dejarlo claro.
+const revRepartidas = computed(() =>
+  revPorPlantaVenta.value
+    .filter(esRepartida)
+    .map(p => ({ ...p, maxPct: maxConcurrente(p.apariciones) }))
+    .filter(p => revCoincide(p.nombre, ...p.apariciones.map(a => a.contrato)))
+    .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
+)
+
+// 2 · Los tramos que el mes dejó fuera de todo contrato PPA (piscina e). OJO:
+// esa piscina NO significa "sin contrato" — significa "sin PPA resuelto en
+// Cumplimiento". Una planta con registro GESCON vigente cae aquí igual si su
+// contrato no cruzó (contrato_interno sin PPA que casar, responsable oculto…).
+// Por eso cada tramo se contrasta contra /asic antes de llamarlo "sin contrato".
+const revTramosLibres = computed(() => {
   const d = revData.value
   if (!d) return []
   const libres = Array.isArray(d.bolsa_libre)
@@ -4774,9 +4910,16 @@ const revSinContrato = computed(() => {
     : (d.bolsa || []).filter(p => p.piscina !== 'comercializador')
   return libres
     .filter(p => revCoincide(p.nombre))
-    .slice()
+    .map(p => ({ ...p, _sic: revSicVigenteEnTramo(p.id, p.segmento_inicio, p.segmento_fin) }))
     .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
 })
+
+// Sin contrato de verdad: ni PPA ni registro GESCON vigente sobre ese tramo.
+const revSinContrato = computed(() => revTramosLibres.value.filter(p => !p._sic))
+
+// Tiene SIC vigente, pero el mes no lo cuenta en ningún contrato: inconsistencia
+// a corregir en GESCON o en el PPA, no una planta libre en bolsa.
+const revSicSinPpa = computed(() => revTramosLibres.value.filter(p => p._sic))
 
 // 3 · UNGC: contratos GESCON donde UNGC compra (b) + remanente cuyo SIC vigente
 // tiene a UNGC de comprador (f). Dos orígenes distintos, una sola lista.
@@ -4815,13 +4958,18 @@ const revUngc = computed(() => {
 const revResumen = computed(() => [
   {
     key: 'dup', n: revDuplicadas.value.length, titulo: 'Plantas duplicadas',
-    detalle: 'En varios contratos o marcadas',
+    detalle: 'Pasan del 100% a la vez, o marcadas',
     color: '#9a6700', fondo: 'rgba(240,192,64,0.10)', borde: 'rgba(240,192,64,0.35)',
   },
   {
     key: 'sin', n: revSinContrato.value.length, titulo: 'Tramos sin contrato',
-    detalle: 'Venden en bolsa desde UNGG',
+    detalle: 'Sin PPA y sin registro GESCON',
     color: '#2C2039', fondo: 'rgba(44,32,57,0.04)', borde: 'rgba(44,32,57,0.14)',
+  },
+  {
+    key: 'inc', n: revSicSinPpa.value.length, titulo: 'Con SIC, fuera del cálculo',
+    detalle: 'Tienen GESCON pero el mes no los cuenta',
+    color: '#D64455', fondo: 'rgba(214,68,85,0.07)', borde: 'rgba(214,68,85,0.28)',
   },
   {
     key: 'ungc', n: revUngc.value.length, titulo: 'Plantas con UNGC',
