@@ -2380,7 +2380,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { proyectoActivoEnMes } from '@/utils/proyectoActivo'
-import { maxConcurrente, aPorcentaje, motivoDuplicada, esRepartida, repartirPlgPlc } from './cumplimientoRevision.js'
+import { maxConcurrente, aPorcentaje, motivoDuplicada, esRepartida, repartirPares, claveContrato } from './cumplimientoRevision.js'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 import InputText from 'primevue/inputtext'
@@ -4879,7 +4879,9 @@ const revPorPlantaVenta = computed(() => {
   }
   return [...porPlanta.values()].map(p => ({
     ...p,
-    nContratos: new Set(p.apariciones.map(a => a.contrato)).size,
+    // Por SIC, no por nombre: un mismo contrato comercial puede estar
+    // registrado bajo varios códigos (Nitro con Cacica: 88747 y 88750).
+    nContratos: new Set(p.apariciones.map(claveContrato)).size,
   }))
 })
 
@@ -4902,7 +4904,7 @@ const revRepartidas = computed(() =>
   revPorPlantaVenta.value
     .filter(esRepartida)
     .map(p => {
-      const apariciones = repartirPlgPlc(p.apariciones)
+      const apariciones = repartirPares(p.apariciones)
       return { ...p, apariciones, maxPct: maxConcurrente(apariciones) }
     })
     .filter(p => revCoincide(p.nombre, ...p.apariciones.map(a => a.contrato)))

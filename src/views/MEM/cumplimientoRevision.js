@@ -45,35 +45,66 @@ export function aPorcentaje(fraccion) {
   return Math.round((fraccion || 0) * 10000) / 100
 }
 
+/** Identidad de un contrato para contarlo: el código SIC. El NOMBRE no sirve —
+ *  un mismo contrato comercial puede estar registrado bajo varios SIC (Nitro
+ *  con Cacica: 88747 y 88750), y contarlos por nombre da "1 contrato" con el
+ *  200% encima, que es absurdo. */
+export function claveContrato(a) {
+  return a.codigo_sic || a.contrato || '—'
+}
+
+/** ¿Se cruzan dos ventanas en el tiempo? Bordes nulos = abiertos. */
+function seSolapan(a, b) {
+  return (!a.desde || !b.hasta || a.desde <= b.hasta)
+      && (!b.desde || !a.hasta || b.desde <= a.hasta)
+}
+
 /**
- * Reparto PLG/PLC.
+ * Un mismo contrato comercial registrado en VARIAS PATAS cuenta una sola vez.
  *
- * Hay plantas repartidas entre dos contratos de modalidad de pago distinta —una
- * PLG y otra PLC— que entre los dos cubren su 100% (MGS 0040 Cacica, MGS 0041
- * Piloneras). Cada contrato la registra al 100% porque así se firmó, pero la
- * planta es una sola: leerlo literal da 200% y la reporta duplicada.
+ * MGS 0040 Cacica y MGS 0041 Piloneras están cada una en el contrato Nitro
+ * registrado bajo dos códigos SIC —una pata PLG y otra PLC—, y cada pata la
+ * inscribe al 100% porque así se firmó. Pero la planta es una sola: leerlo
+ * literal da 200% y la reporta duplicada cuando no lo está.
  *
- * Aquí el par se lee como lo que es: se prorratea el 100% de la planta entre las
- * apariciones marcadas, en proporción a su % registrado. Dos contratos al 100%
- * quedan en 50% y 50%. Las apariciones SIN marcar no se tocan: si además de la
- * pareja hay un tercer contrato, ese sí suma encima y la planta sí sale
- * duplicada.
+ * Se detecta por estructura, sin depender de que alguien marque nada: mismo
+ * contrato, apariciones con SIC distinto (o con modalidad de pago distinta) y
+ * ventanas que se cruzan. El 100% de la planta se prorratea entre las patas en
+ * proporción a su % registrado: dos al 100% quedan en 50% y 50%.
  *
- * Solo reparte cuando hay al menos DOS modalidades distintas: dos contratos
- * marcados los dos PLG no son un par, son dos compromisos reales.
+ * Lo que NO reparte, a propósito:
+ * - Contratos comerciales distintos. Ahí sí suman, y si pasan de 100% la planta
+ *   está duplicada de verdad.
+ * - Patas que no se cruzan en el tiempo: eso es una sucesión (relevada y
+ *   reingresada), no un reparto, y prorratearla subestimaría su participación.
  *
  * Es una lectura, no un cambio de dato: el % almacenado no se toca y la
  * atribución de energía en Cumplimiento sigue igual. Cada aparición repartida
  * conserva su valor original en `pctOriginal`.
  */
-export function repartirPlgPlc(apariciones) {
-  const marcadas = apariciones.filter(a => a.modalidad_pago)
-  if (new Set(marcadas.map(a => a.modalidad_pago)).size < 2) return apariciones
-  const total = marcadas.reduce((s, a) => s + (a.pct || 0), 0)
-  if (!total) return apariciones
-  return apariciones.map(a => a.modalidad_pago
-    ? { ...a, pct: (a.pct || 0) / total, pctOriginal: a.pct, repartido: true }
-    : a)
+export function repartirPares(apariciones) {
+  const grupos = new Map()
+  for (const a of apariciones) {
+    const clave = a.contrato || claveContrato(a)
+    if (!grupos.has(clave)) grupos.set(clave, [])
+    grupos.get(clave).push(a)
+  }
+
+  const salida = []
+  for (const patas of grupos.values()) {
+    const variasPatas = new Set(patas.map(claveContrato)).size > 1
+      || new Set(patas.map(p => p.modalidad_pago).filter(Boolean)).size > 1
+    const cruzadas = patas.some((p, i) => patas.some((q, j) => i !== j && seSolapan(p, q)))
+    const total = patas.reduce((s, p) => s + (p.pct || 0), 0)
+    if (patas.length < 2 || !variasPatas || !cruzadas || !total) {
+      salida.push(...patas)
+      continue
+    }
+    salida.push(...patas.map(p => ({
+      ...p, pct: (p.pct || 0) / total, pctOriginal: p.pct, repartido: true,
+    })))
+  }
+  return salida
 }
 
 /**
@@ -89,7 +120,7 @@ export function motivoDuplicada({ nContratos, apariciones, marcada }) {
   // primero escondería un dato corrupto detrás de una fracción sana.
   const escalaRota = apariciones.some(a => a.pct > 1)
   const sinPct = apariciones.every(a => !a.pct)
-  const maxPct = maxConcurrente(repartirPlgPlc(apariciones))
+  const maxPct = maxConcurrente(repartirPares(apariciones))
 
   if (escalaRota && nContratos > 1) {
     return { motivo: `En ${nContratos} contratos con % fuera de escala (0-1) — no verificable`, maxPct, escalaRota, sinPct }
@@ -113,5 +144,5 @@ export function motivoDuplicada({ nContratos, apariciones, marcada }) {
 export function esRepartida({ nContratos, apariciones, marcada }) {
   if (nContratos <= 1 || marcada) return false
   if (apariciones.some(a => a.pct > 1) || apariciones.every(a => !a.pct)) return false
-  return aPorcentaje(maxConcurrente(repartirPlgPlc(apariciones))) <= 100
+  return aPorcentaje(maxConcurrente(repartirPares(apariciones))) <= 100
 }
