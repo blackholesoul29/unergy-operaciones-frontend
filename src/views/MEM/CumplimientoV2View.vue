@@ -1580,6 +1580,166 @@
       </template>
     </div>
 
+    <!-- ═══════════════ REVISIÓN DEL MES TAB ═══════════════ -->
+    <!-- Tres cosas que conviene mirar cada mes, sobre la MISMA fuente que la
+         pestaña Proyectos (/cumplimiento/plantas-contratos): plantas repetidas,
+         plantas sin contrato y plantas con UNGC. No agrega endpoints: si ya se
+         abrió Proyectos con ese mes, sale de la caché. -->
+    <div v-show="activeTab === 6" class="space-y-5">
+
+      <div class="flex flex-wrap items-end gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+          <Select v-model="revYear" :options="years" class="w-24" @change="loadRevision" />
+        </div>
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Mes</label>
+          <Select v-model="revMonth" :options="MESES_OPTIONS" optionLabel="label" optionValue="value"
+                  class="w-40" @change="loadRevision" />
+        </div>
+        <div class="flex flex-col gap-1 flex-1" style="min-width: 200px;">
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Buscar</label>
+          <InputText v-model="revBusqueda" placeholder="Planta, contrato o SIC…" class="text-sm w-full" />
+        </div>
+      </div>
+
+      <ProgressSpinner v-if="revLoading" />
+      <Message v-else-if="revError" severity="error" :closable="false">{{ revError }}</Message>
+
+      <template v-else-if="revData">
+
+        <!-- Resumen: tres contadores -->
+        <div class="grid gap-3" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+          <div v-for="s in revResumen" :key="s.key"
+               class="rounded-xl px-4 py-3 border" :style="`border-color: ${s.borde}; background: ${s.fondo};`">
+            <div class="text-3xl font-bold leading-none" :style="`color: ${s.color};`">{{ s.n }}</div>
+            <div class="text-xs font-semibold mt-1.5" style="color: #2C2039;">{{ s.titulo }}</div>
+            <div class="text-[11px] mt-0.5" style="color: #7a6e8a;">{{ s.detalle }}</div>
+          </div>
+        </div>
+
+        <p class="text-xs" style="color: #9b89b5;">
+          Al {{ revData.fecha_corte }}. Las filas en <span :style="`color:${ROJO_FIN}; font-weight:600;`">rojo</span>
+          son tramos que ya terminaron dentro del mes: la bolsa se calcula por días, así que una misma
+          planta puede aparecer en más de una fila.
+        </p>
+
+        <!-- 1 · Plantas duplicadas -->
+        <div class="rounded-xl border overflow-hidden" style="border-color: rgba(44,32,57,0.08);">
+          <div class="px-4 py-2.5" style="background: rgba(240,192,64,0.14);">
+            <span class="font-semibold text-sm" style="color: #2C2039;">Plantas duplicadas en el mes</span>
+            <span class="text-xs ml-2" style="color: #7a6e8a;">
+              En más de un contrato de venta, o marcadas como compra en bolsa / uso del recurso.
+              El aporte extra se cubre comprando en bolsa.
+            </span>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr style="background: #faf8fd; color: #7a6e8a;">
+                <th class="text-left px-4 py-2 font-medium">Planta</th>
+                <th class="text-left px-4 py-2 font-medium">Aparece en</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 190px;">Motivo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in revDuplicadas" :key="p.id" class="border-t" style="border-color: rgba(44,32,57,0.06);">
+                <td class="px-4 py-2 font-medium" style="color: #2C2039;">{{ p.nombre }}</td>
+                <td class="px-4 py-2">
+                  <div v-for="(a, i) in p.apariciones" :key="i" class="flex flex-wrap items-center gap-1.5 py-0.5">
+                    <span :style="a.estado === 'terminado' ? `color:${ROJO_FIN};` : 'color:#2C2039;'">{{ a.contrato }}</span>
+                    <span v-if="a.codigo_sic" class="font-mono text-[11px] px-1 rounded"
+                          style="background: rgba(44,32,57,0.06); color: #5b3fa6;">{{ a.codigo_sic }}</span>
+                    <span v-if="a.pct != null" class="text-[11px]" style="color: #7a6e8a;">{{ Math.round(a.pct * 100) }}%</span>
+                    <span v-if="a.marca" class="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                          style="background: rgba(240,192,64,0.22); color: #9a6700;">{{ a.marca }}</span>
+                    <span class="text-[11px]" style="color: #9b89b5;">{{ fmtFechaDia(a.desde) }} → {{ fmtFechaDia(a.hasta) }}</span>
+                  </div>
+                </td>
+                <td class="px-4 py-2 text-xs" style="color: #7a6e8a;">{{ p.motivo }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-if="!revDuplicadas.length" class="px-4 py-8 text-sm text-center" style="color: rgba(44,32,57,0.35);">
+            Ninguna planta duplicada este mes
+          </div>
+        </div>
+
+        <!-- 2 · Plantas sin contrato -->
+        <div class="rounded-xl border overflow-hidden" style="border-color: rgba(44,32,57,0.08);">
+          <div class="px-4 py-2.5" style="background: rgba(44,32,57,0.06);">
+            <span class="font-semibold text-sm" style="color: #2C2039;">Plantas sin contrato asignado</span>
+            <span class="text-xs ml-2" style="color: #7a6e8a;">
+              Sin PPA y sin registro SIC vigente: venden en bolsa desde UNGG (piscina e).
+            </span>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr style="background: #faf8fd; color: #7a6e8a;">
+                <th class="text-left px-4 py-2 font-medium">Planta</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 300px;">Tramo sin contrato</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 120px;">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in revSinContrato" :key="filaKey(p)" class="border-t" style="border-color: rgba(44,32,57,0.06);">
+                <td class="px-4 py-2 font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</td>
+                <td class="px-4 py-2 text-xs" style="color: #7a6e8a;">
+                  {{ fmtFechaDia(p.segmento_inicio) }} → {{ fmtFechaDia(p.segmento_fin) }}
+                </td>
+                <td class="px-4 py-2">
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full" :style="revEstadoBadge(p.estado)">
+                    {{ revEstadoLabel(p.estado) }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-if="!revSinContrato.length" class="px-4 py-8 text-sm text-center" style="color: rgba(44,32,57,0.35);">
+            Todas las plantas tienen contrato este mes
+          </div>
+        </div>
+
+        <!-- 3 · Plantas con UNGC -->
+        <div class="rounded-xl border overflow-hidden" style="border-color: rgba(44,32,57,0.08);">
+          <div class="px-4 py-2.5" style="background: rgba(145,91,216,0.10);">
+            <span class="font-semibold text-sm" style="color: #2C2039;">Plantas en contratos con UNGC</span>
+            <span class="text-xs ml-2" style="color: #7a6e8a;">
+              Contratos GESCON donde UNGC compra (piscina b) y plantas sin PPA cuyo SIC vigente
+              tiene a UNGC de comprador (piscina f).
+            </span>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr style="background: #faf8fd; color: #7a6e8a;">
+                <th class="text-left px-4 py-2 font-medium">Planta</th>
+                <th class="text-left px-4 py-2 font-medium">Contrato</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 90px;">SIC</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 250px;">Ventana</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="p in revUngc" :key="p._key" class="border-t" style="border-color: rgba(44,32,57,0.06);">
+                <td class="px-4 py-2 font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</td>
+                <td class="px-4 py-2 text-xs">
+                  <span v-if="p.contrato" style="color: #2C2039;">{{ p.contrato }}</span>
+                  <span v-else class="text-[10px] font-semibold px-1.5 py-0.5 rounded"
+                        style="background: rgba(44,32,57,0.08); color: #7a6e8a;">Sin PPA · bolsa UNGC</span>
+                </td>
+                <td class="px-4 py-2 font-mono text-xs" style="color: #5b3fa6;">{{ p.codigo_sic || '—' }}</td>
+                <td class="px-4 py-2 text-xs" style="color: #7a6e8a;">
+                  {{ fmtFechaDia(p.desde) }} → {{ fmtFechaDia(p.hasta) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-if="!revUngc.length" class="px-4 py-8 text-sm text-center" style="color: rgba(44,32,57,0.35);">
+            Ninguna planta con UNGC este mes
+          </div>
+        </div>
+
+      </template>
+    </div>
+
     <!-- Floating: desglose de una capa del balance — de qué plantas sale la cifra -->
     <Teleport to="body">
       <template v-if="beCapa">
@@ -2228,6 +2388,7 @@ async function clearCacheAndReload() {
   pcData.value = null
   etData.value = null
   beData.value = null
+  revData.value = null
   tableData.value = []
   try {
     await Promise.all([loadAnnualData(), loadTableData()])
@@ -2235,13 +2396,14 @@ async function clearCacheAndReload() {
     if (activeTab.value === 2) await loadPlantasContratos()
     if (activeTab.value === 3) await loadEnergiaTransada()
     if (activeTab.value === 5) await loadBalance()
+    if (activeTab.value === 6) await loadRevision()
   } finally {
     cacheClearing.value = false
     updateCacheSize()
   }
 }
 
-// Recarga las seis pestañas tras un cambio de universo (interruptor "Ver ocultos"
+// Recarga las pestañas tras un cambio de universo (interruptor "Ver ocultos"
 // o reclasificación de responsables). No borra la caché: el param incluir_todos
 // ya forma parte de la llave, así que cada universo tiene su propia entrada.
 // Lo que está fuera de la pestaña activa se descarta y se recarga al abrirla.
@@ -2252,6 +2414,7 @@ async function recargarPorResponsables() {
   pcData.value    = null
   etData.value    = null
   beData.value    = null
+  revData.value   = null
   tableData.value = []
   anualMatrizData.value = null
   await loadContratos()
@@ -2261,13 +2424,14 @@ async function recargarPorResponsables() {
   if (activeTab.value === 3) await loadEnergiaTransada()
   if (activeTab.value === 4) await loadAnualMatriz()
   if (activeTab.value === 5) await loadBalance()
+  if (activeTab.value === 6) await loadRevision()
   updateCacheSize()
 }
 
 watch(verOcultos, () => { recargarPorResponsables() })
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-const TABS      = ['Estrategia', 'Cumplimiento', 'Proyectos', 'Energía transada', 'Matriz anual', 'Balance de energía']
+const TABS      = ['Estrategia', 'Cumplimiento', 'Proyectos', 'Energía transada', 'Matriz anual', 'Balance de energía', 'Revisión del mes']
 const activeTab = ref(0)
 
 // ── Chart constants ───────────────────────────────────────────────────────────
@@ -4526,6 +4690,155 @@ async function loadPlantasContratos() {
   }
 }
 
+// ── Revisión del mes ─────────────────────────────────────────────────────────
+// Tres cosas que conviene mirar cada mes. Sale de /cumplimiento/plantas-contratos,
+// la MISMA fuente de la pestaña Proyectos: no reimplementa la resolución de GESCON
+// ni agrega endpoints, y si Proyectos ya cargó ese mes es un acierto de caché.
+const revYear    = ref(now.getFullYear())
+const revMonth   = ref(now.getMonth() + 1)
+const revData    = ref(null)
+const revLoading = ref(false)
+const revError   = ref(null)
+const revBusqueda = ref('')
+
+async function loadRevision() {
+  revLoading.value = true
+  revError.value   = null
+  try {
+    revData.value = await cachedGet('/cumplimiento/plantas-contratos',
+      { year: revYear.value, month: revMonth.value, incluir_todos: incluirTodos() })
+    updateCacheSize()
+  } catch (e) {
+    revError.value = e.response?.data?.detail || 'Error al cargar la revisión del mes.'
+  } finally {
+    revLoading.value = false
+  }
+}
+
+function revCoincide(...campos) {
+  const q = revBusqueda.value.trim().toLowerCase()
+  if (!q) return true
+  return campos.some(c => (c || '').toString().toLowerCase().includes(q))
+}
+
+function revMarca(p) {
+  return p.uso_del_recurso ? 'Uso del recurso' : p.es_duplicado ? 'Compra en bolsa' : null
+}
+
+// 1 · Duplicadas: la misma planta comprometida en varios contratos de VENTA, o
+// marcada explícitamente. Solo se miran los contratos de venta a propósito: una
+// planta que además aparece en un contrato de compra UNGC es la MISMA energía
+// vista desde el otro lado, no un duplicado (eso se lista en la sección 3).
+// Los tramos se cuentan por contrato distinto: una planta relevada y reingresada
+// al mismo contrato genera dos filas y no es un duplicado.
+const revDuplicadas = computed(() => {
+  const d = revData.value
+  if (!d) return []
+  const porPlanta = new Map()
+  for (const c of d.venta || []) {
+    for (const p of c.plantas || []) {
+      const acc = porPlanta.get(p.id) || { id: p.id, nombre: p.nombre, apariciones: [], marcada: false }
+      acc.apariciones.push({
+        contrato: c.nombre,
+        codigo_sic: p.codigo_sic,
+        pct: p.pct_despacho,
+        marca: revMarca(p),
+        desde: p.segmento_inicio || p.fecha_inicio,
+        hasta: p.segmento_fin || p.fecha_fin,
+        estado: p.estado,
+      })
+      if (revMarca(p)) acc.marcada = true
+      porPlanta.set(p.id, acc)
+    }
+  }
+  return [...porPlanta.values()]
+    .map(p => ({ ...p, nContratos: new Set(p.apariciones.map(a => a.contrato)).size }))
+    .filter(p => p.nContratos > 1 || p.marcada)
+    .map(p => ({
+      ...p,
+      motivo: p.nContratos > 1
+        ? (p.marcada ? `En ${p.nContratos} contratos y marcada` : `En ${p.nContratos} contratos`)
+        : 'Marcada en su contrato',
+    }))
+    .filter(p => revCoincide(p.nombre, ...p.apariciones.map(a => a.contrato), ...p.apariciones.map(a => a.codigo_sic)))
+    .sort((a, b) => b.nContratos - a.nContratos || (a.nombre || '').localeCompare(b.nombre || ''))
+})
+
+// 2 · Sin contrato: el remanente sin SIC vigente (piscina e). Son TRAMOS de días,
+// no plantas: una que salió de contrato a mitad de mes aporta su tramo aquí.
+const revSinContrato = computed(() => {
+  const d = revData.value
+  if (!d) return []
+  const libres = Array.isArray(d.bolsa_libre)
+    ? d.bolsa_libre
+    : (d.bolsa || []).filter(p => p.piscina !== 'comercializador')
+  return libres
+    .filter(p => revCoincide(p.nombre))
+    .slice()
+    .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
+})
+
+// 3 · UNGC: contratos GESCON donde UNGC compra (b) + remanente cuyo SIC vigente
+// tiene a UNGC de comprador (f). Dos orígenes distintos, una sola lista.
+const revUngc = computed(() => {
+  const d = revData.value
+  if (!d) return []
+  const out = []
+  for (const c of d.compra || []) {
+    for (const p of c.plantas || []) {
+      out.push({
+        _key: `b-${c.id}-${p.id}-${p.segmento_inicio || ''}`,
+        nombre: p.nombre, contrato: c.nombre, codigo_sic: p.codigo_sic,
+        desde: p.fecha_inicio || p.segmento_inicio,
+        hasta: p.fecha_fin || p.segmento_fin,
+        estado: p.estado,
+      })
+    }
+  }
+  const comercializador = Array.isArray(d.bolsa_comercializador)
+    ? d.bolsa_comercializador
+    : (d.bolsa || []).filter(p => p.piscina === 'comercializador')
+  for (const p of comercializador) {
+    out.push({
+      _key: `f-${p.id}-${p.segmento_inicio || ''}`,
+      nombre: p.nombre, contrato: null, codigo_sic: p.codigo_sic,
+      desde: p.fecha_inicio || p.segmento_inicio,
+      hasta: p.fecha_fin || p.segmento_fin,
+      estado: p.estado,
+    })
+  }
+  return out
+    .filter(p => revCoincide(p.nombre, p.contrato, p.codigo_sic))
+    .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
+})
+
+const revResumen = computed(() => [
+  {
+    key: 'dup', n: revDuplicadas.value.length, titulo: 'Plantas duplicadas',
+    detalle: 'En varios contratos o marcadas',
+    color: '#9a6700', fondo: 'rgba(240,192,64,0.10)', borde: 'rgba(240,192,64,0.35)',
+  },
+  {
+    key: 'sin', n: revSinContrato.value.length, titulo: 'Tramos sin contrato',
+    detalle: 'Venden en bolsa desde UNGG',
+    color: '#2C2039', fondo: 'rgba(44,32,57,0.04)', borde: 'rgba(44,32,57,0.14)',
+  },
+  {
+    key: 'ungc', n: revUngc.value.length, titulo: 'Plantas con UNGC',
+    detalle: 'Contrato de compra o SIC con UNGC',
+    color: '#915BD8', fondo: 'rgba(145,91,216,0.08)', borde: 'rgba(145,91,216,0.28)',
+  },
+])
+
+function revEstadoBadge(estado) {
+  return estado === 'terminado' ? 'background: rgba(214,68,85,0.12); color: #D64455;'
+       : estado === 'futuro'    ? 'background: rgba(44,32,57,0.06); color: #7a6e8a;'
+       : 'background: rgba(46,125,50,0.12); color: #2e7d32;'
+}
+function revEstadoLabel(estado) {
+  return estado === 'terminado' ? 'Terminado' : estado === 'futuro' ? 'Futuro' : 'Vigente'
+}
+
 // ── Balance de energía ───────────────────────────────────────────────────────
 // Libro mayor de bolsa del mes: cuánto se compra o se compraría en bolsa. El
 // neteo ocurre DENTRO de cada agente — UNGC va aparte porque es otro agente y
@@ -4753,6 +5066,7 @@ watch(activeTab, (tab) => {
   if (tab === 3 && !etData.value) loadEnergiaTransada()
   if (tab === 4 && !anualMatrizData.value) loadAnualMatriz()
   if (tab === 5 && !beData.value) loadBalance()
+  if (tab === 6 && !revData.value) loadRevision()
 })
 
 onMounted(async () => {
