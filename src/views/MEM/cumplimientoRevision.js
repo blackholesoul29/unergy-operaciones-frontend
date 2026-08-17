@@ -116,6 +116,9 @@ export function repartirPares(apariciones) {
  * afirmar que esté duplicada.
  */
 export function motivoDuplicada({ nContratos, apariciones, marcada }) {
+  // `marcada` es SOLO 'compra en bolsa' (es_duplicado). "Uso del recurso" es
+  // otra figura —el cliente está en bolsa y se le paga su generación a precio
+  // bolsa, sin garantías— y tiene su propia sección: no es una duplicación.
   // La escala y la ausencia de % se juzgan sobre lo REGISTRADO: prorratear
   // primero escondería un dato corrupto detrás de una fracción sana.
   const escalaRota = apariciones.some(a => a.pct > 1)
@@ -132,7 +135,7 @@ export function motivoDuplicada({ nContratos, apariciones, marcada }) {
     }
   }
   if (marcada) {
-    return { motivo: 'Marcada en su contrato', maxPct, escalaRota, sinPct }
+    return { motivo: 'Marcada como compra en bolsa', maxPct, escalaRota, sinPct }
   }
   if (nContratos > 1 && sinPct) {
     return { motivo: `En ${nContratos} contratos sin % registrado — no verificable`, maxPct, escalaRota, sinPct }

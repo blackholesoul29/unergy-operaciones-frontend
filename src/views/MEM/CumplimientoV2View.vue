@@ -1636,7 +1636,8 @@
             <span class="text-xs ml-2" style="color: #7a6e8a;">
               Duplicada es la que compromete <b>más del 100% a la vez</b>: ese excedente se cubre
               comprando en bolsa. Estar en varios contratos no basta —repartir 50% y 50% sigue
-              siendo su 100%—. También entran las marcadas como compra en bolsa / uso del recurso.
+              siendo su 100%—. También entran las marcadas como <b>compra en bolsa</b>; el uso del
+              recurso es otra figura y va en su propia sección.
             </span>
           </div>
           <table class="w-full text-sm">
@@ -1708,7 +1709,7 @@
         <!-- 2 · Plantas sin contrato -->
         <div class="rounded-xl border overflow-hidden" style="border-color: rgba(44,32,57,0.08);">
           <div class="px-4 py-2.5" style="background: rgba(44,32,57,0.06);">
-            <span class="font-semibold text-sm" style="color: #2C2039;">Plantas sin contrato asignado</span>
+            <span class="font-semibold text-sm" style="color: #2C2039;">Libres en bolsa — sin contrato</span>
             <span class="text-xs ml-2" style="color: #7a6e8a;">
               Sin PPA <b>y sin registro GESCON vigente</b> sobre el tramo: venden en bolsa desde UNGG.
             </span>
@@ -1784,7 +1785,46 @@
           </table>
         </div>
 
-        <!-- 3 · Plantas con UNGC -->
+        <!-- 3 · Uso del recurso -->
+        <div class="rounded-xl border overflow-hidden" style="border-color: rgba(2,132,199,0.28);">
+          <div class="px-4 py-2.5" style="background: rgba(2,132,199,0.10);">
+            <span class="font-semibold text-sm" style="color: #2C2039;">Uso del recurso</span>
+            <span class="text-xs ml-2" style="color: #7a6e8a;">
+              El cliente está en bolsa y su planta entra al contrato pagándole la generación a
+              precio de bolsa. <b>No genera garantías y no es una duplicación</b>: es una figura
+              distinta a la compra en bolsa.
+            </span>
+          </div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr style="background: #faf8fd; color: #7a6e8a;">
+                <th class="text-left px-4 py-2 font-medium">Planta</th>
+                <th class="text-left px-4 py-2 font-medium">Contrato</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 90px;">SIC</th>
+                <th class="text-right px-4 py-2 font-medium" style="width: 90px;">Despacho</th>
+                <th class="text-left px-4 py-2 font-medium" style="width: 230px;">Ventana</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="a in revUsoRecurso" :key="a._key" class="border-t" style="border-color: rgba(44,32,57,0.06);">
+                <td class="px-4 py-2 font-medium" style="color: #2C2039;">{{ a.planta }}</td>
+                <td class="px-4 py-2 text-xs" :style="a.estado === 'terminado' ? `color:${ROJO_FIN};` : 'color:#2C2039;'">{{ a.contrato }}</td>
+                <td class="px-4 py-2 font-mono text-xs" style="color: #5b3fa6;">{{ a.codigo_sic || '—' }}</td>
+                <td class="px-4 py-2 text-right font-mono text-xs" style="color: #7a6e8a;">
+                  {{ a.pct ? revPct(a.pct) + '%' : '—' }}
+                </td>
+                <td class="px-4 py-2 text-xs" style="color: #9b89b5;">
+                  {{ fmtFechaDia(a.desde) }} → {{ fmtFechaDia(a.hasta) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div v-if="!revUsoRecurso.length" class="px-4 py-8 text-sm text-center" style="color: rgba(44,32,57,0.35);">
+            Ninguna planta bajo uso del recurso este mes
+          </div>
+        </div>
+
+        <!-- 4 · Plantas con UNGC -->
         <div class="rounded-xl border overflow-hidden" style="border-color: rgba(44,32,57,0.08);">
           <div class="px-4 py-2.5" style="background: rgba(145,91,216,0.10);">
             <span class="font-semibold text-sm" style="color: #2C2039;">Plantas en contratos con UNGC</span>
@@ -4845,8 +4885,11 @@ function revCoincide(...campos) {
   return campos.some(c => (c || '').toString().toLowerCase().includes(q))
 }
 
+// Solo 'compra en bolsa' cuenta como duplicación. "Uso del recurso" es otra
+// figura (el cliente está en bolsa y se le paga su generación a precio bolsa,
+// sin garantías) y tiene su propia sección.
 function revMarca(p) {
-  return p.uso_del_recurso ? 'Uso del recurso' : p.es_duplicado ? 'Compra en bolsa' : null
+  return p.es_duplicado ? 'Compra en bolsa' : null
 }
 
 // Las reglas de duplicación viven en cumplimientoRevision.js: son la parte que
@@ -4868,6 +4911,7 @@ const revPorPlantaVenta = computed(() => {
         codigo_sic: p.codigo_sic,
         pct: p.pct_despacho,
         marca: revMarca(p),
+        uso_del_recurso: !!p.uso_del_recurso,
         modalidad_pago: p.modalidad_pago || null,
         desde: p.segmento_inicio || p.fecha_inicio,
         hasta: p.segmento_fin || p.fecha_fin,
@@ -4969,6 +5013,18 @@ const revUngc = computed(() => {
     .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
 })
 
+// Uso del recurso: el cliente está en bolsa y su planta entra al contrato
+// pagándole la generación a precio de bolsa. No genera garantías y no es una
+// duplicación — por eso va en su propia sección.
+const revUsoRecurso = computed(() =>
+  revPorPlantaVenta.value
+    .flatMap(p => p.apariciones
+      .filter(a => a.uso_del_recurso)
+      .map(a => ({ ...a, _key: `${p.id}-${a.codigo_sic}-${a.desde}`, planta: p.nombre })))
+    .filter(a => revCoincide(a.planta, a.contrato, a.codigo_sic))
+    .sort((a, b) => (a.planta || '').localeCompare(b.planta || ''))
+)
+
 const revResumen = computed(() => [
   {
     key: 'dup', n: revDuplicadas.value.length, titulo: 'Plantas duplicadas',
@@ -4976,9 +5032,14 @@ const revResumen = computed(() => [
     color: '#9a6700', fondo: 'rgba(240,192,64,0.10)', borde: 'rgba(240,192,64,0.35)',
   },
   {
-    key: 'sin', n: revSinContrato.value.length, titulo: 'Tramos sin contrato',
+    key: 'sin', n: revSinContrato.value.length, titulo: 'Libres en bolsa',
     detalle: 'Sin PPA y sin registro GESCON',
     color: '#2C2039', fondo: 'rgba(44,32,57,0.04)', borde: 'rgba(44,32,57,0.14)',
+  },
+  {
+    key: 'uso', n: revUsoRecurso.value.length, titulo: 'Uso del recurso',
+    detalle: 'Se le paga al cliente a precio bolsa',
+    color: '#0369a1', fondo: 'rgba(2,132,199,0.08)', borde: 'rgba(2,132,199,0.28)',
   },
   {
     key: 'inc', n: revSicSinPpa.value.length, titulo: 'Con SIC, fuera del cálculo',
