@@ -1688,12 +1688,20 @@
                   <td class="py-1.5 pr-4 font-mono text-right" style="color: #2e7d32; width: 70px;">{{ revPct(p.maxPct) }}%</td>
                   <td class="py-1.5" style="color: #7a6e8a;">
                     <span v-for="(a, i) in p.apariciones" :key="i">
-                      <span v-if="i"> + </span>{{ revPct(a.pct) }}% {{ a.contrato }}
+                      <span v-if="i"> + </span>{{ revPct(a.pct) }}%
+                      <span v-if="a.modalidad_pago" class="font-semibold uppercase" style="color: #915BD8;">{{ a.modalidad_pago }}</span>
+                      {{ a.contrato }}
+                      <span v-if="a.repartido" style="color: #b0a0c0;">(registrado {{ revPct(a.pctOriginal) }}%)</span>
                     </span>
                   </td>
                 </tr>
               </tbody>
             </table>
+            <p class="mt-2" style="color: #9b89b5;">
+              Un par <b>PLG + PLC</b> es la misma planta repartida entre dos contratos: cada uno la
+              registra al 100% porque así se firmó, y aquí se lee prorrateada. El % almacenado no se
+              modifica y la energía en Cumplimiento se sigue atribuyendo igual.
+            </p>
           </details>
         </div>
 
@@ -2372,7 +2380,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { proyectoActivoEnMes } from '@/utils/proyectoActivo'
-import { maxConcurrente, aPorcentaje, motivoDuplicada, esRepartida } from './cumplimientoRevision.js'
+import { maxConcurrente, aPorcentaje, motivoDuplicada, esRepartida, repartirPlgPlc } from './cumplimientoRevision.js'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 import InputText from 'primevue/inputtext'
@@ -4860,6 +4868,7 @@ const revPorPlantaVenta = computed(() => {
         codigo_sic: p.codigo_sic,
         pct: p.pct_despacho,
         marca: revMarca(p),
+        modalidad_pago: p.modalidad_pago || null,
         desde: p.segmento_inicio || p.fecha_inicio,
         hasta: p.segmento_fin || p.fecha_fin,
         estado: p.estado,
@@ -4892,7 +4901,10 @@ const revDuplicadas = computed(() =>
 const revRepartidas = computed(() =>
   revPorPlantaVenta.value
     .filter(esRepartida)
-    .map(p => ({ ...p, maxPct: maxConcurrente(p.apariciones) }))
+    .map(p => {
+      const apariciones = repartirPlgPlc(p.apariciones)
+      return { ...p, apariciones, maxPct: maxConcurrente(apariciones) }
+    })
     .filter(p => revCoincide(p.nombre, ...p.apariciones.map(a => a.contrato)))
     .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''))
 )

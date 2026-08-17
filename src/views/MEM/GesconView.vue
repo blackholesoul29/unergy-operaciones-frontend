@@ -416,6 +416,18 @@
           </div>
         </div>
 
+        <!-- Modalidad de pago: marca el par PLG/PLC de una planta repartida -->
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium" style="color:#6b5a8a;">Modalidad de pago del contrato</label>
+            <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
+              v-tooltip.top="'Cuando una planta se reparte entre dos contratos, uno PLG y otro PLC, entre los dos cubren su 100%: marcarlos evita que se reporte como duplicada. Déjalo en “No aplica” si el contrato no es de ese par.'" />
+          </div>
+          <SelectButton v-model="modalidadPago" :options="MODALIDADES_PAGO"
+            optionLabel="label" optionValue="value" :allowEmpty="false"
+            :pt="{ button: { style: 'font-size:12px; padding:5px 12px;' } }" />
+        </div>
+
         <!-- Fila 7: Requerimiento + Contacto -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
@@ -900,6 +912,7 @@ const FORM_INICIAL = () => ({
   reemplaza_anterior: true,
   es_duplicado: false,
   uso_del_recurso: false,
+  modalidad_pago: null,
 })
 const form = ref(FORM_INICIAL())
 
@@ -911,6 +924,19 @@ const MODALIDADES_SUMINISTRO = [
   { label: 'Compra en bolsa', value: 'duplicado' },
   { label: 'Uso del recurso', value: 'uso_recurso' },
 ]
+// Modalidad de PAGO del contrato (distinta de la de suministro): marca el par
+// PLG/PLC de una planta repartida entre dos contratos. El SelectButton no
+// maneja null, así que '' hace de "no aplica" y se traduce a null al guardar.
+const MODALIDADES_PAGO = [
+  { label: 'No aplica', value: '' },
+  { label: 'PLG', value: 'plg' },
+  { label: 'PLC', value: 'plc' },
+]
+const modalidadPago = computed({
+  get() { return form.value.modalidad_pago || '' },
+  set(v) { form.value.modalidad_pago = v || null },
+})
+
 const modalidadSuministro = computed({
   get() {
     if (form.value.uso_del_recurso) return 'uso_recurso'
@@ -1031,6 +1057,7 @@ function abrirEditar(row) {
     reemplaza_anterior: row.reemplaza_anterior ?? true,
     es_duplicado: row.es_duplicado ?? false,
     uso_del_recurso: row.uso_del_recurso ?? false,
+    modalidad_pago: row.modalidad_pago || null,
   }
   errores.value = {}
   dialogVisible.value = true
@@ -1082,6 +1109,7 @@ async function guardar() {
       tipo_asignacion: form.value.tipo_asignacion || null,
       link_archivo: form.value.link_archivo || null,
       observaciones: form.value.observaciones || null,
+      modalidad_pago: form.value.modalidad_pago || null,
       fecha_solicitud: toIso(form.value.fecha_solicitud),
       fecha_inicio: toIso(form.value.fecha_inicio),
       fecha_fin: toIso(form.value.fecha_fin),
