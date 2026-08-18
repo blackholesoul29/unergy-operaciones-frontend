@@ -81,6 +81,9 @@
             <ProjectLiveChart v-else :detail="detailMap[p.proyecto_id]" />
           </div>
 
+          <!-- Reconectador: estado + telemetría en vivo de Solenium -->
+          <ReconnectorPanel v-if="rcnMap[p.proyecto_id]" :relay="rcnMap[p.proyecto_id]" />
+
           <!-- Falla(s) activa(s) del proyecto -->
           <div v-if="(fallasMap[p.proyecto_id] || []).length" class="ms-fallas">
             <button v-for="f in (fallasMap[p.proyecto_id] || []).slice(0, 2)" :key="f.id"
@@ -146,6 +149,7 @@ import { usePwa } from '@/mobile/usePwa'
 import { inverterSeries, meterSeries, latest, fmtKw } from '@/mobile/solarSeries'
 import ProjectLiveChart from '@/mobile/components/ProjectLiveChart.vue'
 import ReconnectSheet from '@/mobile/components/ReconnectSheet.vue'
+import ReconnectorPanel from '@/mobile/components/ReconnectorPanel.vue'
 import NotificationsSheet from '@/mobile/components/NotificationsSheet.vue'
 import MobileTabBar from '@/mobile/components/MobileTabBar.vue'
 import FallaCreateSheet from '@/mobile/components/FallaCreateSheet.vue'
@@ -166,7 +170,7 @@ const proyectos     = ref([])
 const idx           = ref(0)
 const detailMap     = reactive({})  // proyecto_id → detalle
 const nowMap        = reactive({})  // proyecto_id → { inv, med } (potencia "ahora")
-const rcnMap        = reactive({})  // proyecto_id → { active }
+const rcnMap        = reactive({})  // proyecto_id → { active, telemetría del relay }
 const loadingList   = ref(false)
 const loadingDetail = ref(0)  // contador: >0 = cargando (permite cargas paralelas)
 const lastUpdated   = ref('')
@@ -298,7 +302,7 @@ async function cargarLista() {
 async function cargarEstados() {
   try {
     const { data } = await api.get('/reconectadores/estados')
-    for (const r of data) rcnMap[r.proyecto_id] = { active: r.active }
+    for (const r of data) rcnMap[r.proyecto_id] = r
   } catch { /* silencioso */ }
 }
 
@@ -339,7 +343,8 @@ function openSheet(p) { sheetTarget.value = p; sheetOpen.value = true }
 function onReconnectDone({ active }) {
   const p = sheetTarget.value
   if (!p) return
-  rcnMap[p.proyecto_id] = { active }
+  // Refleja el comando de inmediato; `cargarEstados()` traerá la lectura real.
+  rcnMap[p.proyecto_id] = { ...(rcnMap[p.proyecto_id] || {}), active }
   window.__primeToast?.({ severity: 'success', summary: 'Comando enviado',
     detail: `${p.nombre}: ${active ? 'ON' : 'OFF'}`, life: 3500 })
   cargarEstados()
@@ -451,6 +456,7 @@ onUnmounted(() => {
 .ms-slide {
   flex: 0 0 100%; width: 100%; height: 100%;
   display: flex; flex-direction: column; padding: 11px 13px 12px;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
 
 .ms-state {
@@ -474,7 +480,7 @@ onUnmounted(() => {
 .ms-chart {
   flex: 1; min-height: 0; position: relative;
   /* tope de alto ≈ 52% del ancho: panorámica pero con más presencia que las chips */
-  max-height: min(52vw, 38vh);
+  max-height: min(52vw, 38vh); min-height: 148px;
   background: #fff; border: 1px solid #eceaf2; border-radius: 16px; padding: 12px 10px 6px;
 }
 
