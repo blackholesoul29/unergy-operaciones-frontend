@@ -405,7 +405,10 @@
             </div>
 
             <!-- Timeline -->
-            <div v-if="sortedSeguimientos.length" class="space-y-3 mt-3">
+            <div v-if="cargandoSeguimientos" class="flex items-center gap-2 mt-3 text-sm" style="color: #9b89b5;">
+              <i class="pi pi-spin pi-spinner" /> Cargando seguimientos…
+            </div>
+            <div v-else-if="sortedSeguimientos.length" class="space-y-3 mt-3">
               <div v-for="seg in sortedSeguimientos" :key="seg.id" class="flex gap-2.5">
                 <div class="avatar-md flex-shrink-0" :style="avatarStyle(seg.usuario)">
                   {{ initials(seg.usuario?.nombre) }}
@@ -446,7 +449,7 @@
     <Dialog v-model:visible="formDialogVisible" modal class="w-full max-w-2xl"
       :header="editingFalla ? `Editar falla ${editingFalla.codigo_interno}` : 'Nueva falla'"
       :closable="!savingForm">
-      <FallaForm :initial="editingFalla" :catalogos="catalogos"
+      <FallaForm :initial="editingFalla" :catalogos="catalogos" :proyectos="proyectos"
         @save="onSaveForm" @cancel="formDialogVisible = false" />
     </Dialog>
 
@@ -737,7 +740,13 @@ function limpiarFiltros() {
   filtroFechaHasta.value = null
 }
 
-function abrirDrawer(falla) {
+// El listado (GET /fallas) no trae seguimientos/intervalos/inversores_afectados
+// -- forzaría un lazy-load por fila en el backend (ver _FALLA_LOAD_LISTA).
+// Se completan aparte al abrir el detalle puntual, mismo patrón que ya usa
+// guardarQuickEdit/agregarSeguimiento para refrescar la fila tras guardar.
+const cargandoSeguimientos = ref(false)
+
+async function abrirDrawer(falla) {
   drawerFalla.value = falla
   quickEdit.estado_id = falla.estado?.id ?? null
   quickEdit.prioridad_id = falla.prioridad?.id ?? null
@@ -745,6 +754,18 @@ function abrirDrawer(falla) {
   nuevaNota.nota = ''
   nuevaNota.estado_id = null
   drawerVisible.value = true
+
+  cargandoSeguimientos.value = true
+  try {
+    const { data } = await api.get(`/fallas/${falla.id}`)
+    if (drawerFalla.value?.id === falla.id) drawerFalla.value = data
+    const idx = allFallas.value.findIndex(f => f.id === data.id)
+    if (idx >= 0) allFallas.value[idx] = data
+  } catch (e) {
+    // no crítico -- el drawer ya muestra los datos livianos del listado
+  } finally {
+    cargandoSeguimientos.value = false
+  }
 }
 
 function abrirCrear() {

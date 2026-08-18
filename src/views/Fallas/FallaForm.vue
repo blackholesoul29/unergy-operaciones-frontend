@@ -365,6 +365,7 @@ import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import api from '@/api/client'
+import { getEstructuraFallas } from '@/utils/fallasEstructuraCache'
 
 const TIPOS_SOLUCION = [
   'Reemplazo de componente',
@@ -383,10 +384,11 @@ const props = defineProps({
   initial:            { type: Object, default: null },
   catalogos:          { type: Object, required: true },
   prefillProyectoIds: { type: Array,  default: () => [] },  // pre-seleccionar proyectos al crear
+  proyectos:          { type: Array,  default: () => [] },  // si el padre ya los tiene cargados, se reusan (evita refetch cada vez que se abre el diálogo)
 })
 const emit = defineEmits(['save', 'cancel'])
 
-const proyectos      = ref([])
+const proyectos      = ref(props.proyectos)
 const saving         = ref(false)
 const errors         = ref({})
 const archivosStaged = ref([])  // File[] — solo al crear
@@ -793,14 +795,15 @@ async function submit() {
 }
 
 onMounted(async () => {
-  try {
-    const { data } = await api.get('/proyectos', { params: { size: 500 } })
-    proyectos.value = data.items ?? []
-  } catch { /* no crítico */ }
-  try {
-    const { data } = await api.get('/fallas/estructura')
-    estructura.value = data.categorias ?? []
-  } catch { /* no crítico */ }
+  // Si el padre ya cargó proyectos (ej. GestionFallasView), se reusan --
+  // solo se pide aparte si no llegaron (uso del form fuera de esa vista).
+  if (!proyectos.value.length) {
+    try {
+      const { data } = await api.get('/proyectos', { params: { size: 500 } })
+      proyectos.value = data.items ?? []
+    } catch { /* no crítico */ }
+  }
+  estructura.value = await getEstructuraFallas()
 })
 </script>
 
