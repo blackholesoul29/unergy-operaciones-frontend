@@ -611,6 +611,28 @@ async function cargar() {
 // por qué una frontera puede estar reportando con estimación/en falla sin
 // tener que salir a buscarlo en otra vista.
 const fallasActivas = ref([])
+
+// Varias fallas CERRADAS del mismo tipo (ej. 3x "Falla del dispositivo") no
+// aportan nada distinto acá -- son ruido repetido de un mismo problema
+// recurrente. Se deja solo la más reciente de cada tipo; una ABIERTA nunca
+// se colapsa, cada una es un problema vigente y distinto. Depende de que
+// /fallas ya venga ordenado por más reciente primero (created_at desc).
+function tipoKeyFalla(f) {
+  return f.tipo?.id ?? f.tipo_libre ?? f.descripcion
+}
+function colapsarCerradasDuplicadas(items) {
+  const vistos = new Set()
+  const resultado = []
+  for (const f of items) {
+    if (!f.estado?.es_estado_final) { resultado.push(f); continue }
+    const key = tipoKeyFalla(f)
+    if (vistos.has(key)) continue
+    vistos.add(key)
+    resultado.push(f)
+  }
+  return resultado
+}
+
 async function cargarFallasActivas(proyectoId) {
   if (!proyectoId) { fallasActivas.value = []; return }
   try {
@@ -618,7 +640,7 @@ async function cargarFallasActivas(proyectoId) {
     // ya clasificado -- debe mostrar las fallas que estaban abiertas en ese
     // momento, no las que están abiertas hoy consultando en vivo.
     const { data } = await api.get('/fallas', { params: { proyecto_id: proyectoId, activa_en_fecha: props.fecha, size: 10 } })
-    fallasActivas.value = data.items || []
+    fallasActivas.value = colapsarCerradasDuplicadas(data.items || [])
   } catch (e) {
     fallasActivas.value = []
   }
