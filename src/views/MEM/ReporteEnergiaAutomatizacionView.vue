@@ -96,7 +96,6 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import Button from 'primevue/button'
@@ -107,8 +106,6 @@ import ReporteEnergiaLista from './ReporteEnergiaLista.vue'
 import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
 
 const toast = useToast()
-const route = useRoute()
-const router = useRouter()
 
 // Bogotá (America/Bogota) es UTC-5 fijo, sin horario de verano -- pero
 // calcularlo restando 5h al epoch y leyendo el resultado con getters LOCALES
@@ -137,20 +134,9 @@ function ayerColombia() {
 // comparte el mismo límite, no porque dispare algo, sino porque no hay
 // ningún día actual con datos que mostrar.
 const maxFecha = ayerColombia()
-
-function parseFechaISO(s) {
-  const [y, m, d] = s.split('-').map(Number)
-  return new Date(y, m - 1, d)
-}
-
-// Restaurar tab/fecha/frontera desde la URL (?tab=&fecha=&frontera_id=) --
-// sin esto, entrar al detalle de una Falla desde "Fallas activas del
-// proyecto" y volver con el botón "atrás" remontaba esta vista desde cero
-// (fecha=ayer, sin frontera elegida), obligando a rebuscarla a mano.
-const tabInicial = route.query.tab === 'historial' ? 1 : 0
-const activeTab = ref(tabInicial)
-const fecha = ref(tabInicial === 0 && route.query.fecha ? parseFechaISO(route.query.fecha) : ayerColombia())
-const fechaHistorial = ref(tabInicial === 1 && route.query.fecha ? parseFechaISO(route.query.fecha) : ayerColombia())
+const fecha = ref(ayerColombia())
+const fechaHistorial = ref(ayerColombia())
+const activeTab = ref(0)
 
 const fechaISO = computed(() => fecha.value.toISOString().slice(0, 10))
 const fechaHistorialISO = computed(() => fechaHistorial.value.toISOString().slice(0, 10))
@@ -206,45 +192,7 @@ async function cargarHistorial() {
 }
 
 watch(fecha, () => { seleccion.value = null; cargarResumen(); cargarLista() })
-
-// Busca en la lista ya cargada (de la fecha/tab correctos) la fila que
-// coincide con ?frontera_id= de la URL, y la selecciona -- mismo objeto
-// `fila` completo que ya usa seleccionar(), no solo el id.
-function restaurarSeleccionDesdeQuery() {
-  const fid = route.query.frontera_id ? Number(route.query.frontera_id) : null
-  if (!fid) return
-  if (activeTab.value === 1) {
-    const f = filasHistorial.value.find(x => x.frontera_id === fid)
-    if (f) seleccionHistorial.value = f
-  } else {
-    const f = filas.value.find(x => x.frontera_id === fid)
-    if (f) seleccion.value = f
-  }
-}
-
-onMounted(async () => {
-  await Promise.all([cargarResumen(), cargarLista()])
-  if (activeTab.value === 1) await cargarHistorial()
-  restaurarSeleccionDesdeQuery()
-})
-
-// Refleja tab/fecha/frontera elegidos en la URL (router.replace, no push --
-// mismo patrón que los filtros de Fronteras/GESCON: no ensucia el historial
-// con cada clic, solo deja la URL reconstruible si se navega afuera y se
-// vuelve). Se define DESPUÉS de restaurarSeleccionDesdeQuery a propósito:
-// como watch() no es inmediato, no pisa la URL antes de que termine de
-// restaurarse el estado inicial.
-watch([activeTab, seleccion, seleccionHistorial, fecha, fechaHistorial], () => {
-  const query = { tab: activeTab.value === 1 ? 'historial' : 'hoy' }
-  if (activeTab.value === 1) {
-    query.fecha = fechaHistorialISO.value
-    if (seleccionHistorial.value) query.frontera_id = seleccionHistorial.value.frontera_id
-  } else {
-    query.fecha = fechaISO.value
-    if (seleccion.value) query.frontera_id = seleccion.value.frontera_id
-  }
-  router.replace({ query })
-})
+onMounted(() => { cargarResumen(); cargarLista() })
 
 function semaforo(f) {
   if (f.revisar_manualmente) return 'critical'
