@@ -73,12 +73,13 @@
             </div>
           </div>
 
-          <!-- Gráfica -->
-          <div class="ms-chart">
+          <!-- Gráfica — al tocarla se abre la potencia por inversor -->
+          <div class="ms-chart" @click="onChartTap(p)">
             <div v-if="loadingDetail && !detailMap[p.proyecto_id]" class="ms-chart-loading">
               <i class="pi pi-spin pi-spinner" /> <span>Cargando datos…</span>
             </div>
             <ProjectLiveChart v-else :detail="detailMap[p.proyecto_id]" />
+            <span class="ms-chart-expand"><i class="pi pi-arrows-alt" /> Inversores</span>
           </div>
 
           <!-- Reconectador: estado + telemetría en vivo de Solenium -->
@@ -131,6 +132,13 @@
       @done="onReconnectDone"
     />
 
+    <InvertersSheet
+      :open="invOpen"
+      :proyecto-id="invTarget?.proyecto_id"
+      :nombre="invTarget?.nombre || ''"
+      @close="invOpen = false"
+    />
+
     <NotificationsSheet :open="notifOpen" @close="notifOpen = false" @changed="fetchUnread" />
 
     <FallaCreateSheet :open="createOpen" :catalogos="catalogos" :proyectos="proyectosFalla"
@@ -150,6 +158,7 @@ import { inverterSeries, meterSeries, latest, fmtKw } from '@/mobile/solarSeries
 import ProjectLiveChart from '@/mobile/components/ProjectLiveChart.vue'
 import ReconnectSheet from '@/mobile/components/ReconnectSheet.vue'
 import ReconnectorPanel from '@/mobile/components/ReconnectorPanel.vue'
+import InvertersSheet from '@/mobile/components/InvertersSheet.vue'
 import NotificationsSheet from '@/mobile/components/NotificationsSheet.vue'
 import MobileTabBar from '@/mobile/components/MobileTabBar.vue'
 import FallaCreateSheet from '@/mobile/components/FallaCreateSheet.vue'
@@ -179,6 +188,8 @@ const pickerOpen    = ref(false)
 const sheetOpen     = ref(false)
 const sheetTarget   = ref(null)
 const notifOpen     = ref(false)
+const invOpen       = ref(false)
+const invTarget     = ref(null)
 const unreadCount   = ref(0)
 let refreshTimer    = null
 
@@ -243,6 +254,7 @@ const slideW   = ref(typeof window !== 'undefined' ? window.innerWidth : 360)
 const dragX    = ref(0)
 const dragging = ref(false)
 let startX = 0, startY = 0, horizontal = null
+let tapMoved = false   // true si el dedo se movió: entonces no fue un toque
 
 const trackStyle = computed(() => ({
   transform: `translate3d(${-idx.value * slideW.value + dragX.value}px, 0, 0)`,
@@ -255,11 +267,13 @@ function onTouchStart(e) {
   startX = e.touches[0].clientX
   startY = e.touches[0].clientY
   horizontal = null
+  tapMoved = false
   dragging.value = true
 }
 function onTouchMove(e) {
   const dx = e.touches[0].clientX - startX
   const dy = e.touches[0].clientY - startY
+  if (Math.abs(dx) > 8 || Math.abs(dy) > 8) tapMoved = true
   if (horizontal === null && (Math.abs(dx) > 6 || Math.abs(dy) > 6)) horizontal = Math.abs(dx) > Math.abs(dy)
   if (!horizontal) return
   let d = dx
@@ -337,6 +351,15 @@ watch(idx, prefetchAround)
 
 // ── Navegación ───────────────────────────────────────────────────────────────
 function selectIdx(i) { idx.value = i; pickerOpen.value = false }
+
+// ── Potencia por inversor ────────────────────────────────────────────────────
+// Solo abre si fue un toque: un swipe entre proyectos o un scroll vertical
+// también terminan en un `click`, y no deben abrir la hoja.
+function onChartTap(p) {
+  if (tapMoved) return
+  invTarget.value = p
+  invOpen.value = true
+}
 
 // ── Reconexión ───────────────────────────────────────────────────────────────
 function openSheet(p) { sheetTarget.value = p; sheetOpen.value = true }
@@ -496,6 +519,16 @@ onUnmounted(() => {
 .ms-falla-tipo { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: #2C2039; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ms-falla-arrow { font-size: 11px; color: #c4b8d8; flex-shrink: 0; }
 .ms-falla-more { font-size: 11px; color: #9ca3af; text-align: center; }
+.ms-chart-expand {
+  position: absolute; top: 9px; right: 10px;
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 8px;
+  background: #f6f2fc; color: #915BD8;
+  font-size: 10px; font-weight: 700; letter-spacing: .2px;
+  pointer-events: none;   /* el toque lo recibe la gráfica */
+}
+.ms-chart-expand .pi { font-size: 9px; }
+
 .ms-chart-loading {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   gap: 10px; color: #6b5a8a; font-size: 14px;
