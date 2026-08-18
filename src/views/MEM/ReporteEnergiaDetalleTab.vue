@@ -1214,18 +1214,33 @@ const ETIQUETAS_FUENTE = {
   principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
   excluida: 'Excluida', excel_terceros: 'Excel de terceros', editado_manualmente: 'Editado manualmente',
 }
+function hayHorasRelleno(d) {
+  return !!(d && (
+    (d.horas_rellenadas_medidor_cruzado || []).length ||
+    (d.horas_rellenadas_reconectador || []).length ||
+    (d.horas_rellenadas_solenium || []).length ||
+    (d.horas_rellenadas_historico || []).length
+  ))
+}
+
 function etiquetaFuente(v, d) {
   if (v === 'relleno_horario' && d) {
-    // El label generico no decia CUAL de las tres fuentes de relleno se usó
-    // de verdad -- ver MGS 0022 La Cumbia 2026-08-05, donde solo entró el
-    // reconectador pero el texto sugería que podían ser las tres.
+    // El label generico no decia CUAL de las fuentes de relleno se usó de
+    // verdad -- ver MGS 0022 La Cumbia 2026-08-05, donde solo entró el
+    // reconectador pero el texto sugería que podían ser todas.
     const partes = []
+    if ((d.horas_rellenadas_medidor_cruzado || []).length) partes.push('medidor cruzado')
     if ((d.horas_rellenadas_reconectador || []).length) partes.push('reconectador')
     if ((d.horas_rellenadas_solenium || []).length) partes.push('Solenium × FP')
     if ((d.horas_rellenadas_historico || []).length) partes.push('histórico')
     if (partes.length) return `Relleno horario (${partes.join(' + ')})`
   }
-  return ETIQUETAS_FUENTE[v] || v || '—'
+  const base = ETIQUETAS_FUENTE[v] || v || '—'
+  // Cuando el medidor SÍ tenía fuente propia (principal/respaldo/cgm/...) y
+  // solo se completó un hueco puntual con otra fuente, medidor_usado no
+  // cambia -- sin este aviso, "Fuente usada" no daba ninguna pista de que
+  // hay que revisar las filas "Horas rellenadas (...)" más abajo.
+  return hayHorasRelleno(d) ? `${base} (Horas rellenadas)` : base
 }
 function fmtKwh(v) {
   if (v === null || v === undefined) return '—'
