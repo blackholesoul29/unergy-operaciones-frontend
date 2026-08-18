@@ -95,6 +95,38 @@
       </dl>
     </div>
 
+    <!-- Fallas activas del proyecto (Gestión de Fallas) -->
+    <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-xs font-semibold uppercase" style="color: #6b5a8a;">Fallas activas del proyecto</p>
+        <RouterLink v-if="fallasActivas.length" :to="`/operaciones/gestion-fallas?proyecto=${detalle.proyecto_id}`"
+          class="text-xs underline" style="color: #915BD8;">Ver todas</RouterLink>
+      </div>
+      <p v-if="!fallasActivas.length" class="text-xs" style="color: #9b89b5;">
+        <i class="pi pi-check-circle text-xs mr-1" style="color: #10B981;" />Sin fallas activas registradas.
+      </p>
+      <div v-else class="space-y-2">
+        <RouterLink v-for="f in fallasActivas" :key="f.id" :to="`/fallas/${f.id}`"
+          class="falla-activa-row flex items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors"
+          style="border: 1px solid #e8e0f0;">
+          <span class="flex-none rounded-full" style="width: 8px; height: 8px;"
+                :style="{ background: prioColorFalla(f.prioridad?.codigo) }" />
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <code class="text-xs font-mono" style="color: #9b89b5;">{{ f.codigo_interno }}</code>
+              <span class="text-xs font-semibold px-1.5 py-0.5 rounded" :style="estadoPillStyleFalla(f.estado?.color_hex)">
+                {{ f.estado?.etiqueta }}
+              </span>
+            </div>
+            <p class="text-sm truncate" style="color: #2C2039;">{{ f.tipo?.etiqueta || f.tipo_libre || f.descripcion }}</p>
+          </div>
+          <span v-if="f.dias_abierta != null" class="text-xs font-mono flex-none" style="color: #9b89b5;">
+            {{ f.dias_abierta }}d
+          </span>
+        </RouterLink>
+      </div>
+    </div>
+
     <!-- Curva -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Curva reportada (24 h)</p>
@@ -567,11 +599,32 @@ async function cargar() {
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
     fuenteManualElegida.value = null
+    cargarFallasActivas(data.proyecto_id)
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el detalle.', life: 4000 })
   } finally {
     loading.value = false
   }
+}
+
+// Fallas activas del proyecto (módulo Gestión de Fallas) -- da contexto de
+// por qué una frontera puede estar reportando con estimación/en falla sin
+// tener que salir a buscarlo en otra vista.
+const fallasActivas = ref([])
+async function cargarFallasActivas(proyectoId) {
+  if (!proyectoId) { fallasActivas.value = []; return }
+  try {
+    const { data } = await api.get('/fallas', { params: { proyecto_id: proyectoId, solo_activas: true, size: 10 } })
+    fallasActivas.value = data.items || []
+  } catch (e) {
+    fallasActivas.value = []
+  }
+}
+const PRIO_COLORS_FALLA = { critica: '#dc2626', alta: '#ea580c', media: '#d97706', baja: '#6b7280' }
+function prioColorFalla(codigo) { return PRIO_COLORS_FALLA[codigo] || '#9ca3af' }
+function estadoPillStyleFalla(hex) {
+  const c = hex || '#915BD8'
+  return { background: c + '1a', color: c, border: `1px solid ${c}40` }
 }
 async function cargarCurvaTipicaPreview() {
   curvaTipicaPreview.value = null
@@ -1184,6 +1237,8 @@ function fmtKwh(v) {
 </script>
 
 <style scoped>
+.falla-activa-row:hover { background: #faf9fc; }
+
 /* Tabla vertical estilo Excel (Hora | kWh) -- dos columnas de 12 horas cada
    una, lado a lado, para no obligar a un scroll larguísimo de 24 filas. */
 .tabla-horas {
