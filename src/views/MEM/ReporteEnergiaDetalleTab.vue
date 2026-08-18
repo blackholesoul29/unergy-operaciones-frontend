@@ -223,6 +223,8 @@
                Consumo. -->
           <Button v-if="hayHuecosSinRellenar" label="Rellenar horas" size="small" severity="secondary" outlined
             :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
+          <Button v-if="hayHorasRelleno(detalle)" label="Deshacer relleno" icon="pi pi-undo" size="small" severity="secondary" outlined
+            :loading="deshaciendoRelleno" :disabled="hayCambiosSinGuardar" @click="deshacerRelleno" />
           <div v-if="!esCasoConfiado" class="relative">
             <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
               style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
@@ -404,6 +406,7 @@ const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
 const rellenando = ref(false)
+const deshaciendoRelleno = ref(false)
 const mostrarMenuReportar = ref(false)
 // Cuál opción de 'Reportar con otra fuente' llenó el editor por última vez
 // -- se manda al guardar para que 'Fuente usada' diga esa fuente específica
@@ -765,6 +768,28 @@ async function rellenarHorario() {
     })
   } finally {
     rellenando.value = false
+  }
+}
+
+async function deshacerRelleno() {
+  deshaciendoRelleno.value = true
+  try {
+    const { data } = await api.post(
+      `/reporte-energia/fronteras/${props.fronteraId}/deshacer-relleno`, null,
+      { params: { fecha: props.fecha } },
+    )
+    detalle.value = data
+    curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    toast.add({ severity: 'success', summary: 'Relleno deshecho', life: 2500 })
+    emit('actualizado')
+    cargarEdiciones()
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo deshacer',
+      detail: e?.response?.data?.detail || 'No se pudo deshacer el relleno.', life: 4000,
+    })
+  } finally {
+    deshaciendoRelleno.value = false
   }
 }
 
