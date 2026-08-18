@@ -207,7 +207,7 @@
       </div>
       <div class="flex items-center gap-1.5 text-xs mt-2" style="color: #9b89b5;">
         <span class="inline-block rounded-sm" style="width: 12px; height: 12px; background: rgba(240, 192, 64, 0.35); border: 1px solid #F0C040;"></span>
-        Hora rellenada (reconectador/Solenium/histórico)
+        Hora rellenada
       </div>
       <p class="text-xs mt-1" style="color: #9b89b5;">
         Tip: pega varios valores seguidos (ej. una columna copiada de Excel) en cualquier celda -- se reparten en las horas siguientes en orden.
