@@ -49,7 +49,9 @@
             <label class="text-xs font-medium" style="color:#6b5a8a">Pagado</label>
             <InputNumber v-model="v.pagado" :min="0" mode="currency" currency="COP" locale="es-CO"
               :maxFractionDigits="0" size="small" style="width:11rem"
-              @blur="guardarPagado(v)" />
+              @keyup.enter="guardarPagado(v)" />
+            <Button label="Calcular saldo" icon="pi pi-calculator" size="small" outlined
+              :loading="v._guardando" @click="guardarPagado(v)" />
           </div>
           <div v-if="v.saldo != null" class="text-sm font-semibold"
             :style="v.saldo >= 0 ? 'color:#059669' : 'color:#DC2626'">
@@ -147,12 +149,17 @@ async function cargarHistorial() {
 }
 
 async function guardarPagado(v) {
+  v._guardando = true
   try {
     await setPagado({ anio: v.anio, mes: v.mes, valor: v.pagado || 0 })
-    await cargar()  // recalcula el saldo
+    // Recalcula el saldo en la tarjeta SIN recargar todo (evita el parpadeo y no
+    // pierde el foco): saldo = pagado − garantía estimada.
+    v.saldo = (v.pagado || 0) - (v.garantia_total || 0)
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo guardar el pagado',
       detail: e.response?.data?.detail || e.message, life: 5000 })
+  } finally {
+    v._guardando = false
   }
 }
 
