@@ -11,7 +11,7 @@
     <i class="pi pi-exclamation-circle text-4xl text-red-400" />
     <p class="text-sm font-semibold text-gray-700">Falla no encontrada</p>
     <p class="text-xs">El registro solicitado no existe o fue eliminado.</p>
-    <Button label="Volver al monitoreo" icon="pi pi-arrow-left" outlined size="small" @click="$router.push('/fallas')" />
+    <Button label="Volver" icon="pi pi-arrow-left" outlined size="small" @click="router.back()" />
   </div>
 
   <!-- ══ VISTA PRINCIPAL ═════════════════════════════════════════════════ -->
@@ -20,7 +20,7 @@
     <!-- ── Header ────────────────────────────────────────────────────── -->
     <div class="flex items-start justify-between flex-wrap gap-3">
       <div class="flex items-start gap-3">
-        <Button icon="pi pi-arrow-left" text rounded @click="$router.push('/fallas')" class="-ml-2 mt-1" />
+        <Button icon="pi pi-arrow-left" text rounded @click="router.back()" class="-ml-2 mt-1" />
         <div>
           <div class="flex items-center gap-2 mb-1.5">
             <Tag :value="falla.estado?.etiqueta || '—'" :style="pillStyle(falla.estado?.color_hex)" />
@@ -694,7 +694,7 @@ function confirmDelete() {
       try {
         await api.delete(`/fallas/${falla.value.id}`)
         toast.add({ severity: 'success', summary: 'Falla eliminada', life: 3000 })
-        router.push('/fallas')
+        router.back()
       } catch {
         toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
       }
