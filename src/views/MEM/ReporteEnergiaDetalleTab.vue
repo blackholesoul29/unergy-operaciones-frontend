@@ -205,20 +205,17 @@
           </tbody>
         </table>
       </div>
-      <div class="flex justify-start mt-2">
-        <button type="button" class="text-xs font-semibold flex-none" style="color: #D64455;" @click="limpiarCurva">
-          <i class="pi pi-eraser text-[10px] mr-1" />Limpiar
-        </button>
-      </div>
       <div class="flex items-center gap-1.5 text-xs mt-2" style="color: #9b89b5;">
         <span class="inline-block rounded-sm" style="width: 12px; height: 12px; background: rgba(240, 192, 64, 0.35); border: 1px solid #F0C040;"></span>
         Hora rellenada (reconectador/Solenium/histórico)
       </div>
       <p class="text-xs mt-1" style="color: #9b89b5;">
-        Tip: Puedes pegar una columna completa desde cualquier celda.
+        Tip: pega varios valores seguidos (ej. una columna copiada de Excel) en cualquier celda -- se reparten en las horas siguientes en orden.
       </p>
       <div class="flex items-center justify-between mt-2">
         <div class="flex items-center gap-2">
+          <Button label="Limpiar curva" icon="pi pi-eraser" size="small" severity="danger" outlined
+            @click="limpiarCurva" />
           <!-- El relleno horario (medidor cruzado / reconectador / Solenium
                × FP / histórico) ya no aplica solo durante la clasificación
                -- queda a criterio de la persona: reportar la curva tal como
