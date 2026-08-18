@@ -614,7 +614,10 @@ const fallasActivas = ref([])
 async function cargarFallasActivas(proyectoId) {
   if (!proyectoId) { fallasActivas.value = []; return }
   try {
-    const { data } = await api.get('/fallas', { params: { proyecto_id: proyectoId, solo_activas: true, size: 10 } })
+    // activa_en_fecha (no solo_activas): esta vista es el detalle de UN día
+    // ya clasificado -- debe mostrar las fallas que estaban abiertas en ese
+    // momento, no las que están abiertas hoy consultando en vivo.
+    const { data } = await api.get('/fallas', { params: { proyecto_id: proyectoId, activa_en_fecha: props.fecha, size: 10 } })
     fallasActivas.value = data.items || []
   } catch (e) {
     fallasActivas.value = []
