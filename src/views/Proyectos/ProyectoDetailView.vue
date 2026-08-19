@@ -166,7 +166,7 @@
             <div>
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Paneles</p>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Cantidad de paneles" :value="proyecto.info_tecnica?.cantidad_total_paneles ?? proyecto.cantidad_total_paneles" />
+                <InfoField label="Cantidad de paneles" :value="proyecto.info_tecnica?.cantidad_total_paneles" />
                 <InfoField label="Potencia panel (kWp)" :value="proyecto.info_tecnica?.potencia_panel_kwp" />
                 <InfoField label="Marca paneles" :value="proyecto.info_tecnica?.marca_paneles" />
               </div>
@@ -968,7 +968,6 @@ const editForm = reactive({
   codigo_tsf: null,
   codigo_sic_generacion: null,
   codigo_sic_consumo: null,
-  cantidad_total_paneles: null,
   produccion_especifica_kwh_kwp: null,
   es_comunidad_energetica: false,
   nombre_comunidad: '',

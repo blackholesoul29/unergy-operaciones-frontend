@@ -307,7 +307,7 @@ watch(() => props.proyecto, (p) => {
     Object.keys(f).forEach(k => { if (k in p) f[k] = p[k] })
     potenciaAcKw.value = p.info_tecnica?.potencia_ac_kw ?? null
     capacidadInstaladaKwp.value = p.info_tecnica?.capacidad_instalada_kwp ?? p.potencia_instalada_kwp ?? null
-    cantidadTotalPaneles.value = p.info_tecnica?.cantidad_total_paneles ?? p.cantidad_total_paneles ?? null
+    cantidadTotalPaneles.value = p.info_tecnica?.cantidad_total_paneles ?? null
     p90Array.value = parseMonthArray(p.p90_mensual_kwh)
     p50Array.value = parseMonthArray(p.p50_mensual_kwh)
     fechaEntrada.value = toDate(p.fecha_entrada_operacion)
