@@ -467,7 +467,7 @@ async function guardar() {
     emit('update:visible', false)
     return
   }
-  if (r.duplicado?.duplicado_nombre) {
+  if (r.duplicado?.duplicado_nombre || r.duplicado?.duplicado_nit) {
     duplicado.value = r.duplicado
     paso.value = 0
     return
