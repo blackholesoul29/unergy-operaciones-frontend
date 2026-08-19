@@ -833,21 +833,28 @@ async function cargar() {
   cliente.value = data
 }
 
+// Fix 2026-08-19: cada llamada tenia su propio .catch(() => ({data: []})),
+// asi que un error real (500, timeout) se veia identico a "este cliente no
+// tiene nada" -- sin forma de distinguir un dato vacio de una peticion
+// fallida. Ahora el error sube al catch de afuera y avisa con un toast.
 async function loadRelatedData(tab) {
   loadingRelated.value = true
   try {
     if (tab === 'proyectos' && clienteProyectos.value.length === 0) {
-      const { data } = await api.get(`/clientes/${route.params.id}/proyectos`).catch(() => ({ data: [] }))
+      const { data } = await api.get(`/clientes/${route.params.id}/proyectos`)
       clienteProyectos.value = Array.isArray(data) ? data : (data.items ?? [])
     } else if (tab === 'fronteras' && clienteFronteras.value.length === 0) {
-      const { data } = await api.get(`/clientes/${route.params.id}/fronteras`).catch(() => ({ data: [] }))
+      const { data } = await api.get(`/clientes/${route.params.id}/fronteras`)
       clienteFronteras.value = Array.isArray(data) ? data : (data.items ?? [])
     } else if (tab === 'ppa' && clientePPA.value.length === 0) {
-      const { data } = await api.get(`/clientes/${route.params.id}/contratos-ppa`).catch(() => ({ data: [] }))
+      const { data } = await api.get(`/clientes/${route.params.id}/contratos-ppa`)
       clientePPA.value = Array.isArray(data) ? data : (data.items ?? [])
     }
-  } catch {
-    // degrade gracefully
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo cargar',
+      detail: e.response?.data?.detail || 'Intenta de nuevo en un momento', life: 4000,
+    })
   } finally {
     loadingRelated.value = false
   }
