@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <PageHeader title="IDs proyectos"
-                subtitle="Códigos SIC/FRT de liquidaciones e IDs de Quoia · GD y minigranjas en operación" />
+                subtitle="Códigos SIC de liquidaciones e IDs de Quoia · GD y minigranjas en operación" />
 
     <!-- Filtro de búsqueda -->
     <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
@@ -43,7 +43,7 @@
               <tr class="bg-gray-50 border-b border-gray-100">
                 <th rowspan="2" class="sticky-col text-left px-4 py-2.5 font-medium text-gray-500 text-xs
                                         uppercase tracking-wide align-bottom" style="min-width:240px">Proyecto</th>
-                <th colspan="4" class="text-center px-3 py-2 font-semibold text-[11px] uppercase tracking-wide"
+                <th colspan="2" class="text-center px-3 py-2 font-semibold text-[11px] uppercase tracking-wide"
                     style="color:#2C2039; border-left:1px solid #EEE;">ID liquidaciones</th>
                 <th colspan="3" class="text-center px-3 py-2 font-semibold text-[11px] uppercase tracking-wide"
                     style="color:#915BD8; border-left:1px solid #EEE;">ID Quoia</th>
@@ -69,11 +69,10 @@
                   </span>
                 </td>
                 <td v-for="col in COLUMNAS" :key="col.key"
-                    class="px-3 py-2 text-center id-cell"
-                    :class="{ 'cursor-pointer': col.fuente === 'quoia' }"
+                    class="px-3 py-2 text-center id-cell cursor-pointer"
                     :style="col.groupStart ? 'border-left:1px solid #F1F1F1;' : ''"
-                    @click="col.fuente === 'quoia' && irAlDetalle(row.proyecto_id)"
-                    v-tooltip.bottom="tieneValor(row[col.key]) ? String(row[col.key]) : 'Sin registrar'">
+                    @click="irAlDetalle(row.proyecto_id, col.tab)"
+                    v-tooltip.bottom="tieneValor(row[col.key]) ? String(row[col.key]) : 'Sin registrar · clic para abrir el proyecto'">
                   <i v-if="tieneValor(row[col.key])" class="pi pi-check-circle"
                      style="color:#10B981; font-size:1rem;" />
                   <span v-else class="text-gray-300">—</span>
@@ -81,7 +80,7 @@
                 <td class="px-3 py-2">
                   <Button icon="pi pi-pencil" text rounded size="small" severity="info"
                           :disabled="!row.nombre_topico"
-                          v-tooltip.left="row.nombre_topico ? 'Editar códigos SIC/FRT' : 'Falta el código base del proyecto'"
+                          v-tooltip.left="row.nombre_topico ? 'Editar códigos SIC' : 'Falta el código base del proyecto'"
                           @click="abrirEditar(row)" />
                 </td>
               </tr>
@@ -92,7 +91,7 @@
     </template>
 
     <!-- Dialog: editar códigos de liquidaciones (van a la API de Liquidaciones) -->
-    <Dialog v-model:visible="formVisible" header="Editar códigos de liquidaciones" modal class="w-full max-w-md">
+    <Dialog v-model:visible="formVisible" header="Editar códigos SIC" modal class="w-full max-w-md">
       <form @submit.prevent="guardar" class="space-y-4 pt-1">
         <div class="text-sm font-medium text-gray-700">{{ f.nombre_comercial }}</div>
         <p class="text-[11px] text-gray-400 -mt-2">
@@ -106,14 +105,6 @@
           <div>
             <label class="field-label">SIC consumo</label>
             <InputText v-model="f.sic_con" class="w-full" placeholder="ej: 3A3P" />
-          </div>
-          <div>
-            <label class="field-label">FRT generación</label>
-            <InputText v-model="f.frt_gen" class="w-full" placeholder="ej: 60629" />
-          </div>
-          <div>
-            <label class="field-label">FRT consumo</label>
-            <InputText v-model="f.frt_con" class="w-full" placeholder="ej: 60630" />
           </div>
         </div>
         <div class="flex justify-end gap-2 pt-1">
@@ -144,15 +135,13 @@ const toast = useToast()
 const TIPOS_INCLUIDOS = ['gd', 'minigranja']
 const ESTADO_OPERATIVA = 'en_operacion'
 
-// Los SIC/FRT viven en la API de Liquidaciones; los IDs de Quoia en esta base.
+// Los códigos SIC viven en la API de Liquidaciones; los IDs de Quoia en esta base.
 const COLUMNAS = [
-  { key: 'sic_gen', short: 'SIC gen.', groupStart: true,  fuente: 'liquidaciones' },
-  { key: 'sic_con', short: 'SIC con.', groupStart: false, fuente: 'liquidaciones' },
-  { key: 'frt_gen', short: 'FRT gen.', groupStart: false, fuente: 'liquidaciones' },
-  { key: 'frt_con', short: 'FRT con.', groupStart: false, fuente: 'liquidaciones' },
-  { key: 'quoia_reporte_generacion_id', short: 'Rep. Gen.',    groupStart: true,  fuente: 'quoia' },
-  { key: 'quoia_reporte_consumo_id',    short: 'Rep. Consumo', groupStart: false, fuente: 'quoia' },
-  { key: 'quoia_nodo_id',               short: 'Nodo',         groupStart: false, fuente: 'quoia' },
+  { key: 'sic_gen', short: 'SIC gen.', groupStart: true,  tab: 'id-liquidaciones' },
+  { key: 'sic_con', short: 'SIC con.', groupStart: false, tab: 'id-liquidaciones' },
+  { key: 'quoia_reporte_generacion_id', short: 'Rep. Gen.',    groupStart: true,  tab: 'id-quoia' },
+  { key: 'quoia_reporte_consumo_id',    short: 'Rep. Consumo', groupStart: false, tab: 'id-quoia' },
+  { key: 'quoia_nodo_id',               short: 'Nodo',         groupStart: false, tab: 'id-quoia' },
 ]
 
 const loading = ref(true)
@@ -164,8 +153,8 @@ function tieneValor(v) {
   return v !== null && v !== undefined && v !== ''
 }
 
-function irAlDetalle(id) {
-  router.push({ path: `/proyectos/${id}`, query: { edit: 'true', tab: 'id-quoia' } })
+function irAlDetalle(id, tab = 'id-liquidaciones') {
+  router.push({ path: `/proyectos/${id}`, query: { edit: 'true', tab } })
 }
 
 const filtrados = computed(() => {
@@ -176,7 +165,7 @@ const filtrados = computed(() => {
 // ── Edición (va a la API de Liquidaciones vía nuestro backend) ────────────────
 const formVisible = ref(false)
 const guardando = ref(false)
-const f = reactive({ proyecto_id: null, nombre_comercial: '', nombre_topico: '', sic_gen: '', sic_con: '', frt_gen: '', frt_con: '' })
+const f = reactive({ proyecto_id: null, nombre_comercial: '', nombre_topico: '', sic_gen: '', sic_con: '' })
 
 function abrirEditar(row) {
   Object.assign(f, {
@@ -185,8 +174,6 @@ function abrirEditar(row) {
     nombre_topico: row.nombre_topico,
     sic_gen: row.sic_gen ?? '',
     sic_con: row.sic_con ?? '',
-    frt_gen: row.frt_gen ?? '',
-    frt_con: row.frt_con ?? '',
   })
   formVisible.value = true
 }
@@ -197,8 +184,6 @@ async function guardar() {
     await api.patch(`/liquidaciones-api/proyectos/${f.proyecto_id}`, {
       sic_gen: f.sic_gen || null,
       sic_con: f.sic_con || null,
-      frt_gen: f.frt_gen || null,
-      frt_con: f.frt_con || null,
     })
     formVisible.value = false
     await cargar()
