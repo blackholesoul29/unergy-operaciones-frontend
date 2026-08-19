@@ -1,29 +1,57 @@
+<!--
+  Las ofertas del cliente, dentro de su ficha. La edición completa vive en el
+  drawer del tablero (una sola fuente, un solo formulario): desde acá se agrega,
+  se mueve de etapa y se salta al drawer.
+
+  Bugs que arregla frente a la versión anterior:
+  · Al crear una oferta, el selector «Etapa» se mostraba pero `guardar()` no
+    enviaba `estado`: TODA oferta nueva nacía en «oportunidad» aunque eligieras
+    otra.
+  · No mandaba `proyecto_id` / `proyecto_ids`, así que la planta nunca se podía
+    vincular a un proyecto real y la ficha operativa quedaba a medias.
+  · No mandaba `fecha_fin_tentativa`, que es lo que le da periodo a un PPA en
+    borrador.
+-->
 <template>
   <div>
     <div class="flex items-center justify-between mb-3">
-      <span class="text-sm text-gray-500">{{ ofertas.length }} oferta(s) — una por planta × servicio</span>
+      <span class="text-sm" style="color:#7a6e8a">
+        {{ ofertas.length }} oferta(s) — una por planta × servicio
+      </span>
       <Button label="Agregar oferta" icon="pi pi-plus" size="small" @click="abrirNueva" />
     </div>
 
     <DataTable :value="ofertas" dataKey="id" class="text-sm" responsiveLayout="scroll">
-      <Column field="planta_nombre" header="Planta">
-        <template #body="{ data }">{{ data.planta_nombre || '—' }}</template>
+      <Column header="Planta" style="min-width:12rem">
+        <template #body="{ data }">
+          <div>
+            <div>{{ data.planta_nombre || data.ficha?.proyecto_nombre || '—' }}</div>
+            <div v-if="data.plantas?.length" class="text-[11px]" style="color:#9b89b5">
+              {{ data.plantas.map((p) => p.nombre_comercial).join(' · ') }}
+            </div>
+          </div>
+        </template>
       </Column>
       <Column header="Tipo">
         <template #body="{ data }">{{ labelTipo(data.tipo) }}</template>
       </Column>
       <Column header="Servicios buscados">
         <template #body="{ data }">
-          <template v-if="data.detalle && data.detalle.servicios && data.detalle.servicios.length">
+          <template v-if="data.detalle?.servicios?.length">
             <span v-for="s in data.detalle.servicios" :key="s"
-                  class="inline-block bg-blue-50 text-blue-700 rounded px-1.5 py-0.5 mr-1 mb-1 text-xs">{{ s }}</span>
+                  class="inline-block rounded px-1.5 py-0.5 mr-1 mb-1 text-xs"
+                  style="background:#EFF6FF;color:#1D4ED8">{{ s }}</span>
           </template>
-          <span v-else class="text-gray-400">—</span>
-          <div v-if="data.detalle && data.detalle.fpo" class="text-xs text-gray-400 mt-1">FPO: {{ data.detalle.fpo }}</div>
+          <span v-else style="color:#c4b8d4">—</span>
+          <div v-if="data.detalle?.fpo" class="text-xs mt-1" style="color:#9b89b5">
+            FPO: {{ data.detalle.fpo }}
+          </div>
         </template>
       </Column>
-      <Column header="Código de seguimiento">
-        <template #body="{ data }"><span class="font-mono text-xs">{{ data.codigo_seguimiento || data.numero_oferta || '—' }}</span></template>
+      <Column header="Código">
+        <template #body="{ data }">
+          <span class="font-mono text-xs">{{ data.codigo_seguimiento || data.numero_oferta || '—' }}</span>
+        </template>
       </Column>
       <Column field="precio_detalle" header="Precio">
         <template #body="{ data }">{{ data.precio_detalle || '—' }}</template>
@@ -31,26 +59,26 @@
       <!-- La etapa es de la oferta: cada una avanza sola. -->
       <Column header="Etapa" style="min-width:11rem">
         <template #body="{ data }">
-          <Dropdown :modelValue="data.estado" :options="ESTADOS" optionLabel="label"
-                    optionValue="value" class="w-full text-xs"
-                    :loading="moviendo === data.id"
-                    @update:modelValue="v => cambiarEtapa(data, v)" />
+          <Select :modelValue="data.estado" :options="ETAPAS" optionLabel="label" optionValue="value"
+                  class="w-full text-xs" :loading="moviendo === data.id"
+                  @update:modelValue="(v) => cambiarEtapa(data, v)" />
         </template>
       </Column>
       <Column header="Enviada">
         <template #body="{ data }">
           <span v-if="data.fecha_oferta">{{ fmtFecha(data.fecha_oferta) }}</span>
-          <span v-else class="text-gray-300">—</span>
+          <span v-else style="color:#c4b8d4">—</span>
         </template>
       </Column>
-      <Column header="Seguimientos">
+      <Column header="Toques">
         <template #body="{ data }">
           <div class="flex items-center gap-2">
-            <span :class="sinRespuesta(data) ? 'text-red-600 font-semibold' : ''">
+            <span :class="alarmante(data) ? 'font-semibold' : ''"
+                  :style="{ color: alarmante(data) ? '#D64455' : 'inherit' }">
               {{ data.seguimientos || 0 }}
             </span>
             <Button icon="pi pi-send" text rounded size="small" :loading="tocando === data.id"
-                    title="Registrar un seguimiento (reenvío o llamada de insistencia)"
+                    v-tooltip.top="'Registrar un toque (reenvío o llamada de insistencia)'"
                     @click="registrarSeguimiento(data)" />
           </div>
         </template>
@@ -58,84 +86,105 @@
       <Column header="Última respuesta">
         <template #body="{ data }">
           <span v-if="data.fecha_ultima_respuesta">{{ fmtFecha(data.fecha_ultima_respuesta) }}</span>
-          <span v-else-if="data.fecha_oferta" class="text-red-600 text-xs">sin respuesta</span>
-          <span v-else class="text-gray-300">—</span>
+          <span v-else-if="data.fecha_oferta" class="text-xs" style="color:#D64455">sin respuesta</span>
+          <span v-else style="color:#c4b8d4">—</span>
         </template>
       </Column>
-      <Column header="Documento">
+      <Column header="Contrato">
         <template #body="{ data }">
-          <a v-if="data.documento_url" :href="data.documento_url" target="_blank" rel="noopener"
-             class="text-primary underline text-xs">PDF</a>
-          <span v-else class="text-gray-300">—</span>
+          <router-link v-if="data.ppa_contrato_id" :to="`/contratos/${data.ppa_contrato_id}`"
+                       class="text-xs underline" style="color:#915BD8">PPA</router-link>
+          <span v-else style="color:#c4b8d4">—</span>
         </template>
       </Column>
-      <Column header="" style="width:6rem">
+      <Column header="" style="width:8rem">
         <template #body="{ data }">
-          <Button icon="pi pi-pencil" text rounded size="small" @click="abrirEditar(data)" />
-          <Button icon="pi pi-trash" text rounded size="small" severity="danger" @click="borrar(data)" />
+          <div class="flex items-center">
+            <Button icon="pi pi-external-link" text rounded size="small"
+                    v-tooltip.left="'Abrir en el tablero (editar todo)'"
+                    @click="$router.push(`/comercial?oferta=${data.id}`)" />
+            <a v-if="data.documento_url" :href="data.documento_url" target="_blank" rel="noopener"
+               class="p-2" v-tooltip.left="'Documento de la oferta'">
+              <i class="pi pi-file-pdf" style="color:#915BD8" />
+            </a>
+          </div>
         </template>
       </Column>
-      <template #empty><span class="text-gray-400 text-sm">Sin ofertas todavía.</span></template>
+      <template #empty><span class="text-sm" style="color:#9b89b5">Sin ofertas todavía.</span></template>
     </DataTable>
 
-    <Dialog v-model:visible="showDialog" :header="editId ? 'Editar oferta' : 'Nueva oferta'" modal class="w-full max-w-lg">
+    <Dialog v-model:visible="showDialog" header="Nueva oferta" modal :style="{ width: '32rem' }">
       <div class="flex flex-col gap-3">
         <div>
-          <label class="block text-sm font-medium mb-1">Tipo de servicio</label>
-          <Dropdown v-model="form.tipo" :options="TIPOS_OFERTA" optionLabel="label" optionValue="value" class="w-full" />
+          <label class="etiqueta">Tipo de oferta *</label>
+          <Select v-model="form.tipo" :options="TIPOS_OFERTA" optionLabel="label" optionValue="value"
+                  class="w-full" placeholder="Seleccionar…" />
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Planta</label>
-          <InputText v-model.trim="form.planta_nombre" class="w-full" />
+          <label class="etiqueta">Planta</label>
+          <InputText v-model.trim="form.planta_nombre" class="w-full" placeholder="Ej: Balmora 1 y 2" />
+        </div>
+        <div>
+          <label class="etiqueta">Proyectos existentes</label>
+          <MultiSelect v-model="form.proyecto_ids" :options="proyectos" optionLabel="nombre_comercial"
+                       optionValue="id" filter display="chip" class="w-full"
+                       :loading="cargandoProyectos" placeholder="Vincular si la planta ya está creada…" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-sm font-medium mb-1">Código de seguimiento</label>
-            <InputText v-model.trim="form.numero_oferta" class="w-full" placeholder="Se autogenera (OP.…) si lo dejas vacío" />
+            <label class="etiqueta">Código de seguimiento</label>
+            <InputText v-model.trim="form.numero_oferta" class="w-full"
+                       placeholder="Se autogenera (OP.…) si lo dejás vacío" />
           </div>
-          <div v-if="!editId">
-            <label class="block text-sm font-medium mb-1">Etapa</label>
-            <Dropdown v-model="form.estado" :options="ESTADOS" optionLabel="label" optionValue="value" class="w-full" />
+          <div>
+            <label class="etiqueta">Etapa inicial</label>
+            <Select v-model="form.estado" :options="ETAPAS_INICIALES" optionLabel="label"
+                    optionValue="value" class="w-full" />
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Precio (detalle)</label>
+          <label class="etiqueta">Precio</label>
           <InputText v-model.trim="form.precio_detalle" class="w-full" placeholder="p. ej. REP: 6 · CGM: 6" />
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-3 gap-3">
           <div>
-            <label class="block text-sm font-medium mb-1">Fecha de oferta</label>
-            <Calendar v-model="form.fecha_oferta" dateFormat="yy-mm-dd" showIcon class="w-full" />
+            <label class="etiqueta">Fecha de envío</label>
+            <DatePicker v-model="form.fecha_oferta" dateFormat="yy-mm-dd" showIcon class="w-full" />
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Fecha tentativa inicio</label>
-            <Calendar v-model="form.fecha_tentativa_inicio" dateFormat="yy-mm-dd" showIcon class="w-full" />
+            <label class="etiqueta">Inicio tentativo</label>
+            <DatePicker v-model="form.fecha_tentativa_inicio" dateFormat="yy-mm-dd" showIcon class="w-full" />
           </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Contrato firmado</label>
-          <InputText v-model.trim="form.contrato_firmado" class="w-full" />
+          <div>
+            <label class="etiqueta">Fin tentativo</label>
+            <DatePicker v-model="form.fecha_fin_tentativa" dateFormat="yy-mm-dd" showIcon class="w-full" />
+          </div>
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" text @click="showDialog = false" />
-        <Button label="Guardar" icon="pi pi-check" :disabled="!form.tipo || guardando" @click="guardar" />
+        <Button label="Cancelar" text severity="secondary" @click="showDialog = false" />
+        <Button label="Crear oferta" icon="pi pi-check" :disabled="!form.tipo" :loading="guardando"
+                @click="guardar" />
       </template>
     </Dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, watch } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Dropdown from 'primevue/dropdown'
+import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
 import InputText from 'primevue/inputtext'
-import Calendar from 'primevue/calendar'
+import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
+import {
+  ETAPAS, TIPOS_OFERTA, labelTipo, fmtFecha, alarmante, aFechaStr,
+} from './comercial.js'
 
 const props = defineProps({
   oportunidadId: { type: [Number, String], required: true },
@@ -144,22 +193,50 @@ const props = defineProps({
 const emit = defineEmits(['changed'])
 const toast = useToast()
 
-const TIPOS_OFERTA = [
-  { label: 'Servicios operacionales', value: 'servicios_operacionales' },
-  { label: 'Compra de energía', value: 'compra_energia' },
-  { label: 'Comunidad energética', value: 'comunidad_energetica' },
-]
-const ESTADOS = [
-  { label: 'Oportunidad', value: 'oportunidad' },
-  { label: 'Oferta', value: 'oferta' },
-  { label: 'Contrato', value: 'contrato' },
-  { label: 'Firmado', value: 'firmado' },
-  { label: 'Operando', value: 'operando' },
-  { label: 'Terminado', value: 'terminado' },
-  { label: 'Declinado', value: 'declinado' },
+// Al crear solo tienen sentido las dos primeras etapas: firmar crea el contrato
+// y se hace desde el tablero, no declarando una etapa.
+const ETAPAS_INICIALES = [
+  { label: 'Oportunidad — todavía no se envió', value: 'oportunidad' },
+  { label: 'Oferta — ya se envió al cliente', value: 'oferta' },
 ]
 
 const moviendo = ref(null)
+const tocando = ref(null)
+const showDialog = ref(false)
+const guardando = ref(false)
+const proyectos = ref([])
+const cargandoProyectos = ref(false)
+
+const form = reactive({
+  tipo: null, planta_nombre: '', proyecto_ids: [], numero_oferta: '', estado: 'oportunidad',
+  precio_detalle: '', fecha_oferta: null, fecha_tentativa_inicio: null, fecha_fin_tentativa: null,
+})
+
+function reset() {
+  Object.assign(form, {
+    tipo: null, planta_nombre: '', proyecto_ids: [], numero_oferta: '', estado: 'oportunidad',
+    precio_detalle: '', fecha_oferta: null, fecha_tentativa_inicio: null, fecha_fin_tentativa: null,
+  })
+}
+
+function abrirNueva() {
+  reset()
+  showDialog.value = true
+}
+
+watch(showDialog, async (abierto) => {
+  if (!abierto || proyectos.value.length) return
+  cargandoProyectos.value = true
+  try {
+    const { data } = await api.get('/proyectos', { params: { size: 1000 } })
+    proyectos.value = (data.items ?? data).map(
+      (p) => ({ id: p.id, nombre_comercial: p.nombre_comercial }))
+  } catch {
+    toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de proyectos', life: 4000 })
+  } finally {
+    cargandoProyectos.value = false
+  }
+})
 
 async function cambiarEtapa(oferta, estado) {
   if (!estado || estado === oferta.estado) return
@@ -175,95 +252,50 @@ async function cambiarEtapa(oferta, estado) {
   }
 }
 
-const showDialog = ref(false)
-const editId = ref(null)
-const guardando = ref(false)
-const form = reactive({
-  tipo: null, planta_nombre: '', numero_oferta: '', estado: 'oferta',
-  precio_detalle: '', fecha_oferta: null, fecha_tentativa_inicio: null, contrato_firmado: '',
-})
-
-const tocando = ref(null)
-
-function fmtFecha(v) {
-  return v ? new Date(`${String(v).slice(0, 10)}T00:00:00`).toLocaleDateString('es-CO', { dateStyle: 'medium' }) : '—'
-}
-// Se envió y el cliente nunca contestó: eso es lo que hay que mirar.
-function sinRespuesta(o) { return (o.seguimientos || 0) > 0 && !o.fecha_ultima_respuesta }
-
 async function registrarSeguimiento(oferta) {
   tocando.value = oferta.id
   try {
     await api.post(`/comercial/ofertas/${oferta.id}/seguimiento`)
     emit('changed')
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo registrar el seguimiento',
+    toast.add({ severity: 'error', summary: 'No se pudo registrar el toque',
                 detail: err.response?.data?.detail ?? '', life: 5000 })
   } finally {
     tocando.value = null
   }
 }
 
-function labelTipo(v) { return TIPOS_OFERTA.find(t => t.value === v)?.label ?? v }
-
-function aFecha(s) { return s ? new Date(`${String(s).slice(0, 10)}T00:00:00`) : null }
-function aFechaStr(v) {
-  if (!v) return null
-  if (typeof v === 'string') return v.slice(0, 10)
-  const d = new Date(v)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-}
-
-function reset() {
-  Object.assign(form, {
-    tipo: null, planta_nombre: '', numero_oferta: '', estado: 'oferta',
-    precio_detalle: '', fecha_oferta: null, fecha_tentativa_inicio: null, contrato_firmado: '',
-  })
-}
-function abrirNueva() { editId.value = null; reset(); showDialog.value = true }
-function abrirEditar(o) {
-  editId.value = o.id
-  Object.assign(form, {
-    tipo: o.tipo, planta_nombre: o.planta_nombre || '', numero_oferta: o.numero_oferta || '',
-    precio_detalle: o.precio_detalle || '',
-    fecha_oferta: aFecha(o.fecha_oferta), fecha_tentativa_inicio: aFecha(o.fecha_tentativa_inicio),
-    contrato_firmado: o.contrato_firmado || '',
-  })
-  showDialog.value = true
-}
-
 async function guardar() {
   guardando.value = true
-  const payload = {
-    tipo: form.tipo,
-    planta_nombre: form.planta_nombre || null,
-    numero_oferta: form.numero_oferta || null,
-    precio_detalle: form.precio_detalle || null,
-    fecha_oferta: aFechaStr(form.fecha_oferta),
-    fecha_tentativa_inicio: aFechaStr(form.fecha_tentativa_inicio),
-    contrato_firmado: form.contrato_firmado || null,
-  }
   try {
-    if (editId.value) {
-      await api.patch(`/comercial/ofertas/${editId.value}`, payload)
-    } else {
-      await api.post(`/comercial/oportunidades/${props.oportunidadId}/ofertas`, payload)
-    }
+    await api.post(`/comercial/oportunidades/${props.oportunidadId}/ofertas`, {
+      tipo: form.tipo,
+      planta_nombre: form.planta_nombre || null,
+      proyecto_ids: form.proyecto_ids?.length ? form.proyecto_ids : null,
+      numero_oferta: form.numero_oferta || null,
+      // Antes no se enviaba: toda oferta nacía en 'oportunidad'.
+      estado: form.estado,
+      precio_detalle: form.precio_detalle || null,
+      fecha_oferta: aFechaStr(form.fecha_oferta),
+      fecha_tentativa_inicio: aFechaStr(form.fecha_tentativa_inicio),
+      fecha_fin_tentativa: aFechaStr(form.fecha_fin_tentativa),
+    })
     showDialog.value = false
     emit('changed')
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar la oferta', detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.add({ severity: 'error', summary: 'No se pudo guardar la oferta',
+                detail: err.response?.data?.detail ?? '', life: 5000 })
   } finally {
     guardando.value = false
   }
 }
-
-async function borrar(o) {
-  try {
-    await api.delete(`/comercial/ofertas/${o.id}`)
-    emit('changed')
-  } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo eliminar', detail: err.response?.data?.detail ?? '', life: 5000 })
-  }
-}
 </script>
+
+<style scoped>
+.etiqueta {
+  display: block;
+  font-size: 11px;
+  color: #7a6e8a;
+  margin-bottom: 0.15rem;
+}
+</style>

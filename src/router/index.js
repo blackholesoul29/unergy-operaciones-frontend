@@ -34,7 +34,9 @@ const routes = [
   { path: '/general/retos/:id', name: 'RetoDetalle',  component: () => import('@/views/Retos/RetoDetailView.vue') },
 
   // ── Comercial ────────────────────────────────────────────────────
-  { path: '/comercial', name: 'Comercial', component: () => import('@/views/Comercial/ComercialPipelineView.vue'), meta: { roles: ['admin', 'comercial'] } },
+  // El drawer de una oferta se abre con ?oferta=<id> sobre esta misma ruta, para
+  // que el enlace se pueda compartir y sobreviva un F5.
+  { path: '/comercial', name: 'Comercial', component: () => import('@/views/Comercial/ComercialView.vue'), meta: { roles: ['admin', 'comercial'] } },
   { path: '/comercial/oportunidades/:id', name: 'OportunidadDetalle', component: () => import('@/views/Comercial/OportunidadDetailView.vue'), meta: { roles: ['admin', 'comercial'] } },
 
   // ── Operaciones ──────────────────────────────────────────────────
