@@ -36,7 +36,7 @@
             <span class="text-xs font-normal text-gray-400">kW</span>
           </p>
           <p class="text-[11px] text-gray-400">
-            {{ generador.total }} de {{ filtrados.length }} proyecto{{ filtrados.length === 1 ? '' : 's' }}
+            {{ generador.total }} proyecto{{ generador.total === 1 ? '' : 's' }} en la API
             <span v-if="generador.sinAcPower" style="color:#B45309">
               · {{ generador.sinAcPower }} sin AC Power
             </span>
@@ -56,13 +56,23 @@
             <span class="text-xs font-normal text-gray-400">kW</span>
           </p>
           <p class="text-[11px] text-gray-400">
-            {{ comercializador.total }} de {{ filtrados.length }} proyecto{{ filtrados.length === 1 ? '' : 's' }}
+            {{ comercializador.total }} proyecto{{ comercializador.total === 1 ? '' : 's' }} en la API
             <span v-if="comercializador.sinAcPower" style="color:#B45309">
               · {{ comercializador.sinAcPower }} sin AC Power
             </span>
           </p>
         </div>
       </div>
+    </div>
+
+    <!-- Aviso: la API cobra proyectos que esta base no reconoce por tópico -->
+    <div v-if="!loading && topicosSinCruce.length" class="rounded-lg px-3 py-2 text-xs"
+         style="background:#FFF8E6; border:1px solid #F5E3B3; color:#7A5C00">
+      <i class="pi pi-exclamation-triangle mr-1" />
+      <strong>{{ topicosSinCruce.length }}</strong> proyecto{{ topicosSinCruce.length === 1 ? '' : 's' }}
+      de la API de Liquidaciones no cruza{{ topicosSinCruce.length === 1 ? '' : 'n' }} con esta base por su
+      código base: <span class="font-mono">{{ topicosSinCruce.join(', ') }}</span>.
+      Sí cuentan en el AC Power total, pero no aparecen en la tabla de abajo.
     </div>
 
     <!-- Aviso: el reparto falla sin ac_power -->
@@ -218,17 +228,24 @@ const filtrados = computed(() => {
 // AC Power sumado del grupo, más cuántos proyectos lo componen y cuántos de
 // ellos no tienen el dato: un proyecto sin AC Power no suma pero sí debería,
 // así que el total se queda corto mientras falte.
-function resumenAcPower(campo) {
-  const delGrupo = filtrados.value.filter(f => f[campo] === true)
-  return {
-    total: delGrupo.length,
-    acPower: delGrupo.reduce((suma, f) => suma + (Number(f.ac_power) || 0), 0),
-    sinAcPower: delGrupo.filter(f => !f.ac_power).length,
-  }
-}
+// Los totales NO se suman de la tabla: la tabla solo trae los proyectos que
+// cruzan por tópico con esta base y además son GD/minigranja en operación, y el
+// AC Power total es el divisor de la prorrata del reparto. Si un proyecto que la
+// API cobra queda fuera del divisor, a todos los demás les toca más costo del
+// que les corresponde. Por eso el backend lo calcula sobre el universo de la API.
+const totalesApi = ref(null)
+const topicosSinCruce = ref([])
 
-const generador = computed(() => resumenAcPower('from_generator'))
-const comercializador = computed(() => resumenAcPower('from_commercializer'))
+const generador = computed(() => ({
+  total: totalesApi.value?.generador?.proyectos ?? 0,
+  acPower: totalesApi.value?.generador?.ac_power ?? 0,
+  sinAcPower: totalesApi.value?.generador?.sin_ac_power ?? 0,
+}))
+const comercializador = computed(() => ({
+  total: totalesApi.value?.comercializador?.proyectos ?? 0,
+  acPower: totalesApi.value?.comercializador?.ac_power ?? 0,
+  sinAcPower: totalesApi.value?.comercializador?.sin_ac_power ?? 0,
+}))
 
 // Sin ac_power el reparto de costos de XM falla: es el divisor de la prorrata.
 const sinAcPower = computed(
@@ -285,7 +302,12 @@ async function cargar() {
   loading.value = true
   error.value = null
   try {
-    const { data } = await api.get('/liquidaciones-api/proyectos')
+    const [{ data }, totales] = await Promise.all([
+      api.get('/liquidaciones-api/proyectos'),
+      api.get('/liquidaciones-api/ac-power').then(r => r.data).catch(() => null),
+    ])
+    totalesApi.value = totales
+    topicosSinCruce.value = totales?.topicos_sin_cruce || []
     filas.value = (data || [])
       .filter(r => TIPOS_INCLUIDOS.includes(r.tipo_proyecto) && r.estado === ESTADO_OPERATIVA)
       .map(r => ({ ...r, nombre_comercial: formatearNombreProyecto(r.nombre_comercial) }))
