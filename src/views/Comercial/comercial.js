@@ -106,6 +106,33 @@ export function puedeFirmarPPA(oferta) {
   return !!oferta && TIPOS_ENERGIA.includes(oferta.tipo) && !oferta.ppa_contrato_id
 }
 
+// ── Precio de la oferta ──────────────────────────────────────────────────────
+/**
+ * Qué es «el precio» depende del tipo de oferta, y el formulario mostraba lo
+ * mismo para los tres: la etiqueta «Precio» con el ejemplo «REP: 6 · CGM: 6»
+ * —que son las COMISIONES en % de los servicios de representación y de CGM—.
+ *
+ * En una compra de energía no hay comisión: lo que se pacta es la tarifa de la
+ * energía en $/kWh. Quien registraba una compra veía un campo pidiéndole
+ * porcentajes de un servicio que esa oferta no incluye, y escribía ahí la
+ * tarifa o lo dejaba vacío. Lo mismo vale para comunidad energética, que
+ * también desemboca en un PPA.
+ */
+export function etiquetaPrecio(tipo) {
+  return TIPOS_ENERGIA.includes(tipo) ? 'Tarifa de energía ($/kWh)' : 'Comisión del servicio (%)'
+}
+
+export function placeholderPrecio(tipo) {
+  return TIPOS_ENERGIA.includes(tipo) ? 'p. ej. 320' : 'p. ej. REP: 6 · CGM: 6'
+}
+
+export function ayudaPrecio(tipo) {
+  if (!tipo) return null
+  return TIPOS_ENERGIA.includes(tipo)
+    ? 'Tarifa tentativa de la oferta. La pactada se carga al firmar y vive en el contrato, que es de donde la leen Cumplimiento y Liquidaciones.'
+    : 'Comisión sobre lo facturado. Las de representación y CGM se anotan juntas: «REP: 6 · CGM: 6».'
+}
+
 // ── Fechas ───────────────────────────────────────────────────────────────────
 // Las fechas del API llegan como 'YYYY-MM-DD' (date) o ISO con hora (datetime).
 // Se normaliza a medianoche local para que no se corran un día por la zona.

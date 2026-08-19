@@ -93,10 +93,12 @@
             <Select v-model="f.tipo" :options="TIPOS_OFERTA" optionLabel="label" optionValue="value"
                     class="w-full" @update:modelValue="autosave" />
           </div>
+          <!-- El precio de una compra de energía es una tarifa en $/kWh, no la
+               comisión en % de un servicio: la etiqueta y el ejemplo siguen al tipo. -->
           <div>
-            <label class="etiqueta">Precio</label>
+            <label class="etiqueta">{{ etiquetaPrecio(f.tipo) }}</label>
             <InputText v-model.trim="f.precio_detalle" class="w-full"
-                       placeholder="p. ej. REP: 6 · CGM: 6" @update:modelValue="autosave" />
+                       :placeholder="placeholderPrecio(f.tipo)" @update:modelValue="autosave" />
           </div>
           <div>
             <label class="etiqueta">Inicio tentativo del suministro</label>
@@ -118,6 +120,7 @@
             <Textarea v-model="f.notas" rows="2" autoResize class="w-full" @update:modelValue="autosave" />
           </div>
         </div>
+        <p v-if="ayudaPrecio(f.tipo)" class="ayuda">{{ ayudaPrecio(f.tipo) }}</p>
       </section>
 
       <!-- ── Plantas ─────────────────────────────────────────────────────── -->
@@ -130,14 +133,33 @@
         <label class="etiqueta">Nombre de la planta (texto libre)</label>
         <InputText v-model.trim="f.planta_nombre" class="w-full" @update:modelValue="autosave" />
         <div class="mt-3">
-          <label class="etiqueta">Proyectos vinculados</label>
+          <div class="flex items-center justify-between mb-1">
+            <label class="etiqueta !mb-0">Proyectos vinculados</label>
+            <Button label="Crear planta" icon="pi pi-plus" text size="small"
+                    v-tooltip.top="'Crearla en Proyectos y vincularla a esta oferta'"
+                    @click="crearProyecto = true" />
+          </div>
           <MultiSelect v-model="f.proyecto_ids" :options="proyectos" optionLabel="nombre_comercial"
+                       :filterFields="['nombre_comercial', 'municipio', 'departamento']"
                        optionValue="id" filter display="chip" class="w-full"
                        :loading="cargandoCatalogos" placeholder="Vincular a proyectos existentes…"
-                       @update:modelValue="cambiarPlantas" />
+                       filterPlaceholder="Buscar por nombre, municipio o departamento…"
+                       @update:modelValue="cambiarPlantas">
+            <template #option="{ option }">
+              <div class="min-w-0">
+                <div class="text-sm" style="color:#2C2039">{{ option.nombre_comercial }}</div>
+                <div class="text-[11px]" style="color:#9b89b5">
+                  {{ [option.municipio, option.departamento].filter(Boolean).join(', ') || 'Sin ubicación' }}
+                  <span v-if="option.potencia_instalada_kwp">
+                    · {{ Number(option.potencia_instalada_kwp).toLocaleString('es-CO', { maximumFractionDigits: 0 }) }} kWp
+                  </span>
+                </div>
+              </div>
+            </template>
+          </MultiSelect>
           <p v-if="!f.proyecto_ids?.length" class="ayuda" style="color:#D64455">
-            Sin ningún proyecto vinculado, el PPA se crearía sin plantas y Cumplimiento
-            no podría medirlo.
+            Sin ningún proyecto vinculado, el PPA se crearía sin plantas: ni Cumplimiento
+            ni <code>/comercial/proyectos-operando</code> pueden ver esta oferta.
           </p>
         </div>
       </section>
@@ -221,6 +243,10 @@
                 @click="confirmarEliminar" />
       </div>
     </div>
+
+    <ProyectoDesdeCRMDialog v-if="oferta" v-model:visible="crearProyecto"
+                            :oportunidad-id="oferta.oportunidad_id" :oferta="oferta"
+                            @creado="proyectoCreado" />
   </Drawer>
 </template>
 
@@ -242,7 +268,10 @@ import api from '@/api/client'
 import {
   ETAPAS, TIPOS_OFERTA, TIPOS_GESTION, FUENTES, puedeFirmarPPA,
   aFecha, aFechaStr, fmtFecha, diasDesde, sinRespuesta,
+  etiquetaPrecio, placeholderPrecio, ayudaPrecio,
 } from './comercial.js'
+import { cargarProyectos } from './catalogos.js'
+import ProyectoDesdeCRMDialog from './ProyectoDesdeCRMDialog.vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -268,7 +297,25 @@ const estadoGuardado = ref('')
 const proyectos = ref([])
 const operadores = ref([])
 const cargandoCatalogos = ref(false)
+const crearProyecto = ref(false)
 let temporizador = null
+
+/**
+ * La planta recién creada ya viene vinculada del backend (`?oferta_id=`). Acá
+ * solo se refleja en el selector para que se vea sin recargar; NO se reenvía la
+ * M2M, porque el backend ya la escribió y mandarla otra vez la reescribiría.
+ */
+function proyectoCreado(p) {
+  proyectos.value = [...proyectos.value, {
+    id: p.id,
+    nombre_comercial: p.nombre_comercial,
+    municipio: p.municipio ?? null,
+    departamento: p.departamento ?? null,
+    estado: p.estado ?? null,
+    potencia_instalada_kwp: p.potencia_instalada_kwp ?? null,
+  }].sort((a, b) => (a.nombre_comercial || '').localeCompare(b.nombre_comercial || '', 'es'))
+  if (!f.proyecto_ids?.includes(p.id)) f.proyecto_ids = [...(f.proyecto_ids ?? []), p.id]
+}
 
 const gestion = reactive({ tipo: 'llamada', descripcion: '' })
 
@@ -314,17 +361,16 @@ watch(() => props.oferta?.id, () => {
 }, { immediate: true })
 
 // Los catálogos se cargan la primera vez que se abre el drawer, no al montar la
-// vista: son ~1000 proyectos que la mayoría de las sesiones no necesita.
+// vista: son más de mil proyectos que la mayoría de las sesiones no necesita.
 watch(() => props.visible, async (abierto) => {
   if (!abierto || proyectos.value.length || operadores.value.length) return
   cargandoCatalogos.value = true
   const [pr, op] = await Promise.allSettled([
-    api.get('/proyectos', { params: { size: 1000 } }),
+    cargarProyectos(),
     api.get('/operadores-red'),
   ])
   if (pr.status === 'fulfilled') {
-    const filas = pr.value.data.items ?? pr.value.data
-    proyectos.value = filas.map((p) => ({ id: p.id, nombre_comercial: p.nombre_comercial }))
+    proyectos.value = pr.value
   } else {
     toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de proyectos', life: 4000 })
   }

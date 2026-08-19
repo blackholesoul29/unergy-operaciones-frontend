@@ -125,10 +125,13 @@
           <InputText v-model.trim="form.planta_nombre" class="w-full" placeholder="Ej: Balmora 1 y 2" />
         </div>
         <div>
-          <label class="etiqueta">Proyectos existentes</label>
+          <label class="etiqueta">Plantas ya creadas en Proyectos</label>
           <MultiSelect v-model="form.proyecto_ids" :options="proyectos" optionLabel="nombre_comercial"
+                       :filterFields="['nombre_comercial', 'municipio', 'departamento']"
                        optionValue="id" filter display="chip" class="w-full"
-                       :loading="cargandoProyectos" placeholder="Vincular si la planta ya está creada…" />
+                       :loading="cargandoProyectos"
+                       placeholder="Buscá la planta por nombre, municipio o departamento…"
+                       :emptyMessage="cargandoProyectos ? 'Cargando…' : 'No hay plantas cargadas'" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -143,8 +146,10 @@
           </div>
         </div>
         <div>
-          <label class="etiqueta">Precio</label>
-          <InputText v-model.trim="form.precio_detalle" class="w-full" placeholder="p. ej. REP: 6 · CGM: 6" />
+          <label class="etiqueta">{{ etiquetaPrecio(form.tipo) }}</label>
+          <InputText v-model.trim="form.precio_detalle" class="w-full"
+                     :placeholder="placeholderPrecio(form.tipo)" />
+          <p v-if="ayudaPrecio(form.tipo)" class="etiqueta mt-1">{{ ayudaPrecio(form.tipo) }}</p>
         </div>
         <div class="grid grid-cols-3 gap-3">
           <div>
@@ -184,7 +189,9 @@ import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import {
   ETAPAS, TIPOS_OFERTA, labelTipo, fmtFecha, alarmante, aFechaStr,
+  etiquetaPrecio, placeholderPrecio, ayudaPrecio,
 } from './comercial.js'
+import { cargarProyectos } from './catalogos.js'
 
 const props = defineProps({
   oportunidadId: { type: [Number, String], required: true },
@@ -228,9 +235,7 @@ watch(showDialog, async (abierto) => {
   if (!abierto || proyectos.value.length) return
   cargandoProyectos.value = true
   try {
-    const { data } = await api.get('/proyectos', { params: { size: 1000 } })
-    proyectos.value = (data.items ?? data).map(
-      (p) => ({ id: p.id, nombre_comercial: p.nombre_comercial }))
+    proyectos.value = await cargarProyectos()
   } catch {
     toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de proyectos', life: 4000 })
   } finally {

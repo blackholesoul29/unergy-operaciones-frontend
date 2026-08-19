@@ -146,8 +146,8 @@
           <template #empty><span style="color:#9b89b5">Sin contratos de representación.</span></template>
         </DataTable>
 
-        <AgregarProyectoDialog v-model:visible="showAgregarProyecto" :oportunidad-id="op.id"
-                               @creado="recargar" />
+        <ProyectoDesdeCRMDialog v-model:visible="showAgregarProyecto" :oportunidad-id="op.id"
+                                @creado="recargar" />
         <!-- ContratoServicioWizard no expone prop de cliente (solo `tipo` y
              `proyectoIdDefault`): el cliente se selecciona dentro del wizard. -->
         <ContratoServicioWizard v-model:visible="showRepWizard" tipo="representacion"
@@ -211,7 +211,7 @@ import api from '@/api/client'
 import ClienteForm from '@/views/Clientes/ClienteForm.vue'
 import ContactosPanel from '@/components/ContactosPanel.vue'
 import ContratoServicioWizard from '@/views/Contratos/ContratoServicioWizard.vue'
-import AgregarProyectoDialog from './AgregarProyectoDialog.vue'
+import ProyectoDesdeCRMDialog from './ProyectoDesdeCRMDialog.vue'
 import BitacoraPanel from './BitacoraPanel.vue'
 import OfertasPanel from './OfertasPanel.vue'
 import { ETAPAS, severidadEtapa, aFecha, aFechaStr } from './comercial.js'

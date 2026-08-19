@@ -16,7 +16,8 @@ const M = new Function(src + `
 return { COLUMNAS, TIPOS_OFERTA, ETAPAS_ABIERTAS, kpis, resumenColumna, agruparPorColumna,
          filtrar, ordenar, mwhMes, sinRespuesta, alarmante, mesDelCodigo, diasDesde,
          aFechaStr, puedeFirmarPPA, validarFirma, tarifasMensualesQueGenera,
-         aniosDelPeriodo, segmentoTipo, labelEtapa };`)()
+         aniosDelPeriodo, segmentoTipo, labelEtapa,
+         etiquetaPrecio, placeholderPrecio, ayudaPrecio };`)()
 
 let ok = true
 const eq = (got, exp, msg) => {
@@ -160,6 +161,22 @@ eq(M.segmentoTipo('compra_energia'), 'COM', 'segmento del código de seguimiento
 eq(M.segmentoTipo('servicios_operacionales'), 'REP', 'servicios = REP')
 eq(M.labelEtapa('oportunidad'), 'Oportunidad', 'etiqueta de etapa')
 eq(M.labelEtapa('prospeccion'), 'prospeccion', 'etapa vieja: se muestra cruda, no se inventa')
+
+// ── El precio cambia de significado con el tipo de oferta ────────────────────
+// El formulario pedía «Precio — p. ej. REP: 6 · CGM: 6» para los tres tipos.
+// REP y CGM son comisiones en %: en una compra de energía no aplican, ahí lo
+// que se pacta es la tarifa en $/kWh.
+eq(M.etiquetaPrecio('compra_energia'), 'Tarifa de energía ($/kWh)',
+   'compra de energía pide tarifa, no comisión')
+eq(M.etiquetaPrecio('comunidad_energetica'), 'Tarifa de energía ($/kWh)',
+   'comunidad energética también desemboca en un PPA')
+eq(M.etiquetaPrecio('servicios_operacionales'), 'Comisión del servicio (%)',
+   'los servicios sí cobran comisión')
+eq(M.placeholderPrecio('compra_energia'), 'p. ej. 320',
+   'el ejemplo de REP/CGM no se le muestra a una compra de energía')
+eq(M.placeholderPrecio('servicios_operacionales'), 'p. ej. REP: 6 · CGM: 6',
+   'los servicios conservan el formato que ya se usa')
+eq(M.ayudaPrecio(null), null, 'sin tipo elegido no se afirma nada sobre el precio')
 
 console.log(ok ? '\n✅ todo bien' : '\n❌ hay fallas')
 process.exit(ok ? 0 : 1)

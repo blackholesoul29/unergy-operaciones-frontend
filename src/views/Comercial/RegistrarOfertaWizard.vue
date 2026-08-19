@@ -130,14 +130,42 @@
                     class="w-full" placeholder="Seleccionar…" />
           </div>
           <div>
-            <label class="etiqueta">Planta</label>
+            <label class="etiqueta">Planta (nombre libre)</label>
             <InputText v-model.trim="o.planta_nombre" class="w-full" placeholder="Ej: Balmora 1 y 2" />
           </div>
+          <!-- El vínculo a la planta REAL. Sin él la oferta queda sin proyecto y
+               /comercial/proyectos-operando la devuelve sin ubicación, sin operador
+               de red y sin ningún dato técnico: todo eso vive en el Proyecto. -->
           <div class="sm:col-span-2">
-            <label class="etiqueta">Proyectos existentes (opcional)</label>
+            <label class="etiqueta">Plantas ya creadas en Proyectos</label>
             <MultiSelect v-model="o.proyecto_ids" :options="proyectos" optionLabel="nombre_comercial"
+                       :filterFields="['nombre_comercial', 'municipio', 'departamento']"
                          optionValue="id" filter display="chip" class="w-full"
-                         :loading="cargandoProyectos" placeholder="Vincular si la planta ya está creada…" />
+                         :loading="cargandoCatalogos"
+                         placeholder="Buscá la planta por nombre, municipio o departamento…"
+                         filterPlaceholder="Buscar…" :emptyMessage="cargandoCatalogos ? 'Cargando…' : 'No hay plantas cargadas'">
+              <template #option="{ option }">
+                <div class="min-w-0">
+                  <div class="text-sm" style="color:#2C2039">{{ option.nombre_comercial }}</div>
+                  <div class="text-[11px]" style="color:#9b89b5">
+                    {{ [option.municipio, option.departamento].filter(Boolean).join(', ') || 'Sin ubicación' }}
+                    <span v-if="option.potencia_instalada_kwp">
+                      · {{ Number(option.potencia_instalada_kwp).toLocaleString('es-CO', { maximumFractionDigits: 0 }) }} kWp
+                    </span>
+                  </div>
+                </div>
+              </template>
+            </MultiSelect>
+            <p class="ayuda" :style="o.proyecto_ids?.length ? '' : 'color:#D64455'">
+              <template v-if="o.proyecto_ids?.length">
+                {{ o.proyecto_ids.length }} planta(s) vinculadas: la oferta va a traer su
+                ubicación, operador de red y ficha técnica.
+              </template>
+              <template v-else>
+                Sin vincular, la oferta queda con el nombre y nada más. Si la planta
+                todavía no existe, se crea desde el panel de la oferta después de registrar.
+              </template>
+            </p>
           </div>
           <div>
             <label class="etiqueta">Etapa inicial</label>
@@ -149,14 +177,16 @@
             <DatePicker v-model="o.fecha_oferta" dateFormat="yy-mm-dd" showIcon class="w-full" />
           </div>
           <div>
-            <label class="etiqueta">Precio</label>
-            <InputText v-model.trim="o.precio_detalle" class="w-full" placeholder="p. ej. REP: 6 · CGM: 6" />
+            <label class="etiqueta">{{ etiquetaPrecio(o.tipo) }}</label>
+            <InputText v-model.trim="o.precio_detalle" class="w-full"
+                       :placeholder="placeholderPrecio(o.tipo)" />
           </div>
           <div>
             <label class="etiqueta">Inicio tentativo</label>
             <DatePicker v-model="o.fecha_tentativa_inicio" dateFormat="yy-mm-dd" showIcon class="w-full" />
           </div>
         </div>
+        <p v-if="ayudaPrecio(o.tipo)" class="ayuda">{{ ayudaPrecio(o.tipo) }}</p>
         <p v-if="o.tipo && o.fecha_oferta && o.estado === 'oportunidad'" class="ayuda">
           Tiene fecha de envío pero la etapa dice «Oportunidad». Si ya se envió, movela a «Oferta».
         </p>
@@ -237,10 +267,11 @@ import AutoComplete from 'primevue/autocomplete'
 import DatePicker from 'primevue/datepicker'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
-import api from '@/api/client'
 import {
   TIPOS_OFERTA, ORIGENES_CLIENTE, labelTipo, labelEtapa, segmentoTipo, aFechaStr,
+  etiquetaPrecio, placeholderPrecio, ayudaPrecio,
 } from './comercial.js'
+import { cargarClientes, cargarProyectos } from './catalogos.js'
 
 const props = defineProps({
   visible: Boolean,
@@ -285,7 +316,7 @@ const clientes = ref([])
 const sugerencias = ref([])
 const clienteSel = ref(null)
 const proyectos = ref([])
-const cargandoProyectos = ref(false)
+const cargandoCatalogos = ref(false)
 
 const negocio = reactive({ nombre: '', notas: '' })
 const nuevo = reactive({
@@ -327,23 +358,20 @@ const pasoCompleto = computed(() => {
 })
 
 async function cargarCatalogos() {
-  const [cl, pr] = await Promise.allSettled([
-    api.get('/clientes', { params: { size: 1000 } }),
-    api.get('/proyectos', { params: { size: 1000 } }),
-  ])
-  if (cl.status === 'fulfilled') clientes.value = cl.value.data.items ?? cl.value.data
+  const [cl, pr] = await Promise.allSettled([cargarClientes(), cargarProyectos()])
+  if (cl.status === 'fulfilled') clientes.value = cl.value
   else toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de clientes', life: 4000 })
-  if (pr.status === 'fulfilled') {
-    const filas = pr.value.data.items ?? pr.value.data
-    proyectos.value = filas.map((p) => ({ id: p.id, nombre_comercial: p.nombre_comercial }))
-  }
-  cargandoProyectos.value = false
+  if (pr.status === 'fulfilled') proyectos.value = pr.value
+  // El fallo de proyectos también se avisa: quedarse sin la lista de plantas y
+  // no enterarse es cómo se registraban ofertas sin vincular a ningún proyecto.
+  else toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de plantas', life: 4000 })
+  cargandoCatalogos.value = false
 }
 
 watch(() => props.visible, (abierto) => {
   if (abierto) {
-    if (!clientes.value.length) {
-      cargandoProyectos.value = true
+    if (!clientes.value.length && !proyectos.value.length) {
+      cargandoCatalogos.value = true
       cargarCatalogos()
     }
   } else {

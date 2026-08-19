@@ -39,13 +39,41 @@
           :disabled="!f.departamento" />
       </div>
       <div>
-        <label class="field-label">Operador de red</label>
+        <label class="field-label">Operador de red{{ operadorRedObligatorio ? ' *' : '' }}</label>
         <Select v-model="f.operador_red_id" :options="operadoresRedOptions" optionLabel="label"
           optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
       </div>
       <div>
         <label class="field-label">Clasificación regulatoria</label>
         <Select v-model="f.clasificacion_regulatoria" :options="clasificaciones" class="w-full" placeholder="Seleccionar" showClear />
+      </div>
+      <div class="col-span-2">
+        <label class="field-label">Dirección / vereda</label>
+        <InputText v-model="f.direccion_vereda" class="w-full" placeholder="Ej: Vereda El Cerrito, km 4 vía Planeta Rica" />
+      </div>
+      <!-- Coordenadas: hasta ahora solo se podían cargar EDITANDO el proyecto, así
+           que toda planta nacía sin ubicación en el mapa y sin coordenadas para
+           quien integra por API. -->
+      <div>
+        <label class="field-label">Latitud</label>
+        <InputNumber v-model="f.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" placeholder="8.748000" />
+      </div>
+      <div>
+        <label class="field-label">Longitud</label>
+        <InputNumber v-model="f.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" placeholder="-75.881000" />
+      </div>
+      <!-- Ortogonal al tipo y a la clasificación: cualquier planta puede o no
+           pertenecer a una comunidad energética. -->
+      <div>
+        <label class="field-label">Comunidad energética</label>
+        <div class="flex items-center gap-2 h-[38px]">
+          <ToggleSwitch v-model="f.es_comunidad_energetica" />
+          <span class="text-sm text-gray-500">{{ f.es_comunidad_energetica ? 'Sí' : 'No' }}</span>
+        </div>
+      </div>
+      <div v-if="f.es_comunidad_energetica">
+        <label class="field-label">Nombre de la comunidad</label>
+        <InputText v-model="f.nombre_comunidad" class="w-full" placeholder="Opcional" />
       </div>
       <div>
         <label class="field-label">Carpeta Drive (código)</label>
@@ -176,9 +204,14 @@
     </div>
 
     <div class="flex justify-end gap-2 pt-2">
-      <Button type="button" label="Cancelar" severity="secondary" @click="$emit('cancel')" />
-      <Button type="submit" :label="editMode ? 'Guardar cambios' : 'Crear proyecto'" />
+      <Button type="button" label="Cancelar" severity="secondary" :disabled="guardando"
+        @click="$emit('cancel')" />
+      <Button type="submit" :label="editMode ? 'Guardar cambios' : 'Crear proyecto'"
+        :loading="guardando" :disabled="!puedeGuardar" />
     </div>
+    <p v-if="operadorRedObligatorio && !f.operador_red_id" class="text-xs text-gray-500 text-right">
+      Falta el operador de red: sin él no se puede crear la planta.
+    </p>
   </form>
 </template>
 
@@ -204,8 +237,18 @@ const props = defineProps({
   clientes: Array,
   proyecto: { type: Object, default: null },
   proyectoId: { type: Number, default: null },
+  /**
+   * El CRM comercial exige operador de red del catálogo (validación bloqueante:
+   * el backend responde 422 sin él). En /proyectos es opcional y se deja así,
+   * para no volver obligatorio un campo que hoy no lo es.
+   */
+  operadorRedObligatorio: { type: Boolean, default: false },
+  guardando: { type: Boolean, default: false },
 })
 const emit = defineEmits(['save', 'cancel'])
+
+const puedeGuardar = computed(() =>
+  !!f.nombre_comercial && (!props.operadorRedObligatorio || !!f.operador_red_id))
 
 const editMode = computed(() => !!props.proyecto)
 
@@ -226,11 +269,16 @@ const f = reactive({
   tipo_tecnologia: null,
   departamento: null,
   municipio: null,
+  direccion_vereda: null,
+  latitud: null,
+  longitud: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
   carpeta_drive_codigo: null,
   sub_project: null,
   codigo_tsf: null,
+  es_comunidad_energetica: false,
+  nombre_comunidad: null,
 })
 
 // Departamento/municipio -- select en vez de texto libre (DIVIPOLA), para
@@ -382,6 +430,14 @@ function submit() {
   // Fechas del proyecto (null = sin fecha / vigente)
   payload.fecha_entrada_operacion = formatFecha(fechaEntrada.value)
   payload.fecha_fin_representacion = formatFecha(fechaFinRep.value)
+  // potencia_instalada_kwp NO se manda: el dual-write se quitó en d68837e
+  // porque ahora lo sincroniza el backend desde info-tecnica.
+  // Comunidad energética: el flag viaja siempre (el bucle de arriba lo dejaría
+  // fuera cuando es false) y el nombre solo si el flag está prendido, para que
+  // apagarlo no deje colgado el nombre de una comunidad a la que ya no pertenece.
+  payload.es_comunidad_energetica = !!f.es_comunidad_energetica
+  payload.nombre_comunidad = f.es_comunidad_energetica ? (f.nombre_comunidad || null) : null
+
   const infoTecnica = {}
   if (potenciaAcKw.value !== null) infoTecnica.potencia_ac_kw = potenciaAcKw.value
   if (capacidadInstaladaKwp.value !== null) infoTecnica.capacidad_instalada_kwp = capacidadInstaladaKwp.value
