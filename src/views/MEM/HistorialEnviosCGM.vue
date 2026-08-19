@@ -18,7 +18,7 @@
         <span class="text-sm font-medium" style="color: #A8590B;">
           <i class="pi pi-exclamation-triangle text-xs mr-1.5" />
           {{ faltantesUltimoEnvio.length }} destinatario{{ faltantesUltimoEnvio.length === 1 ? '' : 's' }}
-          no recibi{{ faltantesUltimoEnvio.length === 1 ? 'ó' : 'eron' }} el reporte del {{ ultimoPeriodo }}
+          no recibi{{ faltantesUltimoEnvio.length === 1 ? 'ó' : 'eron' }} su reporte más reciente
         </span>
         <button type="button" class="text-xs font-semibold underline" style="color: #A8590B;"
           @click="subvista = 'destinatario'">Ver quiénes →</button>
@@ -116,7 +116,7 @@
                 Último intento falló — {{ d.ultima.error }}
               </p>
               <p v-if="d.faltoUltimoEnvio" class="text-xs font-semibold mt-0.5" style="color: #A8590B;">
-                <i class="pi pi-exclamation-triangle text-[10px] mr-1" />No recibió el reporte del {{ ultimoPeriodo }}
+                <i class="pi pi-exclamation-triangle text-[10px] mr-1" />No recibió el reporte del {{ d.periodoEsperado }}
               </p>
             </div>
             <div class="text-right flex-shrink-0">
@@ -289,7 +289,30 @@ function abrirMasReciente() {
 // completo de esa manana. Comparar por lote marcaba como "faltante" a todo
 // el mundo que sí habia recibido el reporte de ese dia, solo porque el
 // envio puntual mas reciente no los incluyo a ellos.
-const ultimoPeriodo = computed(() => envios.value[0]?.periodo || null)
+//
+// Pero tampoco hay un solo periodo global: Operador de Red siempre recibe
+// el reporte de UN SOLO DIA ("2026-08-18") y Cliente siempre recibe "mes a
+// la fecha" ("2026-08-01 a 2026-08-18"), ver reporte_cgm.py fecha_str_envio
+// -- son formatos que conviven en el mismo envio. Comparar todo contra el
+// periodo del ultimo correo procesado (sin importar de qué forma es) marca
+// como "faltante" a cualquier Operador en cuanto el ultimo correo de ese
+// lote resulta ser de un Cliente (o viceversa), aunque sí haya recibido el
+// suyo -- por eso se compara por FORMA de periodo (rango vs día), no por
+// un único string global.
+function formaPeriodo(periodo) {
+  return periodo && periodo.includes(' a ') ? 'rango' : 'dia'
+}
+
+const ultimoPeriodoPorForma = computed(() => {
+  const mapa = {}
+  for (const item of envios.value) {
+    if (!item.periodo) continue
+    const forma = formaPeriodo(item.periodo)
+    const actual = mapa[forma]
+    if (!actual || new Date(item.enviadoEn) > new Date(actual.enviadoEn)) mapa[forma] = item
+  }
+  return mapa
+})
 
 const porDestinatario = computed(() => {
   const mapa = new Map()
@@ -302,9 +325,12 @@ const porDestinatario = computed(() => {
   }
   return [...mapa.values()].map(d => {
     const existe = nombresVigentes.value.has(normalizarNombre(d.nombre))
+    const forma = formaPeriodo(d.ultima.periodo)
+    const periodoEsperado = ultimoPeriodoPorForma.value[forma]?.periodo || null
     return {
       ...d,
-      faltoUltimoEnvio: existe && ultimoPeriodo.value ? !d.periodos.has(ultimoPeriodo.value) : false,
+      periodoEsperado,
+      faltoUltimoEnvio: existe && periodoEsperado ? !d.periodos.has(periodoEsperado) : false,
     }
   })
 })
