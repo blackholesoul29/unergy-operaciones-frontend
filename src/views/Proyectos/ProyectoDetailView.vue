@@ -786,21 +786,35 @@
 
       <!-- ══ ID LIQUIDACIONES ══ -->
       <TabPanel header="ID liquidaciones">
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
-          <template v-if="!isEditMode">
-            <InfoField label="SIC generación" :value="proyecto.codigo_sic_generacion" />
-            <InfoField label="SIC consumo" :value="proyecto.codigo_sic_consumo" />
-          </template>
-          <template v-else>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">SIC generación</label>
-              <InputText v-model="editForm.codigo_sic_generacion" class="w-full" placeholder="Código SIC de generación" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">SIC consumo</label>
-              <InputText v-model="editForm.codigo_sic_consumo" class="w-full" placeholder="Código SIC de consumo" />
-            </div>
-          </template>
+        <div class="p-4 space-y-3 text-sm">
+          <p class="text-[11px] text-gray-400">
+            <i class="pi pi-info-circle mr-1" />
+            Estos códigos viven en la API de Liquidaciones de Unergy, no en esta base.
+            <span v-if="liqConfig?.nombre_topico"> Tópico: <b>{{ liqConfig.nombre_topico }}</b>.</span>
+          </p>
+
+          <div v-if="!proyecto.sub_project" class="rounded-lg px-3 py-2 text-xs"
+               style="background:#FEF3C7; color:#92400E">
+            El proyecto no tiene <b>API ID Unergy</b> (código base), así que no se puede
+            identificar en la API de Liquidaciones. Complétalo en la pestaña General.
+          </div>
+
+          <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <template v-if="!isEditMode">
+              <InfoField label="SIC generación" :value="liqConfig?.sic_gen" />
+              <InfoField label="SIC consumo" :value="liqConfig?.sic_con" />
+            </template>
+            <template v-else>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">SIC generación</label>
+                <InputText v-model="editLiq.sic_gen" class="w-full" placeholder="ej: 3A44" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">SIC consumo</label>
+                <InputText v-model="editLiq.sic_con" class="w-full" placeholder="ej: 3A3P" />
+              </div>
+            </template>
+          </div>
         </div>
       </TabPanel>
     </TabView>
@@ -877,6 +891,9 @@ const FRONTERA_ESTADO_SEVERITY = { activa: 'success', en_registro: 'warn', en_fa
 
 // ── Estado base ───────────────────────────────────────────────────────────────
 const proyecto = ref(null)
+// Configuración de liquidaciones: vive en la API de Unergy, no en esta base.
+const liqConfig = ref(null)
+const editLiq = reactive({ sic_gen: '', sic_con: '' })
 const fronteras = ref([])
 const clientes = ref([])
 const loading = ref(true)
@@ -1100,6 +1117,8 @@ function populateEditForm() {
   editFechaEntrada.value = toDate(p.fecha_entrada_operacion)
   editFechaComerc.value = toDate(p.fecha_inicio_comercializacion)
   editFechaFinRep.value = toDate(p.fecha_fin_representacion)
+  editLiq.sic_gen = liqConfig.value?.sic_gen ?? ''
+  editLiq.sic_con = liqConfig.value?.sic_con ?? ''
 }
 
 watch(isEditMode, (entering) => {
@@ -1164,6 +1183,18 @@ async function saveEdit() {
     payload.nombre_comunidad = editForm.es_comunidad_energetica ? (editForm.nombre_comunidad || null) : null
 
     await api.patch(`/proyectos/${route.params.id}`, payload)
+    // Los códigos SIC se guardan en la API de Liquidaciones, no en esta base.
+    if (proyecto.value?.sub_project) {
+      const sicCambio =
+        (editLiq.sic_gen || null) !== (liqConfig.value?.sic_gen || null) ||
+        (editLiq.sic_con || null) !== (liqConfig.value?.sic_con || null)
+      if (sicCambio) {
+        await api.patch(`/liquidaciones-api/proyectos/${route.params.id}`, {
+          sic_gen: editLiq.sic_gen || null,
+          sic_con: editLiq.sic_con || null,
+        })
+      }
+    }
     // Mismo criterio que arriba -- sin filtrar, para poder limpiar un campo
     // (ver comentario en el payload de editForm).
     const itPayload = {}
@@ -1179,6 +1210,10 @@ async function saveEdit() {
       ...proyRes.data,
       inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
     }
+    try {
+      const { data } = await api.get(`/liquidaciones-api/proyectos/${route.params.id}`)
+      liqConfig.value = data
+    } catch { /* la API externa puede no responder; no bloquea el guardado */ }
     router.replace({ query: {} })
     toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
   } catch (e) {
@@ -1405,6 +1440,9 @@ onMounted(async () => {
       api.get('/operadores-red').catch(() => ({ data: [] })),
       api.get('/fronteras', { params: { proyecto_id: route.params.id } }).catch(() => ({ data: [] })),
     ])
+    api.get(`/liquidaciones-api/proyectos/${route.params.id}`)
+      .then(r => { liqConfig.value = r.data; if (isEditMode.value) populateEditForm() })
+      .catch(() => { liqConfig.value = null })
     proyecto.value = {
       ...proyRes.data,
       inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
