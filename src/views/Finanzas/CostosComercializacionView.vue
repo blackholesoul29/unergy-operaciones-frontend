@@ -100,23 +100,44 @@
     <!-- Filtros -->
     <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
       <div>
-        <label class="field-label">Proyecto (tópico)</label>
-        <InputText v-model="filtros.project" placeholder="ej: perija" class="w-44"
-                   @keyup.enter="recargar" />
+        <label class="field-label">Proyecto</label>
+        <Select v-model="filtros.project" :options="proyectosOptions" optionLabel="label"
+                optionValue="value" class="w-52" showClear filter placeholder="Todos"
+                @change="recargar" />
+      </div>
+      <div>
+        <label class="field-label">Tipo de costo</label>
+        <Select v-model="filtros.payment_type" :options="tiposOptions" optionLabel="label"
+                optionValue="value" class="w-56" showClear filter placeholder="Todos"
+                @change="recargar" />
+      </div>
+      <div>
+        <label class="field-label">Mes</label>
+        <Select v-model="filtros.mes" :options="MESES" optionLabel="label" optionValue="value"
+                class="w-32" showClear placeholder="Todos" @change="recargar" />
+      </div>
+      <div>
+        <label class="field-label">Año</label>
+        <Select v-model="filtros.anio" :options="aniosOptions" class="w-28" showClear
+                placeholder="Todos" @change="recargar" />
       </div>
       <div>
         <label class="field-label">Versión</label>
-        <Select v-model="filtros.version" :options="VERSIONES" class="w-28" showClear
+        <Select v-model="filtros.version" :options="VERSIONES" class="w-24" showClear
                 placeholder="Todas" @change="recargar" />
       </div>
       <div>
         <label class="field-label">Buscar en la página</label>
         <IconField>
           <InputIcon class="pi pi-search" />
-          <InputText v-model="q" placeholder="Proyecto, costo…" class="w-56" />
+          <InputText v-model="q" placeholder="Proyecto, costo…" class="w-48" />
         </IconField>
       </div>
       <div class="flex-1" />
+      <Button label="Exportar" icon="pi pi-file-excel" size="small" outlined
+              :loading="exportando" :disabled="!total"
+              v-tooltip.top="'Exporta a Excel todo lo que coincide con los filtros'"
+              @click="exportar" />
       <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
               v-tooltip.left="'Recargar'" @click="recargar" />
       <div class="text-xs text-gray-400 self-center">
@@ -204,7 +225,9 @@ import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
 import {
   VERSIONES, VERSION_INICIAL, listarCostos, subirExcelCostos, repartirFacturasXm,
+  listarCatalogos,
 } from '@/api/liquidacionesApi'
+import api from '@/api/client'
 
 const toast = useToast()
 
@@ -226,7 +249,21 @@ const COLUMNAS = [
 ]
 
 // ── Listado ──────────────────────────────────────────────────────────────────
-const filtros = reactive({ project: '', version: null, page: 1, size: 100 })
+// `xm` es el grupo de comercializacion: lo que produce el reparto de las
+// facturas de XM. Intereses, opex, descuentos y ajustes no van en esta vista.
+const GRUPO_COMERCIALIZACION = 'xm'
+const filtros = reactive({
+  project: null, payment_type: null, mes: null, anio: null,
+  version: null, page: 1, size: 100,
+})
+
+// Catálogos de los selects.
+const proyectosOptions = ref([])
+const tiposOptions = ref([])
+const aniosOptions = computed(() => {
+  const actual = new Date().getFullYear()
+  return Array.from({ length: 6 }, (_, i) => actual - i)
+})
 const q = ref('')
 const loading = ref(false)
 const error = ref(null)
@@ -249,7 +286,11 @@ async function cargar() {
   error.value = null
   try {
     const data = await listarCostos({
+      grupo: GRUPO_COMERCIALIZACION,
       project: filtros.project || undefined,
+      payment_type: filtros.payment_type || undefined,
+      mes: filtros.mes || undefined,
+      anio: filtros.anio || undefined,
       version: filtros.version || undefined,
       page: filtros.page,
       size: filtros.size,
@@ -388,7 +429,100 @@ function fmtNum(v) {
   return new Intl.NumberFormat('es-CO', { maximumFractionDigits: 2 }).format(n)
 }
 
-onMounted(cargar)
+// ── Catálogos de los filtros ─────────────────────────────────────────────────
+async function cargarOpciones() {
+  try {
+    const [{ data: proyectos }, catalogos] = await Promise.all([
+      api.get('/liquidaciones-api/proyectos'),
+      listarCatalogos(),
+    ])
+    // La API identifica por tópico, pero se muestra el nombre de esta base.
+    proyectosOptions.value = (proyectos || [])
+      .filter(p => p.nombre_topico)
+      .map(p => ({ value: p.nombre_topico, label: p.nombre_comercial }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+    tiposOptions.value = (catalogos.tipos_costo || [])
+      .filter(t => t.group === GRUPO_COMERCIALIZACION)
+      .map(t => ({ value: t.name, label: t.long_name || t.name }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  } catch {
+    // Sin catálogos los filtros quedan vacíos, pero la tabla sigue sirviendo.
+  }
+}
+
+// ── Exportar ─────────────────────────────────────────────────────────────────
+const exportando = ref(false)
+
+async function exportar() {
+  exportando.value = true
+  try {
+    // Se piden todas las filas que cumplen el filtro, no solo la página visible.
+    const data = await listarCostos({
+      grupo: GRUPO_COMERCIALIZACION,
+      project: filtros.project || undefined,
+      payment_type: filtros.payment_type || undefined,
+      mes: filtros.mes || undefined,
+      anio: filtros.anio || undefined,
+      version: filtros.version || undefined,
+      page: 1,
+      size: 5000,
+    })
+    const filas = data.results || []
+    if (!filas.length) {
+      toast.add({ severity: 'warn', summary: 'Nada que exportar', life: 3000 })
+      return
+    }
+
+    const XLSX = await import('xlsx-js-style')
+    const C = { morado: '915BD8', oscuro: '2C2039', blanco: 'FFFFFF', borde: 'ECE4F5' }
+    const encabezados = ['Fecha desde', 'Fecha hasta', 'Proyecto', 'Valor', 'Frecuencia', 'Costo', 'Versión']
+    const cuerpo = filas.map(f => [
+      f.fecha_desde || '', f.fecha_hasta || '', f.proyecto || '',
+      f.valor ?? null, FRECUENCIAS[f.frecuencia_pago] || f.frecuencia_pago || '',
+      f.tipo_pago_nombre || f.tipo_pago || '', f.version || '',
+    ])
+    const ws = XLSX.utils.aoa_to_sheet([encabezados, ...cuerpo])
+
+    const bf = { style: 'thin', color: { rgb: C.borde } }
+    const borde = { top: bf, bottom: bf, left: bf, right: bf }
+    for (let c = 0; c < encabezados.length; c++) {
+      const ref = XLSX.utils.encode_cell({ r: 0, c })
+      ws[ref].s = {
+        font: { bold: true, sz: 10, color: { rgb: C.blanco } },
+        fill: { fgColor: { rgb: C.morado } }, border: borde,
+      }
+    }
+    for (let r = 1; r <= cuerpo.length; r++) {
+      for (let c = 0; c < encabezados.length; c++) {
+        const ref = XLSX.utils.encode_cell({ r, c })
+        if (!ws[ref]) continue
+        ws[ref].s = { border: borde, font: { color: { rgb: C.oscuro } } }
+        if (c === 3) { ws[ref].s.numFmt = '"$"#,##0.00'; ws[ref].s.alignment = { horizontal: 'right' } }
+      }
+    }
+    ws['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 30 }, { wch: 16 }, { wch: 12 }, { wch: 42 }, { wch: 9 }]
+
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Costos comercializacion')
+    const periodo = [filtros.anio, filtros.mes ? String(filtros.mes).padStart(2, '0') : null]
+      .filter(Boolean).join('-') || 'todos'
+    XLSX.writeFile(wb, `Costos_comercializacion_${periodo}.xlsx`)
+
+    if (data.total > filas.length) {
+      toast.add({
+        severity: 'warn', summary: 'Exportación parcial',
+        detail: `Se exportaron ${filas.length} de ${data.total}. Filtra por período para bajar el resto.`,
+        life: 6000,
+      })
+    }
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo exportar', detail: e.message, life: 4000 })
+  } finally {
+    exportando.value = false
+  }
+}
+
+onMounted(() => { cargar(); cargarOpciones() })
 </script>
 
 <style scoped>
