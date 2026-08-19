@@ -41,31 +41,31 @@
 
       <!-- El conteo es lo que evita que un filtro quede activo y escondido:
            plegado, el botón sigue diciendo cuántos hay puestos. -->
-      <Button class="lg:hidden" :label="filtrosAbiertos ? 'Ocultar' : etiquetaFiltros"
+      <Button v-if="!esEscritorio" :label="filtrosAbiertos ? 'Ocultar' : etiquetaFiltros"
               :icon="filtrosAbiertos ? 'pi pi-chevron-up' : 'pi pi-filter'" outlined size="small"
               @click="filtrosAbiertos = !filtrosAbiertos" />
 
-      <MultiSelect v-model="filtros.tipos" :options="TIPOS_OFERTA" optionLabel="label" optionValue="value"
-                   placeholder="Tipo de oferta" :maxSelectedLabels="1"
-                   class="w-full sm:w-52" :class="claseSecundario" />
-      <MultiSelect v-model="filtros.clientes" :options="clientesDisponibles" optionLabel="nombre"
-                   optionValue="id" filter placeholder="Cliente" :maxSelectedLabels="1"
-                   class="w-full sm:w-52" :class="claseSecundario" />
-      <MultiSelect v-if="vista === 'tabla'" v-model="filtros.etapas" :options="ETAPAS"
-                   optionLabel="label" optionValue="value" placeholder="Etapa" :maxSelectedLabels="1"
-                   class="w-full sm:w-48" :class="claseSecundario" />
-      <Select v-if="vista === 'tabla'" v-model="orden" :options="ORDENES" optionLabel="label"
-              optionValue="value" class="w-full sm:w-48" :class="claseSecundario" />
-      <div class="items-center gap-1.5" :class="claseSecundarioFlex">
+      <MultiSelect v-show="filtrosVisibles" v-model="filtros.tipos" :options="TIPOS_OFERTA"
+                   optionLabel="label" optionValue="value" placeholder="Tipo de oferta"
+                   :maxSelectedLabels="1" class="w-full sm:w-52" />
+      <MultiSelect v-show="filtrosVisibles" v-model="filtros.clientes" :options="clientesDisponibles"
+                   optionLabel="nombre" optionValue="id" filter placeholder="Cliente"
+                   :maxSelectedLabels="1" class="w-full sm:w-52" />
+      <MultiSelect v-if="vista === 'tabla'" v-show="filtrosVisibles" v-model="filtros.etapas"
+                   :options="ETAPAS" optionLabel="label" optionValue="value" placeholder="Etapa"
+                   :maxSelectedLabels="1" class="w-full sm:w-48" />
+      <Select v-if="vista === 'tabla'" v-show="filtrosVisibles" v-model="orden" :options="ORDENES"
+              optionLabel="label" optionValue="value" class="w-full sm:w-48" />
+      <div v-show="filtrosVisibles" class="flex items-center gap-1.5">
         <Checkbox v-model="filtros.soloAlerta" binary inputId="soloAlerta" />
         <label for="soloAlerta" class="text-sm" style="color:#7a6e8a">Solo con alerta</label>
       </div>
-      <div class="items-center gap-1.5" :class="claseSecundarioFlex">
+      <div v-show="filtrosVisibles" class="flex items-center gap-1.5">
         <Checkbox v-model="filtros.soloSinRespuesta" binary inputId="soloSinResp" />
         <label for="soloSinResp" class="text-sm" style="color:#7a6e8a">Solo sin respuesta</label>
       </div>
-      <Button v-if="hayFiltros" label="Limpiar" icon="pi pi-filter-slash" text size="small"
-              :class="claseSecundario" @click="limpiarFiltros" />
+      <Button v-if="hayFiltros" v-show="filtrosVisibles" label="Limpiar" icon="pi pi-filter-slash"
+              text size="small" @click="limpiarFiltros" />
     </div>
 
     <!-- Falla de carga: se distingue de "no hay ofertas" a propósito -->
@@ -121,7 +121,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -181,9 +181,23 @@ const acciones = {
 }
 
 // ── Filtros secundarios plegables (solo debajo de lg) ───────────────────────
-// Es estado de presentación, no de negocio: en `lg`+ las clases `lg:` ganan y
-// los filtros van siempre visibles, sin importar lo que diga esta bandera.
+// El plegado se decide en JS, no con clases `lg:hidden`, porque PrimeVue va
+// montado sin cssLayer: sus estilos entran al <head> DESPUÉS de la hoja de
+// Tailwind y con la misma especificidad (`.p-multiselect` vs `.hidden`, ambos
+// 0-1-0), así que empatan y gana el que llegó último — PrimeVue. Sobre la raíz
+// de un componente suyo, las utilidades de display de Tailwind son inertes.
+// `v-show` escribe estilo inline, que gana siempre.
+const LG = '(min-width: 1024px)'
+// Se lee sincrónicamente en el setup para que el primer pintado ya sea el
+// correcto: arrancar en false hacía parpadear los filtros en escritorio.
+const esEscritorio = ref(window.matchMedia(LG).matches)
+const consultaLg = window.matchMedia(LG)
+function alCambiarAncho(e) { esEscritorio.value = e.matches }
+onMounted(() => consultaLg.addEventListener('change', alCambiarAncho))
+onUnmounted(() => consultaLg.removeEventListener('change', alCambiarAncho))
+
 const filtrosAbiertos = ref(false)
+const filtrosVisibles = computed(() => esEscritorio.value || filtrosAbiertos.value)
 
 // El buscador queda fuera del conteo porque nunca se esconde.
 const nFiltrosSecundarios = computed(() =>
@@ -195,9 +209,6 @@ const nFiltrosSecundarios = computed(() =>
 
 const etiquetaFiltros = computed(() =>
   nFiltrosSecundarios.value ? `Filtros (${nFiltrosSecundarios.value})` : 'Filtros')
-
-const claseSecundario = computed(() => (filtrosAbiertos.value ? '' : 'hidden lg:inline-flex'))
-const claseSecundarioFlex = computed(() => (filtrosAbiertos.value ? 'flex' : 'hidden lg:flex'))
 
 const mostrarWizard = ref(false)
 const mostrarFirmar = ref(false)
