@@ -68,7 +68,7 @@
               <span class="io-fact-val">{{ ubicacion || '—' }}</span>
             </div>
             <div class="io-fact">
-              <span class="io-fact-label">Capacidad instalada</span>
+              <span class="io-fact-label">Potencia AC instalada</span>
               <span class="io-fact-val">{{ proyecto.potencia_instalada_kwp ? fmtCapacidad(proyecto.potencia_instalada_kwp) : '—' }}</span>
             </div>
           </div>
@@ -930,7 +930,7 @@ const diasDesdeEnergizacion = computed(() => {
 function fmtCapacidad(kwp) {
   const n = Number(kwp)
   if (!n) return '—'
-  return n >= 1000 ? (n / 1000).toFixed(2) + ' MWp' : n.toLocaleString('es-CO') + ' kWp'
+  return n >= 1000 ? (n / 1000).toFixed(2) + ' MW' : n.toLocaleString('es-CO') + ' kW'
 }
 function progresoStyle(pct) {
   const c = pct >= 100 ? '#16a34a' : pct >= 50 ? '#915BD8' : '#d97706'

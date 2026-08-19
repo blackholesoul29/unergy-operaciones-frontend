@@ -70,7 +70,7 @@
           <div class="om-hero-facts">
             <div class="om-fact"><span class="om-fact-label">Cliente</span><span class="om-fact-val">{{ detalle.proyecto.nombre_clientes || '—' }}</span></div>
             <div class="om-fact"><span class="om-fact-label">Ubicación</span><span class="om-fact-val">{{ ubicacion || '—' }}</span></div>
-            <div class="om-fact"><span class="om-fact-label">Capacidad instalada</span><span class="om-fact-val">{{ fmtCapacidad(detalle.proyecto.potencia_instalada_kwp) }}</span></div>
+            <div class="om-fact"><span class="om-fact-label">Potencia AC instalada</span><span class="om-fact-val">{{ fmtCapacidad(detalle.proyecto.potencia_instalada_kwp) }}</span></div>
             <div class="om-fact"><span class="om-fact-label">Puesta en marcha</span><span class="om-fact-val">{{ fmtFecha(detalle.fecha_inicio_operacion) || '—' }}</span></div>
             <div class="om-fact">
               <span class="om-fact-label">Versión</span>
@@ -821,7 +821,7 @@ function construirHtmlInforme() {
   html += '<div style="display:flex;align-items:center;gap:13px">' + unergyLogoSVG() +
     '<div><div style="color:#fff;font-size:14px;font-weight:800;letter-spacing:.8px">INFORME DE PUESTA EN MARCHA · UNERGY ENERGÍA DIGITAL S.A.S ESP</div>' +
     '<div style="color:#6B5F80;font-size:10px;letter-spacing:.6px;margin-top:2px">Sistema de monitoreo y adquisición de datos</div></div></div>'
-  html += `<div class="rpt-meta-grid">${rmeta('PROYECTO', detalle.proyecto.nombre_comercial)}${rmeta('CLIENTE', detalle.proyecto.nombre_clientes)}${rmeta('UBICACIÓN', ubicacion.value)}${rmeta('CAPACIDAD INSTALADA', fmtCapacidad(detalle.proyecto.potencia_instalada_kwp))}</div>`
+  html += `<div class="rpt-meta-grid">${rmeta('PROYECTO', detalle.proyecto.nombre_comercial)}${rmeta('CLIENTE', detalle.proyecto.nombre_clientes)}${rmeta('UBICACIÓN', ubicacion.value)}${rmeta('POTENCIA AC INSTALADA', fmtCapacidad(detalle.proyecto.potencia_instalada_kwp))}</div>`
   html += '</div>'
 
   html += '<div class="rpt-kpi-row">' +
@@ -937,7 +937,7 @@ const ubicacion = computed(() =>
 function fmtCapacidad(kwp) {
   const n = Number(kwp)
   if (!n) return '—'
-  return n >= 1000 ? (n / 1000).toFixed(2) + ' MWp' : n.toLocaleString('es-CO') + ' kWp'
+  return n >= 1000 ? (n / 1000).toFixed(2) + ' MW' : n.toLocaleString('es-CO') + ' kW'
 }
 function fmtFecha(iso) {
   if (!iso) return null

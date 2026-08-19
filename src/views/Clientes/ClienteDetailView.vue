@@ -301,7 +301,7 @@
                   <p class="text-sm font-semibold" style="color: #2C2039;">{{ p.nombre_comercial }}</p>
                   <p class="text-xs" style="color: #6b5a8a;">
                     {{ [p.municipio, p.departamento].filter(Boolean).join(', ') || '—' }}
-                    <span v-if="p.potencia_instalada_kwp" class="ml-2">{{ p.potencia_instalada_kwp }} kWp</span>
+                    <span v-if="p.potencia_instalada_kwp" class="ml-2">{{ p.potencia_instalada_kwp }} kW AC</span>
                   </p>
                 </div>
               </div>

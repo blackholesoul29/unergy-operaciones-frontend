@@ -103,9 +103,9 @@
         <DataTable :value="proyectosFilas" class="text-sm mb-6" dataKey="id" selectionMode="single"
                    @row-click="$router.push(`/proyectos/${$event.data.id}`)">
           <Column field="nombre_comercial" header="Nombre" />
-          <Column header="Capacidad">
+          <Column header="Potencia AC">
             <template #body="{ data }">
-              {{ data.potencia_instalada_kwp ? `${data.potencia_instalada_kwp} kWp` : '—' }}
+              {{ data.potencia_instalada_kwp ? `${data.potencia_instalada_kwp} kW` : '—' }}
             </template>
           </Column>
           <Column field="municipio" header="Municipio" />

@@ -1065,7 +1065,7 @@ function descargarSimulacionExcel() {
     })
     const aoa = [
       [`Simulación de generación — ${proyecto.value.nombre_comercial || ''}`],
-      [`Potencia instalada: ${proyecto.value.potencia_instalada_kwp ?? '—'} kWp`],
+      [`Potencia AC instalada: ${proyecto.value.potencia_instalada_kwp ?? '—'} kW`],
       [`Exportado: ${new Date().toLocaleString('es-CO')}`],
       [],
       header,
