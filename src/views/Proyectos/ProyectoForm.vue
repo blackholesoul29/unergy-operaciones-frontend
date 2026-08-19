@@ -260,8 +260,9 @@ onMounted(async () => {
 // Técnico), que requiere un proyecto_id existente, así que no son parte de `f`
 // (el payload de POST/PATCH /proyectos). El submit las emite aparte para que
 // quien las reciba haga el PUT a /proyectos/{id}/info-tecnica después de crear.
-// capacidad_instalada_kwp también se copia a proyectos.potencia_instalada_kwp
-// (el campo que usan los cálculos de generación esperada en el resto del backend).
+// Ese PUT ya espeja capacidad_instalada_kwp a proyectos.potencia_instalada_kwp
+// del lado del backend (ver app/api/v1/proyectos.py::upsert_info_tecnica) --
+// no hace falta duplicarlo aquí.
 const potenciaAcKw = ref(null)
 const capacidadInstaladaKwp = ref(null)
 // Cantidad de paneles -- también vive en proyecto_info_tecnica; opcional al crear.
@@ -381,10 +382,6 @@ function submit() {
   // Fechas del proyecto (null = sin fecha / vigente)
   payload.fecha_entrada_operacion = formatFecha(fechaEntrada.value)
   payload.fecha_fin_representacion = formatFecha(fechaFinRep.value)
-  // Capacidad instalada (DC) es la que usan los cálculos de generación esperada
-  // en el resto del backend -- se guarda también aquí, no solo en info-tecnica.
-  if (capacidadInstaladaKwp.value !== null) payload.potencia_instalada_kwp = capacidadInstaladaKwp.value
-
   const infoTecnica = {}
   if (potenciaAcKw.value !== null) infoTecnica.potencia_ac_kw = potenciaAcKw.value
   if (capacidadInstaladaKwp.value !== null) infoTecnica.capacidad_instalada_kwp = capacidadInstaladaKwp.value
