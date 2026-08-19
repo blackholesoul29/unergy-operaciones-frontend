@@ -20,7 +20,9 @@
       </div>
     </div>
 
-    <!-- Tarjetas: cuántos proyectos reciben cada grupo de conceptos -->
+    <!-- Tarjetas: AC Power sumado de los proyectos que reciben cada grupo de
+         conceptos. Es el denominador de la prorrata que pide el reparto de XM,
+         por eso manda el total en kW y no el conteo de proyectos. -->
     <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <div class="bg-white rounded-xl shadow-sm border p-4 flex items-center gap-3" style="border-color:#ECE7F2">
         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
@@ -28,10 +30,16 @@
           <i class="pi pi-bolt text-lg" style="color:#10B981" />
         </div>
         <div class="min-w-0">
-          <p class="text-xs text-gray-500">Costos generador</p>
+          <p class="text-xs text-gray-500">AC Power generador</p>
           <p class="text-xl font-bold" style="color:#2C2039">
-            {{ totalGenerador }}
-            <span class="text-xs font-normal text-gray-400">de {{ filtrados.length }}</span>
+            {{ fmtNum(generador.acPower) }}
+            <span class="text-xs font-normal text-gray-400">kW</span>
+          </p>
+          <p class="text-[11px] text-gray-400">
+            {{ generador.total }} de {{ filtrados.length }} proyecto{{ filtrados.length === 1 ? '' : 's' }}
+            <span v-if="generador.sinAcPower" style="color:#B45309">
+              · {{ generador.sinAcPower }} sin AC Power
+            </span>
           </p>
         </div>
       </div>
@@ -42,10 +50,16 @@
           <i class="pi pi-briefcase text-lg" style="color:#915BD8" />
         </div>
         <div class="min-w-0">
-          <p class="text-xs text-gray-500">Costos comercializador</p>
+          <p class="text-xs text-gray-500">AC Power comercializador</p>
           <p class="text-xl font-bold" style="color:#2C2039">
-            {{ totalComercializador }}
-            <span class="text-xs font-normal text-gray-400">de {{ filtrados.length }}</span>
+            {{ fmtNum(comercializador.acPower) }}
+            <span class="text-xs font-normal text-gray-400">kW</span>
+          </p>
+          <p class="text-[11px] text-gray-400">
+            {{ comercializador.total }} de {{ filtrados.length }} proyecto{{ filtrados.length === 1 ? '' : 's' }}
+            <span v-if="comercializador.sinAcPower" style="color:#B45309">
+              · {{ comercializador.sinAcPower }} sin AC Power
+            </span>
           </p>
         </div>
       </div>
@@ -201,8 +215,20 @@ const filtrados = computed(() => {
 })
 
 // Cuántos de los proyectos listados reciben cada grupo de conceptos.
-const totalGenerador = computed(() => filtrados.value.filter(f => f.from_generator === true).length)
-const totalComercializador = computed(() => filtrados.value.filter(f => f.from_commercializer === true).length)
+// AC Power sumado del grupo, más cuántos proyectos lo componen y cuántos de
+// ellos no tienen el dato: un proyecto sin AC Power no suma pero sí debería,
+// así que el total se queda corto mientras falte.
+function resumenAcPower(campo) {
+  const delGrupo = filtrados.value.filter(f => f[campo] === true)
+  return {
+    total: delGrupo.length,
+    acPower: delGrupo.reduce((suma, f) => suma + (Number(f.ac_power) || 0), 0),
+    sinAcPower: delGrupo.filter(f => !f.ac_power).length,
+  }
+}
+
+const generador = computed(() => resumenAcPower('from_generator'))
+const comercializador = computed(() => resumenAcPower('from_commercializer'))
 
 // Sin ac_power el reparto de costos de XM falla: es el divisor de la prorrata.
 const sinAcPower = computed(
