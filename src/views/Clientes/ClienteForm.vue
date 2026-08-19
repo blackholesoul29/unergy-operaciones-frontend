@@ -18,10 +18,6 @@
         <InputText v-model="f.representante_legal" class="w-full" />
       </div>
       <div>
-        <label class="field-label">Teléfono</label>
-        <InputText v-model="f.telefono_contacto" class="w-full" />
-      </div>
-      <div>
         <label class="field-label">Departamento</label>
         <Select v-model="f.departamento" :options="departamentos" class="w-full" placeholder="Seleccionar" showClear filter />
       </div>
