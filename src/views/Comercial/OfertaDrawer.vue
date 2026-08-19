@@ -51,7 +51,7 @@
       <!-- ── Seguimiento del envío ───────────────────────────────────────── -->
       <section>
         <h3 class="seccion">Seguimiento del envío</h3>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="etiqueta">Enviada el</label>
             <DatePicker v-model="f.fecha_oferta" dateFormat="yy-mm-dd" showIcon class="w-full"
@@ -87,7 +87,7 @@
       <!-- ── Comercial ───────────────────────────────────────────────────── -->
       <section>
         <h3 class="seccion">Comercial</h3>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="etiqueta">Tipo de oferta</label>
             <Select v-model="f.tipo" :options="TIPOS_OFERTA" optionLabel="label" optionValue="value"
@@ -108,12 +108,12 @@
             <DatePicker v-model="f.fecha_fin_tentativa" dateFormat="yy-mm-dd" showIcon class="w-full"
                         @update:modelValue="autosave" />
           </div>
-          <div class="col-span-2">
+          <div class="sm:col-span-2">
             <label class="etiqueta">Documento de la oferta (link)</label>
             <InputText v-model.trim="f.documento_url" class="w-full" placeholder="https://…"
                        @update:modelValue="autosave" />
           </div>
-          <div class="col-span-2">
+          <div class="sm:col-span-2">
             <label class="etiqueta">Notas</label>
             <Textarea v-model="f.notas" rows="2" autoResize class="w-full" @update:modelValue="autosave" />
           </div>

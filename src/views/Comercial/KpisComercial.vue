@@ -5,15 +5,19 @@
   negocio.
 -->
 <template>
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
     <div v-for="k in tarjetas" :key="k.label"
-         class="rounded-lg px-4 py-3 border transition-colors"
+         class="rounded-lg px-3 py-2.5 sm:px-4 sm:py-3 border transition-colors"
          :class="k.accionable ? 'cursor-pointer hover:border-unergy-purple' : ''"
          :style="{ background: k.fondo, borderColor: k.borde }"
          @click="k.accionable && $emit('filtrar', k.filtro)">
-      <div class="text-2xl font-semibold leading-none" :style="{ color: k.color }">{{ k.valor }}</div>
+      <div class="text-xl sm:text-2xl font-semibold leading-none" :style="{ color: k.color }">{{ k.valor }}</div>
       <div class="text-xs mt-1.5" style="color:#7a6e8a">{{ k.label }}</div>
-      <div v-if="k.detalle" class="text-[11px] mt-0.5" style="color:#9b89b5">{{ k.detalle }}</div>
+      <!-- El detalle se oculta cuando la tarjeta mide media pantalla: ahí un
+           texto como "MWh/mes estimados de las ofertas abiertas" envuelve a
+           cuatro líneas, descuadra la fila y empuja el contenido real fuera de
+           la primera pantalla. La cifra y su etiqueta se sostienen solas. -->
+      <div v-if="k.detalle" class="hidden sm:block text-[11px] mt-0.5" style="color:#9b89b5">{{ k.detalle }}</div>
     </div>
   </div>
 </template>

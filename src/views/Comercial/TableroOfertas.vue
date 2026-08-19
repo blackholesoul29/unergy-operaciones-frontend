@@ -11,9 +11,9 @@
 <template>
   <div class="flex gap-3 overflow-x-auto pb-2 items-start">
     <div v-for="col in COLUMNAS" :key="col.value"
-         class="rounded-lg flex-shrink-0 flex flex-col"
-         :class="colapsada(col) ? 'w-14' : 'w-[16.5rem]'"
-         style="background:#FAF8FC;border:1px solid #e8e0f0;max-height:calc(100vh - 20rem)"
+         class="rounded-lg flex-shrink-0 flex flex-col tablero-col"
+         :class="colapsada(col) ? 'w-14' : 'w-[85vw] sm:w-[16.5rem]'"
+         style="background:#FAF8FC;border:1px solid #e8e0f0"
          @dragover.prevent="arrastreSobre = col.value"
          @dragleave="arrastreSobre === col.value && (arrastreSobre = null)"
          @drop="soltar(col)">
@@ -161,3 +161,21 @@ function soltar(col) {
   emit('mover', oferta, destino)
 }
 </script>
+
+<style scoped>
+/* La altura de la columna se mide contra el chrome que tiene encima, y ese
+   chrome no mide lo mismo en las dos puntas: en escritorio son el header, la
+   banda de indicadores y UNA fila de filtros; en pantalla chica todo eso va
+   apilado. Con el valor de escritorio fijo (20rem), en celular la columna
+   quedaba como una ventanita con scroll dentro de una página que también
+   scrollea — dos barras compitiendo por el mismo gesto.
+   `dvh` en vez de `vh` para que la barra de direcciones del navegador móvil,
+   que aparece y desaparece, no deje la columna cortada. */
+.tablero-col {
+  max-height: calc(100vh - 14rem);
+  max-height: calc(100dvh - 14rem);
+}
+@media (min-width: 1024px) {
+  .tablero-col { max-height: calc(100vh - 20rem); }
+}
+</style>

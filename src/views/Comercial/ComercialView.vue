@@ -7,50 +7,65 @@
   que el enlace se pueda pegar en un chat y sobreviva un F5.
 -->
 <template>
-  <div class="p-4 md:p-6">
-    <!-- Encabezado -->
-    <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
-      <div>
-        <h1 class="text-xl font-semibold" style="color:#2C2039">Comercial</h1>
-        <p class="text-sm" style="color:#7a6e8a">
-          Pipeline de ofertas — la oferta es la unidad del negocio, no el cliente
-        </p>
-      </div>
-      <div class="flex items-center gap-2">
+  <!-- Sin `p-4`: el <main> del shell ya paga el padding de pantalla chica
+       (p-4 sm:p-5). Sumarle otro dejaba ~32px de los 390px de un celular en
+       padding anidado. Desde `md` el total queda igual que antes. -->
+  <div class="md:p-6">
+    <PageHeader class="mb-4" title="Comercial"
+                subtitle="Pipeline de ofertas — la oferta es la unidad del negocio, no el cliente">
+      <template #actions>
         <SelectButton v-model="vista" :options="VISTAS" optionLabel="label" optionValue="value"
                       :allowEmpty="false" />
-        <Button label="Registrar oferta" icon="pi pi-plus" @click="mostrarWizard = true" />
-      </div>
-    </div>
+        <Button label="Registrar oferta" icon="pi pi-plus" class="whitespace-nowrap"
+                @click="mostrarWizard = true" />
+      </template>
+    </PageHeader>
 
     <KpisComercial :banda="banda" :alerta-dias="alertaDias" @filtrar="aplicarAtajo" />
 
-    <!-- Filtros, compartidos por las dos vistas -->
+    <!-- Filtros, compartidos por las dos vistas.
+
+         Los anchos fijos (w-72/w-52/w-48) no encogían: debajo de ~1100px cada
+         control caía en su propia fila y en celular eran cinco filas apiladas
+         que empujaban la primera fila de datos una pantalla entera hacia abajo.
+         Ahora: a ancho completo debajo de `sm`, con los mismos anchos de antes
+         desde `sm`, y debajo de `lg` los secundarios se pliegan detrás del
+         botón "Filtros". En `lg`+ el botón no existe y todo va expandido en una
+         sola fila, exactamente como hasta ahora. -->
     <div class="flex flex-wrap items-center gap-2 mb-4">
-      <IconField>
+      <IconField class="w-full sm:w-auto">
         <InputIcon class="pi pi-search" />
         <InputText v-model.trim="filtros.texto" placeholder="Código, cliente, planta, municipio…"
-                   class="w-72" />
+                   class="w-full sm:w-72" />
       </IconField>
+
+      <!-- El conteo es lo que evita que un filtro quede activo y escondido:
+           plegado, el botón sigue diciendo cuántos hay puestos. -->
+      <Button class="lg:hidden" :label="filtrosAbiertos ? 'Ocultar' : etiquetaFiltros"
+              :icon="filtrosAbiertos ? 'pi pi-chevron-up' : 'pi pi-filter'" outlined size="small"
+              @click="filtrosAbiertos = !filtrosAbiertos" />
+
       <MultiSelect v-model="filtros.tipos" :options="TIPOS_OFERTA" optionLabel="label" optionValue="value"
-                   placeholder="Tipo de oferta" class="w-52" :maxSelectedLabels="1" />
+                   placeholder="Tipo de oferta" :maxSelectedLabels="1"
+                   class="w-full sm:w-52" :class="claseSecundario" />
       <MultiSelect v-model="filtros.clientes" :options="clientesDisponibles" optionLabel="nombre"
-                   optionValue="id" filter placeholder="Cliente" class="w-52" :maxSelectedLabels="1" />
+                   optionValue="id" filter placeholder="Cliente" :maxSelectedLabels="1"
+                   class="w-full sm:w-52" :class="claseSecundario" />
       <MultiSelect v-if="vista === 'tabla'" v-model="filtros.etapas" :options="ETAPAS"
-                   optionLabel="label" optionValue="value" placeholder="Etapa" class="w-48"
-                   :maxSelectedLabels="1" />
+                   optionLabel="label" optionValue="value" placeholder="Etapa" :maxSelectedLabels="1"
+                   class="w-full sm:w-48" :class="claseSecundario" />
       <Select v-if="vista === 'tabla'" v-model="orden" :options="ORDENES" optionLabel="label"
-              optionValue="value" class="w-48" />
-      <div class="flex items-center gap-1.5">
+              optionValue="value" class="w-full sm:w-48" :class="claseSecundario" />
+      <div class="items-center gap-1.5" :class="claseSecundarioFlex">
         <Checkbox v-model="filtros.soloAlerta" binary inputId="soloAlerta" />
         <label for="soloAlerta" class="text-sm" style="color:#7a6e8a">Solo con alerta</label>
       </div>
-      <div class="flex items-center gap-1.5">
+      <div class="items-center gap-1.5" :class="claseSecundarioFlex">
         <Checkbox v-model="filtros.soloSinRespuesta" binary inputId="soloSinResp" />
         <label for="soloSinResp" class="text-sm" style="color:#7a6e8a">Solo sin respuesta</label>
       </div>
       <Button v-if="hayFiltros" label="Limpiar" icon="pi pi-filter-slash" text size="small"
-              @click="limpiarFiltros" />
+              :class="claseSecundario" @click="limpiarFiltros" />
     </div>
 
     <!-- Falla de carga: se distingue de "no hay ofertas" a propósito -->
@@ -120,6 +135,7 @@ import Dialog from 'primevue/dialog'
 import Textarea from 'primevue/textarea'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
+import PageHeader from '@/components/PageHeader.vue'
 import KpisComercial from './KpisComercial.vue'
 import TableroOfertas from './TableroOfertas.vue'
 import TablaOfertas from './TablaOfertas.vue'
@@ -163,6 +179,25 @@ const acciones = {
   moverEtapa, guardarOferta, registrarSeguimiento, registrarGestion,
   eliminarOferta, firmar, registrar,
 }
+
+// ── Filtros secundarios plegables (solo debajo de lg) ───────────────────────
+// Es estado de presentación, no de negocio: en `lg`+ las clases `lg:` ganan y
+// los filtros van siempre visibles, sin importar lo que diga esta bandera.
+const filtrosAbiertos = ref(false)
+
+// El buscador queda fuera del conteo porque nunca se esconde.
+const nFiltrosSecundarios = computed(() =>
+  (filtros.tipos.length ? 1 : 0)
+  + (filtros.clientes.length ? 1 : 0)
+  + (filtros.etapas.length ? 1 : 0)
+  + (filtros.soloAlerta ? 1 : 0)
+  + (filtros.soloSinRespuesta ? 1 : 0))
+
+const etiquetaFiltros = computed(() =>
+  nFiltrosSecundarios.value ? `Filtros (${nFiltrosSecundarios.value})` : 'Filtros')
+
+const claseSecundario = computed(() => (filtrosAbiertos.value ? '' : 'hidden lg:inline-flex'))
+const claseSecundarioFlex = computed(() => (filtrosAbiertos.value ? 'flex' : 'hidden lg:flex'))
 
 const mostrarWizard = ref(false)
 const mostrarFirmar = ref(false)

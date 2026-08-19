@@ -50,7 +50,7 @@
       </div>
 
       <template v-else>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="etiqueta">Razón social *</label>
             <InputText v-model.trim="nuevo.razon_social_nombre" class="w-full" />
@@ -101,7 +101,7 @@
         </Message>
       </template>
 
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label class="etiqueta">Nombre del negocio (opcional)</label>
           <InputText v-model.trim="negocio.nombre" class="w-full"
@@ -123,7 +123,7 @@
           <Button v-if="ofertas.length > 1" icon="pi pi-trash" text severity="danger" size="small"
                   @click="ofertas.splice(i, 1)" />
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="etiqueta">Tipo de oferta *</label>
             <Select v-model="o.tipo" :options="TIPOS_OFERTA" optionLabel="label" optionValue="value"
@@ -133,7 +133,7 @@
             <label class="etiqueta">Planta</label>
             <InputText v-model.trim="o.planta_nombre" class="w-full" placeholder="Ej: Balmora 1 y 2" />
           </div>
-          <div class="col-span-2">
+          <div class="sm:col-span-2">
             <label class="etiqueta">Proyectos existentes (opcional)</label>
             <MultiSelect v-model="o.proyecto_ids" :options="proyectos" optionLabel="nombre_comercial"
                          optionValue="id" filter display="chip" class="w-full"
