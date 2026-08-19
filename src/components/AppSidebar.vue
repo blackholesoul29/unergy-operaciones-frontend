@@ -262,11 +262,11 @@ const ALL_GROUPS = [
     items: [
       { to: '/dashboard',       label: 'Dashboard',        icon: 'pi pi-home' },
       { to: '/clientes',        label: 'Clientes',         icon: 'pi pi-building' },
+      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/proyectos',       label: 'Proyectos',        icon: 'pi pi-bolt' },
       { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
-      { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
       { to: '/servicios',       label: 'Servicios',        icon: 'pi pi-file-edit' },
-      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
+      { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
     ],
   },
   {
