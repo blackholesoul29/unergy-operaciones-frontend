@@ -20,6 +20,37 @@
       </div>
     </div>
 
+    <!-- Tarjetas: cuántos proyectos reciben cada grupo de conceptos -->
+    <div v-if="!loading && !error" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="bg-white rounded-xl shadow-sm border p-4 flex items-center gap-3" style="border-color:#ECE7F2">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+             style="background:#10B98118">
+          <i class="pi pi-bolt text-lg" style="color:#10B981" />
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs text-gray-500">Costos generador</p>
+          <p class="text-xl font-bold" style="color:#2C2039">
+            {{ totalGenerador }}
+            <span class="text-xs font-normal text-gray-400">de {{ filtrados.length }}</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border p-4 flex items-center gap-3" style="border-color:#ECE7F2">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+             style="background:#915BD818">
+          <i class="pi pi-briefcase text-lg" style="color:#915BD8" />
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs text-gray-500">Costos comercializador</p>
+          <p class="text-xl font-bold" style="color:#2C2039">
+            {{ totalComercializador }}
+            <span class="text-xs font-normal text-gray-400">de {{ filtrados.length }}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
     <!-- Aviso: el reparto falla sin ac_power -->
     <div v-if="!loading && sinAcPower" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FFF8E6; border:1px solid #F5E3B3; color:#7A5C00">
@@ -168,6 +199,10 @@ const filtrados = computed(() => {
   const term = q.value.trim().toLowerCase()
   return filas.value.filter(f => !term || f.nombre_comercial.toLowerCase().includes(term))
 })
+
+// Cuántos de los proyectos listados reciben cada grupo de conceptos.
+const totalGenerador = computed(() => filtrados.value.filter(f => f.from_generator === true).length)
+const totalComercializador = computed(() => filtrados.value.filter(f => f.from_commercializer === true).length)
 
 // Sin ac_power el reparto de costos de XM falla: es el divisor de la prorrata.
 const sinAcPower = computed(
