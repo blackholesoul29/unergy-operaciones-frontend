@@ -172,6 +172,9 @@
           <span v-if="f.usado" class="text-[10px] font-bold text-white rounded-full px-2 py-0.5 flex-none" style="background: #915BD8;">USADO</span>
         </div>
       </div>
+      <p v-if="detalle.recuperacion_datos" class="text-[11px] mt-3" style="color: #9b89b5;">
+        Recuperación activa intentada al clasificar: {{ detalle.recuperacion_datos }}
+      </p>
     </div>
 
     <!-- Edición manual -->
