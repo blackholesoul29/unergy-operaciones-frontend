@@ -337,7 +337,7 @@
       </p>
       <div class="flex justify-end gap-2">
         <Button label="Cancelar" severity="secondary" @click="duplicadoVisible = false" />
-        <Button label="Crear de todos modos" :loading="forzando" @click="crearForzado" />
+        <Button label="Crear de todos modos" :loading="forzando" @click="duplicadoConfirmAction()" />
       </div>
     </Dialog>
 
@@ -576,6 +576,9 @@ const duplicadoVisible = ref(false)
 const duplicadoInfo = ref(null)   // { mensaje, candidato_id, candidato_nombre }
 const pendingPayload = ref(null)  // payload a reintentar con forzar=true
 const pendingInfoTecnica = ref(null)  // potencia_ac_kw/capacidad_instalada_kwp a reintentar junto con pendingPayload
+// Qué reintentar con forzar=true al confirmar el diálogo -- crearForzado() para
+// el alta manual, o un cierre sobre confirmarPendiente(p, true) para Pendientes.
+const duplicadoConfirmAction = ref(null)
 const forzando = ref(false)
 const openSections = ref(new Set())    // reactive Set via full replacement
 
@@ -775,6 +778,7 @@ async function onCreate(payload, infoTecnica) {
       duplicadoInfo.value = detail
       pendingPayload.value = payload
       pendingInfoTecnica.value = infoTecnica
+      duplicadoConfirmAction.value = crearForzado
       duplicadoVisible.value = true
       return
     }
@@ -840,19 +844,37 @@ function abrirPendientes() {
   loadPendientes().finally(() => { loadingPendientes.value = false })
 }
 
-async function confirmarPendiente(p) {
+async function confirmarPendiente(p, forzar = false) {
   p._loading = 'confirmar'
   try {
     await api.post(`/proyectos/pendientes/${p.clave}/confirmar`, {
       nombre_comercial: p.tipo_sugerencia === 'crear' ? p._nombre : undefined,
       tipo_proyecto: p.tipo_sugerencia === 'crear' ? p._tipo : undefined,
-    })
+    }, forzar ? { params: { forzar: true } } : undefined)
     pendientes.value = pendientes.value.filter(x => x.clave !== p.clave)
+    duplicadoVisible.value = false
     toast.add({ severity: 'success', summary: p.tipo_sugerencia === 'crear' ? 'Proyecto creado' : 'Proyecto actualizado', life: 3000 })
     load()
   } catch (e) {
+    const detail = e.response?.data?.detail
+    // Mismo aviso de "nombre parecido" que en el alta manual -- evita que dos
+    // candidatos pendientes distintos (p. ej. Sun Factory duplicado) creen el
+    // mismo proyecto dos veces sin ningún aviso.
+    if (e.response?.status === 409 && detail?.duplicado_nombre) {
+      duplicadoInfo.value = detail
+      duplicadoConfirmAction.value = async () => {
+        forzando.value = true
+        try {
+          await confirmarPendiente(p, true)
+        } finally {
+          forzando.value = false
+        }
+      }
+      duplicadoVisible.value = true
+      return
+    }
     toast.add({ severity: 'error', summary: 'No se pudo confirmar',
-      detail: e.response?.data?.detail || e.message, life: 5000 })
+      detail: typeof detail === 'string' ? detail : (detail?.mensaje || e.message), life: 5000 })
   } finally {
     p._loading = null
   }
