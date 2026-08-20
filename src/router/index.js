@@ -66,6 +66,7 @@ const routes = [
   { path: '/finanzas/ids-proyectos',   name: 'IdsProyectos',   component: () => import('@/views/Finanzas/IdsProyectosView.vue'),      meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/contratos-energia', name: 'ContratosEnergia', component: () => import('@/views/Finanzas/ContratosEnergiaView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/despachos-liquidados', name: 'DespachosLiquidados', component: () => import('@/views/Finanzas/DespachosLiquidadosView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
+  { path: '/finanzas/consumo', name: 'Consumo', component: () => import('@/views/Finanzas/ConsumoView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/costos-comercializacion', name: 'CostosComercializacion', component: () => import('@/views/Finanzas/CostosComercializacionView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/facturas-xm', name: 'FacturasXm', component: () => import('@/views/Finanzas/FacturasXmView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/verificacion-costos', name: 'VerificacionCostos', component: () => import('@/views/Finanzas/VerificacionCostosView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },

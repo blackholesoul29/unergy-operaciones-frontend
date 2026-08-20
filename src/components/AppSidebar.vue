@@ -324,6 +324,7 @@ const ALL_GROUPS = [
           { to: '/finanzas/ids-proyectos', label: 'IDs proyectos' },
           { to: '/finanzas/contratos-energia', label: 'Contratos de energía' },
           { to: '/finanzas/despachos-liquidados', label: 'Despachos liquidados' },
+          { to: '/finanzas/consumo', label: 'Consumo' },
           { to: '/finanzas/costos-comercializacion', label: 'Costos comercialización' },
           { to: '/finanzas/facturas-xm', label: 'Facturas de XM' },
           { to: '/finanzas/verificacion-costos', label: 'Verificación de costos' },
