@@ -775,7 +775,6 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
-import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import * as XLSX from 'xlsx'
 import api from '@/api/client'
@@ -865,8 +864,6 @@ const editForm = reactive({
   sub_project: null,
   codigo_tsf: null,
   topico_liquidaciones: null,
-  codigo_sic_generacion: null,
-  codigo_sic_consumo: null,
   produccion_especifica_kwh_kwp: null,
   es_comunidad_energetica: false,
   nombre_comunidad: '',
