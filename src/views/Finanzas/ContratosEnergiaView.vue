@@ -303,19 +303,29 @@ async function cargar() {
   }
 }
 
+// La API trae registros con el nombre en null (hoy, dos empresas). Sin
+// descartarlos el orden alfabético revienta al comparar contra null y se caían
+// los dos catálogos a la vez, aunque los precios estuvieran bien.
+function _opciones(filas, campoNombre) {
+  return (filas || [])
+    .filter(x => x?.[campoNombre])
+    .map(x => ({ id: x.id, label: String(x[campoNombre]) }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+}
+
 async function cargarCatalogos() {
   try {
     const cat = await listarCatalogos()
-    empresasOptions.value = (cat.empresas || [])
-      .map(e => ({ id: e.id, label: e.nombre_empresa }))
-      .sort((a, b) => a.label.localeCompare(b.label))
-    preciosOptions.value = (cat.precios_energia || [])
-      .map(p => ({ id: p.id, label: p.name }))
-      .sort((a, b) => a.label.localeCompare(b.label))
-  } catch {
+    empresasOptions.value = _opciones(cat.empresas, 'nombre_empresa')
+    preciosOptions.value = _opciones(cat.precios_energia, 'name')
+  } catch (e) {
+    empresasOptions.value = []
+    preciosOptions.value = []
     toast.add({
       severity: 'warn', summary: 'Catálogos no disponibles',
-      detail: 'No se pudieron cargar comercializadores ni precios de energía.', life: 5000,
+      detail: e.response?.data?.detail
+        || 'No se pudieron cargar comercializadores ni precios de energía.',
+      life: 5000,
     })
   }
 }
