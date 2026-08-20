@@ -18,9 +18,31 @@
         </IconField>
       </div>
       <div>
+        <label class="field-label">Planta</label>
+        <Select v-model="plantaSel" :options="proyectosOptions" optionLabel="label" optionValue="value"
+                class="w-52" showClear filter placeholder="Todas" />
+      </div>
+      <div>
         <label class="field-label">Tipo de contrato</label>
         <Select v-model="tipoSel" :options="TIPOS_CONTRATO" optionLabel="label" optionValue="value"
-                class="w-56" showClear placeholder="Todos" />
+                class="w-52" showClear placeholder="Todos" />
+      </div>
+      <div>
+        <label class="field-label">Tipo de tarifa</label>
+        <Select v-model="tarifaSel" :options="TIPOS_TARIFA" optionLabel="label" optionValue="value"
+                class="w-44" showClear placeholder="Todas" />
+      </div>
+      <div>
+        <label class="field-label">Año</label>
+        <Select v-model="anioSel" :options="aniosOptions" class="w-28" showClear placeholder="Todos"
+                v-tooltip.top="'Contratos cuya vigencia toca ese año'" />
+      </div>
+      <div>
+        <label class="field-label">Vigencia</label>
+        <div class="flex items-center gap-2 h-[38px]">
+          <ToggleSwitch v-model="soloVigentes" />
+          <span class="text-xs text-gray-500">{{ soloVigentes ? 'Solo vigentes' : 'Todos' }}</span>
+        </div>
       </div>
       <div class="flex-1" />
       <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
@@ -217,6 +239,7 @@ import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Select from 'primevue/select'
+import ToggleSwitch from 'primevue/toggleswitch'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
@@ -249,6 +272,23 @@ const COLUMNAS = [
 // ── Estado ───────────────────────────────────────────────────────────────────
 const q = ref('')
 const tipoSel = ref(null)
+const tarifaSel = ref(null)
+const plantaSel = ref(null)
+const anioSel = ref(null)
+// Un contrato está vigente si hoy cae dentro de su ventana de fechas.
+const soloVigentes = ref(false)
+
+// Años con contratos, para no ofrecer un rango vacío.
+const aniosOptions = computed(() => {
+  const set = new Set()
+  for (const c of contratos.value) {
+    for (const f of [c.fecha_desde, c.fecha_hasta]) {
+      const a = Number(String(f || '').slice(0, 4))
+      if (a) set.add(a)
+    }
+  }
+  return [...set].sort((a, b) => b - a)
+})
 const loading = ref(false)
 const error = ref(null)
 const contratos = ref([])
@@ -260,12 +300,38 @@ const proyectosOptions = ref([])
 
 const filtrados = computed(() => {
   const term = q.value.trim().toLowerCase()
-  return contratos.value.filter((c) => {
-    if (tipoSel.value && c.tipo_contrato !== tipoSel.value) return false
-    if (!term) return true
-    return [c.empresa, c.codigo, ...c.proyectos.map(p => nombreProyecto(p.proyecto))]
-      .filter(Boolean).some(v => String(v).toLowerCase().includes(term))
-  })
+  const hoy = new Date().toISOString().slice(0, 10)
+
+  return contratos.value
+    .filter((c) => {
+      if (tipoSel.value && c.tipo_contrato !== tipoSel.value) return false
+      if (tarifaSel.value && c.tipo_tarifa !== tarifaSel.value) return false
+      // El backend ya resuelve el nombre de la planta, pero el select guarda el
+      // tópico: se acepta cualquiera de los dos para no depender de cuál venga.
+      if (plantaSel.value) {
+        const etiqueta = proyectosOptions.value.find(o => o.value === plantaSel.value)?.label
+        const coincide = c.proyectos.some(
+          p => p.proyecto === plantaSel.value || (etiqueta && p.proyecto === etiqueta),
+        )
+        if (!coincide) return false
+      }
+      // El año entra si la vigencia del contrato lo toca, no solo si empieza ahí:
+      // un contrato de 2025 a 2039 también cubre 2026.
+      if (anioSel.value) {
+        const desde = String(c.fecha_desde || '0000')
+        const hasta = String(c.fecha_hasta || '9999')
+        if (desde.slice(0, 4) > String(anioSel.value) || hasta.slice(0, 4) < String(anioSel.value)) return false
+      }
+      if (soloVigentes.value) {
+        if ((c.fecha_desde || '0000-01-01') > hoy) return false
+        if ((c.fecha_hasta || '9999-12-31') < hoy) return false
+      }
+      if (!term) return true
+      return [c.empresa, c.codigo, ...c.proyectos.map(p => nombreProyecto(p.proyecto))]
+        .filter(Boolean).some(v => String(v).toLowerCase().includes(term))
+    })
+    // Lo más reciente arriba: es lo que se está liquidando.
+    .sort((a, b) => String(b.fecha_desde || '').localeCompare(String(a.fecha_desde || '')))
 })
 
 const plcIncompletos = computed(() =>
