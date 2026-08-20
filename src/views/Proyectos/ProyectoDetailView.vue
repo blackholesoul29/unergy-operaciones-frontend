@@ -793,7 +793,7 @@
             <span v-if="liqConfig?.nombre_topico"> Tópico: <b>{{ liqConfig.nombre_topico }}</b>.</span>
           </p>
 
-          <div v-if="!proyecto.sub_project" class="rounded-lg px-3 py-2 text-xs"
+          <div v-if="!proyecto.sub_project && !proyecto.topico_liquidaciones" class="rounded-lg px-3 py-2 text-xs"
                style="background:#FEF3C7; color:#92400E">
             El proyecto no tiene <b>API ID Unergy</b> (código base), así que no se puede
             identificar en la API de Liquidaciones. Complétalo en la pestaña General.
@@ -803,6 +803,8 @@
             <template v-if="!isEditMode">
               <InfoField label="SIC generación" :value="liqConfig?.sic_gen" />
               <InfoField label="SIC consumo" :value="liqConfig?.sic_con" />
+              <InfoField label="Tópico en Liquidaciones"
+                         :value="proyecto.topico_liquidaciones || '(usa el API ID Unergy)'" />
             </template>
             <template v-else>
               <div class="flex flex-col gap-1">
@@ -812,6 +814,15 @@
               <div class="flex flex-col gap-1">
                 <label class="field-label">SIC consumo</label>
                 <InputText v-model="editLiq.sic_con" class="w-full" placeholder="ej: 3A3P" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Tópico en Liquidaciones</label>
+                <InputText v-model="editForm.topico_liquidaciones" class="w-full"
+                           :placeholder="proyecto.sub_project || 'ej: mgs18'" />
+                <small class="text-[11px] text-gray-400">
+                  Solo si esta planta se llama distinto allá que en generación. Vacío = se
+                  usa el API ID Unergy.
+                </small>
               </div>
             </template>
           </div>
@@ -966,6 +977,7 @@ const editForm = reactive({
   carpeta_drive_codigo: null,
   sub_project: null,
   codigo_tsf: null,
+  topico_liquidaciones: null,
   codigo_sic_generacion: null,
   codigo_sic_consumo: null,
   produccion_especifica_kwh_kwp: null,
@@ -1178,6 +1190,9 @@ async function saveEdit() {
     const comercActual = proyecto.value?.fecha_inicio_comercializacion || null
     if (comercNueva !== comercActual) payload.fecha_inicio_comercializacion = comercNueva
     // Comunidad energética: enviar siempre el flag y el nombre (permite limpiarlo).
+    // Se envía siempre para poder dejarlo vacío: el loop de arriba omite lo
+    // vacío, y sin esto no habría forma de quitar un tópico ya puesto.
+    payload.topico_liquidaciones = editForm.topico_liquidaciones || null
     payload.es_comunidad_energetica = !!editForm.es_comunidad_energetica
     payload.nombre_comunidad = editForm.es_comunidad_energetica ? (editForm.nombre_comunidad || null) : null
 
