@@ -136,77 +136,10 @@
       </div>
     </div>
 
-    <!-- Inversionistas (solo modo edición) -->
-    <div v-if="proyectoId" class="border border-gray-200 rounded-lg p-4 space-y-3">
-      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Inversionistas</p>
-
-      <DataTable :value="inversionistas" class="text-xs" stripedRows>
-        <Column field="cliente_nombre" header="Inversionista" />
-        <Column header="Participación (%)">
-          <template #body="{ data }">
-            {{ data.porcentaje_participacion != null ? (data.porcentaje_participacion * 100).toFixed(2) + '%' : '—' }}
-          </template>
-        </Column>
-        <Column header="Inicio">
-          <template #body="{ data }">{{ data.fecha_inicio ? String(data.fecha_inicio).slice(0, 10) : '—' }}</template>
-        </Column>
-        <Column header="Fin">
-          <template #body="{ data }">{{ data.fecha_fin ? String(data.fecha_fin).slice(0, 10) : 'Vigente' }}</template>
-        </Column>
-        <Column header="Pat. autónomo">
-          <template #body="{ data }">
-            <Tag :value="data.es_patrimonio_autonomo ? 'Sí' : 'No'"
-              :severity="data.es_patrimonio_autonomo ? 'info' : 'secondary'" />
-          </template>
-        </Column>
-        <Column header="" style="width:50px">
-          <template #body="{ data }">
-            <Button icon="pi pi-trash" text severity="danger" size="small"
-              @click="eliminarInversionista(data.id)" />
-          </template>
-        </Column>
-        <template #empty>
-          <p class="text-center text-gray-400 py-2 text-xs">Sin inversionistas registrados.</p>
-        </template>
-      </DataTable>
-
-      <Divider />
-      <p class="text-xs font-medium text-gray-600">Agregar inversionista</p>
-      <div class="grid grid-cols-2 gap-2">
-        <div class="col-span-2">
-          <label class="field-label">Cliente</label>
-          <Select v-model="nuevoInv.cliente_id" :options="clientes" optionLabel="razon_social_nombre"
-            optionValue="id" class="w-full" placeholder="Seleccionar" filter />
-        </div>
-        <div>
-          <label class="field-label">% Participación</label>
-          <InputNumber v-model="nuevoInv.porcentaje_pct" :min="0" :max="100" :maxFractionDigits="2"
-            suffix="%" class="w-full" />
-        </div>
-        <div>
-          <label class="field-label">Fecha inicio</label>
-          <DatePicker v-model="nuevoInv.fecha_inicio" dateFormat="yy-mm-dd" showIcon showClear class="w-full" placeholder="—" />
-        </div>
-        <div>
-          <label class="field-label">Fecha fin (opcional = vigente)</label>
-          <DatePicker v-model="nuevoInv.fecha_fin" dateFormat="yy-mm-dd" showIcon showClear class="w-full" placeholder="Vigente" />
-        </div>
-        <div>
-          <label class="field-label">Patrimonio autónomo</label>
-          <div class="flex items-center gap-2 h-10">
-            <ToggleSwitch v-model="nuevoInv.es_patrimonio_autonomo" />
-            <span class="text-xs text-gray-600">{{ nuevoInv.es_patrimonio_autonomo ? 'Sí' : 'No' }}</span>
-          </div>
-        </div>
-      </div>
-      <Button label="Agregar" icon="pi pi-plus" size="small" :loading="guardandoInv"
-        :disabled="!nuevoInv.cliente_id" @click="agregarInversionista" />
-    </div>
-
     <div class="flex justify-end gap-2 pt-2">
       <Button type="button" label="Cancelar" severity="secondary" :disabled="guardando"
         @click="$emit('cancel')" />
-      <Button type="submit" :label="editMode ? 'Guardar cambios' : 'Crear proyecto'"
+      <Button type="submit" label="Crear proyecto"
         :loading="guardando" :disabled="!puedeGuardar" />
     </div>
     <p v-if="operadorRedObligatorio && !f.operador_red_id" class="text-xs text-gray-500 text-right">
@@ -222,21 +155,13 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
 import ToggleSwitch from 'primevue/toggleswitch'
-import Divider from 'primevue/divider'
-import Tag from 'primevue/tag'
-import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import divipola from '@/data/colombia-divipola.json'
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
 const props = defineProps({
-  clientes: Array,
-  proyecto: { type: Object, default: null },
-  proyectoId: { type: Number, default: null },
   /**
    * El CRM comercial exige operador de red del catálogo (validación bloqueante:
    * el backend responde 422 sin él). En /proyectos es opcional y se deja así,
@@ -249,8 +174,6 @@ const emit = defineEmits(['save', 'cancel'])
 
 const puedeGuardar = computed(() =>
   !!f.nombre_comercial && (!props.operadorRedObligatorio || !!f.operador_red_id))
-
-const editMode = computed(() => !!props.proyecto)
 
 const estados = [
   { label: 'En desarrollo', value: 'en_desarrollo' },
@@ -350,68 +273,6 @@ function parseMonthArray(jsonStr) {
 
 const p90Array = ref(Array(12).fill(null))
 const p50Array = ref(Array(12).fill(null))
-
-watch(() => props.proyecto, (p) => {
-  if (p) {
-    Object.keys(f).forEach(k => { if (k in p) f[k] = p[k] })
-    potenciaAcKw.value = p.info_tecnica?.potencia_ac_kw ?? null
-    capacidadInstaladaKwp.value = p.info_tecnica?.capacidad_instalada_kwp ?? p.potencia_instalada_kwp ?? null
-    cantidadTotalPaneles.value = p.info_tecnica?.cantidad_total_paneles ?? null
-    p90Array.value = parseMonthArray(p.p90_mensual_kwh)
-    p50Array.value = parseMonthArray(p.p50_mensual_kwh)
-    fechaEntrada.value = toDate(p.fecha_entrada_operacion)
-    fechaFinRep.value = toDate(p.fecha_fin_representacion)
-  }
-}, { immediate: true })
-
-const toast = useToast()
-const inversionistas = ref([])
-const guardandoInv = ref(false)
-const nuevoInv = reactive({ cliente_id: null, porcentaje_pct: null, es_patrimonio_autonomo: false, fecha_inicio: null, fecha_fin: null })
-
-watch(() => props.proyectoId, async (id) => {
-  if (id) {
-    const { data } = await api.get(`/proyectos/${id}/inversionistas`)
-    inversionistas.value = data
-  }
-}, { immediate: true })
-
-async function agregarInversionista() {
-  if (!nuevoInv.cliente_id) return
-  guardandoInv.value = true
-  try {
-    await api.post(`/proyectos/${props.proyectoId}/inversionistas`, {
-      cliente_id: nuevoInv.cliente_id,
-      porcentaje_participacion: nuevoInv.porcentaje_pct != null ? nuevoInv.porcentaje_pct / 100 : null,
-      es_patrimonio_autonomo: nuevoInv.es_patrimonio_autonomo,
-      fecha_inicio: formatFecha(nuevoInv.fecha_inicio),
-      fecha_fin: formatFecha(nuevoInv.fecha_fin),
-    })
-    const { data } = await api.get(`/proyectos/${props.proyectoId}/inversionistas`)
-    inversionistas.value = data
-    nuevoInv.cliente_id = null
-    nuevoInv.porcentaje_pct = null
-    nuevoInv.es_patrimonio_autonomo = false
-    nuevoInv.fecha_inicio = null
-    nuevoInv.fecha_fin = null
-    toast.add({ severity: 'success', summary: 'Inversionista agregado', life: 2000 })
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al agregar', detail: e.response?.data?.detail, life: 3000 })
-  } finally {
-    guardandoInv.value = false
-  }
-}
-
-async function eliminarInversionista(invId) {
-  if (!confirm('¿Estás seguro de que deseas eliminar este inversionista?')) return
-  try {
-    await api.delete(`/proyectos/${props.proyectoId}/inversionistas/${invId}`)
-    inversionistas.value = inversionistas.value.filter(i => i.id !== invId)
-    toast.add({ severity: 'success', summary: 'Inversionista eliminado', life: 2000 })
-  } catch {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
-  }
-}
 
 function serializeMonthArray(arr) {
   if (arr.every(v => v === null || v === undefined)) return null
