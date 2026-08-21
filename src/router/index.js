@@ -116,8 +116,16 @@ const router = createRouter({
 // `vite:preloadError` en main.js recarga para tomar los archivos nuevos; aquí
 // solo evitamos que la ruta quede completamente muerta si esa recarga no llega
 // a dispararse por algún motivo (navegamos al dashboard en vez de no hacer nada).
+// Una sola vez por carga de página: si el propio fallback también falla (su chunk
+// tampoco existe, o beforeEach lo reenvía a otra ruta rota), currentRoute nunca
+// avanza -- la condición de abajo seguiría siendo verdadera y quedaríamos en un
+// bucle de navegaciones fallidas, cada una pidiendo un archivo inexistente. La
+// bandera vive en el módulo, así que una recarga la reinicia.
+let fallbackIntentado = false
 router.onError((_err, to) => {
+  if (fallbackIntentado) return
   if (to.fullPath !== router.currentRoute.value.fullPath) {
+    fallbackIntentado = true
     router.push('/dashboard').catch(() => {})
   }
 })
