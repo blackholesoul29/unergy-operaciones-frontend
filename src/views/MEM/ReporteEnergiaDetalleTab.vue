@@ -178,7 +178,7 @@
         </div>
       </div>
       <p v-if="detalle.recuperacion_datos" class="text-[11px] mt-3" style="color: #9b89b5;">
-        Última recuperación activa intentada: {{ detalle.recuperacion_datos }}
+        <strong>Última recuperación de medidores:</strong> {{ detalle.recuperacion_datos }}
       </p>
     </div>
 
