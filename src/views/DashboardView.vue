@@ -83,7 +83,6 @@
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold" style="color: #2C2039;">Alarmas MGS</h3>
-          <RouterLink to="/alertas/monitoreo" class="text-xs font-medium" style="color: #915BD8;">Ver alertas →</RouterLink>
         </div>
         <div class="flex items-baseline gap-2">
           <span class="text-3xl font-bold" :style="{ color: data.alarmas_mgs > 0 ? '#D64455' : '#10B981' }">
@@ -269,17 +268,6 @@ const criticalAlerts = computed(() => {
       iconColor: '#DC2626',
       bgColor: 'rgba(220,38,38,0.1)',
       to: '/fallas',
-    })
-  }
-  if (data.value.alarmas_mgs_criticas > 0) {
-    alerts.push({
-      key: 'mgs-criticas',
-      title: `${data.value.alarmas_mgs_criticas} alarma${data.value.alarmas_mgs_criticas > 1 ? 's' : ''} MGS crítica${data.value.alarmas_mgs_criticas > 1 ? 's' : ''}`,
-      detail: 'Plantas con posible falla de generación',
-      icon: 'pi pi-bell',
-      iconColor: '#EA580C',
-      bgColor: 'rgba(234,88,12,0.1)',
-      to: '/alertas/monitoreo',
     })
   }
   if (cumplimientoDeficits.value.length > 0) {

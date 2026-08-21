@@ -123,7 +123,6 @@ const titles = {
   MemCumplimientoV2: 'Cumplimiento v2',
   Alertas:         'Alertas',
   AlertasContratosPPA: 'Alertas de contratos PPA',
-  AlertasMonitoreo: 'Alarmas de monitoreo',
   Servicios:       'Contratos de servicio',
   Notificaciones:  'Notificaciones',
   ResetPassword:   'Restablecer contrasena',

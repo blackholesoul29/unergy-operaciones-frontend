@@ -42,10 +42,10 @@ const routes = [
 
   // ── Operaciones ──────────────────────────────────────────────────
   { path: '/operaciones/informes-mensuales', name: 'InformesMensuales', component: () => import('@/views/Operaciones/InformesMensualesView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
-  { path: '/operaciones/informes-mensuales/dashboard', name: 'InformesMensualesDashboard', component: () => import('@/views/Operaciones/InformesMensualesDashboard.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/informes/:id', name: 'InformeDetalle', component: () => import('@/views/Operaciones/InformeDetailView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/operaciones/gestion-fallas', name: 'GestionFallas', component: () => import('@/views/Operaciones/GestionFallasView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
-  { path: '/operaciones/costos-variables', name: 'CostosVariables', component: () => import('@/views/Operaciones/CostosVariablesTabsView.vue'), meta: { roles: ['admin', 'operaciones'] } },
+  { path: '/operaciones/inicio-operacion', name: 'InicioOperacion', component: () => import('@/views/Operaciones/InicioOperacionView.vue'), meta: { roles: ['admin', 'operaciones'] } },
+  { path: '/operaciones/informe-om', name: 'InformeOM', component: () => import('@/views/Operaciones/InformeOMView.vue'), meta: { roles: ['admin', 'operaciones'] } },
   { path: '/operaciones/polizas', name: 'Polizas', component: () => import('@/views/Operaciones/PolizasView.vue'), meta: { roles: ['admin', 'operaciones'] } },
   { path: '/fallas',       name: 'Fallas',       component: () => import('@/views/Fallas/MonitoreoView.vue'),   meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/fallas/lista', redirect: '/fallas' },
@@ -55,7 +55,6 @@ const routes = [
   // ── Alertas ──────────────────────────────────────────────────────
   { path: '/alertas',             name: 'Alertas',            component: () => import('@/views/Alertas/AlertasView.vue'),           meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/alertas/contratos-ppa', name: 'AlertasContratosPPA', component: () => import('@/views/Alertas/AlertasContratosPPAView.vue'), meta: { roles: ['admin', 'operaciones'] } },
-  { path: '/alertas/monitoreo',   name: 'AlertasMonitoreo',   component: () => import('@/views/Alertas/AlertasMonitoreoView.vue'),  meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
 
   // ── Finanzas ─────────────────────────────────────────────────────
   { path: '/liquidaciones',                  name: 'Liquidaciones',                  component: () => import('@/views/Liquidaciones/LiquidacionesView.vue'),                     meta: { roles: ['admin', 'liquidaciones'] } },

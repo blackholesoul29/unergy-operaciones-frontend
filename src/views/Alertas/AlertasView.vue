@@ -99,14 +99,6 @@ const MODULOS = computed(() => [
     count: (ppaAlerts.value.huerfanos?.length || 0) + (ppaAlerts.value.duplicados?.length || 0),
   },
   {
-    to: '/alertas/monitoreo',
-    label: 'Alarmas MGS',
-    desc: 'Alarmas de generación en tiempo real',
-    icon: 'pi pi-exclamation-triangle',
-    color: '#ef4444',
-    count: kpis.value.alarmas_mgs || 0,
-  },
-  {
     to: '/fallas',
     label: 'Fallas Operativas',
     desc: 'Fallas activas por prioridad y estado',
