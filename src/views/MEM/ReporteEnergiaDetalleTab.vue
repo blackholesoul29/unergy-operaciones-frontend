@@ -224,7 +224,13 @@
                -- queda a criterio de la persona: reportar la curva tal como
                está (con el hueco) o rellenarla con este botón. Generación y
                Consumo. -->
-          <Button v-if="hayHuecosSinRellenar" label="Rellenar horas" size="small" severity="secondary" outlined
+          <!-- Si ya hubo un relleno antes (hayHorasRelleno) y todavía queda
+               un hueco, es porque esa hora YA se intentó contra las 4
+               fuentes en cascada y ninguna tenía dato -- un dato histórico
+               que no cambia. Mostrar el botón otra vez solo invita a un
+               clic que va a fallar con el mismo error (ver captura
+               2026-08-20: 6h vacía después de rellenar 7h-11h/17h-18h). -->
+          <Button v-if="hayHuecosSinRellenar && !hayHorasRelleno(detalle)" label="Rellenar horas" size="small" severity="secondary" outlined
             :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
           <Button v-if="hayHorasRelleno(detalle)" label="Deshacer relleno" icon="pi pi-undo" size="small" severity="secondary" outlined
             :loading="deshaciendoRelleno" :disabled="hayCambiosSinGuardar" @click="deshacerRelleno" />
