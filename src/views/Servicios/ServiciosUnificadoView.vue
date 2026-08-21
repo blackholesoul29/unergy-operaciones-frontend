@@ -11,7 +11,7 @@
 -->
 <template>
   <div class="space-y-3">
-    <PageHeader title="Gestión Documental" :subtitle="subtitulo">
+    <PageHeader title="Proyectos" :subtitle="subtitulo">
       <template #actions>
         <IconField v-if="vista" class="ph-buscar">
           <InputIcon class="pi pi-search" />
@@ -65,34 +65,26 @@
       </template>
     </div>
 
+    <!-- Agrupar el portafolio: reorganiza las mismas plantas por la dimensión
+         que interese, en vez de mandar al usuario a otra tabla. -->
+    <div v-if="vista === 'proyectos'" class="flex flex-wrap items-center gap-2">
+      <label class="text-xs font-semibold" style="color:#6b5a8a">Agrupar por</label>
+      <Select v-model="agruparPor" :options="AGRUPACIONES" optionLabel="label" optionValue="value"
+              size="small" class="w-52" />
+      <span v-if="agruparPor" class="text-xs" style="color:#9b8fb0">
+        {{ nGrupos }} grupo{{ nGrupos === 1 ? '' : 's' }} ·
+        {{ proyectosAgrupados.length }} fila{{ proyectosAgrupados.length === 1 ? '' : 's' }}
+      </span>
+    </div>
+
     <!-- Sin fila de filtros en ningún ángulo (decisión de 2026-08-20): el
          buscador de la cabecera cubre el caso y la fila le robaba alto a la
          tabla, que es lo que interesa maximizar. Las columnas siguen siendo
          ordenables, así que acotar por estado/tipo se hace con un clic en el
          encabezado. -->
 
-    <!-- ══════════ SELECTOR (estado inicial, nada cargado) ══════════ -->
-    <div v-if="!vista" class="tabla-caja p-8">
-      <p class="text-center text-sm font-semibold" style="color:#2C2039">
-        ¿Desde dónde querés mirar?
-      </p>
-      <p class="mt-1 text-center text-xs" style="color:#9b8fb0">
-        La misma información, ordenada según lo que estés buscando.
-      </p>
-      <div class="selector-grid">
-        <button v-for="v in VISTAS" :key="v.key" type="button" class="selector-card"
-                @click="seleccionarVista(v.key)">
-          <span class="selector-icono" :style="`background:${v.bg}; color:${v.color}`">
-            <i :class="v.icon" />
-          </span>
-          <span class="selector-nombre">{{ v.label }}</span>
-          <span class="selector-desc">{{ v.descripcion }}</span>
-        </button>
-      </div>
-    </div>
-
     <!-- ══════════════════ CLIENTES ══════════════════ -->
-    <div v-else-if="vista === 'clientes'" class="tabla-caja">
+    <div v-if="vista === 'clientes'" class="tabla-caja">
       <DataTable :value="clientesFiltrados" :loading="loadingClientes" size="small"
                  class="tabla tabla--clickable" :class="{ 'tabla--compacta': compacta }"
                  scrollable :scrollHeight="scrollHeight" :rowClass="rowClassCliente"
@@ -170,12 +162,18 @@
 
     <!-- ══════════════════ PROYECTOS ══════════════════ -->
     <div v-else-if="vista === 'proyectos'" class="tabla-caja">
-      <DataTable :value="proyectosFiltrados" :loading="loadingProyectos" size="small"
+      <DataTable :value="proyectosAgrupados" :loading="loadingProyectos" size="small"
                  class="tabla" :class="{ 'tabla--compacta': compacta }"
                  scrollable :scrollHeight="scrollHeight"
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
-                 sortField="nombre_comercial" :sortOrder="1" rowHover
+                 :sortField="agruparPor ? '__grupo' : 'nombre_comercial'" :sortOrder="1" rowHover
+                 :rowGroupMode="agruparPor ? 'subheader' : null"
+                 :groupRowsBy="agruparPor ? '__grupo' : null"
                  emptyMessage="No se encontraron proyectos.">
+        <template v-if="agruparPor" #groupheader="{ data }">
+          <span class="grupo-titulo">{{ data.__grupo }}</span>
+          <span class="grupo-conteo">{{ conteoGrupo(data.__grupo) }}</span>
+        </template>
         <Column field="nombre_comercial" header="Nombre comercial" sortable style="width:21%">
           <template #body="{ data }">
             <span class="block text-[9px] leading-none mono"
@@ -561,12 +559,11 @@ const confirm = useConfirm()
 
 // ── Catálogos ────────────────────────────────────────────────────────────────
 const VISTAS = [
-  { key: 'clientes',  label: 'Clientes',  icon: 'pi pi-building',  color: '#915BD8', bg: '#f5f0fd',
-    descripcion: 'Con quién hay relación: razón social, contactos y sus servicios' },
-  { key: 'proyectos', label: 'Proyectos', icon: 'pi pi-bolt',      color: '#10b981', bg: '#f0fdf4',
-    descripcion: 'Las plantas: estado, ubicación, potencia y PPA asociado' },
-  { key: 'servicios', label: 'Servicios', icon: 'pi pi-file-edit', color: '#0C447C', bg: '#eff6ff',
-    descripcion: 'Los contratos: PPA, representación, operación y REC' },
+  // Proyectos va primero y es el que abre: la planta es la base, y clientes y
+  // contratos son formas de mirar ese mismo portafolio.
+  { key: 'proyectos', label: 'Proyectos', icon: 'pi pi-bolt',      color: '#10b981', bg: '#f0fdf4' },
+  { key: 'clientes',  label: 'Clientes',  icon: 'pi pi-building',  color: '#915BD8', bg: '#f5f0fd' },
+  { key: 'servicios', label: 'Servicios', icon: 'pi pi-file-edit', color: '#0C447C', bg: '#eff6ff' },
 ]
 
 const SERVICIOS = [
@@ -621,19 +618,19 @@ const ESTADO_CONTRATO_CLASS = {
 const VISTAS_VALIDAS = VISTAS.map(v => v.key)
 const SERVICIOS_VALIDOS = SERVICIOS.map(s => s.key)
 
-// Arranca vacia a proposito: nada se carga hasta que el usuario elige.
-// Antes abria en "servicios" y disparaba tres peticiones que quiza nadie
-// iba a mirar.
-const vista = ref(VISTAS_VALIDAS.includes(route.query.vista) ? route.query.vista : '')
+// La base son los proyectos: la vista abre directo en su tabla. Igual solo se
+// pide lo del angulo activo, nunca los tres a la vez.
+const vista = ref(VISTAS_VALIDAS.includes(route.query.vista) ? route.query.vista : 'proyectos')
 const servicio = ref(SERVICIOS_VALIDOS.includes(route.query.srv) ? route.query.srv : 'ppa')
 const q = ref(route.query.q || '')
 const compacta = ref(localStorage.getItem('servicios_unificado_compacta') !== '0')
 
 watch(compacta, v => localStorage.setItem('servicios_unificado_compacta', v ? '1' : '0'))
 
-watch([vista, servicio, q], () => {
+watch([vista, servicio, q, agruparPor], () => {
   const query = {}
   if (vista.value) query.vista = vista.value
+  if (vista.value === 'proyectos' && agruparPor.value) query.grupo = agruparPor.value
   if (vista.value === 'servicios') query.srv = servicio.value
   if (q.value) query.q = q.value
   router.replace({ query })
@@ -646,6 +643,78 @@ const filasPorPagina = computed(() => (compacta.value ? 100 : 50))
 const scrollHeight = 'calc(100vh - 250px)'
 
 
+
+// ── Agrupar el portafolio ─────────────────────────────────────────────────────
+// Cliente, PPA y Servicio son multivaluados: una planta puede tener dos
+// inversionistas o estar en dos PPA. En esos casos la planta aparece en cada
+// grupo al que pertenece, que es justo lo que se quiere ver -- por eso la lista
+// agrupada puede tener MAS filas que plantas, y el contador de arriba lo dice.
+const AGRUPACIONES = [
+  { value: '',             label: 'Sin agrupar' },
+  { value: 'cliente',      label: 'Cliente / inversionista' },
+  { value: 'ppa',          label: 'Contrato PPA' },
+  { value: 'servicio',     label: 'Servicio' },
+  { value: 'tipo',         label: 'Tipo de proyecto' },
+  { value: 'estado',       label: 'Estado' },
+  { value: 'departamento', label: 'Departamento' },
+]
+
+const agruparPor = ref(AGRUPACIONES.some(a => a.value === route.query.grupo) ? route.query.grupo : '')
+
+const SIN_DATO = 'Sin asignar'
+
+// Devuelve los grupos a los que pertenece una planta (uno o varios).
+function gruposDe(p) {
+  switch (agruparPor.value) {
+    case 'cliente': {
+      const n = (p.inversionistas || []).map(i => i.cliente_nombre).filter(Boolean)
+      return n.length ? [...new Set(n)] : [SIN_DATO]
+    }
+    case 'ppa': {
+      const n = ppaVigentes(p).map(ppaLabel).filter(Boolean)
+      return n.length ? [...new Set(n)] : ['Sin PPA']
+    }
+    case 'servicio': {
+      const n = SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.tooltip)
+      return n.length ? n : ['Sin servicios']
+    }
+    case 'tipo':
+      return [TIPO_LABELS[p.tipo_proyecto] || p.tipo_proyecto || SIN_DATO]
+    case 'estado':
+      return [ESTADO_LABELS[p.estado] || p.estado || SIN_DATO]
+    case 'departamento':
+      return [p.departamento || SIN_DATO]
+    default:
+      return []
+  }
+}
+
+const proyectosAgrupados = computed(() => {
+  if (!agruparPor.value) return proyectosFiltrados.value
+  const filas = []
+  for (const p of proyectosFiltrados.value) {
+    for (const g of gruposDe(p)) filas.push({ ...p, __grupo: g })
+  }
+  // PrimeVue pinta subencabezados solo si las filas del grupo vienen juntas.
+  // "Sin asignar" / "Sin PPA" al final: son el pendiente, no el encabezado.
+  return filas.sort((a, b) => {
+    const av = a.__grupo.startsWith('Sin ') ? 1 : 0
+    const bv = b.__grupo.startsWith('Sin ') ? 1 : 0
+    if (av !== bv) return av - bv
+    const g = a.__grupo.localeCompare(b.__grupo)
+    return g !== 0 ? g : (a.nombre_comercial || '').localeCompare(b.nombre_comercial || '')
+  })
+})
+
+const conteosPorGrupo = computed(() => {
+  const m = new Map()
+  for (const f of proyectosAgrupados.value) m.set(f.__grupo, (m.get(f.__grupo) || 0) + 1)
+  return m
+})
+
+function conteoGrupo(g) { return conteosPorGrupo.value.get(g) || 0 }
+const nGrupos = computed(() => conteosPorGrupo.value.size)
+
 // ── Completitud del registro ───────────────────────────────────
 // Se cuentan TODOS los campos del registro, no una lista curada. Lo unico que
 // se saca son los que no son "campos por llenar":
@@ -655,7 +724,7 @@ const scrollHeight = 'calc(100vh - 250px)'
 // Un booleano en false y un numero en 0 SI cuentan como llenos: son un dato.
 // Los objetos anidados (info_tecnica, servicio_representacion) se aplanan un
 // nivel, asi que sus campos tambien entran en la cuenta.
-const TECNICOS = ['id', 'created_at', 'updated_at', 'deleted_at']
+const TECNICOS = ['id', 'created_at', 'updated_at', 'deleted_at', '__grupo']
 
 const DERIVADOS = {
   // proximo_vencimiento y alerta_contrato los calcula la proyeccion a partir
@@ -938,7 +1007,6 @@ async function cargarContratosServicio(tipo) {
 const servicioInfo = computed(() => SERVICIOS.find(s => s.key === servicio.value))
 
 function asegurarDatos() {
-  if (!vista.value) return                   // nadie eligio vista todavia
   if (vista.value === 'clientes') { if (!clientesCargados.value) cargarClientes(); return }
   if (vista.value === 'proyectos') { if (!proyectosCargados.value) cargarProyectos(); return }
   if (servicio.value === 'ppa') { if (!ppaCargados.value) cargarPpa(); return }
@@ -969,7 +1037,6 @@ function conteoVista(key) {
 
 // ── Subtítulo / búsqueda / Excel según el ángulo activo ─────────────────────
 const filasVisibles = computed(() => {
-  if (!vista.value) return []
   if (vista.value === 'clientes')  return clientesFiltrados.value
   if (vista.value === 'proyectos') return proyectosFiltrados.value
   if (servicio.value === 'ppa')    return ppaFiltrados.value
@@ -978,7 +1045,6 @@ const filasVisibles = computed(() => {
 })
 
 const totalCrudo = computed(() => {
-  if (!vista.value) return 0
   if (vista.value === 'clientes')  return clientes.value.length
   if (vista.value === 'proyectos') return proyectos.value.length
   if (servicio.value === 'ppa')    return ppa.value.length
@@ -987,7 +1053,6 @@ const totalCrudo = computed(() => {
 })
 
 const subtitulo = computed(() => {
-  if (!vista.value) return 'Elegí una vista para empezar'
   const etiqueta = vista.value === 'clientes' ? 'clientes'
     : vista.value === 'proyectos' ? 'plantas'
     : servicio.value === 'representacion' ? 'plantas representadas'
@@ -1328,28 +1393,6 @@ function confirmarBorrarPpa(contrato) {
 /* La fila entera abre el detalle (sólo donde row-click está cableado) */
 .tabla--clickable :deep(.p-datatable-tbody > tr) { cursor: pointer; }
 
-/* ── Selector inicial ─────────────────────────────────────── */
-.selector-grid {
-  display: grid; gap: 10px; margin: 20px auto 0; max-width: 880px;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-}
-.selector-card {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 6px;
-  padding: 14px; text-align: left; cursor: pointer;
-  background: #fff; border: 1px solid #E5E2EC; border-radius: 11px;
-  transition: border-color .12s, box-shadow .12s, transform .12s;
-}
-.selector-card:hover {
-  border-color: #cbb8e8; box-shadow: 0 3px 10px rgba(76,29,149,.08);
-  transform: translateY(-1px);
-}
-.selector-icono {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px; border-radius: 9px; font-size: 14px;
-}
-.selector-nombre { font-size: 13px; font-weight: 700; color: #2C2039; }
-.selector-desc { font-size: 11px; line-height: 1.35; color: #9b8fb0; }
-
 /* ── Sin scroll horizontal ────────────────────────────────────────
    `table-layout: fixed` hace que los porcentajes de cada <Column> manden: la
    tabla se reparte el ancho disponible y NUNCA lo excede. Lo que no cabe se
@@ -1368,6 +1411,15 @@ function confirmarBorrarPpa(contrato) {
 
 /* Chips en una sola línea: si sobran, se recortan en vez de agrandar la fila */
 .chips-fila { display: flex; gap: 2px; overflow: hidden; min-width: 0; }
+
+/* Subencabezado de grupo (cuando se agrupa el portafolio) */
+.grupo-titulo { font-size: 12px; font-weight: 800; color: #2C2039; }
+.grupo-conteo {
+  margin-left: 7px; background: #f0ebfd; color: #915BD8;
+  border-radius: 999px; font-size: 10px; font-weight: 800; padding: 0 6px;
+}
+.tabla :deep(.p-rowgroup-header) { background: #FAF9FC; }
+.tabla :deep(.p-rowgroup-header > td) { padding: 4px 8px; }
 
 /* Celda "Falta": dos contadores, campos y documentos */
 .falta-celda { display: flex; gap: 3px; }

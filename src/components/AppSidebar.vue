@@ -261,12 +261,12 @@ const ALL_GROUPS = [
     label: 'General',
     items: [
       { to: '/dashboard',       label: 'Dashboard',        icon: 'pi pi-home' },
-      // Gestión Documental reemplaza a las tres entradas que había antes
-      // (Clientes, Proyectos y Servicios): la misma información desde un
-      // selector, en vez de tres menús con tablas distintas. Las rutas
+      // Esta entrada reemplaza a las tres que había antes (Clientes, Proyectos
+      // y Servicios). La base es el portafolio de plantas, y clientes y
+      // contratos son formas de reagrupar ese mismo portafolio. Las rutas
       // /clientes, /proyectos y /servicios siguen vivas -- solo salieron del
       // menú, así que nada se rompe y revertir es volver a poner estas líneas.
-      { to: '/servicios-unificado', label: 'Gestión Documental', icon: 'pi pi-folder-open' },
+      { to: '/servicios-unificado', label: 'Proyectos',          icon: 'pi pi-bolt' },
       { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
       { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
