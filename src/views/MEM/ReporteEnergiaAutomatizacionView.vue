@@ -250,9 +250,7 @@
           <!-- Datos incompletos -->
           <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
             <p class="text-sm font-bold mb-1" style="color:#2C2039;">Datos incompletos de medidores e inversores</p>
-            <p class="text-xs mb-3" style="color:#9b89b5;">
-              Solo Generación — de los días con reporte, cuántos llegaron con esa fuente incompleta (más alto = peor: verde ≤10%, ámbar 10–30%, rojo &gt;30%).
-            </p>
+            <p class="text-xs mb-3" style="color:#9b89b5;">Solo Generación — cuántas veces cada fuente llegó incompleta en el rango.</p>
             <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
               <template v-for="(c, idx) in resumenHistorico.incompletos_callouts" :key="idx">
                 <span><b class="text-base font-extrabold" style="color:#6E3FB8;">{{ c.valor }}</b>
