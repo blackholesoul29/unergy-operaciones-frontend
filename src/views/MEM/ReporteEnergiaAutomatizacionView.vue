@@ -348,26 +348,20 @@
             <DataTable :value="resumenHistorico.recuperacion_activa" class="text-sm resumen-tabla" stripedRows rowHover
                        paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
               <Column field="nombre_proyecto" header="Proyecto" sortable />
-              <Column header="Éxito principal" style="width:170px">
+              <Column header="Éxito principal" style="width:130px">
                 <template #body="{ data }">
                   <span v-if="!data.intentos_principal" class="text-xs" style="color:#9b89b5;">— sin intentos</span>
-                  <div v-else class="flex items-center gap-2">
-                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
-                      <div class="h-full rounded-full" :style="{ width: pctDe(data.exitos_principal, data.intentos_principal) + '%', background: severidadColorExito(pctDe(data.exitos_principal, data.intentos_principal)) }" />
-                    </div>
-                    <span class="text-xs font-bold w-12 text-right">{{ data.exitos_principal }}/{{ data.intentos_principal }}</span>
-                  </div>
+                  <span v-else class="text-xs font-bold" :style="{ color: severidadColorExito(pctDe(data.exitos_principal, data.intentos_principal)) }">
+                    {{ data.exitos_principal }}/{{ data.intentos_principal }}
+                  </span>
                 </template>
               </Column>
-              <Column header="Éxito respaldo" style="width:170px">
+              <Column header="Éxito respaldo" style="width:130px">
                 <template #body="{ data }">
                   <span v-if="!data.intentos_respaldo" class="text-xs" style="color:#9b89b5;">— sin intentos</span>
-                  <div v-else class="flex items-center gap-2">
-                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
-                      <div class="h-full rounded-full" :style="{ width: pctDe(data.exitos_respaldo, data.intentos_respaldo) + '%', background: severidadColorExito(pctDe(data.exitos_respaldo, data.intentos_respaldo)) }" />
-                    </div>
-                    <span class="text-xs font-bold w-12 text-right">{{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}</span>
-                  </div>
+                  <span v-else class="text-xs font-bold" :style="{ color: severidadColorExito(pctDe(data.exitos_respaldo, data.intentos_respaldo)) }">
+                    {{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}
+                  </span>
                 </template>
               </Column>
             </DataTable>
