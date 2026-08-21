@@ -146,15 +146,19 @@
 
     <!-- Detalle de las fuentes -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
-      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Detalle de las fuentes</p>
-      <div v-if="detalle.medidor_actualizado_en_quoia" class="flex items-start gap-2.5 rounded-lg px-3 py-2.5 mb-3"
+      <div class="flex items-center justify-between mb-3">
+        <p class="text-xs font-semibold uppercase" style="color: #6b5a8a;">Detalle de las fuentes</p>
+        <Button label="Recuperar medidor" icon="pi pi-refresh" size="small" severity="secondary" outlined
+          :loading="recuperandoMedidor" @click="recuperarMedidor" />
+      </div>
+      <div v-for="aviso in avisosMedidor" :key="aviso.etiqueta" class="flex items-start gap-2.5 rounded-lg px-3 py-2.5 mb-3"
            style="background: rgba(37,124,214,0.08); border: 1px solid #257CD6;">
         <span class="flex-none rounded-full w-[18px] h-[18px] flex items-center justify-center text-[11px] font-bold text-white"
               style="background: #257CD6; margin-top: 1px;">i</span>
         <p class="text-xs" style="color: #1B5DA3; line-height: 1.5;">
-          El medidor muestra un valor distinto en Quoia
-          (<strong style="color: #2C2039;">{{ fmtKwh(detalle.energia_actual_kwh) }}</strong> ahora
-          vs. <strong style="color: #2C2039;">{{ fmtKwh(energiaMedidorClasificacion) }}</strong> al momento de clasificar).
+          {{ aviso.etiqueta }} muestra un valor distinto en Quoia
+          (<strong style="color: #2C2039;">{{ fmtKwh(aviso.actual) }}</strong> ahora
+          vs. <strong style="color: #2C2039;">{{ fmtKwh(aviso.clasificacion) }}</strong> al momento de clasificar).
         </p>
       </div>
       <div class="space-y-0">
@@ -173,7 +177,7 @@
         </div>
       </div>
       <p v-if="detalle.recuperacion_datos" class="text-[11px] mt-3" style="color: #9b89b5;">
-        Recuperación activa intentada al clasificar: {{ detalle.recuperacion_datos }}
+        Última recuperación activa intentada: {{ detalle.recuperacion_datos }}
       </p>
     </div>
 
@@ -416,6 +420,7 @@ const curvaEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
 const rellenando = ref(false)
 const deshaciendoRelleno = ref(false)
+const recuperandoMedidor = ref(false)
 const mostrarMenuReportar = ref(false)
 // Cuál opción de 'Reportar con otra fuente' llenó el editor por última vez
 // -- se manda al guardar para que 'Fuente usada' diga esa fuente específica
@@ -827,6 +832,35 @@ async function deshacerRelleno() {
   }
 }
 
+// Dispara a demanda la misma recuperación activa que la corrida diaria
+// dispara sola bajo ciertas condiciones, pero para AMBOS medidores y sin
+// ese filtro -- puede tardar hasta 90 segundos (interroga el medidor
+// físico por WebSocket). No toca curva_final/medidor_usado/caso: solo
+// refresca los datos de referencia para que el aviso de arriba y
+// 'Reportar con otra fuente' reflejen el valor recuperado (2026-08-20).
+async function recuperarMedidor() {
+  recuperandoMedidor.value = true
+  toast.add({ severity: 'info', summary: 'Recuperando medidor', detail: 'Puede tardar hasta 90 segundos...', life: 4000 })
+  try {
+    const { data } = await api.post(
+      `/reporte-energia/fronteras/${props.fronteraId}/recuperar-medidor`, null,
+      { params: { fecha: props.fecha }, timeout: 120000 },
+    )
+    detalle.value = data
+    toast.add({
+      severity: 'success', summary: 'Recuperación completada',
+      detail: data.recuperacion_datos || 'Sin medidores para recuperar.', life: 5000,
+    })
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo recuperar',
+      detail: e?.response?.data?.detail || 'Falló la recuperación del medidor.', life: 4000,
+    })
+  } finally {
+    recuperandoMedidor.value = false
+  }
+}
+
 // Mismo criterio que separa 'confiado' de 'corregido_automatico' en el
 // resumen del día (ver reporte_energia.py) -- Caso 1 (Generación) / 'CGM'
 // (Consumo) sin Revisar Manualmente es la única combinación 100% automática
@@ -856,17 +890,17 @@ const opcionesReportarCon = computed(() => {
   }
   const curvaInversoresFp = conFp(d.curva_solenium)
   const tipica = curvaTipicaPreview.value
-  // Cuál medidor (principal/respaldo) es el que se usó realmente -- si
-  // Quoia ya muestra otro valor para ESE medidor (medidor_actualizado_en_
-  // quoia + curva_actual), esa opción usa directo el valor en vivo en vez
-  // del persistido al clasificar, con nota -- no un item aparte: sigue
-  // siendo el mismo medidor, solo con el dato más fresco.
-  const mu = d.medidor_usado || ''
-  const fuenteActualKey = mu.startsWith('respaldo') ? 'respaldo' : 'principal'
-  const tieneActualizado = d.medidor_actualizado_en_quoia && d.curva_actual != null
+  // Cada medidor (principal/respaldo) chequea su PROPIO "¿Quoia ya cambió?"
+  // -- independiente de cuál esté marcado medidor_usado (2026-08-20): si el
+  // clasificador usó 'Histórico' porque el medidor estaba mal, y luego se
+  // recupera ESE medidor, la opción "(actualizado)" tiene que poder
+  // aparecer igual, no solo para el medidor que ganó el Caso.
   const opcionMedidor = (key, nombre, curvaPersistida) => {
-    if (tieneActualizado && key === fuenteActualKey) {
-      return { key, nombre: `${nombre} (actualizado)`, curva: d.curva_actual, valor: d.energia_actual_kwh }
+    const actualizado = key === 'respaldo' ? d.respaldo_actualizado_en_quoia : d.principal_actualizado_en_quoia
+    const curvaActual = key === 'respaldo' ? d.respaldo_curva_actual : d.principal_curva_actual
+    const valorActual = key === 'respaldo' ? d.respaldo_energia_actual_kwh : d.principal_energia_actual_kwh
+    if (actualizado && curvaActual != null) {
+      return { key, nombre: `${nombre} (actualizado)`, curva: curvaActual, valor: valorActual }
     }
     return { key, nombre, curva: curvaPersistida, valor: suma(curvaPersistida), disabled: suma(curvaPersistida) == null }
   }
@@ -1128,16 +1162,25 @@ function sumaCurva(arr) {
   return arr.reduce((s, v) => s + (Number(v) || 0), 0)
 }
 
-// Total del medidor TAL COMO QUEDÓ AL CLASIFICAR -- distinto de energia_
-// final_kwh, que puede ya haber sido corregido a mano con el valor en vivo
-// (ver 'Reportar con otra fuente' -> 'Medidor X (actualizado)'). El aviso de
-// abajo necesita este original, si no la comparación se vuelve redundante
-// contra sí misma justo después de aplicar esa corrección.
-const energiaMedidorClasificacion = computed(() => {
+// 0-2 avisos, uno por cada medidor (principal/respaldo) cuyo valor EN VIVO
+// ya difiere del que quedó guardado al clasificar -- por medidor, no solo
+// el que ganó medidor_usado (2026-08-20), para que recuperar un medidor
+// que el clasificador no usó también se note. `clasificacion` es el total
+// TAL COMO QUEDÓ AL CLASIFICAR -- distinto de energia_final_kwh, que puede
+// ya haber sido corregido a mano con el valor en vivo (ver 'Reportar con
+// otra fuente' -> 'Medidor X (actualizado)'); si no, la comparación se
+// vuelve redundante contra sí misma justo después de aplicar esa corrección.
+const avisosMedidor = computed(() => {
   const d = detalle.value
-  if (!d) return null
-  const curva = (d.medidor_usado || '').startsWith('respaldo') ? d.curva_medidor_respaldo : d.curva_medidor_principal
-  return sumaCurva(curva)
+  if (!d) return []
+  const avisos = []
+  if (d.principal_actualizado_en_quoia) {
+    avisos.push({ etiqueta: 'Medidor principal', actual: d.principal_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_principal) })
+  }
+  if (d.respaldo_actualizado_en_quoia) {
+    avisos.push({ etiqueta: 'Medidor respaldo', actual: d.respaldo_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_respaldo) })
+  }
+  return avisos
 })
 // Comprime horas en rangos legibles: [0,1,2,3,19,20] -> "0-3h, 19-20h".
 function formatearRangosHoras(horas) {
