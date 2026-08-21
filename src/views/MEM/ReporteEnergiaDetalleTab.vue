@@ -369,42 +369,18 @@
       <Button label="Validar Frontera" severity="success" :loading="validando" :disabled="hayCambiosSinGuardar" @click="validar" />
     </div>
 
-    <!-- Envío de prueba a Quoia -- envío controlado de UNA frontera, previo
-         al botón masivo "Enviar reporte" (que manda todas las fronteras del
-         día). Manda datos reales al regulador ASIC, así que pide
-         confirmación explícita y se bloquea igual que el envío masivo si
-         falta validar. -->
-    <div class="rounded-xl p-4 flex items-center justify-between gap-3" style="border: 1px solid #D64455;">
-      <div>
-        <p class="text-sm font-semibold" style="color: #2C2039;">Envío de prueba a Quoia</p>
-        <p class="text-xs" style="color: #9b89b5;">
-          Envía el reporte de ESTA frontera a Quoia/ASIC -- dato real, no reversible.
-        </p>
-        <p v-if="detalle.revisar_manualmente" class="text-xs mt-1" style="color: #D64455;">
-          Esta frontera tiene Revisar Manualmente pendiente -- valídala primero.
-        </p>
-        <p v-else-if="hayCambiosSinGuardar" class="text-xs mt-1" style="color: #D64455;">
-          Hay cambios sin guardar en la curva -- guarda la corrección primero.
-        </p>
-      </div>
-      <Button label="Enviar (prueba)" severity="danger" outlined :loading="enviandoPrueba"
-        :disabled="detalle.revisar_manualmente || hayCambiosSinGuardar" @click="confirmarEnviarPrueba" />
-    </div>
   </div>
-  <ConfirmDialog />
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
-import { useConfirm } from 'primevue/useconfirm'
 import api from '@/api/client'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
 import Textarea from 'primevue/textarea'
-import ConfirmDialog from 'primevue/confirmdialog'
 import CurvaChart from './ReporteEnergiaCurvaChart.vue'
 
 const props = defineProps({
@@ -414,7 +390,6 @@ const props = defineProps({
 const emit = defineEmits(['actualizado'])
 
 const toast = useToast()
-const confirm = useConfirm()
 const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
@@ -434,7 +409,6 @@ const fuenteManualElegida = ref(null)
 // fijo (era un placeholder, no reflejaba si de verdad había histórico).
 const curvaTipicaPreview = ref(null)
 const validando = ref(false)
-const enviandoPrueba = ref(false)
 const ediciones = ref([])
 const subiendoExcelTerceros = ref(false)
 const eliminandoExcelTerceros = ref(false)
@@ -969,45 +943,6 @@ async function validar() {
     toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo validar.', life: 4000 })
   } finally {
     validando.value = false
-  }
-}
-
-// Envío de prueba a Quoia (una sola frontera) -- pensado para el envío
-// controlado antes de confiar en el botón masivo "Enviar reporte" (manda
-// TODAS las fronteras del día). Datos reales al regulador ASIC, así que
-// pide confirmación explícita antes de disparar la petición.
-function confirmarEnviarPrueba() {
-  confirm.require({
-    message: `Se va a enviar el reporte de "${detalle.value.nombre_proyecto}" (${props.fecha}) a Quoia/ASIC con datos reales. Esta acción no se puede deshacer. ¿Confirmas?`,
-    header: 'Confirmar envío a Quoia',
-    icon: 'pi pi-exclamation-triangle',
-    acceptSeverity: 'danger',
-    acceptLabel: 'Enviar',
-    rejectLabel: 'Cancelar',
-    accept: enviarPrueba,
-  })
-}
-
-async function enviarPrueba() {
-  enviandoPrueba.value = true
-  try {
-    const { data } = await api.post(
-      `/reporte-energia/fronteras/${props.fronteraId}/enviar`, null,
-      { params: { fecha: props.fecha } },
-    )
-    if (data.bloqueado) {
-      toast.add({ severity: 'warn', summary: 'Envío bloqueado', detail: data.motivo_bloqueo, life: 5000 })
-    } else if (data.fallidos.length) {
-      toast.add({ severity: 'error', summary: 'Envío falló', detail: data.fallidos[0], life: 6000 })
-    } else if (data.enviados === 0) {
-      toast.add({ severity: 'info', summary: 'Nada que enviar', detail: data.motivo_bloqueo, life: 5000 })
-    } else {
-      toast.add({ severity: 'success', summary: 'Enviado a Quoia', detail: 'Quoia confirmó la recepción.', life: 4000 })
-    }
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo enviar a Quoia.', life: 4000 })
-  } finally {
-    enviandoPrueba.value = false
   }
 }
 
