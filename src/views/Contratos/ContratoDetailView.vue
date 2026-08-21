@@ -342,11 +342,54 @@
       </div>
 
       <!-- ══ CANTIDADES ══ -->
-      <div v-if="tab === 'cantidades'">
-        <div class="flex justify-between items-center mb-3">
-          <SelectButton v-if="!editandoCantidades" v-model="vistaCantidades" :options="VISTAS" optionLabel="label" optionValue="value" />
-          <span v-else />
-          <div class="flex gap-2">
+      <div v-if="tab === 'cantidades'" class="space-y-4">
+
+        <!-- Resumen -->
+        <div v-if="resumenCantidades && !editandoCantidades" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-calendar" style="font-size:9px" />Períodos</p>
+            <p class="cd-stat-val">{{ resumenCantidades.periodos }} meses</p>
+            <p class="cd-stat-sub">{{ resumenCantidades.añoMin }} – {{ resumenCantidades.añoMax }}</p>
+          </div>
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-bolt" style="font-size:9px" />Compromiso {{ hoyPeriodo.año }}</p>
+            <p class="cd-stat-val">{{ fmtNum(resumenCantidades.totalAñoActual) }} MWh</p>
+            <p class="cd-stat-sub">
+              {{ resumenCantidades.tieneAñoActual ? 'suma de mínimos del año' : 'sin compromisos este año' }}
+            </p>
+          </div>
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-clock" style="font-size:9px" />Mes en curso</p>
+            <p class="cd-stat-val">
+              {{ resumenCantidades.actual ? fmtNum(resumenCantidades.actual.energia_minima) + ' MWh' : '—' }}
+            </p>
+            <p class="cd-stat-sub">
+              <template v-if="resumenCantidades.actual">
+                {{ resumenCantidades.actual.plantas_inscritas ?? '—' }} de
+                {{ resumenCantidades.actual.cantidad_proyectos ?? '—' }} plantas
+              </template>
+              <template v-else>{{ MESES[hoyPeriodo.mes - 1] }} sin registro</template>
+            </p>
+          </div>
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-arrows-h" style="font-size:9px" />Flexibilidad</p>
+            <p class="cd-stat-val">
+              {{ resumenCantidades.flex != null ? resumenCantidades.flex.toFixed(0) + '%' : '—' }}
+            </p>
+            <p class="cd-stat-sub">
+              {{ resumenCantidades.flex != null ? 'promedio máx sobre mín' : 'sin rangos máx/mín' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Barra de acciones -->
+        <div class="cd-toolbar">
+          <SelectButton v-if="!editandoCantidades" v-model="vistaCantidades" :options="VISTAS"
+            optionLabel="label" optionValue="value" size="small" />
+          <span v-else class="cd-toolbar-titulo">
+            <i class="pi pi-upload" />Cargar compromisos desde Excel
+          </span>
+          <div class="cd-toolbar-act">
             <template v-if="!editandoCantidades">
               <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
                 @click="editandoCantidades = true" />
@@ -362,42 +405,48 @@
 
         <!-- Modo edición cantidades -->
         <template v-if="editandoCantidades">
-          <p class="text-xs text-gray-400 mb-2">
-            Copia las columnas <strong>Año · Mes · Mín · Máx · Plantas contrato</strong> desde Excel y pégalas aquí
-            (Mín/Máx en MWh/mes; <strong>Plantas contrato</strong> = nº de plantas que el contrato exige ese mes).
-            Máx y Plantas contrato son opcionales. Esto <strong>reemplazará</strong> todos los compromisos actuales.
-          </p>
+          <div class="cd-aviso">
+            <i class="pi pi-exclamation-triangle" />
+            <div>
+              Copia las columnas <strong>Año · Mes · Mín · Máx · Plantas contrato</strong> desde Excel y pégalas
+              abajo (Mín/Máx en MWh/mes; <strong>Plantas contrato</strong> = nº de plantas que el contrato exige
+              ese mes). Máx y Plantas contrato son opcionales.
+              Al guardar se <strong>reemplazan todos</strong> los compromisos actuales.
+            </div>
+          </div>
           <Textarea v-model="energiaPaste" rows="7"
             placeholder="2024&#9;Enero&#9;90&#9;180&#9;4&#10;2024&#9;Febrero&#9;90&#9;180&#9;4"
             class="w-full font-mono text-xs" @paste="onPasteEnergia" />
-          <div class="flex items-center gap-2 mt-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <Button label="Procesar" icon="pi pi-refresh" size="small" severity="secondary" outlined @click="parseEnergia" />
             <Button v-if="energiaRows.length" label="Limpiar" icon="pi pi-times" size="small" severity="danger" text
               @click="energiaRows = []; energiaPaste = ''; energiaError = ''" />
-            <span v-if="energiaRows.length" class="text-xs text-green-600 font-medium">{{ energiaRows.length }} filas listas</span>
-            <span v-if="energiaError" class="text-xs text-red-400">{{ energiaError }}</span>
+            <span v-if="energiaRows.length" class="cd-pill cd-pill--ok">
+              <i class="pi pi-check-circle" />{{ energiaRows.length }} filas listas
+            </span>
+            <span v-if="energiaError" class="cd-pill cd-pill--err">
+              <i class="pi pi-times-circle" />{{ energiaError }}
+            </span>
           </div>
-          <div v-if="energiaRows.length" class="mt-3 border border-gray-100 rounded-lg overflow-hidden">
-            <table class="w-full text-xs">
-              <thead class="bg-gray-50">
+          <div v-if="energiaRows.length" class="cd-tabla">
+            <table class="cd-preview">
+              <thead>
                 <tr>
-                  <th class="px-3 py-1.5 text-left text-gray-500 font-medium">Año</th>
-                  <th class="px-3 py-1.5 text-left text-gray-500 font-medium">Mes</th>
-                  <th class="px-3 py-1.5 text-right text-gray-500 font-medium">Mín (MWh)</th>
-                  <th class="px-3 py-1.5 text-right text-gray-500 font-medium">Máx (MWh)</th>
-                  <th class="px-3 py-1.5 text-right text-gray-500 font-medium">Plantas contrato</th>
+                  <th>Año</th><th>Mes</th>
+                  <th class="cd-der">Mín (MWh)</th><th class="cd-der">Máx (MWh)</th>
+                  <th class="cd-der">Plantas contrato</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(r, i) in energiaRows.slice(0, 8)" :key="i" class="border-t border-gray-50">
-                  <td class="px-3 py-1 text-gray-700">{{ r.año }}</td>
-                  <td class="px-3 py-1 text-gray-700">{{ MESES[r.mes - 1] }}</td>
-                  <td class="px-3 py-1 text-right text-gray-700">{{ r.energia_minima }}</td>
-                  <td class="px-3 py-1 text-right text-gray-700">{{ r.energia_maxima ?? '—' }}</td>
-                  <td class="px-3 py-1 text-right text-gray-700">{{ r.cantidad_proyectos ?? '—' }}</td>
+                <tr v-for="(r, i) in energiaRows.slice(0, 8)" :key="i">
+                  <td>{{ r.año }}</td>
+                  <td>{{ MESES[r.mes - 1] }}</td>
+                  <td class="cd-der cd-num">{{ r.energia_minima }}</td>
+                  <td class="cd-der cd-num">{{ r.energia_maxima ?? '—' }}</td>
+                  <td class="cd-der cd-num">{{ r.cantidad_proyectos ?? '—' }}</td>
                 </tr>
-                <tr v-if="energiaRows.length > 8" class="border-t border-gray-50">
-                  <td colspan="5" class="px-3 py-1 text-gray-300 italic">… y {{ energiaRows.length - 8 }} filas más</td>
+                <tr v-if="energiaRows.length > 8">
+                  <td colspan="5" class="cd-preview-mas">… y {{ energiaRows.length - 8 }} filas más</td>
                 </tr>
               </tbody>
             </table>
@@ -406,59 +455,105 @@
 
         <!-- Modo lectura cantidades -->
         <template v-else>
-          <DataTable
-            :value="vistaCantidades === 'anual' ? cantidadesAnuales : cantidadesMensuales"
-            stripedRows class="text-sm" paginator :rows="24"
-            :rowsPerPageOptions="[12, 24, 60, 120]"
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-            emptyMessage="Sin compromisos de energía registrados."
-          >
-            <Column field="año" header="Año" style="width:70px" />
-            <Column v-if="vistaCantidades === 'mensual'" header="Mes" style="width:130px">
-              <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
-            </Column>
-            <Column :header="vistaCantidades === 'anual' ? 'Mín (MWh/año)' : 'Mín (MWh/mes)'">
-              <template #body="{ data }">
-                {{ data.energia_minima != null ? Number(data.energia_minima).toLocaleString('es-CO', { maximumFractionDigits: 1 }) : '—' }}
-              </template>
-            </Column>
-            <Column :header="vistaCantidades === 'anual' ? 'Máx (MWh/año)' : 'Máx (MWh/mes)'">
-              <template #body="{ data }">
-                {{ data.energia_maxima != null ? Number(data.energia_maxima).toLocaleString('es-CO', { maximumFractionDigits: 1 }) : '—' }}
-              </template>
-            </Column>
-            <Column style="width:150px">
-              <template #header>
-                <span v-tooltip.top="'Plantas registradas y despachando energía al contrato. La calcula la plataforma vía GESCON.'">
-                  {{ vistaCantidades === 'anual' ? 'Plantas inscritas (máx)' : 'Plantas inscritas' }}
-                </span>
-              </template>
-              <template #body="{ data }">
-                {{ data.plantas_inscritas != null ? data.plantas_inscritas : '—' }}
-              </template>
-            </Column>
-            <Column :header="vistaCantidades === 'anual' ? 'Plantas contrato (máx)' : 'Plantas contrato'" style="width:150px">
-              <template #body="{ data }">
-                {{ data.cantidad_proyectos != null ? data.cantidad_proyectos : '—' }}
-              </template>
-            </Column>
-            <Column header="Rango">
-              <template #body="{ data }">
-                <div v-if="data.energia_minima != null && data.energia_maxima != null" class="text-xs text-gray-400">
-                  {{ ((data.energia_maxima / data.energia_minima - 1) * 100).toFixed(0) }}% flex
-                </div>
-              </template>
-            </Column>
-          </DataTable>
+          <div v-if="!cantidadesMensuales.length" class="cd-vacio">
+            <i class="pi pi-chart-bar" />
+            <p class="cd-vacio-tit">Sin compromisos de energía</p>
+            <p class="cd-vacio-sub">Usa <strong>Editar</strong> para pegarlos desde Excel.</p>
+          </div>
+          <div v-else class="cd-tabla">
+            <DataTable
+              :value="vistaCantidades === 'anual' ? cantidadesAnuales : cantidadesMensuales"
+              stripedRows rowHover class="text-sm" paginator :rows="24"
+              :rowsPerPageOptions="[12, 24, 60, 120]"
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+            >
+              <Column field="año" header="Año" style="width:80px">
+                <template #body="{ data }"><span class="cd-num">{{ data.año }}</span></template>
+              </Column>
+              <Column v-if="vistaCantidades === 'mensual'" header="Mes" style="width:130px">
+                <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
+              </Column>
+              <Column :header="vistaCantidades === 'anual' ? 'Mín (MWh/año)' : 'Mín (MWh/mes)'"
+                headerClass="cd-th-der" bodyClass="cd-der">
+                <template #body="{ data }">
+                  <span class="cd-num cd-fuerte">{{ fmtNum(data.energia_minima) }}</span>
+                </template>
+              </Column>
+              <Column :header="vistaCantidades === 'anual' ? 'Máx (MWh/año)' : 'Máx (MWh/mes)'"
+                headerClass="cd-th-der" bodyClass="cd-der">
+                <template #body="{ data }"><span class="cd-num">{{ fmtNum(data.energia_maxima) }}</span></template>
+              </Column>
+              <Column style="width:160px" headerClass="cd-th-der" bodyClass="cd-der">
+                <template #header>
+                  <span v-tooltip.top="'Plantas registradas y despachando energía al contrato. La calcula la plataforma vía GESCON.'">
+                    {{ vistaCantidades === 'anual' ? 'Plantas inscritas (máx)' : 'Plantas inscritas' }}
+                  </span>
+                </template>
+                <template #body="{ data }">
+                  <span v-if="data.plantas_inscritas != null" class="cd-pill"
+                    :class="plantasClase(data)">{{ data.plantas_inscritas }}</span>
+                  <span v-else class="cd-nulo">—</span>
+                </template>
+              </Column>
+              <Column :header="vistaCantidades === 'anual' ? 'Plantas contrato (máx)' : 'Plantas contrato'"
+                style="width:150px" headerClass="cd-th-der" bodyClass="cd-der">
+                <template #body="{ data }">
+                  <span class="cd-num">{{ data.cantidad_proyectos != null ? data.cantidad_proyectos : '—' }}</span>
+                </template>
+              </Column>
+              <Column header="Rango" style="width:110px">
+                <template #body="{ data }">
+                  <span v-if="data.energia_minima > 0 && data.energia_maxima != null" class="cd-pill cd-pill--flex">
+                    {{ ((data.energia_maxima / data.energia_minima - 1) * 100).toFixed(0) }}% flex
+                  </span>
+                  <span v-else class="cd-nulo">—</span>
+                </template>
+              </Column>
+            </DataTable>
+          </div>
         </template>
       </div>
 
       <!-- ══ TARIFAS ══ -->
-      <div v-if="tab === 'tarifas'">
-        <div class="flex justify-between items-center mb-3">
-          <SelectButton v-if="!editandoTarifas" v-model="vistaTarifas" :options="VISTAS" optionLabel="label" optionValue="value" />
-          <span v-else />
-          <div class="flex gap-2">
+      <div v-if="tab === 'tarifas'" class="space-y-4">
+
+        <!-- Resumen -->
+        <div v-if="resumenTarifas && !editandoTarifas" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="cd-stat" style="background:#fffbeb;border-color:#fde68a">
+            <p class="cd-stat-lbl" style="color:#b45309"><i class="pi pi-dollar" style="font-size:9px" />
+              {{ resumenTarifas.esDelMes ? 'Tarifa del mes' : 'Última tarifa' }}</p>
+            <p class="cd-stat-val" style="color:#b45309">{{ fmtCOP(resumenTarifas.vigente.tarifa) }}</p>
+            <p class="cd-stat-sub" style="color:#b45309;opacity:.75">
+              {{ MESES[resumenTarifas.vigente.mes - 1] }} {{ resumenTarifas.vigente.año }} · COP/kWh
+            </p>
+          </div>
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-chart-line" style="font-size:9px" />Variación</p>
+            <p class="cd-stat-val" :style="`color:${varColor(resumenTarifas.varPct)}`">
+              {{ resumenTarifas.varPct != null ? (resumenTarifas.varPct > 0 ? '+' : '') + resumenTarifas.varPct.toFixed(1) + '%' : '—' }}
+            </p>
+            <p class="cd-stat-sub">frente al período anterior</p>
+          </div>
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-arrows-v" style="font-size:9px" />Rango histórico</p>
+            <p class="cd-stat-val">{{ fmtCOP(resumenTarifas.min) }} – {{ fmtCOP(resumenTarifas.max) }}</p>
+            <p class="cd-stat-sub">mínimo y máximo registrados</p>
+          </div>
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-calendar" style="font-size:9px" />Períodos</p>
+            <p class="cd-stat-val">{{ resumenTarifas.periodos }} meses</p>
+            <p class="cd-stat-sub">{{ resumenTarifas.añoMin }} – {{ resumenTarifas.añoMax }}</p>
+          </div>
+        </div>
+
+        <!-- Barra de acciones -->
+        <div class="cd-toolbar">
+          <SelectButton v-if="!editandoTarifas" v-model="vistaTarifas" :options="VISTAS"
+            optionLabel="label" optionValue="value" size="small" />
+          <span v-else class="cd-toolbar-titulo">
+            <i class="pi pi-upload" />Cargar tarifas desde Excel
+          </span>
+          <div class="cd-toolbar-act">
             <template v-if="!editandoTarifas">
               <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
                 @click="editandoTarifas = true" />
@@ -474,37 +569,40 @@
 
         <!-- Modo edición tarifas -->
         <template v-if="editandoTarifas">
-          <p class="text-xs text-gray-400 mb-2">
-            Copia las columnas <strong>Año · Mes · Tarifa</strong> desde Excel y pégalas aquí.
-            Esto <strong>reemplazará</strong> todas las tarifas actuales.
-          </p>
+          <div class="cd-aviso">
+            <i class="pi pi-exclamation-triangle" />
+            <div>
+              Copia las columnas <strong>Año · Mes · Tarifa</strong> desde Excel y pégalas abajo.
+              Al guardar se <strong>reemplazan todas</strong> las tarifas actuales.
+            </div>
+          </div>
           <Textarea v-model="tarifasPaste" rows="7"
             placeholder="2024&#9;Enero&#9;460&#10;2024&#9;Febrero&#9;460"
             class="w-full font-mono text-xs" @paste="onPasteTarifas" />
-          <div class="flex items-center gap-2 mt-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <Button label="Procesar" icon="pi pi-refresh" size="small" severity="secondary" outlined @click="parseTarifas" />
             <Button v-if="tarifasRows.length" label="Limpiar" icon="pi pi-times" size="small" severity="danger" text
               @click="tarifasRows = []; tarifasPaste = ''; tarifasError = ''" />
-            <span v-if="tarifasRows.length" class="text-xs text-green-600 font-medium">{{ tarifasRows.length }} filas listas</span>
-            <span v-if="tarifasError" class="text-xs text-red-400">{{ tarifasError }}</span>
+            <span v-if="tarifasRows.length" class="cd-pill cd-pill--ok">
+              <i class="pi pi-check-circle" />{{ tarifasRows.length }} filas listas
+            </span>
+            <span v-if="tarifasError" class="cd-pill cd-pill--err">
+              <i class="pi pi-times-circle" />{{ tarifasError }}
+            </span>
           </div>
-          <div v-if="tarifasRows.length" class="mt-3 border border-gray-100 rounded-lg overflow-hidden">
-            <table class="w-full text-xs">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th class="px-3 py-1.5 text-left text-gray-500 font-medium">Año</th>
-                  <th class="px-3 py-1.5 text-left text-gray-500 font-medium">Mes</th>
-                  <th class="px-3 py-1.5 text-right text-gray-500 font-medium">Tarifa ($/kWh)</th>
-                </tr>
+          <div v-if="tarifasRows.length" class="cd-tabla">
+            <table class="cd-preview">
+              <thead>
+                <tr><th>Año</th><th>Mes</th><th class="cd-der">Tarifa ($/kWh)</th></tr>
               </thead>
               <tbody>
-                <tr v-for="(r, i) in tarifasRows.slice(0, 8)" :key="i" class="border-t border-gray-50">
-                  <td class="px-3 py-1 text-gray-700">{{ r.año }}</td>
-                  <td class="px-3 py-1 text-gray-700">{{ MESES[r.mes - 1] }}</td>
-                  <td class="px-3 py-1 text-right text-gray-700">{{ r.tarifa }}</td>
+                <tr v-for="(r, i) in tarifasRows.slice(0, 8)" :key="i">
+                  <td>{{ r.año }}</td>
+                  <td>{{ MESES[r.mes - 1] }}</td>
+                  <td class="cd-der cd-num">{{ r.tarifa }}</td>
                 </tr>
-                <tr v-if="tarifasRows.length > 8" class="border-t border-gray-50">
-                  <td colspan="3" class="px-3 py-1 text-gray-300 italic">… y {{ tarifasRows.length - 8 }} filas más</td>
+                <tr v-if="tarifasRows.length > 8">
+                  <td colspan="3" class="cd-preview-mas">… y {{ tarifasRows.length - 8 }} filas más</td>
                 </tr>
               </tbody>
             </table>
@@ -513,137 +611,182 @@
 
         <!-- Modo lectura tarifas -->
         <template v-else>
-          <DataTable
-            :value="vistaTarifas === 'anual' ? tarifasAnuales : tarifasMensuales"
-            stripedRows class="text-sm" paginator :rows="24"
-            :rowsPerPageOptions="[12, 24, 60, 120]"
-            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
-            emptyMessage="Sin tarifas registradas."
-          >
-            <Column field="año" header="Año" style="width:70px" />
-            <Column v-if="vistaTarifas === 'mensual'" header="Mes" style="width:130px">
-              <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
-            </Column>
-            <Column header="Tarifa (COP/kWh)">
-              <template #body="{ data }">
-                <span class="font-mono font-medium text-amber-700">
-                  {{ data.tarifa != null ? `$${Number(data.tarifa).toLocaleString('es-CO', { maximumFractionDigits: 2 })}` : '—' }}
-                </span>
-                <span v-if="vistaTarifas === 'anual' && !data._uniforme" class="text-xs text-gray-400 ml-1">prom.</span>
-              </template>
-            </Column>
-            <Column header="Variación">
-              <template #body="{ data, index }">
-                <template v-if="index > 0">
-                  <span
-                    v-if="currentTarifas[index - 1]?.tarifa != null && data.tarifa != null"
-                    class="text-xs font-medium"
-                    :class="data.tarifa < currentTarifas[index-1].tarifa ? 'text-green-600' : data.tarifa > currentTarifas[index-1].tarifa ? 'text-red-500' : 'text-gray-400'"
-                  >
+          <div v-if="!tarifasMensuales.length" class="cd-vacio">
+            <i class="pi pi-dollar" />
+            <p class="cd-vacio-tit">Sin tarifas registradas</p>
+            <p class="cd-vacio-sub">Usa <strong>Editar</strong> para pegarlas desde Excel.</p>
+          </div>
+          <div v-else class="cd-tabla">
+            <DataTable
+              :value="vistaTarifas === 'anual' ? tarifasAnuales : tarifasMensuales"
+              stripedRows rowHover class="text-sm" paginator :rows="24"
+              :rowsPerPageOptions="[12, 24, 60, 120]"
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+            >
+              <Column field="año" header="Año" style="width:80px">
+                <template #body="{ data }"><span class="cd-num">{{ data.año }}</span></template>
+              </Column>
+              <Column v-if="vistaTarifas === 'mensual'" header="Mes" style="width:130px">
+                <template #body="{ data }">{{ MESES[data.mes - 1] }}</template>
+              </Column>
+              <Column header="Tarifa (COP/kWh)" headerClass="cd-th-der" bodyClass="cd-der">
+                <template #body="{ data }">
+                  <span class="cd-num cd-tarifa">{{ fmtCOP(data.tarifa) }}</span>
+                  <span v-if="vistaTarifas === 'anual' && !data._uniforme" class="cd-nulo ml-1">prom.</span>
+                </template>
+              </Column>
+              <Column header="Variación" style="width:130px" headerClass="cd-th-der" bodyClass="cd-der">
+                <template #body="{ data, index }">
+                  <span v-if="index > 0 && currentTarifas[index - 1]?.tarifa != null && data.tarifa != null"
+                    class="cd-pill" :style="`color:${varColor(varPct(currentTarifas[index-1].tarifa, data.tarifa))};background:${varBg(varPct(currentTarifas[index-1].tarifa, data.tarifa))}`">
+                    <i :class="varIcono(varPct(currentTarifas[index-1].tarifa, data.tarifa))" />
                     {{ variacion(currentTarifas[index-1].tarifa, data.tarifa) }}
                   </span>
+                  <span v-else class="cd-nulo">—</span>
                 </template>
-              </template>
-            </Column>
-          </DataTable>
+              </Column>
+            </DataTable>
+          </div>
         </template>
       </div>
 
       <!-- ══ CONTRATOS ASIC ══ -->
-      <div v-if="tab === 'asic'">
-        <div class="flex justify-between items-center mb-3">
-          <span class="text-xs text-gray-400">{{ asicRows.length }} registros totales</span>
-          <SelectButton v-model="vistaAsic"
+      <div v-if="tab === 'asic'" class="space-y-4">
+
+        <!-- Resumen -->
+        <div v-if="!loadingAsic && asicRows.length" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-book" style="font-size:9px" />Registros</p>
+            <p class="cd-stat-val">{{ resumenAsic.total }}</p>
+            <p class="cd-stat-sub">histórico completo</p>
+          </div>
+          <div class="cd-stat" style="background:#ecfdf5;border-color:#a7f3d0">
+            <p class="cd-stat-lbl" style="color:#059669"><i class="pi pi-check-circle" style="font-size:9px" />Vigentes</p>
+            <p class="cd-stat-val" style="color:#059669">{{ resumenAsic.vigentes }}</p>
+            <p class="cd-stat-sub" style="color:#059669;opacity:.75">con fecha fin en el futuro</p>
+          </div>
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-verified" style="font-size:9px" />Publicados</p>
+            <p class="cd-stat-val">{{ resumenAsic.publicados }}</p>
+            <p class="cd-stat-sub">estado de la solicitud</p>
+          </div>
+          <div class="cd-stat" :style="resumenAsic.enProceso ? 'background:#fffbeb;border-color:#fde68a' : ''">
+            <p class="cd-stat-lbl" :style="resumenAsic.enProceso ? 'color:#b45309' : ''">
+              <i class="pi pi-hourglass" style="font-size:9px" />En proceso</p>
+            <p class="cd-stat-val" :style="resumenAsic.enProceso ? 'color:#b45309' : ''">{{ resumenAsic.enProceso }}</p>
+            <p class="cd-stat-sub" :style="resumenAsic.enProceso ? 'color:#b45309;opacity:.75' : ''">
+              pendientes ante el ASIC
+            </p>
+          </div>
+        </div>
+
+        <!-- Barra de acciones -->
+        <div class="cd-toolbar">
+          <SelectButton v-model="vistaAsic" size="small"
             :options="[{ label: 'Vigentes', value: 'vigentes' }, { label: 'Históricos', value: 'historicos' }]"
             optionLabel="label" optionValue="value" />
+          <div class="cd-toolbar-act">
+            <span class="cd-toolbar-nota">{{ asicFiltrados.length }} de {{ asicRows.length }} registros</span>
+          </div>
         </div>
-        <div v-if="loadingAsic" class="flex items-center justify-center py-16 text-gray-400 gap-2">
-          <i class="pi pi-spin pi-spinner" />
-          <span class="text-sm">Cargando registros ASIC…</span>
-        </div>
-        <DataTable
-          v-else
-          :value="asicFiltrados"
-          stripedRows
-          class="text-sm"
-          emptyMessage="Sin registros ASIC para este contrato."
-          sortField="fecha_solicitud"
-          :sortOrder="-1"
-        >
-          <Column field="codigo_sic_contrato" header="Código SIC" sortable style="width:110px">
-            <template #body="{ data }">
-              <span class="font-mono text-xs">{{ data.codigo_sic_contrato || '—' }}</span>
-            </template>
-          </Column>
-          <Column field="planta_nombre" header="Planta" sortable>
-            <template #body="{ data }">
-              <router-link v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`"
-                class="text-amber-700 hover:underline">
-                {{ data.planta_nombre || data.proyecto_id }}
-              </router-link>
-              <span v-else class="text-gray-400">—</span>
-            </template>
-          </Column>
-          <Column field="tipo_solicitud" header="Tipo" style="width:120px">
-            <template #body="{ data }">
-              <Tag
-                :value="data.tipo_solicitud"
-                :severity="{ registro: 'success', modificacion: 'info', terminacion: 'danger', desistimiento: 'secondary' }[data.tipo_solicitud] || 'secondary'"
-                class="text-xs capitalize"
-              />
-            </template>
-          </Column>
-          <Column field="estado_solicitud" header="Estado" style="width:110px">
-            <template #body="{ data }">
-              <Tag
-                :value="data.estado_solicitud.replace('_', ' ')"
-                :severity="{ publicado: 'success', en_proceso: 'warn', rechazado: 'danger', desistido: 'secondary' }[data.estado_solicitud] || 'secondary'"
-                class="text-xs capitalize"
-              />
-            </template>
-          </Column>
-          <Column field="fecha_inicio" header="Inicio" sortable style="width:100px" />
-          <Column field="fecha_fin" header="Fin" sortable style="width:100px" />
-          <Column field="porcentaje_despacho" header="% Despacho" style="width:110px">
-            <template #body="{ data }">
-              <span v-if="data.porcentaje_despacho != null"
-                :class="data.porcentaje_despacho > 100 ? 'text-red-600 font-semibold' : ''">
-                {{ Number(data.porcentaje_despacho).toFixed(1) }}%
-              </span>
-              <span v-else class="text-gray-400">—</span>
-            </template>
-          </Column>
-          <Column field="fecha_solicitud" header="F. solicitud" sortable style="width:120px" />
-          <Column field="observaciones" header="Observaciones">
-            <template #body="{ data }">
-              <span class="text-xs text-gray-500">{{ data.observaciones || '—' }}</span>
-            </template>
-          </Column>
-        </DataTable>
-      </div>
 
-      <!-- ══ PROYECTOS ══ -->
-      <div v-if="tab === 'proyectos'">
-        <div class="flex justify-end mb-3">
-          <Button label="Asociar proyecto" icon="pi pi-plus" size="small" severity="secondary" outlined
-            @click="abrirAsociar" />
+        <div v-if="loadingAsic" class="cd-cargando">
+          <i class="pi pi-spin pi-spinner" /><span>Cargando registros ASIC…</span>
         </div>
-        <div v-if="contrato.proyectos?.length" class="p-2">
-          <DataTable :value="contrato.proyectos" stripedRows class="text-sm" rowHover>
-            <Column field="id" header="ID" style="width:60px" />
-            <Column field="nombre_comercial" header="Nombre comercial" sortable>
+        <div v-else-if="!asicFiltrados.length" class="cd-vacio">
+          <i class="pi pi-book" />
+          <p class="cd-vacio-tit">Sin registros ASIC {{ vistaAsic === 'vigentes' ? 'vigentes' : '' }}</p>
+          <p class="cd-vacio-sub">
+            Se buscan por número de contrato interno o código SIC.
+            <template v-if="vistaAsic === 'vigentes' && asicRows.length">
+              Hay {{ asicRows.length }} en el histórico.
+            </template>
+          </p>
+        </div>
+        <div v-else class="cd-tabla">
+          <DataTable :value="asicFiltrados" stripedRows rowHover class="text-sm"
+            sortField="fecha_solicitud" :sortOrder="-1">
+            <Column field="codigo_sic_contrato" header="Código SIC" sortable style="width:110px">
               <template #body="{ data }">
-                <router-link :to="`/proyectos/${data.id}`"
-                  class="font-medium text-amber-700 hover:underline">
-                  {{ data.nombre_comercial }}
+                <span class="cd-num">{{ data.codigo_sic_contrato || '—' }}</span>
+              </template>
+            </Column>
+            <Column field="planta_nombre" header="Planta" sortable>
+              <template #body="{ data }">
+                <router-link v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`" class="cd-enlace">
+                  {{ data.planta_nombre || data.proyecto_id }}
                 </router-link>
+                <span v-else class="cd-nulo">—</span>
+              </template>
+            </Column>
+            <Column field="tipo_solicitud" header="Tipo" style="width:120px">
+              <template #body="{ data }">
+                <Tag :value="data.tipo_solicitud" class="text-[10px] capitalize"
+                  :severity="{ registro: 'success', modificacion: 'info', terminacion: 'danger', desistimiento: 'secondary' }[data.tipo_solicitud] || 'secondary'" />
+              </template>
+            </Column>
+            <Column field="estado_solicitud" header="Estado" style="width:115px">
+              <template #body="{ data }">
+                <Tag :value="data.estado_solicitud.replace('_', ' ')" class="text-[10px] capitalize"
+                  :severity="{ publicado: 'success', en_proceso: 'warn', rechazado: 'danger', desistido: 'secondary' }[data.estado_solicitud] || 'secondary'" />
+              </template>
+            </Column>
+            <Column field="fecha_inicio" header="Inicio" sortable style="width:105px">
+              <template #body="{ data }"><span class="cd-num">{{ data.fecha_inicio || '—' }}</span></template>
+            </Column>
+            <Column field="fecha_fin" header="Fin" sortable style="width:105px">
+              <template #body="{ data }"><span class="cd-num">{{ data.fecha_fin || '—' }}</span></template>
+            </Column>
+            <Column field="porcentaje_despacho" header="% Despacho" style="width:115px"
+              headerClass="cd-th-der" bodyClass="cd-der">
+              <template #body="{ data }">
+                <span v-if="data.porcentaje_despacho != null" class="cd-pill"
+                  :class="data.porcentaje_despacho > 100 ? 'cd-pill--err' : 'cd-pill--neutro'">
+                  {{ Number(data.porcentaje_despacho).toFixed(1) }}%
+                </span>
+                <span v-else class="cd-nulo">—</span>
+              </template>
+            </Column>
+            <Column field="fecha_solicitud" header="F. solicitud" sortable style="width:120px">
+              <template #body="{ data }"><span class="cd-num">{{ data.fecha_solicitud || '—' }}</span></template>
+            </Column>
+            <Column header="Observaciones">
+              <template #body="{ data }">
+                <span class="text-xs" style="color:#6b5a8a">{{ data.observaciones || '—' }}</span>
               </template>
             </Column>
           </DataTable>
         </div>
-        <div v-else class="flex flex-col items-center py-16 gap-2 text-gray-400">
-          <i class="pi pi-sitemap text-3xl" />
-          <span class="text-sm">Sin proyectos asociados</span>
+      </div>
+
+      <!-- ══ PROYECTOS ══ -->
+      <div v-if="tab === 'proyectos'" class="space-y-4">
+        <div class="cd-toolbar">
+          <span class="cd-toolbar-titulo">
+            <i class="pi pi-bolt" />
+            {{ contrato.proyectos?.length || 0 }}
+            {{ (contrato.proyectos?.length === 1) ? 'planta asociada' : 'plantas asociadas' }}
+          </span>
+          <div class="cd-toolbar-act">
+            <Button label="Asociar proyecto" icon="pi pi-plus" size="small" severity="secondary" outlined
+              @click="abrirAsociar" />
+          </div>
+        </div>
+
+        <div v-if="contrato.proyectos?.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <router-link v-for="p in proyectosOrdenados" :key="p.id" :to="`/proyectos/${p.id}`" class="cd-proy">
+            <span class="cd-ico" style="background:#915BD818"><i class="pi pi-bolt" style="color:#915BD8" /></span>
+            <div class="min-w-0 flex-1">
+              <p class="cd-proy-nom">{{ p.nombre_comercial }}</p>
+              <p class="cd-proy-id">ID {{ p.id }}</p>
+            </div>
+            <i class="pi pi-chevron-right cd-proy-chev" />
+          </router-link>
+        </div>
+        <div v-else class="cd-vacio">
+          <i class="pi pi-sitemap" />
+          <p class="cd-vacio-tit">Sin plantas asociadas</p>
+          <p class="cd-vacio-sub">Usa <strong>Asociar proyecto</strong> para vincular las que despachan a este PPA.</p>
         </div>
       </div>
       </template>
@@ -681,16 +824,17 @@
   </div>
 
   <!-- Loading -->
-  <div v-else-if="loading" class="flex items-center justify-center py-24 text-gray-400 gap-3">
-    <i class="pi pi-spin pi-spinner text-xl" />
+  <div v-else-if="loading" class="cd-cargando" style="padding:96px 20px">
+    <i class="pi pi-spin pi-spinner" style="font-size:18px" />
     <span>Cargando contrato…</span>
   </div>
 
   <!-- Error -->
-  <div v-else class="flex flex-col items-center py-24 text-gray-400 gap-2">
-    <i class="pi pi-exclamation-triangle text-3xl text-amber-400" />
-    <span class="text-sm">No se encontró el contrato</span>
-    <Button label="Volver" text @click="$router.back()" />
+  <div v-else class="cd-vacio" style="padding:80px 20px">
+    <i class="pi pi-exclamation-triangle" style="color:#fbbf24" />
+    <p class="cd-vacio-tit">No se encontró el contrato</p>
+    <p class="cd-vacio-sub">Puede que lo hayan eliminado o que el enlace esté mal.</p>
+    <Button label="Volver" icon="pi pi-arrow-left" text size="small" class="mt-2" @click="$router.back()" />
   </div>
 </template>
 
@@ -1087,6 +1231,103 @@ function variacion(prev, curr) {
   return `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`
 }
 
+// ── Formato y semáforos compartidos por las pestañas de datos ───────────────
+const hoyPeriodo = { año: new Date().getFullYear(), mes: new Date().getMonth() + 1 }
+
+function fmtNum(v, dec = 1) {
+  if (v == null) return '—'
+  return Number(v).toLocaleString('es-CO', { maximumFractionDigits: dec })
+}
+
+function fmtCOP(v, dec = 2) {
+  if (v == null) return '—'
+  return `$${Number(v).toLocaleString('es-CO', { maximumFractionDigits: dec })}`
+}
+
+function varPct(prev, curr) {
+  if (!prev) return null
+  return ((curr - prev) / prev) * 100
+}
+
+// En una tarifa de venta, subir es bueno para nosotros; el color solo marca la
+// dirección (verde sube / rojo baja), no un juicio de valor.
+function varColor(pct) {
+  if (pct == null || pct === 0) return '#9b89b5'
+  return pct > 0 ? '#059669' : '#dc2626'
+}
+
+function varBg(pct) {
+  if (pct == null || pct === 0) return '#f4f1f9'
+  return pct > 0 ? '#ecfdf5' : '#fef2f2'
+}
+
+function varIcono(pct) {
+  if (pct == null || pct === 0) return 'pi pi-minus'
+  return pct > 0 ? 'pi pi-arrow-up-right' : 'pi pi-arrow-down-right'
+}
+
+// Verde si las plantas inscritas ya cubren lo que el contrato exige ese mes.
+// Sin cantidad_proyectos no hay contra qué comparar: se muestra neutro.
+function plantasClase(row) {
+  if (row.cantidad_proyectos == null) return 'cd-pill--neutro'
+  return row.plantas_inscritas >= row.cantidad_proyectos ? 'cd-pill--ok' : 'cd-pill--warn'
+}
+
+const resumenCantidades = computed(() => {
+  const rows = cantidadesMensuales.value
+  if (!rows.length) return null
+  const años = rows.map(r => r.año)
+  const delAñoActual = rows.filter(r => r.año === hoyPeriodo.año)
+  const conRango = rows.filter(r => r.energia_minima > 0 && r.energia_maxima != null)
+  return {
+    periodos: rows.length,
+    añoMin: Math.min(...años),
+    añoMax: Math.max(...años),
+    tieneAñoActual: delAñoActual.length > 0,
+    totalAñoActual: delAñoActual.reduce((acc, r) => acc + (r.energia_minima ?? 0), 0),
+    actual: rows.find(r => r.año === hoyPeriodo.año && r.mes === hoyPeriodo.mes) || null,
+    flex: conRango.length
+      ? conRango.reduce((acc, r) => acc + (r.energia_maxima / r.energia_minima - 1), 0) / conRango.length * 100
+      : null,
+  }
+})
+
+const resumenTarifas = computed(() => {
+  const rows = tarifasMensuales.value
+  if (!rows.length) return null
+  const vals = rows.map(r => Number(r.tarifa)).filter(v => !isNaN(v))
+  // Si no hay tarifa del mes en curso se muestra la última cargada, que es la
+  // que el equipo va a querer ver (los PPA se cargan con meses de adelanto).
+  const iMes = rows.findIndex(r => r.año === hoyPeriodo.año && r.mes === hoyPeriodo.mes)
+  const i = iMes >= 0 ? iMes : rows.length - 1
+  const años = rows.map(r => r.año)
+  return {
+    periodos: rows.length,
+    añoMin: Math.min(...años),
+    añoMax: Math.max(...años),
+    vigente: rows[i],
+    esDelMes: iMes >= 0,
+    varPct: i > 0 ? varPct(Number(rows[i - 1].tarifa), Number(rows[i].tarifa)) : null,
+    min: vals.length ? Math.min(...vals) : null,
+    max: vals.length ? Math.max(...vals) : null,
+  }
+})
+
+const resumenAsic = computed(() => {
+  const rows = asicRows.value
+  const hoy = new Date().toISOString().slice(0, 10)
+  return {
+    total: rows.length,
+    vigentes: rows.filter(r => r.fecha_fin && r.fecha_fin >= hoy).length,
+    publicados: rows.filter(r => r.estado_solicitud === 'publicado').length,
+    enProceso: rows.filter(r => r.estado_solicitud === 'en_proceso').length,
+  }
+})
+
+const proyectosOrdenados = computed(() =>
+  [...(contrato.value?.proyectos ?? [])].sort((a, b) =>
+    (a.nombre_comercial ?? '').localeCompare(b.nombre_comercial ?? '')))
+
 function agregarPorAño(rows, campos, modo) {
   const byYear = {}
   for (const r of rows) {
@@ -1369,4 +1610,117 @@ onMounted(cargar)
 }
 .cd-head-link:hover { background: #fef3c7; }
 .cd-head-link i { font-size: 10px; }
+/* ── Barra de acciones de las pestañas de tabla ───────────────────────────── */
+.cd-toolbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 12px; border-radius: 10px;
+  background: #faf8fd; border: 1px solid #f0eaf8;
+}
+.cd-toolbar-titulo {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700; letter-spacing: .03em;
+  text-transform: uppercase; color: #2C2039;
+}
+.cd-toolbar-titulo i { font-size: 11px; color: #915BD8; }
+.cd-toolbar-act { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.cd-toolbar-nota { font-size: 11px; color: #9b89b5; }
+
+/* ── Contenedor de tabla: mismo marco que las secciones ───────────────────── */
+.cd-tabla { border: 1.5px solid #e8e0f0; border-radius: 12px; overflow: hidden; background: #fff; }
+.cd-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+.cd-fuerte { font-weight: 600; color: #2C2039; }
+.cd-tarifa { font-weight: 600; color: #b45309; }
+.cd-nulo { color: #c5b9db; }
+.cd-enlace { font-weight: 500; color: #915BD8; }
+.cd-enlace:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+/* PrimeVue renderiza la tabla fuera del alcance de :scoped: hace falta :deep */
+.cd-tabla :deep(.p-datatable-thead > tr > th) {
+  background: #faf8fd; color: #6b5a8a;
+  font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  border-bottom: 1px solid #ECE7F2; padding: 8px 12px;
+}
+.cd-tabla :deep(.p-datatable-tbody > tr > td) {
+  padding: 8px 12px; border-bottom: 1px solid #f6f2fb; color: #2C2039;
+}
+.cd-tabla :deep(.p-datatable-tbody > tr:last-child > td) { border-bottom: none; }
+.cd-tabla :deep(.p-datatable-tbody > tr.p-row-odd) { background: #fdfcfe; }
+.cd-tabla :deep(.p-datatable-tbody > tr:hover) { background: #f7f3fd; }
+.cd-tabla :deep(.p-paginator) {
+  background: #faf8fd; border-top: 1px solid #ECE7F2; padding: 5px 8px;
+}
+.cd-tabla :deep(.cd-th-der .p-datatable-column-header-content) { justify-content: flex-end; }
+.cd-tabla :deep(td.cd-der), .cd-der { text-align: right; }
+
+/* ── Píldoras de estado / variación ───────────────────────────────────────── */
+.cd-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: #f4f1f9; color: #6b5a8a;
+}
+.cd-pill i { font-size: 9px; }
+.cd-pill--neutro { background: #f4f1f9; color: #6b5a8a; }
+.cd-pill--ok { background: #ecfdf5; color: #059669; }
+.cd-pill--warn { background: #fffbeb; color: #b45309; }
+.cd-pill--err { background: #fef2f2; color: #dc2626; }
+.cd-pill--flex { background: #eef2ff; color: #4f46e5; }
+
+/* ── Aviso de "esto reemplaza todo" en los modos de pegado ────────────────── */
+.cd-aviso {
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 10px 13px; border-radius: 10px;
+  background: #fffbeb; border: 1px solid #fde68a;
+  font-size: 12px; line-height: 1.5; color: #92400e;
+}
+.cd-aviso > i { font-size: 13px; color: #d97706; margin-top: 1px; flex-shrink: 0; }
+
+/* ── Tabla de vista previa del pegado ─────────────────────────────────────── */
+.cd-preview { width: 100%; border-collapse: collapse; font-size: 12px; }
+.cd-preview th {
+  background: #faf8fd; color: #6b5a8a; text-align: left;
+  font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  padding: 7px 12px; border-bottom: 1px solid #ECE7F2;
+}
+.cd-preview td { padding: 6px 12px; border-bottom: 1px solid #f6f2fb; color: #2C2039; }
+.cd-preview tr:last-child td { border-bottom: none; }
+.cd-preview .cd-der { text-align: right; }
+.cd-preview-mas { color: #c5b9db; font-style: italic; }
+
+/* ── Estados vacíos y de carga ────────────────────────────────────────────── */
+.cd-vacio {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 44px 20px; border-radius: 12px;
+  border: 1.5px dashed #e8e0f0; background: #fdfcfe; text-align: center;
+}
+.cd-vacio > i { font-size: 26px; color: #d8cce9; margin-bottom: 5px; }
+.cd-vacio-tit { font-size: 13px; font-weight: 600; color: #6b5a8a; }
+.cd-vacio-sub { font-size: 12px; color: #9b89b5; }
+.cd-cargando {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 56px 20px; font-size: 13px; color: #9b89b5;
+}
+
+/* ── Tarjetas de plantas asociadas ────────────────────────────────────────── */
+.cd-proy {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 13px; border-radius: 10px;
+  border: 1px solid #ECE7F2; background: #fff;
+  transition: border-color .12s, background .12s;
+}
+.cd-proy:hover { border-color: #d9c9f5; background: #fdfcfe; }
+.cd-proy-nom {
+  font-size: 13px; font-weight: 600; color: #2C2039;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.cd-proy-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px; color: #9b8fb0;
+}
+.cd-proy-chev { font-size: 10px; color: #c5b9db; flex-shrink: 0; }
+.cd-proy:hover .cd-proy-chev { color: #915BD8; }
 </style>
