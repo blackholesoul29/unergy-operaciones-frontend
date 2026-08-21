@@ -12,201 +12,333 @@
             : 'background:#F6FF72;color:#2C2039'" class="text-[10px]" />
       </template>
       <template #acciones>
+        <!-- Atajo al contrato: el enlace se guarda en la pestaña Datos -->
+        <a v-if="enlaceContrato" :href="enlaceContrato" target="_blank" rel="noopener noreferrer"
+          class="cd-head-link" v-tooltip.bottom="'Abrir el contrato en Drive'">
+          <i class="pi pi-external-link" />Contrato
+        </a>
         <Button label="Editar contrato" icon="pi pi-pencil" severity="secondary" outlined size="small"
           @click="abrirEdicionCompleta" />
       </template>
       <template #default="{ tab }">
       <!-- ══ DATOS ══ -->
-      <div v-if="tab === 'datos'">
-        <div class="space-y-6 p-2">
+      <div v-if="tab === 'datos'" class="space-y-4">
 
-          <!-- Identificación -->
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide">Identificación</p>
+        <!-- ── Resumen: lo que se quiere saber de un vistazo ─────────── -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="cd-stat"
+            :style="`background:${estadoVigencia.bg};border-color:${estadoVigencia.borde}`">
+            <p class="cd-stat-lbl" :style="`color:${estadoVigencia.color}`">
+              <i class="pi pi-circle-fill" style="font-size:6px" />Estado
+            </p>
+            <p class="cd-stat-val" :style="`color:${estadoVigencia.color}`">{{ estadoVigencia.label }}</p>
+            <p class="cd-stat-sub" :style="`color:${estadoVigencia.color};opacity:.7`">{{ estadoVigencia.detalle }}</p>
+          </div>
+
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-clock" style="font-size:9px" />Duración</p>
+            <p class="cd-stat-val">{{ duracion || '—' }}</p>
+            <p class="cd-stat-sub">
+              {{ formatFecha(contrato.fecha_inicio) || '—' }} → {{ formatFecha(contrato.fecha_fin) || '—' }}
+            </p>
+          </div>
+
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-chart-line" style="font-size:9px" />Indexación</p>
+            <p class="cd-stat-val">{{ contrato.indice_indexacion || '—' }}</p>
+            <p class="cd-stat-sub">
+              {{ contrato.periodicidad_indexacion || 'sin periodicidad' }}<template v-if="contrato.periodo_indexacion_base"> · base {{ contrato.periodo_indexacion_base }}</template>
+            </p>
+          </div>
+
+          <div class="cd-stat">
+            <p class="cd-stat-lbl"><i class="pi pi-file" style="font-size:9px" />Facturación</p>
+            <p class="cd-stat-val">{{ contrato.periodicidad_facturacion || '—' }}</p>
+            <p class="cd-stat-sub">
+              {{ contrato.tiempo_pago != null ? ('pago a ' + contrato.tiempo_pago + ' días') : 'sin plazo de pago' }}
+            </p>
+          </div>
+        </div>
+
+        <!-- ── Identificación ────────────────────────────────────────── -->
+        <section class="cd-sec">
+          <header class="cd-sec-head">
+            <span class="cd-ico" style="background:#915BD818"><i class="pi pi-id-card" style="color:#915BD8" /></span>
+            <h3 class="cd-sec-title">Identificación</h3>
+            <div class="cd-sec-act">
               <Button v-if="!editandoId" icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
                 @click="iniciarEdicionId" />
-              <div v-else class="flex gap-2">
+              <template v-else>
                 <Button label="Cancelar" size="small" text severity="secondary" @click="cancelarEdicionId" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardandoId"
-                  @click="guardarId" />
-              </div>
+                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardandoId" @click="guardarId" />
+              </template>
             </div>
+          </header>
+          <div class="cd-sec-body">
             <!-- Modo lectura -->
-            <div v-if="!editandoId" class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <div v-if="!editandoId" class="cd-grid">
               <InfoField label="Nombre interno" :value="contrato.nombre_interno" />
               <InfoField label="Número de contrato" :value="contrato.numero_codigo_contrato" />
+              <InfoField label="Tipo de contrato" :value="contrato.tipo_contrato === 'compra' ? 'Compra' : 'Venta'" />
+              <InfoField label="Responsable" :value="contrato.responsable?.nombre" />
+              <div class="flex flex-col gap-0.5">
+                <span class="cd-campo-lbl">Comunidad energética</span>
+                <div>
+                  <Tag v-if="contrato.es_comunidad_energetica" severity="success" value="🏘 Sí" class="text-[10px]" />
+                  <span v-else class="text-sm" style="color:#2C2039">{{ contrato.es_comunidad_energetica === false ? 'No' : '—' }}</span>
+                </div>
+              </div>
             </div>
             <!-- Modo edición -->
-            <div v-else class="grid grid-cols-2 gap-4 max-w-xl">
+            <div v-else class="cd-grid">
               <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-600">Nombre interno</label>
+                <label class="cd-lbl">Nombre interno</label>
                 <InputText v-model="formId.nombre_interno" placeholder="Ej: Terpel 1" class="w-full" />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-600">Número de contrato</label>
+                <label class="cd-lbl">Número de contrato</label>
                 <InputText v-model="formId.numero_codigo_contrato" placeholder="Ej: UNERGY 001-2023" class="w-full" />
               </div>
             </div>
           </div>
+        </section>
 
-          <Divider />
-
-          <!-- Partes -->
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide">Partes del contrato</p>
+        <!-- ── Partes del contrato ───────────────────────────────────── -->
+        <section class="cd-sec">
+          <header class="cd-sec-head">
+            <span class="cd-ico" style="background:#3b82f618"><i class="pi pi-users" style="color:#3b82f6" /></span>
+            <h3 class="cd-sec-title">Partes del contrato</h3>
+            <div class="cd-sec-act">
               <Button v-if="!editandoPartes" icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
                 @click="iniciarEdicionPartes" />
-              <div v-else class="flex gap-2">
+              <template v-else>
                 <Button label="Cancelar" size="small" text severity="secondary" @click="cancelarEdicionPartes" />
                 <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardandoPartes"
                   @click="guardarPartes" />
-              </div>
+              </template>
             </div>
-            <!-- Modo lectura -->
-            <div v-if="!editandoPartes" class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-              <InfoField label="Comprador" :value="contrato.comprador_nombre" />
-              <InfoField label="NIT comprador" :value="contrato.comprador_nit" />
-              <div />
-              <InfoField label="Vendedor" :value="contrato.vendedor_nombre" />
-              <InfoField label="NIT vendedor" :value="contrato.vendedor_nit" />
+          </header>
+          <div class="cd-sec-body">
+            <!-- Modo lectura: la energía va del vendedor al comprador -->
+            <div v-if="!editandoPartes" class="cd-partes">
+              <div class="cd-parte">
+                <p class="cd-parte-rol"><i class="pi pi-sun" style="font-size:9px" />Vendedor</p>
+                <p class="cd-parte-nom">{{ contrato.vendedor_nombre || '—' }}</p>
+                <p class="cd-parte-nit">NIT {{ contrato.vendedor_nit || '—' }}</p>
+              </div>
+              <i class="pi pi-arrow-right cd-partes-flecha" />
+              <div class="cd-parte">
+                <p class="cd-parte-rol"><i class="pi pi-building" style="font-size:9px" />Comprador</p>
+                <p class="cd-parte-nom">{{ contrato.comprador_nombre || '—' }}</p>
+                <p class="cd-parte-nit">NIT {{ contrato.comprador_nit || '—' }}</p>
+              </div>
             </div>
             <!-- Modo edición -->
-            <div v-else class="grid grid-cols-2 gap-4 p-4 rounded-lg bg-gray-50">
-              <div class="space-y-3">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Comprador</span>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="cd-parte space-y-3">
+                <p class="cd-parte-rol"><i class="pi pi-sun" style="font-size:9px" />Vendedor</p>
                 <div class="flex flex-col gap-1">
-                  <label class="text-xs font-medium text-gray-600">Nombre / Razón social</label>
-                  <InputText v-model="formPartes.comprador_nombre" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs font-medium text-gray-600">NIT</label>
-                  <InputText v-model="formPartes.comprador_nit" class="w-full" />
-                </div>
-              </div>
-              <div class="space-y-3">
-                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Vendedor</span>
-                <div class="flex flex-col gap-1">
-                  <label class="text-xs font-medium text-gray-600">Nombre / Razón social</label>
+                  <label class="cd-lbl">Nombre / Razón social</label>
                   <InputText v-model="formPartes.vendedor_nombre" class="w-full" />
                 </div>
                 <div class="flex flex-col gap-1">
-                  <label class="text-xs font-medium text-gray-600">NIT</label>
+                  <label class="cd-lbl">NIT</label>
                   <InputText v-model="formPartes.vendedor_nit" class="w-full" />
+                </div>
+              </div>
+              <div class="cd-parte space-y-3">
+                <p class="cd-parte-rol"><i class="pi pi-building" style="font-size:9px" />Comprador</p>
+                <div class="flex flex-col gap-1">
+                  <label class="cd-lbl">Nombre / Razón social</label>
+                  <InputText v-model="formPartes.comprador_nombre" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="cd-lbl">NIT</label>
+                  <InputText v-model="formPartes.comprador_nit" class="w-full" />
                 </div>
               </div>
             </div>
           </div>
+        </section>
 
-          <Divider />
-
-          <!-- Vigencia -->
-          <div>
-            <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-3">Vigencia</p>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+        <!-- ── Vigencia ──────────────────────────────────────────────── -->
+        <section class="cd-sec">
+          <header class="cd-sec-head">
+            <span class="cd-ico" style="background:#10b98118"><i class="pi pi-calendar" style="color:#10b981" /></span>
+            <h3 class="cd-sec-title">Vigencia</h3>
+          </header>
+          <div class="cd-sec-body">
+            <div class="cd-grid">
               <InfoField label="Fecha inicio" :value="formatFecha(contrato.fecha_inicio)" />
               <InfoField label="Fecha fin" :value="formatFecha(contrato.fecha_fin)" />
               <InfoField label="Duración" :value="duracion" />
+              <div class="flex flex-col gap-0.5">
+                <span class="cd-campo-lbl">Renovación automática</span>
+                <div>
+                  <Tag v-if="contrato.renovacion_automatica != null"
+                    :severity="contrato.renovacion_automatica ? 'success' : 'secondary'"
+                    :value="contrato.renovacion_automatica ? 'Sí' : 'No'" class="text-[10px]" />
+                  <span v-else class="text-sm" style="color:#2C2039">—</span>
+                </div>
+              </div>
             </div>
           </div>
+        </section>
 
-          <Divider />
-
-          <!-- Condiciones comerciales -->
-          <div>
-            <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-3">Condiciones comerciales</p>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+        <!-- ── Condiciones comerciales ───────────────────────────────── -->
+        <section class="cd-sec">
+          <header class="cd-sec-head">
+            <span class="cd-ico" style="background:#f59e0b18"><i class="pi pi-dollar" style="color:#f59e0b" /></span>
+            <h3 class="cd-sec-title">Condiciones comerciales</h3>
+          </header>
+          <div class="cd-sec-body">
+            <div class="cd-grid">
               <InfoField label="Índice de indexación" :value="contrato.indice_indexacion" />
               <InfoField label="Periodicidad indexación" :value="contrato.periodicidad_indexacion" />
               <InfoField label="Período base indexación" :value="contrato.periodo_indexacion_base" />
-              <InfoField label="Valor indexación base" :value="contrato.valor_indexacion_base != null ? String(contrato.valor_indexacion_base) : null" />
+              <InfoField label="Valor indexación base"
+                :value="contrato.valor_indexacion_base != null ? String(contrato.valor_indexacion_base) : null" />
+              <InfoField label="Tarifa base ($/kWh)" :value="tarifaBaseFmt" />
               <InfoField label="Periodicidad facturación" :value="contrato.periodicidad_facturacion" />
-              <InfoField label="Tiempo de pago (días)" :value="contrato.tiempo_pago != null ? String(contrato.tiempo_pago) : null" />
-              <div v-if="contrato.condiciones_pago" class="col-span-2 md:col-span-3 flex flex-col gap-0.5">
-                <span class="text-xs font-medium" style="color:#9b89b5">Condiciones de pago</span>
-                <span class="text-sm" style="color:#2C2039">{{ contrato.condiciones_pago }}</span>
+              <InfoField label="Tiempo de pago (días)"
+                :value="contrato.tiempo_pago != null ? String(contrato.tiempo_pago) : null" />
+              <div v-if="contrato.condiciones_pago" class="cd-ancho flex flex-col gap-0.5">
+                <span class="cd-campo-lbl">Condiciones de pago</span>
+                <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.condiciones_pago }}</span>
               </div>
             </div>
           </div>
+        </section>
 
-          <Divider />
-
-          <!-- GESCON / SIC -->
-          <div>
-            <div class="flex items-center justify-between mb-3">
-              <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide">GESCON / SIC</p>
+        <!-- ── GESCON / SIC ──────────────────────────────────────────── -->
+        <section class="cd-sec">
+          <header class="cd-sec-head">
+            <span class="cd-ico" style="background:#6366f118"><i class="pi pi-book" style="color:#6366f1" /></span>
+            <h3 class="cd-sec-title">GESCON / SIC</h3>
+            <div class="cd-sec-act">
               <Button v-if="!editandoGescon" icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
                 @click="editandoGescon = true" />
-              <div v-else class="flex gap-2">
+              <template v-else>
                 <Button label="Cancelar" size="small" text severity="secondary" @click="editandoGescon = false" />
                 <Button label="Guardar" size="small" icon="pi pi-check" :loading="guardandoGescon" @click="guardarGescon" />
-              </div>
+              </template>
             </div>
+          </header>
+          <div class="cd-sec-body">
             <!-- Modo lectura -->
-            <div v-if="!editandoGescon" class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <div v-if="!editandoGescon" class="cd-grid">
               <InfoField label="Código SIC" :value="contrato.codigo_sic" />
               <InfoField label="Código GESCON" :value="contrato.gescon_codigo" />
               <InfoField label="GESCON inicio" :value="formatFecha(contrato.gescon_fecha_inicio)" />
               <InfoField label="GESCON fin" :value="formatFecha(contrato.gescon_fecha_fin)" />
-              <InfoField label="Precio GESCON" :value="contrato.gescon_precio != null ? `$${Number(contrato.gescon_precio).toFixed(4)}` : null" />
-              <InfoField label="Cantidades GESCON (kWh)" :value="contrato.gescon_cantidades_kwh != null ? Number(contrato.gescon_cantidades_kwh).toLocaleString('es-CO') : null" />
+              <InfoField label="Precio GESCON" :value="gesconPrecioFmt" />
+              <InfoField label="Cantidades GESCON (kWh)" :value="gesconCantidadesFmt" />
             </div>
             <!-- Modo edición -->
-            <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div v-else class="cd-grid">
               <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-600">Código SIC</label>
+                <label class="cd-lbl">Código SIC</label>
                 <InputText v-model="formGescon.codigo_sic" class="w-full" />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-600">Código GESCON</label>
+                <label class="cd-lbl">Código GESCON</label>
                 <InputText v-model="formGescon.gescon_codigo" class="w-full" />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-600">Precio GESCON ($/kWh)</label>
+                <label class="cd-lbl">Precio GESCON ($/kWh)</label>
                 <InputNumber v-model="formGescon.gescon_precio" :maxFractionDigits="4" class="w-full" />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-600">GESCON inicio</label>
+                <label class="cd-lbl">GESCON inicio</label>
                 <DatePicker v-model="formGescon.gescon_fecha_inicio" dateFormat="yy-mm-dd" showIcon class="w-full" />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-600">GESCON fin</label>
+                <label class="cd-lbl">GESCON fin</label>
                 <DatePicker v-model="formGescon.gescon_fecha_fin" dateFormat="yy-mm-dd" showIcon class="w-full" />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="text-xs font-medium text-gray-600">Cantidades GESCON (kWh)</label>
+                <label class="cd-lbl">Cantidades GESCON (kWh)</label>
                 <InputNumber v-model="formGescon.gescon_cantidades_kwh" :maxFractionDigits="3" locale="en-US" class="w-full" />
               </div>
             </div>
           </div>
+        </section>
 
-          <Divider />
-
-          <!-- Detalles operacionales y contractuales -->
-          <div>
-            <p class="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-3">Detalles Operacionales y Contractuales</p>
-            <div class="grid grid-cols-1 gap-4 text-sm">
-              <div class="flex flex-col gap-0.5">
-                <span class="text-xs font-medium" style="color:#9b89b5">Alcance del servicio</span>
-                <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.service_scope || '—' }}</span>
-              </div>
-              <div class="flex flex-col gap-0.5">
-                <span class="text-xs font-medium" style="color:#9b89b5">Términos específicos del servicio</span>
-                <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.specific_service_terms || '—' }}</span>
-              </div>
-              <div class="flex flex-col gap-0.5">
-                <span class="text-xs font-medium" style="color:#9b89b5">SLAs (Acuerdos de nivel de servicio)</span>
-                <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.slas || '—' }}</span>
-              </div>
-              <div class="flex flex-col gap-0.5">
-                <span class="text-xs font-medium" style="color:#9b89b5">Responsabilidades</span>
-                <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.responsibilities || '—' }}</span>
+        <!-- ── Documentos y enlaces ──────────────────────────────────── -->
+        <section class="cd-sec">
+          <header class="cd-sec-head">
+            <span class="cd-ico" style="background:#d9770618"><i class="pi pi-link" style="color:#d97706" /></span>
+            <h3 class="cd-sec-title">Documentos y enlaces</h3>
+            <div class="cd-sec-act">
+              <Button v-if="!editandoEnlace"
+                :icon="enlaceContrato ? 'pi pi-pencil' : 'pi pi-plus'"
+                :label="enlaceContrato ? 'Editar' : 'Agregar enlace'"
+                size="small" text severity="secondary" @click="iniciarEdicionEnlace" />
+              <template v-else>
+                <Button label="Cancelar" size="small" text severity="secondary" @click="editandoEnlace = false" />
+                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardandoEnlace" @click="guardarEnlace" />
+              </template>
+            </div>
+          </header>
+          <div class="cd-sec-body">
+            <!-- Modo lectura -->
+            <div v-if="!editandoEnlace" class="cd-link" :class="{ 'cd-link--vacio': !enlaceContrato }">
+              <span class="cd-ico" style="background:#fef3c7">
+                <i class="pi pi-file-pdf" style="color:#d97706" />
+              </span>
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-medium mb-0.5" style="color:#92400e">Contrato en Drive</p>
+                <a v-if="enlaceContrato" :href="enlaceContrato" target="_blank" rel="noopener noreferrer"
+                  class="text-sm font-semibold inline-flex items-center gap-1.5 hover:underline" style="color:#d97706">
+                  <i class="pi pi-external-link text-xs" />Ver contrato
+                </a>
+                <button v-else type="button" class="cd-link-add" @click="iniciarEdicionEnlace">
+                  <i class="pi pi-plus-circle text-xs" />Agregar enlace
+                </button>
+                <p v-if="enlaceContrato" class="text-[11px] truncate mt-0.5" style="color:#b4884f">
+                  {{ enlaceContrato }}
+                </p>
               </div>
             </div>
+            <!-- Modo edición -->
+            <div v-else class="flex flex-col gap-1 max-w-xl">
+              <label class="cd-lbl">Enlace al contrato (Drive, Dropbox, SharePoint…)</label>
+              <InputText v-model.trim="formEnlace.carpeta_link" class="w-full"
+                placeholder="https://drive.google.com/…" @keyup.enter="guardarEnlace" />
+              <small class="text-[11px]" style="color:#9b89b5">
+                Debe empezar por <span class="font-mono">http://</span> o <span class="font-mono">https://</span>.
+                Déjalo vacío para quitar el enlace.
+              </small>
+            </div>
           </div>
+        </section>
 
-        </div>
+        <!-- ── Detalles operacionales (solo si el contrato los trae) ─── -->
+        <section v-if="tieneDetallesOperacionales" class="cd-sec">
+          <header class="cd-sec-head">
+            <span class="cd-ico" style="background:#64748b18"><i class="pi pi-list" style="color:#64748b" /></span>
+            <h3 class="cd-sec-title">Detalles operacionales y contractuales</h3>
+          </header>
+          <div class="cd-sec-body space-y-3">
+            <div v-if="contrato.service_scope" class="flex flex-col gap-0.5">
+              <span class="cd-campo-lbl">Alcance del servicio</span>
+              <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.service_scope }}</span>
+            </div>
+            <div v-if="contrato.specific_service_terms" class="flex flex-col gap-0.5">
+              <span class="cd-campo-lbl">Términos específicos del servicio</span>
+              <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.specific_service_terms }}</span>
+            </div>
+            <div v-if="contrato.slas" class="flex flex-col gap-0.5">
+              <span class="cd-campo-lbl">SLAs (Acuerdos de nivel de servicio)</span>
+              <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.slas }}</span>
+            </div>
+            <div v-if="contrato.responsibilities" class="flex flex-col gap-0.5">
+              <span class="cd-campo-lbl">Responsabilidades</span>
+              <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.responsibilities }}</span>
+            </div>
+          </div>
+        </section>
+
       </div>
 
       <!-- ══ CANTIDADES ══ -->
@@ -571,7 +703,6 @@ import Tag from 'primevue/tag'
 import DetalleLayout from '@/components/DetalleLayout.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import Divider from 'primevue/divider'
 import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -706,6 +837,113 @@ async function guardarPartes() {
     guardandoPartes.value = false
   }
 }
+
+// ── Enlace al contrato (carpeta_link) ───────────────────────────────────────
+// El campo ya existía en el modelo pero no se veía ni se editaba en ningún
+// lado: el PPA se creaba con enlace desde la oferta firmada y después no había
+// forma de ponerlo o corregirlo. Acá se edita inline como las demás secciones.
+const editandoEnlace = ref(false)
+const guardandoEnlace = ref(false)
+const formEnlace = reactive({ carpeta_link: '' })
+
+// Solo se muestra como enlace si es navegable: un texto suelto en el campo no
+// debe convertirse en un <a href> roto (o peor, en una ruta relativa del SPA).
+const enlaceContrato = computed(() => {
+  const url = (contrato.value?.carpeta_link || '').trim()
+  return /^https?:\/\//i.test(url) ? url : ''
+})
+
+function iniciarEdicionEnlace() {
+  formEnlace.carpeta_link = contrato.value.carpeta_link || ''
+  editandoEnlace.value = true
+}
+
+async function guardarEnlace() {
+  const url = (formEnlace.carpeta_link || '').trim()
+  if (url && !/^https?:\/\//i.test(url)) {
+    toast.add({
+      severity: 'warn', summary: 'Enlace inválido',
+      detail: 'Debe empezar por http:// o https://', life: 3500,
+    })
+    return
+  }
+  guardandoEnlace.value = true
+  try {
+    const { data } = await api.patch(`/ppa/${contrato.value.id}`, { carpeta_link: url || null })
+    contrato.value = { ...contrato.value, ...data }
+    editandoEnlace.value = false
+    toast.add({
+      severity: 'success', summary: 'Guardado',
+      detail: url ? 'Enlace del contrato actualizado' : 'Enlace eliminado', life: 2500,
+    })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || e.message, life: 4000 })
+  } finally {
+    guardandoEnlace.value = false
+  }
+}
+
+// ── Tarjetas de resumen de la pestaña Datos ─────────────────────────────────
+// `dias_restantes` lo calcula el endpoint /ppa/{id}; si no viniera, se deriva
+// de fecha_fin para que la tarjeta nunca quede muda.
+const estadoVigencia = computed(() => {
+  const sinFechas = {
+    label: 'Sin fechas', color: '#6b7280', bg: '#f9fafb', borde: '#e5e7eb',
+    detalle: 'vigencia no registrada',
+  }
+  const c = contrato.value
+  if (!c) return sinFechas
+  const hoy = new Date().toISOString().slice(0, 10)
+  const ini = formatFecha(c.fecha_inicio)
+  const fin = formatFecha(c.fecha_fin)
+  if (!ini && !fin) return sinFechas
+  const dias = c.dias_restantes ?? (fin
+    ? Math.round((new Date(`${fin}T00:00:00`) - new Date(`${hoy}T00:00:00`)) / 86400000)
+    : null)
+  if (fin && fin < hoy) {
+    return {
+      label: 'Vencido', color: '#dc2626', bg: '#fef2f2', borde: '#fecaca',
+      detalle: dias != null ? `venció hace ${Math.abs(dias).toLocaleString('es-CO')} días` : `venció el ${fin}`,
+    }
+  }
+  if (ini && ini > hoy) {
+    return { label: 'Por iniciar', color: '#4f46e5', bg: '#eef2ff', borde: '#c7d2fe', detalle: `inicia el ${ini}` }
+  }
+  if (dias != null && dias <= 90) {
+    return {
+      label: 'Por vencer', color: '#d97706', bg: '#fffbeb', borde: '#fde68a',
+      detalle: `quedan ${dias.toLocaleString('es-CO')} días`,
+    }
+  }
+  return {
+    label: 'Vigente', color: '#059669', bg: '#ecfdf5', borde: '#a7f3d0',
+    detalle: dias != null ? `quedan ${dias.toLocaleString('es-CO')} días` : 'sin fecha de fin',
+  }
+})
+
+const tarifaBaseFmt = computed(() => {
+  const v = contrato.value?.tarifa_base
+  return v != null ? `$${Number(v).toLocaleString('es-CO', { maximumFractionDigits: 4 })}` : null
+})
+
+const gesconPrecioFmt = computed(() => {
+  const v = contrato.value?.gescon_precio
+  return v != null ? `$${Number(v).toFixed(4)}` : null
+})
+
+const gesconCantidadesFmt = computed(() => {
+  const v = contrato.value?.gescon_cantidades_kwh
+  return v != null ? Number(v).toLocaleString('es-CO') : null
+})
+
+// Estos cuatro campos son de los contratos de SERVICIO, no de los PPA: el
+// endpoint /ppa nunca los devuelve. Se mantiene la sección por si algún día
+// llegan, pero oculta mientras estén vacíos en vez de mostrar cuatro guiones.
+const tieneDetallesOperacionales = computed(() => {
+  const c = contrato.value
+  return !!(c?.service_scope || c?.specific_service_terms || c?.slas || c?.responsibilities)
+})
+
 const vistaCantidades = ref('mensual')
 const vistaTarifas = ref('mensual')
 
@@ -1025,3 +1263,110 @@ async function cargarAsic(c) {
 
 onMounted(cargar)
 </script>
+<style scoped>
+/*
+  Paleta y formas heredadas de las otras vistas de detalle (Cliente / Proyecto)
+  y de Operación: tarjeta blanca con borde lila, cabecera #faf8fd, texto #2C2039,
+  etiquetas #9b89b5 y un chip de ícono de color por sección. Antes esta pestaña
+  era una lista plana de campos separados por <Divider> con títulos ámbar, que
+  no se parecía a ninguna otra pantalla de la plataforma.
+*/
+
+/* ── Tarjetas de resumen ──────────────────────────────────────────────────── */
+.cd-stat {
+  background: #fff; border: 1px solid #ECE7F2; border-radius: 12px;
+  padding: 11px 14px; min-width: 0;
+}
+.cd-stat-lbl {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: #9b89b5; margin-bottom: 3px;
+}
+.cd-stat-val {
+  font-size: 15px; font-weight: 700; color: #2C2039; line-height: 1.25;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Los valores llegan en minúscula de la BD ("mensual"). `capitalize` a secas
+   convertía "16 años 1 mes" en "16 Años 1 Mes"; con ::first-letter solo sube
+   la inicial y las cifras quedan intactas. */
+.cd-stat-val::first-letter { text-transform: uppercase; }
+.cd-stat-sub {
+  font-size: 11px; color: #9b89b5; margin-top: 1px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Secciones ────────────────────────────────────────────────────────────── */
+.cd-sec {
+  background: #fff; border: 1.5px solid #e8e0f0; border-radius: 12px; overflow: hidden;
+}
+.cd-sec-head {
+  display: flex; align-items: center; gap: 9px; min-height: 42px;
+  padding: 6px 14px; background: #faf8fd; border-bottom: 1px solid #f0eaf8;
+}
+.cd-sec-title {
+  font-size: 12px; font-weight: 700; letter-spacing: .03em;
+  text-transform: uppercase; color: #2C2039;
+}
+.cd-sec-act { margin-left: auto; display: flex; align-items: center; gap: 4px; }
+.cd-sec-body { padding: 14px; }
+.cd-ico {
+  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.cd-ico i { font-size: 11px; }
+
+/* Rejilla de campos: 2 columnas en móvil, 3 desde tablet (como Proyecto) */
+.cd-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (min-width: 768px) { .cd-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.cd-ancho { grid-column: 1 / -1; }
+.cd-campo-lbl { font-size: 12px; font-weight: 500; color: #9b89b5; }
+.cd-lbl { font-size: 12px; font-weight: 500; color: #4b5563; }
+
+/* ── Partes: vendedor → comprador ─────────────────────────────────────────── */
+.cd-partes {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+}
+.cd-partes-flecha { font-size: 12px; color: #c5b9db; }
+@media (max-width: 640px) {
+  .cd-partes { grid-template-columns: 1fr; }
+  .cd-partes-flecha { transform: rotate(90deg); justify-self: center; }
+}
+.cd-parte {
+  border: 1px solid #ECE7F2; border-radius: 10px; padding: 11px 13px;
+  background: #fcfbfe; min-width: 0;
+}
+.cd-parte-rol {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+  color: #9b89b5; margin-bottom: 3px;
+}
+.cd-parte-nom { font-size: 13px; font-weight: 600; color: #2C2039; }
+.cd-parte-nit {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px; color: #9b8fb0; margin-top: 1px;
+}
+
+/* ── Enlace al contrato ───────────────────────────────────────────────────── */
+.cd-link {
+  display: flex; align-items: flex-start; gap: 10px;
+  background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 11px 13px;
+}
+.cd-link--vacio { background: #fdfcf8; border-style: dashed; border-color: #ecdcb8; }
+.cd-link-add {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: none; padding: 0; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: #d97706;
+}
+.cd-link-add:hover { text-decoration: underline; }
+
+/* Atajo al contrato en la cabecera, junto a "Editar contrato" */
+.cd-head-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 6px;
+  border: 1px solid #fde68a; background: #fffbeb;
+  font-size: 12px; font-weight: 600; color: #d97706;
+  transition: background .12s;
+}
+.cd-head-link:hover { background: #fef3c7; }
+.cd-head-link i { font-size: 10px; }
+</style>
