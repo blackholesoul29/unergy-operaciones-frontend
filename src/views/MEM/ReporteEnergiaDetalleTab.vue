@@ -133,6 +133,7 @@
       <CurvaChart
         :final="detalle.curva_final"
         :medidor="detalle.curva_medidor_principal || detalle.curva_medidor_respaldo"
+        :medidorLabel="medidorGraficadoLabel"
         :solenium="detalle.curva_solenium"
         :reconectador="detalle.curva_reconectador"
         :horasReconectador="detalle.horas_rellenadas_reconectador"
@@ -1170,6 +1171,17 @@ function sumaCurva(arr) {
 // ya haber sido corregido a mano con el valor en vivo (ver 'Reportar con
 // otra fuente' -> 'Medidor X (actualizado)'); si no, la comparación se
 // vuelve redundante contra sí misma justo después de aplicar esa corrección.
+// La gráfica grafica curva_medidor_principal, con fallback a respaldo si el
+// principal no existe (ver :medidor más arriba) -- la etiqueta "Medidor" a
+// secas era ambigua, no dejaba claro cuál de los dos es (pedido 2026-08-20).
+const medidorGraficadoLabel = computed(() => {
+  const d = detalle.value
+  if (!d) return 'Medidor'
+  if (d.curva_medidor_principal) return 'Medidor principal'
+  if (d.curva_medidor_respaldo) return 'Medidor respaldo'
+  return 'Medidor'
+})
+
 const avisosMedidor = computed(() => {
   const d = detalle.value
   if (!d) return []

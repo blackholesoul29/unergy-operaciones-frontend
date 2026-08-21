@@ -2,7 +2,7 @@
   <div>
     <div class="flex flex-wrap gap-2 mb-3 text-xs">
       <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
-      <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ Medidor</span>
+      <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ {{ medidorLabel }}</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
       <span v-if="reconectadorPath" class="chip" style="border-color:#EA580C;color:#EA580C;">⬥ Reconectador</span>
       <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Hora rellenada</span>
@@ -76,6 +76,10 @@ import { computed } from 'vue'
 const props = defineProps({
   final: { type: Array, default: () => Array(24).fill(null) },
   medidor: { type: Array, default: null },
+  // Cuál medidor viene en la prop `medidor` -- el padre resuelve principal
+  // con fallback a respaldo, así que la etiqueta no puede ser fija (pedido
+  // 2026-08-20: "Medidor" sin más era ambiguo).
+  medidorLabel: { type: String, default: 'Medidor' },
   solenium: { type: Array, default: null },
   reconectador: { type: Array, default: null },
   horasReconectador: { type: Array, default: () => [] },
