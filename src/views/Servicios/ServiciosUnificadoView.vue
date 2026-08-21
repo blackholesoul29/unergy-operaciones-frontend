@@ -279,16 +279,24 @@
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
                  sortField="fecha_inicio" :sortOrder="1" rowHover
                  emptyMessage="No hay contratos PPA registrados.">
-        <Column field="nombre_interno" header="Nombre interno" sortable style="width:20%">
+        <Column field="nombre_interno" header="Nombre interno" sortable style="width:16%">
           <template #body="{ data }">
             <button type="button" class="nombre-link" @click="ir(`/contratos/${data.id}`)"
-                    v-tooltip.bottom="data.numero_codigo_contrato
-                      ? `N° ${data.numero_codigo_contrato}` : 'Ver detalle'">
+                    v-tooltip.bottom="'Ver detalle'">
               {{ data.nombre_interno || data.numero_codigo_contrato || '—' }}
             </button>
           </template>
         </Column>
-        <Column field="tipo_contrato" header="Tipo" sortable style="width:7%">
+        <Column field="numero_codigo_contrato" header="N° contrato" sortable style="width:9%">
+          <template #body="{ data }">
+            <span v-if="data.numero_codigo_contrato" class="mono celda-txt"
+                  v-tooltip.bottom="data.numero_codigo_contrato">
+              {{ data.numero_codigo_contrato }}
+            </span>
+            <span v-else class="vacio">—</span>
+          </template>
+        </Column>
+        <Column field="tipo_contrato" header="Tipo" sortable style="width:6%">
           <template #body="{ data }">
             <span class="mini-chip"
                   :style="data.tipo_contrato === 'compra'
@@ -298,31 +306,44 @@
             </span>
           </template>
         </Column>
-        <Column field="comprador_nombre" header="Comprador" sortable style="width:16%">
+        <!-- Estado de vigencia: derivado de las fechas, mismo cálculo que el
+             detalle del contrato (utils/ppaVigencia.js). Ordena por urgencia. -->
+        <Column field="_vigencia.orden" header="Estado" sortable style="width:8%">
+          <template #body="{ data }">
+            <span class="mini-chip"
+                  :style="`background:${data._vigencia.bg};color:${data._vigencia.color}`"
+                  v-tooltip.bottom="data._vigencia.detalle">
+              {{ data._vigencia.label }}
+            </span>
+          </template>
+        </Column>
+        <Column field="comprador_nombre" header="Comprador" sortable style="width:14%">
           <template #body="{ data }">
             <span class="celda-txt">{{ data.comprador_nombre || '—' }}</span>
           </template>
         </Column>
-        <Column field="vendedor_nombre" header="Vendedor" sortable style="width:16%">
+        <Column field="vendedor_nombre" header="Vendedor" sortable style="width:14%">
           <template #body="{ data }">
             <span class="celda-txt">{{ data.vendedor_nombre || '—' }}</span>
           </template>
         </Column>
-        <Column field="fecha_inicio" header="Inicio" sortable style="width:8%">
+        <Column field="fecha_inicio" header="Inicio" sortable style="width:7%">
           <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template>
         </Column>
-        <Column field="fecha_fin" header="Fin" sortable style="width:8%">
+        <!-- Resaltado y tooltip salen de _vigencia, no de dias_restantes: el
+             listado de /ppa devuelve las filas del ORM y ese campo llega null,
+             así que este aviso nunca se veía. -->
+        <Column field="fecha_fin" header="Fin" sortable style="width:7%">
           <template #body="{ data }">
             <span class="mono"
-                  :style="data.dias_restantes != null && data.dias_restantes <= 90
-                    ? { color: data.dias_restantes <= 30 ? '#D64455' : '#CA8A04', fontWeight: 700 } : null"
-                  v-tooltip.bottom="data.dias_restantes != null
-                    ? `${data.dias_restantes} días restantes` : null">
+                  :style="['vencido', 'por_vencer'].includes(data._vigencia.clave)
+                    ? { color: data._vigencia.color, fontWeight: 700 } : null"
+                  v-tooltip.bottom="data._vigencia.detalle">
               {{ fmtFecha(data.fecha_fin) }}
             </span>
           </template>
         </Column>
-        <Column field="cobertura_actual_pct" header="Cobertura" sortable style="width:10%">
+        <Column field="cobertura_actual_pct" header="Cobertura" sortable style="width:8%">
           <template #body="{ data }">
             <div v-if="data.cobertura_actual_pct != null" class="flex items-center gap-1">
               <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f3f0f7">
@@ -336,7 +357,7 @@
             <span v-else class="vacio">—</span>
           </template>
         </Column>
-        <Column header="Falta" style="width:9%">
+        <Column header="Falta" style="width:6%">
           <template #body="{ data }">
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
@@ -350,7 +371,7 @@
             </div>
           </template>
         </Column>
-        <Column style="width:6%">
+        <Column style="width:5%">
           <template #body="{ data }">
             <div class="acciones">
               <Button icon="pi pi-pencil" text size="small" severity="secondary"
@@ -482,6 +503,7 @@ import InputIcon from 'primevue/inputicon'
 import api from '@/api/client'
 import { formatearNombre } from '@/utils/nombreFormato'
 import { exportarExcel } from '@/utils/exportarExcel'
+import { estadoVigenciaPPA } from '@/utils/ppaVigencia'
 import { SEMAFORO, servicioLabel, fmt } from '@/views/Clientes/clientesUi'
 
 // Los formularios y wizards pesan; sólo se descargan cuando alguien crea algo.
@@ -899,13 +921,15 @@ const ppaCargados = ref(false)
 
 const ppaFiltrados = computed(() => {
   const t = q.value.trim().toLowerCase()
-  if (!t) return ppa.value
-  return ppa.value.filter(c =>
+  const base = !t ? ppa.value : ppa.value.filter(c =>
     (c.nombre_interno || '').toLowerCase().includes(t) ||
     (c.numero_codigo_contrato || '').toLowerCase().includes(t) ||
     (c.comprador_nombre || '').toLowerCase().includes(t) ||
     (c.vendedor_nombre || '').toLowerCase().includes(t) ||
     (c.proyectos || []).some(p => (p.nombre_comercial || '').toLowerCase().includes(t)))
+  // `_vigencia` se precalcula acá y no en la celda para que la columna Estado
+  // sea ordenable (PrimeVue ordena por campo, no por lo que pinta el template).
+  return base.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) }))
 })
 
 async function cargarPpa() {
@@ -1046,6 +1070,7 @@ const COLUMNAS_EXCEL = {
     { header: 'Nombre interno', value: c => c.nombre_interno || '' },
     { header: 'Tipo', value: c => c.tipo_contrato === 'compra' ? 'Compra' : 'Venta' },
     { header: 'N° contrato', value: c => c.numero_codigo_contrato || '' },
+    { header: 'Estado', value: c => (c._vigencia || estadoVigenciaPPA(c)).label },
     { header: 'Comprador', value: c => c.comprador_nombre || '' },
     { header: 'Vendedor', value: c => c.vendedor_nombre || '' },
     { header: 'Inicio', value: c => fmtFecha(c.fecha_inicio) },

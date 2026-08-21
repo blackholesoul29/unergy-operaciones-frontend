@@ -856,6 +856,7 @@ import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import InfoField from '@/components/InfoField.vue'
 import PPAContratoWizard from '@/views/Contratos/PPAContratoWizard.vue'
+import { estadoVigenciaPPA } from '@/utils/ppaVigencia'
 import api from '@/api/client'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -1028,42 +1029,9 @@ async function guardarEnlace() {
 }
 
 // ── Tarjetas de resumen de la pestaña Datos ─────────────────────────────────
-// `dias_restantes` lo calcula el endpoint /ppa/{id}; si no viniera, se deriva
-// de fecha_fin para que la tarjeta nunca quede muda.
-const estadoVigencia = computed(() => {
-  const sinFechas = {
-    label: 'Sin fechas', color: '#6b7280', bg: '#f9fafb', borde: '#e5e7eb',
-    detalle: 'vigencia no registrada',
-  }
-  const c = contrato.value
-  if (!c) return sinFechas
-  const hoy = new Date().toISOString().slice(0, 10)
-  const ini = formatFecha(c.fecha_inicio)
-  const fin = formatFecha(c.fecha_fin)
-  if (!ini && !fin) return sinFechas
-  const dias = c.dias_restantes ?? (fin
-    ? Math.round((new Date(`${fin}T00:00:00`) - new Date(`${hoy}T00:00:00`)) / 86400000)
-    : null)
-  if (fin && fin < hoy) {
-    return {
-      label: 'Vencido', color: '#dc2626', bg: '#fef2f2', borde: '#fecaca',
-      detalle: dias != null ? `venció hace ${Math.abs(dias).toLocaleString('es-CO')} días` : `venció el ${fin}`,
-    }
-  }
-  if (ini && ini > hoy) {
-    return { label: 'Por iniciar', color: '#4f46e5', bg: '#eef2ff', borde: '#c7d2fe', detalle: `inicia el ${ini}` }
-  }
-  if (dias != null && dias <= 90) {
-    return {
-      label: 'Por vencer', color: '#d97706', bg: '#fffbeb', borde: '#fde68a',
-      detalle: `quedan ${dias.toLocaleString('es-CO')} días`,
-    }
-  }
-  return {
-    label: 'Vigente', color: '#059669', bg: '#ecfdf5', borde: '#a7f3d0',
-    detalle: dias != null ? `quedan ${dias.toLocaleString('es-CO')} días` : 'sin fecha de fin',
-  }
-})
+// El estado de vigencia se calcula en utils/ppaVigencia.js porque el listado
+// de /servicios-unificado muestra el mismo estado en su columna Estado.
+const estadoVigencia = computed(() => estadoVigenciaPPA(contrato.value))
 
 const tarifaBaseFmt = computed(() => {
   const v = contrato.value?.tarifa_base
