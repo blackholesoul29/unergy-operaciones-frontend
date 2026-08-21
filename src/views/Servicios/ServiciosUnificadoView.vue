@@ -31,11 +31,14 @@
                 @click="dialogProyecto = true" />
         <Button v-else-if="vista === 'servicios' && servicio === 'ppa'" label="Nuevo PPA" icon="pi pi-plus" size="small"
                 class="bg-amber-500 border-amber-500 hover:bg-amber-600" @click="abrirWizardPPA(null)" />
-        <Button v-else-if="vista === 'servicios' && servicio !== 'representacion'"
-                :label="`Nuevo ${servicioInfo?.label}`"
-                icon="pi pi-plus" size="small"
-                :style="`background:${servicioInfo?.color}; border-color:${servicioInfo?.color}`"
-                @click="showWizardServicio = true" />
+        <template v-else-if="vista === 'servicios'">
+          <Button :label="`Nuevo ${servicioInfo?.label}`"
+                  :icon="tiposDelServicio.length > 1 ? 'pi pi-chevron-down' : 'pi pi-plus'"
+                  size="small"
+                  :style="`background:${servicioInfo?.color}; border-color:${servicioInfo?.color}`"
+                  @click="nuevoContrato($event)" />
+          <Menu ref="menuNuevoContrato" :model="opcionesNuevoContrato" :popup="true" />
+        </template>
       </template>
     </PageHeader>
 
@@ -360,90 +363,9 @@
       </DataTable>
     </div>
 
-    <!-- ══════════════════ SERVICIOS · REPRESENTACIÓN ══════════════════ -->
-    <div v-else-if="servicio === 'representacion'" class="tabla-caja">
-      <DataTable :value="representacionFiltradas" :loading="loadingRepresentacion" size="small"
-                 class="tabla" :class="{ 'tabla--compacta': compacta }"
-                 scrollable :scrollHeight="scrollHeight"
-                 paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
-                 sortField="nombre_comercial" :sortOrder="1" rowHover
-                 emptyMessage="No hay plantas con servicio de representación.">
-        <Column field="nombre_comercial" header="Planta" sortable style="width:21%">
-          <template #body="{ data }">
-            <button type="button" class="nombre-link" @click="ir(`/proyectos/${data.id}`)"
-                    v-tooltip.bottom="'Ver planta'">{{ formatearNombre(data.nombre_comercial) }}</button>
-          </template>
-        </Column>
-        <Column field="potencia_instalada_kwp" header="kWp" sortable
-                style="width:7%" bodyStyle="text-align:right">
-          <template #body="{ data }"><span class="mono">{{ num(data.potencia_instalada_kwp) }}</span></template>
-        </Column>
-        <Column field="estado" header="Estado" sortable style="width:10%">
-          <template #body="{ data }">
-            <span class="mini-chip" :class="ESTADO_CLASS[data.estado] || 'estado-default'">
-              {{ ESTADO_LABELS[data.estado] || data.estado || '—' }}
-            </span>
-          </template>
-        </Column>
-        <Column field="municipio" header="Ubicación" sortable style="width:13%">
-          <template #body="{ data }">
-            <span class="celda-txt sutil"
-                  v-tooltip.bottom="[data.municipio, data.departamento].filter(Boolean).join(', ')">
-              {{ [data.municipio, data.departamento].filter(Boolean).join(', ') || '—' }}
-            </span>
-          </template>
-        </Column>
-        <Column field="servicio_representacion.nombre_rf" header="Representante" sortable style="width:16%">
-          <template #body="{ data }">
-            <span class="celda-txt"
-                  v-tooltip.bottom="data.servicio_representacion?.nombre_comercializador
-                    ? `Comercializador: ${data.servicio_representacion.nombre_comercializador}` : null">
-              {{ data.servicio_representacion?.nombre_rf || '—' }}
-            </span>
-          </template>
-        </Column>
-        <Column field="servicio_representacion.modalidad_venta" header="Modalidad" sortable style="width:10%">
-          <template #body="{ data }">
-            <span v-if="data.servicio_representacion?.modalidad_venta" class="mini-chip"
-                  style="background:#E6F1FB;color:#0C447C">
-              {{ MODALIDAD_LABELS[data.servicio_representacion.modalidad_venta] || data.servicio_representacion.modalidad_venta }}
-            </span>
-            <span v-else class="vacio">—</span>
-          </template>
-        </Column>
-        <Column header="Cód. XM" style="width:8%">
-          <template #body="{ data }">
-            <span class="celda-txt mono">{{ data.servicio_representacion?.codigo_despacho_xm || '—' }}</span>
-          </template>
-        </Column>
-        <Column header="Falta" style="width:9%">
-          <template #body="{ data }">
-            <div class="falta-celda">
-              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'campos')">
-                <i class="pi pi-list" />{{ faltanCampos(data).length }}
-              </span>
-              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'docs')">
-                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
-              </span>
-            </div>
-          </template>
-        </Column>
-        <Column style="width:6%">
-          <template #body="{ data }">
-            <div class="acciones">
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="ir(`/proyectos/${data.id}?edit=true`)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarProyecto(data)" />
-            </div>
-          </template>
-        </Column>
-      </DataTable>
-    </div>
-
-    <!-- ══════════════════ SERVICIOS · OPERACIÓN / REC ══════════════════ -->
+    <!-- ══════ SERVICIOS · REPRESENTACIÓN / OPERACIÓN / REC ══════
+         Los tres son contratos de `contratos_servicio`; Operación agrupa
+         mantenimiento, arriendo e internet, así que lleva columna Tipo. -->
     <div v-else class="tabla-caja">
       <DataTable :value="contratosServicioFiltrados" :loading="loadingServicio" size="small"
                  class="tabla" :class="{ 'tabla--compacta': compacta }"
@@ -451,6 +373,16 @@
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
                  sortField="fecha_inicio" :sortOrder="1" rowHover
                  :emptyMessage="`No hay contratos de ${servicioInfo?.label} registrados.`">
+        <Column v-if="tiposDelServicio.length > 1" field="servicio_aplica" header="Tipo"
+                sortable style="width:11%">
+          <template #body="{ data }">
+            <span class="mini-chip" :style="{
+              color: TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280',
+              background: (TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280') + '1f' }">
+              {{ TIPO_CONTRATO_LABELS[data.servicio_aplica] || data.servicio_aplica || '—' }}
+            </span>
+          </template>
+        </Column>
         <Column field="numero_contrato" header="N° contrato" sortable style="width:15%">
           <template #body="{ data }"><span class="celda-txt mono">{{ data.numero_contrato || '—' }}</span></template>
         </Column>
@@ -523,7 +455,11 @@
     <PPAContratoWizard v-if="showWizardPPA" :visible="showWizardPPA" :initialData="ppaADuplicar"
                        @cerrar="cerrarWizardPPA" @creado="cargarPpa" @editado="cargarPpa" />
 
-    <ContratoServicioWizard v-if="showWizardServicio" :visible="showWizardServicio" :tipo="servicio"
+    <!-- `servicio` es la llave de la pestaña; el wizard guarda servicio_aplica
+         tal cual, asi que tiene que recibir un tipo real del enum o crea filas
+         que ninguna vista lee. -->
+    <ContratoServicioWizard v-if="showWizardServicio" :visible="showWizardServicio"
+                            :tipo="tipoAcrear"
                             @cerrar="showWizardServicio = false"
                             @creado="cargarContratosServicio(servicio)" />
   </div>
@@ -539,6 +475,8 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
+import Select from 'primevue/select'
+import Menu from 'primevue/menu'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import api from '@/api/client'
@@ -573,6 +511,26 @@ const SERVICIOS = [
   { key: 'rec',            label: 'REC',            icon: 'pi pi-verified',  color: '#14b8a6', bg: '#f0fdfa' },
 ]
 
+// El enum `servicio_aplica` del backend NO tiene un valor "operacion": lo que
+// se firma por planta son tres contratos distintos -- mantenimiento, arriendo e
+// internet -- que es como los pide OperacionView.vue. Pedir ?tipo=operacion
+// devolvia siempre 0 filas y dejaba 65 contratos reales sin ninguna pestana, asi
+// que Operacion junta los tres y los distingue con la columna Tipo.
+const TIPOS_POR_SERVICIO = {
+  representacion: ['representacion'],
+  operacion: ['mantenimiento', 'arriendo', 'internet'],
+  rec: ['rec'],
+}
+
+const TIPO_CONTRATO_LABELS = {
+  mantenimiento: 'Mantenimiento', arriendo: 'Arriendo', internet: 'Internet',
+  representacion: 'Representación', rec: 'REC',
+}
+const TIPO_CONTRATO_COLOR = {
+  mantenimiento: '#f59e0b', arriendo: '#8b5cf6', internet: '#06b6d4',
+  representacion: '#3b82f6', rec: '#14b8a6',
+}
+
 const SERVICIOS_BADGES = [
   { key: 'srv_operacion',      badge: 'OP',   tooltip: 'Operación' },
   { key: 'srv_representacion', badge: 'REP',  tooltip: 'Reporte de energía producida' },
@@ -597,10 +555,6 @@ const ESTADO_LABELS = {
 const ESTADO_CLASS = {
   en_operacion: 'estado-operacion', suspendido: 'estado-suspendido',
   en_construccion: 'estado-construccion', en_desarrollo: 'estado-default', cancelado: 'estado-default',
-}
-const MODALIDAD_LABELS = {
-  bolsa_directa: 'Bolsa directa', bolsa_comercializador: 'Bolsa comercializador',
-  ppa: 'PPA', interna: 'Interna',
 }
 const CUMPLIMIENTO_LABELS = { on_track: 'Al día', at_risk: 'En riesgo', deficit: 'Déficit' }
 const CUMPLIMIENTO_CLASS = { on_track: 'chip-ok', at_risk: 'chip-warn', deficit: 'chip-danger' }
@@ -668,6 +622,18 @@ watch([vista, servicio, q, agruparPor], () => {
 })
 
 const SIN_DATO = 'Sin asignar'
+
+// Tope de `size` en /proyectos y /clientes: 501 devuelve 422, no una lista
+// corta. Mientras no haya paginacion de servidor, avisamos si se corta.
+const TOPE_PAGINA = 500
+
+function avisarSiTrunca(total, mostrados, etiqueta) {
+  if (total == null || total <= mostrados) return
+  toast.add({
+    severity: 'warn', summary: 'Listado incompleto', life: 8000,
+    detail: `Se muestran ${mostrados} de ${total} ${etiqueta}: la vista pide como máximo ${TOPE_PAGINA}.`,
+  })
+}
 
 // Devuelve los grupos a los que pertenece una planta (uno o varios).
 function gruposDe(p) {
@@ -740,8 +706,6 @@ const DERIVADOS = {
   proyectos: ['ppa_contratos', 'inversionistas', 'servicios', 'info_tecnica'],
   ppa: ['proyectos', 'dias_restantes', 'estado_cumplimiento', 'cobertura_actual_pct',
         'fecha_fin_efectiva', 'comprador', 'vendedor'],
-  representacion: ['ppa_contratos', 'inversionistas', 'servicios', 'info_tecnica',
-                   'servicio_representacion'],
   contrato: ['contratante', 'prestador', 'facturas_solenium', 'facturas_inversionistas',
              'indexacion_anual', 'indexacion_mensual', 'nombre_proyecto_ref'],
 }
@@ -756,7 +720,6 @@ const DOCS = {
   clientes: [['rut_url', 'RUT'], ['documentos_comerciales', 'Documentos comerciales']],
   proyectos: [['carpeta_drive_codigo', 'Carpeta Drive']],
   ppa: [['carpeta_link', 'Carpeta del contrato']],
-  representacion: [['carpeta_drive_codigo', 'Carpeta Drive']],
   contrato: [['enlace_drive', 'Enlace Drive']],
 }
 
@@ -765,7 +728,6 @@ const claveRequeridos = computed(() => (
   vista.value === 'clientes' ? 'clientes'
   : vista.value === 'proyectos' ? 'proyectos'
   : servicio.value === 'ppa' ? 'ppa'
-  : servicio.value === 'representacion' ? 'representacion'
   : 'contrato'
 ))
 
@@ -867,10 +829,11 @@ async function cargarClientes() {
     const [vista, ficha] = await Promise.all([
       api.get('/clientes/vista-comercial'),
       // size tope 500 en el backend: pedir mas devuelve 422, no una lista corta.
-      api.get('/clientes', { params: { page: 1, size: 500 } }),
+      api.get('/clientes', { params: { page: 1, size: TOPE_PAGINA } }),
     ])
     const porId = new Map((ficha.data.items ?? ficha.data ?? []).map(c => [c.id, c]))
     clientes.value = vista.data.map(c => ({ ...(porId.get(c.id) || {}), ...c }))
+    avisarSiTrunca(ficha.data.total, porId.size, 'clientes')
     clientesCargados.value = true
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al cargar clientes', detail: e.message, life: 4000 })
@@ -908,14 +871,19 @@ const proyectosFiltrados = computed(() => {
     (p.nombre_comercial || '').toLowerCase().includes(t) ||
     (p.codigo_tsf || '').toLowerCase().includes(t) ||
     (p.municipio || '').toLowerCase().includes(t) ||
-    (p.departamento || '').toLowerCase().includes(t))
+    (p.departamento || '').toLowerCase().includes(t) ||
+    // El PPA es una columna visible y el inversionista es una agrupacion: si
+    // se muestran, tienen que poder buscarse.
+    ppaVigentes(p).some(c => ppaLabel(c).toLowerCase().includes(t)) ||
+    (p.inversionistas || []).some(i => (i.cliente_nombre || '').toLowerCase().includes(t)))
 })
 
 async function cargarProyectos() {
   loadingProyectos.value = true
   try {
-    const { data } = await api.get('/proyectos', { params: { page: 1, size: 500 } })
+    const { data } = await api.get('/proyectos', { params: { page: 1, size: TOPE_PAGINA } })
     proyectos.value = data.items ?? data
+    avisarSiTrunca(data.total, proyectos.value.length, 'plantas')
     proyectosCargados.value = true
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al cargar proyectos', detail: e.message, life: 4000 })
@@ -953,35 +921,6 @@ async function cargarPpa() {
   }
 }
 
-// ── Servicios · Representación ───────────────────────────────────────────────
-const representacion = ref([])
-const loadingRepresentacion = ref(false)
-const representacionCargada = ref(false)
-
-const representacionFiltradas = computed(() => {
-  const t = q.value.trim().toLowerCase()
-  if (!t) return representacion.value
-  return representacion.value.filter(p =>
-    (p.nombre_comercial || '').toLowerCase().includes(t) ||
-    (p.servicio_representacion?.nombre_rf || '').toLowerCase().includes(t) ||
-    (p.servicio_representacion?.nombre_comercializador || '').toLowerCase().includes(t) ||
-    (p.departamento || '').toLowerCase().includes(t) ||
-    (p.municipio || '').toLowerCase().includes(t))
-})
-
-async function cargarRepresentacion() {
-  loadingRepresentacion.value = true
-  try {
-    const { data } = await api.get('/proyectos', { params: { servicio: 'representacion', size: 500 } })
-    representacion.value = data.items ?? data
-    representacionCargada.value = true
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar plantas', detail: e.message, life: 4000 })
-  } finally {
-    loadingRepresentacion.value = false
-  }
-}
-
 // ── Servicios · Operación / REC ──────────────────────────────────────────────
 const contratosServicio = ref([])
 const loadingServicio = ref(false)
@@ -996,12 +935,16 @@ const contratosServicioFiltrados = computed(() => {
     (c.prestador_nombre || '').toLowerCase().includes(t))
 })
 
-async function cargarContratosServicio(tipo) {
+async function cargarContratosServicio(servicioKey) {
+  // El endpoint filtra por un solo `tipo`, asi que un servicio que agrupa
+  // varios necesita una llamada por tipo.
+  const tipos = TIPOS_POR_SERVICIO[servicioKey] || [servicioKey]
   loadingServicio.value = true
   try {
-    const { data } = await api.get('/contratos-servicio', { params: { tipo } })
-    contratosServicio.value = data
-    servicioCargado.value = tipo
+    const respuestas = await Promise.all(tipos.map(
+      t => api.get('/contratos-servicio', { params: { tipo: t, limit: 500 } })))
+    contratosServicio.value = respuestas.flatMap(r => r.data)
+    servicioCargado.value = servicioKey
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al cargar contratos', detail: e.message, life: 4000 })
   } finally {
@@ -1012,11 +955,13 @@ async function cargarContratosServicio(tipo) {
 // ── Orquestación: cargar sólo lo que se mira, cachear el resto ──────────────
 const servicioInfo = computed(() => SERVICIOS.find(s => s.key === servicio.value))
 
+// Tipos reales de `servicio_aplica` que alimentan la pestana activa.
+const tiposDelServicio = computed(() => TIPOS_POR_SERVICIO[servicio.value] || [servicio.value])
+
 function asegurarDatos() {
   if (vista.value === 'clientes') { if (!clientesCargados.value) cargarClientes(); return }
   if (vista.value === 'proyectos') { if (!proyectosCargados.value) cargarProyectos(); return }
   if (servicio.value === 'ppa') { if (!ppaCargados.value) cargarPpa(); return }
-  if (servicio.value === 'representacion') { if (!representacionCargada.value) cargarRepresentacion(); return }
   if (servicioCargado.value !== servicio.value) cargarContratosServicio(servicio.value)
 }
 
@@ -1038,7 +983,9 @@ onMounted(asegurarDatos)
 function conteoVista(key) {
   if (key === 'clientes')  return clientesCargados.value  ? clientesFiltrados.value.length  : null
   if (key === 'proyectos') return proyectosCargados.value ? proyectosFiltrados.value.length : null
-  return ppaCargados.value ? ppaFiltrados.value.length : null
+  // Antes devolvia siempre ppaFiltrados: el badge decia 33 mirando "0 de 0".
+  if (servicio.value === 'ppa') return ppaCargados.value ? ppaFiltrados.value.length : null
+  return servicioCargado.value === servicio.value ? contratosServicioFiltrados.value.length : null
 }
 
 // ── Subtítulo / búsqueda / Excel según el ángulo activo ─────────────────────
@@ -1046,7 +993,6 @@ const filasVisibles = computed(() => {
   if (vista.value === 'clientes')  return clientesFiltrados.value
   if (vista.value === 'proyectos') return proyectosFiltrados.value
   if (servicio.value === 'ppa')    return ppaFiltrados.value
-  if (servicio.value === 'representacion') return representacionFiltradas.value
   return contratosServicioFiltrados.value
 })
 
@@ -1054,23 +1000,20 @@ const totalCrudo = computed(() => {
   if (vista.value === 'clientes')  return clientes.value.length
   if (vista.value === 'proyectos') return proyectos.value.length
   if (servicio.value === 'ppa')    return ppa.value.length
-  if (servicio.value === 'representacion') return representacion.value.length
   return contratosServicio.value.length
 })
 
 const subtitulo = computed(() => {
   const etiqueta = vista.value === 'clientes' ? 'clientes'
     : vista.value === 'proyectos' ? 'plantas'
-    : servicio.value === 'representacion' ? 'plantas representadas'
     : `contratos de ${servicioInfo.value?.label}`
   return `${filasVisibles.value.length} de ${totalCrudo.value} ${etiqueta} · vista unificada`
 })
 
 const placeholderBusqueda = computed(() => {
   if (vista.value === 'clientes')  return 'Buscar cliente, NIT, contacto…'
-  if (vista.value === 'proyectos') return 'Buscar planta, código TSF, ubicación…'
+  if (vista.value === 'proyectos') return 'Buscar planta, código TSF, ubicación, PPA, inversionista…'
   if (servicio.value === 'ppa')    return 'Buscar contrato, comprador, planta…'
-  if (servicio.value === 'representacion') return 'Buscar planta, representante…'
   return 'Buscar número, contratante, prestador…'
 })
 
@@ -1111,19 +1054,8 @@ const COLUMNAS_EXCEL = {
     { header: 'Cumplimiento', value: c => CUMPLIMIENTO_LABELS[c.estado_cumplimiento] || c.estado_cumplimiento || '' },
     { header: 'Cobertura (%)', value: c => c.cobertura_actual_pct ?? '' },
   ],
-  representacion: () => [
-    { header: 'Planta', value: p => formatearNombre(p.nombre_comercial) },
-    { header: 'Potencia instalada (kWp)', value: p => p.potencia_instalada_kwp ?? '' },
-    { header: 'Estado', value: p => ESTADO_LABELS[p.estado] || p.estado || '' },
-    { header: 'Municipio', value: p => p.municipio || '' },
-    { header: 'Departamento', value: p => p.departamento || '' },
-    { header: 'Representante', value: p => p.servicio_representacion?.nombre_rf || '' },
-    { header: 'Comercializador', value: p => p.servicio_representacion?.nombre_comercializador || '' },
-    { header: 'Modalidad venta', value: p => MODALIDAD_LABELS[p.servicio_representacion?.modalidad_venta] || p.servicio_representacion?.modalidad_venta || '' },
-    { header: 'Cód. despacho XM', value: p => p.servicio_representacion?.codigo_despacho_xm || '' },
-    { header: 'CGM', value: p => p.srv_cgm ? 'Sí' : 'No' },
-  ],
   contrato: () => [
+    { header: 'Tipo', value: c => TIPO_CONTRATO_LABELS[c.servicio_aplica] || c.servicio_aplica || '' },
     { header: 'N° contrato', value: c => c.numero_contrato || '' },
     { header: 'Contratante', value: c => c.contratante_nombre || '' },
     { header: 'Prestador', value: c => c.prestador_nombre || '' },
@@ -1137,7 +1069,6 @@ async function descargarExcel() {
   const clave = vista.value === 'clientes' ? 'clientes'
     : vista.value === 'proyectos' ? 'proyectos'
     : servicio.value === 'ppa' ? 'ppa'
-    : servicio.value === 'representacion' ? 'representacion'
     : 'contrato'
   const hoja = vista.value === 'clientes' ? 'Clientes'
     : vista.value === 'proyectos' ? 'Proyectos'
@@ -1289,10 +1220,7 @@ function confirmarBorrarProyecto(row) {
     accept: async () => {
       try {
         await api.delete(`/proyectos/${row.id}`)
-        // La misma planta puede estar en la lista de Proyectos y en la de
-        // Representacion; hay que sacarla de las dos.
         proyectos.value = proyectos.value.filter(p => p.id !== row.id)
-        representacion.value = representacion.value.filter(p => p.id !== row.id)
         toast.add({ severity: 'success', summary: 'Proyecto eliminado', life: 2500 })
       } catch (e) {
         toast.add({ severity: 'error', summary: 'No se pudo eliminar',
@@ -1306,6 +1234,25 @@ function confirmarBorrarProyecto(row) {
 const showWizardPPA = ref(false)
 const showWizardServicio = ref(false)
 const ppaADuplicar = ref(null)
+// Que tipo se va a crear. Con un solo tipo es directo; con varios lo escoge el
+// menu, porque el wizard guarda este valor en servicio_aplica sin traducirlo.
+const tipoAcrear = ref(null)
+const menuNuevoContrato = ref(null)
+
+const opcionesNuevoContrato = computed(() => tiposDelServicio.value.map(t => ({
+  label: TIPO_CONTRATO_LABELS[t] || t,
+  icon: 'pi pi-plus',
+  command: () => { tipoAcrear.value = t; showWizardServicio.value = true },
+})))
+
+function nuevoContrato(evento) {
+  if (tiposDelServicio.value.length === 1) {
+    tipoAcrear.value = tiposDelServicio.value[0]
+    showWizardServicio.value = true
+    return
+  }
+  menuNuevoContrato.value?.toggle(evento)
+}
 
 function abrirWizardPPA(contrato) {
   ppaADuplicar.value = contrato
