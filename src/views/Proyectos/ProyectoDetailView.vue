@@ -1,31 +1,28 @@
 <template>
-  <div v-if="proyecto" class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <Button icon="pi pi-arrow-left" text @click="$router.back()" class="-ml-2 mb-1" />
-        <div v-if="!isEditMode">
-          <h2 class="text-xl font-bold text-gray-800">{{ proyecto.nombre_comercial }}</h2>
-          <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="mt-1" />
-        </div>
-        <div v-else class="flex flex-col gap-2 mt-1">
-          <InputText v-model="editForm.nombre_comercial" class="text-base font-semibold w-80" />
-          <Select v-model="editForm.estado" :options="ESTADOS" optionLabel="label" optionValue="value" class="w-48" />
-        </div>
-      </div>
-      <div class="flex gap-2">
+  <div v-if="proyecto">
+    <DetalleLayout :volver="{ to: '/servicios-unificado?vista=proyectos', label: 'Proyectos' }"
+                   :titulo="proyecto.nombre_comercial"
+                   :codigo="proyecto.codigo_tsf || ''"
+                   :tabs="TABS" v-model="activeTab">
+      <!-- En modo edicion, nombre y estado se editan en la misma miga -->
+      <template v-if="isEditMode" #titulo>
+        <InputText v-model="editForm.nombre_comercial" size="small" class="w-64" />
+        <Select v-model="editForm.estado" :options="ESTADOS" optionLabel="label" optionValue="value"
+                size="small" class="w-40" />
+      </template>
+      <template v-if="!isEditMode" #chips>
+        <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="text-[10px]" />
+      </template>
+      <template #acciones>
         <template v-if="isEditMode">
-          <Button label="Cancelar" severity="secondary" outlined @click="cancelEdit" />
-          <Button label="Guardar cambios" icon="pi pi-check" :loading="guardando" @click="saveEdit" />
+          <Button label="Cancelar" severity="secondary" outlined size="small" @click="cancelEdit" />
+          <Button label="Guardar cambios" icon="pi pi-check" size="small" :loading="guardando" @click="saveEdit" />
         </template>
-        <Button v-else label="Editar" icon="pi pi-pencil" outlined @click="enterEditMode" />
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <TabView v-model:activeIndex="activeTab" scrollable>
+        <Button v-else label="Editar" icon="pi pi-pencil" outlined size="small" @click="enterEditMode" />
+      </template>
+      <template #default="{ tab }">
       <!-- ══ GENERAL ══ -->
-      <TabPanel header="General">
+      <div v-if="tab === 'general'">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
           <template v-if="!isEditMode">
             <InfoField label="Tipo" :value="proyecto.tipo_proyecto" />
@@ -121,10 +118,10 @@
             </div>
           </template>
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ TÉCNICO ══ -->
-      <TabPanel header="Técnico">
+      <div v-if="tab === 'tecnico'">
         <div class="p-4 space-y-6 text-sm">
 
           <!-- Vista lectura -->
@@ -395,10 +392,10 @@
           </template>
 
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ SIMULACIÓN ══ -->
-      <TabPanel header="Simulación">
+      <div v-if="tab === 'simulacion'">
         <div class="p-4 space-y-6">
           <div v-if="!isEditMode && hasSimulacionData" class="flex justify-end">
             <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" outlined
@@ -426,10 +423,10 @@
             </div>
           </div>
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ INVERSIONISTAS ══ -->
-      <TabPanel header="Inversionistas">
+      <div v-if="tab === 'inversionistas'">
         <div class="p-4 space-y-4">
           <DataTable :value="proyecto.inversionistas" class="text-sm" stripedRows>
             <Column field="cliente_nombre" header="Inversionista" />
@@ -554,10 +551,10 @@
           <Button label="Agregar" icon="pi pi-plus" :loading="guardando"
             :disabled="!nuevoInv.cliente_id" @click="agregarInversionista" class="mt-2" />
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ CONTACTOS ══ -->
-      <TabPanel header="Contactos">
+      <div v-if="tab === 'contactos'">
         <div class="p-4">
           <ProyectoAreaContactosPanel
             :proyecto-id="proyecto.id"
@@ -565,10 +562,10 @@
             :clientes-options="clientes"
           />
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ SERVICIOS ══ -->
-      <TabPanel header="Servicios">
+      <div v-if="tab === 'servicios'">
         <div class="p-6 space-y-4">
 
           <!-- Cards de servicio -->
@@ -674,10 +671,10 @@
           @cerrar="showContratoWizard = false"
           @creado="onContratoServicioCreado"
         />
-      </TabPanel>
+      </div>
 
       <!-- ══ FRONTERAS ══ -->
-      <TabPanel v-if="fronteras.length" header="Fronteras">
+      <div v-if="tab === 'fronteras'">
         <div class="p-4">
           <DataTable :value="fronteras" class="text-sm" stripedRows>
             <Column field="codigo_frontera" header="Código">
@@ -695,10 +692,10 @@
             Ve a la pestaña Fronteras del menú si deseas reasignar el proyecto.
           </p>
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ ID LIQUIDACIONES ══ -->
-      <TabPanel header="ID liquidaciones">
+      <div v-if="tab === 'id-liquidaciones'">
         <div class="p-4 space-y-3 text-sm">
           <p class="text-[11px] text-gray-400">
             <i class="pi pi-info-circle mr-1" />
@@ -740,10 +737,10 @@
             </template>
           </div>
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ ID QUOIA ══ -->
-      <TabPanel header="ID Quoia">
+      <div v-if="tab === 'id-quoia'">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
           <template v-if="!isEditMode">
             <InfoField label="ID Reporte Generación Quoia" :value="proyecto.quoia_reporte_generacion_id" />
@@ -765,8 +762,9 @@
             </div>
           </template>
         </div>
-      </TabPanel>
-    </TabView>
+      </div>
+      </template>
+    </DetalleLayout>
 
   </div>
 
@@ -784,8 +782,6 @@
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import TabView from 'primevue/tabview'
-import TabPanel from 'primevue/tabpanel'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -806,6 +802,7 @@ import api from '@/api/client'
 import divipola from '@/data/colombia-divipola.json'
 import ContratoServicioWizard from '@/views/Contratos/ContratoServicioWizard.vue'
 import ProyectoAreaContactosPanel from '@/components/ProyectoAreaContactosPanel.vue'
+import DetalleLayout from '@/components/DetalleLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -858,18 +855,25 @@ const showContratoWizard = ref(false)
 // vista "IDs proyectos", que enlaza a las pestañas de IDs).
 // La pestaña Fronteras solo se muestra si el proyecto tiene fronteras
 // asociadas -- los índices de las pestañas siguientes dependen de eso.
-const activeTab = ref(0)
-const TAB_INDEX = computed(() => {
-  const idx = { general: 0, tecnico: 1, simulacion: 2, inversionistas: 3, contactos: 4, servicios: 5 }
-  let n = 6
-  if (fronteras.value.length) idx.fronteras = n++
-  idx['id-liquidaciones'] = n++
-  idx['id-quoia'] = n++
-  return idx
-})
-watch([() => route.query.tab, fronteras], ([t]) => {
-  if (t && TAB_INDEX.value[t] != null) activeTab.value = TAB_INDEX.value[t]
-}, { immediate: true })
+const activeTab = ref('general')
+// Las pestanas se identifican por llave de texto, asi que Fronteras puede
+// aparecer o no sin desplazar a las demas. Antes habia un TAB_INDEX numerico
+// que se recalculaba, y un ?tab=id-liquidaciones o ?tab=id-quoia podia caer en
+// la pestana equivocada segun si la planta tenia fronteras.
+const TABS = computed(() => [
+  { key: 'general',          label: 'General',          icon: 'pi pi-info-circle' },
+  { key: 'tecnico',          label: 'Técnico',          icon: 'pi pi-wrench' },
+  { key: 'simulacion',       label: 'Simulación',       icon: 'pi pi-chart-line' },
+  // Mismo orden que el detalle de Cliente: identidad -> contactos -> servicios
+  // -> relaciones -> integracion. Asi las tres vistas se leen igual.
+  { key: 'contactos',        label: 'Contactos',        icon: 'pi pi-envelope' },
+  { key: 'servicios',        label: 'Servicios',        icon: 'pi pi-briefcase' },
+  { key: 'inversionistas',   label: 'Inversionistas',   icon: 'pi pi-users' },
+  { key: 'fronteras',        label: 'Fronteras',        icon: 'pi pi-globe',
+    badge: fronteras.value.length || null, oculta: !fronteras.value.length },
+  { key: 'id-liquidaciones', label: 'ID liquidaciones', icon: 'pi pi-dollar' },
+  { key: 'id-quoia',         label: 'ID Quoia',         icon: 'pi pi-link' },
+])
 
 // ── Modo edición ──────────────────────────────────────────────────────────────
 const isEditMode = computed(() => route.query.edit === 'true')

@@ -1,20 +1,5 @@
 <template>
   <div class="space-y-4" v-if="cliente">
-    <!-- Header -->
-    <div class="flex items-center gap-3">
-      <button @click="$router.push('/clientes')"
-        class="text-sm flex items-center gap-1 hover:underline" style="color: #915BD8;">
-        <i class="pi pi-arrow-left text-xs" /> Clientes
-      </button>
-      <span style="color: #c5b9db;">/</span>
-      <span class="text-sm font-semibold" style="color: #2C2039;">{{ formatearNombre(cliente.razon_social_nombre) }}</span>
-      <button @click="deleteVisible = true"
-        class="ml-auto text-xs flex items-center gap-1 px-3 py-1.5 rounded-lg transition-colors hover:bg-red-50"
-        style="color: #dc2626;">
-        <i class="pi pi-trash text-xs" /> Eliminar cliente
-      </button>
-    </div>
-
     <!-- Dialog: eliminar cliente -->
     <Dialog v-model:visible="deleteVisible" header="Eliminar cliente" modal class="w-full max-w-sm">
       <p class="text-sm text-gray-700 mb-4">
@@ -27,20 +12,15 @@
       </div>
     </Dialog>
 
-    <!-- Tabs -->
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
-      <div class="flex border-b" style="border-color: #e8e0f0;">
-        <button v-for="tab in tabs" :key="tab.key"
-          @click="activeTab = tab.key"
-          class="px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px"
-          :style="activeTab === tab.key
-            ? 'border-color: #915BD8; color: #915BD8;'
-            : 'border-color: transparent; color: #6b5a8a;'">
-          <i :class="tab.icon + ' mr-1.5 text-xs'" />{{ tab.label }}
-        </button>
-      </div>
-
-      <div class="p-6">
+    <DetalleLayout :volver="{ to: '/servicios-unificado?vista=clientes', label: 'Clientes' }"
+                   :titulo="formatearNombre(cliente.razon_social_nombre)"
+                   :codigo="cliente.nit_cedula || ''"
+                   :tabs="tabs" v-model="activeTab">
+      <template #acciones>
+        <Button icon="pi pi-trash" label="Eliminar" text size="small" severity="danger"
+                @click="deleteVisible = true" />
+      </template>
+      <template #default>
 
         <!-- ── Tab: Resumen 360 ── -->
         <div v-if="activeTab === 'resumen'">
@@ -376,8 +356,8 @@
           </div>
         </div>
 
-      </div>
-    </div>
+      </template>
+    </DetalleLayout>
   </div>
 
   <!-- Loading -->
@@ -532,6 +512,7 @@ import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import api from '@/api/client'
 import ClienteForm from './ClienteForm.vue'
+import DetalleLayout from '@/components/DetalleLayout.vue'
 import ClienteResumen from './ClienteResumen.vue'
 import ContactosPanel from '@/components/ContactosPanel.vue'
 import { formatearNombre } from '@/utils/nombreFormato'
@@ -543,7 +524,7 @@ const toast = useToast()
 const cliente = ref(null)
 const deleteVisible = ref(false)
 const deleting = ref(false)
-const activeTab = ref(typeof route.query.tab === 'string' ? route.query.tab : 'resumen')
+const activeTab = ref('resumen')   // DetalleLayout sincroniza con ?tab=
 const guardando = ref(false)
 const archivoSeleccionado = ref(null)
 

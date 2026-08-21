@@ -1,34 +1,23 @@
 <template>
-  <div v-if="contrato" class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between gap-2">
-      <div class="flex items-center gap-2">
-        <Button icon="pi pi-arrow-left" text @click="$router.back()" class="-ml-2" />
-        <div>
-          <h2 class="text-xl font-bold text-gray-800">
-            {{ contrato.nombre_interno || contrato.numero_codigo_contrato || 'Contrato PPA' }}
-          </h2>
-          <div class="flex items-center gap-2 mt-0.5">
-            <span v-if="contrato.numero_codigo_contrato" class="text-xs text-gray-400 font-mono">
-              {{ contrato.numero_codigo_contrato }}
-            </span>
-            <Tag value="PPA" severity="warning" class="text-xs" />
-            <Tag :value="(contrato.tipo_contrato === 'compra') ? 'Compra' : 'Venta'"
-              :style="(contrato.tipo_contrato === 'compra')
-                ? 'background:#915BD8;color:#fff'
-                : 'background:#F6FF72;color:#2C2039'" class="text-xs" />
-            <span class="text-xs text-gray-400">{{ contrato.proyectos?.length || 0 }} proyectos</span>
-          </div>
-        </div>
-      </div>
-      <Button label="Editar contrato" icon="pi pi-pencil" severity="secondary" outlined
-        @click="abrirEdicionCompleta" />
-    </div>
-
-    <!-- Tabs -->
-    <TabView>
+  <div v-if="contrato">
+    <DetalleLayout :volver="{ to: '/servicios-unificado?vista=servicios&srv=ppa', label: 'Servicios' }"
+                   :titulo="contrato.nombre_interno || contrato.numero_codigo_contrato || 'Contrato PPA'"
+                   :codigo="contrato.numero_codigo_contrato || ''"
+                   :tabs="TABS" v-model="activeTab">
+      <template #chips>
+        <Tag value="PPA" severity="warn" class="text-[10px]" />
+        <Tag :value="(contrato.tipo_contrato === 'compra') ? 'Compra' : 'Venta'"
+          :style="(contrato.tipo_contrato === 'compra')
+            ? 'background:#915BD8;color:#fff'
+            : 'background:#F6FF72;color:#2C2039'" class="text-[10px]" />
+      </template>
+      <template #acciones>
+        <Button label="Editar contrato" icon="pi pi-pencil" severity="secondary" outlined size="small"
+          @click="abrirEdicionCompleta" />
+      </template>
+      <template #default="{ tab }">
       <!-- ══ DATOS ══ -->
-      <TabPanel header="Datos">
+      <div v-if="tab === 'datos'">
         <div class="space-y-6 p-2">
 
           <!-- Identificación -->
@@ -218,10 +207,10 @@
           </div>
 
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ CANTIDADES ══ -->
-      <TabPanel :header="`Cantidades (${contrato.compromisos_energia?.length || 0})`">
+      <div v-if="tab === 'cantidades'">
         <div class="flex justify-between items-center mb-3">
           <SelectButton v-if="!editandoCantidades" v-model="vistaCantidades" :options="VISTAS" optionLabel="label" optionValue="value" />
           <span v-else />
@@ -330,10 +319,10 @@
             </Column>
           </DataTable>
         </template>
-      </TabPanel>
+      </div>
 
       <!-- ══ TARIFAS ══ -->
-      <TabPanel :header="`Tarifas (${contrato.tarifas?.length || 0})`">
+      <div v-if="tab === 'tarifas'">
         <div class="flex justify-between items-center mb-3">
           <SelectButton v-if="!editandoTarifas" v-model="vistaTarifas" :options="VISTAS" optionLabel="label" optionValue="value" />
           <span v-else />
@@ -426,10 +415,10 @@
             </Column>
           </DataTable>
         </template>
-      </TabPanel>
+      </div>
 
       <!-- ══ CONTRATOS ASIC ══ -->
-      <TabPanel :header="`Contratos ASIC (${asicFiltrados.length})`">
+      <div v-if="tab === 'asic'">
         <div class="flex justify-between items-center mb-3">
           <span class="text-xs text-gray-400">{{ asicRows.length }} registros totales</span>
           <SelectButton v-model="vistaAsic"
@@ -499,10 +488,10 @@
             </template>
           </Column>
         </DataTable>
-      </TabPanel>
+      </div>
 
       <!-- ══ PROYECTOS ══ -->
-      <TabPanel :header="`Proyectos (${contrato.proyectos?.length || 0})`">
+      <div v-if="tab === 'proyectos'">
         <div class="flex justify-end mb-3">
           <Button label="Asociar proyecto" icon="pi pi-plus" size="small" severity="secondary" outlined
             @click="abrirAsociar" />
@@ -524,8 +513,9 @@
           <i class="pi pi-sitemap text-3xl" />
           <span class="text-sm">Sin proyectos asociados</span>
         </div>
-      </TabPanel>
-    </TabView>
+      </div>
+      </template>
+    </DetalleLayout>
 
     <!-- Wizard edición completa -->
     <PPAContratoWizard v-if="showWizard" :visible="showWizard"
@@ -578,8 +568,7 @@ import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import TabView from 'primevue/tabview'
-import TabPanel from 'primevue/tabpanel'
+import DetalleLayout from '@/components/DetalleLayout.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Divider from 'primevue/divider'
@@ -599,6 +588,19 @@ const VISTAS = [{ label: 'Mensual', value: 'mensual' }, { label: 'Anual', value:
 
 const route = useRoute()
 const toast = useToast()
+const activeTab = ref('datos')
+const TABS = computed(() => [
+  { key: 'datos',      label: 'Datos',          icon: 'pi pi-info-circle' },
+  { key: 'cantidades', label: 'Cantidades',     icon: 'pi pi-chart-bar',
+    badge: contrato.value?.compromisos_energia?.length || null },
+  { key: 'tarifas',    label: 'Tarifas',        icon: 'pi pi-dollar',
+    badge: contrato.value?.tarifas?.length || null },
+  { key: 'asic',       label: 'Contratos ASIC', icon: 'pi pi-book',
+    badge: asicFiltrados.value?.length || null },
+  { key: 'proyectos',  label: 'Proyectos',      icon: 'pi pi-bolt',
+    badge: contrato.value?.proyectos?.length || null },
+])
+
 const contrato = ref(null)
 const loading = ref(true)
 

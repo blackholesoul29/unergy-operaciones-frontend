@@ -28,6 +28,7 @@ const routes = [
   { path: '/proyectos/:id/operacion',       name: 'ProyectoOperacion',       component: () => import('@/views/Servicios/OperacionView.vue') },
   { path: '/proyectos/:id/representacion',  name: 'ProyectoRepresentacion',  component: () => import('@/views/Servicios/RepresentacionView.vue') },
   { path: '/servicios',    name: 'Servicios',    component: () => import('@/views/Contratos/ContratosListView.vue') },
+  { path: '/servicios-unificado', name: 'ServiciosUnificado', component: () => import('@/views/Servicios/ServiciosUnificadoView.vue') },
   { path: '/contratos/:id',name: 'ContratoDetalle', component: () => import('@/views/Contratos/ContratoDetailView.vue') },
   { path: '/general/proximos-energizar', name: 'ProximosEnergizar', component: () => import('@/views/General/ProximosEnergizarView.vue') },
   { path: '/general/retos',     name: 'Retos',        component: () => import('@/views/Retos/RetosListView.vue') },
