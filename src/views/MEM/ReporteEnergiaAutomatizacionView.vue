@@ -261,7 +261,7 @@
             <DataTable :value="resumenHistorico.incompletos" class="text-sm resumen-tabla" stripedRows rowHover
                        paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
               <Column field="nombre_proyecto" header="Proyecto" sortable />
-              <Column header="Medidor principal incompleto" sortable :sortField="'veces_medidor_principal_incompleto'" style="width:170px">
+              <Column header="Medidor principal" sortable :sortField="'veces_medidor_principal_incompleto'" style="width:170px">
                 <template #body="{ data }">
                   <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
                         :style="chipEstilo(pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila), 'problema')">
@@ -269,7 +269,7 @@
                   </span>
                 </template>
               </Column>
-              <Column header="Medidor respaldo incompleto" sortable :sortField="'veces_medidor_respaldo_incompleto'" style="width:170px">
+              <Column header="Medidor respaldo" sortable :sortField="'veces_medidor_respaldo_incompleto'" style="width:170px">
                 <template #body="{ data }">
                   <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
                         :style="chipEstilo(pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila), 'problema')">
@@ -277,7 +277,7 @@
                   </span>
                 </template>
               </Column>
-              <Column header="Inversores incompleto" sortable :sortField="'veces_solenium_incompleto'" style="width:170px">
+              <Column header="Inversores" sortable :sortField="'veces_solenium_incompleto'" style="width:170px">
                 <template #body="{ data }">
                   <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
                         :style="chipEstilo(pctDe(data.veces_solenium_incompleto, data.dias_con_fila), 'problema')">
