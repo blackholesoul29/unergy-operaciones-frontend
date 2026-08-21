@@ -627,14 +627,9 @@ const compacta = ref(localStorage.getItem('servicios_unificado_compacta') !== '0
 
 watch(compacta, v => localStorage.setItem('servicios_unificado_compacta', v ? '1' : '0'))
 
-watch([vista, servicio, q, agruparPor], () => {
-  const query = {}
-  if (vista.value) query.vista = vista.value
-  if (vista.value === 'proyectos' && agruparPor.value) query.grupo = agruparPor.value
-  if (vista.value === 'servicios') query.srv = servicio.value
-  if (q.value) query.q = q.value
-  router.replace({ query })
-})
+// El watch que sincroniza la URL vive mas abajo, junto a `agruparPor`: watch()
+// evalua su arreglo de fuentes en el acto, asi que nombrar ahi una const que
+// todavia no se declaro rompe la vista entera al montarla.
 
 const filasPorPagina = computed(() => (compacta.value ? 100 : 50))
 // Los filtros de Proyectos ocupan una fila extra, así que la tabla dispone de
@@ -660,6 +655,17 @@ const AGRUPACIONES = [
 ]
 
 const agruparPor = ref(AGRUPACIONES.some(a => a.value === route.query.grupo) ? route.query.grupo : '')
+
+// Los filtros se sincronizan con la URL para poder compartir la vista tal cual
+// se esta viendo. Tiene que ir despues de `agruparPor`: es una de sus fuentes.
+watch([vista, servicio, q, agruparPor], () => {
+  const query = {}
+  if (vista.value) query.vista = vista.value
+  if (vista.value === 'proyectos' && agruparPor.value) query.grupo = agruparPor.value
+  if (vista.value === 'servicios') query.srv = servicio.value
+  if (q.value) query.q = q.value
+  router.replace({ query })
+})
 
 const SIN_DATO = 'Sin asignar'
 
