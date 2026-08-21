@@ -28,6 +28,57 @@
       </div>
     </div>
 
+    <!-- Estado en Quoia: ¿XM ya resolvió los reportes ENVIADOS ese día?
+         Distinto de "Enviar reporte" (que solo dice si el POST llegó bien
+         a Quoia) -- esto vuelve a consultar Quoia para saber si XM lo
+         aprobó ("Exitoso") o lo rechazó ("Error"), o sigue sin resolver
+         ("En espera"). Solo aparece si hay algo enviado ese día; el
+         polling se detiene solo en cuanto nadie queda en_espera. -->
+    <div v-if="estadoQuoia" class="bg-white rounded-xl p-4" style="border: 2px solid #915BD8;">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <p class="text-sm font-bold" style="color: #2C2039;">Estado en Quoia</p>
+          <p class="text-xs mt-0.5" style="color: #9b89b5;">
+            {{ estadoQuoia.total }} fronteras enviadas
+            <span v-if="estadoQuoiaPolling"> · revisando cada 2 min</span>
+          </p>
+        </div>
+        <span v-if="estadoQuoiaPolling" class="flex items-center gap-1.5 text-xs font-semibold" style="color: #915BD8;">
+          <span class="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style="background: #915BD8;" />
+          En vivo
+        </span>
+      </div>
+      <div class="grid grid-cols-4 gap-2.5 mb-1">
+        <div class="rounded-lg text-center py-2.5" style="background: #eef0f4;">
+          <p class="text-xl font-extrabold" style="color: #52596b;">{{ estadoQuoia.en_espera }}</p>
+          <p class="text-[11px] font-semibold mt-0.5" style="color: #52596b;">En espera</p>
+        </div>
+        <div class="rounded-lg text-center py-2.5" style="background: #e8f5d9;">
+          <p class="text-xl font-extrabold" style="color: #4d7c0f;">{{ estadoQuoia.exitoso }}</p>
+          <p class="text-[11px] font-semibold mt-0.5" style="color: #4d7c0f;">Exitoso</p>
+        </div>
+        <div class="rounded-lg text-center py-2.5" style="background: #fdf3d0;">
+          <p class="text-xl font-extrabold" style="color: #92700c;">{{ estadoQuoia.exitoso_con_alerta }}</p>
+          <p class="text-[11px] font-semibold mt-0.5" style="color: #92700c;">Con alerta</p>
+        </div>
+        <div class="rounded-lg text-center py-2.5" style="background: #fde3e3;">
+          <p class="text-xl font-extrabold" style="color: #c02626;">{{ estadoQuoia.error }}</p>
+          <p class="text-[11px] font-semibold mt-0.5" style="color: #c02626;">Error</p>
+        </div>
+      </div>
+      <div v-if="estadoQuoia.fallidas.length" class="mt-3 pt-3" style="border-top: 1px solid #e8e0f0;">
+        <p class="text-xs font-bold mb-2" style="color: #c02626;">⚠ {{ estadoQuoia.fallidas.length }} con error</p>
+        <div v-for="f in estadoQuoia.fallidas" :key="f.frontera_id + f.tipo"
+             class="flex items-center justify-between rounded-lg px-2.5 py-1.5 mb-1.5 text-xs" style="background: #fde3e3;">
+          <span class="font-semibold" style="color: #2C2039;">{{ f.nombre_proyecto }} — {{ f.tipo === 'generacion' ? 'Generación' : 'Consumo' }}</span>
+          <span class="text-[10px] font-bold text-white rounded-full px-2 py-0.5" style="background: #c02626;">ERROR</span>
+        </div>
+      </div>
+      <p v-else-if="!estadoQuoiaPolling && estadoQuoia.en_espera === 0" class="text-xs font-semibold mt-3 pt-3" style="color: #4d7c0f; border-top: 1px solid #e8e0f0;">
+        ✓ Todas las fronteras ya tienen respuesta de XM — nada pendiente
+      </p>
+    </div>
+
     <TabView v-model:activeIndex="activeTab">
       <TabPanel header="Revisión de hoy">
         <div v-if="loadingLista" class="flex items-center justify-center py-12">
@@ -95,7 +146,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
@@ -168,6 +219,10 @@ const enviando = ref(false)
 const ejecutando = ref(false)
 const deteniendo = ref(false)
 
+const estadoQuoia = ref(null)
+const estadoQuoiaPolling = ref(false)
+let estadoQuoiaTimer = null
+
 async function cargarResumen() {
   try {
     const { data } = await api.get('/reporte-energia/resumen', { params: { fecha: fechaISO.value } })
@@ -205,7 +260,54 @@ async function cargarHistorial() {
   }
 }
 
-watch(fecha, () => { seleccion.value = null; cargarResumen(); cargarLista() })
+// Estado en Quoia (aprobación de XM sobre lo YA enviado) -- GET liviano
+// para mostrar lo que ya se sabe (sin golpear Quoia) al entrar o cambiar
+// de fecha; si hay algo todavía 'en_espera' de un envío anterior, retoma
+// el polling solo. detenerPollingEstadoQuoia() no borra estadoQuoia -- el
+// panel se queda visible con el último estado conocido, solo deja de
+// refrescarse (pedido 2026-08-21).
+async function cargarEstadoQuoiaActual() {
+  try {
+    const { data } = await api.get('/reporte-energia/estado-quoia', { params: { fecha: fechaISO.value } })
+    estadoQuoia.value = data.total > 0 ? data : null
+    if (estadoQuoia.value && estadoQuoia.value.en_espera > 0) iniciarPollingEstadoQuoia()
+  } catch {
+    estadoQuoia.value = null
+  }
+}
+
+async function revisarEstadoQuoia() {
+  try {
+    const { data } = await api.post(
+      '/reporte-energia/estado-quoia', null,
+      { params: { fecha: fechaISO.value }, timeout: 180000 },
+    )
+    estadoQuoia.value = data
+    if (data.en_espera === 0) detenerPollingEstadoQuoia()
+  } catch {
+    // silencioso -- se reintenta en el próximo tick del polling
+  }
+}
+
+function iniciarPollingEstadoQuoia() {
+  if (estadoQuoiaTimer) return
+  estadoQuoiaPolling.value = true
+  estadoQuoiaTimer = setInterval(revisarEstadoQuoia, 2 * 60 * 1000)
+}
+function detenerPollingEstadoQuoia() {
+  estadoQuoiaPolling.value = false
+  if (estadoQuoiaTimer) {
+    clearInterval(estadoQuoiaTimer)
+    estadoQuoiaTimer = null
+  }
+}
+onUnmounted(() => detenerPollingEstadoQuoia())
+
+watch(fecha, () => {
+  seleccion.value = null; cargarResumen(); cargarLista()
+  detenerPollingEstadoQuoia()
+  cargarEstadoQuoiaActual()
+})
 
 // Busca en la lista ya cargada (de la fecha/tab correctos) la fila que
 // coincide con ?frontera_id= de la URL, y la selecciona -- mismo objeto
@@ -226,7 +328,7 @@ function restaurarSeleccionDesdeQuery() {
 }
 
 onMounted(async () => {
-  await Promise.all([cargarResumen(), cargarLista()])
+  await Promise.all([cargarResumen(), cargarLista(), cargarEstadoQuoiaActual()])
   if (activeTab.value === 1) await cargarHistorial()
   restaurarSeleccionDesdeQuery()
 })
@@ -415,6 +517,10 @@ async function enviarReporte() {
       })
     } else {
       toast.add({ severity: 'success', summary: 'Reporte enviado', detail: `${data.enviados} fronteras enviadas`, life: 3000 })
+    }
+    if (!data.bloqueado) {
+      await revisarEstadoQuoia()
+      if (estadoQuoia.value && estadoQuoia.value.en_espera > 0) iniciarPollingEstadoQuoia()
     }
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo enviar el reporte.', life: 4000 })
