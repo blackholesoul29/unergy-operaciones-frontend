@@ -437,7 +437,7 @@ async function generarExcel() {
 async function enviarReporte() {
   enviando.value = true
   try {
-    const { data } = await api.post('/reporte-energia/enviar', null, { params: { fecha: fechaISO.value } })
+    const { data } = await api.post('/reporte-energia/enviar', null, { params: { fecha: fechaISO.value }, timeout: 300000 })
     if (data.bloqueado) {
       toast.add({ severity: 'warn', summary: 'Envío bloqueado', detail: data.motivo_bloqueo, life: 5000 })
     } else if (data.fallidos.length) {
@@ -465,7 +465,7 @@ async function reportarFaltantes() {
   try {
     const { data } = await api.post(
       '/reporte-energia/reportar-manual', { frontera_codigos },
-      { params: { fecha: fechaISO.value } },
+      { params: { fecha: fechaISO.value }, timeout: 300000 },
     )
     const partes = [`${data.creadas.length} creadas`, `${data.enviados} enviadas`]
     if (data.ya_existian.length) partes.push(`${data.ya_existian.length} ya existían (sin tocar)`)
