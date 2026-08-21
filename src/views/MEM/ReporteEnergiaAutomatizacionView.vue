@@ -69,9 +69,8 @@
       <div v-if="estadoQuoia.fallidas.length" class="mt-3 pt-3" style="border-top: 1px solid #e8e0f0;">
         <p class="text-xs font-bold mb-2" style="color: #c02626;">⚠ {{ estadoQuoia.fallidas.length }} con error</p>
         <div v-for="f in estadoQuoia.fallidas" :key="f.frontera_id + f.tipo"
-             class="flex items-center justify-between rounded-lg px-2.5 py-1.5 mb-1.5 text-xs" style="background: #fde3e3;">
+             class="rounded-lg px-2.5 py-1.5 mb-1.5 text-xs" style="background: #f7f6fa;">
           <span class="font-semibold" style="color: #2C2039;">{{ f.nombre_proyecto }} — {{ f.tipo === 'generacion' ? 'Generación' : 'Consumo' }}</span>
-          <span class="text-[10px] font-bold text-white rounded-full px-2 py-0.5" style="background: #c02626;">ERROR</span>
         </div>
       </div>
       <p v-else-if="!estadoQuoiaPolling && estadoQuoia.en_espera === 0" class="text-xs font-semibold mt-3 pt-3" style="color: #4d7c0f; border-top: 1px solid #e8e0f0;">
