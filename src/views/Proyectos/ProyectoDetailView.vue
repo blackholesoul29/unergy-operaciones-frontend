@@ -659,6 +659,24 @@
                 <span class="text-xs text-gray-600">{{ srv.label }}</span>
               </div>
             </div>
+
+            <!-- No es un servicio contratado -- excepción para que el
+                 clasificador de Reporte de Energía incluya este proyecto en
+                 su corrida diaria aunque todavía no esté en_operacion/sin
+                 srv_cgm (ver GD Isabela, Los Taurus... 2026-08-21). Tarjeta
+                 aparte a propósito, mismo tono neutro que el resto de la
+                 ficha, para no leerse como un servicio más. -->
+            <div class="flex items-center justify-between gap-3 bg-gray-50 rounded-lg px-3 py-2.5 mt-3">
+              <div class="flex items-center gap-2.5">
+                <span class="flex-none rounded-full w-5 h-5 flex items-center justify-center text-[11px] font-bold"
+                  style="background: #e9edf2; color: #475569;">i</span>
+                <div>
+                  <p class="text-xs font-semibold text-gray-700">Reportar al ASIC</p>
+                  <p class="text-xs text-gray-400">Actívalo para incluirlo en el reporte diario</p>
+                </div>
+              </div>
+              <ToggleSwitch v-model="reportarAsicForzado" @change="toggleReportarAsic" />
+            </div>
           </div>
         </div>
 
@@ -845,6 +863,7 @@ const loading = ref(true)
 const errorMsg = ref(null)
 const guardando = ref(false)
 const srvFlags = reactive({})
+const reportarAsicForzado = ref(false)
 const srvExpanded = ref(null)
 const contratosInline = ref([])
 const loadingInline = ref(false)
@@ -1295,6 +1314,21 @@ async function toggleServicio(key, value) {
   }
 }
 
+// No es un servicio contratado (por eso PATCH general, no /servicios) --
+// excepción para que orquestador._fronteras_con_reporte incluya este
+// proyecto en la corrida diaria aunque siga en_desarrollo/sin srv_cgm.
+async function toggleReportarAsic() {
+  const value = reportarAsicForzado.value
+  try {
+    await api.patch(`/proyectos/${route.params.id}`, { reportar_asic_forzado: value })
+    proyecto.value.reportar_asic_forzado = value
+    toast.add({ severity: 'success', summary: 'Actualizado', life: 2000 })
+  } catch {
+    reportarAsicForzado.value = !value
+    toast.add({ severity: 'error', summary: 'Error al actualizar', life: 3000 })
+  }
+}
+
 function clickServicio(srv) {
   if (srv.key === 'srv_ppa') {
     router.push(`/proyectos/${route.params.id}/ppa`)
@@ -1383,6 +1417,7 @@ onMounted(async () => {
     fronteras.value = Array.isArray(fronterasRes.data) ? fronterasRes.data : (fronterasRes.data.items ?? [])
     operadoresRed.value = Array.isArray(operadoresRes.data) ? operadoresRes.data : (operadoresRes.data.items ?? [])
     for (const s of SERVICIOS_FLAGS) srvFlags[s.key] = proyRes.data[s.key]
+    reportarAsicForzado.value = proyRes.data.reportar_asic_forzado
     if (isEditMode.value) populateEditForm()
   } catch (e) {
     errorMsg.value = e.response?.data?.detail || e.message || 'Error de conexión con el servidor'
