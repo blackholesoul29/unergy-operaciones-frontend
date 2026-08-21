@@ -13,16 +13,16 @@
   <div class="space-y-3">
     <PageHeader title="Gestión Documental" :subtitle="subtitulo">
       <template #actions>
-        <IconField v-if="vista && vista !== 'pendiente'" class="ph-buscar">
+        <IconField v-if="vista" class="ph-buscar">
           <InputIcon class="pi pi-search" />
           <InputText v-model="q" :placeholder="placeholderBusqueda" size="small" class="w-full" />
         </IconField>
-        <Button v-if="vista && vista !== 'pendiente'"
+        <Button v-if="vista"
                 :icon="compacta ? 'pi pi-arrows-v' : 'pi pi-align-justify'"
                 severity="secondary" outlined size="small"
                 v-tooltip.bottom="compacta ? 'Densidad cómoda' : 'Densidad compacta'"
                 @click="compacta = !compacta" />
-        <Button v-if="vista && vista !== 'pendiente'"
+        <Button v-if="vista"
                 label="Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small"
                 :disabled="!filasVisibles.length" @click="descargarExcel" />
         <Button v-if="vista === 'clientes'" label="Nuevo cliente" icon="pi pi-plus" size="small"
@@ -100,7 +100,7 @@
                  sortField="razon_social_nombre" :sortOrder="1" rowHover
                  @row-click="e => ir(`/clientes/${e.data.id}`)"
                  emptyMessage="No hay clientes.">
-        <Column field="razon_social_nombre" header="Razón social" sortable style="width:25%">
+        <Column field="razon_social_nombre" header="Razón social" sortable style="width:26%">
           <template #body="{ data }">
             <div class="flex items-center gap-1 min-w-0">
               <span class="celda-txt font-semibold" style="color:#2C2039">
@@ -114,15 +114,15 @@
             </div>
           </template>
         </Column>
-        <Column field="nit_cedula" header="NIT" sortable style="width:10%">
+        <Column field="nit_cedula" header="NIT" sortable style="width:9%">
           <template #body="{ data }"><span class="mono">{{ fmt(data.nit_cedula) }}</span></template>
         </Column>
-        <Column field="num_plantas" header="Plantas" sortable style="width:7%" bodyStyle="text-align:right">
+        <Column field="num_plantas" header="Plantas" sortable style="width:6%" bodyStyle="text-align:right">
           <template #body="{ data }">
             <span class="font-semibold tabular-nums" style="color:#2C2039">{{ data.num_plantas }}</span>
           </template>
         </Column>
-        <Column header="Servicios" style="width:19%">
+        <Column header="Servicios" style="width:15%">
           <template #body="{ data }">
             <div class="chips-fila">
               <span v-for="sv in data.servicios" :key="sv" class="mini-chip"
@@ -131,14 +131,28 @@
             </div>
           </template>
         </Column>
-        <Column field="contacto_comercial_nombre" header="Contacto" sortable style="width:17%">
+        <Column field="contacto_comercial_nombre" header="Contacto" sortable style="width:14%">
           <template #body="{ data }">
             <span class="celda-txt">{{ fmt(data.contacto_comercial_nombre) }}</span>
           </template>
         </Column>
-        <Column field="contacto_comercial_correo" header="Correo" sortable style="width:16%">
+        <Column field="contacto_comercial_correo" header="Correo" sortable style="width:15%">
           <template #body="{ data }">
             <span class="celda-txt sutil">{{ fmt(data.contacto_comercial_correo) }}</span>
+          </template>
+        </Column>
+        <Column header="Falta" style="width:9%">
+          <template #body="{ data }">
+            <div class="falta-celda">
+              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'campos')">
+                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+              </span>
+              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'docs')">
+                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+              </span>
+            </div>
           </template>
         </Column>
         <Column style="width:6%">
@@ -162,7 +176,7 @@
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
                  sortField="nombre_comercial" :sortOrder="1" rowHover
                  emptyMessage="No se encontraron proyectos.">
-        <Column field="nombre_comercial" header="Nombre comercial" sortable style="width:24%">
+        <Column field="nombre_comercial" header="Nombre comercial" sortable style="width:21%">
           <template #body="{ data }">
             <span class="block text-[9px] leading-none mono"
                   :style="{ color: data.codigo_tsf ? '#9ca3af' : '#d1d5db' }">
@@ -174,7 +188,7 @@
             </button>
           </template>
         </Column>
-        <Column field="estado" header="Estado" sortable style="width:11%">
+        <Column field="estado" header="Estado" sortable style="width:10%">
           <template #body="{ data }">
             <span class="mini-chip inline-flex items-center gap-1"
                   :class="ESTADO_CLASS[data.estado] || 'estado-default'">
@@ -183,14 +197,14 @@
             </span>
           </template>
         </Column>
-        <Column field="tipo_proyecto" header="Tipo" sortable style="width:10%">
+        <Column field="tipo_proyecto" header="Tipo" sortable style="width:9%">
           <template #body="{ data }">
             <span class="mini-chip" :class="TIPO_BADGE_CLASS[data.tipo_proyecto] || 'badge-otro'">
               {{ TIPO_LABELS[data.tipo_proyecto] || data.tipo_proyecto || '—' }}
             </span>
           </template>
         </Column>
-        <Column field="municipio" header="Ubicación" sortable style="width:15%">
+        <Column field="municipio" header="Ubicación" sortable style="width:12%">
           <template #body="{ data }">
             <span v-if="data.municipio || data.departamento" class="celda-txt sutil"
                   v-tooltip.bottom="[data.municipio, data.departamento].filter(Boolean).join(', ')">
@@ -200,14 +214,14 @@
           </template>
         </Column>
         <Column field="info_tecnica.capacidad_instalada_kwp" header="kWp" sortable
-                style="width:8%" bodyStyle="text-align:right">
+                style="width:7%" bodyStyle="text-align:right">
           <template #body="{ data }">
             <span class="mono" v-tooltip.bottom="`AC: ${num(data.info_tecnica?.potencia_ac_kw)} kW`">
               {{ num(data.info_tecnica?.capacidad_instalada_kwp) }}
             </span>
           </template>
         </Column>
-        <Column header="Servicios" style="width:13%">
+        <Column header="Servicios" style="width:12%">
           <template #body="{ data }">
             <div class="chips-fila">
               <template v-for="srv in SERVICIOS_BADGES" :key="srv.key">
@@ -218,7 +232,7 @@
             </div>
           </template>
         </Column>
-        <Column header="PPA" style="width:13%">
+        <Column header="PPA" style="width:14%">
           <template #body="{ data }">
             <div v-if="ppaVigentes(data).length" class="chips-fila">
               <button v-for="c in ppaVigentes(data)" :key="c.id" type="button" class="ppa-chip"
@@ -227,6 +241,20 @@
               </button>
             </div>
             <span v-else class="vacio">—</span>
+          </template>
+        </Column>
+        <Column header="Falta" style="width:9%">
+          <template #body="{ data }">
+            <div class="falta-celda">
+              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'campos')">
+                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+              </span>
+              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'docs')">
+                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+              </span>
+            </div>
           </template>
         </Column>
         <Column style="width:6%">
@@ -242,17 +270,6 @@
       </DataTable>
     </div>
 
-    <!-- ══════════════════ INFORMACIÓN PENDIENTE ══════════════════ -->
-    <!-- Pendiente de definir contenido. Deliberadamente vacía en vez de
-         inventar columnas: Juan dirá qué documentos y qué vista necesita. -->
-    <div v-else-if="vista === 'pendiente'" class="tabla-caja p-10 text-center">
-      <i class="pi pi-clock text-3xl" style="color:#E7C99A" />
-      <p class="mt-3 text-sm font-semibold" style="color:#2C2039">Información pendiente</p>
-      <p class="mt-1 text-xs" style="color:#9b8fb0">
-        Pestaña creada y lista. Falta definir qué va acá.
-      </p>
-    </div>
-
     <!-- ══════════════════ SERVICIOS · PPA ══════════════════ -->
     <div v-else-if="servicio === 'ppa'" class="tabla-caja">
       <DataTable :value="ppaFiltrados" :loading="loadingPpa" size="small"
@@ -261,7 +278,7 @@
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
                  sortField="fecha_inicio" :sortOrder="1" rowHover
                  emptyMessage="No hay contratos PPA registrados.">
-        <Column field="nombre_interno" header="Nombre interno" sortable style="width:22%">
+        <Column field="nombre_interno" header="Nombre interno" sortable style="width:20%">
           <template #body="{ data }">
             <button type="button" class="nombre-link" @click="ir(`/contratos/${data.id}`)"
                     v-tooltip.bottom="data.numero_codigo_contrato
@@ -270,7 +287,7 @@
             </button>
           </template>
         </Column>
-        <Column field="tipo_contrato" header="Tipo" sortable style="width:8%">
+        <Column field="tipo_contrato" header="Tipo" sortable style="width:7%">
           <template #body="{ data }">
             <span class="mini-chip"
                   :style="data.tipo_contrato === 'compra'
@@ -280,20 +297,20 @@
             </span>
           </template>
         </Column>
-        <Column field="comprador_nombre" header="Comprador" sortable style="width:18%">
+        <Column field="comprador_nombre" header="Comprador" sortable style="width:16%">
           <template #body="{ data }">
             <span class="celda-txt">{{ data.comprador_nombre || '—' }}</span>
           </template>
         </Column>
-        <Column field="vendedor_nombre" header="Vendedor" sortable style="width:18%">
+        <Column field="vendedor_nombre" header="Vendedor" sortable style="width:16%">
           <template #body="{ data }">
             <span class="celda-txt">{{ data.vendedor_nombre || '—' }}</span>
           </template>
         </Column>
-        <Column field="fecha_inicio" header="Inicio" sortable style="width:9%">
+        <Column field="fecha_inicio" header="Inicio" sortable style="width:8%">
           <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template>
         </Column>
-        <Column field="fecha_fin" header="Fin" sortable style="width:9%">
+        <Column field="fecha_fin" header="Fin" sortable style="width:8%">
           <template #body="{ data }">
             <span class="mono"
                   :style="data.dias_restantes != null && data.dias_restantes <= 90
@@ -318,6 +335,20 @@
             <span v-else class="vacio">—</span>
           </template>
         </Column>
+        <Column header="Falta" style="width:9%">
+          <template #body="{ data }">
+            <div class="falta-celda">
+              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'campos')">
+                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+              </span>
+              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'docs')">
+                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+              </span>
+            </div>
+          </template>
+        </Column>
         <Column style="width:6%">
           <template #body="{ data }">
             <div class="acciones">
@@ -339,24 +370,24 @@
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
                  sortField="nombre_comercial" :sortOrder="1" rowHover
                  emptyMessage="No hay plantas con servicio de representación.">
-        <Column field="nombre_comercial" header="Planta" sortable style="width:23%">
+        <Column field="nombre_comercial" header="Planta" sortable style="width:21%">
           <template #body="{ data }">
             <button type="button" class="nombre-link" @click="ir(`/proyectos/${data.id}`)"
                     v-tooltip.bottom="'Ver planta'">{{ formatearNombre(data.nombre_comercial) }}</button>
           </template>
         </Column>
         <Column field="potencia_instalada_kwp" header="kWp" sortable
-                style="width:8%" bodyStyle="text-align:right">
+                style="width:7%" bodyStyle="text-align:right">
           <template #body="{ data }"><span class="mono">{{ num(data.potencia_instalada_kwp) }}</span></template>
         </Column>
-        <Column field="estado" header="Estado" sortable style="width:11%">
+        <Column field="estado" header="Estado" sortable style="width:10%">
           <template #body="{ data }">
             <span class="mini-chip" :class="ESTADO_CLASS[data.estado] || 'estado-default'">
               {{ ESTADO_LABELS[data.estado] || data.estado || '—' }}
             </span>
           </template>
         </Column>
-        <Column field="municipio" header="Ubicación" sortable style="width:15%">
+        <Column field="municipio" header="Ubicación" sortable style="width:13%">
           <template #body="{ data }">
             <span class="celda-txt sutil"
                   v-tooltip.bottom="[data.municipio, data.departamento].filter(Boolean).join(', ')">
@@ -364,7 +395,7 @@
             </span>
           </template>
         </Column>
-        <Column field="servicio_representacion.nombre_rf" header="Representante" sortable style="width:18%">
+        <Column field="servicio_representacion.nombre_rf" header="Representante" sortable style="width:16%">
           <template #body="{ data }">
             <span class="celda-txt"
                   v-tooltip.bottom="data.servicio_representacion?.nombre_comercializador
@@ -373,7 +404,7 @@
             </span>
           </template>
         </Column>
-        <Column field="servicio_representacion.modalidad_venta" header="Modalidad" sortable style="width:11%">
+        <Column field="servicio_representacion.modalidad_venta" header="Modalidad" sortable style="width:10%">
           <template #body="{ data }">
             <span v-if="data.servicio_representacion?.modalidad_venta" class="mini-chip"
                   style="background:#E6F1FB;color:#0C447C">
@@ -385,6 +416,20 @@
         <Column header="Cód. XM" style="width:8%">
           <template #body="{ data }">
             <span class="celda-txt mono">{{ data.servicio_representacion?.codigo_despacho_xm || '—' }}</span>
+          </template>
+        </Column>
+        <Column header="Falta" style="width:9%">
+          <template #body="{ data }">
+            <div class="falta-celda">
+              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'campos')">
+                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+              </span>
+              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'docs')">
+                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+              </span>
+            </div>
           </template>
         </Column>
         <Column style="width:6%">
@@ -408,26 +453,40 @@
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
                  sortField="fecha_inicio" :sortOrder="1" rowHover
                  :emptyMessage="`No hay contratos de ${servicioInfo?.label} registrados.`">
-        <Column field="numero_contrato" header="N° contrato" sortable style="width:17%">
+        <Column field="numero_contrato" header="N° contrato" sortable style="width:15%">
           <template #body="{ data }"><span class="celda-txt mono">{{ data.numero_contrato || '—' }}</span></template>
         </Column>
-        <Column field="contratante_nombre" header="Contratante" sortable style="width:24%">
+        <Column field="contratante_nombre" header="Contratante" sortable style="width:21%">
           <template #body="{ data }"><span class="celda-txt">{{ data.contratante_nombre || '—' }}</span></template>
         </Column>
-        <Column field="prestador_nombre" header="Prestador" sortable style="width:24%">
+        <Column field="prestador_nombre" header="Prestador" sortable style="width:21%">
           <template #body="{ data }"><span class="celda-txt">{{ data.prestador_nombre || '—' }}</span></template>
         </Column>
-        <Column field="fecha_inicio" header="Inicio" sortable style="width:9%">
+        <Column field="fecha_inicio" header="Inicio" sortable style="width:8%">
           <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template>
         </Column>
-        <Column field="fecha_fin" header="Fin" sortable style="width:9%">
+        <Column field="fecha_fin" header="Fin" sortable style="width:8%">
           <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_fin) }}</span></template>
         </Column>
-        <Column field="estado" header="Estado" sortable style="width:11%">
+        <Column field="estado" header="Estado" sortable style="width:12%">
           <template #body="{ data }">
             <span class="mini-chip" :class="ESTADO_CONTRATO_CLASS[data.estado] || 'chip-neutral'">
               {{ ESTADO_CONTRATO_LABELS[data.estado] || data.estado || '—' }}
             </span>
+          </template>
+        </Column>
+        <Column header="Falta" style="width:9%">
+          <template #body="{ data }">
+            <div class="falta-celda">
+              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'campos')">
+                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+              </span>
+              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                    v-tooltip.bottom="tipFalta(data, 'docs')">
+                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+              </span>
+            </div>
           </template>
         </Column>
         <Column style="width:6%">
@@ -508,8 +567,6 @@ const VISTAS = [
     descripcion: 'Las plantas: estado, ubicación, potencia y PPA asociado' },
   { key: 'servicios', label: 'Servicios', icon: 'pi pi-file-edit', color: '#0C447C', bg: '#eff6ff',
     descripcion: 'Los contratos: PPA, representación, operación y REC' },
-  { key: 'pendiente', label: 'Información pendiente', icon: 'pi pi-clock', color: '#B45309', bg: '#fffbeb',
-    descripcion: 'Pendiente de definir' },
 ]
 
 const SERVICIOS = [
@@ -588,6 +645,115 @@ const filasPorPagina = computed(() => (compacta.value ? 100 : 50))
 // Ningún ángulo lleva fila de filtros, así que todos disponen del mismo alto.
 const scrollHeight = 'calc(100vh - 250px)'
 
+
+// ── Completitud del registro ───────────────────────────────────
+// Se cuentan TODOS los campos del registro, no una lista curada. Lo unico que
+// se saca son los que no son "campos por llenar":
+//   - tecnicos (id, created_at, updated_at)
+//   - derivados por el backend (num_plantas, dias_restantes, cobertura...)
+//   - relaciones a otras entidades (proyectos, inversionistas, contactos...)
+// Un booleano en false y un numero en 0 SI cuentan como llenos: son un dato.
+// Los objetos anidados (info_tecnica, servicio_representacion) se aplanan un
+// nivel, asi que sus campos tambien entran en la cuenta.
+const TECNICOS = ['id', 'created_at', 'updated_at', 'deleted_at']
+
+const DERIVADOS = {
+  // proximo_vencimiento y alerta_contrato los calcula la proyeccion a partir
+  // de los contratos: no son datos que alguien llene en la ficha.
+  clientes: ['num_plantas', 'servicios', 'alerta_contrato', 'contactos_comerciales_extra',
+             'proximo_vencimiento'],
+  proyectos: ['ppa_contratos', 'inversionistas', 'servicios', 'info_tecnica'],
+  ppa: ['proyectos', 'dias_restantes', 'estado_cumplimiento', 'cobertura_actual_pct',
+        'fecha_fin_efectiva', 'comprador', 'vendedor'],
+  representacion: ['ppa_contratos', 'inversionistas', 'servicios', 'info_tecnica',
+                   'servicio_representacion'],
+  contrato: ['contratante', 'prestador', 'facturas_solenium', 'facturas_inversionistas',
+             'indexacion_anual', 'indexacion_mensual', 'nombre_proyecto_ref'],
+}
+
+// Objetos que se aplanan un nivel para que sus campos cuenten uno por uno.
+const ANIDADOS = ['info_tecnica', 'servicio_representacion']
+
+// Campos de enlace a documento por entidad. El backend no tiene una lista de
+// documentos esperados por entidad, asi que hoy esto solo puede valer 0 o 1
+// (2 en cliente). Para un checklist real ("faltan 3 de 7") hace falta backend.
+const DOCS = {
+  clientes: [['rut_url', 'RUT'], ['documentos_comerciales', 'Documentos comerciales']],
+  proyectos: [['carpeta_drive_codigo', 'Carpeta Drive']],
+  ppa: [['carpeta_link', 'Carpeta del contrato']],
+  representacion: [['carpeta_drive_codigo', 'Carpeta Drive']],
+  contrato: [['enlace_drive', 'Enlace Drive']],
+}
+
+// La misma clave que usa el Excel: cada angulo cuenta contra su propia entidad.
+const claveRequeridos = computed(() => (
+  vista.value === 'clientes' ? 'clientes'
+  : vista.value === 'proyectos' ? 'proyectos'
+  : servicio.value === 'ppa' ? 'ppa'
+  : servicio.value === 'representacion' ? 'representacion'
+  : 'contrato'
+))
+
+function estaVacio(v) {
+  if (v == null || v === '') return true
+  if (Array.isArray(v)) return v.length === 0
+  return false
+}
+
+// "nombre_interno" -> "Nombre interno"
+function etiquetar(clave) {
+  const t = clave.replace(/_/g, ' ')
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}
+
+// Pares [clave, valor] del registro que cuentan como campo por llenar.
+function camposDe(fila) {
+  const fuera = new Set([...TECNICOS, ...(DERIVADOS[claveRequeridos.value] || []),
+                         ...(DOCS[claveRequeridos.value] || []).map(([k]) => k)])
+  const pares = []
+  for (const [k, v] of Object.entries(fila || {})) {
+    if (fuera.has(k)) continue
+    if (ANIDADOS.includes(k)) continue          // se aplanan aparte, abajo
+    if (v && typeof v === 'object' && !Array.isArray(v)) continue   // otro objeto: no es un campo
+    pares.push([etiquetar(k), v])
+  }
+  for (const anidado of ANIDADOS) {
+    const obj = fila?.[anidado]
+    if (!obj || typeof obj !== 'object') continue
+    for (const [k, v] of Object.entries(obj)) {
+      if (TECNICOS.includes(k) || k.endsWith('_id')) continue
+      if (v && typeof v === 'object') continue
+      pares.push([etiquetar(k), v])
+    }
+  }
+  return pares
+}
+
+function faltanCampos(fila) {
+  return camposDe(fila).filter(([, v]) => estaVacio(v)).map(([et]) => et)
+}
+
+function totalCampos(fila) {
+  return camposDe(fila).length
+}
+
+function faltanDocs(fila) {
+  const lista = DOCS[claveRequeridos.value] || []
+  return lista.filter(([k]) => estaVacio(fila?.[k])).map(([, et]) => et)
+}
+
+function tipFalta(fila, tipo) {
+  const esCampos = tipo === 'campos'
+  const nombre = esCampos ? 'campos' : 'documentos'
+  const lista = esCampos ? faltanCampos(fila) : faltanDocs(fila)
+  const total = esCampos ? totalCampos(fila) : (DOCS[claveRequeridos.value] || []).length
+  if (!lista.length) return `Sin ${nombre} pendientes (${total}/${total})`
+  // Con "todos los campos" la lista puede ser larga: se muestran los primeros.
+  const muestra = lista.slice(0, 12).join(', ')
+  const resto = lista.length > 12 ? ` y ${lista.length - 12} más` : ''
+  return `Falta${lista.length === 1 ? '' : 'n'} ${lista.length} de ${total} ${nombre}: ${muestra}${resto}`
+}
+
 // ── Formateo ─────────────────────────────────────────────────────────────────
 function fmtFecha(v) { return v ? String(v).slice(0, 10) : '—' }
 function num(v) { return v == null || v === '' ? '—' : Number(v).toLocaleString('es-CO') }
@@ -617,8 +783,19 @@ function rowClassCliente(data) {
 async function cargarClientes() {
   loadingClientes.value = true
   try {
-    const { data } = await api.get('/clientes/vista-comercial')
-    clientes.value = data
+    // Dos fuentes, fusionadas por id:
+    //  - /clientes/vista-comercial trae lo derivado (num_plantas, servicios,
+    //    contacto comercial, alerta de contrato) pero NO las columnas crudas.
+    //  - /clientes trae la ficha (direccion, ciudad, banco, rut_url...), que es
+    //    lo que necesita el contador de campos faltantes.
+    // Sin la segunda, el indicador solo podria mirar 8 campos y mentiria.
+    const [vista, ficha] = await Promise.all([
+      api.get('/clientes/vista-comercial'),
+      // size tope 500 en el backend: pedir mas devuelve 422, no una lista corta.
+      api.get('/clientes', { params: { page: 1, size: 500 } }),
+    ])
+    const porId = new Map((ficha.data.items ?? ficha.data ?? []).map(c => [c.id, c]))
+    clientes.value = vista.data.map(c => ({ ...(porId.get(c.id) || {}), ...c }))
     clientesCargados.value = true
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al cargar clientes', detail: e.message, life: 4000 })
@@ -762,7 +939,6 @@ const servicioInfo = computed(() => SERVICIOS.find(s => s.key === servicio.value
 
 function asegurarDatos() {
   if (!vista.value) return                   // nadie eligio vista todavia
-  if (vista.value === 'pendiente') return   // sin contenido definido todavía
   if (vista.value === 'clientes') { if (!clientesCargados.value) cargarClientes(); return }
   if (vista.value === 'proyectos') { if (!proyectosCargados.value) cargarProyectos(); return }
   if (servicio.value === 'ppa') { if (!ppaCargados.value) cargarPpa(); return }
@@ -786,7 +962,6 @@ function seleccionarServicio(key) {
 onMounted(asegurarDatos)
 
 function conteoVista(key) {
-  if (key === 'pendiente') return null
   if (key === 'clientes')  return clientesCargados.value  ? clientesFiltrados.value.length  : null
   if (key === 'proyectos') return proyectosCargados.value ? proyectosFiltrados.value.length : null
   return ppaCargados.value ? ppaFiltrados.value.length : null
@@ -794,7 +969,7 @@ function conteoVista(key) {
 
 // ── Subtítulo / búsqueda / Excel según el ángulo activo ─────────────────────
 const filasVisibles = computed(() => {
-  if (!vista.value || vista.value === 'pendiente') return []
+  if (!vista.value) return []
   if (vista.value === 'clientes')  return clientesFiltrados.value
   if (vista.value === 'proyectos') return proyectosFiltrados.value
   if (servicio.value === 'ppa')    return ppaFiltrados.value
@@ -803,7 +978,7 @@ const filasVisibles = computed(() => {
 })
 
 const totalCrudo = computed(() => {
-  if (!vista.value || vista.value === 'pendiente') return 0
+  if (!vista.value) return 0
   if (vista.value === 'clientes')  return clientes.value.length
   if (vista.value === 'proyectos') return proyectos.value.length
   if (servicio.value === 'ppa')    return ppa.value.length
@@ -813,7 +988,6 @@ const totalCrudo = computed(() => {
 
 const subtitulo = computed(() => {
   if (!vista.value) return 'Elegí una vista para empezar'
-  if (vista.value === 'pendiente') return 'Información pendiente · falta definir el contenido'
   const etiqueta = vista.value === 'clientes' ? 'clientes'
     : vista.value === 'proyectos' ? 'plantas'
     : servicio.value === 'representacion' ? 'plantas representadas'
@@ -1194,6 +1368,17 @@ function confirmarBorrarPpa(contrato) {
 
 /* Chips en una sola línea: si sobran, se recortan en vez de agrandar la fila */
 .chips-fila { display: flex; gap: 2px; overflow: hidden; min-width: 0; }
+
+/* Celda "Falta": dos contadores, campos y documentos */
+.falta-celda { display: flex; gap: 3px; }
+.falta-chip {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 700; line-height: 1.5;
+  padding: 0 5px; border-radius: 999px; cursor: default; white-space: nowrap;
+}
+.falta-chip i { font-size: 8px; }
+.falta--ok  { background: #D1FAE5; color: #065F46; }
+.falta--mal { background: #FEF3C7; color: #92400E; }
 
 /* Celda de acciones: mismos dos iconos, misma posicion, en las 5 tablas */
 .acciones { display: flex; justify-content: flex-end; gap: 0; }
