@@ -141,6 +141,95 @@
           Elige una fecha y pulsa "Ver" para revisar ese día.
         </p>
       </TabPanel>
+
+      <TabPanel header="Resumen">
+        <div class="flex flex-wrap items-end gap-3 mb-4">
+          <div>
+            <label class="block text-xs font-semibold mb-1" style="color:#6b5a8a;">Desde</label>
+            <Calendar v-model="resumenDesde" dateFormat="yy-mm-dd" class="w-40" :maxDate="resumenHasta" showIcon />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold mb-1" style="color:#6b5a8a;">Hasta</label>
+            <Calendar v-model="resumenHasta" dateFormat="yy-mm-dd" class="w-40" :minDate="resumenDesde" :maxDate="maxFecha" showIcon />
+          </div>
+          <Button label="Buscar" :loading="loadingResumenHistorico" @click="cargarResumenHistorico" />
+        </div>
+
+        <div v-if="loadingResumenHistorico" class="flex items-center justify-center py-12">
+          <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+        </div>
+
+        <template v-else-if="resumenHistorico">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            <div class="bg-white rounded-xl shadow-sm border p-4" style="border-color:#e8e0f0;">
+              <p class="text-sm font-bold mb-3" style="color:#2C2039;">Fuente usada — Generación</p>
+              <div v-if="chartGeneracion.labels.length" style="height:220px">
+                <Bar :data="chartGeneracion" :options="chartOptionsResumen" />
+              </div>
+              <p v-else class="text-xs text-center py-8" style="color:#9b89b5;">Sin datos en este rango.</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm border p-4" style="border-color:#e8e0f0;">
+              <p class="text-sm font-bold mb-3" style="color:#2C2039;">Fuente usada — Consumo</p>
+              <div v-if="chartConsumo.labels.length" style="height:220px">
+                <Bar :data="chartConsumo" :options="chartOptionsResumen" />
+              </div>
+              <p v-else class="text-xs text-center py-8" style="color:#9b89b5;">Sin datos en este rango.</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
+            <p class="text-sm font-bold mb-1" style="color:#2C2039;">Datos incompletos de medidores e inversores</p>
+            <p class="text-xs mb-3" style="color:#9b89b5;">Solo Generación — cuántas veces cada fuente llegó incompleta en el rango.</p>
+            <DataTable :value="resumenHistorico.incompletos" class="text-sm resumen-tabla" stripedRows rowHover
+                       paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
+              <Column field="nombre_proyecto" header="Proyecto" sortable />
+              <Column field="veces_medidor_principal_incompleto" header="Medidor principal" sortable style="width:150px" />
+              <Column field="veces_medidor_respaldo_incompleto" header="Medidor respaldo" sortable style="width:150px" />
+              <Column field="veces_solenium_incompleto" header="Solenium" sortable style="width:110px" />
+              <Column field="dias_con_fila" header="Días con reporte" sortable style="width:130px" />
+            </DataTable>
+            <p v-if="!resumenHistorico.incompletos.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin datos incompletos en este rango.</p>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
+            <p class="text-sm font-bold mb-1" style="color:#2C2039;">Intervención manual recurrente</p>
+            <p class="text-xs mb-3" style="color:#9b89b5;">Fronteras que caen en "Revisar manualmente" o requieren edición manual una y otra vez.</p>
+            <DataTable :value="resumenHistorico.intervencion_manual" class="text-sm resumen-tabla" stripedRows rowHover
+                       paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
+              <Column field="nombre_proyecto" header="Proyecto" sortable />
+              <Column header="Tipo" field="tipo" sortable style="width:110px">
+                <template #body="{ data }">{{ data.tipo === 'generacion' ? 'Generación' : 'Consumo' }}</template>
+              </Column>
+              <Column field="veces_revisar_manualmente" header="Revisar manualmente" sortable style="width:160px" />
+              <Column field="veces_editado_manualmente" header="Editado manualmente" sortable style="width:160px" />
+              <Column field="dias_con_fila" header="Días con reporte" sortable style="width:130px" />
+            </DataTable>
+            <p v-if="!resumenHistorico.intervencion_manual.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin intervención manual en este rango.</p>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm border p-4" style="border-color:#e8e0f0;">
+            <p class="text-sm font-bold mb-1" style="color:#2C2039;">Recuperación activa de medidores</p>
+            <p class="text-xs mb-3" style="color:#9b89b5;">Intentos y éxitos al forzar la lectura de un medidor — por frontera y medidor.</p>
+            <DataTable :value="resumenHistorico.recuperacion_activa" class="text-sm resumen-tabla" stripedRows rowHover
+                       paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
+              <Column field="nombre_proyecto" header="Proyecto" sortable />
+              <Column field="intentos_principal" header="Intentos principal" sortable style="width:150px" />
+              <Column header="Éxitos principal" style="width:140px">
+                <template #body="{ data }">{{ data.exitos_principal }}/{{ data.intentos_principal }}</template>
+              </Column>
+              <Column field="intentos_respaldo" header="Intentos respaldo" sortable style="width:150px" />
+              <Column header="Éxitos respaldo" style="width:140px">
+                <template #body="{ data }">{{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}</template>
+              </Column>
+            </DataTable>
+            <p v-if="!resumenHistorico.recuperacion_activa.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin intentos de recuperación en este rango.</p>
+          </div>
+        </template>
+
+        <p v-else class="text-sm text-center py-8" style="color: #9b89b5;">
+          Elige un rango de fechas y pulsa "Buscar".
+        </p>
+      </TabPanel>
     </TabView>
   </div>
 </template>
@@ -154,8 +243,16 @@ import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import { Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend,
+} from 'chart.js'
 import ReporteEnergiaLista from './ReporteEnergiaLista.vue'
 import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
 const toast = useToast()
 const route = useRoute()
@@ -222,6 +319,76 @@ const deteniendo = ref(false)
 const estadoQuoia = ref(null)
 const estadoQuoiaPolling = ref(false)
 let estadoQuoiaTimer = null
+
+// ── Resumen histórico (patrones por rango de fechas, no un solo día) ──────
+const resumenHasta = ref(ayerColombia())
+const resumenDesde = ref((() => {
+  const h = ayerColombia()
+  return new Date(h.getFullYear(), h.getMonth(), h.getDate() - 29)
+})())
+const resumenHistorico = ref(null)
+const loadingResumenHistorico = ref(false)
+
+const resumenDesdeISO = computed(() => resumenDesde.value.toISOString().slice(0, 10))
+const resumenHastaISO = computed(() => resumenHasta.value.toISOString().slice(0, 10))
+
+async function cargarResumenHistorico() {
+  loadingResumenHistorico.value = true
+  try {
+    const { data } = await api.get('/reporte-energia/resumen-historico', {
+      params: { desde: resumenDesdeISO.value, hasta: resumenHastaISO.value },
+    })
+    resumenHistorico.value = data
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo cargar el resumen histórico.', life: 4000 })
+    resumenHistorico.value = null
+  } finally {
+    loadingResumenHistorico.value = false
+  }
+}
+
+const PALETA_RESUMEN = ['#915BD8', '#6E3FB8', '#F0C040', '#10B981', '#D64455', '#52596b', '#9b89b5']
+
+function chartDeDistribucion(items) {
+  return {
+    labels: items.map(i => i.etiqueta || '—'),
+    datasets: [{
+      label: 'Veces usada', data: items.map(i => i.total),
+      backgroundColor: items.map((_, idx) => PALETA_RESUMEN[idx % PALETA_RESUMEN.length]),
+      borderRadius: 3, maxBarThickness: 40,
+    }],
+  }
+}
+const chartGeneracion = computed(() => chartDeDistribucion(resumenHistorico.value?.distribucion_fuente_generacion || []))
+const chartConsumo = computed(() => chartDeDistribucion(resumenHistorico.value?.distribucion_fuente_consumo || []))
+
+const chartOptionsResumen = {
+  responsive: true, maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { display: false } },
+    y: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true },
+  },
+}
+
+// Salta a "Historial" en la fecha 'hasta' del rango consultado y selecciona
+// esa frontera -- si esa fecha puntual no tiene fila para ella (pudo no
+// generar/reportar justo ese día), se avisa en vez de fallar en silencio.
+async function irAFronteraHistorial(frontera_id) {
+  activeTab.value = 1
+  fechaHistorial.value = new Date(resumenHasta.value)
+  await cargarHistorial()
+  const f = filasHistorial.value.find(x => x.frontera_id === frontera_id)
+  if (f) {
+    seleccionHistorial.value = f
+  } else {
+    toast.add({
+      severity: 'info', summary: 'Sin fila en esa fecha',
+      detail: 'Esta frontera no tiene reporte en la fecha "hasta" del rango -- prueba con otra fecha en Historial.',
+      life: 5000,
+    })
+  }
+}
 
 async function cargarResumen() {
   try {
@@ -549,4 +716,5 @@ async function enviarReporte() {
   padding: 1.25rem;
   min-height: 20rem;
 }
+:deep(.resumen-tabla tbody tr) { cursor: pointer; }
 </style>
