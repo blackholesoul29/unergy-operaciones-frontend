@@ -164,24 +164,10 @@
           <section class="mb-6">
             <p class="text-sm font-bold" style="color:#2C2039;">Fuente usada — Generación</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">
-              {{ totalDias(kpiGen) }} días-frontera reportados en el rango · clic en una tarjeta para ver el detalle por frontera
+              {{ totalDias(kpiGen) }} días-frontera reportados en el rango · clic en una barra para ver el detalle por frontera
             </p>
-            <div v-if="kpiGen.length" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-              <div v-for="k in kpiGen" :key="k.etiqueta"
-                   class="rounded-xl border p-3 cursor-pointer transition-shadow"
-                   :style="{ borderColor: grupoSeleccionadoGen === k.etiqueta ? grupoColor(k.etiqueta).texto : '#e8e0f0', boxShadow: grupoSeleccionadoGen === k.etiqueta ? `inset 0 0 0 1.5px ${grupoColor(k.etiqueta).texto}` : 'none' }"
-                   @click="toggleGrupo('gen', k.etiqueta)">
-                <p class="text-[11px] font-bold uppercase tracking-wide flex items-center gap-1.5" :style="{ color: '#6b5a8a' }">
-                  <span class="inline-block w-2 h-2 rounded-full" :style="{ background: grupoColor(k.etiqueta).texto }" />
-                  {{ k.etiqueta }}
-                </p>
-                <p class="text-2xl font-extrabold mt-1" style="color:#2C2039;">{{ k.pct }}%</p>
-                <p class="text-xs" style="color:#9b89b5;">{{ k.total }} días</p>
-                <p class="text-[11px] mt-1" :style="{ color: grupoColor(k.etiqueta).texto }">Ver detalle ›</p>
-              </div>
-            </div>
-            <div v-if="kpiGen.length" class="flex h-3 rounded-full overflow-hidden" style="background:#f0ebf6;">
-              <div v-for="k in kpiGen" :key="k.etiqueta" :style="{ width: k.pct + '%', background: grupoColor(k.etiqueta).texto }" />
+            <div v-if="kpiGen.length" class="bg-white rounded-xl border p-3" style="border-color:#e8e0f0; height:220px;">
+              <Bar :data="chartGen" :options="chartOptionsGen" :plugins="[dataLabelPlugin]" />
             </div>
             <p v-else class="text-xs text-center py-8" style="color:#9b89b5;">Sin datos en este rango.</p>
 
@@ -222,24 +208,10 @@
           <section class="mb-6">
             <p class="text-sm font-bold" style="color:#2C2039;">Fuente usada — Consumo</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">
-              {{ totalDias(kpiCon) }} días-frontera reportados en el rango · Consumo no usa inversores
+              {{ totalDias(kpiCon) }} días-frontera reportados en el rango · Consumo no usa inversores · clic en una barra para ver el detalle
             </p>
-            <div v-if="kpiCon.length" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-              <div v-for="k in kpiCon" :key="k.etiqueta"
-                   class="rounded-xl border p-3 cursor-pointer transition-shadow"
-                   :style="{ borderColor: grupoSeleccionadoCon === k.etiqueta ? grupoColor(k.etiqueta).texto : '#e8e0f0', boxShadow: grupoSeleccionadoCon === k.etiqueta ? `inset 0 0 0 1.5px ${grupoColor(k.etiqueta).texto}` : 'none' }"
-                   @click="toggleGrupo('con', k.etiqueta)">
-                <p class="text-[11px] font-bold uppercase tracking-wide flex items-center gap-1.5" style="color:#6b5a8a;">
-                  <span class="inline-block w-2 h-2 rounded-full" :style="{ background: grupoColor(k.etiqueta).texto }" />
-                  {{ k.etiqueta }}
-                </p>
-                <p class="text-2xl font-extrabold mt-1" style="color:#2C2039;">{{ k.pct }}%</p>
-                <p class="text-xs" style="color:#9b89b5;">{{ k.total }} días</p>
-                <p class="text-[11px] mt-1" :style="{ color: grupoColor(k.etiqueta).texto }">Ver detalle ›</p>
-              </div>
-            </div>
-            <div v-if="kpiCon.length" class="flex h-3 rounded-full overflow-hidden" style="background:#f0ebf6;">
-              <div v-for="k in kpiCon" :key="k.etiqueta" :style="{ width: k.pct + '%', background: grupoColor(k.etiqueta).texto }" />
+            <div v-if="kpiCon.length" class="bg-white rounded-xl border p-3" style="border-color:#e8e0f0; height:220px;">
+              <Bar :data="chartCon" :options="chartOptionsCon" :plugins="[dataLabelPlugin]" />
             </div>
             <p v-else class="text-xs text-center py-8" style="color:#9b89b5;">Sin datos en este rango.</p>
 
@@ -423,8 +395,14 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import { Bar } from 'vue-chartjs'
+import {
+  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend,
+} from 'chart.js'
 import ReporteEnergiaLista from './ReporteEnergiaLista.vue'
 import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
 const toast = useToast()
 const route = useRoute()
@@ -545,6 +523,56 @@ function conPct(items) {
 }
 const kpiGen = computed(() => conPct(resumenHistorico.value?.distribucion_fuente_generacion || []))
 const kpiCon = computed(() => conPct(resumenHistorico.value?.distribucion_fuente_consumo || []))
+
+// Barras separadas (no apiladas) -- comparar el tamaño de cada grupo es
+// más preciso con una escala común en 0 que con segmentos de un stacked
+// bar (decidido con el usuario 2026-08-21). El % exacto se dibuja encima
+// de cada barra con un plugin liviano en vez de agregar chartjs-plugin-
+// datalabels como dependencia nueva solo para esto.
+const dataLabelPlugin = {
+  id: 'pctLabel',
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart
+    chart.data.datasets.forEach((dataset, i) => {
+      chart.getDatasetMeta(i).data.forEach((bar, index) => {
+        ctx.save()
+        ctx.fillStyle = '#2C2039'
+        ctx.font = '700 12px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText(`${dataset.data[index]}%`, bar.x, bar.y - 8)
+        ctx.restore()
+      })
+    })
+  },
+}
+function chartDeGrupos(items) {
+  return {
+    labels: items.map(i => i.etiqueta),
+    datasets: [{ data: items.map(i => i.pct), backgroundColor: items.map(i => grupoColor(i.etiqueta).texto), borderRadius: 6, maxBarThickness: 70 }],
+  }
+}
+function chartOptionsPara(tipo, items) {
+  return {
+    responsive: true, maintainAspectRatio: false, layout: { padding: { top: 20 } },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: { label: (ctx) => `${items[ctx.dataIndex].total} días` } },
+    },
+    scales: {
+      x: { ticks: { font: { size: 11, weight: '600' }, color: '#6b5a8a' }, grid: { display: false } },
+      y: { display: false, beginAtZero: true, max: 100 },
+    },
+    onClick: (evt, elements) => {
+      if (!elements.length) return
+      toggleGrupo(tipo, items[elements[0].index].etiqueta)
+    },
+    onHover: (evt, elements) => { evt.native.target.style.cursor = elements.length ? 'pointer' : 'default' },
+  }
+}
+const chartGen = computed(() => chartDeGrupos(kpiGen.value))
+const chartCon = computed(() => chartDeGrupos(kpiCon.value))
+const chartOptionsGen = computed(() => chartOptionsPara('gen', kpiGen.value))
+const chartOptionsCon = computed(() => chartOptionsPara('con', kpiCon.value))
 
 // Semáforo de severidad -- para "% de días con un problema" más alto es
 // peor (incompletos, revisar manualmente); para "% de éxito" más alto es
