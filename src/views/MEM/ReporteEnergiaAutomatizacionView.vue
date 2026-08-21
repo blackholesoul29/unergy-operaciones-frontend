@@ -160,66 +160,244 @@
         </div>
 
         <template v-else-if="resumenHistorico">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-            <div class="bg-white rounded-xl shadow-sm border p-4" style="border-color:#e8e0f0;">
-              <p class="text-sm font-bold mb-3" style="color:#2C2039;">Fuente usada — Generación</p>
-              <div v-if="chartGeneracion.labels.length" style="height:220px">
-                <Bar :data="chartGeneracion" :options="chartOptionsResumen" />
+          <!-- Fuente usada — Generación -->
+          <section class="mb-6">
+            <p class="text-sm font-bold" style="color:#2C2039;">Fuente usada — Generación</p>
+            <p class="text-xs mb-3" style="color:#9b89b5;">
+              {{ totalDias(kpiGen) }} días-frontera reportados en el rango · clic en una tarjeta para ver el detalle por frontera
+            </p>
+            <div v-if="kpiGen.length" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+              <div v-for="k in kpiGen" :key="k.etiqueta"
+                   class="rounded-xl border p-3 cursor-pointer transition-shadow"
+                   :style="{ borderColor: grupoSeleccionadoGen === k.etiqueta ? grupoColor(k.etiqueta).texto : '#e8e0f0', boxShadow: grupoSeleccionadoGen === k.etiqueta ? `inset 0 0 0 1.5px ${grupoColor(k.etiqueta).texto}` : 'none' }"
+                   @click="toggleGrupo('gen', k.etiqueta)">
+                <p class="text-[11px] font-bold uppercase tracking-wide flex items-center gap-1.5" :style="{ color: '#6b5a8a' }">
+                  <span class="inline-block w-2 h-2 rounded-full" :style="{ background: grupoColor(k.etiqueta).texto }" />
+                  {{ k.etiqueta }}
+                </p>
+                <p class="text-2xl font-extrabold mt-1" style="color:#2C2039;">{{ k.pct }}%</p>
+                <p class="text-xs" style="color:#9b89b5;">{{ k.total }} días</p>
+                <p class="text-[11px] mt-1" :style="{ color: grupoColor(k.etiqueta).texto }">Ver detalle ›</p>
               </div>
-              <p v-else class="text-xs text-center py-8" style="color:#9b89b5;">Sin datos en este rango.</p>
             </div>
-            <div class="bg-white rounded-xl shadow-sm border p-4" style="border-color:#e8e0f0;">
-              <p class="text-sm font-bold mb-3" style="color:#2C2039;">Fuente usada — Consumo</p>
-              <div v-if="chartConsumo.labels.length" style="height:220px">
-                <Bar :data="chartConsumo" :options="chartOptionsResumen" />
-              </div>
-              <p v-else class="text-xs text-center py-8" style="color:#9b89b5;">Sin datos en este rango.</p>
+            <div v-if="kpiGen.length" class="flex h-3 rounded-full overflow-hidden" style="background:#f0ebf6;">
+              <div v-for="k in kpiGen" :key="k.etiqueta" :style="{ width: k.pct + '%', background: grupoColor(k.etiqueta).texto }" />
             </div>
-          </div>
+            <p v-else class="text-xs text-center py-8" style="color:#9b89b5;">Sin datos en este rango.</p>
 
+            <div v-if="grupoSeleccionadoGen" class="mt-4">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-sm font-bold flex items-center gap-1.5" style="color:#2C2039;">
+                  <span class="inline-block w-2 h-2 rounded-full" :style="{ background: grupoColor(grupoSeleccionadoGen).texto }" />
+                  Detalle — {{ grupoSeleccionadoGen }}
+                </p>
+                <span class="text-xs cursor-pointer" style="color:#9b89b5;" @click="grupoSeleccionadoGen = null">Cerrar ✕</span>
+              </div>
+              <DataTable :value="detalleFiltrado('gen')" class="text-sm resumen-tabla" stripedRows rowHover
+                         paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
+                <Column field="nombre_proyecto" header="Proyecto / frontera" sortable />
+                <Column field="dias_totales" header="Días totales" sortable style="width:110px" />
+                <Column field="dias_grupo" :header="`Días en ${grupoSeleccionadoGen.toLowerCase()}`" sortable style="width:150px" />
+                <Column header="% del tiempo" style="width:160px" sortable :sortField="'dias_grupo'">
+                  <template #body="{ data }">
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
+                        <div class="h-full rounded-full" :style="{ width: pctDe(data.dias_grupo, data.dias_totales) + '%', background: severidadColor(pctDe(data.dias_grupo, data.dias_totales)) }" />
+                      </div>
+                      <span class="text-xs font-bold w-10 text-right">{{ pctDe(data.dias_grupo, data.dias_totales) }}%</span>
+                    </div>
+                  </template>
+                </Column>
+                <Column header="Fuente(s) usadas">
+                  <template #body="{ data }">
+                    <span v-for="d in data.desglose" :key="d.etiqueta" class="inline-block text-[11px] font-semibold rounded-full px-2 py-0.5 mr-1 mb-1"
+                          style="background:#f0ebf6; color:#6b5a8a;">{{ d.etiqueta }} × {{ d.dias }}</span>
+                  </template>
+                </Column>
+              </DataTable>
+            </div>
+          </section>
+
+          <!-- Fuente usada — Consumo -->
+          <section class="mb-6">
+            <p class="text-sm font-bold" style="color:#2C2039;">Fuente usada — Consumo</p>
+            <p class="text-xs mb-3" style="color:#9b89b5;">
+              {{ totalDias(kpiCon) }} días-frontera reportados en el rango · Consumo no usa inversores
+            </p>
+            <div v-if="kpiCon.length" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+              <div v-for="k in kpiCon" :key="k.etiqueta"
+                   class="rounded-xl border p-3 cursor-pointer transition-shadow"
+                   :style="{ borderColor: grupoSeleccionadoCon === k.etiqueta ? grupoColor(k.etiqueta).texto : '#e8e0f0', boxShadow: grupoSeleccionadoCon === k.etiqueta ? `inset 0 0 0 1.5px ${grupoColor(k.etiqueta).texto}` : 'none' }"
+                   @click="toggleGrupo('con', k.etiqueta)">
+                <p class="text-[11px] font-bold uppercase tracking-wide flex items-center gap-1.5" style="color:#6b5a8a;">
+                  <span class="inline-block w-2 h-2 rounded-full" :style="{ background: grupoColor(k.etiqueta).texto }" />
+                  {{ k.etiqueta }}
+                </p>
+                <p class="text-2xl font-extrabold mt-1" style="color:#2C2039;">{{ k.pct }}%</p>
+                <p class="text-xs" style="color:#9b89b5;">{{ k.total }} días</p>
+                <p class="text-[11px] mt-1" :style="{ color: grupoColor(k.etiqueta).texto }">Ver detalle ›</p>
+              </div>
+            </div>
+            <div v-if="kpiCon.length" class="flex h-3 rounded-full overflow-hidden" style="background:#f0ebf6;">
+              <div v-for="k in kpiCon" :key="k.etiqueta" :style="{ width: k.pct + '%', background: grupoColor(k.etiqueta).texto }" />
+            </div>
+            <p v-else class="text-xs text-center py-8" style="color:#9b89b5;">Sin datos en este rango.</p>
+
+            <div v-if="grupoSeleccionadoCon" class="mt-4">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-sm font-bold flex items-center gap-1.5" style="color:#2C2039;">
+                  <span class="inline-block w-2 h-2 rounded-full" :style="{ background: grupoColor(grupoSeleccionadoCon).texto }" />
+                  Detalle — {{ grupoSeleccionadoCon }}
+                </p>
+                <span class="text-xs cursor-pointer" style="color:#9b89b5;" @click="grupoSeleccionadoCon = null">Cerrar ✕</span>
+              </div>
+              <DataTable :value="detalleFiltrado('con')" class="text-sm resumen-tabla" stripedRows rowHover
+                         paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
+                <Column field="nombre_proyecto" header="Proyecto / frontera" sortable />
+                <Column field="dias_totales" header="Días totales" sortable style="width:110px" />
+                <Column field="dias_grupo" :header="`Días en ${grupoSeleccionadoCon.toLowerCase()}`" sortable style="width:150px" />
+                <Column header="% del tiempo" style="width:160px" sortable :sortField="'dias_grupo'">
+                  <template #body="{ data }">
+                    <div class="flex items-center gap-2">
+                      <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
+                        <div class="h-full rounded-full" :style="{ width: pctDe(data.dias_grupo, data.dias_totales) + '%', background: severidadColor(pctDe(data.dias_grupo, data.dias_totales)) }" />
+                      </div>
+                      <span class="text-xs font-bold w-10 text-right">{{ pctDe(data.dias_grupo, data.dias_totales) }}%</span>
+                    </div>
+                  </template>
+                </Column>
+                <Column header="Fuente(s) usadas">
+                  <template #body="{ data }">
+                    <span v-for="d in data.desglose" :key="d.etiqueta" class="inline-block text-[11px] font-semibold rounded-full px-2 py-0.5 mr-1 mb-1"
+                          style="background:#f0ebf6; color:#6b5a8a;">{{ d.etiqueta }} × {{ d.dias }}</span>
+                  </template>
+                </Column>
+              </DataTable>
+            </div>
+          </section>
+
+          <!-- Datos incompletos -->
           <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
             <p class="text-sm font-bold mb-1" style="color:#2C2039;">Datos incompletos de medidores e inversores</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">Solo Generación — cuántas veces cada fuente llegó incompleta en el rango.</p>
+            <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
+              <template v-for="(c, idx) in resumenHistorico.incompletos_callouts" :key="idx">
+                <span><b class="text-base font-extrabold" style="color:#6E3FB8;">{{ c.valor }}</b>
+                  <span class="text-xs ml-1.5" style="color:#6b5a8a;">{{ c.etiqueta }}</span></span>
+                <span v-if="idx < resumenHistorico.incompletos_callouts.length - 1" class="w-px h-4" style="background:#e8e0f0;" />
+              </template>
+            </div>
             <DataTable :value="resumenHistorico.incompletos" class="text-sm resumen-tabla" stripedRows rowHover
                        paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
               <Column field="nombre_proyecto" header="Proyecto" sortable />
-              <Column field="veces_medidor_principal_incompleto" header="Medidor principal" sortable style="width:150px" />
-              <Column field="veces_medidor_respaldo_incompleto" header="Medidor respaldo" sortable style="width:150px" />
-              <Column field="veces_solenium_incompleto" header="Solenium" sortable style="width:110px" />
+              <Column header="Medidor principal" sortable :sortField="'veces_medidor_principal_incompleto'" style="width:150px">
+                <template #body="{ data }">
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
+                      <div class="h-full rounded-full" :style="{ width: pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) + '%', background: severidadColor(pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila)) }" />
+                    </div>
+                    <span class="text-xs font-bold w-10 text-right">{{ pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) }}%</span>
+                  </div>
+                </template>
+              </Column>
+              <Column header="Medidor respaldo" sortable :sortField="'veces_medidor_respaldo_incompleto'" style="width:150px">
+                <template #body="{ data }">
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
+                      <div class="h-full rounded-full" :style="{ width: pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) + '%', background: severidadColor(pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila)) }" />
+                    </div>
+                    <span class="text-xs font-bold w-10 text-right">{{ pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) }}%</span>
+                  </div>
+                </template>
+              </Column>
+              <Column header="Inversores" sortable :sortField="'veces_solenium_incompleto'" style="width:130px">
+                <template #body="{ data }">
+                  <div class="flex items-center gap-2">
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
+                      <div class="h-full rounded-full" :style="{ width: pctDe(data.veces_solenium_incompleto, data.dias_con_fila) + '%', background: severidadColor(pctDe(data.veces_solenium_incompleto, data.dias_con_fila)) }" />
+                    </div>
+                    <span class="text-xs font-bold w-10 text-right">{{ pctDe(data.veces_solenium_incompleto, data.dias_con_fila) }}%</span>
+                  </div>
+                </template>
+              </Column>
               <Column field="dias_con_fila" header="Días con reporte" sortable style="width:130px" />
             </DataTable>
             <p v-if="!resumenHistorico.incompletos.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin datos incompletos en este rango.</p>
           </div>
 
+          <!-- Intervención manual -->
           <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
             <p class="text-sm font-bold mb-1" style="color:#2C2039;">Intervención manual recurrente</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">Fronteras que caen en "Revisar manualmente" o requieren edición manual una y otra vez.</p>
+            <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
+              <template v-for="(c, idx) in resumenHistorico.intervencion_manual_callouts" :key="idx">
+                <span><b class="text-base font-extrabold" style="color:#6E3FB8;">{{ c.valor }}</b>
+                  <span class="text-xs ml-1.5" style="color:#6b5a8a;">{{ c.etiqueta }}</span></span>
+                <span v-if="idx < resumenHistorico.intervencion_manual_callouts.length - 1" class="w-px h-4" style="background:#e8e0f0;" />
+              </template>
+            </div>
             <DataTable :value="resumenHistorico.intervencion_manual" class="text-sm resumen-tabla" stripedRows rowHover
                        paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
               <Column field="nombre_proyecto" header="Proyecto" sortable />
               <Column header="Tipo" field="tipo" sortable style="width:110px">
                 <template #body="{ data }">{{ data.tipo === 'generacion' ? 'Generación' : 'Consumo' }}</template>
               </Column>
-              <Column field="veces_revisar_manualmente" header="Revisar manualmente" sortable style="width:160px" />
-              <Column field="veces_editado_manualmente" header="Editado manualmente" sortable style="width:160px" />
+              <Column header="Revisar manualmente" sortable :sortField="'veces_revisar_manualmente'" style="width:180px">
+                <template #body="{ data }">
+                  <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
+                        :style="chipEstilo(pctDe(data.veces_revisar_manualmente, data.dias_con_fila), 'problema')">
+                    {{ data.veces_revisar_manualmente }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_revisar_manualmente, data.dias_con_fila) }}%
+                  </span>
+                </template>
+              </Column>
+              <Column header="Editado manualmente" sortable :sortField="'veces_editado_manualmente'" style="width:180px">
+                <template #body="{ data }">
+                  <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
+                        :style="chipEstilo(pctDe(data.veces_editado_manualmente, data.dias_con_fila), 'neutral')">
+                    {{ data.veces_editado_manualmente }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_editado_manualmente, data.dias_con_fila) }}%
+                  </span>
+                </template>
+              </Column>
               <Column field="dias_con_fila" header="Días con reporte" sortable style="width:130px" />
             </DataTable>
             <p v-if="!resumenHistorico.intervencion_manual.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin intervención manual en este rango.</p>
           </div>
 
+          <!-- Recuperación activa -->
           <div class="bg-white rounded-xl shadow-sm border p-4" style="border-color:#e8e0f0;">
             <p class="text-sm font-bold mb-1" style="color:#2C2039;">Recuperación activa de medidores</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">Intentos y éxitos al forzar la lectura de un medidor — por frontera y medidor.</p>
+            <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
+              <template v-for="(c, idx) in resumenHistorico.recuperacion_activa_callouts" :key="idx">
+                <span><b class="text-base font-extrabold" style="color:#6E3FB8;">{{ c.valor }}</b>
+                  <span class="text-xs ml-1.5" style="color:#6b5a8a;">{{ c.etiqueta }}</span></span>
+                <span v-if="idx < resumenHistorico.recuperacion_activa_callouts.length - 1" class="w-px h-4" style="background:#e8e0f0;" />
+              </template>
+            </div>
             <DataTable :value="resumenHistorico.recuperacion_activa" class="text-sm resumen-tabla" stripedRows rowHover
                        paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
               <Column field="nombre_proyecto" header="Proyecto" sortable />
-              <Column field="intentos_principal" header="Intentos principal" sortable style="width:150px" />
-              <Column header="Éxitos principal" style="width:140px">
-                <template #body="{ data }">{{ data.exitos_principal }}/{{ data.intentos_principal }}</template>
+              <Column header="Éxito principal" style="width:170px">
+                <template #body="{ data }">
+                  <span v-if="!data.intentos_principal" class="text-xs" style="color:#9b89b5;">— sin intentos</span>
+                  <div v-else class="flex items-center gap-2">
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
+                      <div class="h-full rounded-full" :style="{ width: pctDe(data.exitos_principal, data.intentos_principal) + '%', background: severidadColorExito(pctDe(data.exitos_principal, data.intentos_principal)) }" />
+                    </div>
+                    <span class="text-xs font-bold w-12 text-right">{{ data.exitos_principal }}/{{ data.intentos_principal }}</span>
+                  </div>
+                </template>
               </Column>
-              <Column field="intentos_respaldo" header="Intentos respaldo" sortable style="width:150px" />
-              <Column header="Éxitos respaldo" style="width:140px">
-                <template #body="{ data }">{{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}</template>
+              <Column header="Éxito respaldo" style="width:170px">
+                <template #body="{ data }">
+                  <span v-if="!data.intentos_respaldo" class="text-xs" style="color:#9b89b5;">— sin intentos</span>
+                  <div v-else class="flex items-center gap-2">
+                    <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
+                      <div class="h-full rounded-full" :style="{ width: pctDe(data.exitos_respaldo, data.intentos_respaldo) + '%', background: severidadColorExito(pctDe(data.exitos_respaldo, data.intentos_respaldo)) }" />
+                    </div>
+                    <span class="text-xs font-bold w-12 text-right">{{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}</span>
+                  </div>
+                </template>
               </Column>
             </DataTable>
             <p v-if="!resumenHistorico.recuperacion_activa.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin intentos de recuperación en este rango.</p>
@@ -245,14 +423,8 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import { Bar } from 'vue-chartjs'
-import {
-  Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend,
-} from 'chart.js'
 import ReporteEnergiaLista from './ReporteEnergiaLista.vue'
 import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
 const toast = useToast()
 const route = useRoute()
@@ -334,6 +506,8 @@ const resumenHastaISO = computed(() => resumenHasta.value.toISOString().slice(0,
 
 async function cargarResumenHistorico() {
   loadingResumenHistorico.value = true
+  grupoSeleccionadoGen.value = null
+  grupoSeleccionadoCon.value = null
   try {
     const { data } = await api.get('/reporte-energia/resumen-historico', {
       params: { desde: resumenDesdeISO.value, hasta: resumenHastaISO.value },
@@ -347,28 +521,60 @@ async function cargarResumenHistorico() {
   }
 }
 
-const PALETA_RESUMEN = ['#915BD8', '#6E3FB8', '#F0C040', '#10B981', '#D64455', '#52596b', '#9b89b5']
-
-function chartDeDistribucion(items) {
-  return {
-    labels: items.map(i => i.etiqueta || '—'),
-    datasets: [{
-      label: 'Veces usada', data: items.map(i => i.total),
-      backgroundColor: items.map((_, idx) => PALETA_RESUMEN[idx % PALETA_RESUMEN.length]),
-      borderRadius: 3, maxBarThickness: 40,
-    }],
-  }
+// Colores suaves por grupo (decidido con el usuario 2026-08-21) -- mismos
+// 3 tonos (verde/ámbar/rosa) se reusan como semáforo de severidad en las
+// tablas de abajo, así que "Medidor"/"bajo % de problema" y "Estimación"/
+// "% medio" comparten intención visual aunque sean secciones distintas.
+const GRUPO_COLOR = {
+  'Medidor': '#4f9d78', 'Inversor': '#6b8fd6', 'Estimación': '#c9a13f',
+  'Sin fuente': '#c97086', 'Otro': '#52596b',
 }
-const chartGeneracion = computed(() => chartDeDistribucion(resumenHistorico.value?.distribucion_fuente_generacion || []))
-const chartConsumo = computed(() => chartDeDistribucion(resumenHistorico.value?.distribucion_fuente_consumo || []))
+function grupoColor(etiqueta) {
+  return { texto: GRUPO_COLOR[etiqueta] || '#52596b' }
+}
 
-const chartOptionsResumen = {
-  responsive: true, maintainAspectRatio: false,
-  plugins: { legend: { display: false } },
-  scales: {
-    x: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { display: false } },
-    y: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { color: 'rgba(0,0,0,0.05)' }, beginAtZero: true },
-  },
+function pctDe(n, total) {
+  return total ? Math.round((n / total) * 100) : 0
+}
+function totalDias(items) {
+  return items.reduce((s, i) => s + i.total, 0)
+}
+function conPct(items) {
+  const total = totalDias(items)
+  return items.map(i => ({ ...i, pct: total ? Math.round((i.total / total) * 100) : 0 }))
+}
+const kpiGen = computed(() => conPct(resumenHistorico.value?.distribucion_fuente_generacion || []))
+const kpiCon = computed(() => conPct(resumenHistorico.value?.distribucion_fuente_consumo || []))
+
+// Semáforo de severidad -- para "% de días con un problema" más alto es
+// peor (incompletos, revisar manualmente); para "% de éxito" más alto es
+// mejor (recuperación activa) -- por eso son dos funciones separadas, no
+// una invertida, para que el umbral de cada una sea explícito.
+function severidadColor(pct) {
+  return pct > 30 ? GRUPO_COLOR['Sin fuente'] : pct > 10 ? GRUPO_COLOR['Estimación'] : GRUPO_COLOR['Medidor']
+}
+function severidadColorExito(pct) {
+  return pct < 34 ? GRUPO_COLOR['Sin fuente'] : pct < 70 ? GRUPO_COLOR['Estimación'] : GRUPO_COLOR['Medidor']
+}
+function chipEstilo(pct, modo) {
+  const color = modo === 'neutral' ? GRUPO_COLOR['Medidor'] : severidadColor(pct)
+  return { background: color + '22', color }
+}
+
+// Drill-down por frontera al hacer clic en una tarjeta KPI -- independiente
+// para Generación/Consumo, ya que son secciones separadas en la misma vista.
+const grupoSeleccionadoGen = ref(null)
+const grupoSeleccionadoCon = ref(null)
+function toggleGrupo(tipo, etiqueta) {
+  const actual = tipo === 'gen' ? grupoSeleccionadoGen : grupoSeleccionadoCon
+  actual.value = actual.value === etiqueta ? null : etiqueta
+}
+function detalleFiltrado(tipo) {
+  const grupo = tipo === 'gen' ? grupoSeleccionadoGen.value : grupoSeleccionadoCon.value
+  const detalle = tipo === 'gen'
+    ? resumenHistorico.value?.detalle_fuente_generacion : resumenHistorico.value?.detalle_fuente_consumo
+  if (!grupo || !detalle) return []
+  return detalle.filter(d => d.grupo === grupo).sort((a, b) => b.dias_grupo - a.dias_grupo)
 }
 
 // Salta a "Historial" en la fecha 'hasta' del rango consultado y selecciona
