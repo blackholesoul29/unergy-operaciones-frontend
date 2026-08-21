@@ -250,7 +250,9 @@
           <!-- Datos incompletos -->
           <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
             <p class="text-sm font-bold mb-1" style="color:#2C2039;">Datos incompletos de medidores e inversores</p>
-            <p class="text-xs mb-3" style="color:#9b89b5;">Solo Generación — cuántas veces cada fuente llegó incompleta en el rango.</p>
+            <p class="text-xs mb-3" style="color:#9b89b5;">
+              Solo Generación — de los días con reporte, cuántos llegaron con esa fuente incompleta (más alto = peor: verde ≤10%, ámbar 10–30%, rojo &gt;30%).
+            </p>
             <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
               <template v-for="(c, idx) in resumenHistorico.incompletos_callouts" :key="idx">
                 <span><b class="text-base font-extrabold" style="color:#6E3FB8;">{{ c.valor }}</b>
@@ -261,33 +263,33 @@
             <DataTable :value="resumenHistorico.incompletos" class="text-sm resumen-tabla" stripedRows rowHover
                        paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
               <Column field="nombre_proyecto" header="Proyecto" sortable />
-              <Column header="Medidor principal" sortable :sortField="'veces_medidor_principal_incompleto'" style="width:150px">
+              <Column header="Medidor principal incompleto" sortable :sortField="'veces_medidor_principal_incompleto'" style="width:190px">
                 <template #body="{ data }">
                   <div class="flex items-center gap-2">
                     <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
                       <div class="h-full rounded-full" :style="{ width: pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) + '%', background: severidadColor(pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila)) }" />
                     </div>
-                    <span class="text-xs font-bold w-10 text-right">{{ pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) }}%</span>
+                    <span class="text-xs font-bold whitespace-nowrap">{{ data.veces_medidor_principal_incompleto }}/{{ data.dias_con_fila }} días · {{ pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) }}%</span>
                   </div>
                 </template>
               </Column>
-              <Column header="Medidor respaldo" sortable :sortField="'veces_medidor_respaldo_incompleto'" style="width:150px">
+              <Column header="Medidor respaldo incompleto" sortable :sortField="'veces_medidor_respaldo_incompleto'" style="width:190px">
                 <template #body="{ data }">
                   <div class="flex items-center gap-2">
                     <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
                       <div class="h-full rounded-full" :style="{ width: pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) + '%', background: severidadColor(pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila)) }" />
                     </div>
-                    <span class="text-xs font-bold w-10 text-right">{{ pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) }}%</span>
+                    <span class="text-xs font-bold whitespace-nowrap">{{ data.veces_medidor_respaldo_incompleto }}/{{ data.dias_con_fila }} días · {{ pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) }}%</span>
                   </div>
                 </template>
               </Column>
-              <Column header="Inversores" sortable :sortField="'veces_solenium_incompleto'" style="width:130px">
+              <Column header="Inversores incompleto" sortable :sortField="'veces_solenium_incompleto'" style="width:170px">
                 <template #body="{ data }">
                   <div class="flex items-center gap-2">
                     <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f0ebf6;">
                       <div class="h-full rounded-full" :style="{ width: pctDe(data.veces_solenium_incompleto, data.dias_con_fila) + '%', background: severidadColor(pctDe(data.veces_solenium_incompleto, data.dias_con_fila)) }" />
                     </div>
-                    <span class="text-xs font-bold w-10 text-right">{{ pctDe(data.veces_solenium_incompleto, data.dias_con_fila) }}%</span>
+                    <span class="text-xs font-bold whitespace-nowrap">{{ data.veces_solenium_incompleto }}/{{ data.dias_con_fila }} días · {{ pctDe(data.veces_solenium_incompleto, data.dias_con_fila) }}%</span>
                   </div>
                 </template>
               </Column>
