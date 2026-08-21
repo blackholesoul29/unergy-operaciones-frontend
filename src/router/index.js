@@ -44,7 +44,6 @@ const routes = [
   { path: '/operaciones/informes-mensuales', name: 'InformesMensuales', component: () => import('@/views/Operaciones/InformesMensualesView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/informes/:id', name: 'InformeDetalle', component: () => import('@/views/Operaciones/InformeDetailView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/operaciones/gestion-fallas', name: 'GestionFallas', component: () => import('@/views/Operaciones/GestionFallasView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
-  { path: '/operaciones/inicio-operacion', name: 'InicioOperacion', component: () => import('@/views/Operaciones/InicioOperacionView.vue'), meta: { roles: ['admin', 'operaciones'] } },
   { path: '/operaciones/informe-om', name: 'InformeOM', component: () => import('@/views/Operaciones/InformeOMView.vue'), meta: { roles: ['admin', 'operaciones'] } },
   { path: '/operaciones/polizas', name: 'Polizas', component: () => import('@/views/Operaciones/PolizasView.vue'), meta: { roles: ['admin', 'operaciones'] } },
   { path: '/fallas',       name: 'Fallas',       component: () => import('@/views/Fallas/MonitoreoView.vue'),   meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },

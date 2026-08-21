@@ -284,7 +284,6 @@ const ALL_GROUPS = [
       { to: '/solar-live', label: 'Generación Solar', icon: 'pi pi-sun', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/operaciones/informes-mensuales', label: 'Informes Mensuales', icon: 'pi pi-file-edit', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/fallas', label: 'Gestión de Fallas', icon: 'pi pi-wrench', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/operaciones/inicio-operacion', label: 'Inicio de Operación', icon: 'pi pi-flag', roles: ['admin', 'operaciones'] },
       { to: '/operaciones/informe-om', label: 'Informe de Puesta en Marcha', icon: 'pi pi-file-pdf', roles: ['admin', 'operaciones'] },
       { to: '/operaciones/polizas', label: 'Pólizas', icon: 'pi pi-shield', roles: ['admin', 'operaciones'] },
     ],
