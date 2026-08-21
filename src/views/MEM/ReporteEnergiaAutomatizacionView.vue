@@ -285,7 +285,6 @@
                   </span>
                 </template>
               </Column>
-              <Column field="dias_con_fila" header="Días con reporte" sortable style="width:130px" />
             </DataTable>
             <p v-if="!resumenHistorico.incompletos.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin datos incompletos en este rango.</p>
           </div>
@@ -323,7 +322,6 @@
                   </span>
                 </template>
               </Column>
-              <Column field="dias_con_fila" header="Días con reporte" sortable style="width:130px" />
             </DataTable>
             <p v-if="!resumenHistorico.intervencion_manual.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin intervención manual en este rango.</p>
           </div>
