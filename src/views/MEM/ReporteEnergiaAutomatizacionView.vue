@@ -15,35 +15,8 @@
                 :disabled="!resumen || !resumen.puede_enviar" :loading="enviando"
                 v-tooltip.bottom="!resumen?.puede_enviar ? 'Quedan fronteras con horas sin fuente por revisar' : null"
                 style="background: #915BD8; border-color: #915BD8;" @click="enviarReporte" />
-        <Button icon="pi pi-plus-circle" label="Reportar faltantes" severity="secondary" outlined
-                @click="mostrarReportarFaltantes = true" />
       </div>
     </div>
-
-    <!-- Fronteras que el clasificador nunca toca (proyecto en_desarrollo o
-         sin srv_cgm, ver orquestador._fronteras_con_reporte) pero que igual
-         deben reportarse con matriz de ceros ante Quoia/ASIC. Crea la fila
-         del día y la envía en un solo paso, SOLO para los códigos pegados
-         acá -- no toca ninguna otra frontera del día (a propósito, para no
-         reenviar de más lo que ya se mandó por separado, ver caso real
-         2026-08-21: GD Isabela, Los Taurus, Mandarino...). -->
-    <Dialog v-model:visible="mostrarReportarFaltantes" header="Reportar fronteras faltantes" modal
-            :style="{ width: '32rem' }">
-      <p class="text-sm mb-3" style="color: #6b5a8a;">
-        Para fronteras que no aparecen en el clasificador (proyecto en desarrollo o sin
-        servicio CGM) pero que igual deben reportarse con matriz de ceros. Pega los códigos
-        de frontera (uno por línea o separados por coma) -- se crea la fila del día en cero
-        y se envía de inmediato, sin tocar ninguna otra frontera de hoy.
-      </p>
-      <Textarea v-model="codigosFaltantes" rows="6" class="w-full text-sm"
-                placeholder="frt0108448, frt0108449, frt98378..." />
-      <template #footer>
-        <Button label="Cancelar" severity="secondary" outlined @click="mostrarReportarFaltantes = false" />
-        <Button label="Reportar y enviar" :loading="reportandoFaltantes"
-                :disabled="!codigosFaltantes.trim()"
-                style="background: #915BD8; border-color: #915BD8;" @click="reportarFaltantes" />
-      </template>
-    </Dialog>
 
     <!-- Stat cards -->
     <div class="flex flex-wrap gap-4">
@@ -128,8 +101,6 @@ import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
-import Dialog from 'primevue/dialog'
-import Textarea from 'primevue/textarea'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import ReporteEnergiaLista from './ReporteEnergiaLista.vue'
@@ -196,10 +167,6 @@ const generandoExcel = ref(false)
 const enviando = ref(false)
 const ejecutando = ref(false)
 const deteniendo = ref(false)
-
-const mostrarReportarFaltantes = ref(false)
-const codigosFaltantes = ref('')
-const reportandoFaltantes = ref(false)
 
 async function cargarResumen() {
   try {
@@ -456,35 +423,7 @@ async function enviarReporte() {
   }
 }
 
-async function reportarFaltantes() {
-  const frontera_codigos = codigosFaltantes.value
-    .split(/[\n,]/).map(c => c.trim()).filter(Boolean)
-  if (!frontera_codigos.length) return
 
-  reportandoFaltantes.value = true
-  try {
-    const { data } = await api.post(
-      '/reporte-energia/reportar-manual', { frontera_codigos },
-      { params: { fecha: fechaISO.value }, timeout: 300000 },
-    )
-    const partes = [`${data.creadas.length} creadas`, `${data.enviados} enviadas`]
-    if (data.ya_existian.length) partes.push(`${data.ya_existian.length} ya existían (sin tocar)`)
-    if (data.fallidos.length) partes.push(`${data.fallidos.length} fallidas`)
-    if (data.no_encontrados.length) partes.push(`${data.no_encontrados.length} sin match: ${data.no_encontrados.join(', ')}`)
-    toast.add({
-      severity: data.fallidos.length || data.no_encontrados.length ? 'warn' : 'success',
-      summary: 'Reportar faltantes', detail: partes.join(' — '), life: 8000,
-    })
-    mostrarReportarFaltantes.value = false
-    codigosFaltantes.value = ''
-    cargarLista(true)
-    cargarResumen()
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo reportar.', life: 4000 })
-  } finally {
-    reportandoFaltantes.value = false
-  }
-}
 </script>
 
 <style scoped>
