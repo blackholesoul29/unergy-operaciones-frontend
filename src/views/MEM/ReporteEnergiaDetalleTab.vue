@@ -496,26 +496,36 @@ async function cargar() {
 // tener que salir a buscarlo en otra vista.
 const fallasActivas = ref([])
 
-// Varias fallas del mismo tipo (abiertas o cerradas) no aportan nada
-// distinto en este resumen -- se deja solo la más reciente de cada tipo.
-// Este panel es solo contexto rápido (con link "Ver todas" a Gestión de
-// Fallas, la fuente de verdad completa), así que ocultar acá una segunda
-// abierta del mismo tipo no pierde el dato, solo lo deja fuera de esta
-// vista compacta (pedido 2026-08-21). Depende de que /fallas ya venga
-// ordenado por más reciente primero (created_at desc).
+// Varias fallas del mismo tipo no aportan nada distinto en este resumen --
+// se deja solo una por tipo. Pero "más reciente" a secas no basta: una
+// CERRADA puede tener fecha más reciente que una ABIERTA del mismo tipo
+// (ver "Problema en cadena fotovoltaico" 2026-08-21: la cerrada 11506 es
+// más nueva que las abiertas 11406/11405, y con "más reciente sin más"
+// tapaba las dos abiertas -- parecía que ya estaba resuelto cuando en
+// realidad seguían sin resolver). Por eso una ABIERTA siempre gana sobre
+// una CERRADA del mismo tipo, sin importar fecha; solo se muestra una
+// cerrada si no hay ninguna abierta de ese tipo. Este panel es solo
+// contexto rápido (con link "Ver todas" a Gestión de Fallas, la fuente de
+// verdad completa), así que ocultar acá una segunda abierta del mismo
+// tipo no pierde el dato, solo lo deja fuera de esta vista compacta.
+// Depende de que /fallas ya venga ordenado por más reciente primero
+// (created_at desc) -- dentro de "abiertas" o "cerradas", gana la primera
+// vista (la más nueva de ese subgrupo).
 function tipoKeyFalla(f) {
   return f.tipo?.id ?? f.tipo_libre ?? f.descripcion
 }
 function colapsarDuplicadas(items) {
-  const vistos = new Set()
-  const resultado = []
+  const elegidoPorTipo = new Map()
   for (const f of items) {
     const key = tipoKeyFalla(f)
-    if (vistos.has(key)) continue
-    vistos.add(key)
-    resultado.push(f)
+    const actual = elegidoPorTipo.get(key)
+    if (!actual) { elegidoPorTipo.set(key, f); continue }
+    const actualAbierta = !actual.estado?.es_estado_final
+    const estaAbierta = !f.estado?.es_estado_final
+    if (estaAbierta && !actualAbierta) elegidoPorTipo.set(key, f)
   }
-  return resultado
+  const elegidos = new Set(elegidoPorTipo.values())
+  return items.filter(f => elegidos.has(f))
 }
 
 async function cargarFallasActivas(proyectoId) {
