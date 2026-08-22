@@ -1247,6 +1247,24 @@ const fuentes = computed(() => {
       valor: sinRegistro ? null : sumaSolenium,
       usado: d.medidor_usado === 'inversores',
     })
+
+    // Mismo patrón que Inversores -- si hay dato se muestra (total + qué
+    // horas faltan si está incompleto), si no hay dato no se muestra nada
+    // alarmante, solo 'na' (el backend solo lo consulta en vivo cuando la
+    // curva final tiene huecos, así que null acá no es un error, puede ser
+    // simplemente que no hizo falta revisarlo -- pedido 2026-08-21).
+    const sumaReconectador = sumaCurva(d.curva_reconectador)
+    lista.push({
+      clave: 'reconectador', nombre: 'Reconectador',
+      estado: sumaReconectador !== null ? 'ok' : 'na',
+      detalle: sumaReconectador !== null
+        ? (horasFaltantesSolares(d.curva_reconectador).length
+            ? `Dato incompleto -- faltan ${formatearRangosHoras(horasFaltantesSolares(d.curva_reconectador))}`
+            : 'Dato completo')
+        : 'Sin dato del reconectador',
+      valor: sumaReconectador,
+      usado: d.medidor_usado === 'reconectador',
+    })
   }
 
   return lista
