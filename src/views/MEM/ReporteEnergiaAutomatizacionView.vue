@@ -263,24 +263,33 @@
               <Column field="nombre_proyecto" header="Proyecto" sortable />
               <Column header="Medidor principal" sortable :sortField="'veces_medidor_principal_incompleto'" style="width:170px">
                 <template #body="{ data }">
-                  <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
-                        :style="chipEstilo(pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila), 'problema')">
+                  <span v-if="esCriticoProblema(pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila))"
+                        class="inline-flex text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
+                    {{ data.veces_medidor_principal_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) }}%
+                  </span>
+                  <span v-else class="text-xs" :style="ESTILO_PLANO">
                     {{ data.veces_medidor_principal_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) }}%
                   </span>
                 </template>
               </Column>
               <Column header="Medidor respaldo" sortable :sortField="'veces_medidor_respaldo_incompleto'" style="width:170px">
                 <template #body="{ data }">
-                  <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
-                        :style="chipEstilo(pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila), 'problema')">
+                  <span v-if="esCriticoProblema(pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila))"
+                        class="inline-flex text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
+                    {{ data.veces_medidor_respaldo_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) }}%
+                  </span>
+                  <span v-else class="text-xs" :style="ESTILO_PLANO">
                     {{ data.veces_medidor_respaldo_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) }}%
                   </span>
                 </template>
               </Column>
               <Column header="Inversores" sortable :sortField="'veces_solenium_incompleto'" style="width:170px">
                 <template #body="{ data }">
-                  <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
-                        :style="chipEstilo(pctDe(data.veces_solenium_incompleto, data.dias_con_fila), 'problema')">
+                  <span v-if="esCriticoProblema(pctDe(data.veces_solenium_incompleto, data.dias_con_fila))"
+                        class="inline-flex text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
+                    {{ data.veces_solenium_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_solenium_incompleto, data.dias_con_fila) }}%
+                  </span>
+                  <span v-else class="text-xs" :style="ESTILO_PLANO">
                     {{ data.veces_solenium_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_solenium_incompleto, data.dias_con_fila) }}%
                   </span>
                 </template>
@@ -308,16 +317,18 @@
               </Column>
               <Column header="Revisar manualmente" sortable :sortField="'veces_revisar_manualmente'" style="width:180px">
                 <template #body="{ data }">
-                  <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
-                        :style="chipEstilo(pctDe(data.veces_revisar_manualmente, data.dias_con_fila), 'problema')">
+                  <span v-if="esCriticoProblema(pctDe(data.veces_revisar_manualmente, data.dias_con_fila))"
+                        class="inline-flex text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
+                    {{ data.veces_revisar_manualmente }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_revisar_manualmente, data.dias_con_fila) }}%
+                  </span>
+                  <span v-else class="text-xs" :style="ESTILO_PLANO">
                     {{ data.veces_revisar_manualmente }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_revisar_manualmente, data.dias_con_fila) }}%
                   </span>
                 </template>
               </Column>
               <Column header="Editado manualmente" sortable :sortField="'veces_editado_manualmente'" style="width:180px">
                 <template #body="{ data }">
-                  <span class="inline-flex text-xs font-bold rounded-full px-2.5 py-1"
-                        :style="chipEstilo(pctDe(data.veces_editado_manualmente, data.dias_con_fila), 'neutral')">
+                  <span class="text-xs" :style="ESTILO_PLANO">
                     {{ data.veces_editado_manualmente }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_editado_manualmente, data.dias_con_fila) }}%
                   </span>
                 </template>
@@ -343,7 +354,11 @@
               <Column header="Éxito principal" style="width:130px">
                 <template #body="{ data }">
                   <span v-if="!data.intentos_principal" class="text-xs" style="color:#9b89b5;">— sin intentos</span>
-                  <span v-else class="text-xs font-bold" :style="{ color: severidadColorExito(pctDe(data.exitos_principal, data.intentos_principal)) }">
+                  <span v-else-if="esCriticoExito(pctDe(data.exitos_principal, data.intentos_principal))"
+                        class="text-xs font-bold" :style="{ color: GRUPO_COLOR['Sin fuente'] }">
+                    {{ data.exitos_principal }}/{{ data.intentos_principal }}
+                  </span>
+                  <span v-else class="text-xs" :style="ESTILO_PLANO">
                     {{ data.exitos_principal }}/{{ data.intentos_principal }}
                   </span>
                 </template>
@@ -351,7 +366,11 @@
               <Column header="Éxito respaldo" style="width:130px">
                 <template #body="{ data }">
                   <span v-if="!data.intentos_respaldo" class="text-xs" style="color:#9b89b5;">— sin intentos</span>
-                  <span v-else class="text-xs font-bold" :style="{ color: severidadColorExito(pctDe(data.exitos_respaldo, data.intentos_respaldo)) }">
+                  <span v-else-if="esCriticoExito(pctDe(data.exitos_respaldo, data.intentos_respaldo))"
+                        class="text-xs font-bold" :style="{ color: GRUPO_COLOR['Sin fuente'] }">
+                    {{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}
+                  </span>
+                  <span v-else class="text-xs" :style="ESTILO_PLANO">
                     {{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}
                   </span>
                 </template>
@@ -560,19 +579,24 @@ const chartOptionsGen = computed(() => chartOptionsPara('gen', kpiGen.value))
 const chartOptionsCon = computed(() => chartOptionsPara('con', kpiCon.value))
 
 // Semáforo de severidad -- para "% de días con un problema" más alto es
-// peor (incompletos, revisar manualmente); para "% de éxito" más alto es
-// mejor (recuperación activa) -- por eso son dos funciones separadas, no
-// una invertida, para que el umbral de cada una sea explícito.
+// peor (incompletos, revisar manualmente, y el drill-down de fuente); para
+// "% de éxito" más alto es mejor (recuperación activa) -- por eso el
+// umbral de "crítico" (esCriticoProblema/esCriticoExito, más abajo) se
+// evalúa por separado, no invirtiendo un solo número.
 function severidadColor(pct) {
   return pct > 30 ? GRUPO_COLOR['Sin fuente'] : pct > 10 ? GRUPO_COLOR['Estimación'] : GRUPO_COLOR['Medidor']
 }
-function severidadColorExito(pct) {
-  return pct < 34 ? GRUPO_COLOR['Sin fuente'] : pct < 70 ? GRUPO_COLOR['Estimación'] : GRUPO_COLOR['Medidor']
-}
-function chipEstilo(pct, modo) {
-  const color = modo === 'neutral' ? GRUPO_COLOR['Medidor'] : severidadColor(pct)
+// Solo lo crítico (rojo) lleva píldora de color -- pintar también lo que
+// está bien generaba demasiado ruido visual, 30 píldoras de colores
+// compitiendo por atención en una sola tabla (pedido 2026-08-21). Lo que
+// no es crítico se muestra en texto plano gris, sin fondo.
+function esCriticoProblema(pct) { return pct > 30 }
+function esCriticoExito(pct) { return pct < 34 }
+function chipEstilo(pct) {
+  const color = GRUPO_COLOR['Sin fuente']
   return { background: color + '22', color }
 }
+const ESTILO_PLANO = { color: '#6b5a8a' }
 
 // Drill-down por frontera al hacer clic en una tarjeta KPI -- independiente
 // para Generación/Consumo, ya que son secciones separadas en la misma vista.
