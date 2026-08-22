@@ -4,7 +4,7 @@
       <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
       <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ {{ medidorLabel }}</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
-      <span v-if="reconectadorPath" class="chip" style="border-color:#c2b8a3;color:#a89878;">⬥ Reconectador</span>
+      <span v-if="reconectadorPath" class="chip" style="border-color:#9c8b68;color:#7a6a48;">⬥ Reconectador</span>
       <span v-if="horasRellenadas.size" class="chip" style="border-color:#F0C040;color:#B8860B;">◆ Hora rellenada</span>
       <span v-if="capacidadKwh != null" class="chip" style="border-color:#9b89b5;color:#6b5a8a;">┅ Capacidad efectiva ({{ capacidadMwFmt }} MW)</span>
     </div>
@@ -53,11 +53,11 @@
            es una referencia de apoyo, no debe competir visualmente con
            Final/Medidor/Solenium, que son las 3 series que de verdad
            importan (pedido 2026-08-21). -->
-      <path v-if="reconectadorPath" :d="reconectadorPath" fill="none" stroke="#c2b8a3" stroke-width="1.25" stroke-dasharray="1 4" opacity="0.85" />
+      <path v-if="reconectadorPath" :d="reconectadorPath" fill="none" stroke="#9c8b68" stroke-width="1.25" stroke-dasharray="1 4" opacity="0.85" />
       <template v-if="reconectadorPath">
         <rect v-for="h in 24" :key="'r' + h"
               :x="x(h - 1) - 2.5" :y="y(val(reconectador, h - 1)) - 2.5" width="5" height="5"
-              fill="white" stroke="#c2b8a3" stroke-width="1.25" opacity="0.9"
+              fill="white" stroke="#9c8b68" stroke-width="1.25" opacity="0.9"
               :transform="`rotate(45 ${x(h - 1)} ${y(val(reconectador, h - 1))})`" />
       </template>
 
