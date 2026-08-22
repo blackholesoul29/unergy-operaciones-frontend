@@ -509,6 +509,10 @@ async function cargarResumenHistorico() {
 // "% medio" comparten intención visual aunque sean secciones distintas.
 const GRUPO_COLOR = {
   'Medidor': '#4f9d78', 'Inversor': '#6b8fd6', 'Estimación': '#c9a13f',
+  // "Apagado" es un estado confirmado (el proyecto no genera), no una
+  // estimación de dato faltante -- tono neutro propio, distinto de
+  // Estimación (pedido 2026-08-21).
+  'Apagado': '#8a94a6',
   'Sin fuente': '#c97086', 'Otro': '#52596b',
 }
 function grupoColor(etiqueta) {
