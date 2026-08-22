@@ -496,19 +496,20 @@ async function cargar() {
 // tener que salir a buscarlo en otra vista.
 const fallasActivas = ref([])
 
-// Varias fallas CERRADAS del mismo tipo (ej. 3x "Falla del dispositivo") no
-// aportan nada distinto acá -- son ruido repetido de un mismo problema
-// recurrente. Se deja solo la más reciente de cada tipo; una ABIERTA nunca
-// se colapsa, cada una es un problema vigente y distinto. Depende de que
-// /fallas ya venga ordenado por más reciente primero (created_at desc).
+// Varias fallas del mismo tipo (abiertas o cerradas) no aportan nada
+// distinto en este resumen -- se deja solo la más reciente de cada tipo.
+// Este panel es solo contexto rápido (con link "Ver todas" a Gestión de
+// Fallas, la fuente de verdad completa), así que ocultar acá una segunda
+// abierta del mismo tipo no pierde el dato, solo lo deja fuera de esta
+// vista compacta (pedido 2026-08-21). Depende de que /fallas ya venga
+// ordenado por más reciente primero (created_at desc).
 function tipoKeyFalla(f) {
   return f.tipo?.id ?? f.tipo_libre ?? f.descripcion
 }
-function colapsarCerradasDuplicadas(items) {
+function colapsarDuplicadas(items) {
   const vistos = new Set()
   const resultado = []
   for (const f of items) {
-    if (!f.estado?.es_estado_final) { resultado.push(f); continue }
     const key = tipoKeyFalla(f)
     if (vistos.has(key)) continue
     vistos.add(key)
@@ -524,7 +525,7 @@ async function cargarFallasActivas(proyectoId) {
     // ya clasificado -- debe mostrar las fallas que estaban abiertas en ese
     // momento, no las que están abiertas hoy consultando en vivo.
     const { data } = await api.get('/fallas', { params: { proyecto_id: proyectoId, activa_en_fecha: props.fecha, size: 10 } })
-    fallasActivas.value = colapsarCerradasDuplicadas(data.items || [])
+    fallasActivas.value = colapsarDuplicadas(data.items || [])
   } catch (e) {
     fallasActivas.value = []
   }
