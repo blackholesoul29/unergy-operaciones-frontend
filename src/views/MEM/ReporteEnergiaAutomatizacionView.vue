@@ -34,7 +34,7 @@
          aprobó ("Exitoso") o lo rechazó ("Error"), o sigue sin resolver
          ("En espera"). Solo aparece si hay algo enviado ese día; el
          polling se detiene solo en cuanto nadie queda en_espera. -->
-    <div v-if="estadoQuoia" class="bg-white rounded-xl p-4" style="border: 2px solid #915BD8;">
+    <div v-if="estadoQuoia" class="bg-white rounded-xl p-4 shadow-sm" style="border: 1px solid #e8e0f0;">
       <div class="flex items-start justify-between gap-3 mb-3">
         <div>
           <p class="text-sm font-bold" style="color: #2C2039;">Estado en Quoia</p>
