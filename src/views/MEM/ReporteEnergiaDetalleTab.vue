@@ -1250,9 +1250,11 @@ const fuentes = computed(() => {
 
     // Mismo patrón que Inversores -- si hay dato se muestra (total + qué
     // horas faltan si está incompleto), si no hay dato no se muestra nada
-    // alarmante, solo 'na' (el backend solo lo consulta en vivo cuando la
-    // curva final tiene huecos, así que null acá no es un error, puede ser
-    // simplemente que no hizo falta revisarlo -- pedido 2026-08-21).
+    // alarmante, solo 'na'. El backend lo consulta y persiste SIEMPRE en
+    // la clasificación diaria (igual que medidor/Solenium, ver
+    // clasificador.clasificar_generacion), así que null acá significa que
+    // el proyecto no tiene reconectador instalado o la consulta falló ese
+    // día -- no que "no hizo falta revisarlo" (pedido 2026-08-21).
     const sumaReconectador = sumaCurva(d.curva_reconectador)
     lista.push({
       clave: 'reconectador', nombre: 'Reconectador',
