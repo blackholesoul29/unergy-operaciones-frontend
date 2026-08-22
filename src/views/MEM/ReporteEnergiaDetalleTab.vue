@@ -321,37 +321,6 @@
       </template>
     </div>
 
-    <!-- Historial de actividad (audit_log): ediciones, validaciones, envíos a Quoia -->
-    <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
-      <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Historial de actividad</p>
-      <p v-if="!ediciones.length" class="text-xs" style="color: #9b89b5;">
-        Sin actividad registrada para este día.
-      </p>
-      <div v-else class="space-y-3">
-        <div v-for="(ed, i) in ediciones" :key="i" class="pt-3 first:pt-0" :class="i > 0 ? 'border-t' : ''" style="border-color: #e8e0f0;">
-          <div class="flex items-baseline gap-2 flex-wrap">
-            <span class="text-sm font-bold" style="color: #2C2039;">{{ ed.usuario_nombre || 'Usuario desconocido' }}</span>
-            <span class="text-sm" style="color: #6b5a8a;">{{ tituloEdicion(ed.cambios) }}</span>
-            <span class="text-xs font-mono ml-auto" style="color: #9b89b5;">{{ fmtFechaHora(ed.created_at) }}</span>
-          </div>
-          <div class="mt-2 space-y-1.5">
-            <div v-for="(c, j) in resumenCambios(ed.cambios)" :key="j"
-                 class="flex items-center gap-2 text-xs rounded-lg px-2.5 py-1.5" style="background: #f9f7ff;">
-              <span class="font-semibold w-32 flex-none" style="color: #6b5a8a;">{{ c.campo }}</span>
-              <template v-if="c.resumen">
-                <span style="color: #6b5a8a;">{{ c.resumen }}</span>
-              </template>
-              <template v-else>
-                <span class="font-mono" style="color: #D64455; text-decoration: line-through; opacity: .75;">{{ c.antes }}</span>
-                <span style="color: #9b89b5;">→</span>
-                <span class="font-mono font-semibold" style="color: #10B981;">{{ c.despues }}</span>
-              </template>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Validar: accion final, independiente de la correccion manual --
          confirma que el numero automatico esta bien tal cual, sin tocar
          ningun valor. Separada de "Guardar correccion" para no parecer
@@ -409,19 +378,9 @@ const fuenteManualElegida = ref(null)
 // fijo (era un placeholder, no reflejaba si de verdad había histórico).
 const curvaTipicaPreview = ref(null)
 const validando = ref(false)
-const ediciones = ref([])
 const subiendoExcelTerceros = ref(false)
 const eliminandoExcelTerceros = ref(false)
 const fileInputExcelTerceros = ref(null)
-
-async function cargarEdiciones() {
-  try {
-    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/ediciones`, { params: { fecha: props.fecha } })
-    ediciones.value = data
-  } catch (e) {
-    ediciones.value = []
-  }
-}
 
 // Exclusion temporal (no depende de Fallas -- ver ReporteEnergiaExclusion en
 // el backend). El historial trae todas (activas y resueltas); "activa" es
@@ -517,70 +476,6 @@ function fmtFechaHora(iso) {
   return new Date(iso).toLocaleString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
-// Encabezado del evento: cada tipo de accion (corregir, validar, enviar a
-// Quoia) pasa por un endpoint distinto y cae en su propia fila de audit_log
-// -- nunca se mezclan en un mismo 'cambios', asi que un solo chequeo basta.
-function tituloEdicion(cambios) {
-  if (!cambios) return 'hizo un cambio'
-  if ('enviado_quoia_ok' in cambios) return 'envió el reporte a Quoia'
-  if ('curva_final' in cambios || 'energia_final_kwh' in cambios) return 'corrigió la curva'
-  if ('validado_en' in cambios) return 'validó la frontera'
-  return 'hizo un cambio'
-}
-
-// Campos que ya se resumen aparte (arriba) y por eso no deben repetirse en
-// el fallback generico de mas abajo.
-const CAMPOS_YA_RESUMIDOS = new Set([
-  'energia_final_kwh', 'curva_final',
-  'enviado_quoia_ok', 'enviado_quoia_en', 'enviado_quoia_error',
-  'validado_en', 'validado_por_id', 'revisar_manualmente',
-])
-
-// 'curva_final' nunca se muestra como 24 numeros crudos -- se resume a
-// cuantas horas cambiaron. El resto de campos (ej. energia_final_kwh) se
-// muestra como antes -> despues.
-function resumenCambios(cambios) {
-  if (!cambios) return []
-  const partes = []
-  if (cambios.energia_final_kwh) {
-    partes.push({
-      campo: 'Energía Total',
-      antes: fmtKwh(cambios.energia_final_kwh.antes),
-      despues: fmtKwh(cambios.energia_final_kwh.despues),
-    })
-  }
-  if (cambios.curva_final) {
-    const antes = cambios.curva_final.antes || []
-    const despues = cambios.curva_final.despues || []
-    const horas = []
-    for (let h = 0; h < 24; h++) {
-      const a = antes[h] ?? null, d = despues[h] ?? null
-      if (Number(a) !== Number(d)) horas.push(h)
-    }
-    partes.push({
-      campo: 'Curva horaria',
-      resumen: horas.length
-        ? `${horas.length} de 24 horas modificadas (${horas.map(h => h + 'h').join(', ')})`
-        : 'Sin cambios en las horas',
-    })
-  }
-  if (cambios.enviado_quoia_ok) {
-    const ok = cambios.enviado_quoia_ok.despues
-    partes.push({
-      campo: 'Envío a Quoia',
-      resumen: ok ? 'Enviado correctamente' : `Error — ${cambios.enviado_quoia_error?.despues || 'sin detalle'}`,
-    })
-  }
-  if (cambios.validado_en) {
-    partes.push({ campo: 'Validación', resumen: 'Confirmado sin cambios' })
-  }
-  for (const [campo, valores] of Object.entries(cambios)) {
-    if (CAMPOS_YA_RESUMIDOS.has(campo)) continue
-    partes.push({ campo, antes: String(valores.antes ?? '—'), despues: String(valores.despues ?? '—') })
-  }
-  return partes
-}
-
 async function cargar() {
   loading.value = true
   try {
@@ -651,9 +546,9 @@ async function cargarCurvaTipicaPreview() {
     curvaTipicaPreview.value = null
   }
 }
-onMounted(() => { cargar(); cargarEdiciones(); cargarExclusiones(); cargarCurvaTipicaPreview() })
+onMounted(() => { cargar(); cargarExclusiones(); cargarCurvaTipicaPreview() })
 watch(() => [props.fronteraId, props.fecha], () => {
-  cargar(); cargarEdiciones(); cargarExclusiones(); cargarCurvaTipicaPreview()
+  cargar(); cargarExclusiones(); cargarCurvaTipicaPreview()
 })
 
 // Frontera de terceros (caso=0, ver FRONTERAS_TERCEROS en clasificador.py) --
@@ -673,7 +568,7 @@ async function onArchivoExcelTercerosSeleccionado(event) {
       detail: `Se cargaron ${data.fechas_cargadas.length} día(s): ${data.fechas_cargadas.join(', ')}`,
       life: 4000,
     })
-    await Promise.all([cargar(), cargarEdiciones()])
+    await cargar()
     emit('actualizado')
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo cargar el Excel.', life: 5000 })
@@ -692,7 +587,7 @@ async function eliminarExcelTerceros() {
       params: { fecha: props.fecha },
     })
     toast.add({ severity: 'success', summary: 'Carga eliminada', life: 2500 })
-    await Promise.all([cargar(), cargarEdiciones()])
+    await cargar()
     emit('actualizado')
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo eliminar la carga.', life: 5000 })
@@ -774,7 +669,6 @@ async function rellenarHorario() {
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
     toast.add({ severity: 'success', summary: 'Horas rellenadas', life: 2500 })
     emit('actualizado')
-    cargarEdiciones()
   } catch (e) {
     toast.add({
       severity: 'error', summary: 'No se pudo rellenar',
@@ -796,7 +690,6 @@ async function deshacerRelleno() {
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
     toast.add({ severity: 'success', summary: 'Relleno deshecho', life: 2500 })
     emit('actualizado')
-    cargarEdiciones()
   } catch (e) {
     toast.add({
       severity: 'error', summary: 'No se pudo deshacer',
@@ -922,7 +815,6 @@ async function guardarCurva() {
     detalle.value = data
     toast.add({ severity: 'success', summary: 'Corrección guardada', life: 2500 })
     emit('actualizado')
-    cargarEdiciones()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la corrección.', life: 4000 })
   } finally {
