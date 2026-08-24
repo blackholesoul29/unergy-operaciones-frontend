@@ -500,8 +500,8 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '~/legacy/api/client'
-import EvidenciaUploader from '~/legacy/components/EvidenciaUploader.vue'
-import ListaEditable from '~/legacy/components/ListaEditable.vue'
+import EvidenciaUploader from '~/components/EvidenciaUploader.vue'
+import ListaEditable from '~/components/ListaEditable.vue'
 
 const router = useRouter()
 

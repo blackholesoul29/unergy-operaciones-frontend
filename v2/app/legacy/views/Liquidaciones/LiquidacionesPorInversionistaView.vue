@@ -133,7 +133,7 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import api from '~/legacy/api/client'
 import NetoMensualBar from './components/NetoMensualBar.vue'
-import { fmtCompact, formatPeriodo } from '~/legacy/utils/liquidaciones'
+import { fmtCompact, formatPeriodo } from '~/utils/liquidaciones'
 
 const props = defineProps({
   embedded: { type: Boolean, default: false },

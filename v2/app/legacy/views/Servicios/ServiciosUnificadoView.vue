@@ -603,9 +603,9 @@ import Menu from 'primevue/menu'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import api from '~/legacy/api/client'
-import { formatearNombre } from '~/legacy/utils/nombreFormato'
-import { exportarExcel } from '~/legacy/utils/exportarExcel'
-import { estadoVigenciaPPA } from '~/legacy/utils/ppaVigencia'
+import { formatearNombre } from '~/utils/nombreFormato'
+import { exportarExcel } from '~/utils/exportarExcel'
+import { estadoVigenciaPPA } from '~/utils/ppaVigencia'
 import { SEMAFORO, servicioLabel, fmt } from '~/legacy/views/Clientes/clientesUi'
 
 // Los formularios y wizards pesan; sólo se descargan cuando alguien crea algo.

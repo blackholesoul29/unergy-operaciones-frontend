@@ -165,7 +165,7 @@ import InputIcon from 'primevue/inputicon'
 import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
 import api from '~/legacy/api/client'
-import { formatearNombre } from '~/legacy/utils/nombreFormato'
+import { formatearNombre } from '~/utils/nombreFormato'
 import HistorialEnviosCGM from './HistorialEnviosCGM.vue'
 
 const toast = useToast()

@@ -501,8 +501,8 @@ import InputIcon     from 'primevue/inputicon'
 import Popover       from 'primevue/popover'
 import { useToast }  from 'primevue/usetoast'
 import api           from '~/legacy/api/client'
-import DocumentoIcon  from '~/legacy/components/DocumentoIcon.vue'
-import { parseCOP }   from '~/legacy/utils/parseCOP.js'
+import DocumentoIcon  from '~/components/DocumentoIcon.vue'
+import { parseCOP }   from '~/utils/parseCOP.js'
 
 const toast = useToast()
 

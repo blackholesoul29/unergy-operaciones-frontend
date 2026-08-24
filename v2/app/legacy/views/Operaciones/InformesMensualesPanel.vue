@@ -186,8 +186,8 @@ import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/legacy/api/client'
-import { buildReportHtmlDoc } from '~/legacy/utils/rptStyles'
-import { tituloFalla } from '~/legacy/utils/fallaTitulo'
+import { buildReportHtmlDoc } from '~/utils/rptStyles'
+import { tituloFalla } from '~/utils/fallaTitulo'
 
 const router = useRouter()
 

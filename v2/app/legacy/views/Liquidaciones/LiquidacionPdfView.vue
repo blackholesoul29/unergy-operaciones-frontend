@@ -60,7 +60,7 @@ import api from '~/legacy/api/client'
 import {
   fmtCOP, pct, normPct, formatPeriodo,
   construirEstadoResultados, indiceSoportesProyecto,
-} from '~/legacy/utils/liquidaciones'
+} from '~/utils/liquidaciones'
 
 const route = useRoute()
 const router = useRouter()

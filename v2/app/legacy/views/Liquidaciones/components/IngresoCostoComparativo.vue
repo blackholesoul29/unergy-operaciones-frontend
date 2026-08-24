@@ -40,7 +40,7 @@ import { Bar } from 'vue-chartjs'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from 'chart.js'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/legacy/api/client'
-import { fmtCompact, fmtCOP } from '~/legacy/utils/liquidaciones'
+import { fmtCompact, fmtCOP } from '~/utils/liquidaciones'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 

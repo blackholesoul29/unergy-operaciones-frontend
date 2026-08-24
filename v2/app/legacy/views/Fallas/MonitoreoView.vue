@@ -649,7 +649,7 @@ import MultiSelect from 'primevue/multiselect'
 import FallaForm from './FallaForm.vue'
 import FallaArchivos from './FallaArchivos.vue'
 import CalendarioFallas from './CalendarioFallas.vue'
-import FasorialButton from '~/legacy/components/FasorialButton.vue'
+import FasorialButton from '~/components/FasorialButton.vue'
 const FallasMapView = defineAsyncComponent(() => import('./FallasMapView.vue'))
 import { Bar, Line } from 'vue-chartjs'
 import {
@@ -659,7 +659,7 @@ import {
 } from 'chart.js'
 ChartJS.register(Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Filler)
 import api from '~/legacy/api/client'
-import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/legacy/utils/fallaTitulo'
+import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/utils/fallaTitulo'
 
 const route          = useRoute()
 const router         = useRouter()

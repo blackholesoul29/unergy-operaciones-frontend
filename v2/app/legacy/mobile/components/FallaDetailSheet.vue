@@ -141,7 +141,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { tituloFalla, clasificacionDetalle } from '~/legacy/utils/fallaTitulo'
+import { tituloFalla, clasificacionDetalle } from '~/utils/fallaTitulo'
 import api from '~/legacy/api/client'
 
 const props = defineProps({

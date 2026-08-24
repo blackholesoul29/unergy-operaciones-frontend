@@ -151,7 +151,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '~/legacy/stores/auth'
+import { useAuthStore } from '~/stores/auth'
 import api from '~/legacy/api/client'
 import { usePwa } from '~/legacy/mobile/usePwa'
 import { inverterSeries, meterSeries, latest, fmtKw } from '~/legacy/mobile/solarSeries'

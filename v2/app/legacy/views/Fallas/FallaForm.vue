@@ -365,7 +365,7 @@ import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import api from '~/legacy/api/client'
-import { getEstructuraFallas } from '~/legacy/utils/fallasEstructuraCache'
+import { getEstructuraFallas } from '~/utils/fallasEstructuraCache'
 
 const TIPOS_SOLUCION = [
   'Reemplazo de componente',

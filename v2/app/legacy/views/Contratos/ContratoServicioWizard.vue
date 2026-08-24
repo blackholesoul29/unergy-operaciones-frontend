@@ -487,7 +487,7 @@ import AutoComplete from 'primevue/autocomplete'
 import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Textarea from 'primevue/textarea'
-import NuevoClienteDialog from '~/legacy/components/NuevoClienteDialog.vue'
+import NuevoClienteDialog from '~/components/NuevoClienteDialog.vue'
 import api from '~/legacy/api/client'
 
 const props = defineProps({

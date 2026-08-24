@@ -33,8 +33,8 @@ import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import Toast from 'primevue/toast'
 import ConfirmDialog from 'primevue/confirmdialog'
-import AppSidebar from '~/legacy/components/AppSidebar.vue'
-import { useSidebar } from '~/legacy/composables/useSidebar'
+import AppSidebar from '~/components/AppSidebar.vue'
+import { useSidebar } from '~/composables/useSidebar'
 
 const route = useRoute()
 const toast = useToast()

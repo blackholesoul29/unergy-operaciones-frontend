@@ -380,9 +380,9 @@ import InputText   from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
 import api          from '~/legacy/api/client'
 import ArriendosZipUpload from './ArriendosZipUpload.vue'
-import CalculoIpcPopover from '~/legacy/components/CalculoIpcPopover.vue'
-import { docsPorProyecto, loadDocs, downloadDoc } from '~/legacy/composables/useArriendosDocs'
-import DocumentoIcon from '~/legacy/components/DocumentoIcon.vue'
+import CalculoIpcPopover from '~/components/CalculoIpcPopover.vue'
+import { docsPorProyecto, loadDocs, downloadDoc } from '~/composables/useArriendosDocs'
+import DocumentoIcon from '~/components/DocumentoIcon.vue'
 
 const toast = useToast()
 const router = useRouter()

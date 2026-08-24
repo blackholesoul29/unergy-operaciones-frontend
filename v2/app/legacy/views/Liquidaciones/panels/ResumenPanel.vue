@@ -172,7 +172,7 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import api from '~/legacy/api/client'
-import { fmtCompact, formatPeriodo, estadoFlujoPanel, ESTADO_FLUJO } from '~/legacy/utils/liquidaciones'
+import { fmtCompact, formatPeriodo, estadoFlujoPanel, ESTADO_FLUJO } from '~/utils/liquidaciones'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 

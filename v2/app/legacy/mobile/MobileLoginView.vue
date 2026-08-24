@@ -43,7 +43,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '~/legacy/stores/auth'
+import { useAuthStore } from '~/stores/auth'
 import { usePwa } from '~/legacy/mobile/usePwa'
 
 const router = useRouter()

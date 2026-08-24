@@ -239,7 +239,7 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
 import api from '~/legacy/api/client'
-import { formatCurrency } from '~/legacy/utils/financialCalculations'
+import { formatCurrency } from '~/utils/financialCalculations'
 
 const TIPO_LABELS = {
   minigranja: 'Minigranja',

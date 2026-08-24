@@ -515,7 +515,7 @@ import Checkbox from 'primevue/checkbox'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/legacy/api/client'
-import InfoField from '~/legacy/components/InfoField.vue'
+import InfoField from '~/components/InfoField.vue'
 
 const route = useRoute()
 const toast = useToast()

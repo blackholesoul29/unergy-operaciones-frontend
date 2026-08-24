@@ -459,8 +459,8 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '~/legacy/api/client'
-import { fmtCOP, formatPeriodo } from '~/legacy/utils/liquidaciones'
-import { exportarExcel } from '~/legacy/utils/exportarExcel'
+import { fmtCOP, formatPeriodo } from '~/utils/liquidaciones'
+import { exportarExcel } from '~/utils/exportarExcel'
 
 const props = defineProps({ periodo: { type: String, required: true } })
 const toast = useToast()

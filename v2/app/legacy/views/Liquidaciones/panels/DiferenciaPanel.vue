@@ -72,7 +72,7 @@
 import { ref, reactive, computed, watch, onMounted, h } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/legacy/api/client'
-import { fmtCOP, fmtCompact, formatPeriodo } from '~/legacy/utils/liquidaciones'
+import { fmtCOP, fmtCompact, formatPeriodo } from '~/utils/liquidaciones'
 
 const props = defineProps({ periodo: { type: String, required: true } })
 

@@ -426,7 +426,7 @@ import { useToast } from 'primevue/usetoast'
 import api from '~/legacy/api/client'
 import ProyectoForm from './ProyectoForm.vue'
 import { formatearNombreProyecto } from './proyectosUi'
-import { exportarExcel } from '~/legacy/utils/exportarExcel'
+import { exportarExcel } from '~/utils/exportarExcel'
 
 const router = useRouter()
 const route  = useRoute()

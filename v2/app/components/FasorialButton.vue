@@ -100,8 +100,8 @@ import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/legacy/api/client'
-import { renderFasorial } from '~/legacy/utils/fasorial'
-import { gaiaSnapshotToFasorial, validarSnapshot } from '~/legacy/utils/gaiaSnapshotToFasorial'
+import { renderFasorial } from '~/utils/fasorial'
+import { gaiaSnapshotToFasorial, validarSnapshot } from '~/utils/gaiaSnapshotToFasorial'
 
 // Umbral (min) para considerar una lectura desactualizada
 const STALE_MIN = 15

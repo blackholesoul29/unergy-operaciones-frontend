@@ -53,7 +53,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { formatCurrency, formatMWh } from '~/legacy/utils/financialCalculations'
+import { formatCurrency, formatMWh } from '~/utils/financialCalculations'
 
 const props = defineProps({
   // complianceMetrics del servicio agregador:

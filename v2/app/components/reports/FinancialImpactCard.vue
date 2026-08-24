@@ -64,7 +64,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { formatCurrency } from '~/legacy/utils/financialCalculations'
+import { formatCurrency } from '~/utils/financialCalculations'
 
 const props = defineProps({
   // Mock: { ingresoPPA, liquidacionXM, multaSLA, neto }

@@ -77,7 +77,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { fmtCOP } from '~/legacy/utils/liquidaciones'
+import { fmtCOP } from '~/utils/liquidaciones'
 
 // `panel` = entrada de proyecto de /liquidaciones/resumen-panel (fuente única: el
 // Panel Contable). filtroPiId opcional: mostrar solo ese inversionista (nav ?inv=).

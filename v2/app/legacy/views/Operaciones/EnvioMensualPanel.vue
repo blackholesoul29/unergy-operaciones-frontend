@@ -550,8 +550,8 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/legacy/api/client'
-import { useAuthStore } from '~/legacy/stores/auth'
-import { buildReportHtmlDoc } from '~/legacy/utils/rptStyles'
+import { useAuthStore } from '~/stores/auth'
+import { buildReportHtmlDoc } from '~/utils/rptStyles'
 
 const auth = useAuthStore()
 

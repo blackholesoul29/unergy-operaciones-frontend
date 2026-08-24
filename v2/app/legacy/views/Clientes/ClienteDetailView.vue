@@ -512,10 +512,10 @@ import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import api from '~/legacy/api/client'
 import ClienteForm from './ClienteForm.vue'
-import DetalleLayout from '~/legacy/components/DetalleLayout.vue'
+import DetalleLayout from '~/components/DetalleLayout.vue'
 import ClienteResumen from './ClienteResumen.vue'
-import ContactosPanel from '~/legacy/components/ContactosPanel.vue'
-import { formatearNombre } from '~/legacy/utils/nombreFormato'
+import ContactosPanel from '~/components/ContactosPanel.vue'
+import { formatearNombre } from '~/utils/nombreFormato'
 import { SEMAFORO, servicioLabel as servicioAplicaLabel } from './clientesUi'
 
 const route = useRoute()

@@ -55,7 +55,7 @@
 import { computed } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import { formatCurrency } from '~/legacy/utils/financialCalculations'
+import { formatCurrency } from '~/utils/financialCalculations'
 
 const props = defineProps({
   // Mock (spot diario): [{ fecha, mwhAsignados, precioSpot, precioPpa, impacto, estado }]

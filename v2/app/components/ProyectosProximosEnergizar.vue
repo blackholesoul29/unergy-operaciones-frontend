@@ -250,8 +250,8 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '~/legacy/api/client'
-import { useEnergizationProjects } from '~/legacy/composables/useEnergizationProjects'
-import { exportarExcel } from '~/legacy/utils/exportarExcel'
+import { useEnergizationProjects } from '~/composables/useEnergizationProjects'
+import { exportarExcel } from '~/utils/exportarExcel'
 
 const {
   projects, loading, warning, syncing, lastSync,

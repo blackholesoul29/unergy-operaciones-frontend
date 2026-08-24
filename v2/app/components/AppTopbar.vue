@@ -86,8 +86,8 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuthStore } from '~/legacy/stores/auth'
-import { useSidebar } from '~/legacy/composables/useSidebar'
+import { useAuthStore } from '~/stores/auth'
+import { useSidebar } from '~/composables/useSidebar'
 import api from '~/legacy/api/client'
 
 const route = useRoute()

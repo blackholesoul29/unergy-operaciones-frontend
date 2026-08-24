@@ -65,7 +65,7 @@ import LiquidacionesPorInversionistaView from './LiquidacionesPorInversionistaVi
 import DiferenciaPanel from './panels/DiferenciaPanel.vue'
 import FacturacionPanel from './panels/FacturacionPanel.vue'
 import api from '~/legacy/api/client'
-import { formatPeriodo, mesActualISO } from '~/legacy/utils/liquidaciones'
+import { formatPeriodo, mesActualISO } from '~/utils/liquidaciones'
 
 const TABS = [
   { key: 'resumen', label: 'Resumen', icon: 'pi pi-chart-bar' },

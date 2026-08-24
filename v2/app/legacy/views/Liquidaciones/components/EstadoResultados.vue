@@ -48,7 +48,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { fmtCOP, construirEstadoResultados, indiceSoportesProyecto } from '~/legacy/utils/liquidaciones'
+import { fmtCOP, construirEstadoResultados, indiceSoportesProyecto } from '~/utils/liquidaciones'
 
 const props = defineProps({
   liq: { type: Object, required: true },

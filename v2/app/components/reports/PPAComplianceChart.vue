@@ -33,7 +33,7 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement,
   Tooltip, Legend, Filler,
 } from 'chart.js'
-import { formatMWh } from '~/legacy/utils/financialCalculations'
+import { formatMWh } from '~/utils/financialCalculations'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler)
 

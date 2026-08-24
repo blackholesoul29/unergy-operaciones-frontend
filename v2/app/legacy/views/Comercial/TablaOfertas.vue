@@ -109,7 +109,7 @@ import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { exportarExcel } from '~/legacy/utils/exportarExcel'
+import { exportarExcel } from '~/utils/exportarExcel'
 import {
   labelEtapa, severidadEtapa, labelTipo, mwhMes, fmtMwh, fmtFecha,
   diasDesde, mesDelCodigo, alarmante,

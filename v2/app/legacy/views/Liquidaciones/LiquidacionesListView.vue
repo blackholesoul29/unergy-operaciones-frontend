@@ -141,8 +141,8 @@ import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import api from '~/legacy/api/client'
-import { proyectoActivoEnMes } from '~/legacy/utils/proyectoActivo'
-import { fmtCompact, formatPeriodo, estadoFlujoPanel } from '~/legacy/utils/liquidaciones'
+import { proyectoActivoEnMes } from '~/utils/proyectoActivo'
+import { fmtCompact, formatPeriodo, estadoFlujoPanel } from '~/utils/liquidaciones'
 
 const props = defineProps({
   embedded: { type: Boolean, default: false },

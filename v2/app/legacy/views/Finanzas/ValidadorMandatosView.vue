@@ -19,7 +19,7 @@ import {
   parseAsientos, extractMandate, suggestTag, reconciliar, fmt, norm as normNombre,
   parseIngresos, matchIngresoContab, normalizarCifra,
   parseIngresosPorConcepto, matchIngresoConceptos,
-} from '~/legacy/utils/conciliacionMandatos.js'
+} from '~/utils/conciliacionMandatos.js'
 
 const root = ref(null)
 

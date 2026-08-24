@@ -2419,7 +2419,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import { proyectoActivoEnMes } from '~/legacy/utils/proyectoActivo'
+import { proyectoActivoEnMes } from '~/utils/proyectoActivo'
 import { maxConcurrente, aPorcentaje, motivoDuplicada, esRepartida, repartirPares, claveContrato } from './cumplimientoRevision.js'
 import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'

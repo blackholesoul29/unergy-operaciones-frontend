@@ -267,7 +267,7 @@
 /* ---------- export ESM (añadido para integración Vue/Vite) ----------
    El IIFE de arriba asigna las funciones al objeto global (window en el
    navegador). Aquí solo las re-exportamos como módulo ES para poder
-   importarlas con `import { renderFasorial } from '~/legacy/utils/fasorial'`.
+   importarlas con `import { renderFasorial } from '~/utils/fasorial'`.
    No se modifica ninguna lógica de cálculo. */
 var _g = typeof window !== 'undefined' ? window : globalThis;
 export const renderFasorial = _g.renderFasorial;

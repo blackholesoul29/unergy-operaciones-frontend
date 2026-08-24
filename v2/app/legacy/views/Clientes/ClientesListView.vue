@@ -99,8 +99,8 @@ import { useToast } from 'primevue/usetoast'
 import api from '~/legacy/api/client'
 import ClienteForm from './ClienteForm.vue'
 import { SEMAFORO, servicioLabel, fmt } from './clientesUi'
-import { formatearNombre } from '~/legacy/utils/nombreFormato'
-import { exportarExcel } from '~/legacy/utils/exportarExcel'
+import { formatearNombre } from '~/utils/nombreFormato'
+import { exportarExcel } from '~/utils/exportarExcel'
 
 const router = useRouter()
 const toast = useToast()

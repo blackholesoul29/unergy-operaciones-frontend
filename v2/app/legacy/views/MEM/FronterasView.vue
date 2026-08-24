@@ -350,8 +350,8 @@ import Dropdown from 'primevue/dropdown'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { formatearNombre } from '~/legacy/utils/nombreFormato'
-import { exportarExcel } from '~/legacy/utils/exportarExcel'
+import { formatearNombre } from '~/utils/nombreFormato'
+import { exportarExcel } from '~/utils/exportarExcel'
 
 const toast = useToast()
 const confirm = useConfirm()

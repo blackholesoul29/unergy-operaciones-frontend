@@ -84,7 +84,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import api from '~/legacy/api/client'
-import { useAuthStore } from '~/legacy/stores/auth'
+import { useAuthStore } from '~/stores/auth'
 import MobileTabBar from '~/legacy/mobile/components/MobileTabBar.vue'
 import TecnicoFallaDetailSheet from '~/legacy/mobile/components/TecnicoFallaDetailSheet.vue'
 import NotificationsSheet from '~/legacy/mobile/components/NotificationsSheet.vue'

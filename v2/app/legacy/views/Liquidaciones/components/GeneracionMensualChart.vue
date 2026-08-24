@@ -53,7 +53,7 @@ import {
 } from 'chart.js'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/legacy/api/client'
-import { formatPeriodo } from '~/legacy/utils/liquidaciones'
+import { formatPeriodo } from '~/utils/liquidaciones'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 

@@ -109,7 +109,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import api from '~/legacy/api/client'
-import { useAuthStore } from '~/legacy/stores/auth'
+import { useAuthStore } from '~/stores/auth'
 import MobileTabBar from '~/legacy/mobile/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/legacy/mobile/components/FallaDetailSheet.vue'
 import FallaCreateSheet from '~/legacy/mobile/components/FallaCreateSheet.vue'

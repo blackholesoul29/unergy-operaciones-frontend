@@ -390,7 +390,7 @@ import MultiSelect from 'primevue/multiselect'
 import AutoComplete from 'primevue/autocomplete'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
-import NuevoClienteDialog from '~/legacy/components/NuevoClienteDialog.vue'
+import NuevoClienteDialog from '~/components/NuevoClienteDialog.vue'
 import api from '~/legacy/api/client'
 import * as XLSX from 'xlsx'
 

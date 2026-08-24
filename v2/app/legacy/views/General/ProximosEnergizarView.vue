@@ -12,5 +12,5 @@
 </template>
 
 <script setup>
-import ProyectosProximosEnergizar from '~/legacy/components/ProyectosProximosEnergizar.vue'
+import ProyectosProximosEnergizar from '~/components/ProyectosProximosEnergizar.vue'
 </script>

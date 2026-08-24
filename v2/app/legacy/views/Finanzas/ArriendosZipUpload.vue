@@ -220,8 +220,8 @@ import { useToast } from 'primevue/usetoast'
 import JSZip from 'jszip'
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
-import { uploadCuentaCobro, fetchDocsPeriodo } from '~/legacy/composables/useArriendosDocs'
-import { validateZipEntries, getSafeFilePath } from '~/legacy/utils/zipSecurityValidator'
+import { uploadCuentaCobro, fetchDocsPeriodo } from '~/composables/useArriendosDocs'
+import { validateZipEntries, getSafeFilePath } from '~/utils/zipSecurityValidator'
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
