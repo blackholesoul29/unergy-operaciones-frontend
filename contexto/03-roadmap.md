@@ -252,53 +252,55 @@ hallazgos que el plan no anticipaba:
 También se retiraron las directivas `@tailwind base/components/utilities` de `assets/main.css`
 (sintaxis de Tailwind 3, inexistente en Tailwind 4).
 
-### 1.2c Estado de la fase 1
+### 1.2c Estado de la fase 1 — ✅ completa (salvo revisión visual)
 
 | Paso | Estado |
 | --- | --- |
-| Copiar el árbol (237 archivos) y repartirlo en `app/` | ✅ |
-| Dependencias del legacy añadidas (15 paquetes, marcadas como temporales) | ✅ |
-| `ssr: false`, `runtimeCompiler: true`, CSS del legacy en `nuxt.config.ts` | ✅ |
-| Paleta y fuentes como `@theme` de Tailwind 4 | ✅ |
+| Árbol del legacy repartido en `app/` (237 archivos) | ✅ |
+| Dependencias del legacy (15 paquetes, marcadas como temporales) | ✅ |
+| `ssr: false`, `runtimeCompiler: true`, CSS y `@theme` de Tailwind 4 | ✅ |
 | Plugin de PrimeVue y layouts `legacy` / `legacy-blank` | ✅ |
-| **Las 75 rutas como páginas en `app/pages/`** (67 vistas + 8 redirecciones) | ✅ |
+| Las 75 rutas como páginas en `app/pages/` (67 vistas + 8 redirecciones) | ✅ |
 | Guard del legacy como middleware global | ✅ |
-| **`app/legacy/` y `app/router/` eliminados** — `main.js` y `App.vue` sustituidos | ✅ |
-| Navegación del sidebar movida a `app/config/navigation.ts` | ✅ |
-| Proxies de Nitro (`/api`, `/monitoreo`, `/api/v1/evo` con su token server-side) | ☐ |
-| `app:chunkError` en lugar de `vite:preloadError` | ☐ |
-| Revisión visual de las 67 rutas contra el legacy | ☐ |
+| `app/legacy/` y `app/router/` eliminados | ✅ |
+| Navegación del sidebar en `app/config/navigation.ts` | ✅ |
+| Proxies de Nitro (`/api/v1`, `/monitoreo`, `/api/v1/evo` con token server-side) | ✅ |
+| `app:chunkError` en lugar de `vite:preloadError` | ✅ |
+| Revisión visual de las 67 rutas contra el legacy | ☐ (necesita backend) |
 
-**Verificación del árbol de rutas:** las rutas derivadas de `app/pages/` se cruzan contra
-`contexto/inventario-rutas.md` y coinciden **75 de 75**, sin faltantes ni sobrantes.
+**Verificado de punta a punta**, no solo compilado:
+
+- El árbol de rutas derivado de `app/pages/` coincide con `contexto/inventario-rutas.md`:
+  **75 de 75**, sin faltantes ni sobrantes.
+- El servidor del build responde **200** en rutas con parámetro y anidadas (`/clientes/42`,
+  `/proyectos/7/ppa`, `/liquidaciones/9/pdf`, `/m/solar`), **sin ninguna variable de entorno**.
+- Los cuatro proxies, contra backends de prueba: ruta y query preservadas, el prefijo
+  `/api/v1/evo` recortado y el `X-EVO-Token` inyectado. El token aparece en el bundle de
+  servidor y en **cero** archivos del cliente.
 
 #### La regla de nombres de página, y por qué
 
 Toda ruta va a `<segmentos>/index.vue`, nunca a `<segmento>.vue`. En Nuxt, un `clientes.vue` que
 convive con una carpeta `clientes/` **deja de ser una página** y pasa a ser el layout padre de sus
 hijas: necesita un `<NuxtPage />` dentro, y sin él `/clientes/:id` renderiza vacío **sin dar
-ningún error**. Con `index.vue` esa ambigüedad no existe, y da igual que la ruta tenga hijas o no.
+ningún error**. Con `index.vue` esa ambigüedad no existe.
 
-Anidadas y con parámetro quedan así: `/proyectos/:id/ppa` → `proyectos/[id]/ppa/index.vue`;
-`/liquidaciones/:id/pdf` → `liquidaciones/[id]/pdf/index.vue`. Y como vue-router prefiere lo
-estático a lo dinámico, `liquidaciones/inversionista/` y `liquidaciones/[id]/` conviven sin pisarse.
+Anidadas y con parámetro: `/proyectos/:id/ppa` → `proyectos/[id]/ppa/index.vue`. Y como
+vue-router prefiere lo estático a lo dinámico, `liquidaciones/inversionista/` y
+`liquidaciones/[id]/` conviven sin pisarse.
 
-### 1.2d Lo que se adelantó de la fase 2
+#### Dos bugs que el `build` verde no detectaba
 
-La reubicación resultó ser el camino corto, así que buena parte de la fase 2 ya está hecha:
+Los encontró una auditoría de imports, no las puertas de calidad — que estaban en verde con los
+dos presentes. Vale la pena repetirla al final de cada ola:
 
-| Origen | Destino | Estado |
-| --- | --- | --- |
-| `api/client.js` | `core/client.ts` (TypeScript) | ✅ |
-| `api/{liquidacionesApi,garantiasProyecciones,xm}.js` | services en `features/<slice>/services/` | ✅ |
-| `stores/auth.js` | `stores/auth.ts` + `features/auth/services/legacy-auth.ts` | ✅ |
-| `utils/security.js` | `utils/security.ts` | ✅ |
-| `composables/*.js` | `composables/*.ts` + services + `useState` | ✅ |
-| `constants/liquidaciones.js` | `features/liquidaciones/constants.ts` | ✅ |
-| `components/`, `assets/`, `data/` | sus carpetas en `app/` | ✅ |
-| `views/`, `mobile/` | repartir en slices de `features/` | ☐ |
-
-Queda por repartir `views/` y `mobile/`: es lo único que separa de terminar la fase 2.
+1. **Cuatro imports rotos.** Un `sed` dejó `~/core/client.js` donde el archivo ya era `.ts`.
+   Compilaba porque Vite resuelve `.js` → `.ts` en proyectos TypeScript.
+2. **Todas las rutas devolvían 302 a `/login`.** El middleware de servidor del template
+   redirigía todo, porque `NUXT_PUBLIC_AUTH_ENABLED=false` vivía solo en `.env` — y un `.env`
+   no viaja al build de producción. La app compilaba perfecta y no servía ni una página. El
+   arreglo no es poner la variable: es que **el valor por defecto de `nuxt.config.ts` refleje la
+   realidad de la fase**. `authEnabled: false` está ahora en la config.
 
 ### 1.3 Riesgos de la fase
 
@@ -325,14 +327,32 @@ Queda por repartir `views/` y `mobile/`: es lo único que separa de terminar la 
 
 ---
 
-## Fase 2 · Reorganización estructural
+## Fase 2 · Reorganización estructural — ✅ completa
 
-**Objetivo:** vaciar `app/legacy/` repartiendo su contenido en la estructura del template, con
-todos los imports funcionando. **Sin cambiar comportamiento, sin reescribir lógica, sin migrar
-todavía a TypeScript.**
+**Ejecutada dentro de la fase 1.** Al no poder usarse la carpeta de cuarentena (ver §1.1), el
+código aterrizó directamente en su sitio, así que las dos fases se solaparon.
 
-**Regla de la fase:** los únicos cambios permitidos dentro de un archivo son sus rutas de
-import. Nada más.
+| Origen | Destino | Estado |
+| --- | --- | --- |
+| `api/client.js` | `core/client.ts` | ✅ |
+| `api/{liquidacionesApi,garantiasProyecciones,xm}.js` | services en `features/<slice>/services/` | ✅ |
+| `stores/auth.js` | `stores/auth.ts` + `features/auth/services/legacy-auth.ts` | ✅ |
+| `utils/security.js` | `utils/security.ts` | ✅ |
+| `composables/*.js` | `composables/*.ts` + services + `useState` | ✅ |
+| `constants/liquidaciones.js` | `features/liquidaciones/constants.ts` | ✅ |
+| `views/**` (150 archivos) | `features/<slice>/components/` en 21 slices | ✅ |
+| `mobile/**` | `features/mobile/components/` | ✅ |
+| `components/`, `assets/`, `data/` | sus carpetas en `app/` | ✅ |
+
+`app/views/` y `app/mobile/` ya no existen. 178 archivos movidos con `git mv` (la historia se
+conserva) y 88 archivos con imports reescritos.
+
+**Dos cruces de slice que había que romper**, ambos detectados por auditoría:
+
+- `GeneracionSolarView` importaba `./Fallas/FallaForm.vue` — ahora por ruta absoluta al slice.
+- `InformeOMView` hacía `import('../MEM/cumplimientoAnualExport.js')`. Este lo dejó pasar la
+  primera auditoría porque era un **`import()` dinámico** y el barrido solo miraba `from '…'`.
+  La auditoría cubre ahora ambas formas.
 
 ### 2.1 Mapa de destino
 
