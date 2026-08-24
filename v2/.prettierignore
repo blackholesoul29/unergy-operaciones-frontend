@@ -29,11 +29,9 @@ app/components/gandalf
 app/legacy
 app/views
 app/mobile
-app/api
 app/router
 app/data
 app/constants
-app/stores
 app/assets/*.js
 app/assets/main.css
 app/components/*.vue

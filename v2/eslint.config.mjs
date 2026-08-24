@@ -22,11 +22,9 @@ const LEGACY_PENDIENTE_DE_MIGRAR = [
   'app/legacy/**', // solo main.js y App.vue, ya sustituidos por el plugin y los layouts
   'app/views/**',
   'app/mobile/**',
-  'app/api/**',
   'app/router/**',
   'app/data/**',
   'app/constants/**',
-  'app/stores/**',
   'app/assets/*.js', // datasets estáticos
 
   // Carpetas compartidas con el template: aquí el legacy es el JavaScript
