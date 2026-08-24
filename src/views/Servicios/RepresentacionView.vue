@@ -61,6 +61,38 @@
         </button>
       </div>
 
+      <!-- Duplicados: la planta tiene varios registros que son el mismo contrato.
+           Los sembraron tres fuentes distintas (los dos seeds y el wizard) sin
+           que ninguna reconociera a las otras. -->
+      <div v-if="grupoDuplicado" class="dup-aviso">
+        <i class="pi pi-clone" />
+        <div class="min-w-0">
+          <p class="font-semibold">
+            {{ grupoDuplicado.ids.length }} registros de esta planta son el mismo contrato
+          </p>
+          <p class="text-[11px] opacity-80">
+            Al fusionar se conserva uno con la unión de todos los datos y se
+            eliminan los demás. Ningún valor se sobreescribe.
+          </p>
+        </div>
+        <Button label="Fusionar" icon="pi pi-check" size="small" class="ml-auto shrink-0"
+          :loading="fusionando" @click="fusionar" />
+      </div>
+
+      <div v-else-if="grupoEnConflicto" class="dup-aviso dup-aviso--frena">
+        <i class="pi pi-exclamation-triangle" />
+        <div class="min-w-0">
+          <p class="font-semibold">
+            {{ grupoEnConflicto.ids.length }} registros parecen el mismo contrato, pero se contradicen
+          </p>
+          <p class="text-[11px] opacity-80">
+            No se fusionan solos porque hay que decidir cuál valor vale:
+            {{ grupoEnConflicto.conflictos.map(c => c.campo).join(', ') }}.
+            Corrige el campo en los registros y el aviso pasará a ofrecer la fusión.
+          </p>
+        </div>
+      </div>
+
       <template v-if="c">
         <!-- ── Resumen ──────────────────────────────────────────────────── -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -522,8 +554,54 @@ function fmtVal(v) {
   return Number.isFinite(n) ? n.toFixed(n % 1 === 0 ? 0 : 4) : '—'
 }
 
+// Dos registros duplicados traen el mismo inversionista, así que la etiqueta a
+// secas los deja indistinguibles. Cuando eso pasa se añade lo que los separa.
 function etiquetaContrato(x) {
-  return x.inversionista_nombre || x.numero_contrato || `Contrato ${x.id}`
+  const base = x.numero_contrato || x.inversionista_nombre || `Contrato ${x.id}`
+  const repetida = contratos.value.filter(o =>
+    (o.numero_contrato || o.inversionista_nombre || `Contrato ${o.id}`) === base).length > 1
+  if (!repetida) return base
+  const detalle = x.numero_contrato ? null
+    : (x.nombre_proyecto_ref ? `ref ${x.nombre_proyecto_ref}` : `#${x.id}`)
+  return detalle ? `${base} · ${detalle}` : `${base} · #${x.id}`
+}
+
+// ── Duplicados ───────────────────────────────────────────────────────────────
+// El backend decide qué es duplicado y si se puede fusionar sin perder datos;
+// acá solo se muestra el grupo que corresponde a esta planta.
+const duplicados = ref({ grupos_fusionables: [], grupos_con_conflicto: [] })
+const fusionando = ref(false)
+
+const idsVista = computed(() => new Set(contratos.value.map(x => x.id)))
+function delaVista(g) { return g.ids.some(id => idsVista.value.has(id)) }
+
+const grupoDuplicado = computed(() =>
+  (duplicados.value.grupos_fusionables || []).find(delaVista) || null)
+const grupoEnConflicto = computed(() =>
+  (duplicados.value.grupos_con_conflicto || []).find(delaVista) || null)
+
+async function cargarDuplicados() {
+  try {
+    const { data } = await api.get('/contratos-servicio/duplicados-representacion')
+    duplicados.value = data
+  } catch { /* el aviso es un extra: la ficha funciona sin él */ }
+}
+
+async function fusionar() {
+  fusionando.value = true
+  try {
+    const { data } = await api.post('/contratos-servicio/fusionar-representacion',
+                                    { ids: grupoDuplicado.value.ids })
+    toast.add({ severity: 'success', summary: 'Registros fusionados',
+                detail: `${data.contratos_eliminados} duplicado(s) eliminado(s)`, life: 3500 })
+    await cargar()
+    await cargarDuplicados()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo fusionar',
+                detail: e.response?.data?.detail || e.message, life: 4000 })
+  } finally {
+    fusionando.value = false
+  }
 }
 
 // ── Indexación ───────────────────────────────────────────────────────────────
@@ -769,6 +847,7 @@ onMounted(async () => {
   } catch { /* el nombre es decorativo: la vista funciona sin él */ }
   try {
     await cargar()
+    await cargarDuplicados()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al cargar contratos',
                 detail: e.response?.data?.detail || e.message, life: 4000 })
@@ -843,11 +922,27 @@ onMounted(async () => {
   font-size: 11px; color: #9b8fb0; margin-top: 1px;
 }
 
+.dup-aviso {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 13px; border-radius: 10px; font-size: 12px;
+  background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+}
+.dup-aviso--frena { background: #fffbeb; border-color: #fde68a; color: #92400E; }
+.dup-aviso i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+
 .idx-fila {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
   border: 1px solid #ECE7F2; border-radius: 10px; padding: 10px 12px; background: #fcfbfe;
 }
-@media (min-width: 768px) { .idx-fila { grid-template-columns: 1fr 1fr 1fr auto; } }
+@media (min-width: 768px) { .dup-aviso {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 13px; border-radius: 10px; font-size: 12px;
+  background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+}
+.dup-aviso--frena { background: #fffbeb; border-color: #fde68a; color: #92400E; }
+.dup-aviso i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+
+.idx-fila { grid-template-columns: 1fr 1fr 1fr auto; } }
 
 .cd-th {
   padding: 8px 16px; text-align: left; font-size: 11px; font-weight: 700;
