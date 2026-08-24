@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/MEM/CumplimientoV2View.vue'
+import View from '~/features/mem/components/CumplimientoV2View.vue'
 
 definePageMeta({ layout: 'legacy' })
 </script>

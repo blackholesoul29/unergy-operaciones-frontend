@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Admin/DiagnosticoEnlacesView.vue'
+import View from '~/features/admin/components/DiagnosticoEnlacesView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin'], requireEmail: 'juanjose@unergy.io' })
 </script>

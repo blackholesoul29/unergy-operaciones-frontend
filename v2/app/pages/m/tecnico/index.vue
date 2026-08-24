@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/mobile/MobileTecnicoFallasView.vue'
+import View from '~/features/mobile/components/MobileTecnicoFallasView.vue'
 
 definePageMeta({ layout: 'legacy-blank', mobile: true, roles: ['tecnico'] })
 </script>

@@ -20,8 +20,8 @@
 
 <script setup>
 import { ref } from 'vue'
-import ReporteEnergiaAutomatizacionView from '~/views/MEM/ReporteEnergiaAutomatizacionView.vue'
-import ReporteCGMView from '~/views/MEM/ReporteCGMView.vue'
+import ReporteEnergiaAutomatizacionView from '~/features/fronteras/components/ReporteEnergiaAutomatizacionView.vue'
+import ReporteCGMView from '~/features/operadores-red/components/ReporteCGMView.vue'
 
 const tab = ref('automatizacion')
 </script>

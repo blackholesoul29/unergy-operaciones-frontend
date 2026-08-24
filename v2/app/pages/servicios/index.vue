@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Contratos/ContratosListView.vue'
+import View from '~/features/contratos/components/ContratosListView.vue'
 
 definePageMeta({ layout: 'legacy' })
 </script>

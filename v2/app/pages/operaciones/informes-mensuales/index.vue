@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Operaciones/InformesMensualesView.vue'
+import View from '~/features/operaciones/components/InformesMensualesView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones', 'monitoreo'] })
 </script>

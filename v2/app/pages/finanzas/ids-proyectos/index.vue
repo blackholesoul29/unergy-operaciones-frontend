@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Finanzas/IdsProyectosView.vue'
+import View from '~/features/finanzas/components/IdsProyectosView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'liquidaciones'] })
 </script>

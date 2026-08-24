@@ -44,7 +44,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
-import { usePwa } from '~/mobile/usePwa'
+import { usePwa } from '~/features/mobile/components/usePwa'
 
 const router = useRouter()
 const auth = useAuthStore()

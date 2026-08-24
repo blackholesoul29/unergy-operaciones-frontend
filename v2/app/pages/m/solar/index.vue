@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/mobile/MobileSolarView.vue'
+import View from '~/features/mobile/components/MobileSolarView.vue'
 
 definePageMeta({ layout: 'legacy-blank', mobile: true })
 </script>

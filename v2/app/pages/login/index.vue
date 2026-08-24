@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/LoginView.vue'
+import View from '~/features/auth/components/LoginView.vue'
 
 definePageMeta({ layout: 'legacy-blank', public: true })
 </script>

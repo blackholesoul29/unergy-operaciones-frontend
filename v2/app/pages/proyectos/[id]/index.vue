@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Proyectos/ProyectoDetailView.vue'
+import View from '~/features/proyectos/components/ProyectoDetailView.vue'
 
 definePageMeta({ layout: 'legacy' })
 </script>

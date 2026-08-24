@@ -606,13 +606,13 @@ import api from '~/core/client'
 import { formatearNombre } from '~/utils/nombreFormato'
 import { exportarExcel } from '~/utils/exportarExcel'
 import { estadoVigenciaPPA } from '~/utils/ppaVigencia'
-import { SEMAFORO, servicioLabel, fmt } from '~/views/Clientes/clientesUi'
+import { SEMAFORO, servicioLabel, fmt } from '~/features/clientes/components/clientesUi'
 
 // Los formularios y wizards pesan; sólo se descargan cuando alguien crea algo.
-const ClienteForm = defineAsyncComponent(() => import('~/views/Clientes/ClienteForm.vue'))
-const ProyectoForm = defineAsyncComponent(() => import('~/views/Proyectos/ProyectoForm.vue'))
-const PPAContratoWizard = defineAsyncComponent(() => import('~/views/Contratos/PPAContratoWizard.vue'))
-const ContratoServicioWizard = defineAsyncComponent(() => import('~/views/Contratos/ContratoServicioWizard.vue'))
+const ClienteForm = defineAsyncComponent(() => import('~/features/clientes/components/ClienteForm.vue'))
+const ProyectoForm = defineAsyncComponent(() => import('~/features/proyectos/components/ProyectoForm.vue'))
+const PPAContratoWizard = defineAsyncComponent(() => import('~/features/contratos/components/PPAContratoWizard.vue'))
+const ContratoServicioWizard = defineAsyncComponent(() => import('~/features/contratos/components/ContratoServicioWizard.vue'))
 
 const router = useRouter()
 const route = useRoute()

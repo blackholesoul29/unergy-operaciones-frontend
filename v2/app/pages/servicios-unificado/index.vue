@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Servicios/ServiciosUnificadoView.vue'
+import View from '~/features/contratos/components/ServiciosUnificadoView.vue'
 
 definePageMeta({ layout: 'legacy' })
 </script>

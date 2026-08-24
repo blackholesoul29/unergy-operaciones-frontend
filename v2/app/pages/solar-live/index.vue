@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Solar/SolarLiveView.vue'
+import View from '~/features/solar/components/SolarLiveView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones', 'monitoreo'] })
 </script>

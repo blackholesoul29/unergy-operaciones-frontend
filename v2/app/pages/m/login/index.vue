@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/mobile/MobileLoginView.vue'
+import View from '~/features/mobile/components/MobileLoginView.vue'
 
 definePageMeta({ layout: 'legacy-blank', public: true, mobile: true })
 </script>

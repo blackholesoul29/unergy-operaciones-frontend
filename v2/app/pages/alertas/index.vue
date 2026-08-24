@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Alertas/AlertasView.vue'
+import View from '~/features/alertas/components/AlertasView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones', 'monitoreo'] })
 </script>

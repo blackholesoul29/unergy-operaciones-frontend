@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/PanelContable/PanelContableView.vue'
+import View from '~/features/panel-contable/components/PanelContableView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'liquidaciones'] })
 </script>

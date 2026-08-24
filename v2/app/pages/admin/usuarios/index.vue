@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Admin/AdminUsuariosView.vue'
+import View from '~/features/admin/components/AdminUsuariosView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
 </script>

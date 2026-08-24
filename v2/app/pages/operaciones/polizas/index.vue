@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Operaciones/PolizasView.vue'
+import View from '~/features/operaciones/components/PolizasView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
 </script>

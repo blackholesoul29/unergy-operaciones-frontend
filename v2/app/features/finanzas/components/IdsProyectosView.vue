@@ -126,7 +126,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
 import api from '~/core/client'
-import { formatearNombreProyecto } from '~/views/Proyectos/proyectosUi'
+import { formatearNombreProyecto } from '~/features/proyectos/components/proyectosUi'
 
 const router = useRouter()
 const toast = useToast()

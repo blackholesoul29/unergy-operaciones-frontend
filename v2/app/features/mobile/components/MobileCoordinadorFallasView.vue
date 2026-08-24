@@ -110,10 +110,10 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import api from '~/core/client'
 import { useAuthStore } from '~/stores/auth'
-import MobileTabBar from '~/mobile/components/MobileTabBar.vue'
-import FallaDetailSheet from '~/mobile/components/FallaDetailSheet.vue'
-import FallaCreateSheet from '~/mobile/components/FallaCreateSheet.vue'
-import NotificationsSheet from '~/mobile/components/NotificationsSheet.vue'
+import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
+import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
+import FallaCreateSheet from '~/features/mobile/components/components/FallaCreateSheet.vue'
+import NotificationsSheet from '~/features/mobile/components/components/NotificationsSheet.vue'
 
 const auth = useAuthStore()
 const fallas = ref([])

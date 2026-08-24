@@ -716,7 +716,10 @@ import Dialog from 'primevue/dialog'
 import AutoComplete from 'primevue/autocomplete'
 import { useToast } from 'primevue/usetoast'
 import api from '~/core/client'
-import FallaForm from './Fallas/FallaForm.vue'
+// Cruza de slice: el formulario de fallas vive en su propio slice, así que se
+// importa por ruta absoluta. Era `./Fallas/FallaForm.vue` cuando ambos colgaban
+// de `views/`.
+import FallaForm from '~/features/fallas/components/FallaForm.vue'
 
 // ── Register Chart.js components ────────────────────────────────────────────
 ChartJS.register(

@@ -855,7 +855,7 @@ import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import InfoField from '~/components/InfoField.vue'
-import PPAContratoWizard from '~/views/Contratos/PPAContratoWizard.vue'
+import PPAContratoWizard from '~/features/contratos/components/PPAContratoWizard.vue'
 import { estadoVigenciaPPA } from '~/utils/ppaVigencia'
 import api from '~/core/client'
 

@@ -96,8 +96,8 @@
 <script setup>
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import api from '~/core/client'
-import MobileTabBar from '~/mobile/components/MobileTabBar.vue'
-import FallaDetailSheet from '~/mobile/components/FallaDetailSheet.vue'
+import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
+import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
 
 // ── Tarjeta de "top" reutilizable (medidores / inversores) ───────────────────
 const TopCard = {

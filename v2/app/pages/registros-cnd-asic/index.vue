@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/RegistrosCndAsic/RegistrosCndAsicListView.vue'
+import View from '~/features/registros-cnd/components/RegistrosCndAsicListView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
 </script>

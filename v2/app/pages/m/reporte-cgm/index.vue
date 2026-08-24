@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/mobile/MobileReporteCGMView.vue'
+import View from '~/features/mobile/components/MobileReporteCGMView.vue'
 
 definePageMeta({ layout: 'legacy-blank', mobile: true })
 </script>

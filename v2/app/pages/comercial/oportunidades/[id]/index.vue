@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Comercial/OportunidadDetailView.vue'
+import View from '~/features/comercial/components/OportunidadDetailView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'comercial'] })
 </script>

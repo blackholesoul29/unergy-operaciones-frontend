@@ -100,7 +100,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import api from '~/core/client'
 import { formatearNombre } from '~/utils/nombreFormato'
-import MobileTabBar from '~/mobile/components/MobileTabBar.vue'
+import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 
 const toast = useToast()
 

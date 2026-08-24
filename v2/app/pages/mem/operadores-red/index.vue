@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/MEM/OperadoresRedView.vue'
+import View from '~/features/operadores-red/components/OperadoresRedView.vue'
 
 definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
 </script>

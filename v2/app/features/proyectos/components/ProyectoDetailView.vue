@@ -800,7 +800,7 @@ import { useToast } from 'primevue/usetoast'
 import * as XLSX from 'xlsx'
 import api from '~/core/client'
 import divipola from '~/data/colombia-divipola.json'
-import ContratoServicioWizard from '~/views/Contratos/ContratoServicioWizard.vue'
+import ContratoServicioWizard from '~/features/contratos/components/ContratoServicioWizard.vue'
 import ProyectoAreaContactosPanel from '~/components/ProyectoAreaContactosPanel.vue'
 import DetalleLayout from '~/components/DetalleLayout.vue'
 

@@ -613,7 +613,7 @@ async function descargarPdf() {
   try {
     const { jsPDF } = await import('jspdf')
     const { default: autoTable } = await import('jspdf-autotable')
-    const { slugify } = await import('../MEM/cumplimientoAnualExport.js')
+    const { slugify } = await import('~/features/mem/components/cumplimientoAnualExport.js')
 
     const doc = new jsPDF({ unit: 'pt', format: 'a4' })
     const pageW = doc.internal.pageSize.getWidth()

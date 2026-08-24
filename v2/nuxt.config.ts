@@ -70,6 +70,23 @@ export default defineNuxtConfig({
    * `NUXT_AUTH_COOKIE_SECURE`, and so on. See `.env.example`.
    */
   runtimeConfig: {
+    /**
+     * MIGRACIÓN — Fase 1. A dónde reenvía Nitro lo que el navegador pide en el
+     * mismo origen. Sustituye al `server.proxy` de `vite.config.js` del legacy y
+     * a los `rewrites` de `vercel.json`.
+     *
+     * Son claves server-only a propósito: no aparecen bajo `public`, así que no
+     * viajan al bundle del cliente.
+     */
+    apiProxyTarget: 'http://localhost:8000',
+    /**
+     * La API de EVO puede vivir en otro host, y su token **no puede tocar el
+     * navegador**: lo inyecta la ruta de Nitro. En el legacy esa garantía la daba
+     * el proxy de Vite; aquí la da `server/routes/api/v1/evo/[...path].ts`.
+     */
+    evoApiUrl: 'http://localhost:18800',
+    evoApiToken: '',
+
     // Server-only: the auth API may live on its own host, and the browser never
     // calls it — everything goes through `server/api/auth/*`. Empty falls back
     // to the data API.

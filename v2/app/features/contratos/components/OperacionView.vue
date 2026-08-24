@@ -1235,7 +1235,7 @@ import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '~/core/client'
-import ContratoServicioWizard from '~/views/Contratos/ContratoServicioWizard.vue'
+import ContratoServicioWizard from '~/features/contratos/components/ContratoServicioWizard.vue'
 import ARRIENDOS_ESTATICOS from '~/assets/arriendos_data.js'
 
 const route = useRoute()

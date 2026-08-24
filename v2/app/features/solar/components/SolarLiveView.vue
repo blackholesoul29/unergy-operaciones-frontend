@@ -249,7 +249,7 @@ import { Line } from 'vue-chartjs'
 import draggable from 'vuedraggable'
 import AutoComplete from 'primevue/autocomplete'
 import api from '~/core/client'
-import GeneracionView from '~/views/Operaciones/GeneracionView.vue'
+import GeneracionView from '~/features/operaciones/components/GeneracionView.vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler)
 

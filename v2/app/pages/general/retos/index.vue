@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/Retos/RetosListView.vue'
+import View from '~/features/retos/components/RetosListView.vue'
 
 definePageMeta({ layout: 'legacy' })
 </script>

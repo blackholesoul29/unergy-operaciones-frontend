@@ -250,7 +250,7 @@ import { TIPOS_CONTRATO, TIPOS_TARIFA } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
 
 const liquidacionesApi = new LiquidacionesApiService()
-import { formatearNombreProyecto } from '~/views/Proyectos/proyectosUi'
+import { formatearNombreProyecto } from '~/features/proyectos/components/proyectosUi'
 
 const toast = useToast()
 

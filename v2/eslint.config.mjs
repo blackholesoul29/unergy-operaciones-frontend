@@ -11,23 +11,53 @@ import withNuxt from './.nuxt/eslint.config.mjs'
  *
  * Así que se quedan fuera del lint hasta que la fase 3 los toque de verdad.
  *
- * El patrón está elegido para que la lista **se vacíe sola**: el legacy es
- * JavaScript y el template es TypeScript, así que `app/utils/*.js` y
- * `app/composables/*.js` separan los dos limpiamente. En cuanto un archivo pasa a
- * `.ts` (paso 4 de la receta de la fase 3) deja de estar ignorado y el linter
- * empieza a exigirle. La lista encogiendo *es* la métrica de avance.
+ * La lista está pensada para **vaciarse sola**. Donde el legacy y el template
+ * comparten carpeta, los separa la extensión: el legacy es JavaScript y el
+ * template TypeScript. Donde el legacy ocupa la carpeta entera —las vistas, ya
+ * repartidas en `features/<slice>/components/`— va una línea por slice.
+ *
+ * En ambos casos, migrar (paso 4 de la receta de la fase 3) saca al archivo del
+ * ignore y el linter empieza a exigirle. La lista encogiendo *es* la métrica de
+ * avance.
  */
 const LEGACY_PENDIENTE_DE_MIGRAR = [
   // Carpetas que son legacy al 100%
-  'app/views/**',
-  'app/mobile/**',
   'app/data/**',
   'app/assets/*.js', // datasets estáticos
 
   // Carpetas compartidas con el template: aquí el legacy es el JavaScript
   'app/components/*.vue', // los del template están en subcarpetas
   'app/components/reports/**',
-  'app/utils/*.js',
+  'app/utils/*.js', // los del template son TypeScript
+  // Las vistas del legacy, ya repartidas en sus slices. Esta lista es la
+  // métrica de avance de la fase 3: cuando un slice se migra, se borra su
+  // línea y el linter empieza a exigirle.
+  //
+  // `auth` va archivo por archivo porque su carpeta está mezclada: el
+  // `LoginForm.vue` es del template y sí cumple las reglas.
+  'app/features/admin/components/**',
+  'app/features/alertas/components/**',
+  'app/features/auth/components/ForgotPasswordView.vue',
+  'app/features/auth/components/LoginView.vue',
+  'app/features/auth/components/ResetPasswordView.vue',
+  'app/features/clientes/components/**',
+  'app/features/comercial/components/**',
+  'app/features/contratos/components/**',
+  'app/features/dashboard/components/**',
+  'app/features/fallas/components/**',
+  'app/features/finanzas/components/**',
+  'app/features/fronteras/components/**',
+  'app/features/garantias/components/**',
+  'app/features/liquidaciones/components/**',
+  'app/features/mem/components/**',
+  'app/features/mobile/components/**',
+  'app/features/operaciones/components/**',
+  'app/features/operadores-red/components/**',
+  'app/features/panel-contable/components/**',
+  'app/features/proyectos/components/**',
+  'app/features/registros-cnd/components/**',
+  'app/features/retos/components/**',
+  'app/features/solar/components/**',
 ]
 
 export default withNuxt(prettier, {

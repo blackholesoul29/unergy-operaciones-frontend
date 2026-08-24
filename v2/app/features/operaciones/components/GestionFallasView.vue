@@ -494,7 +494,7 @@ import InputIcon from 'primevue/inputicon'
 import DatePicker from 'primevue/datepicker'
 import Dialog from 'primevue/dialog'
 import Textarea from 'primevue/textarea'
-import FallaForm from '~/views/Fallas/FallaForm.vue'
+import FallaForm from '~/features/fallas/components/FallaForm.vue'
 import api from '~/core/client'
 import { tituloFalla, categoriaFalla } from '~/utils/fallaTitulo'
 

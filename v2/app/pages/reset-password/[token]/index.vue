@@ -5,7 +5,7 @@
  *
  * Desaparece cuando su página real se escriba en la fase 3.
  */
-import View from '~/views/ResetPasswordView.vue'
+import View from '~/features/auth/components/ResetPasswordView.vue'
 
 definePageMeta({ layout: 'legacy-blank', public: true })
 </script>

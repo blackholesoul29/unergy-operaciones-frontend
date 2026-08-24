@@ -502,7 +502,7 @@ import Popover       from 'primevue/popover'
 import { useToast }  from 'primevue/usetoast'
 import api           from '~/core/client'
 import DocumentoIcon  from '~/components/DocumentoIcon.vue'
-import { parseCOP }   from '~/utils/parseCOP.js'
+import { parseCOP }   from '~/utils/parseCOP'
 
 const toast = useToast()
 
