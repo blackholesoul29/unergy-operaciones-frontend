@@ -98,7 +98,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const route = useRoute()
 const password = ref('')

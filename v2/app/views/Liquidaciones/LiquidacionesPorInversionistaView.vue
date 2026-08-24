@@ -131,7 +131,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
-import api from '~/api/client'
+import api from '~/core/client'
 import NetoMensualBar from './components/NetoMensualBar.vue'
 import { fmtCompact, formatPeriodo } from '~/utils/liquidaciones'
 

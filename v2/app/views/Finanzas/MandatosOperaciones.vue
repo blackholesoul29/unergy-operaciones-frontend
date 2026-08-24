@@ -156,7 +156,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import Select from 'primevue/select'
-import api from '~/api/client'
+import api from '~/core/client'
 import { useToast } from 'primevue/usetoast'
 
 const toast = useToast()

@@ -171,7 +171,7 @@ import {
   Title, Tooltip, Legend, Filler,
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import api from '~/api/client'
+import api from '~/core/client'
 import { fmtCompact, formatPeriodo, estadoFlujoPanel, ESTADO_FLUJO } from '~/utils/liquidaciones'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)

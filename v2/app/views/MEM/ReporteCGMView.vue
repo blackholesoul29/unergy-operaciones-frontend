@@ -164,7 +164,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import { formatearNombre } from '~/utils/nombreFormato'
 import HistorialEnviosCGM from './HistorialEnviosCGM.vue'
 

@@ -119,7 +119,7 @@
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import Tag from 'primevue/tag'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const hoy           = new Date()
 const periodoOffset = ref(0)

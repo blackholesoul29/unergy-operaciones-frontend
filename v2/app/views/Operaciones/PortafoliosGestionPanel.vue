@@ -100,7 +100,7 @@
 import { ref, onMounted } from 'vue'
 import draggable from 'vuedraggable'
 import ProgressSpinner from 'primevue/progressspinner'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const loading = ref(false)
 const creando = ref(false)

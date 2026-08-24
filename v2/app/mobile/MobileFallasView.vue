@@ -68,7 +68,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 import MobileTabBar from '~/mobile/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/mobile/components/FallaDetailSheet.vue'
 import FallaCreateSheet from '~/mobile/components/FallaCreateSheet.vue'

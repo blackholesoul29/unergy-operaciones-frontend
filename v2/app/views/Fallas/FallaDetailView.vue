@@ -377,7 +377,7 @@ import InputNumber from 'primevue/inputnumber'
 import ProgressSpinner from 'primevue/progressspinner'
 import FallaForm from './FallaForm.vue'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/utils/fallaTitulo'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const route = useRoute()
 const router = useRouter()

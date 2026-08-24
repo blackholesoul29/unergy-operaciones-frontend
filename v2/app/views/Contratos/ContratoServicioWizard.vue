@@ -488,7 +488,7 @@ import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Textarea from 'primevue/textarea'
 import NuevoClienteDialog from '~/components/NuevoClienteDialog.vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props = defineProps({
   visible: Boolean,

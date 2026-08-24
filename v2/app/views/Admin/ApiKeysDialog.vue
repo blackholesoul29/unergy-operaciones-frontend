@@ -100,7 +100,7 @@ import InputText from 'primevue/inputtext'
 import Tag from 'primevue/tag'
 import Divider from 'primevue/divider'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props = defineProps({ usuario: Object })
 const visible = defineModel('visible', { type: Boolean })

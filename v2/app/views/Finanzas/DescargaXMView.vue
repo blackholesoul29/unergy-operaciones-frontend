@@ -122,7 +122,9 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
 import Button from 'primevue/button'
-import { iniciarDescargaXM, consultarEstadoXM, agenteLocalNoDisponible } from '~/api/xm'
+import { XmAgenteLocalService } from '~/features/finanzas/services/xm'
+
+const xm = new XmAgenteLocalService()
 
 const TIPOS = ['dspcttos', 'aenc', 'BalCttos', 'grip', 'arrpas', 'tgrl', 'trsd', 'cxcsb', 'tserv', 'afac']
 const EXTENSIONES = ['txf', 'txr', 'tx1', 'tx2', 'tx3', 'tx4', 'tx5', 'tx6', 'tx7', 'tx8']
@@ -215,7 +217,7 @@ async function onDescargar() {
     agente_filtro: form.value.agenteFiltro,
   }
   try {
-    const { job_id: id } = await iniciarDescargaXM(payload)
+    const { job_id: id } = await xm.iniciarDescarga(payload)
     jobId.value = id
     estado.value = { estado: 'descargando', archivos_procesados: 0, archivos_totales: 0 }
     iniciarPolling()
@@ -225,7 +227,7 @@ async function onDescargar() {
 }
 
 function mensajeError(e, generico) {
-  if (agenteLocalNoDisponible(e)) {
+  if (XmAgenteLocalService.noDisponible(e)) {
     return 'No se pudo conectar con el agente local. Abre "iniciar_descarga_xm.bat" en tu computador y déjalo abierto, luego intenta de nuevo.'
   }
   return e.response?.data?.detail || generico
@@ -239,7 +241,7 @@ function iniciarPolling() {
   fallosConsecutivos = 0
   polling = setInterval(async () => {
     try {
-      const data = await consultarEstadoXM(jobId.value)
+      const data = await xm.consultarEstado(jobId.value)
       fallosConsecutivos = 0
       estado.value = data
       if (data.estado === 'listo' || data.estado === 'error') detenerPolling()

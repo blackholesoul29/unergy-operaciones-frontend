@@ -238,7 +238,7 @@ import Select from 'primevue/select'
 import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
-import api from '~/api/client'
+import api from '~/core/client'
 import { formatCurrency } from '~/utils/financialCalculations'
 
 const TIPO_LABELS = {

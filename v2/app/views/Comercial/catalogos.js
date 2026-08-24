@@ -24,7 +24,7 @@
  * página, y un catálogo recortado en silencio es el mismo bug con otra cara —
  * la planta que buscás simplemente no está y no hay nada que lo indique.
  */
-import api from '~/api/client'
+import api from '~/core/client'
 
 // El tope que acepta el backend. No subirlo: por encima responde 422.
 const SIZE_MAX = 500

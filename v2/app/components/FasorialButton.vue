@@ -99,7 +99,7 @@ import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
-import api from '~/api/client'
+import api from '~/core/client'
 import { renderFasorial } from '~/utils/fasorial'
 import { gaiaSnapshotToFasorial, validarSnapshot } from '~/utils/gaiaSnapshotToFasorial'
 

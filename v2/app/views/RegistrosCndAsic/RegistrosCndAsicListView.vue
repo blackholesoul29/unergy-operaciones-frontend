@@ -78,7 +78,7 @@ import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const router = useRouter()
 const toast = useToast()

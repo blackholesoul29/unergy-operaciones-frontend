@@ -67,7 +67,7 @@ import {
   PointElement, LineElement, Legend, Tooltip,
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
-import api from '~/api/client'
+import api from '~/core/client'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Legend, Tooltip)
 

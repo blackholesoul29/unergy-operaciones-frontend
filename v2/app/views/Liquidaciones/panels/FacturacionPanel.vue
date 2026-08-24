@@ -458,7 +458,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import { fmtCOP, formatPeriodo } from '~/utils/liquidaciones'
 import { exportarExcel } from '~/utils/exportarExcel'
 

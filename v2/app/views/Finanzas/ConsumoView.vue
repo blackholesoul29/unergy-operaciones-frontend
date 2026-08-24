@@ -97,8 +97,8 @@ import Select from 'primevue/select'
 import Button from 'primevue/button'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import api from '~/api/client'
-import { VERSIONES } from '~/api/liquidacionesApi'
+import api from '~/core/client'
+import { VERSIONES } from '~/features/liquidaciones/types'
 
 // Las 24 horas del día, como las nombra XM (CON HOUR01 … CON HOUR24).
 const HORAS = Array.from({ length: 24 }, (_, i) => `H${String(i + 1).padStart(2, '0')}`)

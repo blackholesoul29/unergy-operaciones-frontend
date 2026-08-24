@@ -11,7 +11,7 @@
  * sin registro guardado ese mes quedan en value = 0. Genera y descarga el .xlsx.
  */
 import * as XLSX from 'xlsx'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
                'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']

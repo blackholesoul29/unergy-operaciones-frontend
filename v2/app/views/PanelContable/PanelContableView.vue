@@ -629,7 +629,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import XLSX from 'xlsx-js-style'
-import api from '~/api/client'
+import api from '~/core/client'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
 

@@ -136,7 +136,7 @@ import DatePicker from 'primevue/datepicker'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import api from '~/api/client'
+import api from '~/core/client'
 
 // Ventana para agrupar filas de email_envios en un solo "envio" (accion de
 // clic en Enviar): cada fila se guarda con su propio enviado_at (segundos

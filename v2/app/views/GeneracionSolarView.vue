@@ -715,7 +715,7 @@ import { Bar, Line } from 'vue-chartjs'
 import Dialog from 'primevue/dialog'
 import AutoComplete from 'primevue/autocomplete'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import FallaForm from './Fallas/FallaForm.vue'
 
 // ── Register Chart.js components ────────────────────────────────────────────

@@ -364,7 +364,7 @@ import DatePicker from 'primevue/datepicker'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
-import api from '~/api/client'
+import api from '~/core/client'
 import { getEstructuraFallas } from '~/utils/fallasEstructuraCache'
 
 const TIPOS_SOLUCION = [

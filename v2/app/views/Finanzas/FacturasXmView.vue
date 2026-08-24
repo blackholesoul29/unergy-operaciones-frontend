@@ -185,10 +185,10 @@ import Tag from 'primevue/tag'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
-import {
-  VERSIONES, VERSION_INICIAL, MAX_FACTURAS_POR_LOTE, MAX_MB_POR_FACTURA,
-  listarFacturasXm, subirFacturasXm, esperarTarea,
-} from '~/api/liquidacionesApi'
+import { VERSIONES, VERSION_INICIAL, MAX_FACTURAS_POR_LOTE, MAX_MB_POR_FACTURA } from '~/features/liquidaciones/types'
+import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+
+const liquidacionesApi = new LiquidacionesApiService()
 
 const toast = useToast()
 
@@ -256,7 +256,7 @@ async function cargar() {
   loading.value = true
   error.value = null
   try {
-    const data = await listarFacturasXm({
+    const data = await liquidacionesApi.listarFacturasXm({
       month: filtros.month || undefined,
       year: filtros.year || undefined,
       version: filtros.version || undefined,
@@ -328,14 +328,14 @@ async function subir() {
   progresoSubida.value = 0
   progresoTarea.value = ''
   try {
-    const res = await subirFacturasXm(
+    const res = await liquidacionesApi.subirFacturasXm(
       archivos.value.map(a => a.file),
       versionSubida.value,
       { onProgreso: (p) => { progresoSubida.value = p } },
     )
     progresoTarea.value = `Procesando ${res.files_queued} factura(s) con la IA…`
 
-    await esperarTarea(res.task_id, {
+    await liquidacionesApi.esperarTarea(res.task_id, {
       onEstado: (t) => { progresoTarea.value = t.mensaje || progresoTarea.value },
     })
 

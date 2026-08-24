@@ -359,7 +359,7 @@ import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const route = useRoute()
 const toast = useToast()

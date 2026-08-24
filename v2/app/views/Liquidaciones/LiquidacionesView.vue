@@ -64,7 +64,7 @@ import LiquidacionesListView from './LiquidacionesListView.vue'
 import LiquidacionesPorInversionistaView from './LiquidacionesPorInversionistaView.vue'
 import DiferenciaPanel from './panels/DiferenciaPanel.vue'
 import FacturacionPanel from './panels/FacturacionPanel.vue'
-import api from '~/api/client'
+import api from '~/core/client'
 import { formatPeriodo, mesActualISO } from '~/utils/liquidaciones'
 
 const TABS = [

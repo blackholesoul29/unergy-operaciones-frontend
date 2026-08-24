@@ -288,7 +288,7 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const TABS = ['Precios de Bolsa', 'Clima / Pronóstico', 'Histórico']
 const activeTab = ref(0)

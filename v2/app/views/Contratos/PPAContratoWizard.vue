@@ -391,7 +391,7 @@ import AutoComplete from 'primevue/autocomplete'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import NuevoClienteDialog from '~/components/NuevoClienteDialog.vue'
-import api from '~/api/client'
+import api from '~/core/client'
 import * as XLSX from 'xlsx'
 
 const props = defineProps({

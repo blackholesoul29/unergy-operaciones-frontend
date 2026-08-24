@@ -282,7 +282,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const toast = useToast()
 

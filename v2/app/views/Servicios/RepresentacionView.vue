@@ -514,7 +514,7 @@ import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
-import api from '~/api/client'
+import api from '~/core/client'
 import InfoField from '~/components/InfoField.vue'
 
 const route = useRoute()

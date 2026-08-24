@@ -211,7 +211,7 @@
 import { ref, computed, onMounted } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const TABS = ['ENSO Timeline', 'Precio vs ENSO', 'Precipitación', 'Datos ONI']
 const REGIONS = ['Andina', 'Caribe', 'Pacifica', 'Orinoquia', 'Amazonia']

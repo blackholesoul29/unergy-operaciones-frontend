@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import api from '~/api/client.js'
+import api from '~/core/client.js'
 
 function toFrontend(r) {
   return {

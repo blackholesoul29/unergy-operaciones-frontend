@@ -115,7 +115,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import Tag from 'primevue/tag'
-import api from '~/api/client'
+import api from '~/core/client'
 
 // ── Período (mismo criterio de "período actual" que Panel, sin selector — vista informativa) ──
 const hoy = new Date()

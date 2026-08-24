@@ -59,7 +59,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 function mesISO (delta = 0) {
   const n = new Date()

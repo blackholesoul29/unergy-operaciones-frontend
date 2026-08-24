@@ -210,7 +210,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import Select from 'primevue/select'
-import api from '~/api/client'
+import api from '~/core/client'
 
 // ── Props / Emits ─────────────────────────────────────────────────────────────
 const props = defineProps({

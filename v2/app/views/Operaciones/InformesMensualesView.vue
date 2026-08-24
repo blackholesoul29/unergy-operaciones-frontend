@@ -50,7 +50,7 @@ import { useRoute, useRouter } from 'vue-router'
 import InformesMensualesPanel from './InformesMensualesPanel.vue'
 import EnvioMensualPanel from './EnvioMensualPanel.vue'
 import PortafoliosGestionPanel from './PortafoliosGestionPanel.vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const route = useRoute()
 const router = useRouter()

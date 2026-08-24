@@ -46,7 +46,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const kpis = ref({})
 const ppaAlerts = ref({ huerfanos: [], duplicados: [] })

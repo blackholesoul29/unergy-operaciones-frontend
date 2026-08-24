@@ -284,7 +284,7 @@ import InputIcon from 'primevue/inputicon'
 import ConfirmDialog from 'primevue/confirmdialog'
 import PPAContratoWizard from './PPAContratoWizard.vue'
 import ContratoServicioWizard from './ContratoServicioWizard.vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const router = useRouter()
 const toast = useToast()

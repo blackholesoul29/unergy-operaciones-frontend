@@ -87,7 +87,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props = defineProps({ clienteId: { type: [Number, String], required: true } })
 const toast = useToast()

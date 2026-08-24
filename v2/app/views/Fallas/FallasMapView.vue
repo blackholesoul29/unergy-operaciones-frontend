@@ -136,7 +136,7 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import Select from 'primevue/select'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props = defineProps({
   fallas: { type: Array, default: () => [] },

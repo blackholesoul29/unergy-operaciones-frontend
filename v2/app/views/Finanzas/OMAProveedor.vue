@@ -239,7 +239,7 @@
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import Tag             from 'primevue/tag'
 import { useToast }    from 'primevue/usetoast'
-import api             from '~/api/client'
+import api             from '~/core/client'
 
 const toast = useToast()
 

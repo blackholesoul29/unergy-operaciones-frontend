@@ -249,7 +249,7 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import { useEnergizationProjects } from '~/composables/useEnergizationProjects'
 import { exportarExcel } from '~/utils/exportarExcel'
 

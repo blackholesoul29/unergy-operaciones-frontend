@@ -186,7 +186,7 @@ import MultiSelect from 'primevue/multiselect'
 import InputText from 'primevue/inputtext'
 import DatePicker from 'primevue/datepicker'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import {
   ETAPAS, TIPOS_OFERTA, labelTipo, fmtFecha, alarmante, aFechaStr,
   etiquetaPrecio, placeholderPrecio, ayudaPrecio,

@@ -143,7 +143,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Select from 'primevue/select'
 import FallaForm from './FallaForm.vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const route = useRoute()
 const router = useRouter()

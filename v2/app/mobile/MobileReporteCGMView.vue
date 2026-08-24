@@ -98,7 +98,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import { formatearNombre } from '~/utils/nombreFormato'
 import MobileTabBar from '~/mobile/components/MobileTabBar.vue'
 

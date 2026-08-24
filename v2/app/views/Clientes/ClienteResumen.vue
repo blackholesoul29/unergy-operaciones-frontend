@@ -166,7 +166,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 import ParticipacionSparkline from './ParticipacionSparkline.vue'
 import { SEMAFORO, servicioLabel, fmt, fmtFecha } from './clientesUi'
 

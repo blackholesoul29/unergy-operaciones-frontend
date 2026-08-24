@@ -95,7 +95,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dropdown from 'primevue/dropdown'

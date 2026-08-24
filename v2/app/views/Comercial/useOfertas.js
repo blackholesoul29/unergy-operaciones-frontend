@@ -1,5 +1,5 @@
 import { ref, reactive, computed } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 import {
   filtrar, ordenar, agruparPorColumna, kpis, TIPOS_ENERGIA,
 } from './comercial.js'

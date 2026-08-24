@@ -658,7 +658,7 @@ import {
   PointElement, LineElement, Title, Filler
 } from 'chart.js'
 ChartJS.register(Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Filler)
-import api from '~/api/client'
+import api from '~/core/client'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/utils/fallaTitulo'
 
 const route          = useRoute()

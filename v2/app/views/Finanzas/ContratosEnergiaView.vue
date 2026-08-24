@@ -245,10 +245,11 @@ import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
-import {
-  TIPOS_CONTRATO, TIPOS_TARIFA, listarContratosEnergia, crearContratoEnergia, listarCatalogos,
-} from '~/api/liquidacionesApi'
+import api from '~/core/client'
+import { TIPOS_CONTRATO, TIPOS_TARIFA } from '~/features/liquidaciones/types'
+import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+
+const liquidacionesApi = new LiquidacionesApiService()
 import { formatearNombreProyecto } from '~/views/Proyectos/proyectosUi'
 
 const toast = useToast()
@@ -360,7 +361,7 @@ async function cargar() {
   loading.value = true
   error.value = null
   try {
-    contratos.value = await listarContratosEnergia()
+    contratos.value = await liquidacionesApi.listarContratosEnergia()
   } catch (e) {
     error.value = e.response?.data?.detail || 'No se pudieron cargar los contratos de energía.'
     contratos.value = []
@@ -381,7 +382,7 @@ function _opciones(filas, campoNombre) {
 
 async function cargarCatalogos() {
   try {
-    const cat = await listarCatalogos()
+    const cat = await liquidacionesApi.listarCatalogos()
     empresasOptions.value = _opciones(cat.empresas, 'nombre_empresa')
     preciosOptions.value = _opciones(cat.precios_energia, 'name')
   } catch (e) {
@@ -516,7 +517,7 @@ async function guardar() {
 
   guardando.value = true
   try {
-    await crearContratoEnergia({
+    await liquidacionesApi.crearContratoEnergia({
       date_from: fechaISO(f.fecha_desde),
       date_to: fechaISO(f.fecha_hasta),
       contract_type: f.tipo_contrato,

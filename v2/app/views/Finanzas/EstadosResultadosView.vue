@@ -200,12 +200,11 @@ import Select from 'primevue/select'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
-import {
-  VERSIONES, VERSION_INICIAL,
-  generarEstadoResultados as generarErApi,
-  generarCruceFacturas as generarCruceApi,
-} from '~/api/liquidacionesApi'
+import api from '~/core/client'
+import { VERSIONES, VERSION_INICIAL, AccionCiclo } from '~/features/liquidaciones/types'
+import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+
+const liquidacionesApi = new LiquidacionesApiService()
 
 const toast = useToast()
 
@@ -378,12 +377,13 @@ function faltanCampos(p) {
 }
 
 /** Corre la tarea, avisa el resultado y refresca la lista de archivos. */
-async function generarArchivo({ fn, periodo, titulo, enCurso, progreso, cerrar }) {
+async function generarArchivo({ accion, periodo, titulo, enCurso, progreso, cerrar }) {
   if (faltanCampos(periodo)) return
   enCurso.value = true
   progreso.value = ''
   try {
-    const res = await fn(
+    const res = await liquidacionesApi.ejecutarAccionCiclo(
+      accion,
       { month: periodo.mes, year: periodo.anio, version: periodo.version },
       { onEstado: (t) => { progreso.value = t.mensaje } },
     )
@@ -421,7 +421,7 @@ function abrirEstado() {
 }
 function generarEstado() {
   return generarArchivo({
-    fn: generarErApi, periodo: er, titulo: 'Estado de resultados',
+    accion: AccionCiclo.ESTADO_RESULTADOS, periodo: er, titulo: 'Estado de resultados',
     enCurso: generandoEr, progreso: progresoEr,
     cerrar: () => { estadoVisible.value = false },
   })
@@ -440,7 +440,7 @@ function abrirCrudo() {
 }
 function generarCrudo() {
   return generarArchivo({
-    fn: generarCruceApi, periodo: cr, titulo: 'Cruce de facturas',
+    accion: AccionCiclo.CRUCE_FACTURAS, periodo: cr, titulo: 'Cruce de facturas',
     enCurso: generandoCruce, progreso: progresoCruce,
     cerrar: () => { crudoVisible.value = false },
   })

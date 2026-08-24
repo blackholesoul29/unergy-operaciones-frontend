@@ -386,7 +386,7 @@ import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as XLSX from 'xlsx'
 import { useRouter } from 'vue-router'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const toast = useToast()
 const router = useRouter()

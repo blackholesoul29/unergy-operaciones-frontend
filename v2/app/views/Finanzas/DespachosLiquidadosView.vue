@@ -186,10 +186,10 @@ import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
-import {
-  VERSIONES, VERSION_INICIAL, listarDespachos, consultarIpp,
-  descargarArchivosXm, liquidarContratos, diagnosticarProyecto,
-} from '~/api/liquidacionesApi'
+import { VERSIONES, VERSION_INICIAL, AccionCiclo } from '~/features/liquidaciones/types'
+import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+
+const liquidacionesApi = new LiquidacionesApiService()
 
 const toast = useToast()
 
@@ -253,7 +253,7 @@ async function cargar() {
   loading.value = true
   error.value = null
   try {
-    const data = await listarDespachos(filtros)
+    const data = await liquidacionesApi.listarDespachos(filtros)
     despachos.value = data.results || []
     avisos.value = data.avisos || []
   } catch (e) {
@@ -294,7 +294,7 @@ async function ejecutar() {
   const periodo = { month: c.mes, year: c.anio, version: c.version }
   try {
     if (modo.value === 'ipp') {
-      const ipp = await consultarIpp(periodo)
+      const ipp = await liquidacionesApi.consultarIpp(periodo)
       toast.add({
         severity: 'success', summary: `IPP de ${c.mes}/${c.anio}`,
         detail: String(ipp), life: 6000,
@@ -302,8 +302,8 @@ async function ejecutar() {
     } else {
       const opciones = { onEstado: (t) => { progreso.value = t.mensaje } }
       const res = modo.value === 'ftp'
-        ? await descargarArchivosXm(periodo, opciones)
-        : await liquidarContratos(periodo, opciones)
+        ? await liquidacionesApi.ejecutarAccionCiclo(AccionCiclo.DESCARGAR_XM, periodo, opciones)
+        : await liquidacionesApi.ejecutarAccionCiclo(AccionCiclo.LIQUIDAR, periodo, opciones)
       toast.add({
         severity: 'success', summary: cfg.value.header,
         detail: res.message || 'Terminó correctamente.', life: 6000,
@@ -334,7 +334,7 @@ async function diagnosticar(project) {
   diagCargando.value = true
   diagVisible.value = true
   try {
-    diag.value = await diagnosticarProyecto({ project, ...filtros })
+    diag.value = await liquidacionesApi.diagnosticarProyecto({ project, ...filtros })
   } catch (e) {
     diagVisible.value = false
     toast.add({

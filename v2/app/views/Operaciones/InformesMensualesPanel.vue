@@ -185,7 +185,7 @@ import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import api from '~/api/client'
+import api from '~/core/client'
 import { buildReportHtmlDoc } from '~/utils/rptStyles'
 import { tituloFalla } from '~/utils/fallaTitulo'
 

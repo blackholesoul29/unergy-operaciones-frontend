@@ -48,7 +48,7 @@ import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import api from '~/api/client'
+import api from '~/core/client'
 import ProyectoForm from '~/views/Proyectos/ProyectoForm.vue'
 
 const props = defineProps({

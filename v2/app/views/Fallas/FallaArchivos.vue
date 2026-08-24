@@ -87,7 +87,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 
 // ── Props ────────────────────────────────────────────────────────────────────
 const props = defineProps({

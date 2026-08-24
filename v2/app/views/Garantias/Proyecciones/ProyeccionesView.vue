@@ -99,7 +99,9 @@ import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import { fmtCOP } from '../AjustesXM/utils/formatters.js'
-import { getProyecciones, guardarSnapshot, getHistorial, setPagado } from '~/api/garantiasProyecciones.js'
+import { ProyeccionesGarantiasService } from '~/features/garantias/services/proyecciones'
+
+const proyeccionesApi = new ProyeccionesGarantiasService()
 
 const toast = useToast()
 const MESES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -126,7 +128,7 @@ function fmtMWh(v) {
 async function cargar() {
   cargando.value = true
   try {
-    data.value = await getProyecciones({
+    data.value = await proyeccionesApi.obtener({
       plantasNuevas: plantasNuevas.value || 0,
       kwhPlantaNueva: kwhPlantaNueva.value || 0,
     })
@@ -140,7 +142,7 @@ async function cargar() {
 
 async function cargarHistorial() {
   try {
-    const r = await getHistorial()
+    const r = await proyeccionesApi.obtenerHistorial()
     historial.value = r.snapshots || []
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo cargar el histórico',
@@ -151,7 +153,7 @@ async function cargarHistorial() {
 async function guardarPagado(v) {
   v._guardando = true
   try {
-    await setPagado({ anio: v.anio, mes: v.mes, valor: v.pagado || 0 })
+    await proyeccionesApi.registrarPago({ anio: v.anio, mes: v.mes, valor: v.pagado || 0 })
     // Recalcula el saldo en la tarjeta SIN recargar todo (evita el parpadeo y no
     // pierde el foco): saldo = pagado − garantía estimada.
     v.saldo = (v.pagado || 0) - (v.garantia_total || 0)
@@ -166,7 +168,7 @@ async function guardarPagado(v) {
 async function guardar() {
   guardando.value = true
   try {
-    await guardarSnapshot({
+    await proyeccionesApi.guardarSnapshot({
       plantasNuevas: plantasNuevas.value || 0,
       kwhPlantaNueva: kwhPlantaNueva.value || 0,
     })

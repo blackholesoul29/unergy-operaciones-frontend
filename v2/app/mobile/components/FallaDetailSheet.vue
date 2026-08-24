@@ -142,7 +142,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { tituloFalla, clasificacionDetalle } from '~/utils/fallaTitulo'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props = defineProps({
   open:      { type: Boolean, default: false },

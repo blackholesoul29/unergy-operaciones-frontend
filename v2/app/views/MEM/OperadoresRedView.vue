@@ -103,7 +103,7 @@ import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const toast = useToast()
 const operadores = ref([])

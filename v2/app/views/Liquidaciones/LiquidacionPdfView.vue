@@ -56,7 +56,7 @@ import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
 import ProgressSpinner from 'primevue/progressspinner'
-import api from '~/api/client'
+import api from '~/core/client'
 import {
   fmtCOP, pct, normPct, formatPeriodo,
   construirEstadoResultados, indiceSoportesProyecto,

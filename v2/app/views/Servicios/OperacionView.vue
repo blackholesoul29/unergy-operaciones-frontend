@@ -1234,7 +1234,7 @@ import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import ContratoServicioWizard from '~/views/Contratos/ContratoServicioWizard.vue'
 import ARRIENDOS_ESTATICOS from '~/assets/arriendos_data.js'
 

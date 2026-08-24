@@ -2430,7 +2430,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
-import client from '~/api/client'
+import client from '~/core/client'
 
 // ── LocalStorage cache ───────────────────────────────────────────────────────
 const CACHE_PREFIX = 'cumpl_'

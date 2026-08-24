@@ -176,7 +176,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const data = ref({})
 const cumplimiento = ref(null)

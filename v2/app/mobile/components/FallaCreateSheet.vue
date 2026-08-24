@@ -154,7 +154,7 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props = defineProps({
   open:            { type: Boolean, default: false },

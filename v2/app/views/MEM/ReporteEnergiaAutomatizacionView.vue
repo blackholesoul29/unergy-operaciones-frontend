@@ -392,7 +392,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 import TabView from 'primevue/tabview'

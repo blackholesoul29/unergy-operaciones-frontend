@@ -23,7 +23,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props = defineProps({
   proyectoId: { type: [Number, String], required: true },

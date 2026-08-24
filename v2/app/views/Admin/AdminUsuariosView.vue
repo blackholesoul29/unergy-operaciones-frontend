@@ -57,7 +57,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import UsuarioForm from './UsuarioForm.vue'
 import ApiKeysDialog from './ApiKeysDialog.vue'
 

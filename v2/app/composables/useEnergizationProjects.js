@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 // ── Fuente de datos ─────────────────────────────────────────────────────────
 // "Proyectos próximos a energizarse" vive 100% en la BD de operaciones. Un job

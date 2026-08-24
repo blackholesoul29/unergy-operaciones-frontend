@@ -857,7 +857,7 @@ import Select from 'primevue/select'
 import InfoField from '~/components/InfoField.vue'
 import PPAContratoWizard from '~/views/Contratos/PPAContratoWizard.vue'
 import { estadoVigenciaPPA } from '~/utils/ppaVigencia'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const VISTAS = [{ label: 'Mensual', value: 'mensual' }, { label: 'Anual', value: 'anual' }]

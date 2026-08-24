@@ -500,7 +500,7 @@ import IconField     from 'primevue/iconfield'
 import InputIcon     from 'primevue/inputicon'
 import Popover       from 'primevue/popover'
 import { useToast }  from 'primevue/usetoast'
-import api           from '~/api/client'
+import api           from '~/core/client'
 import DocumentoIcon  from '~/components/DocumentoIcon.vue'
 import { parseCOP }   from '~/utils/parseCOP.js'
 

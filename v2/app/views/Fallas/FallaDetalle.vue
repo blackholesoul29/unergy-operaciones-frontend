@@ -226,7 +226,7 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props  = defineProps({ falla: Object, catalogos: Object })
 const emit   = defineEmits(['update', 'close'])

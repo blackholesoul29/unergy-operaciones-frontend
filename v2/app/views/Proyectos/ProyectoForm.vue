@@ -156,7 +156,7 @@ import DatePicker from 'primevue/datepicker'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
-import api from '~/api/client'
+import api from '~/core/client'
 import divipola from '~/data/colombia-divipola.json'
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']

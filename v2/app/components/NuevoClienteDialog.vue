@@ -55,7 +55,7 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
-import api from '~/api/client'
+import api from '~/core/client'
 
 defineProps({ visible: Boolean })
 const emit = defineEmits(['update:visible', 'creado'])

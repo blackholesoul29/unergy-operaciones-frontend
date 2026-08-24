@@ -145,7 +145,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 

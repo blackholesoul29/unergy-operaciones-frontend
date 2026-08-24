@@ -264,7 +264,7 @@ import Tag from 'primevue/tag'
 import Message from 'primevue/message'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
-import api from '~/api/client'
+import api from '~/core/client'
 import {
   ETAPAS, TIPOS_OFERTA, TIPOS_GESTION, FUENTES, puedeFirmarPPA,
   aFecha, aFechaStr, fmtFecha, diasDesde, sinRespuesta,

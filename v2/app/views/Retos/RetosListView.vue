@@ -63,7 +63,7 @@ import Select from 'primevue/select'
 import Button from 'primevue/button'
 import Skeleton from 'primevue/skeleton'
 import Message from 'primevue/message'
-import api from '~/api/client'
+import api from '~/core/client'
 import RetoQCard from './RetoQCard.vue'
 
 const route = useRoute()

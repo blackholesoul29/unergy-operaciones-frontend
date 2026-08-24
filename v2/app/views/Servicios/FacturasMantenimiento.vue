@@ -410,7 +410,7 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import FACTURAS_SOL_ESTATICAS from '~/assets/facturas_solenium_data.js'
 import FACTURAS_INV_ESTATICAS from '~/assets/facturas_inversionistas_data.js'
 

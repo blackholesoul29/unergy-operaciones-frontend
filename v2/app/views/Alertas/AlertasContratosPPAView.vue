@@ -170,7 +170,7 @@ import Tag from 'primevue/tag'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Divider from 'primevue/divider'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const loading = ref(true)
 const fechaConsulta = ref('')

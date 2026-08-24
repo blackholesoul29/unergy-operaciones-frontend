@@ -140,7 +140,7 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 import { proyectoActivoEnMes } from '~/utils/proyectoActivo'
 import { fmtCompact, formatPeriodo, estadoFlujoPanel } from '~/utils/liquidaciones'
 

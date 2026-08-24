@@ -152,7 +152,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
-import api from '~/api/client'
+import api from '~/core/client'
 import { usePwa } from '~/mobile/usePwa'
 import { inverterSeries, meterSeries, latest, fmtKw } from '~/mobile/solarSeries'
 import ProjectLiveChart from '~/mobile/components/ProjectLiveChart.vue'

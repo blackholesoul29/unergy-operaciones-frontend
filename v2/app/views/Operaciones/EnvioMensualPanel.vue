@@ -549,7 +549,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import api from '~/api/client'
+import api from '~/core/client'
 import { useAuthStore } from '~/stores/auth'
 import { buildReportHtmlDoc } from '~/utils/rptStyles'
 

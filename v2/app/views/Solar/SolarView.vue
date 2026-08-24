@@ -562,7 +562,7 @@ import DataTable  from 'primevue/datatable'
 import Column     from 'primevue/column'
 import Tag        from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
-import api from '~/api/client'
+import api from '~/core/client'
 
 // ─── Constantes de diseño ────────────────────────────────────────────────────
 

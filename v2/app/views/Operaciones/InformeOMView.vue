@@ -499,7 +499,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '~/api/client'
+import api from '~/core/client'
 import EvidenciaUploader from '~/components/EvidenciaUploader.vue'
 import ListaEditable from '~/components/ListaEditable.vue'
 

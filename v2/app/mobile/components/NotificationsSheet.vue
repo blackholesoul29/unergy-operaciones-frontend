@@ -36,7 +36,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const props = defineProps({ open: { type: Boolean, default: false } })
 const emit = defineEmits(['close', 'changed'])

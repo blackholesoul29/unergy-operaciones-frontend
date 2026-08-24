@@ -304,7 +304,7 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import api from '~/api/client'
+import api from '~/core/client'
 
 const route = useRoute()
 const toast = useToast()

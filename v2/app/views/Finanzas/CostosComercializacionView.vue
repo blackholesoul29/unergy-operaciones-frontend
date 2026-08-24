@@ -223,11 +223,11 @@ import Tag from 'primevue/tag'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
-import {
-  VERSIONES, VERSION_INICIAL, listarCostos, subirExcelCostos, repartirFacturasXm,
-  listarCatalogos,
-} from '~/api/liquidacionesApi'
-import api from '~/api/client'
+import { VERSIONES, VERSION_INICIAL, AccionCiclo } from '~/features/liquidaciones/types'
+import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+
+const liquidacionesApi = new LiquidacionesApiService()
+import api from '~/core/client'
 
 const toast = useToast()
 
@@ -285,7 +285,7 @@ async function cargar() {
   loading.value = true
   error.value = null
   try {
-    const data = await listarCostos({
+    const data = await liquidacionesApi.listarCostos({
       grupo: GRUPO_COMERCIALIZACION,
       project: filtros.project || undefined,
       payment_type: filtros.payment_type || undefined,
@@ -343,7 +343,7 @@ async function subirExcel() {
   subiendoExcel.value = true
   progresoExcel.value = 0
   try {
-    await subirExcelCostos(excel.value.file, { onProgreso: (p) => { progresoExcel.value = p } })
+    await liquidacionesApi.subirExcelCostos(excel.value.file, { onProgreso: (p) => { progresoExcel.value = p } })
     toast.add({ severity: 'success', summary: 'Excel cargado', life: 4000 })
     excelVisible.value = false
     excel.value = null
@@ -393,7 +393,7 @@ async function repartir() {
   repartiendo.value = true
   progresoReparto.value = ''
   try {
-    const res = await repartirFacturasXm(
+    const res = await liquidacionesApi.ejecutarAccionCiclo(AccionCiclo.REPARTIR, 
       { ...ac },
       { onEstado: (t) => { progresoReparto.value = t.mensaje } },
     )
@@ -434,7 +434,7 @@ async function cargarOpciones() {
   try {
     const [{ data: proyectos }, catalogos] = await Promise.all([
       api.get('/liquidaciones-api/proyectos'),
-      listarCatalogos(),
+      liquidacionesApi.listarCatalogos(),
     ])
     // La API identifica por tópico, pero se muestra el nombre de esta base.
     proyectosOptions.value = (proyectos || [])
@@ -457,7 +457,7 @@ async function exportar() {
   exportando.value = true
   try {
     // Se piden todas las filas que cumplen el filtro, no solo la página visible.
-    const data = await listarCostos({
+    const data = await liquidacionesApi.listarCostos({
       grupo: GRUPO_COMERCIALIZACION,
       project: filtros.project || undefined,
       payment_type: filtros.payment_type || undefined,
