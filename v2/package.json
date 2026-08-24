@@ -15,6 +15,7 @@
     "format": "prettier . --cache --write",
     "format:check": "prettier . --cache --check",
     "test": "vitest --run",
+    "test:legacy": "vitest --run --config vitest.legacy.config.ts",
     "test:watch": "vitest"
   },
   "lint-staged": {
