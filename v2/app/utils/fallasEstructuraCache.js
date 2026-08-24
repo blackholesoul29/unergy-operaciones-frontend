@@ -1,4 +1,4 @@
-import api from '~/api/client'
+import api from '~/core/client'
 
 // GET /fallas/estructura es un catálogo prácticamente estático (la
 // estructura canónica de categorías/tipos de falla) -- se cachea a nivel de
