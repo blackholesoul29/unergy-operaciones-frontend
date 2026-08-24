@@ -11,7 +11,11 @@
  * Se retiraron `uploadDoc` y `deleteDoc`, que no tenían ningún consumidor. Los
  * endpoints siguen registrados en `contexto/inventario-endpoints.md`.
  */
-import type { DocumentoArriendo, DocumentosPorProyecto, SubidaCuentaCobro } from '~/features/finanzas/types'
+import type {
+  DocumentoArriendo,
+  DocumentosPorProyecto,
+  SubidaCuentaCobro,
+} from '~/features/finanzas/types'
 import { logger } from '~/core/logger'
 import { ArriendosDocsService } from '~/features/finanzas/services/arriendos-docs'
 
