@@ -141,7 +141,8 @@
                 <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
                 <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
                   @click="guardar(['numero_contrato', 'inversionista_nombre', 'portafolio',
-                                   'codigo_sun_factory', 'nombre_proyecto_ref'])" />
+                                   'codigo_sun_factory', 'nombre_proyecto_ref',
+                                   'proyecto_id'])" />
               </template>
             </div>
           </header>
@@ -151,13 +152,30 @@
               <InfoField label="Inversionista" :value="c.inversionista_nombre" />
               <InfoField label="Portafolio" :value="c.portafolio" />
               <InfoField label="Código Sun Factory" :value="c.codigo_sun_factory" />
-              <InfoField label="Proyecto según el contrato" :value="c.nombre_proyecto_ref" />
               <div class="flex flex-col gap-0.5">
-                <span class="cd-campo-lbl">Planta asociada</span>
+                <span class="cd-campo-lbl">
+                  Proyecto según el contrato
+                  <i class="pi pi-info-circle text-[10px]"
+                     v-tooltip.top="'Texto que traía el acta. Es informativo: la asociación real es la Planta asociada.'" />
+                </span>
+                <span class="text-sm" style="color:#2C2039">{{ c.nombre_proyecto_ref || '—' }}</span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <span class="cd-campo-lbl">
+                  Planta asociada
+                  <i class="pi pi-info-circle text-[10px]"
+                     v-tooltip.top="'La relación que usa toda la plataforma. Se cambia desde Servicios > Representación.'" />
+                </span>
                 <span v-if="c.proyecto" class="text-sm" style="color:#2C2039">
                   {{ c.proyecto.nombre_comercial }}
                 </span>
                 <span v-else class="text-sm font-semibold" style="color:#92400E">Sin proyecto</span>
+                <!-- Las plantas hermanas numeradas (Agustín 1/2/3, Naos 1/2/3) son
+                     el caso donde una asignación equivocada pasa inadvertida: el
+                     nombre casi coincide y solo cambia el número. -->
+                <span v-if="discrepanciaPlanta" class="mini-alerta">
+                  <i class="pi pi-exclamation-triangle" />{{ discrepanciaPlanta }}
+                </span>
               </div>
             </div>
             <div v-else class="cd-grid">
@@ -180,6 +198,19 @@
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Proyecto según el contrato</label>
                 <InputText v-model="form.nombre_proyecto_ref" class="w-full" />
+              </div>
+              <!-- La planta asociada se edita acá y no solo desde el listado:
+                   cuando el aviso de discrepancia salta, la corrección tiene que
+                   estar donde se ve el problema. -->
+              <div class="flex flex-col gap-1">
+                <label class="cd-lbl">Planta asociada</label>
+                <Select v-model="form.proyecto_id" :options="proyectos"
+                  optionLabel="nombre_comercial" optionValue="id" filter showClear
+                  :loading="cargandoProyectos" placeholder="Buscar planta…"
+                  filterPlaceholder="Escribe para filtrar…" size="small" class="w-full" />
+                <span class="text-[10.5px]" style="color:#9b89b5">
+                  Cambiarla mueve el contrato a otra planta.
+                </span>
               </div>
             </div>
           </div>
@@ -544,6 +575,8 @@ const proyectoNombre = ref('')
 const contratos = ref([])
 const idSeleccionado = ref(null)
 const edit = ref(null)          // 'id' | 'partes' | 'vigencia' | 'comercial'
+const proyectos = ref([])       // catálogo para reasignar la planta
+const cargandoProyectos = ref(false)
 const guardando = ref(false)
 
 const c = computed(() => contratos.value.find(x => x.id === idSeleccionado.value) || null)
@@ -569,6 +602,24 @@ function etiquetaContrato(x) {
     : (x.nombre_proyecto_ref ? `ref ${x.nombre_proyecto_ref}` : `#${x.id}`)
   return detalle ? `${base} · ${detalle}` : `${base} · #${x.id}`
 }
+
+// ── Coherencia entre la referencia del contrato y la planta asignada ─────────
+// Solo se comparan los NUMEROS de los dos nombres. Comparar el texto completo
+// daria falsas alarmas todo el tiempo, porque la referencia y el nombre comercial
+// casi nunca se escriben igual ("Minigranja 0012 - La Reserva" contra "Minigranja
+// Solar La Reserva"). Lo que de verdad importa son las plantas hermanas
+// numeradas -- Agustin 1/2/3, Naos 1/2/3 -- donde equivocarse de numero es facil
+// y el error pasa inadvertido porque el resto del nombre coincide.
+const discrepanciaPlanta = computed(() => {
+  const x = c.value
+  if (!x?.proyecto || !x.nombre_proyecto_ref) return null
+  const numeros = t => (String(t).match(/\d+/g) || []).map(n => String(Number(n)))
+  const enRef = numeros(x.nombre_proyecto_ref)
+  const enPlanta = numeros(x.proyecto.nombre_comercial)
+  if (!enRef.length || !enPlanta.length) return null
+  if (enRef.some(n => enPlanta.includes(n))) return null
+  return `El contrato dice "${x.nombre_proyecto_ref}" — revisa si la planta es la correcta`
+})
 
 // ── Duplicados ───────────────────────────────────────────────────────────────
 // El backend decide qué es duplicado y si se puede fusionar sin perder datos;
@@ -738,6 +789,7 @@ function abrir(seccion) {
     portafolio: x.portafolio || '',
     codigo_sun_factory: x.codigo_sun_factory || '',
     nombre_proyecto_ref: x.nombre_proyecto_ref || '',
+    proyecto_id: x.proyecto_id ?? null,
     contratante_nombre: x.contratante_nombre || '',
     contratante_nit: x.contratante_nit || '',
     prestador_nombre: x.prestador_nombre || '',
@@ -756,6 +808,22 @@ function abrir(seccion) {
     enlace_drive: x.enlace_drive || '',
   })
   edit.value = seccion
+  // El catálogo solo hace falta para reasignar la planta, así que se pide la
+  // primera vez que se abre esa sección y no al montar la vista.
+  if (seccion === 'id' && !proyectos.value.length) cargarProyectos()
+}
+
+async function cargarProyectos() {
+  cargandoProyectos.value = true
+  try {
+    const { data } = await api.get('/proyectos', { params: { page: 1, size: 500 } })
+    proyectos.value = data.items ?? data
+  } catch (e) {
+    toast.add({ severity: 'warn', summary: 'No se pudo cargar el listado de plantas',
+                detail: e.response?.data?.detail || e.message, life: 4000 })
+  } finally {
+    cargandoProyectos.value = false
+  }
 }
 
 function aFecha(v) { return v ? new Date(`${String(v).slice(0, 10)}T00:00:00`) : null }
@@ -788,9 +856,26 @@ async function enviar(payload) {
   guardando.value = true
   try {
     const { data } = await api.patch(`/contratos-servicio/${c.value.id}`, payload)
+    edit.value = null
+
+    // Si se reasignó la planta, el contrato ya no pertenece a esta ficha: se
+    // saca de la lista y se dice a dónde fue, en vez de dejarlo ahí como si
+    // nada hubiera cambiado.
+    const pid = Number(route.params.id)
+    if (data.proyecto_id !== pid) {
+      contratos.value = contratos.value.filter(x => x.id !== data.id)
+      idSeleccionado.value = contratos.value[0]?.id ?? null
+      toast.add({ severity: 'success', summary: 'Contrato movido',
+                  detail: data.proyecto
+                    ? `Ahora pertenece a ${data.proyecto.nombre_comercial}`
+                    : 'Quedó sin planta asociada',
+                  life: 5000 })
+      await cargarDuplicados()
+      return
+    }
+
     const i = contratos.value.findIndex(x => x.id === data.id)
     if (i !== -1) contratos.value[i] = data
-    edit.value = null
     toast.add({ severity: 'success', summary: 'Cambios guardados', life: 2500 })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo guardar',
@@ -961,6 +1046,12 @@ onMounted(async () => {
   font-size: 11px; color: #9b8fb0; margin-top: 1px;
 }
 
+.mini-alerta {
+  display: inline-flex; align-items: flex-start; gap: 4px; margin-top: 3px;
+  font-size: 10.5px; font-weight: 600; line-height: 1.35; color: #92400E;
+}
+.mini-alerta i { font-size: 10px; margin-top: 1px; flex-shrink: 0; }
+
 .dup-aviso {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 10px 13px; border-radius: 10px; font-size: 12px;
@@ -973,7 +1064,13 @@ onMounted(async () => {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
   border: 1px solid #ECE7F2; border-radius: 10px; padding: 10px 12px; background: #fcfbfe;
 }
-@media (min-width: 768px) { .dup-aviso {
+@media (min-width: 768px) { .mini-alerta {
+  display: inline-flex; align-items: flex-start; gap: 4px; margin-top: 3px;
+  font-size: 10.5px; font-weight: 600; line-height: 1.35; color: #92400E;
+}
+.mini-alerta i { font-size: 10px; margin-top: 1px; flex-shrink: 0; }
+
+.dup-aviso {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 10px 13px; border-radius: 10px; font-size: 12px;
   background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
