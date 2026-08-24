@@ -17,6 +17,9 @@
               v-tooltip.left="'Recargar'" @click="cargar" />
       <div class="text-xs text-gray-400 self-center">
         {{ filtrados.length }} proyecto{{ filtrados.length === 1 ? '' : 's' }}
+        <span v-if="resumen.completos" style="color:#10B981">· {{ resumen.completos }} completos</span>
+        <span v-if="resumen.pendientes" style="color:#B45309">· {{ resumen.pendientes }} pendientes</span>
+        <span v-if="resumen.sinTopico">· {{ resumen.sinTopico }} sin tópico</span>
       </div>
     </div>
 
@@ -58,8 +61,15 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="row in filtrados" :key="row.proyecto_id"
-                  class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 row-hover">
+              <template v-for="(row, i) in filtrados" :key="row.proyecto_id">
+              <tr v-if="abreGrupo(row, i)" class="border-t border-gray-200">
+                <td :colspan="COLUMNAS.length + 2"
+                    class="sticky-col-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide"
+                    style="background:#F9FAFB; color:#6B7280">
+                  {{ etiquetaGrupo(row) }}
+                </td>
+              </tr>
+              <tr class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 row-hover">
                 <td class="sticky-col px-4 py-2" style="min-width:240px">
                   <span class="text-sm text-gray-800 font-medium">{{ row.nombre_comercial }}</span>
                   <span v-if="!row.nombre_topico" class="ml-2 text-[10px] px-1.5 py-0.5 rounded"
@@ -84,6 +94,7 @@
                           @click="abrirEditar(row)" />
                 </td>
               </tr>
+              </template>
             </tbody>
           </table>
         </div>
@@ -157,10 +168,58 @@ function irAlDetalle(id, tab = 'id-liquidaciones') {
   router.push({ path: `/proyectos/${id}`, query: { edit: 'true', tab } })
 }
 
+// Orden por completitud: primero lo que ya está listo, al fondo lo que falta.
+// Las que no tienen tópico van de últimas porque sin él la API de Liquidaciones
+// no las puede identificar: sus columnas SIC no se pueden llenar desde aquí.
+const Completitud = Object.freeze({
+  COMPLETO: 0,
+  PARCIAL: 1,
+  SIN_IDS: 2,
+  SIN_TOPICO: 3,
+})
+
+function completitud(fila) {
+  if (!fila.nombre_topico) return Completitud.SIN_TOPICO
+  const puestos = COLUMNAS.filter(c => tieneValor(fila[c.key])).length
+  if (puestos === COLUMNAS.length) return Completitud.COMPLETO
+  return puestos ? Completitud.PARCIAL : Completitud.SIN_IDS
+}
+
 const filtrados = computed(() => {
   const term = q.value.trim().toLowerCase()
-  return filas.value.filter(f => !term || f.nombre_comercial.toLowerCase().includes(term))
+  return filas.value
+    .filter(f => !term || f.nombre_comercial.toLowerCase().includes(term))
+    .sort((a, b) =>
+      completitud(a) - completitud(b) ||
+      a.nombre_comercial.localeCompare(b.nombre_comercial))
 })
+
+// Cuántas quedaron en cada grupo, para no tener que contarlas a ojo en la tabla.
+const resumen = computed(() => {
+  const filas = filtrados.value
+  return {
+    completos: filas.filter(f => completitud(f) === Completitud.COMPLETO).length,
+    pendientes: filas.filter(f => [Completitud.PARCIAL, Completitud.SIN_IDS].includes(completitud(f))).length,
+    sinTopico: filas.filter(f => completitud(f) === Completitud.SIN_TOPICO).length,
+  }
+})
+
+/** Primera fila de un grupo: sirve para dibujar el separador en la tabla. */
+function abreGrupo(fila, indice) {
+  if (indice === 0) return false
+  return completitud(fila) !== completitud(filtrados.value[indice - 1])
+}
+
+const ETIQUETA_GRUPO = {
+  [Completitud.COMPLETO]: 'Completos',
+  [Completitud.PARCIAL]: 'Con IDs pendientes',
+  [Completitud.SIN_IDS]: 'Sin ningún ID registrado',
+  [Completitud.SIN_TOPICO]: 'Sin tópico · no se pueden identificar en la API de Liquidaciones',
+}
+
+function etiquetaGrupo(fila) {
+  return ETIQUETA_GRUPO[completitud(fila)]
+}
 
 // ── Edición (va a la API de Liquidaciones vía nuestro backend) ────────────────
 const formVisible = ref(false)
@@ -211,12 +270,22 @@ async function cargar() {
       .filter(r => TIPOS_INCLUIDOS.includes(r.tipo_proyecto) && r.estado === ESTADO_OPERATIVA)
       .map(r => {
         const p = quoiaPorId.get(r.proyecto_id) || {}
+        // Los ids de Quoia son de los subproyectos, no del proyecto. Manda lo
+        // que diga la API — es la misma que los consume — y solo si allá no hay
+        // nada se muestra lo que quedó tecleado en esta base.
+        const sub = (r.subproyectos || [])
+        const deLaApi = campo => sub.map(s => s[campo]).find(v => v !== null && v !== '') ?? null
         return {
           ...r,
           nombre_comercial: formatearNombreProyecto(r.nombre_comercial),
-          quoia_reporte_generacion_id: p.quoia_reporte_generacion_id ?? null,
-          quoia_reporte_consumo_id: p.quoia_reporte_consumo_id ?? null,
-          quoia_nodo_id: p.quoia_nodo_id ?? null,
+          quoia_reporte_generacion_id:
+            deLaApi('quoia_report_gen_id') ?? p.quoia_reporte_generacion_id ?? null,
+          quoia_reporte_consumo_id:
+            deLaApi('quoia_report_con_id') ?? p.quoia_reporte_consumo_id ?? null,
+          quoia_nodo_id: deLaApi('quoia_node_id') ?? p.quoia_nodo_id ?? null,
+          // Cuántos subproyectos tiene: con más de uno, la columna muestra el
+          // primero que tenga valor y hay que abrir el detalle para verlos todos.
+          subproyectos_n: sub.length,
         }
       })
       .sort((a, b) => a.nombre_comercial.localeCompare(b.nombre_comercial))
@@ -242,6 +311,8 @@ onMounted(cargar)
   border-right: 1px solid #E5E7EB;
 }
 thead .sticky-col { background: #F9FAFB; z-index: 3; }
+/* La fila de grupo abarca toda la tabla, así que no se congela. */
+.sticky-col-full { position: sticky; left: 0; }
 .row-hover:hover .sticky-col { background: #F8FAFC; }
 .id-cell:hover { background: #F3EEFB; }
 </style>
