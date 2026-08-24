@@ -257,26 +257,48 @@ También se retiraron las directivas `@tailwind base/components/utilities` de `a
 | Paso | Estado |
 | --- | --- |
 | Copiar el árbol (237 archivos) y repartirlo en `app/` | ✅ |
-| Dependencias del legacy añadidas (15 paquetes, todas marcadas como temporales) | ✅ |
+| Dependencias del legacy añadidas (15 paquetes, marcadas como temporales) | ✅ |
 | `ssr: false`, `runtimeCompiler: true`, CSS del legacy en `nuxt.config.ts` | ✅ |
 | Paleta y fuentes como `@theme` de Tailwind 4 | ✅ |
-| Imports reescritos (338) y verificados: los 86 destinos distintos resuelven | ✅ |
-| Plugin de PrimeVue (traducción de `main.js`) | ✅ |
-| Layouts `legacy` y `legacy-blank` (traducción de `App.vue`) | ✅ |
-| `Toast`/`ConfirmDialog` globales y el puente `window.__primeToast` tipado | ✅ |
-| Colisiones de auto-import resueltas | ✅ |
-| Exclusión de lint/format que se vacía sola | ✅ |
-| Pruebas unificadas en `bun run test` (16 archivos, 214 pruebas) | ✅ |
-| **Spike:** `build` verde con una vista rica cableada | ✅ |
-| Generar las 66 páginas puente restantes | ☐ |
-| Guard del legacy como middleware global | ☐ |
-| Redirecciones del router como `routeRules` | ☐ |
+| Plugin de PrimeVue y layouts `legacy` / `legacy-blank` | ✅ |
+| **Las 75 rutas como páginas en `app/pages/`** (67 vistas + 8 redirecciones) | ✅ |
+| Guard del legacy como middleware global | ✅ |
+| **`app/legacy/` y `app/router/` eliminados** — `main.js` y `App.vue` sustituidos | ✅ |
+| Navegación del sidebar movida a `app/config/navigation.ts` | ✅ |
 | Proxies de Nitro (`/api`, `/monitoreo`, `/api/v1/evo` con su token server-side) | ☐ |
 | `app:chunkError` en lugar de `vite:preloadError` | ☐ |
 | Revisión visual de las 67 rutas contra el legacy | ☐ |
 
-Puertas de calidad al cierre del spike: `lint` sin errores · `typecheck` 0 · `test` 214 en verde ·
-`format:check` limpio · `build` completo.
+**Verificación del árbol de rutas:** las rutas derivadas de `app/pages/` se cruzan contra
+`contexto/inventario-rutas.md` y coinciden **75 de 75**, sin faltantes ni sobrantes.
+
+#### La regla de nombres de página, y por qué
+
+Toda ruta va a `<segmentos>/index.vue`, nunca a `<segmento>.vue`. En Nuxt, un `clientes.vue` que
+convive con una carpeta `clientes/` **deja de ser una página** y pasa a ser el layout padre de sus
+hijas: necesita un `<NuxtPage />` dentro, y sin él `/clientes/:id` renderiza vacío **sin dar
+ningún error**. Con `index.vue` esa ambigüedad no existe, y da igual que la ruta tenga hijas o no.
+
+Anidadas y con parámetro quedan así: `/proyectos/:id/ppa` → `proyectos/[id]/ppa/index.vue`;
+`/liquidaciones/:id/pdf` → `liquidaciones/[id]/pdf/index.vue`. Y como vue-router prefiere lo
+estático a lo dinámico, `liquidaciones/inversionista/` y `liquidaciones/[id]/` conviven sin pisarse.
+
+### 1.2d Lo que se adelantó de la fase 2
+
+La reubicación resultó ser el camino corto, así que buena parte de la fase 2 ya está hecha:
+
+| Origen | Destino | Estado |
+| --- | --- | --- |
+| `api/client.js` | `core/client.ts` (TypeScript) | ✅ |
+| `api/{liquidacionesApi,garantiasProyecciones,xm}.js` | services en `features/<slice>/services/` | ✅ |
+| `stores/auth.js` | `stores/auth.ts` + `features/auth/services/legacy-auth.ts` | ✅ |
+| `utils/security.js` | `utils/security.ts` | ✅ |
+| `composables/*.js` | `composables/*.ts` + services + `useState` | ✅ |
+| `constants/liquidaciones.js` | `features/liquidaciones/constants.ts` | ✅ |
+| `components/`, `assets/`, `data/` | sus carpetas en `app/` | ✅ |
+| `views/`, `mobile/` | repartir en slices de `features/` | ☐ |
+
+Queda por repartir `views/` y `mobile/`: es lo único que separa de terminar la fase 2.
 
 ### 1.3 Riesgos de la fase
 

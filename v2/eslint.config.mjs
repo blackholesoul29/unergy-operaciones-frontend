@@ -19,10 +19,8 @@ import withNuxt from './.nuxt/eslint.config.mjs'
  */
 const LEGACY_PENDIENTE_DE_MIGRAR = [
   // Carpetas que son legacy al 100%
-  'app/legacy/**', // solo main.js y App.vue, ya sustituidos por el plugin y los layouts
   'app/views/**',
   'app/mobile/**',
-  'app/router/**',
   'app/data/**',
   'app/assets/*.js', // datasets estáticos
 

@@ -26,10 +26,8 @@ app/components/gandalf
 # MIGRACIÓN — Fase 1/2: el legacy todavía no cumple el formato del template.
 # Mismo criterio que en eslint.config.mjs: el legacy es JavaScript, el template
 # TypeScript. La lista se vacía sola a medida que la fase 3 convierte archivos.
-app/legacy
 app/views
 app/mobile
-app/router
 app/data
 app/assets/*.js
 app/assets/main.css

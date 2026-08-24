@@ -154,6 +154,11 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { useSidebar } from '~/composables/useSidebar'
+import {
+  LEGACY_NAV_GROUP_LABELS,
+  LEGACY_NAV_GROUP_ORDER,
+  LEGACY_NAV_ITEMS,
+} from '~/config/navigation'
 import api from '~/core/client'
 
 const auth = useAuthStore()
@@ -256,117 +261,6 @@ onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-const ALL_GROUPS = [
-  {
-    label: 'General',
-    items: [
-      { to: '/dashboard',       label: 'Dashboard',        icon: 'pi pi-home' },
-      // Esta entrada reemplaza a las tres que había antes (Clientes, Proyectos
-      // y Servicios). La base es el portafolio de plantas, y clientes y
-      // contratos son formas de reagrupar ese mismo portafolio. Las rutas
-      // /clientes, /proyectos y /servicios siguen vivas -- solo salieron del
-      // menú, así que nada se rompe y revertir es volver a poner estas líneas.
-      { to: '/servicios-unificado', label: 'Proyectos',          icon: 'pi pi-bolt' },
-      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
-      { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
-    ],
-  },
-  {
-    label: 'Comercial',
-    items: [
-      { to: '/comercial', label: 'Pipeline', icon: 'pi pi-briefcase', roles: ['admin', 'comercial'] },
-    ],
-  },
-  {
-    label: 'Operaciones',
-    items: [
-      { to: '/solar-live', label: 'Generación Solar', icon: 'pi pi-sun', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/operaciones/informes-mensuales', label: 'Informes Mensuales', icon: 'pi pi-file-edit', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/fallas', label: 'Gestión de Fallas', icon: 'pi pi-wrench', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/operaciones/informe-om', label: 'Informe de Puesta en Marcha', icon: 'pi pi-file-pdf', roles: ['admin', 'operaciones'] },
-      { to: '/operaciones/polizas', label: 'Pólizas', icon: 'pi pi-shield', roles: ['admin', 'operaciones'] },
-    ],
-  },
-  {
-    label: 'Fronteras Comerciales',
-    items: [
-      { to: '/mem/fronteras',         label: 'General',            icon: 'pi pi-globe',      roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/mem/reporte-energia',   label: 'Reporte de Energía', icon: 'pi pi-file-edit',  roles: ['admin', 'operaciones', 'monitoreo'] },
-    ],
-  },
-  {
-    label: 'Registros CND/ASIC',
-    items: [
-      { to: '/registros-cnd-asic', label: 'Proyectos en conexión', icon: 'pi pi-flag', roles: ['admin', 'operaciones'] },
-    ],
-  },
-  {
-    label: 'Comercialización',
-    items: [
-      { to: '/mem/cumplimiento',    label: 'Cumplimiento PPA', icon: 'pi pi-shield' },
-      { to: '/mem/descubrimientos', label: 'Descubrimientos',  icon: 'pi pi-bolt' },
-      { to: '/garantias',           label: 'Garantías',        icon: 'pi pi-wallet' },
-      { to: '/mem/gescon',          label: 'GESCON / ASIC',    icon: 'pi pi-book' },
-      { to: '/mem/precio-bolsa',    label: 'Precio de Bolsa',  icon: 'pi pi-chart-line' },
-      { to: '/mem/balance',         label: 'Balance Energía',  icon: 'pi pi-chart-bar' },
-      { to: '/mem/clima',           label: 'Clima & ENSO',     icon: 'pi pi-cloud' },
-    ],
-  },
-  {
-    label: 'Finanzas',
-    items: [
-      {
-        label: 'Liquidaciones', icon: 'pi pi-dollar', roles: ['admin', 'liquidaciones'],
-        children: [
-          // Entrada directa: antes solo se llegaba a la pestaña de Facturación
-          // entrando por Panel Contable → Minigranjas/Autoconsumo.
-          { to: '/liquidaciones?tab=facturacion', label: 'Facturación de energía' },
-          { to: '/finanzas/ids-proyectos', label: 'IDs proyectos' },
-          { to: '/finanzas/contratos-energia', label: 'Contratos de energía' },
-          { to: '/finanzas/despachos-liquidados', label: 'Despachos liquidados' },
-          { to: '/finanzas/consumo', label: 'Consumo' },
-          { to: '/finanzas/costos-comercializacion', label: 'Costos comercialización' },
-          { to: '/finanzas/facturas-xm', label: 'Facturas de XM' },
-          { to: '/finanzas/verificacion-costos', label: 'Verificación de costos' },
-          { to: '/finanzas/estados-resultados', label: 'Estados de resultados' },
-          { to: '/finanzas/mandatos', label: 'Mandatos' },
-        ],
-      },
-      {
-        label: 'Panel Contable', icon: 'pi pi-calculator', roles: ['admin', 'liquidaciones'],
-        children: [
-          { to: '/panel-contable', label: 'Panel contable' },
-          { to: '/liquidaciones?tipo=minigranja', label: 'Minigranjas' },
-          { to: '/liquidaciones?tipo=autoconsumo', label: 'Autoconsumo' },
-          { to: '/liquidaciones/inversionista', label: 'Por Inversionista' },
-        ],
-      },
-      {
-        label: 'Herramientas liquidaciones', icon: 'pi pi-wrench', roles: ['admin', 'liquidaciones'],
-        children: [
-          { to: '/validador-mandatos', label: 'Validador de Mandatos' },
-          { to: '/finanzas/descarga-xm', label: 'Descarga de XM' },
-        ],
-      },
-      { to: '/finanzas/costos', label: 'Costos', icon: 'pi pi-credit-card', roles: ['admin', 'liquidaciones'] },
-    ],
-  },
-  {
-    label: 'Alertas',
-    items: [
-      { to: '/alertas', label: 'Centro de Alertas', icon: 'pi pi-exclamation-circle' },
-    ],
-  },
-  {
-    label: 'Admin',
-    items: [
-      { to: '/admin/usuarios', label: 'Usuarios', icon: 'pi pi-users', requireEmail: 'juanjose@unergy.io' },
-      { to: '/admin/diagnostico', label: 'Diagnóstico', icon: 'pi pi-link', requireEmail: 'juanjose@unergy.io' },
-    ],
-  },
-]
-
 // Submenús expandibles dentro de un grupo (ej. Liquidaciones).
 // Arrancan cerrados al recargar para no saturar visualmente el menú.
 const expandedItems = ref(new Set())
@@ -378,15 +272,16 @@ function toggleItem(label) {
   expandedItems.value = new Set(expandedItems.value)
 }
 
-const navGroups = computed(() =>
-  ALL_GROUPS.map(g => ({
-    ...g,
-    items: g.items.filter(i =>
-      (!i.roles || auth.can(...i.roles)) &&
-      (!i.requireEmail || auth.user?.email === i.requireEmail)
-    ),
-  })).filter(g => g.items.length > 0)
-)
+const navGroups = computed(() => {
+  const visible = (item) =>
+    (!item.roles || auth.can(...item.roles)) &&
+    (!item.requireEmail || auth.user?.email === item.requireEmail)
+
+  return LEGACY_NAV_GROUP_ORDER.map((group) => ({
+    label: LEGACY_NAV_GROUP_LABELS[group],
+    items: LEGACY_NAV_ITEMS.filter((i) => i.group === group && visible(i)),
+  })).filter((g) => g.items.length > 0)
+})
 </script>
 
 <style scoped>
