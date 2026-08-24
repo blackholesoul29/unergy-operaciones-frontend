@@ -81,7 +81,23 @@ export default defineNuxtConfig({
 
     public: {
       apiBaseUrl: '',
-      authEnabled: true,
+      /**
+       * MIGRACIÓN — Fase 1: apagado por defecto, no por `.env`.
+       *
+       * La sesión la gobierna el store del legacy y el guard
+       * `legacy-auth.global.ts`. El guard del template —y su middleware de
+       * servidor— trabajan contra `AUTH_ROUTE_PERMISSIONS`, donde solo está
+       * declarada `/`, así que encendidos redirigen **todas** las rutas a un
+       * `/login` que no gobiernan.
+       *
+       * Estaba en `.env`, pero un `.env` no viaja al build de producción: el
+       * servidor arrancaba con el valor por defecto `true` y devolvía 302 en
+       * todo. El valor por defecto tiene que ser el que hace que la app
+       * funcione; la variable de entorno queda para volver a encenderlo.
+       *
+       * Se vuelve a `true` en la fase 3, ola 1.
+       */
+      authEnabled: false,
       authPasswordEnabled: true,
       authGoogleEnabled: false,
       googleClientId: '',
