@@ -55,22 +55,48 @@ Están enumeradas en `02-specs.md §20`. Las tres que bloquean el arranque, **de
 Las demás (rol `admin`, restricción por email, Chart.js vs. Unovis, placeholders,
 `OperacionView.vue`) pueden decidirse durante la fase 2 sin bloquear.
 
-### 0.2 Red de seguridad
+### 0.2 Red de seguridad — ✅ completada el 2026-08-24
 
-- [ ] **Rama de trabajo** `migration` (ya existe) y una regla: `master` sigue sirviendo el
+- [x] **Rama de trabajo** `migration` (ya existe) y una regla: `master` sigue sirviendo el
       legacy en producción hasta el cutover de la fase 4.
-- [ ] **Portar las 6 pruebas existentes a Vitest** (`conciliacionMandatos`,
+- [x] **Portar las 6 pruebas existentes a Vitest** (`conciliacionMandatos`,
       `financialCalculations`, `parseCOP`, `validacionContratos`, `zipSecurityValidator`,
-      `comercial`) — es lo primero que da red y cuesta horas, no días.
-- [ ] **Inventario de rutas congelado**: un archivo generado desde `router/index.js` con las
-      75 rutas (67 con vista, 8 redirecciones), sus roles y su componente. Es la lista de
-      verificación de las fases 1 y 2.
-- [ ] **Inventario de endpoints congelado**: los 341 endpoints agrupados en 23 slices. Es el
-      índice de los services que hay que escribir en la fase 3.
-- [ ] **Guion de humo manual**: 15–20 recorridos críticos (login, listar proyectos, abrir una
-      liquidación, exportar la matriz anual, registrar una falla…) que se ejecutan al final de
-      cada ola. La cobertura automatizada de esta app es ~0; el humo manual es la verificación
-      real y hay que asumirlo como tal.
+      `comercial`). Ahora importan el módulo de verdad en vez de leer el fuente y evaluarlo con
+      `new Function`. **135 pruebas en verde**; los `.test.mjs` originales se retiraron.
+      Se corren con `bun run test:legacy` desde `v2/` (config temporal
+      `v2/vitest.legacy.config.ts`, que se absorbe en `vitest.config.ts` en la fase 1).
+- [x] **Inventario de rutas congelado** → [`inventario-rutas.md`](./inventario-rutas.md).
+      75 rutas (67 con vista, 8 redirecciones), con roles, flags y la página Nuxt destino de
+      cada una. Es la lista de verificación de las fases 1 y 2.
+- [x] **Inventario de endpoints congelado** → [`inventario-endpoints.md`](./inventario-endpoints.md).
+      341 endpoints agrupados en 23 slices, con sus archivos consumidores y los 48 que comparte
+      más de un slice. Es el índice de los services de la fase 3.
+- [x] **Guion de humo manual** → [`guion-humo.md`](./guion-humo.md). 9 bloques, 74 recorridos,
+      etiquetados por slice para poder correr solo el subconjunto de cada ola. La cobertura
+      automatizada de esta app es ~0; el humo manual es la verificación real y hay que asumirlo
+      como tal.
+
+Ambos inventarios se generaron con un script sobre el código, no a mano: son reproducibles y
+**no se editan a mano**.
+
+### 0.4 Estado de la base de `v2/`
+
+Verificado el 2026-08-24, todo en verde:
+
+| Comprobación | Resultado |
+| --- | --- |
+| `bun run lint` | sin errores |
+| `bun run typecheck` | 0 errores |
+| `bun run test` (v2) | 10 archivos, 79 pruebas |
+| `bun run test:legacy` | 6 archivos, 135 pruebas |
+
+**Un arreglo necesario para llegar ahí:** `GAccordionTrigger.vue` y `GSwitch.vue` importaban de
+`lucide-vue-next` mientras el resto de la app usa `@lucide/vue`, que es el que está instalado —
+2 errores de `typecheck` de origen. Se corrigieron los dos imports.
+
+> ⚠️ `app/components/gandalf/` es **intocable** según `AGENTS.md`: lo sincroniza el repo de
+> Gandalf y el próximo sync revertirá este arreglo. **Hay que corregirlo también allá**, o
+> volverá a romper el `typecheck`.
 
 ### 0.3 Definición de terminado (aplica a todo el roadmap)
 
