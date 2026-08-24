@@ -21,7 +21,10 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['app/**/*.test.ts', 'server/**/*.test.ts'],
+    // MIGRACIÓN — Fase 1: el `.js` cubre las pruebas del legacy, que se portaron a
+    // Vitest en la fase 0 y viajaron con su módulo. Sobra cuando la fase 3 las
+    // pase a TypeScript.
+    include: ['app/**/*.test.{ts,js}', 'server/**/*.test.ts'],
     setupFiles: ['./vitest.setup.ts'],
     expect: { requireAssertions: true },
   },

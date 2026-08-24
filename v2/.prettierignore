@@ -23,5 +23,27 @@ app/components/gandalf
 .claude
 .agents
 
-# MIGRACIÓN — Fase 1: cuarentena del legacy, se vacía en la fase 2
+# MIGRACIÓN — Fase 1/2: el legacy todavía no cumple el formato del template.
+# Mismo criterio que en eslint.config.mjs: el legacy es JavaScript, el template
+# TypeScript. La lista se vacía sola a medida que la fase 3 convierte archivos.
 app/legacy
+app/views
+app/mobile
+app/api
+app/router
+app/data
+app/constants
+app/stores
+app/assets/*.js
+app/assets/main.css
+app/components/*.vue
+app/components/reports
+app/composables/*.js
+app/utils/*.js
+
+# Especificaciones de dominio traídas del legacy: se conservan tal cual se
+# escribieron, reformatearlas solo produce ruido en el diff.
+docs
+
+# Service worker de la PWA móvil: código vendido, se sirve tal cual.
+public/sw-mobile.js
