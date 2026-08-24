@@ -14,7 +14,7 @@
  *
  * Se retira en la fase 3, ola 1, cuando el shell pase a `layouts/default.vue`.
  */
-import AppSidebar from '~/components/AppSidebar.vue'
+import AppSidebar from '~/components/layout/LegacyAppSidebar.vue'
 import { useSidebar } from '~/composables/useSidebar'
 import { ChevronsRightIcon, MenuIcon } from '@lucide/vue'
 

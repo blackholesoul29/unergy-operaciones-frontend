@@ -19,7 +19,7 @@ import {
   isTokenExpired,
   setAccessToken,
   setStoredUser,
-} from '~/utils/security'
+} from '~/core/security'
 
 /** Reconstruye el usuario desde los claims del JWT. */
 function usuarioDesdeToken(jwt: string): UsuarioLegacy | null {

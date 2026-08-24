@@ -1,8 +1,8 @@
 <script setup lang="ts">
-// MIGRACIÓN — Fase 1: el sidebar del legacy vive en `~/components/AppSidebar.vue`
-// y comparte nombre con el del template. Se importa por ruta para que no haya
-// ambigüedad de auto-import. Se resuelve solo en la fase 3, ola 1, cuando el
-// shell del legacy se retire.
+// MIGRACIÓN — Fase 1: este es el sidebar del template, no el del legacy (que es
+// `~/components/layout/LegacyAppSidebar.vue`). Se importa por ruta para que no
+// haya ambigüedad de auto-import entre los dos. Cuando el shell del legacy se
+// retire, en la fase 3 ola 1, este layout vuelve a ser el único.
 import LayoutAppSidebar from '~/components/layout/AppSidebar.vue'
 </script>
 
