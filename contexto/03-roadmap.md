@@ -63,8 +63,9 @@ Las demás (rol `admin`, restricción por email, Chart.js vs. Unovis, placeholde
       `financialCalculations`, `parseCOP`, `validacionContratos`, `zipSecurityValidator`,
       `comercial`) — es lo primero que da red y cuesta horas, no días.
 - [ ] **Inventario de rutas congelado**: un archivo generado desde `router/index.js` con las
-      ~100 rutas, sus roles y su componente. Es la lista de verificación de las fases 1 y 2.
-- [ ] **Inventario de endpoints congelado**: los ~280 endpoints agrupados por slice. Es el
+      75 rutas (67 con vista, 8 redirecciones), sus roles y su componente. Es la lista de
+      verificación de las fases 1 y 2.
+- [ ] **Inventario de endpoints congelado**: los 341 endpoints agrupados en 23 slices. Es el
       índice de los services que hay que escribir en la fase 3.
 - [ ] **Guion de humo manual**: 15–20 recorridos críticos (login, listar proyectos, abrir una
       liquidación, exportar la matriz anual, registrar una falla…) que se ejecutan al final de
@@ -90,7 +91,7 @@ de humo.
 ## Fase 1 · Traslado literal
 
 **Objetivo:** que todo el código de `legacy/src/` viva dentro de `v2/` **sin una sola
-modificación de lógica**, y que la aplicación arranque y sirva las ~100 rutas.
+modificación de lógica**, y que la aplicación arranque y sirva las 75 rutas.
 
 **Regla de la fase:** si un archivo de `legacy/src/` cambia de contenido, hay que poder
 explicar por qué en una línea. El objetivo es cero diffs de producto.
@@ -135,7 +136,7 @@ está excluida de lint y format igual que `ui/` y `gandalf/`, y su único destin
    <template><View /></template>
    ```
 
-   ~100 archivos de 5 líneas, generados desde el inventario de la fase 0. Cada uno desaparece
+   67 archivos de 5 líneas, generados desde el inventario de la fase 0. Cada uno desaparece
    solo cuando su página real se escribe en la fase 3. Las redirecciones del router se
    convierten en `routeRules` de Nuxt.
 4. **Guard.** `router.beforeEach` → `app/middleware/legacy-auth.global.ts`, con la misma lógica
@@ -182,7 +183,7 @@ está excluida de lint y format igual que `ui/` y `gandalf/`, y su único destin
 ### 1.4 Criterios de aceptación
 
 - [ ] `bun run dev` arranca sin errores ni advertencias nuevas.
-- [ ] Las ~100 rutas del inventario cargan y renderizan lo mismo que el legacy (revisión visual
+- [ ] Las 67 rutas con vista del inventario cargan y renderizan lo mismo que el legacy (revisión visual
       lado a lado).
 - [ ] Login, guard por rol y redirecciones se comportan igual.
 - [ ] Las rutas `/m/*` funcionan con su layout propio.
@@ -356,7 +357,8 @@ Sin esto, cada slice reinventa lo mismo. No cambia nada visible para el usuario.
   `toUser`/`toSession`. **Nunca tipar una respuesta externa directamente como un tipo interno.**
 - Migrar a cookies `httpOnly`; retirar `stores/auth.js`, `utils/security.js` y el interceptor
   de axios. Esto cierra la deuda que el propio `SECURITY.md` del legacy lleva tiempo pidiendo.
-- **Traducir roles a permisos.** Partiendo de los `meta.roles` de las ~100 rutas, definir los
+- **Traducir roles a permisos.** Partiendo de los `meta.roles` de las 75 rutas —23 de ellas sin
+  roles declarados, hoy abiertas a cualquier sesión—, definir los
   tags `recurso:acción`, la matriz `ROLE_PERMISSIONS` (con `admin` recibiendo todo de forma
   explícita, sin bypass) y `AUTH_ROUTE_PERMISSIONS`. Deny-by-default: una ruta sin declarar es
   un 403, no un acceso.
@@ -416,9 +418,9 @@ Métricas objetivas, verificables con un comando:
 | Archivos en `app/legacy/` | 237 | 0 (al terminar la fase 2) |
 | Archivos que importan `primevue` | 120 | 0 |
 | Archivos `.js`/`.vue` sin `lang="ts"` | 237 | 0 |
-| Llamadas a la API fuera de un service | ~280 | 0 |
+| Llamadas a la API fuera de un service | 341 | 0 |
 | Literales hex de la paleta | ~2.528 | 0 |
-| Rutas declaradas en `AUTH_ROUTE_PERMISSIONS` | 1 | ~100 |
+| Rutas declaradas en `AUTH_ROUTE_PERMISSIONS` | 1 | 67 |
 | Slices que cumplen la receta completa | 0 | 21 |
 
 ---
@@ -470,7 +472,7 @@ Métricas objetivas, verificables con un comando:
 | Fase | Entregable | Señal de que terminó |
 | --- | --- | --- |
 | **0 · Preparar** | Decisiones firmadas, pruebas en Vitest, inventarios, guion de humo | Las 3 decisiones bloqueantes están cerradas |
-| **1 · Trasladar** | Una app Nuxt que hace todo lo del legacy | Las ~100 rutas cargan; hay despliegue de vista previa |
+| **1 · Trasladar** | Una app Nuxt que hace todo lo del legacy | Las 67 rutas cargan; hay despliegue de vista previa |
 | **2 · Reorganizar** | El código en la estructura del template | `app/legacy/` no existe; el alias `@` está eliminado |
 | **3 · Migrar** | Código que cumple `AGENTS.md` | 0 imports de PrimeVue, 0 archivos sin TypeScript, 0 llamadas fuera de un service |
 | **4 · Cerrar** | Un solo repositorio, un solo producto | `legacy/` borrado, documentación reescrita |

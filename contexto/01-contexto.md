@@ -164,7 +164,7 @@ legacy/src/
 ├── App.vue            # shell: sidebar + main + Toast + ConfirmDialog
 ├── api/               # client.js (axios) + 3 clientes de API específicos
 ├── stores/auth.js     # el único store
-├── router/index.js    # ~100 rutas + guard de auth/roles
+├── router/index.js    # 75 rutas (67 vistas + 8 redirecciones) + guard
 ├── composables/       # 3 composables
 ├── constants/         # 1 archivo
 ├── utils/             # 20 utilidades puras + 5 tests .mjs caseros
@@ -187,7 +187,7 @@ legacy/src/
 | Archivos que importan PrimeVue | **120** de 237 |
 | Archivos con `style="…"` inline | 158 |
 | Literales hex de la paleta hardcodeados | ~2.528 |
-| Endpoints distintos consumidos | ~280 |
+| Endpoints distintos consumidos | 341 |
 | Archivos que tocan `window.` | 30 |
 | Archivos que tocan `document.` | 26 |
 | Archivos que tocan `localStorage` | 14 |
@@ -314,10 +314,10 @@ Esta tabla es el mapa de todo lo que hay que traducir. Cada fila es trabajo real
 | --- | --- | --- | --- |
 | Framework | Vite SPA, `main.js` | Nuxt 4 SSR + Nitro | Bootstrap, layouts, plugins |
 | Lenguaje | JavaScript | TypeScript estricto | **237 archivos a tipar** |
-| Routing | `router/index.js`, ~100 rutas a mano | file-based `app/pages/` | ~100 archivos de página |
+| Routing | `router/index.js`, 75 rutas a mano | file-based `app/pages/` | 67 archivos de página |
 | Auth | JWT en `localStorage`, Pinia | cookies `httpOnly` + `useState` + Nitro | Reescribir el flujo completo |
 | Permisos | `meta.roles` + bypass de `admin` | tags `recurso:acción`, deny-by-default, sin bypass | Rediseñar la matriz de acceso |
-| HTTP | axios global, llamado desde vistas | services `extends BaseService`, ofetch | **~280 endpoints a encapsular** |
+| HTTP | axios global, llamado desde vistas | services `extends BaseService`, ofetch | **341 endpoints a encapsular** |
 | UI | PrimeVue 4 | shadcn-vue + Gandalf | **120 archivos** con imports de PrimeVue |
 | Iconos | PrimeIcons (`pi pi-*`) | `@lucide/vue` | Mapeo 1:1, mecánico pero masivo |
 | Estilos | Tailwind 3 + hex inline | Tailwind 4 + tokens semánticos | **~2.528 hex, 158 archivos** |
@@ -332,7 +332,7 @@ Esta tabla es el mapa de todo lo que hay que traducir. Cada fila es trabajo real
 
 ### Lo que **no** cambia
 
-- La API backend. Los ~280 endpoints siguen siendo los mismos; solo cambia quién los llama.
+- La API backend. Los 341 endpoints siguen siendo los mismos; solo cambia quién los llama.
 - Las reglas de negocio: conciliación de mandatos, cálculo de estado de resultados, validación
   de contratos, parseo COP, cálculo fasorial, vigencia de PPA. Son funciones puras en `utils/`
   y se migran casi textualmente (a TypeScript).
