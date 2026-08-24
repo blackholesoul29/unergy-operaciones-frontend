@@ -31,12 +31,10 @@ app/views
 app/mobile
 app/router
 app/data
-app/constants
 app/assets/*.js
 app/assets/main.css
 app/components/*.vue
 app/components/reports
-app/composables/*.js
 app/utils/*.js
 
 # Especificaciones de dominio traídas del legacy: se conservan tal cual se

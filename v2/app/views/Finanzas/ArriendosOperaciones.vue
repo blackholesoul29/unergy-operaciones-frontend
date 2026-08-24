@@ -381,7 +381,7 @@ import { useToast } from 'primevue/usetoast'
 import api          from '~/core/client'
 import ArriendosZipUpload from './ArriendosZipUpload.vue'
 import CalculoIpcPopover from '~/components/CalculoIpcPopover.vue'
-import { docsPorProyecto, loadDocs, downloadDoc } from '~/composables/useArriendosDocs'
+const { docsPorProyecto, loadDocs, downloadDoc } = useArriendosDocs()
 import DocumentoIcon from '~/components/DocumentoIcon.vue'
 
 const toast = useToast()

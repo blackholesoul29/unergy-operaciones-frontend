@@ -24,13 +24,11 @@ const LEGACY_PENDIENTE_DE_MIGRAR = [
   'app/mobile/**',
   'app/router/**',
   'app/data/**',
-  'app/constants/**',
   'app/assets/*.js', // datasets estáticos
 
   // Carpetas compartidas con el template: aquí el legacy es el JavaScript
   'app/components/*.vue', // los del template están en subcarpetas
   'app/components/reports/**',
-  'app/composables/*.js',
   'app/utils/*.js',
 ]
 
