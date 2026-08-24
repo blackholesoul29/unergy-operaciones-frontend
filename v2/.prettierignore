@@ -32,7 +32,6 @@ app/assets/*.js
 app/assets/main.css
 app/components/*.vue
 app/components/reports
-app/utils/*.js
 
 # Especificaciones de dominio traídas del legacy: se conservan tal cual se
 # escribieron, reformatearlas solo produce ruido en el diff.

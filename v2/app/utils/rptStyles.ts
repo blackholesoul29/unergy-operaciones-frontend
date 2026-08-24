@@ -291,6 +291,14 @@ body {
 }
 `
 
+export interface ReportHtmlDocOptions {
+  title?: string
+  bgGray?: boolean
+  editable?: boolean
+  // escala cada .rpt-page para que SIEMPRE quepa en una hoja A4 (Ranking vs P90)
+  autoFit?: boolean
+}
+
 /**
  * Construye el documento HTML completo para mostrar (o editar) un informe.
  *
@@ -305,16 +313,16 @@ body {
  * A4 @ 96 DPI = 793.7px ≈ 794px.  Con @page margin 8mm cada lado (16mm total):
  *   ancho área contenido = (210 - 16) mm × 3.7795 px/mm ≈ 733 px
  */
-export function buildReportHtmlDoc(html, opts = {}) {
+export function buildReportHtmlDoc(html: string, opts: ReportHtmlDocOptions = {}): string {
   const {
-    title    = 'Informe Operacional',
-    bgGray   = true,
+    title = 'Informe Operacional',
+    bgGray = true,
     editable = false,
-    autoFit  = false,   // escala cada .rpt-page para que SIEMPRE quepa en una hoja A4 (Ranking vs P90)
+    autoFit = false,
   } = opts
 
   // ── CSS extra según el modo ──────────────────────────────────────────
-  let modeCSS = ''
+  let modeCSS: string
 
   if (autoFit) {
     // Modo auto-ajuste (impresión de Ranking): cada página se mide y se escala
@@ -384,7 +392,8 @@ export function buildReportHtmlDoc(html, opts = {}) {
   // Script de auto-ajuste: envuelve cada .rpt-page, mide su alto natural a 733px
   // (ancho de contenido A4 con márgenes de 8mm) y aplica transform:scale() para que
   // entre completa en el alto imprimible de una hoja (~285mm). Dispara print() al terminar.
-  const fitScript = autoFit ? `
+  const fitScript = autoFit
+    ? `
 <script>
 (function () {
   var TARGET_H = 1040;  // alto imprimible útil en px (A4 285mm @96dpi ≈ 1077px, con margen de seguridad)
@@ -417,7 +426,8 @@ export function buildReportHtmlDoc(html, opts = {}) {
     window.addEventListener('load', function () { setTimeout(run, 600); });
   }
 })();
-</script>` : ''
+</script>`
+    : ''
 
   return `<!doctype html>
 <html lang="es">
@@ -434,6 +444,6 @@ ${RPT_CSS}
 ${modeCSS}
 </style>
 </head>
-<body${bodyAttrs}>${html}</body>
+<body${bodyAttrs}>${html}${fitScript}</body>
 </html>`
 }

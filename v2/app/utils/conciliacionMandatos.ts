@@ -291,7 +291,7 @@ export function parseAsientos(rows: unknown[][] | null | undefined): ParseAsient
 
 // ===================== PARSEO DE MANDATO (texto del PDF) =====================
 
-export interface Mandato {
+export interface MandatoPdf {
   cmu: string
   projName: string
   mandante: string
@@ -304,7 +304,7 @@ export interface Mandato {
  * @param text      Texto extraído del PDF.
  * @param filename  Nombre del archivo (fallback).
  */
-export function extractMandate(text: string, filename = ''): Mandato {
+export function extractMandate(text: string, filename = ''): MandatoPdf {
   text = text || ''
   const cmu = (text.match(/CMU\d+/i) || filename.match(/CMU\d+/i))?.[0] ?? '?'
   const flat = text.replace(/\s+/g, ' ')
