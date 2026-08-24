@@ -22,3 +22,6 @@ app/components/gandalf
 # Agent tooling — written by the tools, not by us
 .claude
 .agents
+
+# MIGRACIÓN — Fase 1: cuarentena del legacy, se vacía en la fase 2
+app/legacy

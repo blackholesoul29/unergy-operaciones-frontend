@@ -7,7 +7,36 @@ export default defineNuxtConfig({
 
   modules: ['@nuxt/eslint', 'shadcn-nuxt', '@vueuse/nuxt', '@pinia/nuxt', '@nuxtjs/color-mode'],
 
-  css: ['~/assets/css/tailwind.css'],
+  /**
+   * MIGRACIÓN — Fase 1. La aplicación que se está trasladando es una SPA de Vite
+   * y se mantiene así durante las fases 1 y 2: hay ~70 archivos que tocan
+   * `window`, `document` o `localStorage` en el cuerpo del módulo, y encenderlos
+   * bajo SSR convertiría un traslado en 70 fallos simultáneos.
+   *
+   * Nuxt sigue aportando lo que se buscaba — routing por archivos, auto-imports,
+   * Nitro y el ecosistema — aunque el render sea de cliente. En la fase 3 se
+   * evalúa SSR página por página. Ver `contexto/03-roadmap.md`.
+   */
+  ssr: false,
+
+  /**
+   * MIGRACIÓN — Fase 1, temporal.
+   * `app/legacy/views/Servicios/OperacionView.vue` define 8 componentes con
+   * `template:` como string en vez de un `<template>` de SFC. El build por
+   * defecto de Vue es runtime-only y no puede compilarlos: renderizarían vacío,
+   * sin error, solo un warning en consola. El legacy resolvía esto con un alias
+   * a `vue/dist/vue.esm-bundler.js` en `vite.config.js`.
+   *
+   * Se retira cuando ese archivo se refactorice a SFC (fase 3, ola 2).
+   */
+  vue: { runtimeCompiler: true },
+
+  css: [
+    '~/assets/css/tailwind.css',
+    // MIGRACIÓN — Fase 1: estilos del legacy. Salen en la fase 3.
+    'primeicons/primeicons.css',
+    '~/legacy/assets/main.css',
+  ],
 
   // Nuxt prefixes a component's name with its folder path by default
   // (components/layout/AppSidebar.vue -> <LayoutAppSidebar>). The pyramid is

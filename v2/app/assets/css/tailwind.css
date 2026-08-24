@@ -14,6 +14,9 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
+/* MIGRACIÓN — Fase 1: la paleta y las fuentes del legacy. Se retira en la fase 3. */
+@import './legacy-theme.css';
+
 @theme inline {
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
