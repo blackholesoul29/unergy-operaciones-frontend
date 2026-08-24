@@ -233,6 +233,51 @@ Los exports de `app/utils/` **no** chocaron con los del template (`date.ts`, `st
 11. **Pruebas.** Portar las 6 `.test.mjs` a Vitest (si no se hizo en la fase 0) y colocarlas
     junto a su archivo.
 
+### 1.2b Hallazgos del spike (ejecutado)
+
+Antes de cablear las 67 rutas se validó la pila entera con una vista rica
+(`ProyectosListView.vue`, 1.104 líneas: DataTable, filtros, diálogos). **El build pasa.** Dos
+hallazgos que el plan no anticipaba:
+
+1. **Tailwind 4 rompe `@apply` dentro de `<style>` de un SFC.** Cada bloque se procesa aislado y
+   no ve el tema, así que falla con `Cannot apply unknown utility class`. El build **falla en
+   duro**, no en silencio, que es la buena noticia. Afecta a **21 archivos / 26 reglas**, todas
+   con utilidades core. Se resolvió insertando `@reference 'tailwindcss';` al inicio de cada
+   bloque afectado.
+2. **La paleta `unergy` había que reexpresarla** como `@theme` de Tailwind 4
+   (`app/assets/css/legacy-theme.css`). Sin eso, las ~2.500 clases `bg-unergy-purple`,
+   `text-unergy-deep`, `font-body`… **no fallan: simplemente no se generan**, y la aplicación se
+   ve rota sin que nada avise. Este es el modo de fallo peligroso de la fase.
+
+También se retiraron las directivas `@tailwind base/components/utilities` de `assets/main.css`
+(sintaxis de Tailwind 3, inexistente en Tailwind 4).
+
+### 1.2c Estado de la fase 1
+
+| Paso | Estado |
+| --- | --- |
+| Copiar el árbol (237 archivos) y repartirlo en `app/` | ✅ |
+| Dependencias del legacy añadidas (15 paquetes, todas marcadas como temporales) | ✅ |
+| `ssr: false`, `runtimeCompiler: true`, CSS del legacy en `nuxt.config.ts` | ✅ |
+| Paleta y fuentes como `@theme` de Tailwind 4 | ✅ |
+| Imports reescritos (338) y verificados: los 86 destinos distintos resuelven | ✅ |
+| Plugin de PrimeVue (traducción de `main.js`) | ✅ |
+| Layouts `legacy` y `legacy-blank` (traducción de `App.vue`) | ✅ |
+| `Toast`/`ConfirmDialog` globales y el puente `window.__primeToast` tipado | ✅ |
+| Colisiones de auto-import resueltas | ✅ |
+| Exclusión de lint/format que se vacía sola | ✅ |
+| Pruebas unificadas en `bun run test` (16 archivos, 214 pruebas) | ✅ |
+| **Spike:** `build` verde con una vista rica cableada | ✅ |
+| Generar las 66 páginas puente restantes | ☐ |
+| Guard del legacy como middleware global | ☐ |
+| Redirecciones del router como `routeRules` | ☐ |
+| Proxies de Nitro (`/api`, `/monitoreo`, `/api/v1/evo` con su token server-side) | ☐ |
+| `app:chunkError` en lugar de `vite:preloadError` | ☐ |
+| Revisión visual de las 67 rutas contra el legacy | ☐ |
+
+Puertas de calidad al cierre del spike: `lint` sin errores · `typecheck` 0 · `test` 214 en verde ·
+`format:check` limpio · `build` completo.
+
 ### 1.3 Riesgos de la fase
 
 | Riesgo | Mitigación |
