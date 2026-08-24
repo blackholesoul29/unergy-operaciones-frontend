@@ -28,7 +28,9 @@
         </p>
         <h2 class="text-lg font-bold" style="color:#2C2039">Representación CGM</h2>
       </div>
-      <div class="ml-auto">
+      <div class="ml-auto flex items-center gap-2">
+        <Button v-if="c" label="Eliminar" icon="pi pi-trash" size="small" outlined
+          severity="danger" @click="confirmarEliminar" />
         <Button label="Nuevo contrato" icon="pi pi-plus" size="small" @click="nuevoContrato" />
       </div>
     </div>
@@ -503,6 +505,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -516,6 +519,7 @@ import InfoField from '@/components/InfoField.vue'
 
 const route = useRoute()
 const toast = useToast()
+const confirm = useConfirm()
 
 const ESTADO_LABELS = {
   vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación',
@@ -584,7 +588,42 @@ async function cargarDuplicados() {
   try {
     const { data } = await api.get('/contratos-servicio/duplicados-representacion')
     duplicados.value = data
-  } catch { /* el aviso es un extra: la ficha funciona sin él */ }
+  } catch (e) {
+    // Antes esto se tragaba el error y el aviso simplemente no aparecía, sin
+    // forma de saber si no había duplicados o si la consulta había fallado.
+    toast.add({ severity: 'warn', summary: 'No se pudo revisar duplicados',
+                detail: e.response?.data?.detail || e.message, life: 5000 })
+  }
+}
+
+// Eliminar el contrato seleccionado. Hace falta para deshacer un "Nuevo
+// contrato" creado por error y para dejar un solo registro cuando la fusión no
+// aplica (por ejemplo si uno de los duplicados no aporta ningún dato).
+function confirmarEliminar() {
+  const x = c.value
+  confirm.require({
+    header: 'Eliminar contrato',
+    message: `Se eliminará "${etiquetaContrato(x)}" de ${proyectoNombre.value || 'esta planta'}. `
+           + 'Esta acción no se puede deshacer.',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Eliminar',
+    rejectLabel: 'Cancelar',
+    acceptProps: { severity: 'danger' },
+    accept: () => eliminar(x.id),
+  })
+}
+
+async function eliminar(id) {
+  try {
+    await api.delete(`/contratos-servicio/${id}`)
+    contratos.value = contratos.value.filter(x => x.id !== id)
+    idSeleccionado.value = contratos.value[0]?.id ?? null
+    toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2500 })
+    await cargarDuplicados()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo eliminar',
+                detail: e.response?.data?.detail || e.message, life: 4000 })
+  }
 }
 
 async function fusionar() {

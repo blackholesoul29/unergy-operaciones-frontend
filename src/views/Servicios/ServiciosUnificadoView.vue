@@ -397,6 +397,26 @@
         <Button :label="soloHuerfanos ? 'Ver todos' : 'Ver solo estos'" text size="small"
                 class="ml-auto" @click="soloHuerfanos = !soloHuerfanos" />
       </div>
+
+      <!-- Duplicados: el mismo contrato escrito por varias fuentes. Se limpian
+           desde acá porque ir planta por planta no es viable con 126 contratos. -->
+      <div v-if="esRepresentacion && nDuplicados" class="barra-duplicados">
+        <i class="pi pi-clone" />
+        <span>
+          <strong>{{ nDuplicados }}</strong> registros duplicados en
+          {{ duplicados.grupos_fusionables.length }}
+          planta{{ duplicados.grupos_fusionables.length === 1 ? '' : 's' }}
+          <template v-if="nEnConflicto">
+            · {{ nEnConflicto }} grupo{{ nEnConflicto === 1 ? '' : 's' }} necesita revisión
+          </template>
+        </span>
+        <Button label="Ver solo estos" text size="small" class="ml-auto"
+                @click="soloDuplicados = !soloDuplicados" v-if="!soloDuplicados" />
+        <Button label="Ver todos" text size="small" class="ml-auto"
+                @click="soloDuplicados = false" v-else />
+        <Button label="Fusionar duplicados" icon="pi pi-check" size="small"
+                :loading="fusionando" @click="confirmarFusion" />
+      </div>
       <DataTable :value="contratosServicioFiltrados" :loading="loadingServicio" size="small"
                  class="tabla" :class="{ 'tabla--compacta': compacta }"
                  scrollable :scrollHeight="scrollHeight"
@@ -1043,12 +1063,74 @@ const esRepresentacion = computed(() => servicio.value === 'representacion')
 // Contratos de representación sin planta asociada: son datos por corregir, no
 // una categoría del negocio. `soloHuerfanos` los aísla para poder cerrarlos.
 const soloHuerfanos = ref(false)
+
+// ── Duplicados de representación ─────────────────────────────────────────────
+// Quién es duplicado y si se puede fusionar sin perder datos lo decide el
+// backend (services/representacion_dedup.py). Acá solo se cuenta y se dispara.
+const duplicados = ref({ grupos_fusionables: [], grupos_con_conflicto: [] })
+const soloDuplicados = ref(false)
+const fusionando = ref(false)
+
+const nDuplicados = computed(() =>
+  (duplicados.value.grupos_fusionables || []).reduce((n, g) => n + g.ids.length, 0))
+const nEnConflicto = computed(() => (duplicados.value.grupos_con_conflicto || []).length)
+
+// Todos los ids involucrados, para poder aislarlos en la tabla.
+const idsDuplicados = computed(() => new Set([
+  ...(duplicados.value.grupos_fusionables || []).flatMap(g => g.ids),
+  ...(duplicados.value.grupos_con_conflicto || []).flatMap(g => g.ids),
+]))
+
+async function cargarDuplicados() {
+  if (!esRepresentacion.value) return
+  try {
+    const { data } = await api.get('/contratos-servicio/duplicados-representacion')
+    duplicados.value = data
+  } catch { /* el aviso es un extra: la tabla funciona sin él */ }
+}
+
+function confirmarFusion() {
+  const n = nDuplicados.value
+  const grupos = duplicados.value.grupos_fusionables.length
+  confirm.require({
+    header: 'Fusionar contratos duplicados',
+    message: `Se conservará un contrato por planta (${grupos}) con la unión de todos `
+           + `los datos y se eliminarán ${n - grupos} registros sobrantes. Ningún `
+           + `valor se sobreescribe, y los grupos que se contradicen no se tocan.`,
+    icon: 'pi pi-clone',
+    acceptLabel: 'Fusionar',
+    rejectLabel: 'Cancelar',
+    accept: fusionarDuplicados,
+  })
+}
+
+async function fusionarDuplicados() {
+  fusionando.value = true
+  try {
+    // Sin `ids`: fusiona todos los grupos limpios de una vez.
+    const { data } = await api.post('/contratos-servicio/fusionar-representacion', {})
+    toast.add({ severity: 'success', summary: 'Duplicados fusionados',
+                detail: `${data.grupos_fusionados} contrato(s) consolidado(s), `
+                      + `${data.contratos_eliminados} registro(s) eliminado(s)`, life: 5000 })
+    soloDuplicados.value = false
+    await cargarContratosServicio(servicio.value)
+    await cargarDuplicados()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo fusionar',
+                detail: e.response?.data?.detail || e.message, life: 4000 })
+  } finally {
+    fusionando.value = false
+  }
+}
 const nHuerfanos = computed(() =>
   contratosServicio.value.filter(c => !c.proyecto_id).length)
 
 const contratosServicioFiltrados = computed(() => {
   let base = contratosServicio.value
   if (esRepresentacion.value && soloHuerfanos.value) base = base.filter(c => !c.proyecto_id)
+  if (esRepresentacion.value && soloDuplicados.value) {
+    base = base.filter(c => idsDuplicados.value.has(c.id))
+  }
   const t = q.value.trim().toLowerCase()
   if (!t) return base
   return base.filter(c =>
@@ -1073,6 +1155,8 @@ async function cargarContratosServicio(servicioKey) {
     contratosServicio.value = respuestas.flatMap(r => r.data)
     servicioCargado.value = servicioKey
     soloHuerfanos.value = false
+    soloDuplicados.value = false
+    if (servicioKey === 'representacion') cargarDuplicados()
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al cargar contratos', detail: e.message, life: 4000 })
   } finally {
@@ -1607,6 +1691,12 @@ function confirmarBorrarPpa(contrato) {
   background: #FEF3C7; color: #92400E; border: 1px dashed #F59E0B;
 }
 .chip-huerfano:hover { background: #FDE68A; }
+
+.barra-duplicados {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 10px; font-size: 12px;
+  background: #EFF6FF; color: #1E40AF; border-bottom: 1px solid #BFDBFE;
+}
 
 .barra-huerfanos {
   display: flex; align-items: center; gap: 7px;
