@@ -5,7 +5,7 @@
 import {
   ESTADO_SEVERITY, ESTADO_LABEL, ETIQUETAS, LABEL_SERVICIO,
   TIPOS_INGRESO_BRUTO, TIPOS_COMERCIALIZACION,
-} from '~/constants/liquidaciones'
+} from '~/features/liquidaciones/constants'
 
 // ── Formato ────────────────────────────────────────────────────────────────
 
