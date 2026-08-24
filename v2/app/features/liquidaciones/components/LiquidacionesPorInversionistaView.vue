@@ -134,7 +134,7 @@ import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import api from '~/core/client'
 import NetoMensualBar from './components/NetoMensualBar.vue'
-import { fmtCompact, formatPeriodo } from '~/utils/liquidaciones'
+import { fmtCompact, formatPeriodo } from '~/features/liquidaciones/utils/liquidaciones'
 import { ArrowUpRightIcon, ChartColumnIcon, ChevronDownIcon, ChevronRightIcon, EyeIcon, MinusIcon, SearchIcon, WalletIcon, ZapIcon } from '@lucide/vue'
 
 const props = defineProps({

@@ -188,8 +188,8 @@ import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
-import { buildReportHtmlDoc } from '~/utils/rptStyles'
-import { tituloFalla } from '~/utils/fallaTitulo'
+import { buildReportHtmlDoc } from '~/features/operaciones/utils/rptStyles'
+import { tituloFalla } from '~/features/fallas/utils/fallaTitulo'
 import { ArrowRightIcon, CalendarClockIcon, ChartColumnIcon, CircleAlertIcon, FilePenIcon, InfoIcon, LayoutGridIcon, PrinterIcon, RefreshCwIcon, SaveIcon, SettingsIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 const router = useRouter()

@@ -73,7 +73,7 @@
 import { ref, reactive, computed, watch, onMounted, h } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
-import { fmtCOP, fmtCompact, formatPeriodo } from '~/utils/liquidaciones'
+import { fmtCOP, fmtCompact, formatPeriodo } from '~/features/liquidaciones/utils/liquidaciones'
 import { ChevronDownIcon, ChevronRightIcon, ClockIcon } from '@lucide/vue'
 
 const props = defineProps({ periodo: { type: String, required: true } })

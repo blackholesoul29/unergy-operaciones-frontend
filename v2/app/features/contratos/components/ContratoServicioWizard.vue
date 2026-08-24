@@ -498,7 +498,7 @@ import AutoComplete from 'primevue/autocomplete'
 import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Textarea from 'primevue/textarea'
-import NuevoClienteDialog from '~/components/NuevoClienteDialog.vue'
+import NuevoClienteDialog from '~/features/contratos/components/NuevoClienteDialog.vue'
 import api from '~/core/client'
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, LinkIcon, PencilIcon, PlusIcon, Trash2Icon, UsersIcon } from '@lucide/vue'
 

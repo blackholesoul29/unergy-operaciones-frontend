@@ -469,7 +469,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import Dialog from 'primevue/dialog'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
-import { fmtCOP, formatPeriodo } from '~/utils/liquidaciones'
+import { fmtCOP, formatPeriodo } from '~/features/liquidaciones/utils/liquidaciones'
 import { exportarExcel } from '~/utils/exportarExcel'
 import { ArrowRightIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, CircleCheckIcon, CopyIcon, DatabaseIcon, DollarSignIcon, FileIcon, FileSpreadsheetIcon, HashIcon, ImageIcon, InfoIcon, LoaderCircleIcon, MenuIcon, NetworkIcon, PercentIcon, SaveIcon, SearchIcon, TriangleAlertIcon, UploadIcon } from '@lucide/vue'
 

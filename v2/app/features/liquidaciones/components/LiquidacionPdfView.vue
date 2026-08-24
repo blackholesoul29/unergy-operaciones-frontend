@@ -69,7 +69,7 @@ import { ArrowLeftIcon, FileSpreadsheetIcon, FileTextIcon, PencilIcon, RefreshCw
 import {
   fmtCOP, pct, normPct, formatPeriodo,
   construirEstadoResultados, indiceSoportesProyecto,
-} from '~/utils/liquidaciones'
+} from '~/features/liquidaciones/utils/liquidaciones'
 
 const route = useRoute()
 const router = useRouter()

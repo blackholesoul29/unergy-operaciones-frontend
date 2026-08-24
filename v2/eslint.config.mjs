@@ -25,9 +25,17 @@ const LEGACY_PENDIENTE_DE_MIGRAR = [
   'app/data/**',
   'app/assets/*.js', // datasets estáticos
 
-  // Carpetas compartidas con el template: aquí el legacy es el JavaScript
-  'app/components/*.vue', // los del template están en subcarpetas
-  'app/components/reports/**',
+  // Piezas del legacy que aterrizaron en capas del template. Van archivo a
+  // archivo porque comparten carpeta con código que sí cumple.
+  'app/components/layout/LegacyAppSidebar.vue',
+  'app/components/blocks/PageHeader.vue',
+  'app/components/blocks/InfoField.vue',
+  'app/components/blocks/DetalleLayout.vue',
+  'app/components/blocks/ContactosPanel.vue',
+
+  // Utilidades y datasets del legacy, ya dentro de su slice.
+  'app/features/*/utils/**',
+  'app/features/*/data/**',
   // Las vistas del legacy, ya repartidas en sus slices. Esta lista es la
   // métrica de avance de la fase 3: cuando un slice se migra, se borra su
   // línea y el linter empieza a exigirle.

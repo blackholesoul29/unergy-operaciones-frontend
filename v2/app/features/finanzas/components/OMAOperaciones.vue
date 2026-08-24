@@ -494,7 +494,7 @@ import InputIcon     from 'primevue/inputicon'
 import Popover       from 'primevue/popover'
 import { toast } from 'vue-sonner'
 import api           from '~/core/client'
-import DocumentoIcon  from '~/components/DocumentoIcon.vue'
+import DocumentoIcon  from '~/features/finanzas/components/DocumentoIcon.vue'
 import { parseCOP }   from '~/utils/parseCOP'
 import { ChartColumnIcon, ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, CircleIcon, ClockIcon, DownloadIcon, ExternalLinkIcon, FileTextIcon, InfoIcon, LoaderCircleIcon, MessageSquareIcon, SaveIcon, SearchIcon, TableIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 

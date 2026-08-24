@@ -66,7 +66,7 @@ import LiquidacionesPorInversionistaView from './LiquidacionesPorInversionistaVi
 import DiferenciaPanel from './panels/DiferenciaPanel.vue'
 import FacturacionPanel from './panels/FacturacionPanel.vue'
 import api from '~/core/client'
-import { formatPeriodo, mesActualISO } from '~/utils/liquidaciones'
+import { formatPeriodo, mesActualISO } from '~/features/liquidaciones/utils/liquidaciones'
 import { ChartColumnIcon, ChevronLeftIcon, ChevronRightIcon, DollarSignIcon, FileSpreadsheetIcon, FolderIcon, LoaderCircleIcon, MoveHorizontalIcon, UsersIcon, ZapIcon } from '@lucide/vue'
 
 const TABS = [

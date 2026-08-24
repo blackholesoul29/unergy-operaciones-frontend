@@ -146,7 +146,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { proyectoActivoEnMes } from '~/utils/proyectoActivo'
-import { fmtCompact, formatPeriodo, estadoFlujoPanel } from '~/utils/liquidaciones'
+import { fmtCompact, formatPeriodo, estadoFlujoPanel } from '~/features/liquidaciones/utils/liquidaciones'
 import { EyeIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 
 const props = defineProps({

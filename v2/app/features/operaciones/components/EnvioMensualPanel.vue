@@ -555,7 +555,7 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import { useAuthStore } from '~/stores/auth'
-import { buildReportHtmlDoc } from '~/utils/rptStyles'
+import { buildReportHtmlDoc } from '~/features/operaciones/utils/rptStyles'
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon, CircleCheckIcon, EyeIcon, FileIcon, FolderIcon, InboxIcon, InfoIcon, LoaderCircleIcon, LockIcon, MessagesSquareIcon, PencilIcon, PlusIcon, PrinterIcon, RefreshCwIcon, SaveIcon, SearchIcon, SendIcon, Trash2Icon, XIcon } from '@lucide/vue'
 
 const auth = useAuthStore()

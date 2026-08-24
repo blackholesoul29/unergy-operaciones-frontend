@@ -366,9 +366,9 @@ import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import api from '~/core/client'
-import { getEstructuraFallas } from '~/utils/fallasEstructuraCache'
+import { getEstructuraFallas } from '~/features/fallas/utils/fallasEstructuraCache'
 import { AlignLeftIcon, BellIcon, CalendarIcon, CheckIcon, CircleCheckIcon, ClockIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, FileTypeIcon, ImageIcon, InfoIcon, MessageSquareIcon, PaperclipIcon, PlusIcon, SearchIcon, SendIcon, SettingsIcon, TagIcon, Trash2Icon, UploadIcon, XIcon } from '@lucide/vue'
-import { iconoCategoriaFalla } from '~/utils/fallaTitulo'
+import { iconoCategoriaFalla } from '~/features/fallas/utils/fallaTitulo'
 
 const TIPOS_SOLUCION = [
   'Reemplazo de componente',

@@ -521,8 +521,8 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '~/core/client'
-import EvidenciaUploader from '~/components/EvidenciaUploader.vue'
-import ListaEditable from '~/components/ListaEditable.vue'
+import EvidenciaUploader from '~/features/operaciones/components/EvidenciaUploader.vue'
+import ListaEditable from '~/features/operaciones/components/ListaEditable.vue'
 import { ArrowLeftIcon, BadgeCheckIcon, BellIcon, BoxIcon, ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, EyeIcon, FileCheckIcon, FilePenIcon, FileTextIcon, FlagIcon, ImagesIcon, InboxIcon, InfoIcon, ListChecksIcon, ListIcon, LoaderCircleIcon, MapPinIcon, MonitorIcon, NetworkIcon, PaperclipIcon, PencilIcon, PlusIcon, RefreshCwIcon, SearchIcon, ThumbsUpIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 

@@ -30,8 +30,13 @@ app/features/*/components
 app/data
 app/assets/*.js
 app/assets/main.css
-app/components/*.vue
-app/components/reports
+app/components/layout/LegacyAppSidebar.vue
+app/components/blocks/PageHeader.vue
+app/components/blocks/InfoField.vue
+app/components/blocks/DetalleLayout.vue
+app/components/blocks/ContactosPanel.vue
+app/features/*/utils
+app/features/*/data
 
 # Especificaciones de dominio traídas del legacy: se conservan tal cual se
 # escribieron, reformatearlas solo produce ruido en el diff.

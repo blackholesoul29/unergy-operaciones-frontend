@@ -173,7 +173,7 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import api from '~/core/client'
-import { fmtCompact, formatPeriodo, estadoFlujoPanel, ESTADO_FLUJO } from '~/utils/liquidaciones'
+import { fmtCompact, formatPeriodo, estadoFlujoPanel, ESTADO_FLUJO } from '~/features/liquidaciones/utils/liquidaciones'
 import { ArrowDownLeftIcon, ArrowUpRightIcon, CircleCheckIcon, ClockIcon, EyeIcon, InboxIcon, PercentIcon, TriangleAlertIcon, WalletIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)

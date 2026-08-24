@@ -46,7 +46,7 @@ export const ROLES_LEGACY = [
 
 export type RolLegacy = (typeof ROLES_LEGACY)[number]
 
-/** El usuario tal como viaja en el JWT y como lo guarda `~/utils/security`. */
+/** El usuario tal como viaja en el JWT y como lo guarda `~/core/security`. */
 export interface UsuarioLegacy {
   id: string
   /**

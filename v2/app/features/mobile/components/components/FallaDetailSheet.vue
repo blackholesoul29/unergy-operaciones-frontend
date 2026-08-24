@@ -141,7 +141,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { tituloFalla, clasificacionDetalle } from '~/utils/fallaTitulo'
+import { tituloFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
 import api from '~/core/client'
 import { CircleCheckIcon, LoaderCircleIcon, RotateCcwIcon, SendIcon, ServerIcon, XIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'

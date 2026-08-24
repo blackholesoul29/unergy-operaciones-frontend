@@ -77,7 +77,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { fmtCOP } from '~/utils/liquidaciones'
+import { fmtCOP } from '~/features/liquidaciones/utils/liquidaciones'
 import { UsersIcon } from '@lucide/vue'
 
 // `panel` = entrada de proyecto de /liquidaciones/resumen-panel (fuente única: el

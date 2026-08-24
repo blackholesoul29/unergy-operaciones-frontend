@@ -53,7 +53,7 @@ import {
 } from 'chart.js'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
-import { formatPeriodo } from '~/utils/liquidaciones'
+import { formatPeriodo } from '~/features/liquidaciones/utils/liquidaciones'
 import { ChartColumnIcon, SunIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)

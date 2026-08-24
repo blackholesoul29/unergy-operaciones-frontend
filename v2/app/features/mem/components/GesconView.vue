@@ -573,7 +573,7 @@
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
 import api from '~/core/client'
-import { conflictosAtribucion } from '~/utils/validacionContratos'
+import { conflictosAtribucion } from '~/features/mem/utils/validacionContratos'
 import GesconModificacionForm from './GesconModificacionForm.vue'
 import GesconTerminacionForm from './GesconTerminacionForm.vue'
 import DataTable from 'primevue/datatable'

@@ -374,9 +374,9 @@ import InputText   from 'primevue/inputtext'
 import { toast } from 'vue-sonner'
 import api          from '~/core/client'
 import ArriendosZipUpload from './ArriendosZipUpload.vue'
-import CalculoIpcPopover from '~/components/CalculoIpcPopover.vue'
+import CalculoIpcPopover from '~/features/finanzas/components/CalculoIpcPopover.vue'
 const { docsPorProyecto, loadDocs, downloadDoc } = useArriendosDocs()
-import DocumentoIcon from '~/components/DocumentoIcon.vue'
+import DocumentoIcon from '~/features/finanzas/components/DocumentoIcon.vue'
 import { ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, InfoIcon, MessageSquareIcon, SaveIcon, TableIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const router = useRouter()

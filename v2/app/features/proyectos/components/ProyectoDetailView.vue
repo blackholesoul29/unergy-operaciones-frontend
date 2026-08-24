@@ -812,8 +812,8 @@ import * as XLSX from 'xlsx'
 import api from '~/core/client'
 import divipola from '~/data/colombia-divipola.json'
 import ContratoServicioWizard from '~/features/contratos/components/ContratoServicioWizard.vue'
-import ProyectoAreaContactosPanel from '~/components/ProyectoAreaContactosPanel.vue'
-import DetalleLayout from '~/components/DetalleLayout.vue'
+import ProyectoAreaContactosPanel from '~/features/proyectos/components/ProyectoAreaContactosPanel.vue'
+import DetalleLayout from '~/components/blocks/DetalleLayout.vue'
 
 const route = useRoute()
 const router = useRouter()

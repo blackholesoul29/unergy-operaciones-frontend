@@ -20,7 +20,7 @@ import {
   parseAsientos, extractMandate, suggestTag, reconciliar, fmt, norm as normNombre,
   parseIngresos, matchIngresoContab, normalizarCifra,
   parseIngresosPorConcepto, matchIngresoConceptos,
-} from '~/utils/conciliacionMandatos'
+} from '~/features/finanzas/utils/conciliacionMandatos'
 
 const root = ref(null)
 

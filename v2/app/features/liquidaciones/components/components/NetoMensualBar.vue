@@ -8,7 +8,7 @@
 import { computed } from 'vue'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip } from 'chart.js'
 import { Bar } from 'vue-chartjs'
-import { fmtCompact } from '~/utils/liquidaciones'
+import { fmtCompact } from '~/features/liquidaciones/utils/liquidaciones'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
 

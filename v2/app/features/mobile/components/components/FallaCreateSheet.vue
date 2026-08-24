@@ -156,7 +156,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import api from '~/core/client'
 import { CheckIcon, CirclePlusIcon, LoaderCircleIcon, PlusIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
-import { iconoCategoriaFalla } from '~/utils/fallaTitulo'
+import { iconoCategoriaFalla } from '~/features/fallas/utils/fallaTitulo'
 
 const props = defineProps({
   open:            { type: Boolean, default: false },

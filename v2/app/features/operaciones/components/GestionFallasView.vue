@@ -516,7 +516,7 @@ import Dialog from 'primevue/dialog'
 import Textarea from 'primevue/textarea'
 import FallaForm from '~/features/fallas/components/FallaForm.vue'
 import api from '~/core/client'
-import { tituloFalla, categoriaFalla } from '~/utils/fallaTitulo'
+import { tituloFalla, categoriaFalla } from '~/features/fallas/utils/fallaTitulo'
 
 const route = useRoute()
 const router = useRouter()

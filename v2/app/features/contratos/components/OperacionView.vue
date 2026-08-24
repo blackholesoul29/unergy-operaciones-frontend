@@ -1242,7 +1242,7 @@ import Dialog from 'primevue/dialog'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import ContratoServicioWizard from '~/features/contratos/components/ContratoServicioWizard.vue'
-import ARRIENDOS_ESTATICOS from '~/assets/arriendos_data.js'
+import ARRIENDOS_ESTATICOS from '~/features/contratos/data/arriendos_data.js'
 
 const route = useRoute()
 const router = useRouter()

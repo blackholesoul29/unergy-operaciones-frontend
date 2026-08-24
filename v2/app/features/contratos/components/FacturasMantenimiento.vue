@@ -408,8 +408,8 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
-import FACTURAS_SOL_ESTATICAS from '~/assets/facturas_solenium_data.js'
-import FACTURAS_INV_ESTATICAS from '~/assets/facturas_inversionistas_data.js'
+import FACTURAS_SOL_ESTATICAS from '~/features/contratos/data/facturas_solenium_data.js'
+import FACTURAS_INV_ESTATICAS from '~/features/contratos/data/facturas_inversionistas_data.js'
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon, FilterIcon, LoaderCircleIcon, ReceiptIcon, Trash2Icon, UsersIcon, XIcon } from '@lucide/vue'
 
 // ── Props ──────────────────────────────────────────────────────────────────────

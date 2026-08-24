@@ -243,7 +243,7 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
 import api from '~/core/client'
-import { formatCurrency } from '~/utils/financialCalculations'
+import { formatCurrency } from '~/features/operaciones/utils/financialCalculations'
 import { CheckIcon, InboxIcon, PencilIcon, RefreshCwIcon, SearchIcon, ShieldIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 

@@ -104,8 +104,8 @@ import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
-import { renderFasorial } from '~/utils/fasorial'
-import { gaiaSnapshotToFasorial, validarSnapshot } from '~/utils/gaiaSnapshotToFasorial'
+import { renderFasorial } from '~/features/fallas/utils/fasorial'
+import { gaiaSnapshotToFasorial, validarSnapshot } from '~/features/fallas/utils/gaiaSnapshotToFasorial'
 import { ClockIcon, DownloadIcon, ImageIcon, MoonIcon, RefreshCwIcon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 
 // Umbral (min) para considerar una lectura desactualizada

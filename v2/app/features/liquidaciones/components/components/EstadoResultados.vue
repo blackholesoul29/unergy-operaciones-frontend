@@ -48,7 +48,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { fmtCOP, construirEstadoResultados, indiceSoportesProyecto } from '~/utils/liquidaciones'
+import { fmtCOP, construirEstadoResultados, indiceSoportesProyecto } from '~/features/liquidaciones/utils/liquidaciones'
 import { ChartLineIcon, HashIcon, PaperclipIcon } from '@lucide/vue'
 
 const props = defineProps({
