@@ -166,9 +166,6 @@
       </DataTable>
     </div>
 
-    <ConfirmDialog>
-      <template #icon><TriangleAlertIcon class="size-8 shrink-0" /></template>
-    </ConfirmDialog>
 
     <!-- ── Dialog Registro ─────────────────────────────────────── -->
     <Dialog v-model:visible="dialogVisible" :header="tituloDialogo" modal
@@ -590,9 +587,7 @@ import Dialog from 'primevue/dialog'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Checkbox from 'primevue/checkbox'
-import ConfirmDialog from 'primevue/confirmdialog'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import { CheckIcon, ExternalLinkIcon, FileSpreadsheetIcon, FlagIcon, HistoryIcon, InfoIcon, LinkIcon, PencilIcon, PlusIcon, RefreshCwIcon, SearchIcon, ShoppingCartIcon, Trash2Icon, TriangleAlertIcon, WandSparklesIcon, XIcon } from '@lucide/vue'
 
 const confirm = useConfirm()
@@ -819,13 +814,13 @@ async function descargarGesconExcel() {
 function confirmarEliminar(row) {
   const label = row.codigo_sic_contrato || row.contrato_interno || `ID ${row.id}`
   const planta = row.planta_nombre ? ` (${row.planta_nombre})` : ''
-  confirm.require({
-    message: `¿Eliminar el registro GESCON "${label}"${planta}? Esta acción no se puede deshacer.`,
-    header: 'Confirmar eliminación',
-    acceptSeverity: 'danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: async () => {
+  confirm({
+    title: 'Confirmar eliminación',
+    description: `¿Eliminar el registro GESCON "${label}"${planta}? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/asic/${row.id}`)
         rows.value = rows.value.filter(r => r.id !== row.id)

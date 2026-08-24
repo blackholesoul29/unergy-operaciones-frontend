@@ -526,7 +526,6 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -624,14 +623,14 @@ async function cargarDuplicados() {
 // aplica (por ejemplo si uno de los duplicados no aporta ningún dato).
 function confirmarEliminar() {
   const x = c.value
-  confirm.require({
-    header: 'Eliminar contrato',
-    message: `Se eliminará "${etiquetaContrato(x)}" de ${proyectoNombre.value || 'esta planta'}. `
-           + 'Esta acción no se puede deshacer.',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    acceptProps: { severity: 'danger' },
-    accept: () => eliminar(x.id),
+  confirm({
+    title: 'Eliminar contrato',
+    description: `Se eliminará "${etiquetaContrato(x)}" de ${proyectoNombre.value || 'esta planta'}. `
+      + 'Esta acción no se puede deshacer.',
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: () => eliminar(x.id),
   })
 }
 

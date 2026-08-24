@@ -180,7 +180,6 @@ import Menu from 'primevue/menu'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import api from '~/core/client'
 import { useAuthStore } from '~/stores/auth'
 import MetricaKpiCard from './MetricaKpiCard.vue'
@@ -462,13 +461,13 @@ function confirmarEliminarMetrica(m) {
   if (!m) return
   const n = m.semanas_con_dato ?? 0
   const cola = n === 0 ? '' : n === 1 ? ' y su valor semanal' : ` y sus ${n} valores semanales`
-  confirm.require({
-    header: 'Eliminar métrica',
-    message: `Se eliminará “${m.nombre}”${cola}. Esta acción no se puede deshacer.`,
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    acceptClass: 'p-button-danger p-button-sm',
-    accept: () => eliminarMetrica(m),
+  confirm({
+    title: 'Eliminar métrica',
+    description: `Se eliminará “${m.nombre}”${cola}. Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: () => eliminarMetrica(m),
   })
 }
 

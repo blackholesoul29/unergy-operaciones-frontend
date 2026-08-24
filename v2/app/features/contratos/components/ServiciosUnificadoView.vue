@@ -608,7 +608,6 @@
 import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -1108,14 +1107,14 @@ async function cargarDuplicados() {
 function confirmarFusion() {
   const n = nDuplicados.value
   const grupos = duplicados.value.grupos_fusionables.length
-  confirm.require({
-    header: 'Fusionar contratos duplicados',
-    message: `Se conservará un contrato por planta (${grupos}) con la unión de todos `
+  confirm({
+    title: 'Fusionar contratos duplicados',
+    description: `Se conservará un contrato por planta (${grupos}) con la unión de todos `
            + `los datos y se eliminarán ${n - grupos} registros sobrantes. Ningún `
            + `valor se sobreescribe, y los grupos que se contradicen no se tocan.`,
-    acceptLabel: 'Fusionar',
-    rejectLabel: 'Cancelar',
-    accept: fusionarDuplicados,
+    confirmLabel: 'Fusionar',
+    cancelLabel: 'Cancelar',
+    onConfirm: fusionarDuplicados,
   })
 }
 
@@ -1392,13 +1391,13 @@ async function crearCliente(payload) {
 }
 
 function confirmarBorrarCliente(row) {
-  confirm.require({
-    header: 'Eliminar cliente',
-    message: `¿Eliminar "${formatearNombre(row.razon_social_nombre)}"? Esta acción no se puede deshacer.`,
-    acceptSeverity: 'danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: async () => {
+  confirm({
+    title: 'Eliminar cliente',
+    description: `¿Eliminar "${formatearNombre(row.razon_social_nombre)}"? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/clientes/${row.id}`)
         clientes.value = clientes.value.filter(c => c.id !== row.id)
@@ -1428,13 +1427,13 @@ function irAEditarContratoServicio(row) {
 
 function confirmarBorrarContratoServicio(row) {
   const nombre = row.numero_contrato || row.contratante_nombre || 'sin número'
-  confirm.require({
-    header: 'Eliminar contrato',
-    message: `¿Eliminar el contrato "${nombre}"? Esta acción no se puede deshacer.`,
-    acceptSeverity: 'danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: async () => {
+  confirm({
+    title: 'Eliminar contrato',
+    description: `¿Eliminar el contrato "${nombre}"? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/contratos-servicio/${row.id}`)
         contratosServicio.value = contratosServicio.value.filter(c => c.id !== row.id)
@@ -1519,13 +1518,13 @@ async function crearProyectoForzado() {
 }
 
 function confirmarBorrarProyecto(row) {
-  confirm.require({
-    header: 'Eliminar proyecto',
-    message: `¿Eliminar "${formatearNombre(row.nombre_comercial)}"? Esta acción no se puede deshacer.`,
-    acceptSeverity: 'danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: async () => {
+  confirm({
+    title: 'Eliminar proyecto',
+    description: `¿Eliminar "${formatearNombre(row.nombre_comercial)}"? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/proyectos/${row.id}`)
         proyectos.value = proyectos.value.filter(p => p.id !== row.id)
@@ -1575,13 +1574,13 @@ function cerrarWizardPPA() {
 
 function confirmarBorrarPpa(contrato) {
   const nombre = contrato.nombre_interno || contrato.numero_codigo_contrato || 'sin nombre'
-  confirm.require({
-    header: 'Confirmar eliminación',
-    message: `¿Seguro que deseas eliminar el contrato "${nombre}"? Esta acción no se puede deshacer.`,
-    acceptSeverity: 'danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: async () => {
+  confirm({
+    title: 'Confirmar eliminación',
+    description: `¿Seguro que deseas eliminar el contrato "${nombre}"? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/ppa/${contrato.id}`)
         ppa.value = ppa.value.filter(c => c.id !== contrato.id)

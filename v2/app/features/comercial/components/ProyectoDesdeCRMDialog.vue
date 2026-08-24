@@ -47,7 +47,6 @@ import { ref, computed, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import api from '~/core/client'
 import ProyectoForm from '~/features/proyectos/components/ProyectoForm.vue'
 
@@ -111,12 +110,12 @@ async function crear(payload, infoTecnica, forzar = false) {
   } catch (err) {
     const det = err.response?.data?.detail
     if (err.response?.status === 409 && det?.codigo === 'posible_duplicado') {
-      confirm.require({
-        header: 'Posible duplicado',
-        message: `${det.mensaje}. ¿Crear de todos modos?`,
-        acceptLabel: 'Crear igual',
-        rejectLabel: 'Cancelar',
-        accept: () => crear(payload, infoTecnica, true),
+      confirm({
+        title: 'Posible duplicado',
+        description: `${det.mensaje}. ¿Crear de todos modos?`,
+        confirmLabel: 'Crear igual',
+        cancelLabel: 'Cancelar',
+        onConfirm: () => crear(payload, infoTecnica, true),
       })
     } else {
       error.value = mensajeError(det)

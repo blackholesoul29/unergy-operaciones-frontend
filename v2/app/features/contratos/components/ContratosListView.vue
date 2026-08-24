@@ -267,9 +267,6 @@
       @cerrar="showServicioWizard = false"
       @creado="onServicioCreado" />
 
-    <ConfirmDialog>
-      <template #icon><TriangleAlertIcon class="size-8 shrink-0" /></template>
-    </ConfirmDialog>
   </div>
 </template>
 
@@ -277,7 +274,6 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
@@ -285,11 +281,10 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import ConfirmDialog from 'primevue/confirmdialog'
 import PPAContratoWizard from './PPAContratoWizard.vue'
 import ContratoServicioWizard from './ContratoServicioWizard.vue'
 import api from '~/core/client'
-import { ArrowRightIcon, BadgeCheckIcon, ChartColumnIcon, CircleCheckIcon, CopyIcon, FilePenIcon, MinusIcon, PlusIcon, SearchIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
+import { ArrowRightIcon, BadgeCheckIcon, ChartColumnIcon, CircleCheckIcon, CopyIcon, FilePenIcon, MinusIcon, PlusIcon, SearchIcon, Trash2Icon, ZapIcon } from '@lucide/vue'
 
 const router = useRouter()
 const confirm = useConfirm()
@@ -356,13 +351,13 @@ function duplicarContrato(contrato) {
 }
 
 function confirmarEliminar(contrato) {
-  confirm.require({
-    message: `¿Seguro que deseas eliminar el contrato "${contrato.nombre_interno || contrato.numero_codigo_contrato || 'sin nombre'}"? Esta acción no se puede deshacer.`,
-    header: 'Confirmar eliminación',
-    acceptSeverity: 'danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: async () => {
+  confirm({
+    title: 'Confirmar eliminación',
+    description: `¿Seguro que deseas eliminar el contrato "${contrato.nombre_interno || contrato.numero_codigo_contrato || 'sin nombre'}"? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/ppa/${contrato.id}`)
         contratos.value = contratos.value.filter(c => c.id !== contrato.id)

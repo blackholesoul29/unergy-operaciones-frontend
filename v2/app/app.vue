@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import PrimeConfirmDialog from 'primevue/confirmdialog'
 import { APP_BRANDING } from '~/config/app'
-import { TriangleAlertIcon } from '@lucide/vue'
 
 // Fallback title/description: a page with its own `useHead` overrides this.
 useHead({
@@ -34,10 +32,8 @@ useHead({
          arriba a la derecha y con color por severidad. -->
     <Toaster position="top-right" rich-colors close-button />
 
-    <!-- MIGRACIÓN — Fase 1: montado a nivel global igual que en `legacy/src/App.vue`.
-         Sale en la fase 3, cuando `useConfirm` pase a AlertDialog. -->
-    <PrimeConfirmDialog>
-      <template #icon><TriangleAlertIcon class="size-8 shrink-0" /></template>
-    </PrimeConfirmDialog>
+    <!-- Un solo diálogo para toda la app: `useConfirm()` lo abre desde
+         cualquier componente. Ver ~/composables/useConfirm.ts. -->
+    <ConfirmDialog />
   </div>
 </template>

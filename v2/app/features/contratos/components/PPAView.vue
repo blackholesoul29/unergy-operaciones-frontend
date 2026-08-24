@@ -292,10 +292,6 @@
       </template>
     </Dialog>
 
-    <!-- Confirm eliminar -->
-    <ConfirmDialog>
-      <template #icon><TriangleAlertIcon class="size-8 shrink-0" /></template>
-    </ConfirmDialog>
   </div>
 </template>
 
@@ -303,7 +299,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
@@ -313,13 +308,12 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
-import ConfirmDialog from 'primevue/confirmdialog'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import api from '~/core/client'
-import { ArrowLeftIcon, CheckIcon, ExternalLinkIcon, FilePenIcon, PencilIcon, PlusIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
+import { ArrowLeftIcon, CheckIcon, ExternalLinkIcon, FilePenIcon, PencilIcon, PlusIcon, Trash2Icon, ZapIcon } from '@lucide/vue'
 
 const route = useRoute()
 const confirm = useConfirm()
@@ -441,13 +435,13 @@ async function guardar() {
 }
 
 function confirmarEliminar(contrato) {
-  confirm.require({
-    message: `¿Eliminar el contrato "${contrato.nombre_interno || contrato.numero_codigo_contrato || 'sin nombre'}"? Esta acción no se puede deshacer.`,
-    header: 'Confirmar eliminación',
-    acceptSeverity: 'danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: async () => {
+  confirm({
+    title: 'Confirmar eliminación',
+    description: `¿Eliminar el contrato "${contrato.nombre_interno || contrato.numero_codigo_contrato || 'sin nombre'}"? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/ppa/${contrato.id}`)
         contratos.value = contratos.value.filter(c => c.id !== contrato.id)
@@ -465,13 +459,13 @@ function confirmarEliminar(contrato) {
 
 function confirmarEliminarAsic(registro) {
   const label = registro.codigo_sic_contrato || registro.contrato_interno || `ID ${registro.id}`
-  confirm.require({
-    message: `¿Eliminar el registro GESCON "${label}"? Esta acción no se puede deshacer.`,
-    header: 'Confirmar eliminación GESCON',
-    acceptSeverity: 'danger',
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    accept: async () => {
+  confirm({
+    title: 'Confirmar eliminación GESCON',
+    description: `¿Eliminar el registro GESCON "${label}"? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/asic/${registro.id}`)
         asicRows.value = asicRows.value.filter(r => r.id !== registro.id)

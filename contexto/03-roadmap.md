@@ -481,7 +481,7 @@ Sin esto, cada slice reinventa lo mismo. No cambia nada visible para el usuario.
   | `ProgressSpinner` | 25 | `ui/spinner` / `AsyncView` |
   | `IconField` + `InputIcon` | 50 | `ui/input-group` |
   | `MultiSelect` | 14 | `ui/combobox` |
-  | `useConfirm` + `ConfirmDialog` | 17 | `ui/alert-dialog` |
+  | `useConfirm` + `ConfirmDialog` | 17 | `ui/alert-dialog` — ✅ **hecho** (§3.2.3) |
   | `Checkbox`, `ToggleSwitch`, `SelectButton` | 29 | `ui/checkbox`, `ui/switch`, `ui/toggle-group` |
   | `TabView` + `TabPanel` | 10 | `GTabs` |
   | `Message` | 8 | `ui/alert` |
@@ -495,9 +495,9 @@ Sin esto, cada slice reinventa lo mismo. No cambia nada visible para el usuario.
   `useFilters`, con o sin TanStack Table como dependencia nueva. Si esta pieza no está
   resuelta, cada slice la improvisará distinta y la migración se degrada.
 - **Mapa de iconos** PrimeIcons → `@lucide/vue` — ✅ **hecho** (ver §3.2.1).
-- **Envoltorios de infraestructura**: notificación (sonner) — ✅ **hecho** (§3.2.2);
-  quedan confirmación (`AlertDialog`), formato de moneda/fecha/número en `app/utils/`, y las
-  utilidades de exportación como módulos `client-only` con import dinámico.
+- **Envoltorios de infraestructura**: notificación (sonner) — ✅ **hecho** (§3.2.2); confirmación
+  (`AlertDialog`) — ✅ **hecho** (§3.2.3); quedan formato de moneda/fecha/número en `app/utils/`
+  y las utilidades de exportación como módulos `client-only` con import dinámico.
 - **Tipos base del dominio** en `app/types/`: `Proyecto`, `Cliente`, `Contrato`, `Falla`,
   `Liquidacion`, `Frontera`, `Inversionista`, y los `enum` de estados y roles.
 
@@ -551,7 +551,8 @@ habría arrastrado los 156 iconos al bundle.
    no recibe props, así que el icono se declaró una vez en cada montaje del diálogo
    (`app.vue` y tres vistas) y se quitó de las 20 llamadas. **Cambio cosmético asumido:** la
    confirmación de "duplicar" usaba `pi-clone` y ahora muestra el mismo triángulo que el resto.
-   Desaparece en la ola 2, cuando `useConfirm` pase a `ui/alert-dialog`.
+   Este workaround completo (icono repetido en cuatro sitios) desapareció al día siguiente, con
+   la migración a `AlertDialog` — ver §3.2.3.
 7. **Iconos que vienen del backend.** `GET /fallas/estructura` devuelve `icono: 'pi pi-server'`.
    Se dejó de leer ese campo: `iconoCategoriaFalla(codigo)` en `~/utils/fallaTitulo.ts` traduce
    del **código de categoría** al componente, que además es donde ya vivía `ICONO_CAT`. La API
@@ -631,6 +632,60 @@ importado sin usar ni usado sin importar, y de que las cinco vistas con `functio
 no reciben el import (habría sido una redeclaración). Los props del `<Toaster>` los validó
 `vue-tsc`, porque `app.vue` sí es TypeScript. **Falta la revisión visual.**
 
+#### 3.2.3 Confirmaciones · `useConfirm`/`ConfirmDialog` de PrimeVue → `AlertDialog` — ✅ completo (2026-08-24)
+
+**Estado:** cero `confirm.require(…)`, cero `primevue/useconfirm`, cero `primevue/confirmdialog`,
+`ConfirmationService` fuera del plugin de arranque. 20 llamadas en 13 archivos, todas destinadas
+a borrar algo o descartar cambios sin guardar — el inventario no tenía ni un `reject` (nadie
+reacciona a "Cancelar") ni un `group` (nunca dos confirmaciones compitiendo en la misma página).
+
+**La pieza nueva, porque `ui/alert-dialog` es solo marcado:**
+
+- **`app/composables/useConfirm.ts`** — estado compartido en `useState('confirm-dialog', …)`,
+  con la misma forma que `useAuthState`/`useAuth` en `useAuth.ts`: `useConfirmState()` expone el
+  estado crudo, `useConfirm()` expone la función que lo abre. `confirm({ title, description,
+  confirmLabel, cancelLabel, variant, onConfirm })` reemplaza el `confirm.require({ header,
+  message, acceptLabel, rejectLabel, acceptSeverity/acceptClass/acceptProps.severity, accept })`
+  de PrimeVue — API propia, no un adaptador con su forma.
+- **`app/components/blocks/ConfirmDialog.vue`** — el único componente de toda la app que renderiza
+  `<AlertDialog>`, montado una vez en `app.vue` (antes eran cuatro montajes: uno global en
+  `app.vue` y tres locales, en `ContratosListView`, `PPAView` y `GesconView`, todos idénticos).
+  Va en `blocks/` y no en `gandalf/base/` porque **`gandalf/` es intocable** — el wrapper
+  correcto según `AGENTS.md` se agrega en el repo de Gandalf, no aquí; mientras tanto se compone
+  directo sobre `ui/alert-dialog`, que es la salida que la propia regla contempla.
+
+**Decisiones:**
+
+1. **`confirm` es una función, no un objeto con `.require`.** Con PrimeVue retirado, mantener el
+   nombre del método no aportaba nada — se limpia junto con el resto del vocabulario ajeno
+   (`header`→`title`, `message`→`description`, `life` no existía aquí). Los 13 call sites solo
+   cambian el cuerpo de la llamada, no la línea `const confirm = useConfirm()`.
+2. **Variable renombrada en 3 archivos.** `FallaDetailView.vue`, `MonitoreoView.vue` y
+   `GestionFallasView.vue` guardaban el composable en `confirmService` en vez de `confirm`, sin
+   razón visible. Se unificó a `confirm`, que es lo que usan los otros 10.
+3. **`AlertDialogMedia` como icono, con color por variante.** El `ConfirmDialog` de PrimeVue
+   pintaba el mismo triángulo neutro para las 20 llamadas, incluida la de "Fusionar contratos
+   duplicados", que no es destructiva. El bloque nuevo tiñe el círculo de `AlertDialogMedia` en
+   rojo (`bg-destructive/10 text-destructive`) cuando `variant: 'destructive'`, y lo deja neutro
+   si no. Es una mejora real de la mayoría de los casos (19 de 20 son "Eliminar…" o "Descartar
+   cambios") a costa de una diferencia visual intencional en el caso que no lo es.
+4. **Sin estado de carga en el botón de confirmar.** El comportamiento de PrimeVue era cerrar el
+   diálogo al aceptar y disparar `accept` sin esperarlo, incluso cuando es `async`; se preservó
+   igual — `AlertDialogAction` cierra solo al hacer click (es el comportamiento de Reka UI) y
+   `onConfirm()` corre después, sin bloquear el cierre. Ninguna de las 20 llamadas dependía de
+   que el diálogo siguiera abierto durante el `await`.
+5. **`rejectProps`/`acceptProps` con objeto anidado.** Cinco llamadas (`FallaDetailView` × 2,
+   `MonitoreoView`, `GestionFallasView`, `FronterasView` × 2) usaban
+   `acceptProps: { label, severity }` en vez de `acceptLabel`/`acceptSeverity` planos. El codemod
+   parsea el objeto anidado igual que el plano; no quedó ninguna forma sin traducir.
+
+**Verificado**: `lint`, `typecheck`, `test` (214) y `build` en verde; barrido a cero de
+`confirm.require`, `primevue/useconfirm` y `primevue/confirmdialog`; auditoría cruzada de que los
+13 archivos con `confirm({…})` declaran `const confirm = useConfirm()` y de que no queda ningún
+`acceptLabel`/`rejectSeverity`/`acceptProps` residual. **Falta la revisión visual** — es la más
+sensible de las tres migraciones de esta ola porque cambia la única pieza interactiva (antes solo
+cambiaban icono y color de fondo).
+
 ### 3.3 Ola 1 · Auth, permisos y shell
 
 - Apuntar `server/utils/auth-api.ts` al backend real: rutas, tipos `External*` y los mappers
@@ -698,9 +753,10 @@ Métricas objetivas, verificables con un comando:
 | Métrica | Inicio | Hoy | Meta |
 | --- | --- | --- | --- |
 | Archivos en `app/legacy/` | 237 | 0 | 0 (al terminar la fase 2) |
-| Archivos que importan `primevue` | 120 | 115 | 0 |
+| Archivos que importan `primevue` | 120 | 113 | 0 |
 | **Apariciones de `pi pi-*`** | **1.822** | **0** | **0** |
 | **Llamadas a `toast.add` de PrimeVue** | **557** | **0** | **0** |
+| **Llamadas a `confirm.require` de PrimeVue** | **20** | **0** | **0** |
 | Archivos `.js`/`.vue` sin `lang="ts"` | 237 | 237 | 0 |
 | Llamadas a la API fuera de un service | 341 | 341 | 0 |
 | Literales hex de la paleta | ~2.528 | ~2.528 | 0 |
@@ -713,6 +769,7 @@ Los comandos, desde `v2/`:
 grep -rl "from 'primevue" app | wc -l           # archivos que importan PrimeVue
 grep -roP "(?<![-\w])pi pi-" app | wc -l        # clases de PrimeIcons que quedan
 grep -ro "toast\.add(" app | wc -l              # avisos aún en la API de PrimeVue
+grep -ro "confirm\.require(" app | wc -l        # confirmaciones aún en la API de PrimeVue
 ```
 
 ---

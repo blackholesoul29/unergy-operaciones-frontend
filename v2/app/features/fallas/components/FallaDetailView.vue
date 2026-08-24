@@ -377,7 +377,6 @@ import { ArrowLeftIcon, ArrowRightIcon, BuildingIcon, CalendarIcon, CheckIcon, C
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Select from 'primevue/select'
@@ -390,7 +389,7 @@ import api from '~/core/client'
 
 const route = useRoute()
 const router = useRouter()
-const confirmService = useConfirm()
+const confirm = useConfirm()
 
 // ── Estado ──────────────────────────────────────────────────────────────
 const falla = ref(null)
@@ -679,12 +678,13 @@ async function uploadFotos(event) {
 }
 
 function deleteFoto(url) {
-  confirmService.require({
-    message: '¿Eliminar este adjunto? Esta acción no se puede deshacer.',
-    header: 'Eliminar adjunto',
-    rejectProps: { label: 'Cancelar', severity: 'secondary' },
-    acceptProps: { label: 'Eliminar', severity: 'danger' },
-    accept: async () => {
+  confirm({
+    title: 'Eliminar adjunto',
+    description: '¿Eliminar este adjunto? Esta acción no se puede deshacer.',
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         // No hay endpoint DELETE en backend. Actualizamos fotos_urls vía PATCH excluyendo la URL.
         const nuevaLista = adjuntos.value.filter(u => u !== url)
@@ -700,12 +700,13 @@ function deleteFoto(url) {
 }
 
 function confirmDelete() {
-  confirmService.require({
-    message: `¿Eliminar la falla ${falla.value.codigo_interno}? Esta acción no se puede deshacer.`,
-    header: 'Confirmar eliminación',
-    rejectProps: { label: 'Cancelar', severity: 'secondary' },
-    acceptProps: { label: 'Eliminar', severity: 'danger' },
-    accept: async () => {
+  confirm({
+    title: 'Confirmar eliminación',
+    description: `¿Eliminar la falla ${falla.value.codigo_interno}? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/fallas/${falla.value.id}`)
         toast.success('Falla eliminada', { duration: 3000 })

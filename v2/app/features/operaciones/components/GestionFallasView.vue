@@ -502,7 +502,6 @@ import { ArrowRightIcon, BuildingIcon, CalendarClockIcon, CalendarIcon, CheckIco
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -520,7 +519,7 @@ import { tituloFalla, categoriaFalla } from '~/features/fallas/utils/fallaTitulo
 
 const route = useRoute()
 const router = useRouter()
-const confirmService = useConfirm()
+const confirm = useConfirm()
 
 // ── Constantes ──────────────────────────────────────────────────────────
 const BUCKETS = [
@@ -972,12 +971,13 @@ async function agregarSeguimiento() {
 }
 
 function confirmDelete(falla) {
-  confirmService.require({
-    message: `¿Eliminar la falla ${falla.codigo_interno}? Esta acción no se puede deshacer.`,
-    header: 'Eliminar falla',
-    rejectProps: { label: 'Cancelar', severity: 'secondary' },
-    acceptProps: { label: 'Eliminar', severity: 'danger' },
-    accept: async () => {
+  confirm({
+    title: 'Eliminar falla',
+    description: `¿Eliminar la falla ${falla.codigo_interno}? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/fallas/${falla.id}`)
         allFallas.value = allFallas.value.filter(f => f.id !== falla.id)

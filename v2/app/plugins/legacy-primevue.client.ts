@@ -1,13 +1,14 @@
 /**
  * MIGRACIÓN — Fase 1. El arranque que hacía `legacy/src/main.js`, traducido a un
- * plugin de Nuxt: el tema de PrimeVue, `ConfirmationService` y la directiva
- * `tooltip`.
+ * plugin de Nuxt: el tema de PrimeVue y la directiva `tooltip`.
  *
  * `InfoField` y `PageHeader` ya no se registran aquí: viven en
  * `components/blocks/`, que Nuxt auto-importa. El registro global era lo que
  * hacía `main.js` porque en una SPA de Vite no había auto-import.
  *
  * `ToastService` ya no está: los avisos pasaron a vue-sonner en la fase 3, ola 0.
+ * `ConfirmationService` tampoco: las confirmaciones pasaron a `useConfirm()` +
+ * `AlertDialog` de shadcn, misma ola.
  *
  * Todo lo de aquí es temporal. PrimeVue sale en la fase 3, a medida que cada
  * slice pasa a Gandalf/shadcn; cuando no quede ningún import de `primevue`, este
@@ -23,7 +24,6 @@
 import { definePreset } from '@primevue/themes'
 import Aura from '@primevue/themes/aura'
 import PrimeVue from 'primevue/config'
-import ConfirmationService from 'primevue/confirmationservice'
 import Tooltip from 'primevue/tooltip'
 
 /** Mapea el `primary` de PrimeVue al morado de marca. Copiado de `main.js`. */
@@ -52,6 +52,5 @@ export default defineNuxtPlugin((nuxtApp) => {
       options: { darkModeSelector: '.dark', cssLayer: false },
     },
   })
-  nuxtApp.vueApp.use(ConfirmationService)
   nuxtApp.vueApp.directive('tooltip', Tooltip)
 })

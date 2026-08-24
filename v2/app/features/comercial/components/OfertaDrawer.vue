@@ -267,7 +267,6 @@ import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Message from 'primevue/message'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import api from '~/core/client'
 import {
   ETAPAS, TIPOS_OFERTA, TIPOS_GESTION, FUENTES, puedeFirmarPPA,
@@ -516,13 +515,13 @@ async function registrarGestion() {
 
 function confirmarEliminar() {
   const nombre = props.oferta.planta_nombre || props.oferta.codigo_seguimiento || 'esta oferta'
-  confirm.require({
-    header: 'Eliminar oferta',
-    message: `Se elimina «${nombre}» y su histórico de etapas. No se puede deshacer.`,
-    acceptLabel: 'Eliminar',
-    rejectLabel: 'Cancelar',
-    acceptClass: 'p-button-danger',
-    accept: async () => {
+  confirm({
+    title: 'Eliminar oferta',
+    description: `Se elimina «${nombre}» y su histórico de etapas. No se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       const r = await props.acciones.eliminarOferta(props.oferta.id)
       if (r.ok) emit('update:visible', false)
       else toast.error('No se pudo eliminar', { description: r.error, duration: 5000 })

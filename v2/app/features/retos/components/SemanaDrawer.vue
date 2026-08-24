@@ -154,7 +154,6 @@ import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import { fmtNumero } from './retosUi'
 import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '@lucide/vue'
 
@@ -424,13 +423,13 @@ function cerrar() {
 function intentarCerrar(v) {
   if (v) { emit('update:visible', true); return }
   if (!hayCambios.value) { cerrar(); return }
-  confirm.require({
-    header: 'Cambios sin guardar',
-    message: `Tienes cambios en la semana ${props.semana?.numero ?? ''} que no se han guardado.`,
-    acceptLabel: 'Descartar',
-    rejectLabel: 'Seguir editando',
-    acceptClass: 'p-button-danger p-button-sm',
-    accept: () => { sincronizar(); cerrar() },
+  confirm({
+    title: 'Cambios sin guardar',
+    description: `Tienes cambios en la semana ${props.semana?.numero ?? ''} que no se han guardado.`,
+    confirmLabel: 'Descartar',
+    cancelLabel: 'Seguir editando',
+    variant: 'destructive',
+    onConfirm: () => { sincronizar(); cerrar() },
   })
 }
 

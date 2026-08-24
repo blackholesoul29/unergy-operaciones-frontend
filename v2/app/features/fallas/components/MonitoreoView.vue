@@ -651,7 +651,6 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -682,7 +681,7 @@ import { ArrowRightIcon, BellIcon, BriefcaseIcon, BuildingIcon, CalendarIcon, Ca
 
 const route          = useRoute()
 const router         = useRouter()
-const confirmService = useConfirm()
+const confirm = useConfirm()
 
 // ── Calendario: refresh automático al guardar fallas ─────────────────────
 const calRefreshKey = ref(0)
@@ -1444,12 +1443,13 @@ async function agregarSeguimiento() {
 }
 
 function confirmDelete(falla) {
-  confirmService.require({
-    message: `¿Eliminar la falla ${falla.codigo_interno}? Esta acción no se puede deshacer.`,
-    header: 'Eliminar falla',
-    rejectProps: { label: 'Cancelar', severity: 'secondary' },
-    acceptProps: { label: 'Eliminar', severity: 'danger' },
-    accept: async () => {
+  confirm({
+    title: 'Eliminar falla',
+    description: `¿Eliminar la falla ${falla.codigo_interno}? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/fallas/${falla.id}`)
         allFallas.value     = allFallas.value.filter(f => f.id !== falla.id)

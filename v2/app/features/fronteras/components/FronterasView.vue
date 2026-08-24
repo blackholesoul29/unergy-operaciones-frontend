@@ -345,7 +345,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import { useConfirm } from 'primevue/useconfirm'
 import api from '~/core/client'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -642,12 +641,13 @@ async function crearFronteraForzado() {
 }
 
 function deleteFrontera(f) {
-  confirm.require({
-    message: `¿Eliminar la frontera ${f.codigo_frontera}? Esta acción no se puede deshacer.`,
-    header: 'Confirmar eliminación',
-    rejectProps: { label: 'Cancelar', severity: 'secondary' },
-    acceptProps: { label: 'Eliminar', severity: 'danger' },
-    accept: async () => {
+  confirm({
+    title: 'Confirmar eliminación',
+    description: `¿Eliminar la frontera ${f.codigo_frontera}? Esta acción no se puede deshacer.`,
+    confirmLabel: 'Eliminar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       try {
         await api.delete(`/fronteras/${f.id}`)
         toast.success('Frontera eliminada', { duration: 2000 })
@@ -721,12 +721,13 @@ async function confirmarPendiente(p) {
 }
 
 function ignorarPendiente(p) {
-  confirm.require({
-    message: `¿Ignorar "${p.nombre_quoia}" (${p.frt_code})? No volverá a aparecer como pendiente.`,
-    header: 'Ignorar frontera de Quoia',
-    rejectProps: { label: 'Cancelar', severity: 'secondary' },
-    acceptProps: { label: 'Ignorar', severity: 'danger' },
-    accept: async () => {
+  confirm({
+    title: 'Ignorar frontera de Quoia',
+    description: `¿Ignorar "${p.nombre_quoia}" (${p.frt_code})? No volverá a aparecer como pendiente.`,
+    confirmLabel: 'Ignorar',
+    cancelLabel: 'Cancelar',
+    variant: 'destructive',
+    onConfirm: async () => {
       p._loading = 'ignorar'
       try {
         await api.post(`/fronteras/quoia/pendientes/${p.frt_code}/ignorar`, {})
