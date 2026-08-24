@@ -1,0 +1,24 @@
+# Dependencies and build output
+node_modules
+.nuxt
+.output
+dist
+
+# Unrelated reference projects
+template
+example
+
+# Tooling caches
+.prettier-cache
+
+# Generated artifacts
+*.min.js
+*.min.css
+
+# Vendored UI — shadcn-vue regenerates the first, Gandalf syncs the second
+app/components/ui
+app/components/gandalf
+
+# Agent tooling — written by the tools, not by us
+.claude
+.agents
