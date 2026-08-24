@@ -9,19 +9,21 @@
       <!-- New key revealed (only once) -->
       <div v-if="newKey" class="bg-green-50 border border-green-200 rounded-lg p-4 space-y-2">
         <div class="flex items-center gap-2 text-green-800 font-medium text-sm">
-          <i class="pi pi-check-circle" />
+          <CircleCheckIcon class="size-[1em]" />
           API Key creada — copia ahora, no se mostrará de nuevo
         </div>
         <div class="flex items-center gap-2">
           <code class="flex-1 bg-white border rounded px-3 py-2 text-xs font-mono break-all select-all">{{ newKey }}</code>
-          <Button icon="pi pi-copy" text rounded size="small" v-tooltip.top="'Copiar'" @click="copyKey" />
+          <Button text rounded size="small" v-tooltip.top="'Copiar'" @click="copyKey">
+            <template #icon><CopyIcon class="size-[1em]" /></template>
+          </Button>
         </div>
         <div class="text-xs text-gray-500 mt-2 space-y-1">
           <p><strong>Uso:</strong> Enviar en header <code class="bg-gray-100 px-1 rounded">X-API-Key: {{ newKey }}</code></p>
           <p><strong>Base URL:</strong> <code class="bg-gray-100 px-1 rounded">{{ baseUrl }}/api/v1</code></p>
         </div>
         <div class="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-2 mt-1">
-          <i class="pi pi-shield mt-0.5" />
+          <ShieldIcon class="mt-0.5 size-[1em]" />
           <span>
             Trata esta key como una contraseña: concede el rol del usuario.
             Guárdala en un gestor de secretos, nunca en el código ni en repositorios,
@@ -36,7 +38,9 @@
           <label class="block text-xs font-medium text-gray-600 mb-1">Nombre de la API Key</label>
           <InputText v-model="newKeyName" placeholder="ej: Integración Power BI" class="w-full" />
         </div>
-        <Button label="Generar" icon="pi pi-key" :loading="creating" @click="createKey" :disabled="!newKeyName.trim()" />
+        <Button label="Generar" :loading="creating" @click="createKey" :disabled="!newKeyName.trim()">
+          <template #icon><KeyIcon class="size-[1em]" /></template>
+        </Button>
       </div>
 
       <!-- Existing keys -->
@@ -59,10 +63,13 @@
               </template>
             </div>
           </div>
-          <Button :icon="k.activo ? 'pi pi-pause' : 'pi pi-play'" text rounded size="small"
-            v-tooltip.top="k.activo ? 'Desactivar' : 'Activar'" @click="toggleKey(k)" />
-          <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-            v-tooltip.top="'Eliminar'" @click="confirmDelete(k)" />
+          <Button text rounded size="small"
+            v-tooltip.top="k.activo ? 'Desactivar' : 'Activar'" @click="toggleKey(k)">
+            <template #icon><component :is="k.activo ? PauseIcon : PlayIcon" class="size-[1em]" /></template>
+          </Button>
+          <Button text rounded size="small" severity="danger" v-tooltip.top="'Eliminar'" @click="confirmDelete(k)">
+            <template #icon><Trash2Icon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
       <div v-else-if="!loadingKeys" class="text-center text-sm text-gray-400 py-4">
@@ -99,12 +106,12 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Tag from 'primevue/tag'
 import Divider from 'primevue/divider'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
+import { CircleCheckIcon, CopyIcon, KeyIcon, PauseIcon, PlayIcon, ShieldIcon, Trash2Icon } from '@lucide/vue'
 
 const props = defineProps({ usuario: Object })
 const visible = defineModel('visible', { type: Boolean })
-const toast = useToast()
 
 const keys = ref([])
 const loadingKeys = ref(false)
@@ -146,10 +153,10 @@ async function createKey() {
     })
     newKey.value = data.api_key
     newKeyName.value = ''
-    toast.add({ severity: 'success', summary: 'API Key creada', life: 3000 })
+    toast.success('API Key creada', { duration: 3000 })
     await loadKeys()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'Error al crear', life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail || 'Error al crear', duration: 4000 })
   } finally {
     creating.value = false
   }
@@ -159,9 +166,9 @@ async function toggleKey(k) {
   try {
     const { data } = await api.patch(`/api-keys/${k.id}/toggle`)
     k.activo = data.activo
-    toast.add({ severity: 'info', summary: data.activo ? 'Key activada' : 'Key desactivada', life: 2000 })
+    toast.info(data.activo ? 'Key activada' : 'Key desactivada', { duration: 2000 })
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al cambiar estado', life: 3000 })
+    toast.error('Error al cambiar estado', { duration: 3000 })
   }
 }
 
@@ -175,10 +182,10 @@ async function doDelete() {
   try {
     await api.delete(`/api-keys/${deletingKey.value.id}`)
     deleteConfirmVisible.value = false
-    toast.add({ severity: 'success', summary: 'Key eliminada', life: 3000 })
+    toast.success('Key eliminada', { duration: 3000 })
     await loadKeys()
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
+    toast.error('Error al eliminar', { duration: 3000 })
   } finally {
     deleting.value = false
   }
@@ -186,7 +193,7 @@ async function doDelete() {
 
 function copyKey() {
   navigator.clipboard.writeText(newKey.value)
-  toast.add({ severity: 'info', summary: 'Copiado al portapapeles', life: 2000 })
+  toast.info('Copiado al portapapeles', { duration: 2000 })
 }
 
 function formatDate(d) {

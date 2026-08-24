@@ -3,7 +3,7 @@
     <PageHeader title="Centro de Alertas" subtitle="Estado operacional de la plataforma">
       <template #lead>
         <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background: rgba(214,68,85,0.1);">
-          <i class="pi pi-exclamation-circle text-sm" style="color: #D64455;" />
+          <CircleAlertIcon class="text-sm size-[1em]" style="color: #D64455;" />
         </div>
       </template>
     </PageHeader>
@@ -27,7 +27,7 @@
       >
         <div class="w-16 h-16 rounded-full flex items-center justify-center relative"
           :style="`background: ${mod.color}18`">
-          <i :class="mod.icon" class="text-3xl" :style="`color: ${mod.color}`" />
+          <component :is="mod.icon" class="text-3xl size-[1em]" :style="`color: ${mod.color}`" />
           <span v-if="mod.count > 0"
                 class="absolute -top-1 -right-1 w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center"
                 :style="`background: ${mod.color};`">
@@ -47,6 +47,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import api from '~/core/client'
+import { CircleAlertIcon, WrenchIcon, ZapIcon } from '@lucide/vue'
 
 const kpis = ref({})
 const ppaAlerts = ref({ huerfanos: [], duplicados: [] })
@@ -94,7 +95,7 @@ const MODULOS = computed(() => [
     to: '/alertas/contratos-ppa',
     label: 'Contratos PPA',
     desc: 'Proyectos huérfanos y duplicados en GESCON',
-    icon: 'pi pi-bolt',
+    icon: ZapIcon,
     color: '#f59e0b',
     count: (ppaAlerts.value.huerfanos?.length || 0) + (ppaAlerts.value.duplicados?.length || 0),
   },
@@ -102,7 +103,7 @@ const MODULOS = computed(() => [
     to: '/fallas',
     label: 'Fallas Operativas',
     desc: 'Fallas activas por prioridad y estado',
-    icon: 'pi pi-wrench',
+    icon: WrenchIcon,
     color: '#915BD8',
     count: kpis.value.fallas_abiertas || 0,
   },

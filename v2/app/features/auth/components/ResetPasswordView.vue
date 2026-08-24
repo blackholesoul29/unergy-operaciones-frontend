@@ -16,7 +16,7 @@
           <!-- Success state -->
           <div v-if="success" class="text-center space-y-3">
             <div class="w-14 h-14 mx-auto rounded-full flex items-center justify-center" style="background: rgba(16,185,129,0.1);">
-              <i class="pi pi-check text-2xl" style="color: #10B981;" />
+              <CheckIcon class="text-2xl size-[1em]" style="color: #10B981;" />
             </div>
             <p class="text-sm" style="color: #2C2039;">
               Tu contraseña ha sido actualizada exitosamente.
@@ -73,7 +73,7 @@
               onmouseout="if(!this.disabled) this.style.backgroundColor='#915BD8'"
             >
               <span v-if="loading" class="flex items-center justify-center gap-2">
-                <i class="pi pi-spin pi-spinner text-xs" />
+                <LoaderCircleIcon class="text-xs size-[1em] animate-spin" />
                 Guardando...
               </span>
               <span v-else>Restablecer contraseña</span>
@@ -99,6 +99,7 @@
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import api from '~/core/client'
+import { CheckIcon, LoaderCircleIcon } from '@lucide/vue'
 
 const route = useRoute()
 const password = ref('')

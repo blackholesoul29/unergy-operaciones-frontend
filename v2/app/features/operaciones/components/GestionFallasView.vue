@@ -7,7 +7,7 @@
     <!-- ══ TITLE + BUCKETS + ACTIONS (una sola fila compacta) ═══════════ -->
     <div class="gf-topbar">
       <div class="gf-topbar-title">
-        <i class="pi pi-bolt text-sm" style="color:#915BD8" />
+        <ZapIcon class="text-sm size-[1em]" style="color:#915BD8" />
         <h2 class="text-base font-bold text-gray-800 whitespace-nowrap">Gestión de Fallas</h2>
       </div>
 
@@ -25,16 +25,19 @@
       </div>
 
       <div class="gf-topbar-actions">
-        <Button icon="pi pi-refresh" outlined size="small" :loading="loading" @click="cargar"
-          v-tooltip.bottom="'Actualizar'" />
-        <Button label="Nueva" icon="pi pi-plus" size="small" @click="abrirCrear" />
+        <Button outlined size="small" :loading="loading" @click="cargar" v-tooltip.bottom="'Actualizar'">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Nueva" size="small" @click="abrirCrear">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
     <!-- ══ TOOLBAR (fila delgada) ═══════════════════════════════════════ -->
     <div class="gf-toolbar">
       <IconField class="flex-1 min-w-[200px] max-w-sm">
-        <InputIcon class="pi pi-search text-xs" />
+        <InputIcon><SearchIcon class="text-xs size-[1em]" /></InputIcon>
         <InputText ref="searchInputRef" v-model="search"
           placeholder="Buscar por código, descripción, proyecto, tipo..."
           class="w-full" size="small" />
@@ -51,8 +54,9 @@
         showButtonBar class="w-28" size="small" />
       <DatePicker v-model="filtroFechaHasta" placeholder="Hasta" dateFormat="yy-mm-dd"
         showButtonBar class="w-28" size="small" />
-      <Button v-if="hayFiltros" icon="pi pi-times" text size="small" severity="secondary"
-        @click="limpiarFiltros" v-tooltip.bottom="'Limpiar filtros'" />
+      <Button v-if="hayFiltros" text size="small" severity="secondary" @click="limpiarFiltros" v-tooltip.bottom="'Limpiar filtros'">
+        <template #icon><XIcon class="size-[1em]" /></template>
+      </Button>
       <span class="ml-auto text-[11px] text-gray-500 whitespace-nowrap" v-if="!loading">
         {{ filtradas.length }} / {{ porBucket.length }}
       </span>
@@ -72,7 +76,7 @@
         </span>
       </div>
       <div v-if="!filtradas.length" class="gf-compact-empty">
-        <i class="pi pi-inbox text-2xl mb-2" />
+        <InboxIcon class="text-2xl mb-2 size-[1em]" />
         <p class="text-xs">Sin resultados</p>
       </div>
       <div v-else class="gf-compact-list">
@@ -98,12 +102,14 @@
     <!-- ══ TABLA (oculta cuando hay panel en lg+) ═══════════════════════ -->
     <div :class="['gf-table-wrap', drawerVisible && 'lg:!hidden']">
       <div v-if="error" class="p-6 flex items-center gap-3 text-red-600">
-        <i class="pi pi-exclamation-circle text-xl" />
+        <CircleAlertIcon class="text-xl size-[1em]" />
         <div class="flex-1">
           <div class="font-semibold">Error al cargar</div>
           <div class="text-sm text-gray-500">{{ error }}</div>
         </div>
-        <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="cargar" />
+        <Button label="Reintentar" outlined size="small" @click="cargar">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
       </div>
       <DataTable v-else :value="filtradas" :loading="loading" rowHover stripedRows
         class="gf-table text-sm" :rows="25" paginator
@@ -112,13 +118,15 @@
         :rowClass="rowClass" scrollable>
         <template #empty>
           <div class="flex flex-col items-center py-14 gap-2 text-gray-400">
-            <i :class="bucketActual.icon + ' text-4xl'" :style="{ color: bucketActual.color }" />
+            <component :is="bucketActual.icon" class="text-4xl size-[1em]" :style="{ color: bucketActual.color }" />
             <p class="text-sm font-semibold text-gray-700">{{ emptyTitulo }}</p>
             <p class="text-xs">{{ emptySubtitulo }}</p>
-            <Button v-if="bucket === 'activas' && !hayFiltros" label="Registrar primera falla"
-              icon="pi pi-plus" outlined size="small" class="mt-2" @click="abrirCrear" />
-            <Button v-else-if="hayFiltros" label="Limpiar filtros" icon="pi pi-times" text size="small"
-              class="mt-2" @click="limpiarFiltros" />
+            <Button v-if="bucket === 'activas' && !hayFiltros" label="Registrar primera falla" outlined size="small" class="mt-2" @click="abrirCrear">
+              <template #icon><PlusIcon class="size-[1em]" /></template>
+            </Button>
+            <Button v-else-if="hayFiltros" label="Limpiar filtros" text size="small" class="mt-2" @click="limpiarFiltros">
+              <template #icon><XIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </template>
 
@@ -163,7 +171,7 @@
               <span class="text-xs text-gray-700 truncate flex-1">{{ data.asignado_a.nombre }}</span>
             </div>
             <div v-else class="flex items-center gap-2 text-gray-400">
-              <div class="avatar-sm avatar-sm--empty"><i class="pi pi-user text-[10px]" /></div>
+              <div class="avatar-sm avatar-sm--empty"><UserIcon class="text-[10px] size-[1em]" /></div>
               <span class="text-xs">Sin asignar</span>
             </div>
           </template>
@@ -195,13 +203,15 @@
         <Column header="" style="width:120px">
           <template #body="{ data }">
             <div class="row-actions" @click.stop>
-              <Button v-if="!data.estado?.es_estado_final" icon="pi pi-check-circle"
-                text rounded size="small" severity="success"
-                @click="quickResolve(data)" v-tooltip.left="'Marcar resuelta'" />
-              <Button icon="pi pi-pencil" text rounded size="small" severity="info"
-                @click="abrirEditar(data)" v-tooltip.left="'Editar'" />
-              <Button icon="pi pi-arrow-right" text rounded size="small" severity="secondary"
-                @click="abrirDrawer(data)" v-tooltip.left="'Ver detalle'" />
+              <Button v-if="!data.estado?.es_estado_final" text rounded size="small" severity="success" @click="quickResolve(data)" v-tooltip.left="'Marcar resuelta'">
+                <template #icon><CircleCheckIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text rounded size="small" severity="info" @click="abrirEditar(data)" v-tooltip.left="'Editar'">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text rounded size="small" severity="secondary" @click="abrirDrawer(data)" v-tooltip.left="'Ver detalle'">
+                <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+              </Button>
             </div>
           </template>
         </Column>
@@ -217,7 +227,9 @@
       <div class="gf-aside-panel">
         <!-- Header panel -->
         <div class="gf-drawer-header">
-          <Button icon="pi pi-times" text rounded size="small" @click="drawerVisible = false" v-tooltip.bottom="'Cerrar (Esc)'" />
+          <Button text rounded size="small" @click="drawerVisible = false" v-tooltip.bottom="'Cerrar (Esc)'">
+            <template #icon><XIcon class="size-[1em]" /></template>
+          </Button>
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 flex-wrap">
               <code class="font-mono text-sm text-purple-700 bg-purple-50 px-2 py-0.5 rounded">{{ drawerFalla.codigo_interno }}</code>
@@ -228,14 +240,18 @@
               </span>
             </div>
           </div>
-          <Button icon="pi pi-chevron-left" text rounded size="small" severity="secondary"
-            :disabled="navIndex <= 0" @click="navegar(-1)" v-tooltip.bottom="'Anterior (←)'" />
-          <Button icon="pi pi-chevron-right" text rounded size="small" severity="secondary"
-            :disabled="navIndex < 0 || navIndex >= filtradas.length - 1" @click="navegar(1)" v-tooltip.bottom="'Siguiente (→)'" />
-          <Button icon="pi pi-external-link" text rounded size="small" severity="secondary"
-            @click="$router.push(`/fallas/${drawerFalla.id}`)" v-tooltip.bottom="'Abrir página completa'" />
-          <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-            @click="confirmDelete(drawerFalla)" v-tooltip.bottom="'Eliminar'" />
+          <Button text rounded size="small" severity="secondary" :disabled="navIndex <= 0" @click="navegar(-1)" v-tooltip.bottom="'Anterior (←)'">
+            <template #icon><ChevronLeftIcon class="size-[1em]" /></template>
+          </Button>
+          <Button text rounded size="small" severity="secondary" :disabled="navIndex < 0 || navIndex >= filtradas.length - 1" @click="navegar(1)" v-tooltip.bottom="'Siguiente (→)'">
+            <template #icon><ChevronRightIcon class="size-[1em]" /></template>
+          </Button>
+          <Button text rounded size="small" severity="secondary" @click="$router.push(`/fallas/${drawerFalla.id}`)" v-tooltip.bottom="'Abrir página completa'">
+            <template #icon><ExternalLinkIcon class="size-[1em]" /></template>
+          </Button>
+          <Button text rounded size="small" severity="danger" @click="confirmDelete(drawerFalla)" v-tooltip.bottom="'Eliminar'">
+            <template #icon><Trash2Icon class="size-[1em]" /></template>
+          </Button>
         </div>
 
         <!-- Body drawer -->
@@ -259,11 +275,11 @@
             <!-- Hechos en grid compacto (todo a un vistazo) -->
             <dl class="gf-facts">
               <div class="gf-fact">
-                <dt class="gf-fact-label"><i class="pi pi-building" /> Proyecto</dt>
+                <dt class="gf-fact-label"><BuildingIcon class="size-[1em]" /> Proyecto</dt>
                 <dd class="gf-fact-value">{{ drawerFalla.proyecto?.nombre_comercial || '—' }}</dd>
               </div>
               <div class="gf-fact">
-                <dt class="gf-fact-label"><i class="pi pi-user" /> Asignado</dt>
+                <dt class="gf-fact-label"><UserIcon class="size-[1em]" /> Asignado</dt>
                 <dd class="gf-fact-value">
                   <div v-if="drawerFalla.asignado_a" class="flex items-center gap-1.5">
                     <div class="avatar-xs" :style="avatarStyle(drawerFalla.asignado_a)">{{ initials(drawerFalla.asignado_a.nombre) }}</div>
@@ -273,26 +289,26 @@
                 </dd>
               </div>
               <div class="gf-fact">
-                <dt class="gf-fact-label"><i class="pi pi-calendar" /> Identificada</dt>
+                <dt class="gf-fact-label"><CalendarIcon class="size-[1em]" /> Identificada</dt>
                 <dd class="gf-fact-value">
                   {{ fmtFecha(drawerFalla.fecha_identificacion) }}<span v-if="drawerFalla.hora_identificacion"> · {{ fmtHora(drawerFalla.hora_identificacion) }}</span>
                   <span class="text-gray-500"> · {{ relativeTime(drawerFalla.fecha_identificacion) }}</span>
                 </dd>
               </div>
               <div class="gf-fact">
-                <dt class="gf-fact-label"><i class="pi pi-user-edit" /> Registrado por</dt>
+                <dt class="gf-fact-label"><UserPenIcon class="size-[1em]" /> Registrado por</dt>
                 <dd class="gf-fact-value">{{ drawerFalla.registrado_por?.nombre || '—' }}</dd>
               </div>
               <div v-if="drawerFalla.fecha_resolucion" class="gf-fact">
-                <dt class="gf-fact-label"><i class="pi pi-check-circle" /> Resuelta</dt>
+                <dt class="gf-fact-label"><CircleCheckIcon class="size-[1em]" /> Resuelta</dt>
                 <dd class="gf-fact-value text-emerald-700 font-semibold">{{ fmtFechaHora(drawerFalla.fecha_resolucion) }}</dd>
               </div>
               <div v-if="drawerFalla.tiempo_afectacion_horas != null" class="gf-fact">
-                <dt class="gf-fact-label"><i class="pi pi-clock" /> Tiempo de afectación</dt>
+                <dt class="gf-fact-label"><ClockIcon class="size-[1em]" /> Tiempo de afectación</dt>
                 <dd class="gf-fact-value font-semibold" style="color:#b45309">{{ fmtDuracion(drawerFalla.tiempo_afectacion_horas) }}</dd>
               </div>
               <div v-if="drawerFalla.energia_perdida_kwh != null" class="gf-fact">
-                <dt class="gf-fact-label"><i class="pi pi-bolt" /> Energía perdida</dt>
+                <dt class="gf-fact-label"><ZapIcon class="size-[1em]" /> Energía perdida</dt>
                 <dd class="gf-fact-value text-red-700 font-semibold">{{ Number(drawerFalla.energia_perdida_kwh).toLocaleString('es-CO') }} kWh</dd>
               </div>
             </dl>
@@ -303,13 +319,13 @@
             <!-- Quick actions con autosave -->
             <section class="gf-section gf-section--filled">
               <header class="gf-section-head">
-                <i class="pi pi-bolt gf-section-icon" />
+                <ZapIcon class="gf-section-icon size-[1em]" />
                 <h3 class="gf-section-title">Edición rápida</h3>
                 <span v-if="savingQuick" class="gf-save-flag">
-                  <i class="pi pi-spin pi-spinner" /> Guardando…
+                  <LoaderCircleIcon class="size-[1em] animate-spin" /> Guardando…
                 </span>
                 <span v-else-if="savedFlash" class="gf-save-flag gf-save-flag--ok">
-                  <i class="pi pi-check" /> Guardado
+                  <CheckIcon class="size-[1em]" /> Guardado
                 </span>
               </header>
               <div class="space-y-2">
@@ -337,7 +353,7 @@
             <!-- SLA -->
             <section class="gf-section gf-section--filled">
               <header class="gf-section-head">
-                <i class="pi pi-clock gf-section-icon" />
+                <ClockIcon class="gf-section-icon size-[1em]" />
                 <h3 class="gf-section-title">SLA</h3>
                 <Tag v-if="drawerFalla.sla_limite_horas" class="ml-auto" :value="slaText(drawerFalla)" :severity="slaSeverity(drawerFalla)" />
                 <span v-else class="ml-auto text-xs text-gray-500">Sin límite</span>
@@ -357,7 +373,7 @@
 
           <!-- ── ACCIÓN SUGERIDA (alta visibilidad si existe) ──────────── -->
           <aside v-if="drawerFalla.tipo?.accion_sugerida" class="gf-suggestion">
-            <div class="gf-suggestion-icon"><i class="pi pi-lightbulb" /></div>
+            <div class="gf-suggestion-icon"><LightbulbIcon class="size-[1em]" /></div>
             <div>
               <p class="gf-suggestion-label">Acción sugerida</p>
               <p class="gf-suggestion-text">{{ drawerFalla.tipo.accion_sugerida }}</p>
@@ -367,7 +383,7 @@
           <!-- ── ANÁLISIS ──────────────────────────────────────────────── -->
           <section v-if="drawerFalla.causa_raiz || drawerFalla.acciones_correctivas" class="gf-section">
             <header class="gf-section-head">
-              <i class="pi pi-search gf-section-icon" />
+              <SearchIcon class="gf-section-icon size-[1em]" />
               <h3 class="gf-section-title">Análisis</h3>
             </header>
             <div class="space-y-3">
@@ -385,7 +401,7 @@
           <!-- ── SEGUIMIENTOS ──────────────────────────────────────────── -->
           <section class="gf-section">
             <header class="gf-section-head">
-              <i class="pi pi-comments gf-section-icon" />
+              <MessagesSquareIcon class="gf-section-icon size-[1em]" />
               <h3 class="gf-section-title">Seguimientos</h3>
               <span class="gf-section-count">{{ drawerFalla.seguimientos?.length || 0 }}</span>
             </header>
@@ -398,15 +414,15 @@
                 <Select v-model="nuevaNota.estado_id" :options="catalogos.estados"
                   optionLabel="etiqueta" optionValue="id" placeholder="Cambiar estado (opcional)"
                   showClear class="flex-1" />
-                <Button label="Agregar" icon="pi pi-send" size="small"
-                  :disabled="!nuevaNota.nota.trim() && !nuevaNota.estado_id"
-                  :loading="addingSeg" @click="agregarSeguimiento" />
+                <Button label="Agregar" size="small" :disabled="!nuevaNota.nota.trim() && !nuevaNota.estado_id" :loading="addingSeg" @click="agregarSeguimiento">
+                  <template #icon><SendIcon class="size-[1em]" /></template>
+                </Button>
               </div>
             </div>
 
             <!-- Timeline -->
             <div v-if="cargandoSeguimientos" class="flex items-center gap-2 mt-3 text-sm" style="color: #9b89b5;">
-              <i class="pi pi-spin pi-spinner" /> Cargando seguimientos…
+              <LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando seguimientos…
             </div>
             <div v-else-if="sortedSeguimientos.length" class="space-y-3 mt-3">
               <div v-for="seg in sortedSeguimientos" :key="seg.id" class="flex gap-2.5">
@@ -430,13 +446,15 @@
 
           <!-- ── ACCIONES PRINCIPALES (final del scroll) ───────────────── -->
           <div class="gf-actions-inline">
-            <Button label="Editar completa" icon="pi pi-pencil" outlined class="flex-1"
-              @click="editarDesdeDrawer" />
-            <Button v-if="!drawerFalla.estado?.es_estado_final" label="Marcar resuelta"
-              icon="pi pi-check" severity="success" class="flex-1"
-              :loading="resolvingFalla" @click="quickResolve(drawerFalla)" />
-            <Button v-else label="Reabrir" icon="pi pi-replay" severity="warn" outlined
-              class="flex-1" @click="reabrirFalla" />
+            <Button label="Editar completa" outlined class="flex-1" @click="editarDesdeDrawer">
+              <template #icon><PencilIcon class="size-[1em]" /></template>
+            </Button>
+            <Button v-if="!drawerFalla.estado?.es_estado_final" label="Marcar resuelta" severity="success" class="flex-1" :loading="resolvingFalla" @click="quickResolve(drawerFalla)">
+              <template #icon><CheckIcon class="size-[1em]" /></template>
+            </Button>
+            <Button v-else label="Reabrir" severity="warn" outlined class="flex-1" @click="reabrirFalla">
+              <template #icon><RotateCcwIcon class="size-[1em]" /></template>
+            </Button>
           </div>
 
         </div>
@@ -470,8 +488,9 @@
       <template #footer>
         <Button label="Cancelar" severity="secondary" :disabled="resolvingFalla"
           @click="resolveDialog.visible = false" />
-        <Button label="Marcar resuelta" severity="success" icon="pi pi-check"
-          :loading="resolvingFalla" @click="confirmarResolver" />
+        <Button label="Marcar resuelta" severity="success" :loading="resolvingFalla" @click="confirmarResolver">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
 
@@ -479,9 +498,10 @@
 </template>
 
 <script setup>
+import { ArrowRightIcon, BuildingIcon, CalendarClockIcon, CalendarIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, ClockIcon, ExternalLinkIcon, InboxIcon, LightbulbIcon, ListIcon, LoaderCircleIcon, MessagesSquareIcon, PencilIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, SendIcon, Trash2Icon, UserIcon, UserPenIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
@@ -500,15 +520,14 @@ import { tituloFalla, categoriaFalla } from '~/utils/fallaTitulo'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const confirmService = useConfirm()
 
 // ── Constantes ──────────────────────────────────────────────────────────
 const BUCKETS = [
-  { key: 'activas',     label: 'Activas',     icon: 'pi pi-bolt',          color: '#dc2626' },
-  { key: 'programadas', label: 'Programadas', icon: 'pi pi-calendar-clock',color: '#2563eb' },
-  { key: 'resueltas',   label: 'Resueltas',   icon: 'pi pi-check-circle',  color: '#16a34a' },
-  { key: 'todas',       label: 'Todas',       icon: 'pi pi-list',          color: '#915BD8' },
+  { key: 'activas',     label: 'Activas',     icon: ZapIcon,          color: '#dc2626' },
+  { key: 'programadas', label: 'Programadas', icon: CalendarClockIcon,color: '#2563eb' },
+  { key: 'resueltas',   label: 'Resueltas',   icon: CircleCheckIcon,  color: '#16a34a' },
+  { key: 'todas',       label: 'Todas',       icon: ListIcon,          color: '#915BD8' },
 ]
 
 const PRIO_COLORS = {
@@ -794,7 +813,7 @@ async function onSaveForm(payload) {
       if (notaInicial) {
         api.post(`/fallas/${editingFalla.value.id}/seguimientos`, { nota: notaInicial }).catch(() => {})
       }
-      toast.add({ severity: 'success', summary: 'Falla actualizada', life: 2500 })
+      toast.success('Falla actualizada', { duration: 2500 })
     } else {
       // Al crear: puede venir proyecto_ids (array) → una falla por proyecto
       // eslint-disable-next-line no-unused-vars
@@ -810,10 +829,8 @@ async function onSaveForm(payload) {
           api.post(`/fallas/${nueva.id}/seguimientos`, { nota: nota_inicial }).catch(() => {})
         }
       }
-      toast.add({
-        severity: 'success',
-        summary: created.length > 1 ? `${created.length} fallas registradas` : 'Falla registrada',
-        life: 2500,
+      toast.success(created.length > 1 ? `${created.length} fallas registradas` : 'Falla registrada', {
+        duration: 2500,
       })
     }
     formDialogVisible.value = false
@@ -825,7 +842,7 @@ async function onSaveForm(payload) {
     }
   } catch (err) {
     const msg = err?.response?.data?.detail ?? 'Error al guardar'
-    toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 4000 })
+    toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     savingForm.value = false
   }
@@ -857,7 +874,7 @@ async function guardarQuickEdit() {
     savedFlash.value = true
     setTimeout(() => { savedFlash.value = false }, 1500)
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: err?.response?.data?.detail, life: 3000 })
+    toast.error('No se pudo guardar', { description: err?.response?.data?.detail, duration: 3000 })
     // Revertir UI
     quickEdit.estado_id = drawerFalla.value.estado?.id ?? null
     quickEdit.prioridad_id = drawerFalla.value.prioridad?.id ?? null
@@ -870,7 +887,7 @@ async function guardarQuickEdit() {
 function quickResolve(falla) {
   const estadoFinal = catalogos.value.estados.find(e => e.es_estado_final)
   if (!estadoFinal) {
-    toast.add({ severity: 'warn', summary: 'Sin estado final configurado', life: 3000 })
+    toast.warning('Sin estado final configurado', { duration: 3000 })
     return
   }
   // Abrir diálogo con la fecha/hora de cierre sugerida (momento actual, editable)
@@ -900,9 +917,9 @@ async function confirmarResolver() {
     if (idx >= 0) allFallas.value[idx] = data
     if (drawerFalla.value?.id === data.id) drawerFalla.value = data
     resolveDialog.visible = false
-    toast.add({ severity: 'success', summary: 'Falla resuelta', life: 2500 })
+    toast.success('Falla resuelta', { duration: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
   } finally {
     resolvingFalla.value = false
   }
@@ -912,7 +929,7 @@ async function reabrirFalla() {
   const abierta = catalogos.value.estados.find(e => e.codigo === 'abierta')
     || catalogos.value.estados.find(e => !e.es_estado_final)
   if (!abierta) {
-    toast.add({ severity: 'warn', summary: 'Sin estado abierto configurado', life: 3000 })
+    toast.warning('Sin estado abierto configurado', { duration: 3000 })
     return
   }
   try {
@@ -924,9 +941,9 @@ async function reabrirFalla() {
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     quickEdit.estado_id = data.estado?.id ?? null
-    toast.add({ severity: 'success', summary: 'Falla reabierta', life: 2500 })
+    toast.success('Falla reabierta', { duration: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
   }
 }
 
@@ -946,9 +963,9 @@ async function agregarSeguimiento() {
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     quickEdit.estado_id = data.estado?.id ?? null
-    toast.add({ severity: 'success', summary: 'Seguimiento agregado', life: 2000 })
+    toast.success('Seguimiento agregado', { duration: 2000 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
   } finally {
     addingSeg.value = false
   }
@@ -958,7 +975,6 @@ function confirmDelete(falla) {
   confirmService.require({
     message: `¿Eliminar la falla ${falla.codigo_interno}? Esta acción no se puede deshacer.`,
     header: 'Eliminar falla',
-    icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancelar', severity: 'secondary' },
     acceptProps: { label: 'Eliminar', severity: 'danger' },
     accept: async () => {
@@ -966,9 +982,9 @@ function confirmDelete(falla) {
         await api.delete(`/fallas/${falla.id}`)
         allFallas.value = allFallas.value.filter(f => f.id !== falla.id)
         drawerVisible.value = false
-        toast.add({ severity: 'success', summary: 'Falla eliminada', life: 2500 })
+        toast.success('Falla eliminada', { duration: 2500 })
       } catch (err) {
-        toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+        toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
       }
     },
   })
@@ -1640,7 +1656,7 @@ watch(bucket, (newBucket) => {
   align-items: center;
   gap: 5px;
 }
-.gf-fact-label i { font-size: 11px; }
+.gf-fact-label svg { font-size: 11px; }
 .gf-fact-value {
   font-size: 14px;
   color: #2C2039;
@@ -1715,7 +1731,7 @@ watch(bucket, (newBucket) => {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.gf-suggestion-icon i { font-size: 14px; }
+.gf-suggestion-icon svg { font-size: 14px; }
 .gf-suggestion-label {
   font-size: 11.5px;
   font-weight: 700;

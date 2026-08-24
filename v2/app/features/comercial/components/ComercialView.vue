@@ -16,8 +16,9 @@
       <template #actions>
         <SelectButton v-model="vista" :options="VISTAS" optionLabel="label" optionValue="value"
                       :allowEmpty="false" />
-        <Button label="Registrar oferta" icon="pi pi-plus" class="whitespace-nowrap"
-                @click="mostrarWizard = true" />
+        <Button label="Registrar oferta" class="whitespace-nowrap" @click="mostrarWizard = true">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -34,7 +35,7 @@
          sola fila, exactamente como hasta ahora. -->
     <div class="flex flex-wrap items-center gap-2 mb-4">
       <IconField class="w-full sm:w-auto">
-        <InputIcon class="pi pi-search" />
+        <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
         <InputText v-model.trim="filtros.texto" placeholder="Código, cliente, planta, municipio…"
                    class="w-full sm:w-72" />
       </IconField>
@@ -42,8 +43,10 @@
       <!-- El conteo es lo que evita que un filtro quede activo y escondido:
            plegado, el botón sigue diciendo cuántos hay puestos. -->
       <Button v-if="!esEscritorio" :label="filtrosAbiertos ? 'Ocultar' : etiquetaFiltros"
-              :icon="filtrosAbiertos ? 'pi pi-chevron-up' : 'pi pi-filter'" outlined size="small"
-              @click="filtrosAbiertos = !filtrosAbiertos" />
+              outlined size="small"
+              @click="filtrosAbiertos = !filtrosAbiertos">
+        <template #icon><component :is="filtrosAbiertos ? ChevronUpIcon : FilterIcon" class="size-[1em]" /></template>
+      </Button>
 
       <MultiSelect v-show="filtrosVisibles" v-model="filtros.tipos" :options="TIPOS_OFERTA"
                    optionLabel="label" optionValue="value" placeholder="Tipo de oferta"
@@ -64,15 +67,18 @@
         <Checkbox v-model="filtros.soloSinRespuesta" binary inputId="soloSinResp" />
         <label for="soloSinResp" class="text-sm" style="color:#7a6e8a">Solo sin respuesta</label>
       </div>
-      <Button v-if="hayFiltros" v-show="filtrosVisibles" label="Limpiar" icon="pi pi-filter-slash"
-              text size="small" @click="limpiarFiltros" />
+      <Button v-if="hayFiltros" v-show="filtrosVisibles" label="Limpiar" text size="small" @click="limpiarFiltros">
+        <template #icon><FilterXIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- Falla de carga: se distingue de "no hay ofertas" a propósito -->
     <div v-if="errorCarga" class="rounded-lg p-4 text-center space-y-2 mb-4"
          style="background:#FEF2F2;border:1px solid rgba(214,68,85,0.2)">
       <p class="text-sm" style="color:#D64455">No se pudieron cargar las ofertas: {{ errorCarga }}</p>
-      <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined @click="cargar()" />
+      <Button label="Reintentar" size="small" outlined @click="cargar()">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <div v-else-if="cargando && !ofertas.length" class="flex justify-center py-16">
@@ -82,9 +88,11 @@
     <!-- Vacío real: no hay nada registrado todavía -->
     <div v-else-if="!ofertas.length" class="rounded-lg p-10 text-center"
          style="background:#FAF8FC;border:1px dashed #e0d3f5">
-      <i class="pi pi-briefcase text-3xl mb-3 block" style="color:#c4b8d4" />
+      <BriefcaseIcon class="text-3xl mb-3 block size-[1em]" style="color:#c4b8d4" />
       <p class="text-sm mb-3" style="color:#7a6e8a">Todavía no hay ofertas registradas.</p>
-      <Button label="Registrar la primera" icon="pi pi-plus" @click="mostrarWizard = true" />
+      <Button label="Registrar la primera" @click="mostrarWizard = true">
+        <template #icon><PlusIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <template v-else>
@@ -134,7 +142,7 @@ import Checkbox from 'primevue/checkbox'
 import Dialog from 'primevue/dialog'
 import Textarea from 'primevue/textarea'
 import ProgressSpinner from 'primevue/progressspinner'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import PageHeader from '~/components/PageHeader.vue'
 import KpisComercial from './KpisComercial.vue'
 import TableroOfertas from './TableroOfertas.vue'
@@ -144,10 +152,10 @@ import RegistrarOfertaWizard from './RegistrarOfertaWizard.vue'
 import FirmarOfertaDialog from './FirmarOfertaDialog.vue'
 import { useOfertas } from './useOfertas.js'
 import { ETAPAS, TIPOS_OFERTA } from './comercial.js'
+import { BriefcaseIcon, ChevronUpIcon, FilterIcon, FilterXIcon, PlusIcon, RefreshCwIcon, SearchIcon } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 
 const VISTAS = [
   { label: 'Tablero', value: 'tablero' },
@@ -239,11 +247,9 @@ function abrirOferta(oferta) {
 // limpia: dejarlo puesto deja el drawer cerrado sin explicar por qué.
 watch([ofertaAbiertaId, ofertas], () => {
   if (ofertaAbiertaId.value && ofertas.value.length && !ofertaAbierta.value) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Esa oferta ya no existe',
-      detail: `No se encontró la oferta #${ofertaAbiertaId.value}.`,
-      life: 4000,
+    toast.warning('Esa oferta ya no existe', {
+      description: `No se encontró la oferta #${ofertaAbiertaId.value}.`,
+      duration: 4000,
     })
     router.replace({ query: { ...route.query, oferta: undefined } })
   }
@@ -253,27 +259,23 @@ watch([ofertaAbiertaId, ofertas], () => {
 async function mover(oferta, estado) {
   const r = await moverEtapa(oferta, estado)
   if (!r.ok) {
-    toast.add({ severity: 'error', summary: 'No se pudo cambiar la etapa', detail: r.error, life: 5000 })
+    toast.error('No se pudo cambiar la etapa', { description: r.error, duration: 5000 })
   }
 }
 
 function pedirFirma(oferta) {
   // Servicios operacionales no deriva en PPA: el backend responde 422.
   if (oferta.tipo === 'servicios_operacionales') {
-    toast.add({
-      severity: 'info',
-      summary: 'Esta oferta no genera un PPA',
-      detail: 'Las de servicios derivan en un contrato de representación, que se crea en Servicios.',
-      life: 6000,
+    toast.info('Esta oferta no genera un PPA', {
+      description: 'Las de servicios derivan en un contrato de representación, que se crea en Servicios.',
+      duration: 6000,
     })
     return
   }
   if (oferta.ppa_contrato_id) {
-    toast.add({
-      severity: 'info',
-      summary: 'Ya tiene contrato',
-      detail: `Contrato PPA #${oferta.ppa_contrato_id}.`,
-      life: 4000,
+    toast.info('Ya tiene contrato', {
+      description: `Contrato PPA #${oferta.ppa_contrato_id}.`,
+      duration: 4000,
     })
     return
   }
@@ -301,7 +303,7 @@ async function declinar() {
     })
     mostrarDeclinar.value = false
   } else {
-    toast.add({ severity: 'error', summary: 'No se pudo declinar', detail: r.error, life: 5000 })
+    toast.error('No se pudo declinar', { description: r.error, duration: 5000 })
   }
   declinando.value = false
 }

@@ -3,8 +3,9 @@
     <PageHeader title="Contratos de energía"
                 subtitle="Contratos de energía y sus proyectos vinculados">
       <template #actions>
-        <Button label="Crear nuevo contrato de energía" icon="pi pi-plus" size="small"
-                @click="abrirFormulario" />
+        <Button label="Crear nuevo contrato de energía" size="small" @click="abrirFormulario">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -13,7 +14,7 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Comercializador, proyecto, código…" class="w-72" />
         </IconField>
       </div>
@@ -45,8 +46,9 @@
         </div>
       </div>
       <div class="flex-1" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar'" @click="cargar" />
+      <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar'" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
       <div class="text-xs text-gray-400 self-center">
         {{ filtrados.length }} contrato{{ filtrados.length === 1 ? '' : 's' }}
       </div>
@@ -55,7 +57,7 @@
     <!-- Un PLC sin piso y techo hace fallar la liquidación -->
     <div v-if="!loading && plcIncompletos.length" class="rounded-lg px-3 py-2 text-xs"
          style="background:#FFF8E6; border:1px solid #F5E3B3; color:#7A5C00">
-      <i class="pi pi-exclamation-triangle mr-1" />
+      <TriangleAlertIcon class="mr-1 size-[1em]" />
       {{ plcIncompletos.length }} contrato{{ plcIncompletos.length === 1 ? '' : 's' }} PLC
       sin piso o sin techo cargado. La liquidación falla sin los dos:
       <span class="font-mono">{{ plcIncompletos.map(c => c.codigo || c.id).join(', ') }}</span>
@@ -63,7 +65,7 @@
 
     <div v-if="error" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FEF2F2; border:1px solid #FECACA; color:#B42318">
-      <i class="pi pi-times-circle" /> {{ error }}
+      <CircleXIcon class="size-[1em]" /> {{ error }}
     </div>
 
     <!-- Tabla -->
@@ -91,27 +93,25 @@
                 <span v-for="p in row.proyectos" :key="p.id" class="inline-flex items-center gap-1 mr-2">
                   {{ nombreProyecto(p.proyecto) }}
                   <!-- Solo los PLC necesitan piso y techo -->
-                  <i v-if="row.tipo_contrato === 'ppa_pay_as_contracted' && !(p.tiene_piso && p.tiene_techo)"
-                     class="pi pi-exclamation-triangle text-xs" style="color:#D97706"
-                     v-tooltip.top="'Falta ' + faltantes(p)" />
+                  <TriangleAlertIcon class="text-xs size-[1em]" v-if="row.tipo_contrato === 'ppa_pay_as_contracted' && !(p.tiene_piso && p.tiene_techo)" style="color:#D97706" v-tooltip.top="'Falta ' + faltantes(p)" />
                 </span>
               </td>
               <td class="px-4 py-2 whitespace-nowrap">{{ LABEL_TIPO_CONTRATO[row.tipo_contrato] || row.tipo_contrato || '—' }}</td>
               <td class="px-4 py-2 whitespace-nowrap">{{ LABEL_TIPO_TARIFA[row.tipo_tarifa] || row.tipo_tarifa || '—' }}</td>
               <td class="px-4 py-2 text-right font-mono text-xs">{{ row.porcentaje ?? '—' }}</td>
               <td class="px-4 py-2 text-center">
-                <i v-if="row.proyectos.some(p => p.precio_energia_id)" class="pi pi-check-circle" style="color:#10B981" />
-                <i v-else class="pi pi-times-circle" style="color:#D64455" />
+                <CircleCheckIcon class="size-[1em]" v-if="row.proyectos.some(p => p.precio_energia_id)" style="color:#10B981" />
+                <CircleXIcon class="size-[1em]" v-else style="color:#D64455" />
               </td>
             </tr>
             <tr v-if="loading">
               <td :colspan="COLUMNAS.length" class="px-4 py-12 text-center text-gray-400">
-                <i class="pi pi-spin pi-spinner text-2xl" />
+                <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" />
               </td>
             </tr>
             <tr v-else-if="!filtrados.length">
               <td :colspan="COLUMNAS.length" class="px-4 py-12 text-center text-sm text-gray-400">
-                <i class="pi pi-file text-2xl mb-2 block text-gray-300" />
+                <FileIcon class="text-2xl mb-2 block text-gray-300 size-[1em]" />
                 No hay contratos con esos filtros.
               </td>
             </tr>
@@ -167,15 +167,15 @@
 
         <div class="rounded-lg px-3 py-2.5 space-y-1" style="background:#FBF7FF; border:1px solid #ECE0FB;">
           <p class="text-xs text-gray-600">
-            <i class="pi pi-info-circle mr-1" style="color:#915BD8;" />
+            <InfoIcon class="mr-1 size-[1em]" style="color:#915BD8;" />
             <b>Sin contrato</b> obliga a tipo de tarifa <b>Bolsa</b>.
           </p>
           <p class="text-xs text-gray-600">
-            <i class="pi pi-info-circle mr-1" style="color:#915BD8;" />
+            <InfoIcon class="mr-1 size-[1em]" style="color:#915BD8;" />
             <b>PPA</b> exige precio de energía; <b>Bolsa</b> no lo admite.
           </p>
           <p v-if="esPlc" class="text-xs text-gray-600">
-            <i class="pi pi-info-circle mr-1" style="color:#915BD8;" />
+            <InfoIcon class="mr-1 size-[1em]" style="color:#915BD8;" />
             Cada proyecto de un contrato <b>PLC</b> necesita piso <b>y</b> techo: 24 valores en kWh, de la hora 1 a la 24.
           </p>
         </div>
@@ -199,8 +199,9 @@
                         :disabled="f.tipo_tarifa === 'market'" />
               </div>
               <div class="col-span-1 flex justify-center pb-1">
-                <Button icon="pi pi-times" text rounded severity="danger" size="small" type="button"
-                        @click="quitarProyecto(idx)" v-tooltip="'Eliminar'" />
+                <Button text rounded severity="danger" size="small" type="button" @click="quitarProyecto(idx)" v-tooltip="'Eliminar'">
+                  <template #icon><XIcon class="size-[1em]" /></template>
+                </Button>
               </div>
             </div>
 
@@ -218,14 +219,17 @@
             </div>
           </div>
 
-          <Button label="Agregar proyecto" icon="pi pi-plus" text size="small" type="button"
-                  @click="agregarProyecto" />
+          <Button label="Agregar proyecto" text size="small" type="button" @click="agregarProyecto">
+            <template #icon><PlusIcon class="size-[1em]" /></template>
+          </Button>
         </div>
 
         <div class="flex justify-end gap-2 pt-1">
           <Button type="button" label="Cancelar" severity="secondary" :disabled="guardando"
                   @click="formVisible = false" />
-          <Button type="submit" label="Guardar" icon="pi pi-check" :loading="guardando" />
+          <Button type="submit" label="Guardar" :loading="guardando">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </form>
     </Dialog>
@@ -244,15 +248,15 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { TIPOS_CONTRATO, TIPOS_TARIFA } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
 
 const liquidacionesApi = new LiquidacionesApiService()
 import { formatearNombreProyecto } from '~/features/proyectos/components/proyectosUi'
+import { CheckIcon, CircleCheckIcon, CircleXIcon, FileIcon, InfoIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 const LABEL_TIPO_CONTRATO = Object.fromEntries(TIPOS_CONTRATO.map(t => [t.value, t.label]))
 const LABEL_TIPO_TARIFA = Object.fromEntries(TIPOS_TARIFA.map(t => [t.value, t.label]))
@@ -388,11 +392,10 @@ async function cargarCatalogos() {
   } catch (e) {
     empresasOptions.value = []
     preciosOptions.value = []
-    toast.add({
-      severity: 'warn', summary: 'Catálogos no disponibles',
-      detail: e.response?.data?.detail
+    toast.warning('Catálogos no disponibles', {
+      description: e.response?.data?.detail
         || 'No se pudieron cargar comercializadores ni precios de energía.',
-      life: 5000,
+      duration: 5000,
     })
   }
 }
@@ -511,7 +514,7 @@ function validar() {
 async function guardar() {
   const problema = validar()
   if (problema) {
-    toast.add({ severity: 'warn', summary: 'Revisa el formulario', detail: problema, life: 6000 })
+    toast.warning('Revisa el formulario', { description: problema, duration: 6000 })
     return
   }
 
@@ -532,14 +535,11 @@ async function guardar() {
         roof: esPlc.value ? parseHoras(l.roofTexto) : undefined,
       })),
     })
-    toast.add({ severity: 'success', summary: 'Contrato creado', life: 4000 })
+    toast.success('Contrato creado', { duration: 4000 })
     formVisible.value = false
     await cargar()
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo crear',
-      detail: e.response?.data?.detail || e.message, life: 10000,
-    })
+    toast.error('No se pudo crear', { description: e.response?.data?.detail || e.message, duration: 10000 })
   } finally {
     guardando.value = false
   }

@@ -13,7 +13,7 @@
           <div class="flex flex-col items-center gap-1.5" style="flex:1">
             <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
               :style="step >= i ? `background:${tipoColor}; color:white` : 'background:#f3f4f6; color:#9ca3af'">
-              <i v-if="step > i" class="pi pi-check text-xs" />
+              <CheckIcon class="text-xs size-[1em]" v-if="step > i" />
               <span v-else>{{ i + 1 }}</span>
             </div>
             <span class="text-[10px] text-center leading-tight px-0.5 font-medium"
@@ -180,11 +180,12 @@
                   class="flex-1"
                   inputClass="w-full"
                 />
-                <Button icon="pi pi-plus" severity="secondary" outlined size="small"
-                  v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('contratante')" />
+                <Button severity="secondary" outlined size="small" v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('contratante')">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
               <div v-if="form.contratante_id" class="flex items-center gap-1 text-xs text-green-600">
-                <i class="pi pi-link text-xs" /> Cliente vinculado (id {{ form.contratante_id }})
+                <LinkIcon class="text-xs size-[1em]" /> Cliente vinculado (id {{ form.contratante_id }})
               </div>
             </div>
             <div class="flex flex-col gap-1">
@@ -207,11 +208,12 @@
                   class="flex-1"
                   inputClass="w-full"
                 />
-                <Button icon="pi pi-plus" severity="secondary" outlined size="small"
-                  v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('prestador')" />
+                <Button severity="secondary" outlined size="small" v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('prestador')">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
               <div v-if="form.prestador_id" class="flex items-center gap-1 text-xs text-green-600">
-                <i class="pi pi-link text-xs" /> Cliente vinculado (id {{ form.prestador_id }})
+                <LinkIcon class="text-xs size-[1em]" /> Cliente vinculado (id {{ form.prestador_id }})
               </div>
             </div>
             <div class="flex flex-col gap-1">
@@ -329,10 +331,11 @@
         <div class="rounded-xl border" style="border-color:#ddd6fe">
           <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
             <span class="text-xs font-semibold flex items-center gap-1.5" style="color:#5b21b6">
-              <i class="pi pi-users text-xs" style="color:#8b5cf6" />Arrendadores
+              <UsersIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Arrendadores
             </span>
-            <Button icon="pi pi-plus" label="Agregar arrendador" size="small" text
-              style="color:#8b5cf6" @click="openArrendadorDialog('crear')" />
+            <Button label="Agregar arrendador" size="small" text style="color:#8b5cf6" @click="openArrendadorDialog('crear')">
+              <template #icon><PlusIcon class="size-[1em]" /></template>
+            </Button>
           </div>
           <div v-if="!arrendadores.length" class="px-4 py-6 text-center text-xs text-gray-400">
             Sin arrendadores registrados.
@@ -347,10 +350,12 @@
                   style="background:#ede9fe;color:#7c3aed">Responsable IVA</span>
               </div>
               <div class="flex items-center gap-1 flex-shrink-0">
-                <Button icon="pi pi-pencil" size="small" text severity="secondary"
-                  @click="openArrendadorDialog('editar', a)" />
-                <Button icon="pi pi-trash" size="small" text severity="danger"
-                  @click="eliminarArrendadorWizard(a)" />
+                <Button size="small" text severity="secondary" @click="openArrendadorDialog('editar', a)">
+                  <template #icon><PencilIcon class="size-[1em]" /></template>
+                </Button>
+                <Button size="small" text severity="danger" @click="eliminarArrendadorWizard(a)">
+                  <template #icon><Trash2Icon class="size-[1em]" /></template>
+                </Button>
               </div>
             </div>
           </div>
@@ -452,23 +457,29 @@
 
     <!-- Footer -->
     <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
-      <Button v-if="step > 0 && !contratoIdCreado" label="Anterior" icon="pi pi-arrow-left" severity="secondary" outlined @click="step--" />
+      <Button v-if="step > 0 && !contratoIdCreado" label="Anterior" severity="secondary" outlined @click="step--">
+        <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+      </Button>
       <span v-else />
       <div class="flex gap-2">
         <Button label="Cancelar" severity="secondary" text @click="$emit('cerrar')" />
-        <Button v-if="tipo === 'arriendo' && step === STEPS.length - 2" label="Crear y continuar" icon="pi pi-arrow-right" iconPos="right"
+        <Button v-if="tipo === 'arriendo' && step === STEPS.length - 2" label="Crear y continuar" class="flex-row-reverse"
           :loading="guardando"
           :style="`background:${tipoColor}; border-color:${tipoColor}`"
-          @click="crearYContinuarArriendo" />
-        <Button v-else-if="tipo === 'arriendo' && step === STEPS.length - 1" label="Finalizar" icon="pi pi-check"
+          @click="crearYContinuarArriendo">
+          <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-else-if="tipo === 'arriendo' && step === STEPS.length - 1" label="Finalizar" :style="`background:${tipoColor}; border-color:${tipoColor}`" @click="finalizarArriendo">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-else-if="step < STEPS.length - 1" label="Siguiente" class="flex-row-reverse"
           :style="`background:${tipoColor}; border-color:${tipoColor}`"
-          @click="finalizarArriendo" />
-        <Button v-else-if="step < STEPS.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
-          :style="`background:${tipoColor}; border-color:${tipoColor}`"
-          @click="step++" />
-        <Button v-else label="Crear contrato" icon="pi pi-check" :loading="guardando"
-          :style="`background:${tipoColor}; border-color:${tipoColor}`"
-          @click="guardar" />
+          @click="step++">
+          <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-else label="Crear contrato" :loading="guardando" :style="`background:${tipoColor}; border-color:${tipoColor}`" @click="guardar">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -477,7 +488,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -489,6 +500,7 @@ import ToggleSwitch from 'primevue/toggleswitch'
 import Textarea from 'primevue/textarea'
 import NuevoClienteDialog from '~/components/NuevoClienteDialog.vue'
 import api from '~/core/client'
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, LinkIcon, PencilIcon, PlusIcon, Trash2Icon, UsersIcon } from '@lucide/vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -497,7 +509,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:visible', 'cerrar', 'creado'])
 
-const toast = useToast()
 const step = ref(0)
 const guardando = ref(false)
 const todosProyectos = ref([])
@@ -766,7 +777,7 @@ function openArrendadorDialog(modo, arrendador = null) {
 async function guardarArrendadorWizard() {
   if (!contratoIdCreado.value) return
   if (!arrendadorDialog.form.nombre?.trim()) {
-    toast.add({ severity: 'error', summary: 'El nombre es obligatorio', life: 3000 })
+    toast.error('El nombre es obligatorio', { duration: 3000 })
     return
   }
   arrendadorDialog.guardando = true
@@ -788,9 +799,9 @@ async function guardarArrendadorWizard() {
     }
     arrendadorDialog.visible = false
     await cargarArrendadoresWizard()
-    toast.add({ severity: 'success', summary: 'Arrendador guardado', life: 2500 })
+    toast.success('Arrendador guardado', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al guardar arrendador', detail: e.response?.data?.detail, life: 3500 })
+    toast.error('Error al guardar arrendador', { description: e.response?.data?.detail, duration: 3500 })
   } finally {
     arrendadorDialog.guardando = false
   }
@@ -802,7 +813,7 @@ async function eliminarArrendadorWizard(arrendador) {
     await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
     await cargarArrendadoresWizard()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', detail: e.response?.data?.detail, life: 3500 })
+    toast.error('Error al eliminar', { description: e.response?.data?.detail, duration: 3500 })
   }
 }
 
@@ -861,11 +872,11 @@ async function guardar() {
   guardando.value = true
   try {
     await crearContrato()
-    toast.add({ severity: 'success', summary: 'Contrato creado', life: 2500 })
+    toast.success('Contrato creado', { duration: 2500 })
     emit('creado')
     emit('cerrar')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail ?? e.message, life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -876,10 +887,10 @@ async function crearYContinuarArriendo() {
   try {
     const data = await crearContrato()
     contratoIdCreado.value = data.id
-    toast.add({ severity: 'success', summary: 'Contrato creado — agrega los arrendadores', life: 3000 })
+    toast.success('Contrato creado — agrega los arrendadores', { duration: 3000 })
     step.value++
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail ?? e.message, life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
   } finally {
     guardando.value = false
   }

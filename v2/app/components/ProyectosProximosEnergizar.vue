@@ -17,7 +17,8 @@
         >
           <span class="stat-num" style="color:#b45309;">{{ proximosAEnergizarCount }}</span>
           <span class="stat-label">próximos a energizar</span>
-          <i class="pi" :class="soloProximosAEnergizar ? 'pi-times-circle' : 'pi-filter'" style="font-size:0.65rem; color:#b45309;" />
+          <CircleXIcon v-if="soloProximosAEnergizar" class="size-[1em]" style="font-size:0.65rem; color:#b45309;" />
+          <FilterIcon v-else class="size-[1em]" style="font-size:0.65rem; color:#b45309;" />
         </button>
         <button
           type="button"
@@ -28,24 +29,15 @@
         >
           <span class="stat-num" style="color:#15803d;">{{ conFronteraCount }}</span>
           <span class="stat-label">con frontera asignada</span>
-          <i class="pi" :class="soloConFrontera ? 'pi-times-circle' : 'pi-filter'" style="font-size:0.65rem;" />
+          <CircleXIcon v-if="soloConFrontera" class="size-[1em]" style="font-size:0.65rem;" />
+          <FilterIcon v-else class="size-[1em]" style="font-size:0.65rem;" />
         </button>
-        <Button
-          icon="pi pi-sync"
-          label="Actualizar"
-          size="small"
-          :loading="syncing"
-          @click="onSync"
-          v-tooltip.bottom="'Trae de nuevo % de obra, estado y fecha estimada desde Sun Factory'"
-        />
-        <Button
-          icon="pi pi-file-excel"
-          label="Descargar Excel"
-          size="small"
-          severity="secondary"
-          outlined
-          @click="descargarExcel"
-        />
+        <Button label="Actualizar" size="small" :loading="syncing" @click="onSync" v-tooltip.bottom="'Trae de nuevo % de obra, estado y fecha estimada desde Sun Factory'">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Descargar Excel" size="small" severity="secondary" outlined @click="descargarExcel">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
       </div>
       <p class="text-xs" style="color: #7a6e8a;">
         <template v-if="lastSync">última sincronización {{ lastSyncLabel }}</template>
@@ -55,7 +47,7 @@
     <!-- Aviso de origen de datos (config faltante / fuente caída) -->
     <div v-if="warning" class="mx-3 mt-3 flex items-start gap-2 px-3 py-2 rounded-lg text-xs"
       style="background: rgba(240,192,64,0.12); border: 1px solid rgba(240,192,64,0.35); color: #8a6d00;">
-      <i class="pi pi-exclamation-triangle mt-0.5" />
+      <TriangleAlertIcon class="mt-0.5 size-[1em]" />
       <span>{{ warning }}</span>
     </div>
 
@@ -63,7 +55,7 @@
          un proyecto existente se parece — necesitan confirmación humana) -->
     <div v-if="sugerencias.length" class="mx-3 mt-3 flex items-start gap-2 px-3 py-2 rounded-lg text-xs"
       style="background: rgba(145,91,216,0.10); border: 1px solid rgba(145,91,216,0.30); color: #6b3fa0;">
-      <i class="pi pi-info-circle mt-0.5" />
+      <InfoIcon class="mt-0.5 size-[1em]" />
       <span>
         {{ sugerencias.length }} posible{{ sugerencias.length !== 1 ? 's' : '' }} vínculo{{ sugerencias.length !== 1 ? 's' : '' }} con Sun Factory por confirmar.
         <button type="button" class="underline font-semibold" @click="sugerenciasVisible = true">Revisar</button>
@@ -83,11 +75,11 @@
         <template #empty>
           <div class="text-center py-8 text-sm" style="color: rgba(44,32,57,0.45);">
             <template v-if="loading">
-              <i class="pi pi-spin pi-spinner" style="font-size:1.2rem; color:#915BD8;" />
+              <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.2rem; color:#915BD8;" />
               <p class="mt-2">Cargando proyectos del pipeline…</p>
             </template>
             <template v-else-if="warning">
-              <i class="pi pi-database" style="font-size:1.4rem; color:#c4b8d4;" />
+              <DatabaseIcon class="size-[1em]" style="font-size:1.4rem; color:#c4b8d4;" />
               <p class="mt-2">No se pudieron cargar los proyectos.</p>
               <p class="mt-1 text-xs" style="color: rgba(44,32,57,0.4);">Revisa el aviso de arriba (configuración / fuente de datos).</p>
             </template>
@@ -144,7 +136,7 @@
         <Column header="Frontera" style="min-width: 130px;">
           <template #body="{ data }">
             <span v-if="data.tieneFrontera" class="frontera-badge yes" v-tooltip.top="data.codigoFrontera">
-              <i class="pi pi-check-circle" /> {{ data.codigoFrontera }}
+              <CircleCheckIcon class="size-[1em]" /> {{ data.codigoFrontera }}
             </span>
             <span v-else class="frontera-badge no">—</span>
           </template>
@@ -155,7 +147,7 @@
           <template #body="{ data }">
             <span v-if="data.contracts && data.contracts.length" class="contract-badge has-contract"
                   v-tooltip.top="data.contracts.join(', ')">
-              <i class="pi pi-file" />
+              <FileIcon class="size-[1em]" />
               {{ data.contracts[0] }}<template v-if="data.contracts.length > 1"> +{{ data.contracts.length - 1 }}</template>
             </span>
             <span v-else class="contract-badge">
@@ -176,7 +168,9 @@
         <!-- Actions -->
         <Column style="width: 56px; text-align: center;">
           <template #body="{ data }">
-            <Button icon="pi pi-trash" severity="danger" text rounded size="small" @click="confirmRemove(data)" />
+            <Button severity="danger" text rounded size="small" @click="confirmRemove(data)">
+              <template #icon><Trash2Icon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
 
@@ -224,7 +218,7 @@
               <span v-if="sug.candidato_municipio" class="text-gray-400"> · {{ sug.candidato_municipio }}</span>
             </div>
             <div v-if="sug.candidato_sunfactory_id_previo != null" class="mt-1 text-xs" style="color:#b45309;">
-              <i class="pi pi-exclamation-triangle" style="font-size:0.7rem;" />
+              <TriangleAlertIcon class="size-[1em]" style="font-size:0.7rem;" />
               Este proyecto ya había quedado confirmado antes como el ID {{ sug.candidato_sunfactory_id_previo }}
               de Sun Factory. Si confirmas que también es el {{ sug.sunfactory_project_id }}, ese ID anterior
               se reemplaza por este — puede ser que Sun Factory tenga el mismo proyecto duplicado con dos IDs.
@@ -248,17 +242,17 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { useEnergizationProjects } from '~/composables/useEnergizationProjects'
 import { exportarExcel } from '~/utils/exportarExcel'
+import { CircleCheckIcon, CircleXIcon, DatabaseIcon, FileIcon, FileSpreadsheetIcon, FilterIcon, InfoIcon, LoaderCircleIcon, RefreshCwIcon, Trash2Icon, TriangleAlertIcon } from '@lucide/vue'
 
 const {
   projects, loading, warning, syncing, lastSync,
   loadProjects, removeProject, syncNow,
 } = useEnergizationProjects()
 
-const toast = useToast()
 const sugerencias = ref([])
 const sugerenciasVisible = ref(false)
 const vinculandoId = ref(null)
@@ -330,9 +324,9 @@ async function onSync() {
       r.sin_match ? `Sin vínculo (revisar en Proyectos › Proyectos pendientes): ${r.sin_match}` : null,
       r.errores ? `Errores: ${r.errores}` : null,
     ].filter(Boolean)
-    toast.add({ severity: 'success', summary: 'Sincronización completa', detail: partes.join(' · '), life: 4000 })
+    toast.success('Sincronización completa', { description: partes.join(' · '), duration: 4000 })
     if (Array.isArray(r.warnings) && r.warnings.length) {
-      toast.add({ severity: 'warn', summary: 'Avisos', detail: r.warnings.join(' · '), life: 6000 })
+      toast.warning('Avisos', { description: r.warnings.join(' · '), duration: 6000 })
     }
     if (Array.isArray(r.sugerencias_vinculo) && r.sugerencias_vinculo.length) {
       sugerencias.value = r.sugerencias_vinculo
@@ -353,9 +347,12 @@ async function vincular(sug) {
   try {
     await api.post(`/proyectos/${sug.candidato_id}/vincular-sunfactory/${sug.sunfactory_project_id}`)
     sugerencias.value = sugerencias.value.filter(s => s !== sug)
-    toast.add({ severity: 'success', summary: 'Vinculado', detail: `${sug.candidato_nombre} vinculado a Sun Factory`, life: 3000 })
+    toast.success('Vinculado', {
+      description: `${sug.candidato_nombre} vinculado a Sun Factory`,
+      duration: 3000,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo vincular', detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo vincular', { description: e.response?.data?.detail || e.message, duration: 5000 })
   } finally {
     vinculandoId.value = null
   }
@@ -448,8 +445,7 @@ function isProrated(project, year, month) {
   background: rgba(22,163,74,0.14);
   border-color: rgba(22,163,74,0.4);
 }
-.stat-pill.clickable .pi-filter,
-.stat-pill.clickable .pi-times-circle { color: #15803d; }
+.stat-pill.clickable svg { color: #15803d; }
 .stat-num { font-size: 15px; font-weight: 800; color: #2C2039; font-variant-numeric: tabular-nums; }
 .stat-label { color: #7a6e8a; white-space: nowrap; }
 

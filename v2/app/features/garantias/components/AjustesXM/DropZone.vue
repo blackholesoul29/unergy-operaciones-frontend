@@ -16,19 +16,19 @@
     />
 
     <div v-if="!file && !error" class="space-y-1">
-      <i class="pi pi-file-excel text-2xl block" style="color:#c4b8d4" />
+      <FileSpreadsheetIcon class="text-2xl block size-[1em]" style="color:#c4b8d4" />
       <p class="text-sm font-medium" style="color:#6b5a8a">{{ label }}</p>
       <p class="text-xs" style="color:#9ca3af">Arrastra o haz clic</p>
     </div>
 
     <div v-else-if="error" class="space-y-1">
-      <i class="pi pi-times-circle text-2xl block" style="color:#D64455" />
+      <CircleXIcon class="text-2xl block size-[1em]" style="color:#D64455" />
       <p class="text-sm font-medium" style="color:#D64455">{{ error }}</p>
       <p class="text-xs" style="color:#9ca3af">Haz clic para intentar de nuevo</p>
     </div>
 
     <div v-else class="space-y-1">
-      <i class="pi pi-check-circle text-2xl block" style="color:#10B981" />
+      <CircleCheckIcon class="text-2xl block size-[1em]" style="color:#10B981" />
       <p class="text-sm font-medium truncate max-w-xs mx-auto" style="color:#2C2039">{{ file.name }}</p>
       <p class="text-xs" style="color:#10B981">Archivo cargado</p>
     </div>
@@ -37,6 +37,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { CircleCheckIcon, CircleXIcon, FileSpreadsheetIcon } from '@lucide/vue'
 
 const props = defineProps({
   label: { type: String, default: 'Subir archivo' },

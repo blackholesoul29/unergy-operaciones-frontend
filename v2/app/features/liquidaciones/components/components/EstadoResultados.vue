@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-xl shadow-sm border overflow-hidden h-full flex flex-col" style="border-color:#e8e0f0">
     <div class="px-4 py-2.5 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
-      <i class="pi pi-chart-line text-sm" style="color:#915BD8" />
+      <ChartLineIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <h3 class="text-sm font-bold" style="color:#2C2039">Estado de Resultados</h3>
       <span class="ml-auto text-[10px] uppercase tracking-wide font-semibold" style="color:#bba8d4">Concepto · Soporte · Valor</span>
     </div>
@@ -22,11 +22,11 @@
           <a v-if="l.soporte_url" :href="l.soporte_url" target="_blank" rel="noopener"
             class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md"
             style="background:#F1EAF9; color:#6E3FB8" :title="l.referencia || 'Ver soporte'">
-            <i class="pi pi-paperclip text-[10px]" />{{ l.refCodigo || 'Soporte' }}
+            <PaperclipIcon class="text-[10px] size-[1em]" />{{ l.refCodigo || 'Soporte' }}
           </a>
           <span v-else-if="l.refCodigo" class="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-md"
             style="background:#f5f1fa; color:#9b8fb0" :title="l.referencia">
-            <i class="pi pi-hashtag text-[10px]" />{{ l.refCodigo }}
+            <HashIcon class="text-[10px] size-[1em]" />{{ l.refCodigo }}
           </span>
           <span v-else-if="l.requiereSoporte" class="text-[10px] italic" style="color:#cdbfe2" title="Sin soporte adjunto">— sin soporte</span>
           <span class="text-xs font-mono tabular-nums whitespace-nowrap" style="color:#6b5a8a">{{ fmtCOP(l.valor) }}</span>
@@ -49,6 +49,7 @@
 <script setup>
 import { computed } from 'vue'
 import { fmtCOP, construirEstadoResultados, indiceSoportesProyecto } from '~/utils/liquidaciones'
+import { ChartLineIcon, HashIcon, PaperclipIcon } from '@lucide/vue'
 
 const props = defineProps({
   liq: { type: Object, required: true },

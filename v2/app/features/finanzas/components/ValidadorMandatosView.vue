@@ -2,7 +2,7 @@
   <div class="gf-page">
     <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
     <div class="mon-tab-bar">
-      <i class="pi pi-file-check text-sm" style="color:#915BD8" />
+      <FileCheckIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Validador de Mandatos</span>
       <span class="vm-version">v8.0</span>
     </div>
@@ -15,6 +15,7 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import * as XLSX from 'xlsx'
+import { FileCheckIcon } from '@lucide/vue'
 import {
   parseAsientos, extractMandate, suggestTag, reconciliar, fmt, norm as normNombre,
   parseIngresos, matchIngresoContab, normalizarCifra,

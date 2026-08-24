@@ -26,13 +26,14 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Proyecto…" class="w-48" />
         </IconField>
       </div>
       <div class="flex-1" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar'" @click="cargar" />
+      <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar'" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
       <div class="text-xs text-gray-400 self-center">
         {{ filtrados.length }} registro{{ filtrados.length === 1 ? '' : 's' }}
       </div>
@@ -73,12 +74,12 @@
             </tr>
             <tr v-if="loading">
               <td :colspan="HORAS.length + 4" class="px-4 py-12 text-center text-gray-400">
-                <i class="pi pi-spin pi-spinner text-2xl" />
+                <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" />
               </td>
             </tr>
             <tr v-else-if="!filtrados.length">
               <td :colspan="HORAS.length + 4" class="px-4 py-12 text-center text-sm text-gray-400">
-                <i class="pi pi-bolt text-2xl mb-2 block text-gray-300" />
+                <ZapIcon class="text-2xl mb-2 block text-gray-300 size-[1em]" />
                 Aún no hay consumo registrado.<br>
                 <span class="text-xs">La carga de datos se conectará a la API cuando exista.</span>
               </td>
@@ -99,6 +100,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import api from '~/core/client'
 import { VERSIONES } from '~/features/liquidaciones/types'
+import { LoaderCircleIcon, RefreshCwIcon, SearchIcon, ZapIcon } from '@lucide/vue'
 
 // Las 24 horas del día, como las nombra XM (CON HOUR01 … CON HOUR24).
 const HORAS = Array.from({ length: 24 }, (_, i) => `H${String(i + 1).padStart(2, '0')}`)

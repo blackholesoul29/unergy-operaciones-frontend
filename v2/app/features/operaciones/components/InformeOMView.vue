@@ -4,23 +4,24 @@
     <div v-if="!seleccion" class="om-list-wrap">
       <div class="om-list-head">
         <div class="flex items-center gap-2">
-          <i class="pi pi-file-pdf" style="color:#915BD8;font-size:16px" />
+          <FileTextIcon class="size-[1em]" style="color:#915BD8;font-size:16px" />
           <h2 class="om-title">Informe de Puesta en Marcha</h2>
           <span class="om-badge">{{ proyectos.length }}</span>
         </div>
         <button class="om-icon-btn" :disabled="loadingLista" @click="cargarLista" title="Actualizar">
-          <i :class="loadingLista ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+          <LoaderCircleIcon v-if="loadingLista" class="size-[1em] animate-spin" />
+          <RefreshCwIcon v-else class="size-[1em]" />
         </button>
       </div>
 
       <div class="om-search">
-        <i class="pi pi-search" />
+        <SearchIcon class="size-[1em]" />
         <input v-model="busqueda" placeholder="Buscar proyecto…" />
       </div>
 
-      <div v-if="loadingLista" class="om-state"><i class="pi pi-spin pi-spinner" /> Cargando proyectos…</div>
+      <div v-if="loadingLista" class="om-state"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando proyectos…</div>
       <div v-else-if="!proyectosFiltrados.length" class="om-state">
-        <i class="pi pi-inbox" style="font-size:32px;color:#cbd5e1" />
+        <InboxIcon class="size-[1em]" style="font-size:32px;color:#cbd5e1" />
         <span>{{ proyectos.length ? 'Sin resultados' : 'No hay minigranjas en operación con servicio de operación' }}</span>
       </div>
 
@@ -33,8 +34,8 @@
             </span>
           </div>
           <div class="om-card-meta">
-            <span v-if="p.municipio || p.departamento"><i class="pi pi-map-marker" /> {{ [p.municipio, p.departamento].filter(Boolean).join(', ') }}</span>
-            <span v-if="p.potencia_instalada_kwp"><i class="pi pi-bolt" /> {{ fmtCapacidad(p.potencia_instalada_kwp) }}</span>
+            <span v-if="p.municipio || p.departamento"><MapPinIcon class="size-[1em]" /> {{ [p.municipio, p.departamento].filter(Boolean).join(', ') }}</span>
+            <span v-if="p.potencia_instalada_kwp"><ZapIcon class="size-[1em]" /> {{ fmtCapacidad(p.potencia_instalada_kwp) }}</span>
           </div>
         </button>
       </div>
@@ -42,21 +43,24 @@
 
     <!-- ══ FICHA DE DETALLE ═══════════════════════════════════════════════ -->
     <div v-else class="om-detail">
-      <div v-if="loadingFicha" class="om-state"><i class="pi pi-spin pi-spinner" /> Cargando informe…</div>
+      <div v-if="loadingFicha" class="om-state"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando informe…</div>
 
       <template v-else>
         <div class="om-detail-head">
-          <button class="om-back" @click="cerrar"><i class="pi pi-arrow-left" /> Proyectos</button>
+          <button class="om-back" @click="cerrar"><ArrowLeftIcon class="size-[1em]" /> Proyectos</button>
           <div class="om-detail-actions">
             <span v-if="dirty" class="om-dirty">Cambios sin guardar</span>
             <button class="om-pdf" :disabled="exportandoPdf" @click="descargarPdf" title="Descargar PDF">
-              <i :class="exportandoPdf ? 'pi pi-spin pi-spinner' : 'pi pi-file-pdf'" /> {{ exportandoPdf ? 'Generando…' : 'Descargar PDF' }}
+              <LoaderCircleIcon v-if="exportandoPdf" class="size-[1em] animate-spin" />
+              <FileTextIcon v-else class="size-[1em]" /> {{ exportandoPdf ? 'Generando…' : 'Descargar PDF' }}
             </button>
             <button class="om-generar" :disabled="generandoInforme" @click="generarInforme" title="Generar informe editable y enviarlo a revisión">
-              <i :class="generandoInforme ? 'pi pi-spin pi-spinner' : 'pi pi-file-edit'" /> {{ generandoInforme ? 'Generando…' : 'Generar informe' }}
+              <LoaderCircleIcon v-if="generandoInforme" class="size-[1em] animate-spin" />
+              <FilePenIcon v-else class="size-[1em]" /> {{ generandoInforme ? 'Generando…' : 'Generar informe' }}
             </button>
             <button class="om-save" :disabled="guardando || !dirty" @click="guardar">
-              <i :class="guardando ? 'pi pi-spin pi-spinner' : 'pi pi-check'" /> {{ guardando ? 'Guardando…' : 'Guardar' }}
+              <LoaderCircleIcon v-if="guardando" class="size-[1em] animate-spin" />
+              <CheckIcon v-else class="size-[1em]" /> {{ guardando ? 'Guardando…' : 'Guardar' }}
             </button>
           </div>
         </div>
@@ -86,19 +90,19 @@
         <!-- KPIs -->
         <div class="om-kpis">
           <div class="om-kpi">
-            <i class="pi pi-check-circle om-kpi-ico" />
+            <CircleCheckIcon class="om-kpi-ico size-[1em]" />
             <div><span class="om-kpi-val">{{ detalle.kpis.pruebas_ejecutadas }}</span><span class="om-kpi-label">Pruebas ejecutadas</span></div>
           </div>
           <div class="om-kpi om-kpi--ok">
-            <i class="pi pi-verified om-kpi-ico" />
+            <BadgeCheckIcon class="om-kpi-ico size-[1em]" />
             <div><span class="om-kpi-val">{{ detalle.kpis.pruebas_conformes }}</span><span class="om-kpi-label">Conformes</span></div>
           </div>
           <div class="om-kpi" :class="detalle.kpis.pruebas_no_conformes > 0 && 'om-kpi--warn'">
-            <i class="pi pi-exclamation-triangle om-kpi-ico" />
+            <TriangleAlertIcon class="om-kpi-ico size-[1em]" />
             <div><span class="om-kpi-val">{{ detalle.kpis.pruebas_no_conformes }}</span><span class="om-kpi-label">No conformidades</span></div>
           </div>
           <div class="om-kpi" :class="detalle.kpis.eventos_total > 0 && 'om-kpi--warn'">
-            <i class="pi pi-bolt om-kpi-ico" />
+            <ZapIcon class="om-kpi-ico size-[1em]" />
             <div><span class="om-kpi-val">{{ detalle.kpis.eventos_total }}</span><span class="om-kpi-label">Eventos registrados</span></div>
           </div>
         </div>
@@ -106,7 +110,8 @@
         <!-- Semáforo -->
         <div class="om-semaforo" :class="`om-semaforo--${detalle.kpis.estado_global}`">
           <div class="om-semaforo-top">
-            <i :class="detalle.kpis.estado_global === 'atencion' ? 'pi pi-exclamation-triangle' : 'pi pi-check-circle'" />
+            <TriangleAlertIcon v-if="detalle.kpis.estado_global === 'atencion'" class="size-[1em]" />
+            <CircleCheckIcon v-else class="size-[1em]" />
             <span>{{ detalle.kpis.estado_global === 'atencion' ? 'ATENCIÓN' : 'OPERATIVO' }} — Con seguimiento activo</span>
           </div>
           <div class="om-semaforo-grid">
@@ -120,8 +125,9 @@
         <!-- ─ Objetivo y alcance ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('objetivo')">
-            <i :class="['pi', abierto.objetivo ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-flag om-acc-ico" /><span>Objetivo y Alcance</span>
+            <ChevronDownIcon v-if="abierto.objetivo" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <FlagIcon class="om-acc-ico size-[1em]" /><span>Objetivo y Alcance</span>
           </button>
           <div v-show="abierto.objetivo" class="om-acc-body">
             <label class="om-field">
@@ -135,8 +141,9 @@
         <!-- ─ Datos generales ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('generales')">
-            <i :class="['pi', abierto.generales ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-info-circle om-acc-ico" /><span>Datos Generales</span>
+            <ChevronDownIcon v-if="abierto.generales" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <InfoIcon class="om-acc-ico size-[1em]" /><span>Datos Generales</span>
           </button>
           <div v-show="abierto.generales" class="om-acc-body">
             <div class="om-readonly-grid">
@@ -144,7 +151,7 @@
               <div><span class="om-ro-label">Empresa contratista</span><span class="om-ro-val">{{ detalle.empresa_contratista || '—' }}</span></div>
               <div><span class="om-ro-label">Cantidad de inversores</span><span class="om-ro-val">{{ detalle.inversores.length }}</span></div>
             </div>
-            <span class="om-ro-hint"><i class="pi pi-flag" /> Estos datos vienen de Inicio de Operación — corrígelos allí si hace falta.</span>
+            <span class="om-ro-hint"><FlagIcon class="size-[1em]" /> Estos datos vienen de Inicio de Operación — corrígelos allí si hace falta.</span>
 
             <div class="om-fields-grid">
               <label class="om-field"><span>Seguidores solares — marca</span><input v-model="ficha.datos_generales.seguidores_marca" @input="marcar" /></label>
@@ -160,12 +167,13 @@
         <!-- ─ Inversores (solo lectura, Solenium) ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('inversores')">
-            <i :class="['pi', abierto.inversores ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-bolt om-acc-ico" /><span>Configuración de Inversores</span>
+            <ChevronDownIcon v-if="abierto.inversores" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <ZapIcon class="om-acc-ico size-[1em]" /><span>Configuración de Inversores</span>
             <span class="om-acc-count">{{ detalle.inversores.length }} · {{ fmtCapacidad(capacidadTotal) }}</span>
           </button>
           <div v-show="abierto.inversores" class="om-acc-body">
-            <span class="om-ro-hint"><i class="pi pi-flag" /> Datos en vivo de Solenium — revisión de strings en Inicio de Operación.</span>
+            <span class="om-ro-hint"><FlagIcon class="size-[1em]" /> Datos en vivo de Solenium — revisión de strings en Inicio de Operación.</span>
             <table class="om-table">
               <thead><tr><th>Inversor</th><th>Potencia</th><th>Estado</th></tr></thead>
               <tbody>
@@ -182,11 +190,12 @@
         <!-- ─ Sistemas (solo lectura, Inicio de Operación) ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('sistemas')">
-            <i :class="['pi', abierto.sistemas ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-desktop om-acc-ico" /><span>Estado de Sistemas</span>
+            <ChevronDownIcon v-if="abierto.sistemas" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <MonitorIcon class="om-acc-ico size-[1em]" /><span>Estado de Sistemas</span>
           </button>
           <div v-show="abierto.sistemas" class="om-acc-body">
-            <span class="om-ro-hint"><i class="pi pi-flag" /> Vienen de Inicio de Operación — edítalos allí si hace falta.</span>
+            <span class="om-ro-hint"><FlagIcon class="size-[1em]" /> Vienen de Inicio de Operación — edítalos allí si hace falta.</span>
             <div class="om-sistemas-grid">
               <div class="om-sistema-chip" :class="`om-sistema-chip--${detalle.fusion_solar_estado}`">Fusion Solar<b>{{ detalle.fusion_solar_estado === 'aprobado' ? 'Aprobado' : 'Pendiente' }}</b></div>
               <div class="om-sistema-chip" :class="`om-sistema-chip--${detalle.frontera_estado}`">Frontera<b>{{ detalle.frontera_estado === 'aprobado' ? 'Aprobado' : 'Pendiente' }}</b></div>
@@ -199,8 +208,9 @@
         <!-- ─ Arquitectura de comunicación ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('arquitectura')">
-            <i :class="['pi', abierto.arquitectura ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-sitemap om-acc-ico" /><span>Arquitectura de Comunicación</span>
+            <ChevronDownIcon v-if="abierto.arquitectura" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <NetworkIcon class="om-acc-ico size-[1em]" /><span>Arquitectura de Comunicación</span>
           </button>
           <div v-show="abierto.arquitectura" class="om-acc-body">
             <div class="om-fields-grid">
@@ -221,8 +231,9 @@
         <!-- ─ Equipos integrados ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('equipos')">
-            <i :class="['pi', abierto.equipos ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-box om-acc-ico" /><span>Equipos Integrados</span>
+            <ChevronDownIcon v-if="abierto.equipos" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <BoxIcon class="om-acc-ico size-[1em]" /><span>Equipos Integrados</span>
             <span class="om-acc-count">{{ ficha.equipos.length }}</span>
           </button>
           <div v-show="abierto.equipos" class="om-acc-body">
@@ -236,21 +247,22 @@
                     <td><input type="number" min="0" v-model.number="e.cantidad" @input="marcar" /></td>
                     <td><input v-model="e.ubicacion" @input="marcar" placeholder="Ej. Campo solar" /></td>
                     <td><input v-model="e.numero_serie" @input="marcar" /></td>
-                    <td><button class="om-del" @click="quitarFila(ficha.equipos, i)"><i class="pi pi-trash" /></button></td>
+                    <td><button class="om-del" @click="quitarFila(ficha.equipos, i)"><Trash2Icon class="size-[1em]" /></button></td>
                   </tr>
                   <tr v-if="!ficha.equipos.length"><td colspan="6" class="om-table-empty">Sin equipos. Agrega uno.</td></tr>
                 </tbody>
               </table>
             </div>
-            <button class="om-add-row" @click="agregarFila(ficha.equipos, { descripcion: '', marca: '', cantidad: 1, ubicacion: '', numero_serie: '' })"><i class="pi pi-plus" /> Agregar equipo</button>
+            <button class="om-add-row" @click="agregarFila(ficha.equipos, { descripcion: '', marca: '', cantidad: 1, ubicacion: '', numero_serie: '' })"><PlusIcon class="size-[1em]" /> Agregar equipo</button>
           </div>
         </section>
 
         <!-- ─ Variables monitoreadas ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('variables')">
-            <i :class="['pi', abierto.variables ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-chart-line om-acc-ico" /><span>Variables Monitoreadas</span>
+            <ChevronDownIcon v-if="abierto.variables" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <ChartLineIcon class="om-acc-ico size-[1em]" /><span>Variables Monitoreadas</span>
             <span class="om-acc-count">{{ ficha.variables_monitoreadas.length }}</span>
           </button>
           <div v-show="abierto.variables" class="om-acc-body">
@@ -264,21 +276,22 @@
                     <td><input v-model="v.fuente" @input="marcar" /></td>
                     <td><input v-model="v.registro" @input="marcar" placeholder="5 min" /></td>
                     <td><input v-model="v.plataforma" @input="marcar" /></td>
-                    <td><button class="om-del" @click="quitarFila(ficha.variables_monitoreadas, i)"><i class="pi pi-trash" /></button></td>
+                    <td><button class="om-del" @click="quitarFila(ficha.variables_monitoreadas, i)"><Trash2Icon class="size-[1em]" /></button></td>
                   </tr>
                   <tr v-if="!ficha.variables_monitoreadas.length"><td colspan="6" class="om-table-empty">Sin variables. Agrega una.</td></tr>
                 </tbody>
               </table>
             </div>
-            <button class="om-add-row" @click="agregarFila(ficha.variables_monitoreadas, { variable: '', unidad: '', fuente: '', registro: '', plataforma: '' })"><i class="pi pi-plus" /> Agregar variable</button>
+            <button class="om-add-row" @click="agregarFila(ficha.variables_monitoreadas, { variable: '', unidad: '', fuente: '', registro: '', plataforma: '' })"><PlusIcon class="size-[1em]" /> Agregar variable</button>
           </div>
         </section>
 
         <!-- ─ Configuración del monitoreo ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('config')">
-            <i :class="['pi', abierto.config ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-bell om-acc-ico" /><span>Configuración del Monitoreo</span>
+            <ChevronDownIcon v-if="abierto.config" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <BellIcon class="om-acc-ico size-[1em]" /><span>Configuración del Monitoreo</span>
           </button>
           <div v-show="abierto.config" class="om-acc-body">
             <span class="om-sub-label">Usuarios y destinatarios de notificación</span>
@@ -291,13 +304,13 @@
                     <td><input v-model="n.nombre" @input="marcar" /></td>
                     <td><input v-model="n.canal" @input="marcar" placeholder="Correo / WhatsApp" /></td>
                     <td><input v-model="n.alcance" @input="marcar" /></td>
-                    <td><button class="om-del" @click="quitarFila(ficha.configuracion_monitoreo.notificaciones, i)"><i class="pi pi-trash" /></button></td>
+                    <td><button class="om-del" @click="quitarFila(ficha.configuracion_monitoreo.notificaciones, i)"><Trash2Icon class="size-[1em]" /></button></td>
                   </tr>
                   <tr v-if="!ficha.configuracion_monitoreo.notificaciones.length"><td colspan="5" class="om-table-empty">Sin destinatarios.</td></tr>
                 </tbody>
               </table>
             </div>
-            <button class="om-add-row" @click="agregarFila(ficha.configuracion_monitoreo.notificaciones, { rol: '', nombre: '', canal: '', alcance: '' })"><i class="pi pi-plus" /> Agregar destinatario</button>
+            <button class="om-add-row" @click="agregarFila(ficha.configuracion_monitoreo.notificaciones, { rol: '', nombre: '', canal: '', alcance: '' })"><PlusIcon class="size-[1em]" /> Agregar destinatario</button>
 
             <span class="om-sub-label" style="margin-top:16px">Umbrales de alarma</span>
             <div class="om-table-wrap">
@@ -309,13 +322,13 @@
                     <td><input v-model="u.condicion" @input="marcar" /></td>
                     <td><input v-model="u.notificacion" @input="marcar" placeholder="Inmediata" /></td>
                     <td><input v-model="u.destinatarios" @input="marcar" /></td>
-                    <td><button class="om-del" @click="quitarFila(ficha.configuracion_monitoreo.umbrales_alarma, i)"><i class="pi pi-trash" /></button></td>
+                    <td><button class="om-del" @click="quitarFila(ficha.configuracion_monitoreo.umbrales_alarma, i)"><Trash2Icon class="size-[1em]" /></button></td>
                   </tr>
                   <tr v-if="!ficha.configuracion_monitoreo.umbrales_alarma.length"><td colspan="5" class="om-table-empty">Sin umbrales.</td></tr>
                 </tbody>
               </table>
             </div>
-            <button class="om-add-row" @click="agregarFila(ficha.configuracion_monitoreo.umbrales_alarma, { evento: '', condicion: '', notificacion: '', destinatarios: '' })"><i class="pi pi-plus" /> Agregar umbral</button>
+            <button class="om-add-row" @click="agregarFila(ficha.configuracion_monitoreo.umbrales_alarma, { evento: '', condicion: '', notificacion: '', destinatarios: '' })"><PlusIcon class="size-[1em]" /> Agregar umbral</button>
 
             <ListaEditable v-model="ficha.configuracion_monitoreo.politicas_datos" label="Políticas de datos" placeholder="Ej. Retención de históricos…" style="margin-top:16px" @update:modelValue="marcar" />
           </div>
@@ -324,8 +337,9 @@
         <!-- ─ Protocolo de pruebas ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('pruebas')">
-            <i :class="['pi', abierto.pruebas ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-list-check om-acc-ico" /><span>Protocolo de Pruebas y Resultados</span>
+            <ChevronDownIcon v-if="abierto.pruebas" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <ListChecksIcon class="om-acc-ico size-[1em]" /><span>Protocolo de Pruebas y Resultados</span>
             <span class="om-acc-count">{{ detalle.kpis.pruebas_conformes }}/{{ detalle.kpis.pruebas_ejecutadas }}</span>
           </button>
           <div v-show="abierto.pruebas" class="om-acc-body">
@@ -346,21 +360,22 @@
                       </select>
                     </td>
                     <td><input v-model="p.observacion" @input="marcar" /></td>
-                    <td><button class="om-del" @click="quitarFila(ficha.protocolo_pruebas, i)"><i class="pi pi-trash" /></button></td>
+                    <td><button class="om-del" @click="quitarFila(ficha.protocolo_pruebas, i)"><Trash2Icon class="size-[1em]" /></button></td>
                   </tr>
                   <tr v-if="!ficha.protocolo_pruebas.length"><td colspan="6" class="om-table-empty">Sin pruebas. Agrega una.</td></tr>
                 </tbody>
               </table>
             </div>
-            <button class="om-add-row" @click="agregarFila(ficha.protocolo_pruebas, { codigo: `P-${String(ficha.protocolo_pruebas.length + 1).padStart(2, '0')}`, prueba: '', criterio_aceptacion: '', resultado: '', observacion: '' })"><i class="pi pi-plus" /> Agregar prueba</button>
+            <button class="om-add-row" @click="agregarFila(ficha.protocolo_pruebas, { codigo: `P-${String(ficha.protocolo_pruebas.length + 1).padStart(2, '0')}`, prueba: '', criterio_aceptacion: '', resultado: '', observacion: '' })"><PlusIcon class="size-[1em]" /> Agregar prueba</button>
           </div>
         </section>
 
         <!-- ─ Eventos operativos ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('eventos')">
-            <i :class="['pi', abierto.eventos ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-exclamation-circle om-acc-ico" /><span>Eventos Operativos y Acciones Correctivas</span>
+            <ChevronDownIcon v-if="abierto.eventos" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <CircleAlertIcon class="om-acc-ico size-[1em]" /><span>Eventos Operativos y Acciones Correctivas</span>
             <span class="om-acc-count">{{ ficha.eventos_operativos.length }}</span>
           </button>
           <div v-show="abierto.eventos" class="om-acc-body">
@@ -381,25 +396,26 @@
                         <option value="cerrada">Cerrada</option>
                       </select>
                     </td>
-                    <td><button class="om-del" @click="quitarFila(ficha.eventos_operativos, i)"><i class="pi pi-trash" /></button></td>
+                    <td><button class="om-del" @click="quitarFila(ficha.eventos_operativos, i)"><Trash2Icon class="size-[1em]" /></button></td>
                   </tr>
                   <tr v-if="!ficha.eventos_operativos.length"><td colspan="6" class="om-table-empty">Sin eventos operativos registrados.</td></tr>
                 </tbody>
               </table>
             </div>
-            <button class="om-add-row" @click="agregarFila(ficha.eventos_operativos, { codigo: `I-${String(ficha.eventos_operativos.length + 1).padStart(2, '0')}`, descripcion: '', causa_raiz: '', accion_correctiva: '', estado: 'abierta' })"><i class="pi pi-plus" /> Agregar evento</button>
+            <button class="om-add-row" @click="agregarFila(ficha.eventos_operativos, { codigo: `I-${String(ficha.eventos_operativos.length + 1).padStart(2, '0')}`, descripcion: '', causa_raiz: '', accion_correctiva: '', estado: 'abierta' })"><PlusIcon class="size-[1em]" /> Agregar evento</button>
           </div>
         </section>
 
         <!-- ─ Pendientes (solo lectura, Inicio de Operación) ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('pendientes')">
-            <i :class="['pi', abierto.pendientes ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-list om-acc-ico" /><span>Pendientes</span>
+            <ChevronDownIcon v-if="abierto.pendientes" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <ListIcon class="om-acc-ico size-[1em]" /><span>Pendientes</span>
             <span class="om-acc-count">{{ detalle.pendientes.length }}</span>
           </button>
           <div v-show="abierto.pendientes" class="om-acc-body">
-            <span class="om-ro-hint"><i class="pi pi-flag" /> Vienen de Inicio de Operación — edítalos allí.</span>
+            <span class="om-ro-hint"><FlagIcon class="size-[1em]" /> Vienen de Inicio de Operación — edítalos allí.</span>
             <div v-if="!detalle.pendientes.length" class="om-empty-mini">Sin pendientes.</div>
             <div v-for="(p, i) in detalle.pendientes" :key="i" class="om-pendiente-ro">
               <b>{{ p.descripcion || '—' }}</b>
@@ -411,8 +427,9 @@
         <!-- ─ Observaciones ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('observaciones')">
-            <i :class="['pi', abierto.observaciones ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-eye om-acc-ico" /><span>Observaciones y Estado del Sistema</span>
+            <ChevronDownIcon v-if="abierto.observaciones" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <EyeIcon class="om-acc-ico size-[1em]" /><span>Observaciones y Estado del Sistema</span>
           </button>
           <div v-show="abierto.observaciones" class="om-acc-body">
             <label class="om-field">
@@ -429,8 +446,9 @@
         <!-- ─ Recomendaciones ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('recomendaciones')">
-            <i :class="['pi', abierto.recomendaciones ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-thumbs-up om-acc-ico" /><span>Recomendaciones de Operación y Mantenimiento</span>
+            <ChevronDownIcon v-if="abierto.recomendaciones" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <ThumbsUpIcon class="om-acc-ico size-[1em]" /><span>Recomendaciones de Operación y Mantenimiento</span>
           </button>
           <div v-show="abierto.recomendaciones" class="om-acc-body">
             <ListaEditable v-model="ficha.recomendaciones" label="" placeholder="Ej. Verificación diaria del estado de comunicación…" @update:modelValue="marcar" />
@@ -440,8 +458,9 @@
         <!-- ─ Conclusión ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('conclusion')">
-            <i :class="['pi', abierto.conclusion ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-file-check om-acc-ico" /><span>Conclusión</span>
+            <ChevronDownIcon v-if="abierto.conclusion" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <FileCheckIcon class="om-acc-ico size-[1em]" /><span>Conclusión</span>
           </button>
           <div v-show="abierto.conclusion" class="om-acc-body">
             <textarea v-model="ficha.conclusion" rows="4" class="om-textarea-full" @input="marcar" />
@@ -451,8 +470,9 @@
         <!-- ─ Firmas ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('firmas')">
-            <i :class="['pi', abierto.firmas ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-pencil om-acc-ico" /><span>Aceptación y Firmas</span>
+            <ChevronDownIcon v-if="abierto.firmas" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <PencilIcon class="om-acc-ico size-[1em]" /><span>Aceptación y Firmas</span>
           </button>
           <div v-show="abierto.firmas" class="om-acc-body">
             <div class="om-table-wrap">
@@ -463,29 +483,30 @@
                     <td><input v-model="f.nombre" @input="marcar" /></td>
                     <td><input v-model="f.cargo" @input="marcar" /></td>
                     <td><input type="date" v-model="f.fecha" @change="marcar" /></td>
-                    <td><button class="om-del" @click="quitarFila(ficha.firmas, i)"><i class="pi pi-trash" /></button></td>
+                    <td><button class="om-del" @click="quitarFila(ficha.firmas, i)"><Trash2Icon class="size-[1em]" /></button></td>
                   </tr>
                   <tr v-if="!ficha.firmas.length"><td colspan="4" class="om-table-empty">Sin firmantes.</td></tr>
                 </tbody>
               </table>
             </div>
-            <button class="om-add-row" @click="agregarFila(ficha.firmas, { nombre: '', cargo: '', fecha: null })"><i class="pi pi-plus" /> Agregar firmante</button>
+            <button class="om-add-row" @click="agregarFila(ficha.firmas, { nombre: '', cargo: '', fecha: null })"><PlusIcon class="size-[1em]" /> Agregar firmante</button>
           </div>
         </section>
 
         <!-- ─ Anexos: evidencia ─ -->
         <section class="om-acc">
           <button class="om-acc-head" @click="toggle('anexos')">
-            <i :class="['pi', abierto.anexos ? 'pi-chevron-down' : 'pi-chevron-right']" />
-            <i class="pi pi-images om-acc-ico" /><span>Anexos — Evidencia</span>
+            <ChevronDownIcon v-if="abierto.anexos" class="size-[1em]" />
+            <ChevronRightIcon v-else class="size-[1em]" />
+            <ImagesIcon class="om-acc-ico size-[1em]" /><span>Anexos — Evidencia</span>
             <span class="om-acc-count">{{ detalle.evidencia_relacionada.length }}</span>
           </button>
           <div v-show="abierto.anexos" class="om-acc-body">
-            <span class="om-ro-hint"><i class="pi pi-flag" /> Es la misma evidencia ya subida en cada sección (Inversores, Frontera, Monitoreo, Estación Meteo, Reconectador) y en Arquitectura de Comunicación arriba — se muestra junta aquí para el informe.</span>
+            <span class="om-ro-hint"><FlagIcon class="size-[1em]" /> Es la misma evidencia ya subida en cada sección (Inversores, Frontera, Monitoreo, Estación Meteo, Reconectador) y en Arquitectura de Comunicación arriba — se muestra junta aquí para el informe.</span>
             <div v-if="!detalle.evidencia_relacionada.length" class="om-empty-mini">Sin evidencia subida todavía.</div>
             <div v-for="(ev, i) in detalle.evidencia_relacionada" :key="i" class="om-anexo-row">
               <span class="om-anexo-seccion">{{ ev.seccion }}</span>
-              <a :href="ev.url" target="_blank" rel="noopener" class="om-anexo-link"><i class="pi pi-paperclip" /> {{ ev.nombre }}</a>
+              <a :href="ev.url" target="_blank" rel="noopener" class="om-anexo-link"><PaperclipIcon class="size-[1em]" /> {{ ev.nombre }}</a>
             </div>
           </div>
         </section>
@@ -502,6 +523,8 @@ import { useRouter } from 'vue-router'
 import api from '~/core/client'
 import EvidenciaUploader from '~/components/EvidenciaUploader.vue'
 import ListaEditable from '~/components/ListaEditable.vue'
+import { ArrowLeftIcon, BadgeCheckIcon, BellIcon, BoxIcon, ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, EyeIcon, FileCheckIcon, FilePenIcon, FileTextIcon, FlagIcon, ImagesIcon, InboxIcon, InfoIcon, ListChecksIcon, ListIcon, LoaderCircleIcon, MapPinIcon, MonitorIcon, NetworkIcon, PaperclipIcon, PencilIcon, PlusIcon, RefreshCwIcon, SearchIcon, ThumbsUpIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 
 const router = useRouter()
 
@@ -581,7 +604,7 @@ async function abrir(id) {
       observaciones: { ...base.observaciones, ...data.ficha.observaciones },
     })
   } catch {
-    window.__primeToast?.({ severity: 'error', summary: 'No se pudo cargar el informe', life: 3000 })
+    toast.error('No se pudo cargar el informe', { duration: 3000 })
     seleccion.value = null
   } finally {
     loadingFicha.value = false
@@ -599,10 +622,10 @@ async function guardar() {
     const { data } = await api.put(`/informe-om/${seleccion.value}`, ficha)
     Object.assign(detalle, data)
     dirty.value = false
-    window.__primeToast?.({ severity: 'success', summary: 'Informe guardado', life: 2000 })
+    toast.success('Informe guardado', { duration: 2000 })
     cargarLista()
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'No se pudo guardar', detail: e.response?.data?.detail, life: 3500 })
+    toast.error('No se pudo guardar', { description: e.response?.data?.detail, duration: 3500 })
   } finally {
     guardando.value = false
   }
@@ -781,7 +804,7 @@ async function descargarPdf() {
     doc.save(`informe_puesta_en_marcha_${slug}.pdf`)
   } catch (e) {
     console.error('Error exportando informe a PDF', e)
-    window.__primeToast?.({ severity: 'error', summary: 'No se pudo generar el PDF', life: 3500 })
+    toast.error('No se pudo generar el PDF', { duration: 3500 })
   } finally {
     exportandoPdf.value = false
   }
@@ -918,7 +941,7 @@ async function generarInforme() {
     const { data } = await api.post('/informes/', payload)
     router.push(`/informes/${data.id}`)
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'No se pudo generar el informe', detail: e.response?.data?.detail, life: 3500 })
+    toast.error('No se pudo generar el informe', { description: e.response?.data?.detail, duration: 3500 })
   } finally {
     generandoInforme.value = false
   }
@@ -926,7 +949,7 @@ async function generarInforme() {
 
 function marcar() { dirty.value = true }
 function toggle(k) { abierto[k] = !abierto[k] }
-function mostrarError(msg) { window.__primeToast?.({ severity: 'error', summary: msg, life: 3500 }) }
+function mostrarError(msg) { toast.error(msg, { duration: 3500 }) }
 function agregarFila(lista, plantilla) { lista.push({ ...plantilla }); marcar() }
 function quitarFila(lista, i) { lista.splice(i, 1); marcar() }
 
@@ -960,17 +983,17 @@ onMounted(cargarLista)
 .om-icon-btn { width: 34px; height: 34px; border: 1px solid #e5e7eb; border-radius: 9px; background: #fff; color: #6b5a8a; }
 .om-icon-btn:disabled { opacity: .5; }
 .om-search { display: flex; align-items: center; gap: 9px; background: #f5f3fa; border: 1px solid #eceaf2; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; }
-.om-search .pi { color: #9ca3af; }
+.om-search svg { color: #9ca3af; }
 .om-search input { flex: 1; border: none; background: none; outline: none; font-size: 15px; color: #2C2039; }
 .om-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 50px 20px; color: #6b5a8a; font-size: 15px; }
-.om-state .pi-spinner { font-size: 24px; color: #915BD8; }
+.om-state svg { font-size: 24px; color: #915BD8; }
 .om-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; overflow-y: auto; padding-bottom: 8px; }
 .om-card { text-align: left; background: #fff; border: 1px solid #eceaf2; border-radius: 14px; padding: 14px; cursor: pointer; transition: box-shadow .15s, transform .1s; }
 .om-card:hover { box-shadow: 0 6px 18px rgba(145,91,216,0.15); transform: translateY(-1px); }
 .om-card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .om-card-name { flex: 1; font-size: 14.5px; font-weight: 700; color: #2C2039; line-height: 1.25; }
 .om-card-meta { display: flex; flex-direction: column; gap: 4px; font-size: 12.5px; color: #6b5a8a; }
-.om-card-meta .pi { font-size: 11px; color: #915BD8; margin-right: 4px; }
+.om-card-meta svg { font-size: 11px; color: #915BD8; margin-right: 4px; }
 
 .om-chip { font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 7px; flex-shrink: 0; }
 .om-chip--operativo { background: #dcfce7; color: #15803d; }
@@ -1018,7 +1041,7 @@ onMounted(cargarLista)
 /* ── Acordeón ── */
 .om-acc { background: #fff; border: 1px solid #eceaf2; border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
 .om-acc-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 16px; border: none; background: #fff; font-size: 15px; font-weight: 700; color: #2C2039; cursor: pointer; text-align: left; }
-.om-acc-head > .pi:first-child { color: #9ca3af; font-size: 13px; }
+.om-acc-head > svg:first-child { color: #9ca3af; font-size: 13px; }
 .om-acc-ico { color: #915BD8; font-size: 15px; }
 .om-acc-head span:first-of-type { flex: 1; }
 .om-acc-count { background: #f3edfb; color: #6E3FB8; font-size: 12px; font-weight: 800; padding: 1px 9px; border-radius: 8px; }
@@ -1036,7 +1059,7 @@ onMounted(cargarLista)
 .om-ro-label { display: block; font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: #9b8db5; }
 .om-ro-val { display: block; font-size: 13.5px; font-weight: 600; color: #2C2039; }
 .om-ro-hint { font-size: 11.5px; color: #9b8db5; display: flex; align-items: center; gap: 5px; }
-.om-ro-hint .pi { color: #915BD8; font-size: 10px; }
+.om-ro-hint svg { color: #915BD8; font-size: 10px; }
 
 .om-sistemas-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
 .om-sistema-chip { display: flex; flex-direction: column; gap: 4px; background: #f8f7fb; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; font-weight: 600; color: #6b5a8a; }
@@ -1053,7 +1076,7 @@ onMounted(cargarLista)
 .om-anexo-seccion { font-size: 11px; font-weight: 700; color: #6b5a8a; background: #f5f3fa; padding: 2px 9px; border-radius: 7px; flex-shrink: 0; }
 .om-anexo-link { display: flex; align-items: center; gap: 6px; color: #6E3FB8; text-decoration: none; font-weight: 600; }
 .om-anexo-link:hover { text-decoration: underline; }
-.om-anexo-link .pi { font-size: 11px; }
+.om-anexo-link svg { font-size: 11px; }
 
 /* ── Tablas editables ── */
 .om-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }

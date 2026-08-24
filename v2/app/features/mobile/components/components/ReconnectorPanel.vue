@@ -1,10 +1,11 @@
 <template>
   <div class="rp-card">
     <button class="rp-head" @click="open = !open">
-      <i class="pi pi-bolt rp-ico" />
+      <ZapIcon class="rp-ico size-[1em]" />
       <span class="rp-title">Reconectador</span>
       <span :class="['rp-badge', badgeClass]">{{ badgeText }}</span>
-      <i :class="['pi', open ? 'pi-chevron-up' : 'pi-chevron-down', 'rp-caret']" />
+      <ChevronUpIcon v-if="open" class="rp-caret size-[1em]" />
+      <ChevronDownIcon v-else class="rp-caret size-[1em]" />
     </button>
 
     <!-- Resumen: siempre visible -->
@@ -61,7 +62,7 @@
       </div>
 
       <div class="rp-time">
-        <i class="pi pi-clock" /> {{ tiempo }}
+        <ClockIcon class="size-[1em]" /> {{ tiempo }}
       </div>
     </div>
   </div>
@@ -69,6 +70,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { ChevronDownIcon, ChevronUpIcon, ClockIcon, ZapIcon } from '@lucide/vue'
 
 const props = defineProps({
   // Registro de /reconectadores/estados: estado del relay + telemetría de Solenium
@@ -134,7 +136,7 @@ const tiempo = computed(() => {
   font-size: clamp(11px, 3.4vw, 14px); font-weight: 700; color: #2C2039;
   line-height: 1.2; white-space: nowrap; letter-spacing: -0.2px;
 }
-.rp-kpi-val i { font-style: normal; font-size: 0.72em; font-weight: 600; color: #6b5a8a; }
+.rp-kpi-val svg { font-style: normal; font-size: 0.72em; font-weight: 600; color: #6b5a8a; }
 
 /* Detalle por fase */
 .rp-detail { margin-top: 8px; border-top: 1px solid #f3f0f9; padding-top: 7px; }

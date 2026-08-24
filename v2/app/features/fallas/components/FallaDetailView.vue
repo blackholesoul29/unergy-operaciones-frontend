@@ -8,10 +8,12 @@
 
   <!-- ══ NO ENCONTRADA ═══════════════════════════════════════════════════ -->
   <div v-else-if="notFound" class="flex flex-col items-center justify-center py-20 gap-3 text-gray-500">
-    <i class="pi pi-exclamation-circle text-4xl text-red-400" />
+    <CircleAlertIcon class="text-4xl text-red-400 size-[1em]" />
     <p class="text-sm font-semibold text-gray-700">Falla no encontrada</p>
     <p class="text-xs">El registro solicitado no existe o fue eliminado.</p>
-    <Button label="Volver" icon="pi pi-arrow-left" outlined size="small" @click="router.back()" />
+    <Button label="Volver" outlined size="small" @click="router.back()">
+      <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+    </Button>
   </div>
 
   <!-- ══ VISTA PRINCIPAL ═════════════════════════════════════════════════ -->
@@ -20,7 +22,9 @@
     <!-- ── Header ────────────────────────────────────────────────────── -->
     <div class="flex items-start justify-between flex-wrap gap-3">
       <div class="flex items-start gap-3">
-        <Button icon="pi pi-arrow-left" text rounded @click="router.back()" class="-ml-2 mt-1" />
+        <Button text rounded @click="router.back()" class="-ml-2 mt-1">
+          <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+        </Button>
         <div>
           <div class="flex items-center gap-2 mb-1.5">
             <Tag :value="falla.estado?.etiqueta || '—'" :style="pillStyle(falla.estado?.color_hex)" />
@@ -36,31 +40,34 @@
           <p class="text-sm text-gray-600 mt-1 max-w-2xl">{{ falla.descripcion }}</p>
           <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-500">
             <span v-if="falla.proyecto?.nombre_comercial" class="inline-flex items-center gap-1">
-              <i class="pi pi-building" /> {{ falla.proyecto.nombre_comercial }}
+              <BuildingIcon class="size-[1em]" /> {{ falla.proyecto.nombre_comercial }}
             </span>
             <span class="inline-flex items-center gap-1">
-              <i class="pi pi-calendar" /> Identificada el {{ fmtDate(falla.fecha_identificacion) }}
+              <CalendarIcon class="size-[1em]" /> Identificada el {{ fmtDate(falla.fecha_identificacion) }}
             </span>
             <span v-if="falla.registrado_por?.nombre" class="inline-flex items-center gap-1">
-              <i class="pi pi-user" /> Registrada por {{ falla.registrado_por.nombre }}
+              <UserIcon class="size-[1em]" /> Registrada por {{ falla.registrado_por.nombre }}
             </span>
           </div>
         </div>
       </div>
       <div class="flex gap-2">
-        <Button v-if="!editMode" label="Editar" icon="pi pi-pencil" outlined size="small"
-          @click="editMode = true" />
-        <Button v-else label="Cancelar edición" icon="pi pi-times" outlined size="small"
-          severity="secondary" @click="editMode = false" />
-        <Button icon="pi pi-trash" outlined size="small" severity="danger" @click="confirmDelete"
-          v-tooltip.top="'Eliminar falla'" />
+        <Button v-if="!editMode" label="Editar" outlined size="small" @click="editMode = true">
+          <template #icon><PencilIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-else label="Cancelar edición" outlined size="small" severity="secondary" @click="editMode = false">
+          <template #icon><XIcon class="size-[1em]" /></template>
+        </Button>
+        <Button outlined size="small" severity="danger" @click="confirmDelete" v-tooltip.top="'Eliminar falla'">
+          <template #icon><Trash2Icon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
     <!-- ── Modo edición ──────────────────────────────────────────────── -->
     <div v-if="editMode" class="bg-white rounded-xl shadow-sm p-5">
       <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-        <i class="pi pi-pencil text-sm" style="color:#915BD8" />
+        <PencilIcon class="text-sm size-[1em]" style="color:#915BD8" />
         <h3 class="font-semibold text-sm text-gray-700">Editar falla completa</h3>
       </div>
       <FallaForm :initial="falla" :catalogos="catalogos" @save="onUpdate" @cancel="editMode = false" />
@@ -75,7 +82,7 @@
         <!-- Clasificación (metodología estructurada) -->
         <div v-if="clasif" class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i :class="clasif.icono" class="text-sm" :style="{ color: clasif.categoriaColor }" />
+            <component :is="clasif.icono" class="text-sm size-[1em]" :style="{ color: clasif.categoriaColor }" />
             <h3 class="font-semibold text-sm text-gray-700">Clasificación</h3>
             <Tag v-if="clasif.pendienteReclasificar" value="Pendiente de reclasificar"
               severity="warn" class="ml-auto text-[11px]" />
@@ -96,12 +103,14 @@
           <div v-if="clasif.frontera" class="flex flex-wrap gap-2">
             <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md"
               :class="clasif.frontera.afectaMedicion ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-500'">
-              <i :class="clasif.frontera.afectaMedicion ? 'pi pi-times-circle' : 'pi pi-check-circle'" class="text-[11px]" />
+              <CircleXIcon v-if="clasif.frontera.afectaMedicion" class="text-[11px] size-[1em]" />
+              <CircleCheckIcon v-else class="text-[11px] size-[1em]" />
               {{ clasif.frontera.afectaMedicion ? 'Afecta la medición' : 'No afecta la medición' }}
             </span>
             <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md"
               :class="clasif.frontera.perdidaComunicacion ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500'">
-              <i :class="clasif.frontera.perdidaComunicacion ? 'pi pi-wifi' : 'pi pi-check-circle'" class="text-[11px]" />
+              <WifiIcon v-if="clasif.frontera.perdidaComunicacion" class="text-[11px] size-[1em]" />
+              <CircleCheckIcon v-else class="text-[11px] size-[1em]" />
               {{ clasif.frontera.perdidaComunicacion ? 'Pérdida de comunicación' : 'Comunicación OK' }}
             </span>
           </div>
@@ -112,7 +121,7 @@
             <div v-for="(inv, idx) in clasif.inversores" :key="idx"
               class="rounded-lg border border-gray-100 bg-gray-50 p-3">
               <div class="flex items-center gap-2 mb-1.5">
-                <i class="pi pi-server text-xs" style="color:#915BD8" />
+                <ServerIcon class="text-xs size-[1em]" style="color:#915BD8" />
                 <span class="text-sm font-semibold text-gray-800">{{ inv.nombre }}</span>
                 <span v-if="inv.potenciaKw != null" class="text-xs text-gray-500">· {{ inv.potenciaKw }} kW</span>
               </div>
@@ -129,7 +138,7 @@
         <!-- Información general -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-info-circle text-sm" style="color:#915BD8" />
+            <InfoIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <h3 class="font-semibold text-sm text-gray-700">Información general</h3>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -154,7 +163,7 @@
         <!-- SLA -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-clock text-sm" style="color:#915BD8" />
+            <ClockIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <h3 class="font-semibold text-sm text-gray-700">SLA</h3>
             <Tag :value="slaTexto" :severity="slaSeverity" class="ml-auto" />
           </div>
@@ -175,7 +184,7 @@
         <!-- Análisis -->
         <div v-if="falla.causa_raiz || falla.acciones_correctivas" class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-search text-sm" style="color:#915BD8" />
+            <SearchIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <h3 class="font-semibold text-sm text-gray-700">Análisis</h3>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -193,13 +202,13 @@
         <!-- Adjuntos -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-paperclip text-sm" style="color:#915BD8" />
+            <PaperclipIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <h3 class="font-semibold text-sm text-gray-700">Adjuntos ({{ adjuntos.length }})</h3>
             <label class="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold cursor-pointer px-3 py-1.5 rounded-md border transition-colors"
               :class="uploadingFoto ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-wait'
                                     : 'border-purple-200 text-purple-700 hover:bg-purple-50'">
-              <i v-if="uploadingFoto" class="pi pi-spin pi-spinner text-xs" />
-              <i v-else class="pi pi-plus text-xs" />
+              <LoaderCircleIcon class="text-xs size-[1em] animate-spin" v-if="uploadingFoto" />
+              <PlusIcon class="text-xs size-[1em]" v-else />
               {{ uploadingFoto ? 'Subiendo...' : 'Subir' }}
               <input type="file" accept="image/*,.pdf" multiple class="hidden"
                 @change="uploadFotos" :disabled="uploadingFoto" />
@@ -212,21 +221,19 @@
               <img v-if="isImage(url)" :src="thumbUrl(url)" :alt="filename(url)"
                 class="w-full h-full object-cover" />
               <div v-else class="w-full h-full flex flex-col items-center justify-center gap-2 p-3 text-gray-500">
-                <i :class="filename(url).match(/\.pdf$/i) ? 'pi pi-file-pdf text-red-400'
-                         : filename(url).match(/\.(xls|xlsx|csv)$/i) ? 'pi pi-file-excel text-green-500'
-                         : filename(url).match(/\.(doc|docx)$/i) ? 'pi pi-file-word text-blue-500'
-                         : 'pi pi-file text-gray-400'" style="font-size:2rem" />
+                <component :is="iconoAdjunto(url).icon" class="size-[1em]" :class="iconoAdjunto(url).color"
+                  style="font-size:2rem" />
                 <span class="text-[10px] text-center line-clamp-2 w-full px-1">{{ filename(url) }}</span>
               </div>
               <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                 <a :href="resolveUrl(url)" target="_blank" rel="noopener"
                   class="w-8 h-8 rounded-full bg-white text-gray-700 flex items-center justify-center hover:bg-purple-100 hover:text-purple-700 transition-colors"
                   v-tooltip.top="'Abrir en Drive'">
-                  <i class="pi pi-external-link text-xs" />
+                  <ExternalLinkIcon class="text-xs size-[1em]" />
                 </a>
                 <button class="w-8 h-8 rounded-full bg-white text-red-600 flex items-center justify-center hover:bg-red-50 transition-colors"
                   v-tooltip.top="'Eliminar'" @click="deleteFoto(url)">
-                  <i class="pi pi-trash text-xs" />
+                  <Trash2Icon class="text-xs size-[1em]" />
                 </button>
               </div>
             </div>
@@ -237,7 +244,7 @@
         <!-- Seguimientos -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-comments text-sm" style="color:#915BD8" />
+            <MessagesSquareIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <h3 class="font-semibold text-sm text-gray-700">Historial de seguimiento ({{ falla.seguimientos?.length || 0 }})</h3>
           </div>
 
@@ -251,9 +258,9 @@
             <Textarea v-model="nuevaNota.nota" rows="2" autoResize
               placeholder="Escribe una actualización, novedad o nota técnica…" class="w-full text-sm" />
             <div class="flex justify-end">
-              <Button label="Agregar nota" icon="pi pi-send" size="small"
-                :disabled="!nuevaNota.nota.trim() && !nuevaNota.estado_id"
-                :loading="addingSeg" @click="addSeguimiento" />
+              <Button label="Agregar nota" size="small" :disabled="!nuevaNota.nota.trim() && !nuevaNota.estado_id" :loading="addingSeg" @click="addSeguimiento">
+                <template #icon><SendIcon class="size-[1em]" /></template>
+              </Button>
             </div>
           </div>
 
@@ -270,7 +277,7 @@
                 </div>
                 <p v-if="seg.nota" class="text-sm text-gray-700 whitespace-pre-line">{{ seg.nota }}</p>
                 <div v-if="seg.estado_nuevo" class="mt-1.5 flex items-center gap-1 text-xs">
-                  <i class="pi pi-arrow-right text-[10px] text-gray-400" />
+                  <ArrowRightIcon class="text-[10px] text-gray-400 size-[1em]" />
                   <Tag :value="seg.estado_nuevo?.etiqueta || ''" :style="pillStyle(seg.estado_nuevo?.color_hex)" class="text-[10px]" />
                 </div>
               </div>
@@ -288,7 +295,7 @@
         <div v-if="falla.tipo?.accion_sugerida" class="rounded-xl p-5 shadow-sm"
           style="background: linear-gradient(135deg, #faf7ff 0%, #f3edff 100%); border: 1px solid #e5d9ff;">
           <div class="flex items-center gap-2 mb-3">
-            <i class="pi pi-lightbulb text-sm" style="color:#915BD8" />
+            <LightbulbIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <h3 class="font-semibold text-sm" style="color:#4a3b6b">Acción sugerida</h3>
           </div>
           <p class="text-sm text-gray-700 leading-relaxed">{{ falla.tipo.accion_sugerida }}</p>
@@ -297,7 +304,7 @@
         <!-- Actualización rápida -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-bolt text-sm" style="color:#915BD8" />
+            <ZapIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <h3 class="font-semibold text-sm text-gray-700">Actualización rápida</h3>
           </div>
           <div class="space-y-3">
@@ -326,15 +333,16 @@
               <Textarea v-model="quickEdit.causa_raiz" rows="2" autoResize
                 placeholder="Causa raíz identificada…" class="w-full text-sm" />
             </div>
-            <Button label="Guardar cambios" icon="pi pi-check" :loading="savingQuick"
-              @click="saveQuickEdit" class="w-full" />
+            <Button label="Guardar cambios" :loading="savingQuick" @click="saveQuickEdit" class="w-full">
+              <template #icon><CheckIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
 
         <!-- Detalles técnicos -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-cog text-sm" style="color:#915BD8" />
+            <SettingsIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <h3 class="font-semibold text-sm text-gray-700">Detalles técnicos</h3>
           </div>
           <div class="space-y-2 text-xs">
@@ -365,9 +373,10 @@
 </template>
 
 <script setup>
+import { ArrowLeftIcon, ArrowRightIcon, BuildingIcon, CalendarIcon, CheckIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, ClockIcon, ExternalLinkIcon, FileIcon, FileTypeIcon, InfoIcon, LightbulbIcon, LoaderCircleIcon, MessagesSquareIcon, PaperclipIcon, PencilIcon, PlusIcon, SearchIcon, SendIcon, ServerIcon, SettingsIcon, Trash2Icon, UserIcon, WifiIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, computed, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
@@ -381,7 +390,6 @@ import api from '~/core/client'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const confirmService = useConfirm()
 
 // ── Estado ──────────────────────────────────────────────────────────────
@@ -536,6 +544,15 @@ function isImage(url) {
   const name = filename(url)
   return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(name)
 }
+
+/** Icono y color del adjunto según su extensión. */
+function iconoAdjunto(url) {
+  const name = filename(url)
+  if (/\.pdf$/i.test(name)) return { icon: FileTextIcon, color: 'text-red-400' }
+  if (/\.(xls|xlsx|csv)$/i.test(name)) return { icon: FileSpreadsheetIcon, color: 'text-green-500' }
+  if (/\.(doc|docx)$/i.test(name)) return { icon: FileTypeIcon, color: 'text-blue-500' }
+  return { icon: FileIcon, color: 'text-gray-400' }
+}
 function resolveUrl(url) {
   if (!url) return ''
   // Strip fragment for the actual link
@@ -583,12 +600,12 @@ async function loadUsuarios() {
 async function onUpdate(payload) {
   try {
     await api.patch(`/fallas/${falla.value.id}`, payload)
-    toast.add({ severity: 'success', summary: 'Falla actualizada', life: 3000 })
+    toast.success('Falla actualizada', { duration: 3000 })
     editMode.value = false
     await load()
   } catch (err) {
     const msg = err?.response?.data?.detail ?? 'Error al actualizar'
-    toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 4000 })
+    toast.error('Error', { description: msg, duration: 4000 })
   }
 }
 
@@ -602,11 +619,11 @@ async function saveQuickEdit() {
     if (quickEdit.causa_raiz?.trim()) payload.causa_raiz = quickEdit.causa_raiz.trim()
     if (quickEdit.energia_perdida_kwh != null) payload.energia_perdida_kwh = quickEdit.energia_perdida_kwh
     await api.patch(`/fallas/${falla.value.id}`, payload)
-    toast.add({ severity: 'success', summary: 'Cambios guardados', life: 2500 })
+    toast.success('Cambios guardados', { duration: 2500 })
     await load()
   } catch (err) {
     const msg = err?.response?.data?.detail ?? 'Error al guardar'
-    toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 4000 })
+    toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     savingQuick.value = false
   }
@@ -622,11 +639,11 @@ async function addSeguimiento() {
     await api.post(`/fallas/${falla.value.id}/seguimientos`, payload)
     nuevaNota.nota = ''
     nuevaNota.estado_id = ''
-    toast.add({ severity: 'success', summary: 'Seguimiento agregado', life: 2500 })
+    toast.success('Seguimiento agregado', { duration: 2500 })
     await load()
   } catch (err) {
     const msg = err?.response?.data?.detail ?? 'Error al agregar'
-    toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 4000 })
+    toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     addingSeg.value = false
   }
@@ -648,12 +665,12 @@ async function uploadFotos(event) {
         okCount++
       } catch (err) {
         const msg = err?.response?.data?.detail ?? `No se pudo subir ${file.name}`
-        toast.add({ severity: 'warn', summary: 'Archivo rechazado', detail: msg, life: 4000 })
+        toast.warning('Archivo rechazado', { description: msg, duration: 4000 })
       }
     }
     if (okCount) {
       await load()
-      toast.add({ severity: 'success', summary: `${okCount} archivo(s) subido(s)`, life: 2500 })
+      toast.success(`${okCount} archivo(s) subido(s)`, { duration: 2500 })
     }
   } finally {
     uploadingFoto.value = false
@@ -665,7 +682,6 @@ function deleteFoto(url) {
   confirmService.require({
     message: '¿Eliminar este adjunto? Esta acción no se puede deshacer.',
     header: 'Eliminar adjunto',
-    icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancelar', severity: 'secondary' },
     acceptProps: { label: 'Eliminar', severity: 'danger' },
     accept: async () => {
@@ -674,10 +690,10 @@ function deleteFoto(url) {
         const nuevaLista = adjuntos.value.filter(u => u !== url)
         await api.patch(`/fallas/${falla.value.id}`, { fotos_urls: nuevaLista })
         await load()
-        toast.add({ severity: 'success', summary: 'Adjunto eliminado', life: 2500 })
+        toast.success('Adjunto eliminado', { duration: 2500 })
       } catch (err) {
         const msg = err?.response?.data?.detail ?? 'No se pudo eliminar'
-        toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 3000 })
+        toast.error('Error', { description: msg, duration: 3000 })
       }
     },
   })
@@ -687,16 +703,15 @@ function confirmDelete() {
   confirmService.require({
     message: `¿Eliminar la falla ${falla.value.codigo_interno}? Esta acción no se puede deshacer.`,
     header: 'Confirmar eliminación',
-    icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancelar', severity: 'secondary' },
     acceptProps: { label: 'Eliminar', severity: 'danger' },
     accept: async () => {
       try {
         await api.delete(`/fallas/${falla.value.id}`)
-        toast.add({ severity: 'success', summary: 'Falla eliminada', life: 3000 })
+        toast.success('Falla eliminada', { duration: 3000 })
         router.back()
       } catch {
-        toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
+        toast.error('Error al eliminar', { duration: 3000 })
       }
     },
   })

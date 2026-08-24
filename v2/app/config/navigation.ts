@@ -1,6 +1,30 @@
 import type { Component } from 'vue'
 import type { Permission } from '~/config/permissions'
-import { HouseIcon } from '@lucide/vue'
+import {
+  BookIcon,
+  BriefcaseIcon,
+  CalculatorIcon,
+  ChartColumnIcon,
+  ChartLineIcon,
+  CircleAlertIcon,
+  ClockIcon,
+  CloudIcon,
+  CreditCardIcon,
+  DollarSignIcon,
+  FilePenIcon,
+  FileTextIcon,
+  FlagIcon,
+  GlobeIcon,
+  HouseIcon,
+  LinkIcon,
+  NetworkIcon,
+  ShieldIcon,
+  SunIcon,
+  UsersIcon,
+  WalletIcon,
+  WrenchIcon,
+  ZapIcon,
+} from '@lucide/vue'
 
 /**
  * The buckets the sidebar renders, in this order. A group with no visible items
@@ -52,9 +76,7 @@ export const NAVIGATION_GROUP_LABELS: Record<NavigationGroup, string> = {
 // entrada por entrada—, mientras que esto todavía filtra por rol. Fundirlos es la
 // ola 1 de la fase 3: cada `roles: [...]` de aquí se convierte en un permiso.
 //
-// Los iconos son clases de PrimeIcons porque es lo que renderiza el sidebar del
-// legacy (`<i :class="item.icon">`). Pasan a componentes de `@lucide/vue` cuando
-// ese sidebar se sustituya por el del template.
+// Los iconos son componentes de `@lucide/vue`, igual que en `NAVIGATION_ITEMS`.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** Los grupos del menú, en el orden en que se pintan. */
@@ -103,8 +125,8 @@ export interface LegacyNavChild {
 
 export interface LegacyNavItem {
   label: string
-  /** Clase de PrimeIcons, p. ej. `'pi pi-bolt'`. */
-  icon: string
+  /** Componente de `@lucide/vue`, p. ej. `ZapIcon`. */
+  icon: Component
   group: LegacyNavGroup
   /** Ausente cuando el item solo despliega un submenú. */
   to?: string
@@ -122,33 +144,33 @@ const EMAIL_ADMIN_PLATAFORMA = 'juanjose@unergy.io'
 
 export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── General ────────────────────────────────────────────────────────────────
-  { label: 'Dashboard', icon: 'pi pi-home', to: '/dashboard', group: LegacyNavGroup.General },
+  { label: 'Dashboard', icon: HouseIcon, to: '/dashboard', group: LegacyNavGroup.General },
   // Esta entrada reemplaza a las tres que había antes (Clientes, Proyectos y
   // Servicios). La base es el portafolio de plantas, y clientes y contratos son
   // formas de reagrupar ese mismo portafolio. Las rutas /clientes, /proyectos y
   // /servicios siguen vivas: solo salieron del menú.
   {
     label: 'Proyectos',
-    icon: 'pi pi-bolt',
+    icon: ZapIcon,
     to: '/servicios-unificado',
     group: LegacyNavGroup.General,
   },
   {
     label: 'Operadores de Red',
-    icon: 'pi pi-sitemap',
+    icon: NetworkIcon,
     to: '/mem/operadores-red',
     group: LegacyNavGroup.General,
     roles: ['admin', 'operaciones', 'monitoreo'],
   },
   {
     label: 'Próximos a energizar',
-    icon: 'pi pi-clock',
+    icon: ClockIcon,
     to: '/general/proximos-energizar',
     group: LegacyNavGroup.General,
   },
   {
     label: 'Retos Q',
-    icon: 'pi pi-flag-fill',
+    icon: FlagIcon,
     to: '/general/retos',
     group: LegacyNavGroup.General,
   },
@@ -156,7 +178,7 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── Comercial ──────────────────────────────────────────────────────────────
   {
     label: 'Pipeline',
-    icon: 'pi pi-briefcase',
+    icon: BriefcaseIcon,
     to: '/comercial',
     group: LegacyNavGroup.Comercial,
     roles: ['admin', 'comercial'],
@@ -165,35 +187,35 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── Operaciones ────────────────────────────────────────────────────────────
   {
     label: 'Generación Solar',
-    icon: 'pi pi-sun',
+    icon: SunIcon,
     to: '/solar-live',
     group: LegacyNavGroup.Operaciones,
     roles: ['admin', 'operaciones', 'monitoreo'],
   },
   {
     label: 'Informes Mensuales',
-    icon: 'pi pi-file-edit',
+    icon: FilePenIcon,
     to: '/operaciones/informes-mensuales',
     group: LegacyNavGroup.Operaciones,
     roles: ['admin', 'operaciones', 'monitoreo'],
   },
   {
     label: 'Gestión de Fallas',
-    icon: 'pi pi-wrench',
+    icon: WrenchIcon,
     to: '/fallas',
     group: LegacyNavGroup.Operaciones,
     roles: ['admin', 'operaciones', 'monitoreo'],
   },
   {
     label: 'Informe de Puesta en Marcha',
-    icon: 'pi pi-file-pdf',
+    icon: FileTextIcon,
     to: '/operaciones/informe-om',
     group: LegacyNavGroup.Operaciones,
     roles: ['admin', 'operaciones'],
   },
   {
     label: 'Pólizas',
-    icon: 'pi pi-shield',
+    icon: ShieldIcon,
     to: '/operaciones/polizas',
     group: LegacyNavGroup.Operaciones,
     roles: ['admin', 'operaciones'],
@@ -202,14 +224,14 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── Fronteras Comerciales ──────────────────────────────────────────────────
   {
     label: 'General',
-    icon: 'pi pi-globe',
+    icon: GlobeIcon,
     to: '/mem/fronteras',
     group: LegacyNavGroup.Fronteras,
     roles: ['admin', 'operaciones', 'monitoreo'],
   },
   {
     label: 'Reporte de Energía',
-    icon: 'pi pi-file-edit',
+    icon: FilePenIcon,
     to: '/mem/reporte-energia',
     group: LegacyNavGroup.Fronteras,
     roles: ['admin', 'operaciones', 'monitoreo'],
@@ -218,7 +240,7 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── Registros CND/ASIC ─────────────────────────────────────────────────────
   {
     label: 'Proyectos en conexión',
-    icon: 'pi pi-flag',
+    icon: FlagIcon,
     to: '/registros-cnd-asic',
     group: LegacyNavGroup.RegistrosCnd,
     roles: ['admin', 'operaciones'],
@@ -227,43 +249,43 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── Comercialización ───────────────────────────────────────────────────────
   {
     label: 'Cumplimiento PPA',
-    icon: 'pi pi-shield',
+    icon: ShieldIcon,
     to: '/mem/cumplimiento',
     group: LegacyNavGroup.Comercializacion,
   },
   {
     label: 'Descubrimientos',
-    icon: 'pi pi-bolt',
+    icon: ZapIcon,
     to: '/mem/descubrimientos',
     group: LegacyNavGroup.Comercializacion,
   },
   {
     label: 'Garantías',
-    icon: 'pi pi-wallet',
+    icon: WalletIcon,
     to: '/garantias',
     group: LegacyNavGroup.Comercializacion,
   },
   {
     label: 'GESCON / ASIC',
-    icon: 'pi pi-book',
+    icon: BookIcon,
     to: '/mem/gescon',
     group: LegacyNavGroup.Comercializacion,
   },
   {
     label: 'Precio de Bolsa',
-    icon: 'pi pi-chart-line',
+    icon: ChartLineIcon,
     to: '/mem/precio-bolsa',
     group: LegacyNavGroup.Comercializacion,
   },
   {
     label: 'Balance Energía',
-    icon: 'pi pi-chart-bar',
+    icon: ChartColumnIcon,
     to: '/mem/balance',
     group: LegacyNavGroup.Comercializacion,
   },
   {
     label: 'Clima & ENSO',
-    icon: 'pi pi-cloud',
+    icon: CloudIcon,
     to: '/mem/clima',
     group: LegacyNavGroup.Comercializacion,
   },
@@ -271,7 +293,7 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── Finanzas ───────────────────────────────────────────────────────────────
   {
     label: 'Liquidaciones',
-    icon: 'pi pi-dollar',
+    icon: DollarSignIcon,
     group: LegacyNavGroup.Finanzas,
     roles: ['admin', 'liquidaciones'],
     children: [
@@ -291,7 +313,7 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   },
   {
     label: 'Panel Contable',
-    icon: 'pi pi-calculator',
+    icon: CalculatorIcon,
     group: LegacyNavGroup.Finanzas,
     roles: ['admin', 'liquidaciones'],
     children: [
@@ -303,7 +325,7 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   },
   {
     label: 'Herramientas liquidaciones',
-    icon: 'pi pi-wrench',
+    icon: WrenchIcon,
     group: LegacyNavGroup.Finanzas,
     roles: ['admin', 'liquidaciones'],
     children: [
@@ -313,7 +335,7 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   },
   {
     label: 'Costos',
-    icon: 'pi pi-credit-card',
+    icon: CreditCardIcon,
     to: '/finanzas/costos',
     group: LegacyNavGroup.Finanzas,
     roles: ['admin', 'liquidaciones'],
@@ -322,7 +344,7 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── Alertas ────────────────────────────────────────────────────────────────
   {
     label: 'Centro de Alertas',
-    icon: 'pi pi-exclamation-circle',
+    icon: CircleAlertIcon,
     to: '/alertas',
     group: LegacyNavGroup.Alertas,
   },
@@ -330,14 +352,14 @@ export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
   // ── Admin ──────────────────────────────────────────────────────────────────
   {
     label: 'Usuarios',
-    icon: 'pi pi-users',
+    icon: UsersIcon,
     to: '/admin/usuarios',
     group: LegacyNavGroup.Admin,
     requireEmail: EMAIL_ADMIN_PLATAFORMA,
   },
   {
     label: 'Diagnóstico',
-    icon: 'pi pi-link',
+    icon: LinkIcon,
     to: '/admin/diagnostico',
     group: LegacyNavGroup.Admin,
     requireEmail: EMAIL_ADMIN_PLATAFORMA,

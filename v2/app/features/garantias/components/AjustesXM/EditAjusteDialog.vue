@@ -4,7 +4,7 @@ import Dialog from 'primevue/dialog'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import { useGarantiasHistorial } from './composables/useGarantiasHistorial.js'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 
 const props = defineProps({
   visible: Boolean,
@@ -13,7 +13,6 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'saved'])
 
 const store = useGarantiasHistorial()
-const toast = useToast()
 
 const local = ref({})
 
@@ -30,11 +29,11 @@ const TIPO_LABEL = { semanal: 'Semanal', txr: 'TXR', mensual: 'Mensual' }
 async function guardar() {
   try {
     await store.actualizar(props.ajuste.id, local.value)
-    toast.add({ severity: 'success', summary: 'Guardado', detail: 'Registro actualizado', life: 3000 })
+    toast.success('Guardado', { description: 'Registro actualizado', duration: 3000 })
     emit('saved')
     emit('update:visible', false)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar', life: 4000 })
+    toast.error('Error', { description: 'No se pudo guardar', duration: 4000 })
   }
 }
 

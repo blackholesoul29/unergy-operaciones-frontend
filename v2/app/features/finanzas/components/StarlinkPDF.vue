@@ -10,14 +10,14 @@
           <div class="flex items-center gap-2">
             <button type="button" @click="irAnterior" :disabled="periodoIndex <= 0"
               class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
-              <i class="pi pi-chevron-left text-xs text-gray-500" />
+              <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
             </button>
             <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
               {{ periodoLabel }}
             </span>
             <button type="button" @click="irSiguiente" :disabled="periodoIndex >= periodos.length - 1"
               class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
-              <i class="pi pi-chevron-right text-xs text-gray-500" />
+              <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
             </button>
           </div>
           <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
@@ -28,14 +28,12 @@
       <!-- Acciones -->
       <div class="flex items-center gap-2">
         <input ref="fileInputRef" type="file" accept=".pdf" class="hidden" @change="onFileSelected" />
-        <Button label="Subir PDF" icon="pi pi-upload" size="small"
-          :loading="procesando"
-          @click="fileInputRef.click()"
-          style="background:#06b6d4;border-color:#06b6d4" />
-        <Button v-if="facturaActual" label="Descargar Excel" icon="pi pi-download" size="small" outlined
-          :loading="descargando"
-          @click="descargarExcel"
-          style="border-color:#1F4E79;color:#1F4E79" />
+        <Button label="Subir PDF" size="small" :loading="procesando" @click="fileInputRef.click()" style="background:#06b6d4;border-color:#06b6d4">
+          <template #icon><UploadIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-if="facturaActual" label="Descargar Excel" size="small" outlined :loading="descargando" @click="descargarExcel" style="border-color:#1F4E79;color:#1F4E79">
+          <template #icon><DownloadIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -44,7 +42,7 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="filtroTexto" placeholder="Nombre de la minigranja…" class="w-56" />
         </IconField>
       </div>
@@ -53,7 +51,7 @@
 
     <!-- ── Estado vacío ─────────────────────────────────────────────────────── -->
     <div v-if="!periodos.length && !procesando" class="mon-tab-empty">
-      <i class="pi pi-wifi" style="font-size:2.5rem; color:#c4b8d4;" />
+      <WifiIcon class="size-[1em]" style="font-size:2.5rem; color:#c4b8d4;" />
       <p class="mt-3 text-sm font-semibold" style="color:#6b5a8a;">Sin facturas procesadas</p>
       <p class="mt-1 text-xs" style="color:#a094b8; max-width:300px; margin:4px auto 0">
         Haz clic en <strong>Subir PDF</strong> para cargar la primera factura Starlink
@@ -63,7 +61,7 @@
 
     <!-- ── Spinner de carga ──────────────────────────────────────────────────── -->
     <div v-else-if="cargandoFactura" class="flex justify-center py-10">
-      <i class="pi pi-spin pi-spinner" style="font-size:1.5rem; color:#915BD8" />
+      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.5rem; color:#915BD8" />
     </div>
 
     <!-- ── Datos del período seleccionado ───────────────────────────────────── -->
@@ -97,8 +95,7 @@
             <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ background: sec.dot }" />
             <span class="font-semibold text-gray-800 text-sm flex-1">{{ sec.label }}</span>
             <span class="text-xs text-gray-400 font-medium">({{ sec.items.length }})</span>
-            <i class="pi pi-chevron-down text-gray-400 text-xs ml-2 transition-transform duration-200"
-              :class="{ 'rotate-180': openSections.has(sec.tipo) }" />
+            <ChevronDownIcon class="text-gray-400 text-xs ml-2 transition-transform duration-200 size-[1em]" :class="{ 'rotate-180': openSections.has(sec.tipo) }" />
           </button>
           <div class="section-collapse" :class="{ open: openSections.has(sec.tipo) }">
             <div class="overflow-x-auto">
@@ -132,7 +129,7 @@
                         <Tag severity="warn" value="Sin asignar" />
                         <button type="button" class="mn-asignar-btn" title="Asignar minigranja"
                           @click="abrirAsignarMinigranja(fila.descripcion)">
-                          <i class="pi pi-link text-xs" />
+                          <LinkIcon class="text-xs size-[1em]" />
                         </button>
                       </div>
                     </td>
@@ -181,7 +178,7 @@
         <div v-if="resultadoPendiente?.advertencia"
           class="rounded-xl border p-3 flex items-start gap-3"
           style="background:#fef3c7;border-color:#f59e0b40">
-          <i class="pi pi-exclamation-triangle text-sm flex-shrink-0 mt-0.5" style="color:#d97706" />
+          <TriangleAlertIcon class="text-sm flex-shrink-0 mt-0.5 size-[1em]" style="color:#d97706" />
           <p class="text-xs" style="color:#92400e">{{ resultadoPendiente.advertencia }}</p>
         </div>
 
@@ -199,7 +196,7 @@
         <div v-if="periodoYaExiste"
           class="rounded-lg border p-2.5 flex items-start gap-2"
           style="background:#fef3c7;border-color:#f59e0b60">
-          <i class="pi pi-exclamation-triangle text-xs flex-shrink-0 mt-0.5" style="color:#d97706" />
+          <TriangleAlertIcon class="text-xs flex-shrink-0 mt-0.5 size-[1em]" style="color:#d97706" />
           <p class="text-xs" style="color:#92400e">
             Ya existen datos para <strong>{{ periodoLabelFrom(periodoParaGuardar) }}</strong>.
             Al confirmar se sobreescribirán.
@@ -220,10 +217,9 @@
         <div class="flex gap-2 justify-end pt-1">
           <Button label="Cancelar" size="small" outlined severity="secondary"
             :disabled="guardando" @click="showGuardarDialog = false" />
-          <Button label="Guardar" icon="pi pi-check" size="small"
-            :loading="guardando" :disabled="!periodoParaGuardar"
-            @click="guardarFactura"
-            style="background:#915BD8;border-color:#915BD8" />
+          <Button label="Guardar" size="small" :loading="guardando" :disabled="!periodoParaGuardar" @click="guardarFactura" style="background:#915BD8;border-color:#915BD8">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </Dialog>
@@ -261,10 +257,9 @@
             :disabled="asignando" :loading="excluyendo" @click="confirmarExcluirSitio" />
           <Button label="Cancelar" size="small" outlined severity="secondary"
             :disabled="asignando || excluyendo" @click="showAsignarDialog = false" />
-          <Button label="Asignar" icon="pi pi-check" size="small"
-            :loading="asignando" :disabled="!proyectoParaAsignar || excluyendo"
-            @click="confirmarAsignarMinigranja"
-            style="background:#915BD8;border-color:#915BD8" />
+          <Button label="Asignar" size="small" :loading="asignando" :disabled="!proyectoParaAsignar || excluyendo" @click="confirmarAsignarMinigranja" style="background:#915BD8;border-color:#915BD8">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </Dialog>
@@ -281,10 +276,10 @@ import Select from 'primevue/select'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
+import { CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, DownloadIcon, LinkIcon, LoaderCircleIcon, SearchIcon, TriangleAlertIcon, UploadIcon, WifiIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 // ── Períodos guardados ────────────────────────────────────────────────────────
 const periodos       = ref([])   // ['2026-05', '2026-04', ...] — desc
@@ -403,8 +398,10 @@ async function onFileSelected(e) {
     periodoParaGuardar.value = data.periodo || ''
     showGuardarDialog.value  = true
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al procesar PDF',
-      detail: err.response?.data?.detail ?? err.message, life: 6000 })
+    toast.error('Error al procesar PDF', {
+      description: err.response?.data?.detail ?? err.message,
+      duration: 6000,
+    })
   } finally {
     procesando.value = false
   }
@@ -420,7 +417,7 @@ async function guardarFactura() {
       cargos_totales: resultadoPendiente.value.cargos_totales,
       suma_items:     resultadoPendiente.value.suma_items,
     })
-    toast.add({ severity: 'success', summary: `Factura guardada — ${periodoLabelFrom(periodoParaGuardar.value)}`, life: 3000 })
+    toast.success(`Factura guardada — ${periodoLabelFrom(periodoParaGuardar.value)}`, { duration: 3000 })
     showGuardarDialog.value = false
     resultadoPendiente.value = null
 
@@ -430,8 +427,10 @@ async function guardarFactura() {
     if (idx >= 0) periodoIndex.value = idx
     await cargarFactura(periodoParaGuardar.value)
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al guardar',
-      detail: err.response?.data?.detail ?? err.message, life: 4000 })
+    toast.error('Error al guardar', {
+      description: err.response?.data?.detail ?? err.message,
+      duration: 4000,
+    })
   } finally {
     guardando.value = false
   }
@@ -457,7 +456,7 @@ async function descargarExcel() {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al generar Excel', life: 4000 })
+    toast.error('Error al generar Excel', { duration: 4000 })
   } finally {
     descargando.value = false
   }
@@ -506,12 +505,14 @@ async function confirmarAsignarMinigranja() {
       proyecto_id: proyectoParaAsignar.value,
       activo:      true,
     })
-    toast.add({ severity: 'success', summary: 'Minigranja asignada', life: 3000 })
+    toast.success('Minigranja asignada', { duration: 3000 })
     showAsignarDialog.value = false
     await cargarFactura(periodoActual.value)
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al asignar minigranja',
-      detail: err.response?.data?.detail ?? err.message, life: 4000 })
+    toast.error('Error al asignar minigranja', {
+      description: err.response?.data?.detail ?? err.message,
+      duration: 4000,
+    })
   } finally {
     asignando.value = false
   }
@@ -527,12 +528,14 @@ async function confirmarExcluirSitio() {
       excluido:    true,
       activo:      true,
     })
-    toast.add({ severity: 'success', summary: 'Sitio marcado como "No aplica"', life: 3000 })
+    toast.success('Sitio marcado como "No aplica"', { duration: 3000 })
     showAsignarDialog.value = false
     await cargarFactura(periodoActual.value)
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al excluir el sitio',
-      detail: err.response?.data?.detail ?? err.message, life: 4000 })
+    toast.error('Error al excluir el sitio', {
+      description: err.response?.data?.detail ?? err.message,
+      duration: 4000,
+    })
   } finally {
     excluyendo.value = false
   }

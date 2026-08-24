@@ -16,7 +16,7 @@
         <div v-for="a in alertas" :key="a.key"
           class="flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
           :style="{ background: a.bg, border: `1px solid ${a.border}` }">
-          <i :class="a.icon" class="mt-0.5 shrink-0" :style="{ color: a.color }" />
+          <component :is="a.icon" class="mt-0.5 shrink-0 size-[1em]" :style="{ color: a.color }" />
           <div>
             <span class="font-semibold" :style="{ color: a.color }">{{ a.titulo }}</span>
             <span style="color:#6b5a8a"> — {{ a.detalle }}</span>
@@ -35,7 +35,7 @@
             <p v-if="kpi.sub" class="text-[11px] mt-0.5" :style="{ color: kpi.subColor || '#915BD8' }">{{ kpi.sub }}</p>
           </div>
           <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" :style="{ backgroundColor: kpi.bg }">
-            <i :class="[kpi.icon, 'text-lg']" :style="{ color: kpi.color }" />
+            <component :is="kpi.icon" class="text-lg size-[1em]" :style="{ color: kpi.color }" />
           </div>
         </div>
       </div>
@@ -126,8 +126,9 @@
           </Column>
           <Column header="" style="width:48px">
             <template #body="{ data }">
-              <Button v-if="data.liquidacion_id" icon="pi pi-eye" text rounded size="small"
-                @click.stop="goDetalle(data.liquidacion_id)" />
+              <Button v-if="data.liquidacion_id" text rounded size="small" @click.stop="goDetalle(data.liquidacion_id)">
+                <template #icon><EyeIcon class="size-[1em]" /></template>
+              </Button>
             </template>
           </Column>
           <template #expansion="{ data }">
@@ -173,6 +174,7 @@ import {
 import { Line } from 'vue-chartjs'
 import api from '~/core/client'
 import { fmtCompact, formatPeriodo, estadoFlujoPanel, ESTADO_FLUJO } from '~/utils/liquidaciones'
+import { ArrowDownLeftIcon, ArrowUpRightIcon, CircleCheckIcon, ClockIcon, EyeIcon, InboxIcon, PercentIcon, TriangleAlertIcon, WalletIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
@@ -212,7 +214,7 @@ const alertas = computed(() => {
   const out = []
   const negativos = proyectos.value.filter(p => (p.valor_a_pagar_total || 0) < 0)
   if (negativos.length) out.push({
-    key: 'neg', icon: 'pi pi-exclamation-triangle', color: '#D64455', bg: '#fef2f3', border: '#f7c7cd',
+    key: 'neg', icon: TriangleAlertIcon, color: '#D64455', bg: '#fef2f3', border: '#f7c7cd',
     titulo: `${negativos.length} proyecto(s) con valor a pagar negativo`,
     detalle: negativos.slice(0, 6).map(p => p.proyecto).join(', ') + (negativos.length > 6 ? '…' : ''),
   })
@@ -221,12 +223,12 @@ const alertas = computed(() => {
     return p.inversionistas?.length && Math.abs(s - 100) > 1
   })
   if (pctRaros.length) out.push({
-    key: 'pct', icon: 'pi pi-percentage', color: '#CA8A04', bg: '#fefce8', border: '#f4e2a1',
+    key: 'pct', icon: PercentIcon, color: '#CA8A04', bg: '#fefce8', border: '#f4e2a1',
     titulo: `${pctRaros.length} proyecto(s) con participación ≠ 100%`,
     detalle: pctRaros.slice(0, 6).map(p => p.proyecto).join(', ') + (pctRaros.length > 6 ? '…' : ''),
   })
   if (sinPanel.value.length) out.push({
-    key: 'sinpanel', icon: 'pi pi-inbox', color: '#6E3FB8', bg: '#faf7ff', border: '#e3d5f5',
+    key: 'sinpanel', icon: InboxIcon, color: '#6E3FB8', bg: '#faf7ff', border: '#e3d5f5',
     titulo: `${sinPanel.value.length} proyecto(s) en operación sin panel este período`,
     detalle: sinPanel.value.slice(0, 6).map(p => p.proyecto).join(', ') + (sinPanel.value.length > 6 ? '…' : ''),
   })
@@ -266,12 +268,12 @@ const kpis = computed(() => {
   }
   const tint = (hex) => hex + '1a'
   return [
-    { label: 'Ingresos', value: fmtCompact(ing), sub: delta(ing, prev?.ingresos_total_cop), subColor: '#10B981', icon: 'pi pi-arrow-up-right', color: '#10B981', bg: tint('#10B981') },
-    { label: 'Costos', value: fmtCompact(cos), sub: delta(cos, prev?.costos_total_cop), subColor: '#D64455', icon: 'pi pi-arrow-down-left', color: '#D64455', bg: tint('#D64455') },
-    { label: 'Valor a pagar', value: fmtCompact(vap), icon: 'pi pi-wallet', color: '#915BD8', bg: tint('#915BD8') },
-    { label: 'Margen', value: `${margen.toFixed(0)}%`, icon: 'pi pi-percentage', color: '#6E3FB8', bg: tint('#6E3FB8') },
-    { label: 'Firmados', value: String(firmados), icon: 'pi pi-check-circle', color: '#10B981', bg: tint('#10B981') },
-    { label: 'Pendientes', value: String(pendientes), icon: 'pi pi-clock', color: '#CA8A04', bg: tint('#CA8A04') },
+    { label: 'Ingresos', value: fmtCompact(ing), sub: delta(ing, prev?.ingresos_total_cop), subColor: '#10B981', icon: ArrowUpRightIcon, color: '#10B981', bg: tint('#10B981') },
+    { label: 'Costos', value: fmtCompact(cos), sub: delta(cos, prev?.costos_total_cop), subColor: '#D64455', icon: ArrowDownLeftIcon, color: '#D64455', bg: tint('#D64455') },
+    { label: 'Valor a pagar', value: fmtCompact(vap), icon: WalletIcon, color: '#915BD8', bg: tint('#915BD8') },
+    { label: 'Margen', value: `${margen.toFixed(0)}%`, icon: PercentIcon, color: '#6E3FB8', bg: tint('#6E3FB8') },
+    { label: 'Firmados', value: String(firmados), icon: CircleCheckIcon, color: '#10B981', bg: tint('#10B981') },
+    { label: 'Pendientes', value: String(pendientes), icon: ClockIcon, color: '#CA8A04', bg: tint('#CA8A04') },
   ]
 })
 

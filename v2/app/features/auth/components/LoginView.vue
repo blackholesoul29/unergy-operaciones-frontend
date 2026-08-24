@@ -59,7 +59,7 @@
               onmouseout="if(!this.disabled) this.style.backgroundColor='#915BD8'"
             >
               <span v-if="loading" class="flex items-center justify-center gap-2">
-                <i class="pi pi-spin pi-spinner text-xs" />
+                <LoaderCircleIcon class="text-xs size-[1em] animate-spin" />
                 Ingresando...
               </span>
               <span v-else>Ingresar</span>
@@ -85,6 +85,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
+import { LoaderCircleIcon } from '@lucide/vue'
 
 const router = useRouter()
 const auth = useAuthStore()

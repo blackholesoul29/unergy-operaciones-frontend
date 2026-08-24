@@ -11,8 +11,8 @@
               <code class="td-code">{{ fa.codigo_interno }}</code>
               <span class="td-type">{{ fa.tipo?.etiqueta || fa.tipo_libre || 'Falla' }}</span>
             </div>
-            <span v-if="saving" class="td-saving"><i class="pi pi-spin pi-spinner" /></span>
-            <button class="td-close" @click="close"><i class="pi pi-times" /></button>
+            <span v-if="saving" class="td-saving"><LoaderCircleIcon class="size-[1em] animate-spin" /></span>
+            <button class="td-close" @click="close"><XIcon class="size-[1em]" /></button>
           </div>
 
           <div class="td-body">
@@ -20,11 +20,11 @@
             <div class="td-info-row">
               <span class="td-badge-estado" :style="estadoStyle(fa.estado)">{{ fa.estado?.etiqueta }}</span>
               <span class="td-badge-prio" :style="{ color: fa.prioridad?.color_hex }">
-                <i class="pi pi-flag-fill" /> {{ fa.prioridad?.etiqueta }}
+                <FlagIcon class="size-[1em] fill-current" /> {{ fa.prioridad?.etiqueta }}
               </span>
               <span class="td-time">{{ relativeTime(fa.fecha_identificacion) }}</span>
             </div>
-            <div class="td-proj"><i class="pi pi-bolt" /> {{ fa.proyecto?.nombre_comercial || '—' }}</div>
+            <div class="td-proj"><ZapIcon class="size-[1em]" /> {{ fa.proyecto?.nombre_comercial || '—' }}</div>
             <p class="td-desc">{{ fa.descripcion }}</p>
 
             <!-- HALLAZGOS Y SOLUCIÓN -->
@@ -60,11 +60,11 @@
               <!-- Botones de cámara / galería -->
               <div class="td-foto-btns">
                 <button class="td-foto-btn td-foto-btn--cam" @click="$refs.inputCamara.click()" :disabled="uploading">
-                  <i class="pi pi-camera" />
+                  <CameraIcon class="size-[1em]" />
                   <span>Cámara</span>
                 </button>
                 <button class="td-foto-btn td-foto-btn--gal" @click="$refs.inputGaleria.click()" :disabled="uploading">
-                  <i class="pi pi-images" />
+                  <ImagesIcon class="size-[1em]" />
                   <span>Galería</span>
                 </button>
               </div>
@@ -81,7 +81,7 @@
                 <span>Subiendo a Drive… {{ uploadPct }}%</span>
               </div>
               <div v-if="uploadError" class="td-upload-error">
-                <i class="pi pi-exclamation-triangle" /> {{ uploadError }}
+                <TriangleAlertIcon class="size-[1em]" /> {{ uploadError }}
                 <button @click="uploadError = ''">Cerrar</button>
               </div>
 
@@ -89,11 +89,11 @@
               <div v-if="archivos.length" class="td-fotos-grid">
                 <div v-for="a in archivos" :key="a.id" class="td-foto-item">
                   <a :href="a.url" target="_blank" rel="noopener" class="td-foto-thumb">
-                    <i class="pi pi-image" />
+                    <ImageIcon class="size-[1em]" />
                     <span>{{ truncarNombre(a.nombre) }}</span>
                   </a>
                   <button class="td-foto-del" @click.prevent="eliminarFoto(a)" title="Eliminar">
-                    <i class="pi pi-times" />
+                    <XIcon class="size-[1em]" />
                   </button>
                 </div>
               </div>
@@ -106,7 +106,7 @@
               <div class="td-nota-add">
                 <textarea v-model="nota" rows="2" class="td-textarea td-textarea--sm" placeholder="Agregar nota o actualización…" />
                 <button class="td-nota-send" :disabled="addingSeg || !nota.trim()" @click="agregarNota">
-                  <i v-if="addingSeg" class="pi pi-spin pi-spinner" /><i v-else class="pi pi-send" />
+                  <LoaderCircleIcon class="size-[1em] animate-spin" v-if="addingSeg" /><SendIcon class="size-[1em]" v-else />
                 </button>
               </div>
               <div v-for="s in (fa.seguimientos || []).slice().reverse()" :key="s.id" class="td-seg">
@@ -122,10 +122,10 @@
           <!-- Botón principal: Cerrar falla -->
           <div class="td-actions">
             <button v-if="!fa.estado?.es_estado_final" class="td-btn-cerrar" :disabled="saving" @click="cerrarFalla">
-              <i class="pi pi-check-circle" /> Marcar falla resuelta
+              <CircleCheckIcon class="size-[1em]" /> Marcar falla resuelta
             </button>
             <button v-else class="td-btn-reabrir" :disabled="saving" @click="reabrirFalla">
-              <i class="pi pi-replay" /> Reabrir falla
+              <RotateCcwIcon class="size-[1em]" /> Reabrir falla
             </button>
           </div>
         </div>
@@ -137,6 +137,8 @@
 <script setup>
 import { ref, watch } from 'vue'
 import api from '~/core/client'
+import { CameraIcon, CircleCheckIcon, FlagIcon, ImageIcon, ImagesIcon, LoaderCircleIcon, RotateCcwIcon, SendIcon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 
 const props = defineProps({
   open:      { type: Boolean, default: false },
@@ -225,7 +227,7 @@ async function patch(payload) {
     emit('updated', data)
     return true
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'No se pudo guardar', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('No se pudo guardar', { description: e.response?.data?.detail, duration: 3000 })
     return false
   } finally {
     saving.value = false
@@ -248,9 +250,9 @@ async function agregarNota() {
     await api.post(`/fallas/${fa.value.id}/seguimientos`, { nota: nota.value.trim() })
     nota.value = ''
     await refrescar()
-    window.__primeToast?.({ severity: 'success', summary: 'Nota agregada', life: 2000 })
+    toast.success('Nota agregada', { duration: 2000 })
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     addingSeg.value = false
   }
@@ -291,11 +293,11 @@ async function _subirArchivo(file) {
     })
     uploadPct.value = 100
     archivos.value.push(data)
-    window.__primeToast?.({ severity: 'success', summary: 'Foto guardada en Drive', life: 2000 })
+    toast.success('Foto guardada en Drive', { duration: 2000 })
   } catch (e) {
     const msg = e.response?.data?.detail || 'Error al subir la foto. Verifica tu conexión.'
     uploadError.value = msg
-    window.__primeToast?.({ severity: 'error', summary: 'Error al subir foto', detail: msg, life: 4000 })
+    toast.error('Error al subir foto', { description: msg, duration: 4000 })
   } finally {
     uploading.value = false
     uploadPct.value = 0
@@ -307,20 +309,20 @@ async function eliminarFoto(archivo) {
   try {
     await api.delete(`/fallas/${fa.value.id}/archivos/${archivo.id}`)
     archivos.value = archivos.value.filter((a) => a.id !== archivo.id)
-    window.__primeToast?.({ severity: 'info', summary: 'Foto eliminada', life: 2000 })
+    toast.info('Foto eliminada', { duration: 2000 })
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'No se pudo eliminar', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('No se pudo eliminar', { description: e.response?.data?.detail, duration: 3000 })
   }
 }
 
 async function cerrarFalla() {
   const final = (props.catalogos.estados || []).find((e) => e.es_estado_final)
   if (!final) {
-    window.__primeToast?.({ severity: 'warn', summary: 'Sin estado final configurado', life: 3000 })
+    toast.warning('Sin estado final configurado', { duration: 3000 })
     return
   }
   const ok = await patch({ estado_id: final.id, fecha_resolucion: new Date().toISOString() })
-  if (ok) window.__primeToast?.({ severity: 'success', summary: '¡Falla resuelta!', life: 2500 })
+  if (ok) toast.success('¡Falla resuelta!', { duration: 2500 })
 }
 
 async function reabrirFalla() {
@@ -353,7 +355,7 @@ async function reabrirFalla() {
 .td-badge-prio { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
 .td-time { font-size: 12px; color: #9ca3af; margin-left: auto; }
 .td-proj { font-size: 13px; color: #6b5a8a; display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
-.td-proj .pi { color: #059669; font-size: 11px; }
+.td-proj svg { color: #059669; font-size: 11px; }
 .td-desc { font-size: 14px; color: #374151; line-height: 1.5; margin: 0 0 16px; padding: 12px; background: #f9fafb; border-radius: 10px; }
 
 .td-section { margin-bottom: 18px; }
@@ -376,11 +378,11 @@ async function reabrirFalla() {
   padding: 14px 10px; border: 2px dashed #d1d5db; border-radius: 14px;
   background: #f9fafb; font-size: 13px; font-weight: 600; color: #374151;
 }
-.td-foto-btn .pi { font-size: 22px; }
+.td-foto-btn svg { font-size: 22px; }
 .td-foto-btn--cam { border-color: #059669; color: #065f46; background: #f0fdf4; }
-.td-foto-btn--cam .pi { color: #059669; }
+.td-foto-btn--cam svg { color: #059669; }
 .td-foto-btn--gal { border-color: #2563eb; color: #1e40af; background: #eff6ff; }
-.td-foto-btn--gal .pi { color: #2563eb; }
+.td-foto-btn--gal svg { color: #2563eb; }
 .td-foto-btn:disabled { opacity: .5; }
 
 .td-upload-progress {
@@ -404,7 +406,7 @@ async function reabrirFalla() {
   background: #f0fdf4; text-decoration: none; color: #065f46; font-size: 10px; text-align: center;
   padding: 10px 4px; overflow: hidden;
 }
-.td-foto-thumb .pi { font-size: 24px; color: #059669; }
+.td-foto-thumb svg { font-size: 24px; color: #059669; }
 .td-foto-del {
   position: absolute; top: -5px; right: -5px; width: 20px; height: 20px;
   border-radius: 50%; border: none; background: #dc2626; color: #fff; font-size: 9px;

@@ -24,7 +24,7 @@
 
       <template v-if="overrides[tipo.value] && editando !== tipo.value">
         <span class="text-sm flex-1" style="color: #6b5a8a;">
-          <i class="pi pi-arrow-right-arrow-left text-xs mr-1" style="color:#915BD8;" />
+          <ArrowRightLeftIcon class="text-xs mr-1 size-[1em]" style="color:#915BD8;" />
           <RouterLink :to="`/clientes/${overrides[tipo.value].cliente_id}?tab=contactos`" class="underline" style="color:#915BD8;">
             {{ overrides[tipo.value].cliente_nombre }}
           </RouterLink>
@@ -33,7 +33,7 @@
           class="text-xs px-2 py-1 rounded hover:bg-gray-50" style="color:#915BD8;">Cambiar</button>
         <button type="button" @click="quitarOverride(tipo.value)"
           class="p-1.5 rounded-lg transition-colors hover:bg-red-50">
-          <i class="pi pi-trash text-xs" style="color: #ef4444;" />
+          <Trash2Icon class="text-xs size-[1em]" style="color: #ef4444;" />
         </button>
       </template>
 
@@ -42,10 +42,10 @@
           optionValue="id" class="flex-1" filter showClear placeholder="Buscar cliente..." />
         <button type="button" @click="guardarOverride(tipo.value)" :disabled="!clienteSeleccionado"
           class="p-1.5 rounded-lg hover:bg-green-50 disabled:opacity-40">
-          <i class="pi pi-check text-xs" style="color: #16a34a;" />
+          <CheckIcon class="text-xs size-[1em]" style="color: #16a34a;" />
         </button>
         <button type="button" @click="editando = null" class="p-1.5 rounded-lg hover:bg-gray-50">
-          <i class="pi pi-times text-xs" style="color: #9b89b5;" />
+          <XIcon class="text-xs size-[1em]" style="color: #9b89b5;" />
         </button>
       </template>
 
@@ -61,15 +61,15 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import Select from 'primevue/select'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
+import { ArrowRightLeftIcon, CheckIcon, Trash2Icon, XIcon } from '@lucide/vue'
 
 const props = defineProps({
   proyectoId: { type: [Number, String], required: true },
   inversionistas: { type: Array, default: () => [] },
   clientesOptions: { type: Array, default: () => [] },
 })
-const toast = useToast()
 
 const inversionistasConId = computed(() => {
   const hoy = new Date().toISOString().slice(0, 10)
@@ -103,7 +103,7 @@ async function guardarOverride(tipo) {
     overrides.value = { ...overrides.value, [tipo]: data }
     editando.value = null
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo guardar', life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail || 'No se pudo guardar', duration: 4000 })
   }
 }
 
@@ -114,7 +114,7 @@ async function quitarOverride(tipo) {
     delete rest[tipo]
     overrides.value = rest
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo quitar el puntero', life: 4000 })
+    toast.error('Error', { description: 'No se pudo quitar el puntero', duration: 4000 })
   }
 }
 

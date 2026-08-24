@@ -32,7 +32,7 @@
                 :style="{ background: i <= paso ? '#915BD8' : '#c4b8d4' }">{{ i + 1 }}</span>
           {{ t }}
         </button>
-        <i v-if="i < PASOS.length - 1" class="pi pi-angle-right" style="color:#c4b8d4;font-size:10px" />
+        <ChevronRightIcon class="size-[1em]" v-if="i < PASOS.length - 1" style="color:#c4b8d4;font-size:10px" />
       </li>
     </ol>
 
@@ -73,8 +73,9 @@
         <div>
           <div class="flex items-center justify-between mb-1">
             <label class="etiqueta !mb-0">Contactos * (al menos uno con correo)</label>
-            <Button label="Agregar" icon="pi pi-plus" text size="small"
-                    @click="nuevo.contactos.push({ nombre: '', telefono: '', email: '', tipo: 'comercial' })" />
+            <Button label="Agregar" text size="small" @click="nuevo.contactos.push({ nombre: '', telefono: '', email: '', tipo: 'comercial' })">
+              <template #icon><PlusIcon class="size-[1em]" /></template>
+            </Button>
           </div>
           <div v-for="(c, i) in nuevo.contactos" :key="i"
                class="grid grid-cols-[1fr_1fr_1.2fr_auto_auto] gap-2 mb-2">
@@ -83,8 +84,9 @@
             <InputText v-model.trim="c.email" placeholder="Correo *" />
             <Select v-model="c.tipo" :options="TIPOS_CONTACTO" optionLabel="label" optionValue="value"
                     class="w-32" />
-            <Button icon="pi pi-trash" text severity="danger" :disabled="nuevo.contactos.length === 1"
-                    @click="nuevo.contactos.splice(i, 1)" />
+            <Button text severity="danger" :disabled="nuevo.contactos.length === 1" @click="nuevo.contactos.splice(i, 1)">
+              <template #icon><Trash2Icon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
 
@@ -120,8 +122,9 @@
            style="background:#FAF8FC;border:1px solid #e8e0f0">
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-semibold" style="color:#7a6e8a">Oferta {{ i + 1 }}</span>
-          <Button v-if="ofertas.length > 1" icon="pi pi-trash" text severity="danger" size="small"
-                  @click="ofertas.splice(i, 1)" />
+          <Button v-if="ofertas.length > 1" text severity="danger" size="small" @click="ofertas.splice(i, 1)">
+            <template #icon><Trash2Icon class="size-[1em]" /></template>
+          </Button>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
@@ -192,8 +195,9 @@
         </p>
       </div>
 
-      <Button label="Agregar otra oferta" icon="pi pi-plus" outlined size="small" class="self-start"
-              @click="agregarOferta" />
+      <Button label="Agregar otra oferta" outlined size="small" class="self-start" @click="agregarOferta">
+        <template #icon><PlusIcon class="size-[1em]" /></template>
+      </Button>
       <p class="ayuda">
         Una oferta por planta × servicio. Es la unidad del tablero: sin al menos una,
         el registro no aparecería en ninguna vista.
@@ -240,15 +244,19 @@
 
     <template #footer>
       <div class="flex items-center justify-between w-full">
-        <Button v-if="paso > 0" label="Atrás" icon="pi pi-angle-left" text :disabled="guardando"
-                @click="paso -= 1" />
+        <Button v-if="paso > 0" label="Atrás" text :disabled="guardando" @click="paso -= 1">
+          <template #icon><ChevronLeftIcon class="size-[1em]" /></template>
+        </Button>
         <span v-else />
         <div class="flex items-center gap-2">
           <Button label="Cancelar" text severity="secondary" :disabled="guardando" @click="cerrar(false)" />
-          <Button v-if="paso < PASOS.length - 1" label="Continuar" icon="pi pi-angle-right"
-                  iconPos="right" :disabled="!pasoCompleto" @click="paso += 1" />
-          <Button v-else label="Registrar" icon="pi pi-check" :loading="guardando"
-                  :disabled="!pasoCompleto" @click="guardar" />
+          <Button v-if="paso < PASOS.length - 1" label="Continuar" class="flex-row-reverse"
+                  :disabled="!pasoCompleto" @click="paso += 1">
+            <template #icon><ChevronRightIcon class="size-[1em]" /></template>
+          </Button>
+          <Button v-else label="Registrar" :loading="guardando" :disabled="!pasoCompleto" @click="guardar">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </template>
@@ -266,12 +274,13 @@ import SelectButton from 'primevue/selectbutton'
 import AutoComplete from 'primevue/autocomplete'
 import DatePicker from 'primevue/datepicker'
 import Message from 'primevue/message'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import {
   TIPOS_OFERTA, ORIGENES_CLIENTE, labelTipo, labelEtapa, segmentoTipo, aFechaStr,
   etiquetaPrecio, placeholderPrecio, ayudaPrecio,
 } from './comercial.js'
 import { cargarClientes, cargarProyectos } from './catalogos.js'
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -279,7 +288,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:visible', 'registrada'])
 
-const toast = useToast()
 
 const PASOS = ['Cliente', 'Ofertas', 'Confirmar']
 const SUBTITULOS = [
@@ -360,11 +368,11 @@ const pasoCompleto = computed(() => {
 async function cargarCatalogos() {
   const [cl, pr] = await Promise.allSettled([cargarClientes(), cargarProyectos()])
   if (cl.status === 'fulfilled') clientes.value = cl.value
-  else toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de clientes', life: 4000 })
+  else toast.warning('No se pudo cargar la lista de clientes', { duration: 4000 })
   if (pr.status === 'fulfilled') proyectos.value = pr.value
   // El fallo de proyectos también se avisa: quedarse sin la lista de plantas y
   // no enterarse es cómo se registraban ofertas sin vincular a ningún proyecto.
-  else toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de plantas', life: 4000 })
+  else toast.warning('No se pudo cargar la lista de plantas', { duration: 4000 })
   cargandoCatalogos.value = false
 }
 
@@ -457,12 +465,7 @@ async function guardar() {
 
   if (r.ok) {
     const n = r.oportunidad.ofertas?.length ?? 0
-    toast.add({
-      severity: 'success',
-      summary: `${n} oferta(s) registrada(s)`,
-      detail: 'Ya están en el tablero.',
-      life: 3500,
-    })
+    toast.success(`${n} oferta(s) registrada(s)`, { description: 'Ya están en el tablero.', duration: 3500 })
     emit('registrada', r.oportunidad)
     emit('update:visible', false)
     return

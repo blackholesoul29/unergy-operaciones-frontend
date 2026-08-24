@@ -2,10 +2,9 @@
   <!-- Botón trigger -->
   <div class="inline-block">
     <input ref="zipInputRef" type="file" accept=".zip" class="hidden" @change="onZipSelected" />
-    <Button label="Cargar ZIP" icon="pi pi-upload" size="small" outlined
-      :loading="procesando"
-      @click="zipInputRef.click()"
-      style="border-color:#915BD8;color:#915BD8" />
+    <Button label="Cargar ZIP" size="small" outlined :loading="procesando" @click="zipInputRef.click()" style="border-color:#915BD8;color:#915BD8">
+      <template #icon><UploadIcon class="size-[1em]" /></template>
+    </Button>
   </div>
 
   <!-- ── Dialog preview ──────────────────────────────────────────────────── -->
@@ -20,7 +19,7 @@
       <div v-if="periodoZip && periodoZip !== periodo"
         class="rounded-xl border p-3 flex items-center gap-3"
         style="background:#eff6ff;border-color:#bfdbfe">
-        <i class="pi pi-info-circle text-sm flex-shrink-0" style="color:#2563eb"/>
+        <InfoIcon class="text-sm flex-shrink-0 size-[1em]" style="color:#2563eb" />
         <p class="text-xs" style="color:#1e40af">
           El ZIP corresponde al período <strong>{{ periodoZip }}</strong>.
           Los documentos se guardarán en ese período.
@@ -31,7 +30,7 @@
       <div v-if="hayDuplicados"
         class="rounded-xl border p-3 flex items-start gap-3"
         style="background:#fef3c7;border-color:#f59e0b40">
-        <i class="pi pi-exclamation-triangle text-sm flex-shrink-0 mt-0.5" style="color:#d97706"/>
+        <TriangleAlertIcon class="text-sm flex-shrink-0 mt-0.5 size-[1em]" style="color:#d97706" />
         <div class="flex-1 text-xs" style="color:#92400e">
           <p class="font-semibold mb-1">
             Ya existe documento para {{ predioscDuplicados.length }} predio(s) en este período
@@ -44,7 +43,7 @@
       <div v-if="prediosSinMatch.length"
         class="rounded-xl border p-3 flex items-start gap-3"
         style="background:#fef2f2;border-color:#fca5a540">
-        <i class="pi pi-exclamation-circle text-sm flex-shrink-0 mt-0.5" style="color:#dc2626"/>
+        <CircleAlertIcon class="text-sm flex-shrink-0 mt-0.5 size-[1em]" style="color:#dc2626" />
         <div class="flex-1 text-xs" style="color:#991b1b">
           <p class="font-semibold mb-1">{{ prediosSinMatch.length }} predio(s) sin proyecto en BD</p>
           <p class="font-mono text-[11px]">{{ prediosSinMatch.map(p => p.codigoPredio).join(', ') }}</p>
@@ -95,8 +94,7 @@
                   :class="!predio.proyectoId ? 'bg-red-50/40' : (predio.yaExiste ? 'bg-amber-50/40' : '')">
                   <td class="px-3 py-2 font-mono text-xs text-gray-600">
                     {{ predio.codigoPredio }}
-                    <i v-if="predio.yaExiste" class="pi pi-refresh text-[9px] ml-1" style="color:#d97706"
-                      title="Ya existe — se reemplazará" />
+                    <RefreshCwIcon class="text-[9px] ml-1 size-[1em]" v-if="predio.yaExiste" style="color:#d97706" title="Ya existe — se reemplazará" />
                   </td>
                   <td class="px-3 py-2">
                     <div v-if="predio.proyectoId" class="text-xs font-medium" style="color:#2C2039">
@@ -133,12 +131,12 @@
                     <span v-if="predio.proyectoId"
                       class="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
                       style="background:#dcfce7;color:#166534">
-                      <i class="pi pi-check text-[10px]" />OK
+                      <CheckIcon class="text-[10px] size-[1em]" />OK
                     </span>
                     <span v-else
                       class="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
                       style="background:#fee2e2;color:#991b1b">
-                      <i class="pi pi-times text-[10px]" />Sin match
+                      <XIcon class="text-[10px] size-[1em]" />Sin match
                     </span>
                   </td>
                 </tr>
@@ -157,11 +155,9 @@
         <div class="flex gap-2">
           <Button label="Cancelar" size="small" outlined severity="secondary"
             :disabled="guardando" @click="showDialog = false" />
-          <Button :label="hayDuplicados ? 'Reemplazar y guardar' : 'Confirmar y guardar'"
-            icon="pi pi-check" size="small"
-            :loading="guardando" :disabled="totalPredios === 0"
-            @click="confirmar"
-            style="background:#915BD8;border-color:#915BD8" />
+          <Button :label="hayDuplicados ? 'Reemplazar y guardar' : 'Confirmar y guardar'" size="small" :loading="guardando" :disabled="totalPredios === 0" @click="confirmar" style="background:#915BD8;border-color:#915BD8">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
 
@@ -174,14 +170,14 @@
       <!-- Asociados -->
       <div class="rounded-lg border p-3 space-y-1.5" style="background:#f0fdf4;border-color:#bbf7d0">
         <p class="text-xs font-semibold" style="color:#166534">
-          <i class="pi pi-check-circle mr-1"/>
+          <CircleCheckIcon class="mr-1 size-[1em]" />
           {{ resumen.asociados.length }} predio(s) asociados correctamente
         </p>
         <div v-for="(item, idx) in resumen.asociados" :key="idx"
           class="flex items-center gap-2 text-[11px] text-gray-600 pl-3">
-          <i class="pi pi-file-pdf text-[9px]" style="color:#16a34a"/>
+          <FileTextIcon class="text-[9px] size-[1em]" style="color:#16a34a" />
           <span class="font-mono text-gray-400">{{ item.codigo }}</span>
-          <i class="pi pi-arrow-right text-[9px] text-gray-300"/>
+          <ArrowRightIcon class="text-[9px] text-gray-300 size-[1em]" />
           <span>{{ item.proyecto }}</span>
         </div>
       </div>
@@ -189,7 +185,7 @@
       <!-- Sin match -->
       <div v-if="resumen.sinMatch.length" class="rounded-lg border p-3 space-y-1.5" style="background:#fffbeb;border-color:#fcd34d40">
         <p class="text-xs font-semibold" style="color:#92400e">
-          <i class="pi pi-exclamation-triangle mr-1"/>
+          <TriangleAlertIcon class="mr-1 size-[1em]" />
           {{ resumen.sinMatch.length }} predio(s) sin match — revisión manual
         </p>
         <div v-for="(item, idx) in resumen.sinMatch" :key="idx"
@@ -202,8 +198,8 @@
 
       <!-- Totales -->
       <div class="flex items-center gap-4 text-xs text-gray-500 pt-1 border-t">
-        <span><i class="pi pi-copy mr-1"/>{{ resumen.copiasGeneradas }} copias generadas</span>
-        <span><i class="pi pi-folder mr-1"/>{{ resumen.carpetasProcesadas }} carpetas procesadas</span>
+        <span><CopyIcon class="mr-1 size-[1em]" />{{ resumen.copiasGeneradas }} copias generadas</span>
+        <span><FolderIcon class="mr-1 size-[1em]" />{{ resumen.carpetasProcesadas }} carpetas procesadas</span>
       </div>
     </div>
     <template #footer>
@@ -216,12 +212,13 @@
 import { ref, computed } from 'vue'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import JSZip from 'jszip'
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 const { uploadCuentaCobro, fetchDocsPeriodo } = useArriendosDocs()
 import { validateZipEntries, getSafeFilePath } from '~/utils/zipSecurityValidator'
+import { ArrowRightIcon, CheckIcon, CircleAlertIcon, CircleCheckIcon, CopyIcon, FileTextIcon, FolderIcon, InfoIcon, RefreshCwIcon, TriangleAlertIcon, UploadIcon, XIcon } from '@lucide/vue'
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
@@ -230,7 +227,6 @@ GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 // El resto — en especial ejecutables — hace que se rechace todo el ZIP.
 const EXTENSIONES_PERMITIDAS = ['pdf', 'jpg', 'jpeg', 'png', 'xml']
 
-const toast = useToast()
 
 const props = defineProps({
   // [{ id (arr_arrendador_id, o sintético -proyecto_id si no tiene contrato),
@@ -504,11 +500,9 @@ async function onZipSelected(e) {
     if (!valid) {
       const primeros = errors.slice(0, 4).map(e => e.message).join(' · ')
       const extra = errors.length > 4 ? ` (+${errors.length - 4} más)` : ''
-      toast.add({
-        severity: 'error',
-        summary: 'ZIP rechazado por seguridad',
-        detail: `Estructura de archivos inválida o tipo no permitido. ${primeros}${extra}`,
-        life: 8000,
+      toast.error('ZIP rechazado por seguridad', {
+        description: `Estructura de archivos inválida o tipo no permitido. ${primeros}${extra}`,
+        duration: 8000,
       })
       return
     }
@@ -520,7 +514,7 @@ async function onZipSelected(e) {
     })
 
     if (!carpetas.size) {
-      toast.add({ severity: 'warn', summary: 'ZIP sin carpetas pago_*', life: 4000 })
+      toast.warning('ZIP sin carpetas pago_*', { duration: 4000 })
       return
     }
 
@@ -622,7 +616,7 @@ async function onZipSelected(e) {
     }
 
     if (!grupos.length) {
-      toast.add({ severity: 'warn', summary: 'No se encontraron documentos procesables', life: 4000 })
+      toast.warning('No se encontraron documentos procesables', { duration: 4000 })
       return
     }
 
@@ -644,7 +638,7 @@ async function onZipSelected(e) {
     showDialog.value = true
   } catch (err) {
     console.error(err)
-    toast.add({ severity: 'error', summary: 'Error al procesar el ZIP', detail: err.message, life: 5000 })
+    toast.error('Error al procesar el ZIP', { description: err.message, duration: 5000 })
   } finally {
     procesando.value = false
   }
@@ -699,7 +693,7 @@ async function confirmar() {
         }
       } catch (uploadErr) {
         console.error('Error subiendo', grupo.carpeta, uploadErr)
-        toast.add({ severity: 'warn', summary: `Error al subir ${grupo.carpeta}`, life: 4000 })
+        toast.warning(`Error al subir ${grupo.carpeta}`, { duration: 4000 })
       }
     }
 
@@ -709,7 +703,7 @@ async function confirmar() {
     emit('docs-actualizados', periodoParse)
   } catch (err) {
     console.error(err)
-    toast.add({ severity: 'error', summary: 'Error al guardar', detail: err.message, life: 4000 })
+    toast.error('Error al guardar', { description: err.message, duration: 4000 })
   } finally {
     guardando.value = false
   }

@@ -4,27 +4,27 @@
     <header class="cf-topbar">
       <div class="cf-topbar-left">
         <span class="cf-role-badge">Coordinador</span>
-        <span class="cf-brand"><i class="pi pi-wrench" /> Fallas</span>
+        <span class="cf-brand"><WrenchIcon class="size-[1em]" /> Fallas</span>
       </div>
       <button class="cf-icon-btn cf-bell" @click="notifOpen = true" title="Notificaciones">
-        <i class="pi pi-bell" />
+        <BellIcon class="size-[1em]" />
         <span v-if="unreadCount > 0" class="cf-bell-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
       </button>
       <button class="cf-icon-btn cf-add" @click="createOpen = true" title="Registrar falla">
-        <i class="pi pi-plus" />
+        <PlusIcon class="size-[1em]" />
       </button>
     </header>
 
     <!-- FILTROS -->
     <div class="cf-filters">
       <div class="cf-search">
-        <i class="pi pi-search" />
+        <SearchIcon class="size-[1em]" />
         <input v-model="search" placeholder="Código, descripción, proyecto…" />
-        <i v-if="search" class="pi pi-times cf-clear" @click="search = ''" />
+        <XIcon class="cf-clear size-[1em]" v-if="search" @click="search = ''" />
       </div>
       <div class="cf-chips">
         <button :class="['cf-fchip', filtro === 'sin_asignar' && 'cf-fchip--on cf-fchip--warn']" @click="filtro = 'sin_asignar'">
-          <i class="pi pi-user-plus" /> Sin asignar
+          <UserPlusIcon class="size-[1em]" /> Sin asignar
         </button>
         <button :class="['cf-fchip', filtro === 'activas' && 'cf-fchip--on']" @click="filtro = 'activas'">Activas</button>
         <button :class="['cf-fchip', filtro === null && 'cf-fchip--on']" @click="filtro = null">Todas</button>
@@ -53,11 +53,11 @@
 
     <!-- LISTA -->
     <main class="cf-list">
-      <div v-if="loading" class="cf-state"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
+      <div v-if="loading" class="cf-state"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando…</div>
       <div v-else-if="!filtradas.length" class="cf-state">
-        <i class="pi pi-check-circle" style="font-size:32px;color:#22c55e" />
+        <CircleCheckIcon class="size-[1em]" style="font-size:32px;color:#22c55e" />
         <span>{{ fallas.length ? 'Sin resultados con estos filtros' : 'No hay fallas registradas' }}</span>
-        <button class="cf-empty-add" @click="createOpen = true"><i class="pi pi-plus" /> Registrar falla</button>
+        <button class="cf-empty-add" @click="createOpen = true"><PlusIcon class="size-[1em]" /> Registrar falla</button>
       </div>
       <template v-else>
         <button v-for="f in filtradas" :key="f.id" class="cf-card" @click="openDetail(f)">
@@ -68,7 +68,7 @@
               <span class="cf-card-estado" :style="estadoStyle(f.estado)">{{ f.estado?.etiqueta }}</span>
             </div>
             <div class="cf-card-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</div>
-            <div class="cf-card-proj"><i class="pi pi-bolt" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
+            <div class="cf-card-proj"><ZapIcon class="size-[1em]" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
             <div class="cf-card-foot">
               <span class="cf-prio" :style="{ color: f.prioridad?.color_hex || '#6b5a8a' }">{{ f.prioridad?.etiqueta }}</span>
               <span class="cf-time">{{ relativeTime(f.fecha_identificacion) }}</span>
@@ -77,7 +77,7 @@
                 {{ initials(f.asignado_a.nombre) }}
               </span>
               <span v-else class="cf-assignee cf-assignee--empty" title="Sin asignar">
-                <i class="pi pi-user-plus" />
+                <UserPlusIcon class="size-[1em]" />
               </span>
             </div>
           </div>
@@ -114,6 +114,8 @@ import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.v
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
 import FallaCreateSheet from '~/features/mobile/components/components/FallaCreateSheet.vue'
 import NotificationsSheet from '~/features/mobile/components/components/NotificationsSheet.vue'
+import { BellIcon, CircleCheckIcon, LoaderCircleIcon, PlusIcon, SearchIcon, UserPlusIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 
 const auth = useAuthStore()
 const fallas = ref([])
@@ -197,7 +199,10 @@ async function cargar() {
     tecnicos.value = todos.filter((u) => u.rol === 'tecnico')
     await cargarFallas()
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'Error al cargar fallas', detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('Error al cargar fallas', {
+      description: e.response?.data?.detail || e.message,
+      duration: 4000,
+    })
   } finally {
     loading.value = false
   }
@@ -250,7 +255,7 @@ onMounted(() => { cargar(); fetchUnread() })
   align-self: flex-start;
 }
 .cf-brand { font-size: clamp(14px, 4vw, 16px); font-weight: 700; }
-.cf-brand .pi { color: #fbbf24; margin-right: 5px; }
+.cf-brand svg { color: #fbbf24; margin-right: 5px; }
 .cf-icon-btn {
   width: 38px; height: 38px; border-radius: 10px; border: none;
   background: rgba(255,255,255,0.12); color: #fff; font-size: 15px; position: relative;
@@ -265,7 +270,7 @@ onMounted(() => { cargar(); fetchUnread() })
 /* Filtros */
 .cf-filters { flex-shrink: 0; background: #fff; padding: 12px 14px; border-bottom: 1px solid #eceaf2; }
 .cf-search { display: flex; align-items: center; gap: 9px; background: #f1f5f9; border-radius: 12px; padding: 11px 14px; }
-.cf-search .pi-search { color: #9ca3af; font-size: 15px; }
+.cf-search svg { color: #9ca3af; font-size: 15px; }
 .cf-search input { flex: 1; border: none; background: none; outline: none; font-size: 16px; color: #2C2039; }
 .cf-clear { color: #9ca3af; }
 .cf-chips { display: flex; gap: 8px; margin-top: 11px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
@@ -295,7 +300,7 @@ onMounted(() => { cargar(); fetchUnread() })
 /* Lista */
 .cf-list { flex: 1; overflow-y: auto; padding: 12px 14px; -webkit-overflow-scrolling: touch; }
 .cf-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; color: #6b5a8a; font-size: 15px; text-align: center; }
-.cf-state .pi-spinner { font-size: 26px; color: #2563eb; }
+.cf-state svg { font-size: 26px; color: #2563eb; }
 .cf-empty-add { margin-top: 6px; display: flex; align-items: center; gap: 8px; padding: 11px 20px; border: none; border-radius: 12px; background: #2563eb; color: #fff; font-weight: 700; font-size: 15px; }
 
 .cf-card {
@@ -309,7 +314,7 @@ onMounted(() => { cargar(); fetchUnread() })
 .cf-card-estado { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 7px; }
 .cf-card-tipo { font-size: 14px; font-weight: 700; color: #2C2039; line-height: 1.25; }
 .cf-card-proj { font-size: 12.5px; color: #6b5a8a; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
-.cf-card-proj .pi { font-size: 11px; color: #2563eb; }
+.cf-card-proj svg { font-size: 11px; color: #2563eb; }
 .cf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
 .cf-prio { font-size: 12.5px; font-weight: 700; }
 .cf-time { font-size: 12px; color: #9ca3af; }

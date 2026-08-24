@@ -4,17 +4,18 @@
     <div class="flex items-center justify-between flex-wrap gap-3">
       <Calendar v-model="fecha" dateFormat="yy-mm-dd" class="w-40" :maxDate="maxFecha" showIcon />
       <div class="flex items-center gap-2">
-        <Button icon="pi pi-play" label="Ejecutar clasificación" severity="secondary" outlined
-                :loading="ejecutando" :disabled="ejecutando"
-                @click="ejecutarClasificacion" />
-        <Button v-if="ejecutando" icon="pi pi-stop-circle" label="Detener" severity="danger" outlined
-                :loading="deteniendo" @click="detenerClasificacion" />
-        <Button icon="pi pi-file-excel" label="Generar Excel" severity="secondary" outlined
-                :loading="generandoExcel" @click="generarExcel" />
-        <Button icon="pi pi-send" label="Enviar reporte"
-                :disabled="!resumen || !resumen.puede_enviar" :loading="enviando"
-                v-tooltip.bottom="!resumen?.puede_enviar ? 'Quedan fronteras con horas sin fuente por revisar' : null"
-                style="background: #915BD8; border-color: #915BD8;" @click="enviarReporte" />
+        <Button label="Ejecutar clasificación" severity="secondary" outlined :loading="ejecutando" :disabled="ejecutando" @click="ejecutarClasificacion">
+          <template #icon><PlayIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-if="ejecutando" label="Detener" severity="danger" outlined :loading="deteniendo" @click="detenerClasificacion">
+          <template #icon><CircleStopIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Generar Excel" severity="secondary" outlined :loading="generandoExcel" @click="generarExcel">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Enviar reporte" :disabled="!resumen || !resumen.puede_enviar" :loading="enviando" v-tooltip.bottom="!resumen?.puede_enviar ? 'Quedan fronteras con horas sin fuente por revisar' : null" style="background: #915BD8; border-color: #915BD8;" @click="enviarReporte">
+          <template #icon><SendIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -81,11 +82,13 @@
     <TabView v-model:activeIndex="activeTab">
       <TabPanel header="Revisión de hoy">
         <div v-if="loadingLista" class="flex items-center justify-center py-12">
-          <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
         </div>
         <div v-else-if="!filas.length" class="text-center py-12" style="color: #9b89b5;">
           <p class="mb-3">Todavía no se ha corrido la clasificación para este día.</p>
-          <Button icon="pi pi-play" label="Ejecutar clasificación" :loading="ejecutando" @click="ejecutarClasificacion" />
+          <Button label="Ejecutar clasificación" :loading="ejecutando" @click="ejecutarClasificacion">
+            <template #icon><PlayIcon class="size-[1em]" /></template>
+          </Button>
         </div>
         <div v-else class="workspace">
           <ReporteEnergiaLista
@@ -115,7 +118,7 @@
           <Button label="Ver" size="small" @click="cargarHistorial" />
         </div>
         <div v-if="loadingHistorial" class="flex items-center justify-center py-12">
-          <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
         </div>
         <div v-else-if="filasHistorial.length" class="workspace">
           <ReporteEnergiaLista
@@ -155,7 +158,7 @@
         </div>
 
         <div v-if="loadingResumenHistorico" class="flex items-center justify-center py-12">
-          <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
         </div>
 
         <template v-else-if="resumenHistorico">
@@ -391,7 +394,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
@@ -405,10 +408,10 @@ import {
 } from 'chart.js'
 import ReporteEnergiaLista from './ReporteEnergiaLista.vue'
 import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
+import { CircleStopIcon, FileSpreadsheetIcon, LoaderCircleIcon, PlayIcon, SendIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
-const toast = useToast()
 const route = useRoute()
 const router = useRouter()
 
@@ -496,7 +499,10 @@ async function cargarResumenHistorico() {
     })
     resumenHistorico.value = data
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo cargar el resumen histórico.', life: 4000 })
+    toast.error('Error', {
+      description: e.response?.data?.detail || 'No se pudo cargar el resumen histórico.',
+      duration: 4000,
+    })
     resumenHistorico.value = null
   } finally {
     loadingResumenHistorico.value = false
@@ -629,10 +635,9 @@ async function irAFronteraHistorial(frontera_id) {
   if (f) {
     seleccionHistorial.value = f
   } else {
-    toast.add({
-      severity: 'info', summary: 'Sin fila en esa fecha',
-      detail: 'Esta frontera no tiene reporte en la fecha "hasta" del rango -- prueba con otra fecha en Historial.',
-      life: 5000,
+    toast.info('Sin fila en esa fecha', {
+      description: 'Esta frontera no tiene reporte en la fecha "hasta" del rango -- prueba con otra fecha en Historial.',
+      duration: 5000,
     })
   }
 }
@@ -653,7 +658,7 @@ async function cargarLista(silent = false) {
     filas.value = data
   } catch (e) {
     if (!silent) {
-      toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el reporte de ese día.', life: 4000 })
+      toast.error('Error', { description: 'No se pudo cargar el reporte de ese día.', duration: 4000 })
       filas.value = []
     }
   } finally {
@@ -807,14 +812,16 @@ async function ejecutarClasificacion() {
   ejecutando.value = true
   try {
     await api.post('/reporte-energia/ejecutar', null, { params: { fecha: fechaISO.value } })
-    toast.add({
-      severity: 'info', summary: 'Clasificación iniciada',
-      detail: 'Corre en segundo plano -- puede tardar varios minutos si hay medidores incompletos. La tabla se va a ir actualizando sola.',
-      life: 6000,
+    toast.info('Clasificación iniciada', {
+      description: 'Corre en segundo plano -- puede tardar varios minutos si hay medidores incompletos. La tabla se va a ir actualizando sola.',
+      duration: 6000,
     })
     sondearResultado()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo iniciar la clasificación.', life: 4000 })
+    toast.error('Error', {
+      description: e.response?.data?.detail || 'No se pudo iniciar la clasificación.',
+      duration: 4000,
+    })
     ejecutando.value = false
   }
 }
@@ -827,9 +834,12 @@ async function detenerClasificacion() {
   deteniendo.value = true
   try {
     await api.post('/reporte-energia/ejecutar/cancelar', null, { params: { fecha: fechaISO.value } })
-    toast.add({ severity: 'info', summary: 'Deteniendo…', detail: 'Se detiene después de terminar la frontera en curso, no de inmediato.', life: 5000 })
+    toast.info('Deteniendo…', {
+      description: 'Se detiene después de terminar la frontera en curso, no de inmediato.',
+      duration: 5000,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo pedir la detención.', life: 4000 })
+    toast.error('Error', { description: 'No se pudo pedir la detención.', duration: 4000 })
   } finally {
     deteniendo.value = false
   }
@@ -877,20 +887,18 @@ async function avisarSiHuboFallidas(fechaSondeada) {
   try {
     const { data } = await api.get('/reporte-energia/ejecutar/estado', { params: { fecha: fechaSondeada } })
     if (data.error_general) {
-      toast.add({ severity: 'error', summary: 'Clasificación interrumpida', detail: data.error_general, life: 8000 })
+      toast.error('Clasificación interrumpida', { description: data.error_general, duration: 8000 })
     } else if (data.cancelado) {
-      toast.add({
-        severity: 'warn', summary: 'Clasificación detenida',
-        detail: data.fallidas.length
+      toast.warning('Clasificación detenida', {
+        description: data.fallidas.length
           ? `Se detuvo manualmente. Además, ${data.fallidas.length} fronteras fallaron antes de detenerse: ${data.fallidas.join(', ')}`
           : 'Se detuvo manualmente antes de terminar todas las fronteras.',
-        life: 8000,
+        duration: 8000,
       })
     } else if (data.fallidas.length) {
-      toast.add({
-        severity: 'warn', summary: 'Clasificación terminada con errores',
-        detail: `${data.fallidas.length} fronteras fallaron y quedaron marcadas para revisar: ${data.fallidas.join(', ')}`,
-        life: 8000,
+      toast.warning('Clasificación terminada con errores', {
+        description: `${data.fallidas.length} fronteras fallaron y quedaron marcadas para revisar: ${data.fallidas.join(', ')}`,
+        duration: 8000,
       })
     }
   } catch (e) {
@@ -911,7 +919,7 @@ async function generarExcel() {
     a.click()
     URL.revokeObjectURL(url)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo generar el Excel.', life: 4000 })
+    toast.error('Error', { description: 'No se pudo generar el Excel.', duration: 4000 })
   } finally {
     generandoExcel.value = false
   }
@@ -922,22 +930,24 @@ async function enviarReporte() {
   try {
     const { data } = await api.post('/reporte-energia/enviar', null, { params: { fecha: fechaISO.value }, timeout: 300000 })
     if (data.bloqueado) {
-      toast.add({ severity: 'warn', summary: 'Envío bloqueado', detail: data.motivo_bloqueo, life: 5000 })
+      toast.warning('Envío bloqueado', { description: data.motivo_bloqueo, duration: 5000 })
     } else if (data.fallidos.length) {
-      toast.add({
-        severity: 'warn', summary: 'Reporte enviado con fallos',
-        detail: `${data.enviados} fronteras enviadas, ${data.fallidos.length} fallidas — ${data.fallidos.join('; ')}`,
-        life: 8000,
+      toast.warning('Reporte enviado con fallos', {
+        description: `${data.enviados} fronteras enviadas, ${data.fallidos.length} fallidas — ${data.fallidos.join('; ')}`,
+        duration: 8000,
       })
     } else {
-      toast.add({ severity: 'success', summary: 'Reporte enviado', detail: `${data.enviados} fronteras enviadas`, life: 3000 })
+      toast.success('Reporte enviado', { description: `${data.enviados} fronteras enviadas`, duration: 3000 })
     }
     if (!data.bloqueado) {
       await revisarEstadoQuoia()
       if (estadoQuoia.value && estadoQuoia.value.en_espera > 0) iniciarPollingEstadoQuoia()
     }
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo enviar el reporte.', life: 4000 })
+    toast.error('Error', {
+      description: e.response?.data?.detail || 'No se pudo enviar el reporte.',
+      duration: 4000,
+    })
   } finally {
     enviando.value = false
   }

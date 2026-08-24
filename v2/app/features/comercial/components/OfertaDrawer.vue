@@ -75,11 +75,12 @@
             </div>
           </div>
           <div class="flex items-center gap-1 flex-shrink-0">
-            <Button label="+1 toque" icon="pi pi-send" size="small" outlined :loading="tocando"
-                    v-tooltip.top="'Reenvío o llamada de insistencia'" @click="tocar" />
-            <Button label="Respondió" icon="pi pi-check" size="small" severity="success" outlined
-                    :loading="guardando" v-tooltip.top="'Marca la respuesta de hoy y apaga la alerta'"
-                    @click="marcarRespuesta" />
+            <Button label="+1 toque" size="small" outlined :loading="tocando" v-tooltip.top="'Reenvío o llamada de insistencia'" @click="tocar">
+              <template #icon><SendIcon class="size-[1em]" /></template>
+            </Button>
+            <Button label="Respondió" size="small" severity="success" outlined :loading="guardando" v-tooltip.top="'Marca la respuesta de hoy y apaga la alerta'" @click="marcarRespuesta">
+              <template #icon><CheckIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
       </section>
@@ -135,9 +136,9 @@
         <div class="mt-3">
           <div class="flex items-center justify-between mb-1">
             <label class="etiqueta !mb-0">Proyectos vinculados</label>
-            <Button label="Crear planta" icon="pi pi-plus" text size="small"
-                    v-tooltip.top="'Crearla en Proyectos y vincularla a esta oferta'"
-                    @click="crearProyecto = true" />
+            <Button label="Crear planta" text size="small" v-tooltip.top="'Crearla en Proyectos y vincularla a esta oferta'" @click="crearProyecto = true">
+              <template #icon><PlusIcon class="size-[1em]" /></template>
+            </Button>
           </div>
           <MultiSelect v-model="f.proyecto_ids" :options="proyectos" optionLabel="nombre_comercial"
                        :filterFields="['nombre_comercial', 'municipio', 'departamento']"
@@ -210,8 +211,9 @@
           </div>
         </div>
         <div v-else-if="puedeFirmarPPA(oferta)">
-          <Button label="Firmar → crear PPA" icon="pi pi-file-check" class="w-full"
-                  @click="$emit('firmar', oferta)" />
+          <Button label="Firmar → crear PPA" class="w-full" @click="$emit('firmar', oferta)">
+            <template #icon><FileCheckIcon class="size-[1em]" /></template>
+          </Button>
           <p class="ayuda">Crea el contrato con sus tarifas y lo enlaza a esta oferta.</p>
         </div>
         <p v-else-if="oferta.tipo === 'servicios_operacionales'" class="ayuda">
@@ -228,8 +230,9 @@
                   class="w-36" />
           <InputText v-model.trim="gestion.descripcion" class="flex-1"
                      placeholder="Qué pasó…" @keyup.enter="registrarGestion" />
-          <Button icon="pi pi-plus" :disabled="!gestion.descripcion" :loading="guardandoGestion"
-                  @click="registrarGestion" />
+          <Button :disabled="!gestion.descripcion" :loading="guardandoGestion" @click="registrarGestion">
+            <template #icon><PlusIcon class="size-[1em]" /></template>
+          </Button>
         </div>
         <p class="ayuda">
           Queda colgada de esta oferta y apaga solo su alerta — no la de sus hermanas
@@ -239,8 +242,9 @@
 
       <div class="flex items-center justify-between pt-2 border-t" style="border-color:#e8e0f0">
         <span class="text-xs" style="color:#9b89b5">{{ estadoGuardado }}</span>
-        <Button label="Eliminar oferta" icon="pi pi-trash" text severity="danger" size="small"
-                @click="confirmarEliminar" />
+        <Button label="Eliminar oferta" text severity="danger" size="small" @click="confirmarEliminar">
+          <template #icon><Trash2Icon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -262,7 +266,7 @@ import DatePicker from 'primevue/datepicker'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import Message from 'primevue/message'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import api from '~/core/client'
 import {
@@ -272,6 +276,7 @@ import {
 } from './comercial.js'
 import { cargarProyectos } from './catalogos.js'
 import ProyectoDesdeCRMDialog from './ProyectoDesdeCRMDialog.vue'
+import { CheckIcon, FileCheckIcon, PlusIcon, SendIcon, Trash2Icon } from '@lucide/vue'
 
 const props = defineProps({
   visible: Boolean,
@@ -286,7 +291,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:visible', 'firmar'])
 
-const toast = useToast()
 const confirm = useConfirm()
 
 const moviendo = ref(false)
@@ -372,7 +376,7 @@ watch(() => props.visible, async (abierto) => {
   if (pr.status === 'fulfilled') {
     proyectos.value = pr.value
   } else {
-    toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de proyectos', life: 4000 })
+    toast.warning('No se pudo cargar la lista de proyectos', { duration: 4000 })
   }
   if (op.status === 'fulfilled') {
     const filas = op.value.data.items ?? op.value.data
@@ -464,7 +468,7 @@ async function cambiarEtapa(estado) {
   const r = await props.acciones.moverEtapa(props.oferta, estado)
   moviendo.value = false
   if (!r.ok) {
-    toast.add({ severity: 'error', summary: 'No se pudo cambiar la etapa', detail: r.error, life: 5000 })
+    toast.error('No se pudo cambiar la etapa', { description: r.error, duration: 5000 })
   }
 }
 
@@ -473,7 +477,7 @@ async function tocar() {
   const r = await props.acciones.registrarSeguimiento(props.oferta.id)
   tocando.value = false
   if (!r.ok) {
-    toast.add({ severity: 'error', summary: 'No se pudo registrar el toque', detail: r.error, life: 5000 })
+    toast.error('No se pudo registrar el toque', { description: r.error, duration: 5000 })
   }
 }
 
@@ -492,7 +496,7 @@ async function marcarRespuesta() {
     descripcion: 'El cliente respondió la oferta',
     ofertaId: props.oferta.id,
   })
-  toast.add({ severity: 'success', summary: 'Respuesta registrada', life: 2500 })
+  toast.success('Respuesta registrada', { duration: 2500 })
 }
 
 async function registrarGestion() {
@@ -504,9 +508,9 @@ async function registrarGestion() {
   guardandoGestion.value = false
   if (r.ok) {
     gestion.descripcion = ''
-    toast.add({ severity: 'success', summary: 'Gestión registrada', life: 2500 })
+    toast.success('Gestión registrada', { duration: 2500 })
   } else {
-    toast.add({ severity: 'error', summary: 'No se pudo registrar', detail: r.error, life: 5000 })
+    toast.error('No se pudo registrar', { description: r.error, duration: 5000 })
   }
 }
 
@@ -515,14 +519,13 @@ function confirmarEliminar() {
   confirm.require({
     header: 'Eliminar oferta',
     message: `Se elimina «${nombre}» y su histórico de etapas. No se puede deshacer.`,
-    icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
     acceptClass: 'p-button-danger',
     accept: async () => {
       const r = await props.acciones.eliminarOferta(props.oferta.id)
       if (r.ok) emit('update:visible', false)
-      else toast.add({ severity: 'error', summary: 'No se pudo eliminar', detail: r.error, life: 5000 })
+      else toast.error('No se pudo eliminar', { description: r.error, duration: 5000 })
     },
   })
 }

@@ -1,14 +1,14 @@
 <template>
   <section class="fa-section">
     <header class="fa-section-head">
-      <i class="pi pi-paperclip fa-section-icon" />
+      <PaperclipIcon class="fa-section-icon size-[1em]" />
       <h3 class="fa-section-title">Archivos adjuntos</h3>
       <span class="fa-section-count">{{ archivos.length }}</span>
     </header>
 
     <!-- Estado: backend no disponible -->
     <div v-if="noDisponible" class="fa-unavailable">
-      <i class="pi pi-info-circle fa-unavailable-icon" />
+      <InfoIcon class="fa-unavailable-icon size-[1em]" />
       <span>Archivos no disponibles</span>
     </div>
 
@@ -22,7 +22,7 @@
         @drop.prevent="onDrop"
         @click="triggerFileInput"
       >
-        <i class="pi pi-upload fa-dropzone-icon" />
+        <UploadIcon class="fa-dropzone-icon size-[1em]" />
         <p class="fa-dropzone-text">Arrastra archivos aquí o <span class="fa-dropzone-link">haz clic para seleccionar</span></p>
         <p class="fa-dropzone-hint">Imágenes, PDF, Excel, Word, CSV</p>
         <input
@@ -53,7 +53,7 @@
               <img :src="archivo.url" :alt="archivo.nombre" class="fa-thumb-img" />
             </a>
             <div v-else class="fa-thumb-icon-wrap">
-              <i :class="[iconoArchivo(archivo), 'fa-thumb-icon']" />
+              <component :is="iconoArchivo(archivo)" class="fa-thumb-icon size-[1em]" />
             </div>
           </div>
 
@@ -70,10 +70,10 @@
           <!-- Acciones -->
           <div class="fa-row-actions">
             <a :href="archivo.url" target="_blank" rel="noopener noreferrer" class="fa-action-btn fa-action-btn--download" title="Descargar">
-              <i class="pi pi-download" />
+              <DownloadIcon class="size-[1em]" />
             </a>
             <button class="fa-action-btn fa-action-btn--delete" title="Eliminar" @click="eliminarArchivo(archivo)">
-              <i class="pi pi-trash" />
+              <Trash2Icon class="size-[1em]" />
             </button>
           </div>
         </div>
@@ -86,8 +86,9 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
+import { DownloadIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, FileTypeIcon, InfoIcon, PaperclipIcon, Trash2Icon, UploadIcon } from '@lucide/vue'
 
 // ── Props ────────────────────────────────────────────────────────────────────
 const props = defineProps({
@@ -98,7 +99,6 @@ const props = defineProps({
 })
 
 // ── State ────────────────────────────────────────────────────────────────────
-const toast         = useToast()
 const archivos      = ref([])
 const noDisponible  = ref(false)
 const isDragging    = ref(false)
@@ -125,12 +125,12 @@ function estaImagen(archivo) {
 
 function iconoArchivo(archivo) {
   const mime = archivo.tipo_mime || ''
-  if (mime === 'application/pdf') return 'pi pi-file-pdf'
+  if (mime === 'application/pdf') return FileTextIcon
   if (mime.includes('excel') || mime.includes('spreadsheet') ||
-      /\.(xls|xlsx|csv)$/i.test(archivo.nombre || '')) return 'pi pi-file-excel'
+      /\.(xls|xlsx|csv)$/i.test(archivo.nombre || '')) return FileSpreadsheetIcon
   if (mime.includes('word') || mime.includes('document') ||
-      /\.(doc|docx)$/i.test(archivo.nombre || '')) return 'pi pi-file-word'
-  return 'pi pi-file'
+      /\.(doc|docx)$/i.test(archivo.nombre || '')) return FileTypeIcon
+  return FileIcon
 }
 
 // ── API ──────────────────────────────────────────────────────────────────────
@@ -182,12 +182,7 @@ async function procesarArchivos(files) {
       archivos.value.push(nuevo)
       exitosos++
     } catch {
-      toast.add({
-        severity: 'warn',
-        summary: 'No se pudo subir',
-        detail: file.name,
-        life: 3500,
-      })
+      toast.warning('No se pudo subir', { description: file.name, duration: 3500 })
     }
     // Progreso global entre archivos múltiples
     uploadProgress.value = Math.round(((i + 1) / files.length) * 100)
@@ -197,11 +192,7 @@ async function procesarArchivos(files) {
   uploadProgress.value = 0
 
   if (exitosos > 0) {
-    toast.add({
-      severity: 'success',
-      summary: exitosos === 1 ? 'Archivo subido' : `${exitosos} archivos subidos`,
-      life: 2500,
-    })
+    toast.success(exitosos === 1 ? 'Archivo subido' : `${exitosos} archivos subidos`, { duration: 2500 })
   }
 }
 
@@ -210,9 +201,9 @@ async function eliminarArchivo(archivo) {
   try {
     await api.delete(`/fallas/${props.fallaId}/archivos/${archivo.id}`)
     archivos.value = archivos.value.filter((a) => a.id !== archivo.id)
-    toast.add({ severity: 'success', summary: 'Archivo eliminado', life: 2000 })
+    toast.success('Archivo eliminado', { duration: 2000 })
   } catch {
-    toast.add({ severity: 'error', summary: 'No se pudo eliminar el archivo', life: 3000 })
+    toast.error('No se pudo eliminar el archivo', { duration: 3000 })
   }
 }
 

@@ -18,12 +18,9 @@
     <!-- Header ─────────────────────────────────────────────────────────── -->
     <template #header>
       <div class="rq-dw-head">
-        <Button
-          icon="pi pi-chevron-left" text rounded size="small"
-          :disabled="!haySemanaAnterior || guardando"
-          aria-label="Semana anterior"
-          @click="navegar(-1)"
-        />
+        <Button text rounded size="small" :disabled="!haySemanaAnterior || guardando" aria-label="Semana anterior" @click="navegar(-1)">
+          <template #icon><ChevronLeftIcon class="size-[1em]" /></template>
+        </Button>
         <div class="rq-dw-head-centro">
           <div class="rq-dw-titulo">Semana {{ semana?.numero ?? '—' }}</div>
           <div class="rq-dw-sub">
@@ -35,12 +32,9 @@
             </span>
           </div>
         </div>
-        <Button
-          icon="pi pi-chevron-right" text rounded size="small"
-          :disabled="!haySemanaSiguiente || guardando"
-          aria-label="Semana siguiente"
-          @click="navegar(1)"
-        />
+        <Button text rounded size="small" :disabled="!haySemanaSiguiente || guardando" aria-label="Semana siguiente" @click="navegar(1)">
+          <template #icon><ChevronRightIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </template>
 
@@ -95,7 +89,7 @@
             <span v-else-if="haySemanaAnterior" class="rq-dw-ref">S{{ semana.numero - 1 }}: —</span>
 
             <span v-if="delta(m)" class="rq-dw-delta" :style="{ color: delta(m).color }">
-              <i v-if="delta(m).icono" :class="delta(m).icono" />
+              <component :is="delta(m).icono" class="size-[1em]" v-if="delta(m).icono" />
               {{ delta(m).texto }}
             </span>
           </div>
@@ -109,7 +103,7 @@
             type="button" class="rq-dw-nota-link"
             @click="abrirNota(m)"
           >
-            <i class="pi pi-pencil" />
+            <PencilIcon class="size-[1em]" />
             <span>Agregar nota</span>
           </button>
           <div v-else class="rq-dw-nota">
@@ -135,11 +129,9 @@
         <span class="rq-dw-edicion">{{ ultimaEdicion }}</span>
         <span class="rq-dw-espaciador" />
         <Button label="Cancelar" severity="secondary" text size="small" @click="intentarCerrar(false)" />
-        <Button
-          label="Guardar semana" icon="pi pi-check" size="small"
-          :disabled="!hayCambios" :loading="guardando"
-          @click="guardarSemana()"
-        />
+        <Button label="Guardar semana" size="small" :disabled="!hayCambios" :loading="guardando" @click="guardarSemana()">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </template>
   </Drawer>
@@ -161,9 +153,10 @@ import Drawer from 'primevue/drawer'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import { fmtNumero } from './retosUi'
+import { ArrowDownIcon, ArrowUpIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, PencilIcon } from '@lucide/vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -177,7 +170,6 @@ const props = defineProps({
 
 const emit = defineEmits(['update:visible', 'navegar'])
 
-const toast = useToast()
 const confirm = useConfirm()
 
 const cuerpoEl = ref(null)
@@ -341,7 +333,7 @@ function delta(m) {
   const bueno = m.direccion === 'menor_mejor' ? !sube : sube
   return {
     texto: `${sube ? '+' : '−'}${fmtNumero(Math.abs(d), dec)}`,
-    icono: sube ? 'pi pi-arrow-up' : 'pi pi-arrow-down',
+    icono: sube ? ArrowUpIcon : ArrowDownIcon,
     color: bueno ? '#047857' : '#B0364A',
   }
 }
@@ -384,28 +376,20 @@ async function guardarSemana({ cerrarAlTerminar = true } = {}) {
   })
 
   if (!fallos.length) {
-    toast.add({
-      severity: 'success',
-      summary: `Semana ${numero} registrada`,
-      detail: `${ok.length} ${ok.length === 1 ? 'métrica actualizada' : 'métricas actualizadas'}`,
-      life: 2500,
+    toast.success(`Semana ${numero} registrada`, {
+      description: `${ok.length} ${ok.length === 1 ? 'métrica actualizada' : 'métricas actualizadas'}`,
+      duration: 2500,
     })
     if (cerrarAlTerminar) cerrar()
     return true
   }
 
   if (ok.length) {
-    toast.add({
-      severity: 'warn',
-      summary: `Se guardaron ${ok.length} de ${sucias.length} métricas`,
-      life: 5000,
-    })
+    toast.warning(`Se guardaron ${ok.length} de ${sucias.length} métricas`, { duration: 5000 })
   } else {
-    toast.add({
-      severity: 'error',
-      summary: 'No se pudo guardar la semana',
-      detail: detalleError(resultados[0]?.reason),
-      life: 5000,
+    toast.error('No se pudo guardar la semana', {
+      description: detalleError(resultados[0]?.reason),
+      duration: 5000,
     })
   }
   return false
@@ -443,7 +427,6 @@ function intentarCerrar(v) {
   confirm.require({
     header: 'Cambios sin guardar',
     message: `Tienes cambios en la semana ${props.semana?.numero ?? ''} que no se han guardado.`,
-    icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Descartar',
     rejectLabel: 'Seguir editando',
     acceptClass: 'p-button-danger p-button-sm',
@@ -564,7 +547,7 @@ watch(
   display: inline-flex; align-items: center; gap: 3px;
   font-size: 11px; font-weight: 700; white-space: nowrap;
 }
-.rq-dw-delta i { font-size: 8px; }
+.rq-dw-delta svg { font-size: 8px; }
 
 .rq-dw-error { font-size: 10px; color: #B0364A; margin-top: 4px; }
 
@@ -574,7 +557,7 @@ watch(
   font-size: 11px; font-weight: 600; color: #915BD8; background: none; border: 0; padding: 0;
   cursor: pointer;
 }
-.rq-dw-nota-link i { font-size: 9px; }
+.rq-dw-nota-link svg { font-size: 9px; }
 .rq-dw-nota { margin-top: 6px; }
 .rq-dw-nota :deep(textarea) { font-size: 11.5px; }
 .rq-dw-contador { font-size: 9px; color: #c7bdd8; text-align: right; margin-top: 2px; }

@@ -3,7 +3,9 @@
 
     <!-- Header -->
     <div class="flex items-center gap-2 flex-wrap">
-      <Button icon="pi pi-arrow-left" label="Volver" text size="small" @click="volver" />
+      <Button label="Volver" text size="small" @click="volver">
+        <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+      </Button>
       <div class="flex items-center gap-2 flex-wrap">
         <h2 class="text-base font-semibold" style="color:#2C2039">
           {{ liq?.proyecto_nombre }} — {{ formatPeriodo(liq?.periodo) }}
@@ -14,11 +16,11 @@
         <a v-if="liq?.estado_resultados_url" :href="liq.estado_resultados_url" target="_blank"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-80 transition-opacity"
           style="background:#F6FF72; color:#2C2039">
-          <i class="pi pi-chart-line text-xs" />Estado de Resultados
+          <ChartLineIcon class="text-xs size-[1em]" />Estado de Resultados
         </a>
-        <Button label="Descargar PDF" icon="pi pi-file-pdf" size="small"
-          style="background:#915BD8; border-color:#915BD8"
-          @click="router.push(`/liquidaciones/${route.params.id}/pdf`)" />
+        <Button label="Descargar PDF" size="small" style="background:#915BD8; border-color:#915BD8" @click="router.push(`/liquidaciones/${route.params.id}/pdf`)">
+          <template #icon><FileTextIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -30,7 +32,7 @@
       <div v-if="invFiltroId && invFiltrado"
         class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs flex-wrap"
         style="background:rgba(145,91,216,0.08); border:1px solid rgba(145,91,216,0.2)">
-        <i class="pi pi-user shrink-0" style="color:#915BD8" />
+        <UserIcon class="shrink-0 size-[1em]" style="color:#915BD8" />
         <span style="color:#2C2039">
           Mostrando datos de:
           <strong>{{ invFiltrado.cliente_nombre }}</strong>
@@ -39,7 +41,7 @@
         <button class="ml-auto flex items-center gap-1.5 text-xs font-semibold hover:opacity-70 shrink-0"
           style="color:#915BD8"
           @click="router.push(`/liquidaciones/${route.params.id}`)">
-          <i class="pi pi-times-circle text-xs" />
+          <CircleXIcon class="text-xs size-[1em]" />
           Ver proyecto completo
         </button>
       </div>
@@ -131,7 +133,7 @@
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
@@ -146,10 +148,10 @@ import api from '~/core/client'
 import EstadoResultadosConsolidado from './components/EstadoResultadosConsolidado.vue'
 import GeneracionMensualChart from './components/GeneracionMensualChart.vue'
 import IngresoCostoComparativo from './components/IngresoCostoComparativo.vue'
+import { ArrowLeftIcon, ChartLineIcon, CircleXIcon, FileTextIcon, UserIcon } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 
 // Navegación determinística hacia arriba (el padre del detalle es el listado).
 // Evita loops de history.back() cuando se entra por link directo.
@@ -256,11 +258,9 @@ async function load() {
     nuevoEstado.value = data.estado
   } catch (e) {
     console.error('[LiquidacionDetail] Error:', e?.response?.status, e?.response?.data ?? e)
-    toast.add({
-      severity: 'error',
-      summary: `Error ${e?.response?.status || 'red'} — liq ${route.params.id}`,
-      detail: JSON.stringify(e?.response?.data ?? e?.message ?? 'sin detalle').slice(0, 300),
-      life: 10000
+    toast.error(`Error ${e?.response?.status || 'red'} — liq ${route.params.id}`, {
+      description: JSON.stringify(e?.response?.data ?? e?.message ?? 'sin detalle').slice(0, 300),
+      duration: 10000,
     })
   } finally {
     loading.value = false
@@ -298,9 +298,9 @@ async function guardarEstado() {
     await api.patch(`/liquidaciones/${route.params.id}`, { estado: nuevoEstado.value })
     liq.value.estado = nuevoEstado.value
     dialogEstado.value = false
-    toast.add({ severity: 'success', summary: 'Estado actualizado', life: 2000 })
+    toast.success('Estado actualizado', { duration: 2000 })
   } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo actualizar', life: 3000 })
+    toast.error('Error', { description: 'No se pudo actualizar', duration: 3000 })
   } finally {
     guardando.value = false
   }
@@ -329,9 +329,9 @@ async function guardarResumen() {
     // Recargar para asegurar consistencia con el servidor
     await load()
     dialogResumen.value = false
-    toast.add({ severity: 'success', summary: 'Resumen actualizado', life: 2000 })
+    toast.success('Resumen actualizado', { duration: 2000 })
   } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo actualizar', life: 3000 })
+    toast.error('Error', { description: 'No se pudo actualizar', duration: 3000 })
   } finally {
     guardando.value = false
   }

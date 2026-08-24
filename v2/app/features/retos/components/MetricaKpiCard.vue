@@ -9,12 +9,12 @@
       <span class="rq-kpi-nombre" v-tooltip.top="metrica.descripcion || ''">{{ metrica.nombre }}</span>
       <span v-if="!metrica.activa" class="rq-chip rq-chip-neutro">Inactiva</span>
       <span class="rq-chip" :style="estadoBadge(metrica.estado)">{{ estadoLabel(metrica.estado) }}</span>
-      <Button
-        icon="pi pi-ellipsis-h" text rounded size="small" class="rq-kpi-mas"
-        :aria-label="`Acciones de ${metrica.nombre}`"
-        @click.stop="menu.toggle($event)"
-      />
-      <Menu ref="menu" :model="items" :popup="true" />
+      <Button text rounded size="small" class="rq-kpi-mas" :aria-label="`Acciones de ${metrica.nombre}`" @click.stop="menu.toggle($event)">
+        <template #icon><EllipsisIcon class="size-[1em]" /></template>
+      </Button>
+      <Menu ref="menu" :model="items" :popup="true">
+        <template #itemicon="{ item }"><component :is="item.icon" class="size-[1em]" /></template>
+      </Menu>
     </div>
 
     <!-- 2. Fila metadatos -->
@@ -64,6 +64,7 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Sparkline from './viz/Sparkline.vue'
 import BulletMeta from './viz/BulletMeta.vue'
+import { EllipsisIcon, EyeIcon, EyeOffIcon, PencilIcon, Trash2Icon } from '@lucide/vue'
 import {
   estadoBadge, estadoColor, estadoLabel,
   fmtNumero, fmtPct, fmtPctEntero, fmtValor,
@@ -81,14 +82,14 @@ const emit = defineEmits(['foco', 'editar', 'alternar-activa', 'eliminar'])
 const menu = ref(null)
 
 const items = computed(() => [
-  { label: 'Editar métrica', icon: 'pi pi-pencil', command: () => emit('editar', props.metrica) },
+  { label: 'Editar métrica', icon: PencilIcon, command: () => emit('editar', props.metrica) },
   {
     label: props.metrica.activa ? 'Desactivar métrica' : 'Activar métrica',
-    icon: props.metrica.activa ? 'pi pi-eye-slash' : 'pi pi-eye',
+    icon: props.metrica.activa ? EyeOffIcon : EyeIcon,
     command: () => emit('alternar-activa', props.metrica),
   },
   { separator: true },
-  { label: 'Eliminar métrica', icon: 'pi pi-trash', class: 'rq-menu-danger', command: () => emit('eliminar', props.metrica) },
+  { label: 'Eliminar métrica', icon: Trash2Icon, class: 'rq-menu-danger', command: () => emit('eliminar', props.metrica) },
 ])
 
 function numeroONulo(v) {

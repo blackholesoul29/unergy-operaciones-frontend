@@ -16,7 +16,7 @@
 
     <div class="rounded-lg px-3 py-2 text-xs flex items-start gap-2"
       style="background:#FFF7ED; border:1px solid #FED7AA; color:#9A3412;">
-      <i class="pi pi-info-circle mt-0.5" />
+      <InfoIcon class="mt-0.5 size-[1em]" />
       <span>Al publicar, los registros de este código SIC dejarán de aportar energía en
         Cumplimiento después de la fecha indicada. El histórico previo se conserva.</span>
     </div>
@@ -111,7 +111,7 @@
     <!-- 4 · Resumen -->
     <div v-if="resumen" class="rounded-lg px-3 py-2 text-xs flex items-start gap-2"
       style="background:#F3EEFB; border:1px solid #DCCFF2; color:#4A3570;">
-      <i class="pi pi-flag mt-0.5" />
+      <FlagIcon class="mt-0.5 size-[1em]" />
       <span>{{ resumen }}</span>
     </div>
 
@@ -131,8 +131,9 @@
 
     <div class="flex justify-end gap-2 pt-2">
       <Button label="Cancelar" severity="secondary" type="button" @click="$emit('cancelar')" />
-      <Button label="Registrar terminación" icon="pi pi-check" type="submit" :loading="guardando"
-        style="background:#915BD8; border-color:#915BD8;" />
+      <Button label="Registrar terminación" type="submit" :loading="guardando" style="background:#915BD8; border-color:#915BD8;">
+        <template #icon><CheckIcon class="size-[1em]" /></template>
+      </Button>
     </div>
   </form>
 </template>
@@ -145,7 +146,8 @@ import InputText from 'primevue/inputtext'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
+import { CheckIcon, FlagIcon, InfoIcon } from '@lucide/vue'
 import {
   opcionesSicVigentes, plantasInscritas, filaIdentidad,
   toIso, fmtFecha as fmt,
@@ -156,7 +158,6 @@ const props = defineProps({
   estado: { type: String, default: 'publicado' },
 })
 const emit = defineEmits(['guardado', 'cancelar'])
-const toast = useToast()
 
 const codigoSic = ref(null)
 const fechaTerminacion = ref(null)
@@ -226,14 +227,12 @@ async function guardar() {
       observaciones: observaciones.value || null,
     }
     const { data } = await api.post('/asic/terminacion', payload)
-    toast.add({ severity: 'success', summary: 'Terminación registrada', detail: data.resumen, life: 6000 })
+    toast.success('Terminación registrada', { description: data.resumen, duration: 6000 })
     emit('guardado', data)
   } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: 'No se pudo registrar la terminación',
-      detail: e.response?.data?.detail || e.message,
-      life: 8000,
+    toast.error('No se pudo registrar la terminación', {
+      description: e.response?.data?.detail || e.message,
+      duration: 8000,
     })
   } finally {
     guardando.value = false

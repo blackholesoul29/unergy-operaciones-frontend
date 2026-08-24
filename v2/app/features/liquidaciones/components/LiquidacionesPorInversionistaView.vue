@@ -15,7 +15,7 @@
         </button>
       </div>
       <IconField class="ml-2">
-        <InputIcon class="pi pi-search" />
+        <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
         <InputText v-model="q" placeholder="Buscar inversionista…" class="w-56" />
       </IconField>
       <span class="text-[11px] ml-auto" style="color:#9b8fb0">
@@ -35,8 +35,8 @@
         <!-- Nivel 1: Inversionista -->
         <div class="flex items-center gap-2 px-4 py-2.5 cursor-pointer select-none bg-gray-100 hover:bg-gray-200 transition-colors"
           @click="toggleCliente(cli.key)">
-          <i :class="expandidos[cli.key] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-            class="text-[10px] text-gray-400" />
+          <ChevronDownIcon v-if="expandidos[cli.key]" class="text-[10px] text-gray-400 size-[1em]" />
+          <ChevronRightIcon v-else class="text-[10px] text-gray-400 size-[1em]" />
           <span class="flex-1 text-sm font-bold text-gray-800 uppercase tracking-wide">
             {{ cli.cliente_nombre }}
           </span>
@@ -56,7 +56,7 @@
                 class="flex-1 min-w-[140px] bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                 <div class="flex items-start justify-between mb-2">
                   <span class="text-xs font-medium text-gray-400 uppercase tracking-wide">{{ k.label }}</span>
-                  <i :class="k.icon" class="text-gray-300 text-[11px]" />
+                  <component :is="k.icon" class="text-gray-300 text-[11px] size-[1em]" />
                 </div>
                 <div class="text-xl font-bold" :style="{ color: k.color }">{{ fmtCompact(k.value) }}</div>
               </div>
@@ -74,7 +74,8 @@
             <div>
               <button class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 mb-2"
                 @click="toggleTabla(cli.key)">
-                <i :class="tablasAbiertas[cli.key] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-[9px]" />
+                <ChevronDownIcon v-if="tablasAbiertas[cli.key]" class="text-[9px] size-[1em]" />
+                <ChevronRightIcon v-else class="text-[9px] size-[1em]" />
                 Detalle por proyecto
               </button>
               <div v-show="tablasAbiertas[cli.key]" class="overflow-x-auto">
@@ -102,7 +103,7 @@
                         <button v-if="row.liquidacion_id"
                           class="inline-flex items-center justify-center w-6 h-6 rounded hover:bg-gray-200 transition-colors"
                           title="Ver detalle operativo" @click="router.push(`/liquidaciones/${row.liquidacion_id}`)">
-                          <i class="pi pi-eye text-gray-500 text-xs" />
+                          <EyeIcon class="text-gray-500 text-xs size-[1em]" />
                         </button>
                       </td>
                     </tr>
@@ -134,6 +135,7 @@ import InputText from 'primevue/inputtext'
 import api from '~/core/client'
 import NetoMensualBar from './components/NetoMensualBar.vue'
 import { fmtCompact, formatPeriodo } from '~/utils/liquidaciones'
+import { ArrowUpRightIcon, ChartColumnIcon, ChevronDownIcon, ChevronRightIcon, EyeIcon, MinusIcon, SearchIcon, WalletIcon, ZapIcon } from '@lucide/vue'
 
 const props = defineProps({
   embedded: { type: Boolean, default: false },
@@ -246,11 +248,11 @@ const clientesMostrados = computed(() => {
 function kpiCards(cli) {
   const k = cli.kpis
   return [
-    { label: 'Ingreso Bruto', value: k.ingresoBruto, icon: 'pi pi-arrow-up-right', color: '#111827' },
-    { label: 'Comercialización', value: k.comercializacion, icon: 'pi pi-chart-bar', color: '#D64455' },
-    { label: 'Costos Operativos', value: k.costosOperativos, icon: 'pi pi-minus', color: '#D64455' },
-    { label: 'Servicios Unergy', value: k.serviciosUnergy, icon: 'pi pi-bolt', color: '#111827' },
-    { label: 'Valor a pagar', value: k.ingresoNeto, icon: 'pi pi-wallet', color: k.ingresoNeto >= 0 ? '#915BD8' : '#ef4444' },
+    { label: 'Ingreso Bruto', value: k.ingresoBruto, icon: ArrowUpRightIcon, color: '#111827' },
+    { label: 'Comercialización', value: k.comercializacion, icon: ChartColumnIcon, color: '#D64455' },
+    { label: 'Costos Operativos', value: k.costosOperativos, icon: MinusIcon, color: '#D64455' },
+    { label: 'Servicios Unergy', value: k.serviciosUnergy, icon: ZapIcon, color: '#111827' },
+    { label: 'Valor a pagar', value: k.ingresoNeto, icon: WalletIcon, color: k.ingresoNeto >= 0 ? '#915BD8' : '#ef4444' },
   ]
 }
 

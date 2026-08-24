@@ -2,7 +2,7 @@
   <div class="list-pane bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style="border: 1px solid #e8e0f0;">
     <div class="p-3 space-y-2" style="border-bottom: 1px solid #f1ecf7;">
       <span class="p-input-icon-left w-full">
-        <i class="pi pi-search" />
+        <SearchIcon class="size-[1em]" />
         <InputText v-model="search" placeholder="Buscar proyecto..." class="w-full" />
       </span>
       <div class="flex gap-2">
@@ -43,6 +43,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import InputText from 'primevue/inputtext'
+import { SearchIcon } from '@lucide/vue'
 
 const props = defineProps({
   filas: { type: Array, default: () => [] },

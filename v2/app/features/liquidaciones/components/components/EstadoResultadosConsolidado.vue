@@ -1,7 +1,7 @@
 <template>
   <div v-if="columnas.length && grupos.length" class="bg-white rounded-xl shadow-sm border overflow-hidden" style="border-color:#e8e0f0">
     <div class="px-3 py-2 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
-      <i class="pi pi-users text-sm" style="color:#915BD8" />
+      <UsersIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <h3 class="text-sm font-bold" style="color:#2C2039">Estado de Resultados por inversionista</h3>
       <span class="ml-auto text-[10px] uppercase tracking-wide font-semibold" style="color:#bba8d4">
         Espejo del Panel Contable
@@ -78,6 +78,7 @@
 <script setup>
 import { computed } from 'vue'
 import { fmtCOP } from '~/utils/liquidaciones'
+import { UsersIcon } from '@lucide/vue'
 
 // `panel` = entrada de proyecto de /liquidaciones/resumen-panel (fuente única: el
 // Panel Contable). filtroPiId opcional: mostrar solo ese inversionista (nav ?inv=).

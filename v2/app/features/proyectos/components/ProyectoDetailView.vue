@@ -16,9 +16,13 @@
       <template #acciones>
         <template v-if="isEditMode">
           <Button label="Cancelar" severity="secondary" outlined size="small" @click="cancelEdit" />
-          <Button label="Guardar cambios" icon="pi pi-check" size="small" :loading="guardando" @click="saveEdit" />
+          <Button label="Guardar cambios" size="small" :loading="guardando" @click="saveEdit">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </template>
-        <Button v-else label="Editar" icon="pi pi-pencil" outlined size="small" @click="enterEditMode" />
+        <Button v-else label="Editar" outlined size="small" @click="enterEditMode">
+          <template #icon><PencilIcon class="size-[1em]" /></template>
+        </Button>
       </template>
       <template #default="{ tab }">
       <!-- ══ GENERAL ══ -->
@@ -134,7 +138,7 @@
                 <a v-if="proyecto.info_tecnica?.url_ubicacion" :href="proyecto.info_tecnica.url_ubicacion"
                    target="_blank" rel="noopener"
                    class="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
-                  <i class="pi pi-map-marker" /> Ver en Google Maps
+                  <MapPinIcon class="size-[1em]" /> Ver en Google Maps
                 </a>
               </div>
             </div>
@@ -143,7 +147,7 @@
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Documentación</p>
               <a :href="proyecto.info_tecnica.retie_url" target="_blank" rel="noopener"
                  class="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
-                <i class="pi pi-file" /> RETIE
+                <FileIcon class="size-[1em]" /> RETIE
               </a>
             </div>
             <!-- Eléctrico general -->
@@ -398,8 +402,9 @@
       <div v-if="tab === 'simulacion'">
         <div class="p-4 space-y-6">
           <div v-if="!isEditMode && hasSimulacionData" class="flex justify-end">
-            <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" outlined
-              severity="success" @click="descargarSimulacionExcel" />
+            <Button label="Descargar Excel" size="small" outlined severity="success" @click="descargarSimulacionExcel">
+              <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+            </Button>
           </div>
           <div v-for="sim in SIMULACIONES" :key="sim.key">
             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
@@ -465,16 +470,20 @@
               <template #body="{ data }">
                 <div class="flex gap-1">
                   <template v-if="editandoInvId === data.id">
-                    <Button icon="pi pi-check" text severity="success" size="small" :loading="guardando"
-                      @click="guardarEdicionInversionista(data.id)" v-tooltip="'Guardar'" />
-                    <Button icon="pi pi-times" text severity="secondary" size="small"
-                      @click="editandoInvId = null" v-tooltip="'Cancelar'" />
+                    <Button text severity="success" size="small" :loading="guardando" @click="guardarEdicionInversionista(data.id)" v-tooltip="'Guardar'">
+                      <template #icon><CheckIcon class="size-[1em]" /></template>
+                    </Button>
+                    <Button text severity="secondary" size="small" @click="editandoInvId = null" v-tooltip="'Cancelar'">
+                      <template #icon><XIcon class="size-[1em]" /></template>
+                    </Button>
                   </template>
                   <template v-else>
-                    <Button icon="pi pi-pencil" text severity="info" size="small"
-                      @click="iniciarEdicionInversionista(data)" v-tooltip="'Editar'" />
-                    <Button icon="pi pi-trash" text severity="danger" size="small"
-                      @click="eliminarInversionista(data.id)" v-tooltip="'Eliminar'" />
+                    <Button text severity="info" size="small" @click="iniciarEdicionInversionista(data)" v-tooltip="'Editar'">
+                      <template #icon><PencilIcon class="size-[1em]" /></template>
+                    </Button>
+                    <Button text severity="danger" size="small" @click="eliminarInversionista(data.id)" v-tooltip="'Eliminar'">
+                      <template #icon><Trash2Icon class="size-[1em]" /></template>
+                    </Button>
                   </template>
                 </div>
               </template>
@@ -510,8 +519,7 @@
               </span>
               <span class="font-semibold tabular-nums" :class="per.ok ? 'text-green-600' : 'text-amber-600'">
                 {{ per.total.toFixed(2) }}%
-                <i v-if="!per.ok" class="pi pi-exclamation-triangle text-xs ml-1"
-                  v-tooltip.left="'No suma ~100% en este período'" />
+                <TriangleAlertIcon class="text-xs ml-1 size-[1em]" v-if="!per.ok" v-tooltip.left="'No suma ~100% en este período'" />
               </span>
             </div>
           </div>
@@ -548,8 +556,9 @@
               </div>
             </div>
           </div>
-          <Button label="Agregar" icon="pi pi-plus" :loading="guardando"
-            :disabled="!nuevoInv.cliente_id" @click="agregarInversionista" class="mt-2" />
+          <Button label="Agregar" :loading="guardando" :disabled="!nuevoInv.cliente_id" @click="agregarInversionista" class="mt-2">
+            <template #icon><PlusIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
 
@@ -581,8 +590,7 @@
             >
               <div class="w-12 h-12 rounded-full flex items-center justify-center"
                 :style="`background:${(srvFlags[srv.key] || srvExpanded === srv.key) ? srv.color + '25' : '#e5e7eb'}`">
-                <i :class="srv.icon" class="text-2xl"
-                  :style="`color:${(srvFlags[srv.key] || srvExpanded === srv.key) ? srv.color : '#9ca3af'}`" />
+                <component :is="srv.icon" class="text-2xl size-[1em]" :style="`color:${(srvFlags[srv.key] || srvExpanded === srv.key) ? srv.color : '#9ca3af'}`" />
               </div>
               <span class="text-sm font-semibold text-center"
                 :style="`color:${(srvFlags[srv.key] || srvExpanded === srv.key) ? srv.color : '#6b7280'}`">
@@ -591,7 +599,7 @@
               <span v-if="srvFlags[srv.key]"
                 class="absolute top-2 right-2 w-2 h-2 rounded-full"
                 :style="`background:${srv.color}`" />
-              <i v-if="srv.key === 'srv_ppa'" class="pi pi-external-link absolute bottom-2 right-2 text-xs text-gray-300" />
+              <ExternalLinkIcon class="absolute bottom-2 right-2 text-xs text-gray-300 size-[1em]" v-if="srv.key === 'srv_ppa'" />
             </div>
           </div>
 
@@ -599,15 +607,14 @@
           <div v-if="srvExpanded" class="rounded-xl border border-gray-100 bg-white overflow-hidden">
             <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
               <div class="flex items-center gap-2">
-                <i :class="SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.icon" class="text-sm"
-                  :style="`color:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}`" />
+                <component :is="SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.icon" class="text-sm size-[1em]" :style="`color:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}`" />
                 <p class="text-sm font-semibold text-gray-700">
                   Contratos · {{ SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.label }}
                 </p>
               </div>
-              <Button label="Nuevo contrato" icon="pi pi-plus" size="small"
-                :style="`background:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}; border-color:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}`"
-                @click="showContratoWizard = true" />
+              <Button label="Nuevo contrato" size="small" :style="`background:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}; border-color:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}`" @click="showContratoWizard = true">
+                <template #icon><PlusIcon class="size-[1em]" /></template>
+              </Button>
             </div>
             <DataTable
               :value="contratosInline"
@@ -642,8 +649,9 @@
               </Column>
               <Column style="width:50px">
                 <template #body="{ data }">
-                  <Button icon="pi pi-arrow-right" text size="small" severity="secondary"
-                    @click.stop="$router.push(`/contratos/${data.id}`)" />
+                  <Button text size="small" severity="secondary" @click.stop="$router.push(`/contratos/${data.id}`)">
+                    <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+                  </Button>
                 </template>
               </Column>
             </DataTable>
@@ -698,7 +706,7 @@
       <div v-if="tab === 'id-liquidaciones'">
         <div class="p-4 space-y-3 text-sm">
           <p class="text-[11px] text-gray-400">
-            <i class="pi pi-info-circle mr-1" />
+            <InfoIcon class="mr-1 size-[1em]" />
             Estos códigos viven en la API de Liquidaciones de Unergy, no en esta base.
             <span v-if="liqConfig?.nombre_topico"> Tópico: <b>{{ liqConfig.nombre_topico }}</b>.</span>
           </p>
@@ -773,13 +781,16 @@
   </div>
 
   <div v-else class="flex flex-col items-center py-20 gap-3 text-gray-500">
-    <i class="pi pi-exclamation-circle text-3xl text-red-400"></i>
+    <CircleAlertIcon class="text-3xl text-red-400 size-[1em]" />
     <p class="text-sm">{{ errorMsg || 'No se pudo cargar el proyecto.' }}</p>
-    <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="$router.go(0)" />
+    <Button label="Reintentar" outlined size="small" @click="$router.go(0)">
+      <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+    </Button>
   </div>
 </template>
 
 <script setup>
+import { ArrowRightIcon, BadgeCheckIcon, BriefcaseIcon, ChartColumnIcon, ChartLineIcon, CheckIcon, CircleAlertIcon, DollarSignIcon, ExternalLinkIcon, FileIcon, FilePenIcon, FileSpreadsheetIcon, GlobeIcon, InfoIcon, LinkIcon, MailIcon, MapPinIcon, PencilIcon, PlusIcon, RefreshCwIcon, Trash2Icon, TriangleAlertIcon, UsersIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Tag from 'primevue/tag'
@@ -796,7 +807,7 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import * as XLSX from 'xlsx'
 import api from '~/core/client'
 import divipola from '~/data/colombia-divipola.json'
@@ -806,7 +817,6 @@ import DetalleLayout from '~/components/DetalleLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 
 // ── Constantes (sin hardcode en template) ────────────────────────────────────
 const ESTADOS = [
@@ -820,15 +830,15 @@ const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 const SERVICIOS_CARDS = [
-  { key: 'srv_ppa',           label: 'PPA',           icon: 'pi pi-bolt',       color: '#f59e0b', bg: '#fef3c7', tipo: null },
-  { key: 'srv_operacion',     label: 'Operación',     icon: 'pi pi-wrench',     color: '#10b981', bg: '#ecfdf5', tipo: 'operacion' },
-  { key: 'srv_representacion',label: 'Representación', icon: 'pi pi-file-edit',  color: '#3b82f6', bg: '#eff6ff', tipo: 'representacion' },
-  { key: 'srv_rec',           label: 'REC',           icon: 'pi pi-verified',   color: '#14b8a6', bg: '#f0fdfa', tipo: 'rec' },
+  { key: 'srv_ppa',           label: 'PPA',           icon: ZapIcon,       color: '#f59e0b', bg: '#fef3c7', tipo: null },
+  { key: 'srv_operacion',     label: 'Operación',     icon: WrenchIcon,     color: '#10b981', bg: '#ecfdf5', tipo: 'operacion' },
+  { key: 'srv_representacion',label: 'Representación', icon: FilePenIcon,  color: '#3b82f6', bg: '#eff6ff', tipo: 'representacion' },
+  { key: 'srv_rec',           label: 'REC',           icon: BadgeCheckIcon,   color: '#14b8a6', bg: '#f0fdfa', tipo: 'rec' },
 ]
 const SERVICIOS_FLAGS = [
   ...SERVICIOS_CARDS,
-  { key: 'srv_cgm',     label: 'CGM',     icon: 'pi pi-chart-bar', color: '#10b981', bg: '#ecfdf5' },
-  { key: 'srv_promotor',label: 'Promotor',icon: 'pi pi-briefcase', color: '#8b5cf6', bg: '#f5f3ff' },
+  { key: 'srv_cgm',     label: 'CGM',     icon: ChartColumnIcon, color: '#10b981', bg: '#ecfdf5' },
+  { key: 'srv_promotor',label: 'Promotor',icon: BriefcaseIcon, color: '#8b5cf6', bg: '#f5f3ff' },
 ]
 const ESTADO_LABELS_SRV = { vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación' }
 const ESTADO_SEVERITY_SRV = { vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn' }
@@ -861,18 +871,18 @@ const activeTab = ref('general')
 // que se recalculaba, y un ?tab=id-liquidaciones o ?tab=id-quoia podia caer en
 // la pestana equivocada segun si la planta tenia fronteras.
 const TABS = computed(() => [
-  { key: 'general',          label: 'General',          icon: 'pi pi-info-circle' },
-  { key: 'tecnico',          label: 'Técnico',          icon: 'pi pi-wrench' },
-  { key: 'simulacion',       label: 'Simulación',       icon: 'pi pi-chart-line' },
+  { key: 'general',          label: 'General',          icon: InfoIcon },
+  { key: 'tecnico',          label: 'Técnico',          icon: WrenchIcon },
+  { key: 'simulacion',       label: 'Simulación',       icon: ChartLineIcon },
   // Mismo orden que el detalle de Cliente: identidad -> contactos -> servicios
   // -> relaciones -> integracion. Asi las tres vistas se leen igual.
-  { key: 'contactos',        label: 'Contactos',        icon: 'pi pi-envelope' },
-  { key: 'servicios',        label: 'Servicios',        icon: 'pi pi-briefcase' },
-  { key: 'inversionistas',   label: 'Inversionistas',   icon: 'pi pi-users' },
-  { key: 'fronteras',        label: 'Fronteras',        icon: 'pi pi-globe',
+  { key: 'contactos',        label: 'Contactos',        icon: MailIcon },
+  { key: 'servicios',        label: 'Servicios',        icon: BriefcaseIcon },
+  { key: 'inversionistas',   label: 'Inversionistas',   icon: UsersIcon },
+  { key: 'fronteras',        label: 'Fronteras',        icon: GlobeIcon,
     badge: fronteras.value.length || null, oculta: !fronteras.value.length },
-  { key: 'id-liquidaciones', label: 'ID liquidaciones', icon: 'pi pi-dollar' },
-  { key: 'id-quoia',         label: 'ID Quoia',         icon: 'pi pi-link' },
+  { key: 'id-liquidaciones', label: 'ID liquidaciones', icon: DollarSignIcon },
+  { key: 'id-quoia',         label: 'ID Quoia',         icon: LinkIcon },
 ])
 
 // ── Modo edición ──────────────────────────────────────────────────────────────
@@ -1010,9 +1020,9 @@ function descargarSimulacionExcel() {
     XLSX.utils.book_append_sheet(wb, ws, 'Simulación')
     const filename = `simulacion_${sanitizeFilename(proyecto.value.nombre_comercial)}.xlsx`
     XLSX.writeFile(wb, filename)
-    toast.add({ severity: 'success', summary: 'Excel descargado', life: 2500 })
+    toast.success('Excel descargado', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo generar el Excel', detail: e?.message, life: 4000 })
+    toast.error('No se pudo generar el Excel', { description: e?.message, duration: 4000 })
   }
 }
 
@@ -1076,7 +1086,10 @@ function cancelEdit() {
 
 async function saveEdit() {
   if (!editForm.nombre_comercial?.trim()) {
-    toast.add({ severity: 'error', summary: 'Falta el nombre', detail: 'El nombre comercial no puede quedar vacío.', life: 4000 })
+    toast.error('Falta el nombre', {
+      description: 'El nombre comercial no puede quedar vacío.',
+      duration: 4000,
+    })
     return
   }
   guardando.value = true
@@ -1147,13 +1160,11 @@ async function saveEdit() {
       liqConfig.value = data
     } catch { /* la API externa puede no responder; no bloquea el guardado */ }
     router.replace({ query: {} })
-    toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
+    toast.success('Proyecto actualizado', { duration: 3000 })
   } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error al guardar',
-      detail: e.response?.data?.detail || e.message || 'No se pudo actualizar el proyecto.',
-      life: 5000,
+    toast.error('Error al guardar', {
+      description: e.response?.data?.detail || e.message || 'No se pudo actualizar el proyecto.',
+      duration: 5000,
     })
   } finally {
     guardando.value = false
@@ -1209,7 +1220,7 @@ const tieneVariosPeriodos = computed(() => periodos.value.length > 1)
 
 async function agregarInversionista() {
   if (!nuevoInv.cliente_id) {
-    toast.add({ severity: 'warn', summary: 'Selecciona un cliente', life: 2000 })
+    toast.warning('Selecciona un cliente', { duration: 2000 })
     return
   }
   guardando.value = true
@@ -1228,9 +1239,9 @@ async function agregarInversionista() {
     nuevoInv.es_patrimonio_autonomo = false
     nuevoInv.fecha_inicio = null
     nuevoInv.fecha_fin = null
-    toast.add({ severity: 'success', summary: 'Inversionista agregado', life: 2000 })
+    toast.success('Inversionista agregado', { duration: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al agregar', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error al agregar', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     guardando.value = false
   }
@@ -1241,9 +1252,9 @@ async function eliminarInversionista(invId) {
   try {
     await api.delete(`/proyectos/${route.params.id}/inversionistas/${invId}`)
     proyecto.value.inversionistas = proyecto.value.inversionistas.filter(i => i.id !== invId)
-    toast.add({ severity: 'success', summary: 'Inversionista eliminado', life: 2000 })
+    toast.success('Inversionista eliminado', { duration: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error al eliminar', { description: e.response?.data?.detail, duration: 3000 })
   }
 }
 
@@ -1268,9 +1279,9 @@ async function guardarEdicionInversionista(invId) {
     editFechaFin.value = null
     const { data } = await api.get(`/proyectos/${route.params.id}/inversionistas`)
     proyecto.value.inversionistas = Array.isArray(data) ? data : (data.items ?? [])
-    toast.add({ severity: 'success', summary: 'Porcentaje actualizado', life: 2000 })
+    toast.success('Porcentaje actualizado', { duration: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al actualizar', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error al actualizar', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     guardando.value = false
   }
@@ -1288,10 +1299,10 @@ async function toggleServicio(key, value) {
       ...proyRes.data,
       inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
     }
-    toast.add({ severity: 'success', summary: 'Servicio actualizado', life: 2000 })
+    toast.success('Servicio actualizado', { duration: 2000 })
   } catch {
     srvFlags[key] = !value
-    toast.add({ severity: 'error', summary: 'Error al actualizar', life: 3000 })
+    toast.error('Error al actualizar', { duration: 3000 })
   }
 }
 
@@ -1324,7 +1335,7 @@ async function cargarContratosInline(tipo) {
     const { data } = await api.get('/contratos-servicio', { params: { tipo, proyecto_id: route.params.id } })
     contratosInline.value = data
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos', life: 3000 })
+    toast.error('Error al cargar contratos', { duration: 3000 })
   } finally {
     loadingInline.value = false
   }

@@ -2,26 +2,27 @@
   <div class="ms-root">
     <!-- ══ TOP BAR ══ -->
     <header class="ms-topbar">
-      <button class="ms-icon-btn" @click="menuOpen = !menuOpen" title="Menú"><i class="pi pi-bars" /></button>
-      <span class="ms-brand"><i class="pi pi-sun" /> Unergy Solar</span>
+      <button class="ms-icon-btn" @click="menuOpen = !menuOpen" title="Menú"><MenuIcon class="size-[1em]" /></button>
+      <span class="ms-brand"><SunIcon class="size-[1em]" /> Unergy Solar</span>
       <button class="ms-icon-btn ms-bell" @click="notifOpen = true" title="Notificaciones">
-        <i class="pi pi-bell" />
+        <BellIcon class="size-[1em]" />
         <span v-if="unreadCount > 0" class="ms-bell-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
       </button>
       <button class="ms-icon-btn" :disabled="loadingDetail" @click="refrescar" title="Actualizar">
-        <i :class="loadingDetail ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+        <LoaderCircleIcon v-if="loadingDetail" class="size-[1em] animate-spin" />
+        <RefreshCwIcon v-else class="size-[1em]" />
       </button>
 
       <div v-if="menuOpen" class="ms-menu" @click.self="menuOpen = false">
         <div class="ms-menu-card">
           <div class="ms-menu-user">
-            <i class="pi pi-user" />
+            <UserIcon class="size-[1em]" />
             <div>
               <div class="ms-menu-name">{{ auth.user?.nombre || 'Usuario' }}</div>
               <div class="ms-menu-email">{{ auth.user?.email }}</div>
             </div>
           </div>
-          <button class="ms-menu-item" @click="cerrarSesion"><i class="pi pi-sign-out" /> Cerrar sesión</button>
+          <button class="ms-menu-item" @click="cerrarSesion"><LogOutIcon class="size-[1em]" /> Cerrar sesión</button>
         </div>
       </div>
     </header>
@@ -31,9 +32,9 @@
       <button class="ms-current" @click="pickerOpen = !pickerOpen">
         <span class="ms-dot" :style="{ background: statusColor(current?.status) }" />
         <span class="ms-name">{{ current?.nombre || '—' }}</span>
-        <i class="pi pi-chevron-down ms-caret" />
+        <ChevronDownIcon class="ms-caret size-[1em]" />
       </button>
-      <button class="ms-add-falla" @click="openCreate" title="Reportar falla en esta planta"><i class="pi pi-plus" /></button>
+      <button class="ms-add-falla" @click="openCreate" title="Reportar falla en esta planta"><PlusIcon class="size-[1em]" /></button>
       <span class="ms-count">{{ idx + 1 }}/{{ proyectos.length }}</span>
 
       <div v-if="pickerOpen" class="ms-picker" @click.self="pickerOpen = false">
@@ -44,7 +45,7 @@
             @click="selectIdx(i)">
             <span class="ms-dot" :style="{ background: statusColor(p.status) }" />
             <span class="ms-picker-name">{{ p.nombre }}</span>
-            <i v-if="rcnMap[p.proyecto_id]" class="pi pi-bolt ms-picker-relay" title="Tiene reconectador" />
+            <ZapIcon class="ms-picker-relay size-[1em]" v-if="rcnMap[p.proyecto_id]" title="Tiene reconectador" />
           </button>
         </div>
       </div>
@@ -76,10 +77,10 @@
           <!-- Gráfica — al tocarla se abre la potencia por inversor -->
           <div class="ms-chart" @click="onChartTap(p)">
             <div v-if="loadingDetail && !detailMap[p.proyecto_id]" class="ms-chart-loading">
-              <i class="pi pi-spin pi-spinner" /> <span>Cargando datos…</span>
+              <LoaderCircleIcon class="size-[1em] animate-spin" /> <span>Cargando datos…</span>
             </div>
             <ProjectLiveChart v-else :detail="detailMap[p.proyecto_id]" />
-            <span class="ms-chart-expand"><i class="pi pi-arrows-alt" /> Inversores</span>
+            <span class="ms-chart-expand"><MoveIcon class="size-[1em]" /> Inversores</span>
           </div>
 
           <!-- Reconectador: estado + telemetría en vivo de Solenium -->
@@ -92,7 +93,7 @@
               <span class="ms-falla-stripe" :style="{ background: f.prioridad?.color_hex || '#9ca3af' }" />
               <span class="ms-falla-estado" :style="{ background: (f.estado?.color_hex || '#915BD8') + '22', color: f.estado?.color_hex || '#915BD8' }">{{ f.estado?.etiqueta }}</span>
               <span class="ms-falla-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</span>
-              <i class="pi pi-chevron-right ms-falla-arrow" />
+              <ChevronRightIcon class="ms-falla-arrow size-[1em]" />
             </button>
             <span v-if="(fallasMap[p.proyecto_id] || []).length > 2" class="ms-falla-more">
               +{{ (fallasMap[p.proyecto_id] || []).length - 2 }} fallas más
@@ -101,10 +102,10 @@
 
           <!-- Pie -->
           <div class="ms-footer">
-            <span class="ms-updated"><i class="pi pi-clock" /> {{ lastUpdated || '—' }}</span>
+            <span class="ms-updated"><ClockIcon class="size-[1em]" /> {{ lastUpdated || '—' }}</span>
             <button v-if="rcnMap[p.proyecto_id]" class="ms-reconnect" @click="openSheet(p)">
               <span :class="['ms-relay-badge', relayBadgeClass(p)]">{{ relayBadgeText(p) }}</span>
-              <i class="pi pi-power-off" /> Reconectar
+              <PowerIcon class="size-[1em]" /> Reconectar
             </button>
           </div>
         </section>
@@ -113,9 +114,9 @@
 
     <!-- ══ ESTADOS sin proyectos ══ -->
     <div v-else class="ms-state">
-      <template v-if="loadingList"><i class="pi pi-spin pi-spinner" /> <span>Cargando proyectos…</span></template>
+      <template v-if="loadingList"><LoaderCircleIcon class="size-[1em] animate-spin" /> <span>Cargando proyectos…</span></template>
       <template v-else>
-        <i class="pi pi-sun" style="font-size:34px;color:#cbd5e1" />
+        <SunIcon class="size-[1em]" style="font-size:34px;color:#cbd5e1" />
         <span>Sin proyectos disponibles</span>
         <button class="ms-retry" @click="cargarLista">Reintentar</button>
       </template>
@@ -163,6 +164,8 @@ import NotificationsSheet from '~/features/mobile/components/components/Notifica
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import FallaCreateSheet from '~/features/mobile/components/components/FallaCreateSheet.vue'
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
+import { BellIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, LoaderCircleIcon, LogOutIcon, MenuIcon, MoveIcon, PlusIcon, PowerIcon, RefreshCwIcon, SunIcon, UserIcon, ZapIcon } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -368,8 +371,7 @@ function onReconnectDone({ active }) {
   if (!p) return
   // Refleja el comando de inmediato; `cargarEstados()` traerá la lectura real.
   rcnMap[p.proyecto_id] = { ...(rcnMap[p.proyecto_id] || {}), active }
-  window.__primeToast?.({ severity: 'success', summary: 'Comando enviado',
-    detail: `${p.nombre}: ${active ? 'ON' : 'OFF'}`, life: 3500 })
+  toast.success('Comando enviado', { description: `${p.nombre}: ${active ? 'ON' : 'OFF'}`, duration: 3500 })
   cargarEstados()
 }
 
@@ -406,7 +408,7 @@ onUnmounted(() => {
   background: #2C2039; color: #fff; position: relative;
 }
 .ms-brand { flex: 1; text-align: center; font-size: clamp(14px, 3.9vw, 16px); font-weight: 700; letter-spacing: .2px; }
-.ms-brand .pi { color: #F6FF72; margin-right: 5px; }
+.ms-brand svg { color: #F6FF72; margin-right: 5px; }
 .ms-icon-btn {
   width: 36px; height: 36px; border-radius: 10px; border: none;
   background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; flex-shrink: 0;
@@ -427,7 +429,7 @@ onUnmounted(() => {
   box-shadow: 0 12px 30px rgba(0,0,0,0.25);
 }
 .ms-menu-user { display: flex; align-items: center; gap: 10px; padding: 10px 10px 12px; border-bottom: 1px solid #f0ebf7; }
-.ms-menu-user .pi { font-size: 22px; color: #915BD8; }
+.ms-menu-user svg { font-size: 22px; color: #915BD8; }
 .ms-menu-name { font-size: 15px; font-weight: 700; color: #2C2039; }
 .ms-menu-email { font-size: 12.5px; color: #9ca3af; }
 .ms-menu-item {
@@ -486,7 +488,7 @@ onUnmounted(() => {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; color: #6b5a8a; font-size: 15px;
 }
-.ms-state .pi-spinner { font-size: 26px; color: #915BD8; }
+.ms-state svg { font-size: 26px; color: #915BD8; }
 .ms-retry { margin-top: 4px; padding: 10px 20px; border: none; border-radius: 11px; background: #915BD8; color: #fff; font-weight: 600; font-size: 15px; }
 
 /* Chips "ahora" */
@@ -527,13 +529,13 @@ onUnmounted(() => {
   font-size: 10px; font-weight: 700; letter-spacing: .2px;
   pointer-events: none;   /* el toque lo recibe la gráfica */
 }
-.ms-chart-expand .pi { font-size: 9px; }
+.ms-chart-expand svg { font-size: 9px; }
 
 .ms-chart-loading {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   gap: 10px; color: #6b5a8a; font-size: 14px;
 }
-.ms-chart-loading .pi-spinner { font-size: 22px; color: #915BD8; }
+.ms-chart-loading svg { font-size: 22px; color: #915BD8; }
 
 .ms-footer { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-shrink: 0; }
 .ms-updated { font-size: 12px; color: #9ca3af; display: flex; align-items: center; gap: 6px; }

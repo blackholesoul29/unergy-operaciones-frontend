@@ -46,7 +46,7 @@
 import { ref, computed, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Message from 'primevue/message'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import api from '~/core/client'
 import ProyectoForm from '~/features/proyectos/components/ProyectoForm.vue'
@@ -59,7 +59,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:visible', 'creado'])
 
-const toast = useToast()
 const confirm = useConfirm()
 
 const guardando = ref(false)
@@ -96,20 +95,16 @@ async function crear(payload, infoTecnica, forzar = false) {
       try {
         await api.put(`/proyectos/${data.id}/info-tecnica`, infoTecnica)
       } catch {
-        toast.add({
-          severity: 'warn',
-          summary: 'La planta se creó, pero la ficha técnica no',
-          detail: 'Completá potencia AC y paneles desde el proyecto.',
-          life: 6000,
+        toast.warning('La planta se creó, pero la ficha técnica no', {
+          description: 'Completá potencia AC y paneles desde el proyecto.',
+          duration: 6000,
         })
       }
     }
 
-    toast.add({
-      severity: 'success',
-      summary: `Planta «${data.nombre_comercial}» creada`,
-      detail: props.oferta ? `Vinculada a ${codigoOferta.value}.` : 'Sin vincular a ninguna oferta.',
-      life: 4000,
+    toast.success(`Planta «${data.nombre_comercial}» creada`, {
+      description: props.oferta ? `Vinculada a ${codigoOferta.value}.` : 'Sin vincular a ninguna oferta.',
+      duration: 4000,
     })
     emit('creado', data)
     emit('update:visible', false)
@@ -119,7 +114,6 @@ async function crear(payload, infoTecnica, forzar = false) {
       confirm.require({
         header: 'Posible duplicado',
         message: `${det.mensaje}. ¿Crear de todos modos?`,
-        icon: 'pi pi-exclamation-triangle',
         acceptLabel: 'Crear igual',
         rejectLabel: 'Cancelar',
         accept: () => crear(payload, infoTecnica, true),

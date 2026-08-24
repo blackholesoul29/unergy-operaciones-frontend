@@ -2,14 +2,16 @@
   <div class="space-y-4">
     <PageHeader title="Gestión de Usuarios">
       <template #actions>
-        <Button label="Nuevo usuario" icon="pi pi-plus" size="small" @click="openNew" />
+        <Button label="Nuevo usuario" size="small" @click="openNew">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
     <div class="bg-white rounded-xl shadow-sm overflow-hidden">
       <div class="p-4 border-b border-gray-100">
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Buscar por nombre o correo..." class="w-72" @input="onSearch" />
         </IconField>
       </div>
@@ -30,8 +32,12 @@
         </Column>
         <Column header="Acciones" style="width: 140px">
           <template #body="{ data }">
-            <Button icon="pi pi-key" text rounded size="small" v-tooltip.top="'API Keys'" @click="openApiKeys(data)" />
-            <Button icon="pi pi-pencil" text rounded size="small" v-tooltip.top="'Editar'" @click="openEdit(data)" />
+            <Button text rounded size="small" v-tooltip.top="'API Keys'" @click="openApiKeys(data)">
+              <template #icon><KeyIcon class="size-[1em]" /></template>
+            </Button>
+            <Button text rounded size="small" v-tooltip.top="'Editar'" @click="openEdit(data)">
+              <template #icon><PencilIcon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
       </DataTable>
@@ -56,12 +62,12 @@ import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Tag from 'primevue/tag'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import UsuarioForm from './UsuarioForm.vue'
 import ApiKeysDialog from './ApiKeysDialog.vue'
+import { KeyIcon, PencilIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 
-const toast = useToast()
 const items = ref([])
 const loading = ref(false)
 const q = ref('')
@@ -138,15 +144,15 @@ async function onSave(payload) {
   try {
     if (editingId.value) {
       await api.patch(`/usuarios/${editingId.value}`, payload)
-      toast.add({ severity: 'success', summary: 'Usuario actualizado', life: 3000 })
+      toast.success('Usuario actualizado', { duration: 3000 })
     } else {
       await api.post('/usuarios', payload)
-      toast.add({ severity: 'success', summary: 'Usuario creado', life: 3000 })
+      toast.success('Usuario creado', { duration: 3000 })
     }
     dialogVisible.value = false
     load()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'Error al guardar', life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail || 'Error al guardar', duration: 4000 })
   }
 }
 </script>

@@ -18,7 +18,9 @@
       <span class="text-sm" style="color:#7a6e8a">
         {{ ofertas.length }} oferta(s) — una por planta × servicio
       </span>
-      <Button label="Agregar oferta" icon="pi pi-plus" size="small" @click="abrirNueva" />
+      <Button label="Agregar oferta" size="small" @click="abrirNueva">
+        <template #icon><PlusIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <DataTable :value="ofertas" dataKey="id" class="text-sm" responsiveLayout="scroll">
@@ -77,9 +79,9 @@
                   :style="{ color: alarmante(data) ? '#D64455' : 'inherit' }">
               {{ data.seguimientos || 0 }}
             </span>
-            <Button icon="pi pi-send" text rounded size="small" :loading="tocando === data.id"
-                    v-tooltip.top="'Registrar un toque (reenvío o llamada de insistencia)'"
-                    @click="registrarSeguimiento(data)" />
+            <Button text rounded size="small" :loading="tocando === data.id" v-tooltip.top="'Registrar un toque (reenvío o llamada de insistencia)'" @click="registrarSeguimiento(data)">
+              <template #icon><SendIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </template>
       </Column>
@@ -100,12 +102,12 @@
       <Column header="" style="width:8rem">
         <template #body="{ data }">
           <div class="flex items-center">
-            <Button icon="pi pi-external-link" text rounded size="small"
-                    v-tooltip.left="'Abrir en el tablero (editar todo)'"
-                    @click="$router.push(`/comercial?oferta=${data.id}`)" />
+            <Button text rounded size="small" v-tooltip.left="'Abrir en el tablero (editar todo)'" @click="$router.push(`/comercial?oferta=${data.id}`)">
+              <template #icon><ExternalLinkIcon class="size-[1em]" /></template>
+            </Button>
             <a v-if="data.documento_url" :href="data.documento_url" target="_blank" rel="noopener"
                class="p-2" v-tooltip.left="'Documento de la oferta'">
-              <i class="pi pi-file-pdf" style="color:#915BD8" />
+              <FileTextIcon class="size-[1em]" style="color:#915BD8" />
             </a>
           </div>
         </template>
@@ -168,8 +170,9 @@
       </div>
       <template #footer>
         <Button label="Cancelar" text severity="secondary" @click="showDialog = false" />
-        <Button label="Crear oferta" icon="pi pi-check" :disabled="!form.tipo" :loading="guardando"
-                @click="guardar" />
+        <Button label="Crear oferta" :disabled="!form.tipo" :loading="guardando" @click="guardar">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
   </div>
@@ -185,20 +188,20 @@ import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 import InputText from 'primevue/inputtext'
 import DatePicker from 'primevue/datepicker'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import {
   ETAPAS, TIPOS_OFERTA, labelTipo, fmtFecha, alarmante, aFechaStr,
   etiquetaPrecio, placeholderPrecio, ayudaPrecio,
 } from './comercial.js'
 import { cargarProyectos } from './catalogos.js'
+import { CheckIcon, ExternalLinkIcon, FileTextIcon, PlusIcon, SendIcon } from '@lucide/vue'
 
 const props = defineProps({
   oportunidadId: { type: [Number, String], required: true },
   ofertas: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['changed'])
-const toast = useToast()
 
 // Al crear solo tienen sentido las dos primeras etapas: firmar crea el contrato
 // y se hace desde el tablero, no declarando una etapa.
@@ -237,7 +240,7 @@ watch(showDialog, async (abierto) => {
   try {
     proyectos.value = await cargarProyectos()
   } catch {
-    toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de proyectos', life: 4000 })
+    toast.warning('No se pudo cargar la lista de proyectos', { duration: 4000 })
   } finally {
     cargandoProyectos.value = false
   }
@@ -250,8 +253,10 @@ async function cambiarEtapa(oferta, estado) {
     await api.post(`/comercial/ofertas/${oferta.id}/estado`, { estado })
     emit('changed')
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo cambiar la etapa',
-                detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.error('No se pudo cambiar la etapa', {
+      description: err.response?.data?.detail ?? '',
+      duration: 5000,
+    })
   } finally {
     moviendo.value = null
   }
@@ -263,8 +268,10 @@ async function registrarSeguimiento(oferta) {
     await api.post(`/comercial/ofertas/${oferta.id}/seguimiento`)
     emit('changed')
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo registrar el toque',
-                detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.error('No se pudo registrar el toque', {
+      description: err.response?.data?.detail ?? '',
+      duration: 5000,
+    })
   } finally {
     tocando.value = null
   }
@@ -288,8 +295,10 @@ async function guardar() {
     showDialog.value = false
     emit('changed')
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar la oferta',
-                detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.error('No se pudo guardar la oferta', {
+      description: err.response?.data?.detail ?? '',
+      duration: 5000,
+    })
   } finally {
     guardando.value = false
   }

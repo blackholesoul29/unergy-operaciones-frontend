@@ -10,7 +10,7 @@
 
       <div v-if="!diff.tiene_oficial" class="rounded-lg px-3 py-3 text-xs text-center"
         style="background:#faf7ff; border:1px solid #e3d5f5; color:#6b5a8a">
-        <i class="pi pi-clock" style="font-size:20px; display:block; margin-bottom:6px; color:#915BD8" />
+        <ClockIcon class="size-[1em]" style="font-size:20px; display:block; margin-bottom:6px; color:#915BD8" />
         Aún no hay liquidación <b>oficial</b> para comparar en {{ formatPeriodo(periodo) }}.<br />
         Carga el ER oficial en Panel Contable (pestaña Oficial).
       </div>
@@ -29,7 +29,8 @@
           <!-- Encabezado clickeable -->
           <div class="px-4 py-2.5 flex items-center gap-2 border-b cursor-pointer select-none hover:bg-gray-50"
             style="border-color:#f0ebf6" @click="toggle(proy.proyecto_id)">
-            <i :class="abiertos.has(proy.proyecto_id) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs" style="color:#9b8fb0" />
+            <ChevronDownIcon v-if="abiertos.has(proy.proyecto_id)" class="text-xs size-[1em]" style="color:#9b8fb0" />
+            <ChevronRightIcon v-else class="text-xs size-[1em]" style="color:#9b8fb0" />
             <h3 class="text-sm font-bold" style="color:#2C2039">{{ proy.proyecto_nombre }}</h3>
             <span class="ml-auto text-xs font-mono">
               <span style="color:#9b8fb0">Preliq</span> {{ fmtCompact(proy.utilidad_pre) }}
@@ -73,6 +74,7 @@ import { ref, reactive, computed, watch, onMounted, h } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import { fmtCOP, fmtCompact, formatPeriodo } from '~/utils/liquidaciones'
+import { ChevronDownIcon, ChevronRightIcon, ClockIcon } from '@lucide/vue'
 
 const props = defineProps({ periodo: { type: String, required: true } })
 

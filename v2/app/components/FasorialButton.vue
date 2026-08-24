@@ -49,22 +49,23 @@
       </div>
 
       <div class="fz-actions">
-        <Button label="Generar" icon="pi pi-bolt" :disabled="!proyectoSel || loading"
-          :loading="loading" @click="generar" />
+        <Button label="Generar" :disabled="!proyectoSel || loading" :loading="loading" @click="generar">
+          <template #icon><ZapIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
     <!-- ── Avisos ────────────────────────────────────────────────────────── -->
     <div v-if="stale != null" class="fz-note fz-note--warn">
-      <i class="pi pi-clock" />
+      <ClockIcon class="size-[1em]" />
       <span>Lectura desactualizada (hace {{ stale }} min). Se genera de todas formas.</span>
     </div>
     <div v-if="sinCarga" class="fz-note fz-note--info">
-      <i class="pi pi-moon" />
+      <MoonIcon class="size-[1em]" />
       <span>Ángulos no evaluables con la planta en vacío — generar en horas de sol.</span>
     </div>
     <div v-if="errorMsg" class="fz-note fz-note--error">
-      <i class="pi pi-exclamation-triangle" />
+      <TriangleAlertIcon class="size-[1em]" />
       <span>{{ errorMsg }}</span>
       <Button v-if="lastProyId" label="Reintentar" text size="small" class="ml-auto" @click="generar" />
     </div>
@@ -80,12 +81,15 @@
       <div ref="diagramRef" class="fz-diagram" />
 
       <div class="fz-downloads">
-        <Button label="Descargar SVG" icon="pi pi-download" outlined size="small"
-          @click="descargarSVG" />
-        <Button label="Descargar PNG" icon="pi pi-image" outlined size="small"
-          @click="descargarPNG" />
-        <Button label="Actualizar lectura" icon="pi pi-refresh" text size="small"
-          class="ml-auto" :loading="loading" @click="generar" />
+        <Button label="Descargar SVG" outlined size="small" @click="descargarSVG">
+          <template #icon><DownloadIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Descargar PNG" outlined size="small" @click="descargarPNG">
+          <template #icon><ImageIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Actualizar lectura" text size="small" class="ml-auto" :loading="loading" @click="generar">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
   </Dialog>
@@ -102,6 +106,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import { renderFasorial } from '~/utils/fasorial'
 import { gaiaSnapshotToFasorial, validarSnapshot } from '~/utils/gaiaSnapshotToFasorial'
+import { ClockIcon, DownloadIcon, ImageIcon, MoonIcon, RefreshCwIcon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 
 // Umbral (min) para considerar una lectura desactualizada
 const STALE_MIN = 15

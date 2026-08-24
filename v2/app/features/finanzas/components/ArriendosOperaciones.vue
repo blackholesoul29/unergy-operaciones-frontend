@@ -7,14 +7,14 @@
         <div class="flex items-center gap-2">
           <button type="button" @click="cambiarMes(-1)"
             class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-            <i class="pi pi-chevron-left text-xs text-gray-500" />
+            <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
           </button>
           <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
             {{ periodoLabel }}
           </span>
           <button type="button" @click="cambiarMes(1)"
             class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-            <i class="pi pi-chevron-right text-xs text-gray-500" />
+            <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
           </button>
         </div>
         <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
@@ -22,8 +22,9 @@
 
       <div class="flex items-center gap-2">
         <div class="relative">
-          <Button label="Columnas" icon="pi pi-table" size="small" outlined severity="secondary"
-            @click="showColMenu = !showColMenu" />
+          <Button label="Columnas" size="small" outlined severity="secondary" @click="showColMenu = !showColMenu">
+            <template #icon><TableIcon class="size-[1em]" /></template>
+          </Button>
           <div v-if="showColMenu"
             class="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-xl shadow-lg p-3 space-y-1"
             style="min-width:240px">
@@ -35,18 +36,17 @@
             </label>
           </div>
         </div>
-        <Button label="IPC" icon="pi pi-chart-line" size="small" outlined
-          @click="showIPCDialog = true"
-          style="border-color:#915BD8;color:#915BD8" />
+        <Button label="IPC" size="small" outlined @click="showIPCDialog = true" style="border-color:#915BD8;color:#915BD8">
+          <template #icon><ChartLineIcon class="size-[1em]" /></template>
+        </Button>
         <ArriendosZipUpload
           :proyectos="filasParaZip"
           :periodo="periodoActual"
           :periodo-label="periodoLabel"
           @docs-actualizados="() => loadDocs(periodoActual.value)" />
-        <Button label="Guardar selección" icon="pi pi-save" size="small"
-          :loading="guardando"
-          style="background:#915BD8;border-color:#915BD8"
-          @click="guardarSeleccion" />
+        <Button label="Guardar selección" size="small" :loading="guardando" style="background:#915BD8;border-color:#915BD8" @click="guardarSeleccion">
+          <template #icon><SaveIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -100,8 +100,7 @@
         <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ background: sec.dot }" />
         <span class="font-semibold text-gray-800 text-sm flex-1">{{ sec.label }}</span>
         <span class="text-xs text-gray-400 font-medium">({{ sec.items.length }})</span>
-        <i class="pi pi-chevron-down text-gray-400 text-xs ml-2 transition-transform duration-200"
-          :class="{ 'rotate-180': openSections.has(sec.tipo) }" />
+        <ChevronDownIcon class="text-gray-400 text-xs ml-2 transition-transform duration-200 size-[1em]" :class="{ 'rotate-180': openSections.has(sec.tipo) }" />
       </button>
 
       <div class="section-collapse" :class="{ open: openSections.has(sec.tipo) }">
@@ -161,13 +160,13 @@
                       class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
                       style="background:#e5e7eb; color:#4b5563"
                       title="Según su periodicidad, a este arriendo no le corresponde cobro este mes.">
-                      <i class="pi pi-clock text-[9px]" />no aplica este mes
+                      <ClockIcon class="text-[9px] size-[1em]" />no aplica este mes
                     </span>
                     <span v-if="fila.motivo_exclusion"
                       class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full cursor-help flex-shrink-0"
                       style="background:#fee2e2; color:#991b1b"
                       :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
-                      <i class="pi pi-comment text-[9px]" />excluido
+                      <MessageSquareIcon class="text-[9px] size-[1em]" />excluido
                     </span>
                   </span>
                   <span v-if="fila.nombre_arrendador" class="text-[11px] text-gray-400 truncate" :title="fila.nombre_arrendador">
@@ -204,12 +203,7 @@
                     {{ formatCOP(fila.canon_calculado) }}
                   </span>
                   <span v-else class="text-gray-300">—</span>
-                  <i v-if="fila.canon_calculado != null"
-                    class="pi pi-info-circle flex-shrink-0 cursor-help opacity-0 group-hover:opacity-100 transition-opacity"
-                    style="font-size:11px;color:#915BD8"
-                    title="Ver cálculo"
-                    @mouseenter="mostrarCanon($event, fila)"
-                    @mouseleave="ocultarCanon()" />
+                  <InfoIcon class="flex-shrink-0 cursor-help opacity-0 group-hover:opacity-100 transition-opacity size-[1em]" v-if="fila.canon_calculado != null" style="font-size:11px;color:#915BD8" title="Ver cálculo" @mouseenter="mostrarCanon($event, fila)" @mouseleave="ocultarCanon()" />
                 </span>
               </td>
               <td class="px-4 py-2 text-right font-mono text-xs bg-purple-50/30" :class="!esFacturable(fila) ? 'opacity-40' : ''">
@@ -240,7 +234,7 @@
                   <span v-if="facturadoActual[fila.id]"
                     class="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
                     style="background:#dcfce7;color:#166534">
-                    <i class="pi pi-check text-[10px]"/>Sí
+                    <CheckIcon class="text-[10px] size-[1em]" />Sí
                   </span>
                   <span v-else class="text-xs text-gray-300">—</span>
                 </button>
@@ -282,7 +276,7 @@
     <div v-if="proyectosSinIPC.length"
       class="rounded-xl border p-3 flex items-start gap-3"
       style="background:#fef3c7;border-color:#f59e0b40">
-      <i class="pi pi-exclamation-triangle text-sm flex-shrink-0 mt-0.5" style="color:#d97706"/>
+      <TriangleAlertIcon class="text-sm flex-shrink-0 mt-0.5 size-[1em]" style="color:#d97706" />
       <div class="flex-1 text-xs" style="color:#92400e">
         <p class="font-semibold mb-1">IPC pendiente para próximos períodos</p>
         <p>{{ proyectosSinIPC.join(', ') }} — agrégalo en el diálogo IPC.</p>
@@ -350,9 +344,9 @@
               <InputText v-model="ipcForm.fuente" class="w-full" placeholder="DANE" />
             </div>
           </div>
-          <Button label="Guardar tasa" icon="pi pi-check" size="small"
-            @click="guardarIPC"
-            style="background:#915BD8;border-color:#915BD8" />
+          <Button label="Guardar tasa" size="small" @click="guardarIPC" style="background:#915BD8;border-color:#915BD8">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </Dialog>
@@ -377,14 +371,14 @@ import DataTable   from 'primevue/datatable'
 import Column      from 'primevue/column'
 import InputNumber from 'primevue/inputnumber'
 import InputText   from 'primevue/inputtext'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api          from '~/core/client'
 import ArriendosZipUpload from './ArriendosZipUpload.vue'
 import CalculoIpcPopover from '~/components/CalculoIpcPopover.vue'
 const { docsPorProyecto, loadDocs, downloadDoc } = useArriendosDocs()
 import DocumentoIcon from '~/components/DocumentoIcon.vue'
+import { ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, InfoIcon, MessageSquareIcon, SaveIcon, TableIcon, TriangleAlertIcon } from '@lucide/vue'
 
-const toast = useToast()
 const router = useRouter()
 
 function irADetalleProyecto(fila) {
@@ -455,10 +449,10 @@ async function guardarIPC() {
       confirmado: true,
       fuente: ipcForm.fuente || 'DANE',
     })
-    toast.add({ severity: 'success', summary: 'Tasa IPC guardada', life: 2500 })
+    toast.success('Tasa IPC guardada', { duration: 2500 })
     await cargarDatos()
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al guardar IPC', life: 3000 })
+    toast.error('Error al guardar IPC', { duration: 3000 })
   }
 }
 
@@ -480,7 +474,7 @@ async function cargarDatos() {
     ipcTasas.value = ipc.data
     filas.value.forEach(f => { seleccion[f.id] = f.incluido && f.habilitado })
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al cargar arriendos', life: 3000 })
+    toast.error('Error al cargar arriendos', { duration: 3000 })
   } finally {
     loading.value = false
   }
@@ -604,10 +598,10 @@ async function _ejecutarGuardado(motivos) {
       motivo_exclusion: motivos[f.id] || null,
     }))
     await api.post(`/arriendos/seleccion/${periodoActual.value}`, { items })
-    toast.add({ severity: 'success', summary: 'Selección guardada', life: 2500 })
+    toast.success('Selección guardada', { duration: 2500 })
     await cargarDatos()
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al guardar', life: 3000 })
+    toast.error('Error al guardar', { duration: 3000 })
   } finally {
     guardando.value = false
   }
@@ -618,7 +612,7 @@ async function toggleFacturado(id) {
     await api.patch(`/arriendos/seleccion/${periodoActual.value}/${id}/facturado`)
     await cargarDatos()
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al marcar facturado', life: 3000 })
+    toast.error('Error al marcar facturado', { duration: 3000 })
   }
 }
 

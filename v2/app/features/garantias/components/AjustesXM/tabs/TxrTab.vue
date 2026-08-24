@@ -10,7 +10,7 @@
         @drop.prevent="onDrop"
       >
         <input ref="fileInput" type="file" accept=".xlsx,.xls" class="hidden" @change="onSelect" />
-        <i class="pi pi-file-excel text-3xl block mb-2" style="color:#c4b8d4" />
+        <FileSpreadsheetIcon class="text-3xl block mb-2 size-[1em]" style="color:#c4b8d4" />
         <p class="text-sm font-medium" style="color:#6b5a8a">Archivo TXR — hoja "Ajuste"</p>
         <p class="text-xs mt-1" style="color:#9ca3af">Arrastra o haz clic para seleccionar</p>
       </div>
@@ -20,8 +20,9 @@
       </div>
 
       <div class="flex justify-end">
-        <Button label="Procesar" icon="pi pi-bolt" :loading="loading" :disabled="!pendingFile" @click="procesar"
-          style="background:#915BD8;border-color:#915BD8" />
+        <Button label="Procesar" :loading="loading" :disabled="!pendingFile" @click="procesar" style="background:#915BD8;border-color:#915BD8">
+          <template #icon><ZapIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -31,7 +32,9 @@
         <h3 class="text-sm font-semibold" style="color:#2C2039">
           Ajuste TXR — {{ resultado.rows.length }} filas (UNGC + UNGG)
         </h3>
-        <Button label="Nuevo archivo" icon="pi pi-refresh" text severity="secondary" size="small" @click="reset" />
+        <Button label="Nuevo archivo" text severity="secondary" size="small" @click="reset">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
       </div>
 
       <!-- Tabla scrollable (columnas dinámicas según el archivo) -->
@@ -88,9 +91,15 @@
         </div>
 
         <div class="flex justify-end gap-2">
-          <Button label="Exportar Excel" icon="pi pi-file-excel" outlined severity="secondary" size="small" @click="exportar" />
-          <Button label="Copiar" icon="pi pi-copy" outlined severity="secondary" @click="copiar" />
-          <Button label="Confirmar y guardar" icon="pi pi-check" @click="guardarRegistro" style="background:#915BD8;border-color:#915BD8" />
+          <Button label="Exportar Excel" outlined severity="secondary" size="small" @click="exportar">
+            <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+          </Button>
+          <Button label="Copiar" outlined severity="secondary" @click="copiar">
+            <template #icon><CopyIcon class="size-[1em]" /></template>
+          </Button>
+          <Button label="Confirmar y guardar" @click="guardarRegistro" style="background:#915BD8;border-color:#915BD8">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </div>
@@ -102,13 +111,13 @@ import { ref, computed } from 'vue'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { parseTxr } from '../composables/useGarantiasParser.js'
 import { useGarantiasHistorial } from '../composables/useGarantiasHistorial.js'
 import { fmtCOP, fmtISODate } from '../utils/formatters.js'
 import { exportTablaExcel } from '../utils/excelExport.js'
+import { CheckIcon, CopyIcon, FileSpreadsheetIcon, RefreshCwIcon, ZapIcon } from '@lucide/vue'
 
-const toast = useToast()
 const store = useGarantiasHistorial()
 
 const esCodigo = (col) => /^c[oó]digo$/i.test(col)
@@ -181,7 +190,7 @@ El monto a consignar es de ${fmtCOP(montoEditable.value)}.${contexto.value ? '\n
 
 async function copiar() {
   await navigator.clipboard.writeText(mensajeEditable.value)
-  toast.add({ severity: 'success', summary: 'Copiado', life: 2000 })
+  toast.success('Copiado', { duration: 2000 })
 }
 
 function exportar() {
@@ -199,9 +208,9 @@ async function guardarRegistro() {
       disponibleCustodia: null, congelado: null, saldo: null,
       totalAjusteTXR: montoEditable.value,
     })
-    toast.add({ severity: 'success', summary: 'Guardado en historial', life: 3000 })
+    toast.success('Guardado en historial', { duration: 3000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar el registro', life: 4000 })
+    toast.error('Error', { description: 'No se pudo guardar el registro', duration: 4000 })
   }
 }
 </script>

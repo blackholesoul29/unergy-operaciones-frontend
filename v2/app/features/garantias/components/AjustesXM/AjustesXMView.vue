@@ -21,7 +21,7 @@
         title="Configuración"
         style="color:#6b5a8a"
       >
-        <i class="pi pi-cog text-base" />
+        <SettingsIcon class="text-base size-[1em]" />
       </button>
     </div>
 
@@ -43,6 +43,7 @@ import MensualesTab from './tabs/MensualesTab.vue'
 import TxfTab from './tabs/TxfTab.vue'
 import HistoricoTab from './tabs/HistoricoTab.vue'
 import AjustesDialog from './AjustesDialog.vue'
+import { SettingsIcon } from '@lucide/vue'
 
 const tabs = [
   { key: 'semanales',  label: 'Semanales' },

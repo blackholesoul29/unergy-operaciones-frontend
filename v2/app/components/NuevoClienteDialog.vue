@@ -44,7 +44,9 @@
 
     <template #footer>
       <Button label="Cancelar" text severity="secondary" @click="$emit('update:visible', false)" />
-      <Button label="Crear cliente" icon="pi pi-check" :loading="guardando" @click="guardar" />
+      <Button label="Crear cliente" :loading="guardando" @click="guardar">
+        <template #icon><CheckIcon class="size-[1em]" /></template>
+      </Button>
     </template>
   </Dialog>
 </template>
@@ -56,6 +58,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
 import api from '~/core/client'
+import { CheckIcon } from '@lucide/vue'
 
 defineProps({ visible: Boolean })
 const emit = defineEmits(['update:visible', 'creado'])

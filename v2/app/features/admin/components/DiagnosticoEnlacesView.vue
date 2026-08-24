@@ -3,12 +3,16 @@
     <PageHeader title="Diagnóstico de Enlaces" subtitle="Mapeo Contrato → GESCON → Planta → sub_project (API Unergy)">
       <template #lead>
         <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(145,91,216,0.12);">
-          <i class="pi pi-link text-lg" style="color: #915BD8;" />
+          <LinkIcon class="text-lg size-[1em]" style="color: #915BD8;" />
         </div>
       </template>
       <template #actions>
-        <Button icon="pi pi-refresh" severity="secondary" text :loading="loading" @click="load" />
-        <Button label="Auto-Fix Enlaces" icon="pi pi-wrench" severity="warn" size="small" :loading="fixing" @click="fixEnlaces" />
+        <Button severity="secondary" text :loading="loading" @click="load">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Auto-Fix Enlaces" severity="warn" size="small" :loading="fixing" @click="fixEnlaces">
+          <template #icon><WrenchIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -26,7 +30,7 @@
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-20">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
     </div>
 
     <template v-if="data && !loading">
@@ -133,7 +137,7 @@
 
         <!-- No plants warning -->
         <div v-if="!c.gescon_raw?.length && !c.gescon_resolved?.length" class="px-4 py-6 text-center">
-          <i class="pi pi-exclamation-triangle text-2xl mb-2 block" style="color: #dc2626;" />
+          <TriangleAlertIcon class="text-2xl mb-2 block size-[1em]" style="color: #dc2626;" />
           <p class="text-xs font-semibold" style="color: #dc2626;">
             Sin registros GESCON — {{ !c.numero_codigo_contrato ? 'no tiene código de contrato' : 'no hay AsicSolicitud con contrato_interno = ' + c.numero_codigo_contrato }}
           </p>
@@ -148,6 +152,7 @@ import { ref, onMounted } from 'vue'
 import api from '~/core/client'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
+import { LinkIcon, LoaderCircleIcon, RefreshCwIcon, TriangleAlertIcon, WrenchIcon } from '@lucide/vue'
 
 const data = ref(null)
 const loading = ref(false)

@@ -32,14 +32,15 @@
           v-tooltip.top="!totalSeleccionados ? 'Selecciona al menos un destinatario' : ''"
           class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors"
           :style="!totalSeleccionados || enviando ? 'background:#915BD8;color:#fff;opacity:.4;cursor:not-allowed;' : 'background:#915BD8;color:#fff;cursor:pointer;'">
-          <i :class="['pi text-xs', enviando ? 'pi-spin pi-spinner' : 'pi-send']" />
+          <LoaderCircleIcon v-if="enviando" class="text-xs size-[1em] animate-spin" />
+          <SendIcon v-else class="text-xs size-[1em]" />
           {{ enviando ? 'Enviando…' : `Enviar a ${totalSeleccionados}` }}
         </button>
       </div>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
     </div>
 
     <div v-else class="space-y-3">
@@ -50,7 +51,7 @@
           {{ opt.label }}
         </button>
         <IconField style="max-width: 240px; flex: 1;">
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="busqueda" placeholder="Buscar destinatario…" class="w-full" style="height: 34px;" />
         </IconField>
       </div>
@@ -109,7 +110,8 @@
               <td class="px-4 py-2.5">
                 <button type="button" @click="toggle(row.key)"
                   class="flex items-center gap-1.5 text-xs font-medium" style="color: #6b5a8a;">
-                  <i :class="['pi text-[10px]', expanded.has(row.key) ? 'pi-chevron-down' : 'pi-chevron-right']" />
+                  <ChevronDownIcon v-if="expanded.has(row.key)" class="text-[10px] size-[1em]" />
+                  <ChevronRightIcon v-else class="text-[10px] size-[1em]" />
                   {{ labelProyectos(row) }}
                 </button>
               </td>
@@ -163,12 +165,12 @@ import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import DatePicker from 'primevue/datepicker'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { formatearNombre } from '~/utils/nombreFormato'
 import HistorialEnviosCGM from './HistorialEnviosCGM.vue'
+import { ChevronDownIcon, ChevronRightIcon, LoaderCircleIcon, SearchIcon, SendIcon } from '@lucide/vue'
 
-const toast = useToast()
 const innerTab = ref('enviar')
 const fronteras = ref([])
 const loading = ref(true)
@@ -353,14 +355,17 @@ async function enviarSeleccionados() {
     }, { timeout: 300000 }) // "Operaciones Unergy" (todas las fronteras) puede tardar >150s el ultimo dia del mes (se adjunta ademas el resumen mensual) -- medido en produccion 2026-08-12
     const ok = data.resultados.filter(r => r.ok)
     const conError = data.resultados.filter(r => !r.ok)
-    toast.add({
-      severity: conError.length ? 'warn' : 'success',
-      summary: `${ok.length} enviado${ok.length === 1 ? '' : 's'}${conError.length ? `, ${conError.length} con error` : ''}`,
-      detail: conError.length ? conError.map(r => `${r.nombre}: ${r.error}`).join(' · ') : undefined,
-      life: 6000,
-    })
+    const resumen = `${ok.length} enviado${ok.length === 1 ? '' : 's'}${conError.length ? `, ${conError.length} con error` : ''}`
+    if (conError.length) {
+      toast.warning(resumen, {
+        description: conError.map(r => `${r.nombre}: ${r.error}`).join(' · '),
+        duration: 6000,
+      })
+    } else {
+      toast.success(resumen, { duration: 6000 })
+    }
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al enviar', detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('Error al enviar', { description: e.response?.data?.detail || e.message, duration: 5000 })
   } finally {
     enviando.value = false
   }

@@ -4,7 +4,7 @@
     <!-- ══ Topbar compacto ═══════════════════════════════════════ -->
     <div class="imv-topbar">
       <div class="imv-topbar-title">
-        <i class="pi pi-file-edit text-sm" style="color:#915BD8" />
+        <FilePenIcon class="text-sm size-[1em]" style="color:#915BD8" />
         <h2 class="text-base font-bold text-gray-800 whitespace-nowrap">Informes Mensuales</h2>
         <span class="hidden lg:inline text-xs text-gray-500">· Generación, revisión y envío al cliente</span>
       </div>
@@ -13,18 +13,18 @@
       <div class="imv-tabs">
         <button class="imv-tab" :class="{ 'imv-tab--on': tab === 'generar' }"
                 @click="tab = 'generar'">
-          <i class="pi pi-cog" />
+          <SettingsIcon class="size-[1em]" />
           <span>Generar</span>
         </button>
         <button class="imv-tab" :class="{ 'imv-tab--on': tab === 'pipeline' }"
                 @click="tab = 'pipeline'">
-          <i class="pi pi-send" />
+          <SendIcon class="size-[1em]" />
           <span>Revisión y envío</span>
           <span class="imv-tab-badge" v-if="badgePipeline">{{ badgePipeline }}</span>
         </button>
         <button class="imv-tab" :class="{ 'imv-tab--on': tab === 'portafolios' }"
                 @click="tab = 'portafolios'">
-          <i class="pi pi-th-large" />
+          <LayoutGridIcon class="size-[1em]" />
           <span>Gestión de portafolios</span>
         </button>
       </div>
@@ -69,6 +69,7 @@ function setTab(t) {
 }
 // Watcher para sincronizar query con tab activa (cuando cambia desde el UI)
 import { watch } from 'vue'
+import { FilePenIcon, LayoutGridIcon, SendIcon, SettingsIcon } from '@lucide/vue'
 watch(tab, (val) => setTab(val))
 
 // Cuenta informes pendientes/comentados del mes actual para mostrar badge en el tab Pipeline
@@ -145,7 +146,7 @@ onMounted(cargarBadge)
   transition: all .15s;
   white-space: nowrap;
 }
-.imv-tab i { font-size: 12px; }
+.imv-tab svg { font-size: 12px; }
 .imv-tab:hover:not(.imv-tab--on) { color: #2C2039; background: rgba(145,91,216,.08); }
 .imv-tab--on {
   background: #915BD8;

@@ -4,10 +4,10 @@
     <header class="tf-topbar">
       <div class="tf-topbar-left">
         <span class="tf-role-badge">Técnico</span>
-        <span class="tf-brand"><i class="pi pi-wrench" /> Mis Fallas</span>
+        <span class="tf-brand"><WrenchIcon class="size-[1em]" /> Mis Fallas</span>
       </div>
       <button class="tf-icon-btn tf-bell" @click="notifOpen = true" title="Notificaciones">
-        <i class="pi pi-bell" />
+        <BellIcon class="size-[1em]" />
         <span v-if="unreadCount > 0" class="tf-bell-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
       </button>
     </header>
@@ -16,7 +16,7 @@
     <div class="tf-filters">
       <div class="tf-chips">
         <button :class="['tf-fchip', filtro === 'activas' && 'tf-fchip--on']" @click="filtro = 'activas'">
-          <i class="pi pi-bolt" /> Activas
+          <ZapIcon class="size-[1em]" /> Activas
         </button>
         <button :class="['tf-fchip', filtro === 'programadas' && 'tf-fchip--on']" @click="filtro = 'programadas'">
           Programadas
@@ -32,14 +32,14 @@
 
     <!-- LISTA -->
     <main class="tf-list">
-      <div v-if="loading" class="tf-state"><i class="pi pi-spin pi-spinner" /> Cargando tus fallas…</div>
+      <div v-if="loading" class="tf-state"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando tus fallas…</div>
       <div v-else-if="!misFallas.length" class="tf-state">
-        <i class="pi pi-check-circle" style="font-size:38px;color:#22c55e" />
+        <CircleCheckIcon class="size-[1em]" style="font-size:38px;color:#22c55e" />
         <span>No tienes fallas asignadas</span>
         <span style="font-size:13px;color:#9b8db5">El coordinador te asignará fallas cuando haya trabajo pendiente</span>
       </div>
       <div v-else-if="!filtradas.length" class="tf-state">
-        <i class="pi pi-filter-slash" style="font-size:28px;color:#9b8db5" />
+        <FilterXIcon class="size-[1em]" style="font-size:28px;color:#9b8db5" />
         <span>Sin fallas con este filtro</span>
         <button class="tf-filter-clear" @click="filtro = null">Ver todas</button>
       </div>
@@ -52,16 +52,16 @@
               <span class="tf-card-estado" :style="estadoStyle(f.estado)">{{ f.estado?.etiqueta }}</span>
             </div>
             <div class="tf-card-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</div>
-            <div class="tf-card-proj"><i class="pi pi-bolt" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
+            <div class="tf-card-proj"><ZapIcon class="size-[1em]" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
             <div class="tf-card-foot">
               <span class="tf-prio" :style="{ color: f.prioridad?.color_hex || '#6b5a8a' }">
-                <i class="pi pi-flag-fill" style="font-size:10px" /> {{ f.prioridad?.etiqueta }}
+                <FlagIcon class="size-[1em] fill-current" style="font-size:10px" /> {{ f.prioridad?.etiqueta }}
               </span>
               <span class="tf-time">{{ relativeTime(f.fecha_identificacion) }}</span>
               <span v-if="f.fotos_urls?.length" class="tf-fotos-badge">
-                <i class="pi pi-image" /> {{ f.fotos_urls.length }}
+                <ImageIcon class="size-[1em]" /> {{ f.fotos_urls.length }}
               </span>
-              <i class="pi pi-chevron-right tf-chevron" />
+              <ChevronRightIcon class="tf-chevron size-[1em]" />
             </div>
           </div>
         </button>
@@ -88,6 +88,8 @@ import { useAuthStore } from '~/stores/auth'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import TecnicoFallaDetailSheet from '~/features/mobile/components/components/TecnicoFallaDetailSheet.vue'
 import NotificationsSheet from '~/features/mobile/components/components/NotificationsSheet.vue'
+import { BellIcon, ChevronRightIcon, CircleCheckIcon, FilterXIcon, FlagIcon, ImageIcon, LoaderCircleIcon, WrenchIcon, ZapIcon } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 
 const auth = useAuthStore()
 const fallas = ref([])
@@ -147,7 +149,10 @@ async function cargar() {
     ])
     Object.assign(catalogos, cat.data)
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'Error al cargar fallas', detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('Error al cargar fallas', {
+      description: e.response?.data?.detail || e.message,
+      duration: 4000,
+    })
   } finally {
     loading.value = false
   }
@@ -200,7 +205,7 @@ onMounted(() => { cargar(); fetchUnread() })
   align-self: flex-start;
 }
 .tf-brand { font-size: clamp(14px, 4vw, 16px); font-weight: 700; }
-.tf-brand .pi { color: #fbbf24; margin-right: 5px; }
+.tf-brand svg { color: #fbbf24; margin-right: 5px; }
 .tf-icon-btn {
   width: 38px; height: 38px; border-radius: 10px; border: none;
   background: rgba(255,255,255,0.12); color: #fff; font-size: 15px; position: relative;
@@ -230,7 +235,7 @@ onMounted(() => { cargar(); fetchUnread() })
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; padding: 60px 20px; color: #6b5a8a; font-size: 15px; text-align: center;
 }
-.tf-state .pi-spinner { font-size: 26px; color: #064e3b; }
+.tf-state svg { font-size: 26px; color: #064e3b; }
 .tf-filter-clear { padding: 9px 18px; border: none; border-radius: 10px; background: #f0fdf4; color: #16a34a; font-weight: 700; font-size: 14px; }
 
 .tf-card {
@@ -244,7 +249,7 @@ onMounted(() => { cargar(); fetchUnread() })
 .tf-card-estado { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 7px; }
 .tf-card-tipo { font-size: 14px; font-weight: 700; color: #2C2039; line-height: 1.25; }
 .tf-card-proj { font-size: 12.5px; color: #6b5a8a; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
-.tf-card-proj .pi { font-size: 11px; color: #059669; }
+.tf-card-proj svg { font-size: 11px; color: #059669; }
 .tf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
 .tf-prio { font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 3px; }
 .tf-time { font-size: 12px; color: #9ca3af; }

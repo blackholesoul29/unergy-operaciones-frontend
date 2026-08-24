@@ -3,15 +3,16 @@
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-3">
       <h2 class="text-lg font-semibold" style="color: #2C2039;">Gestión de fallas</h2>
-      <Button label="Registrar falla" icon="pi pi-plus" @click="openNew"
-        style="background: #915BD8; border-color: #915BD8;" />
+      <Button label="Registrar falla" @click="openNew" style="background: #915BD8; border-color: #915BD8;">
+        <template #icon><PlusIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- Filtros -->
     <div class="bg-white rounded-xl px-4 py-3 flex flex-wrap gap-3 items-center"
       style="border: 1px solid #e8e0f0;">
       <IconField class="flex-1 min-w-[180px]">
-        <InputIcon class="pi pi-search" />
+        <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
         <InputText v-model="filters.q" placeholder="Buscar por código o descripción…"
           class="w-full" @input="debouncedLoad" />
       </IconField>
@@ -25,8 +26,9 @@
       <Select v-model="filters.proyecto_id" :options="proyectos" optionLabel="nombre_comercial"
         optionValue="id" placeholder="Proyecto" showClear filter class="min-w-[180px]" @change="load" />
 
-      <Button v-if="hasFilters" label="Limpiar" icon="pi pi-times" severity="secondary"
-        size="small" @click="clearFilters" />
+      <Button v-if="hasFilters" label="Limpiar" severity="secondary" size="small" @click="clearFilters">
+        <template #icon><XIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- Tabla -->
@@ -114,8 +116,9 @@
 
         <Column style="width: 60px;">
           <template #body="{ data }">
-            <Button icon="pi pi-chevron-right" text rounded severity="secondary" size="small"
-              @click.stop="goToDetail({ data })" />
+            <Button text rounded severity="secondary" size="small" @click.stop="goToDetail({ data })">
+              <template #icon><ChevronRightIcon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
       </DataTable>
@@ -132,7 +135,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -144,10 +147,10 @@ import InputIcon from 'primevue/inputicon'
 import Select from 'primevue/select'
 import FallaForm from './FallaForm.vue'
 import api from '~/core/client'
+import { ChevronRightIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 
 const items = ref([])
 const total = ref(0)
@@ -262,12 +265,12 @@ async function onCreate(payload) {
       await api.post(`/fallas/${nueva.id}/seguimientos`, { nota: notaInicial })
     }
     dialogVisible.value = false
-    toast.add({ severity: 'success', summary: 'Falla registrada', life: 3000 })
+    toast.success('Falla registrada', { duration: 3000 })
     page.value = 1
     load()
   } catch (err) {
     const msg = err?.response?.data?.detail ?? 'Error al registrar la falla'
-    toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 4000 })
+    toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     saving.value = false
   }

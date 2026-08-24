@@ -15,11 +15,11 @@
             autocomplete="current-password" placeholder="••••••••" required />
         </label>
 
-        <div v-if="error" class="ml-error"><i class="pi pi-exclamation-triangle" /> {{ error }}</div>
+        <div v-if="error" class="ml-error"><TriangleAlertIcon class="size-[1em]" /> {{ error }}</div>
 
         <button class="ml-submit" type="submit" :disabled="loading || !email || !password">
-          <i v-if="loading" class="pi pi-spin pi-spinner" />
-          <i v-else class="pi pi-sun" />
+          <LoaderCircleIcon class="size-[1em] animate-spin" v-if="loading" />
+          <SunIcon class="size-[1em]" v-else />
           {{ loading ? 'Ingresando…' : 'Ingresar' }}
         </button>
       </form>
@@ -30,10 +30,10 @@
       <div v-if="isDev" class="ml-preview">
         <p class="ml-preview-label">— Vista previa local —</p>
         <button class="ml-preview-btn ml-preview-btn--coord" @click="previsualizarComo('coordinador')">
-          <i class="pi pi-briefcase" /> Ver como Coordinador
+          <BriefcaseIcon class="size-[1em]" /> Ver como Coordinador
         </button>
         <button class="ml-preview-btn ml-preview-btn--tec" @click="previsualizarComo('tecnico')">
-          <i class="pi pi-wrench" /> Ver como Técnico
+          <WrenchIcon class="size-[1em]" /> Ver como Técnico
         </button>
       </div>
     </div>
@@ -45,6 +45,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { usePwa } from '~/features/mobile/components/usePwa'
+import { BriefcaseIcon, LoaderCircleIcon, SunIcon, TriangleAlertIcon, WrenchIcon } from '@lucide/vue'
 
 const router = useRouter()
 const auth = useAuthStore()

@@ -73,8 +73,9 @@
 
         <div v-else>
           <div class="flex items-center gap-2 mb-2">
-            <Button label="Llenar los años del periodo" icon="pi pi-list" size="small" outlined
-                    :disabled="!aniosPeriodo.length" @click="llenarAnios" />
+            <Button label="Llenar los años del periodo" size="small" outlined :disabled="!aniosPeriodo.length" @click="llenarAnios">
+              <template #icon><ListIcon class="size-[1em]" /></template>
+            </Button>
             <span class="text-[11px]" style="color:#9b89b5">
               {{ aniosPeriodo.length ? `${aniosPeriodo.length} año(s) entre inicio y fin` : 'Definí las fechas primero' }}
             </span>
@@ -83,11 +84,13 @@
             <InputNumber v-model="p.anio" class="w-24" :useGrouping="false" placeholder="Año" />
             <InputNumber v-model="p.precio" class="w-40" suffix=" $/kWh" :maxFractionDigits="2"
                          placeholder="Precio" />
-            <Button icon="pi pi-trash" text severity="danger" size="small"
-                    @click="f.precios_anuales.splice(i, 1)" />
+            <Button text severity="danger" size="small" @click="f.precios_anuales.splice(i, 1)">
+              <template #icon><Trash2Icon class="size-[1em]" /></template>
+            </Button>
           </div>
-          <Button label="Agregar año" icon="pi pi-plus" text size="small"
-                  @click="f.precios_anuales.push({ anio: null, precio: null })" />
+          <Button label="Agregar año" text size="small" @click="f.precios_anuales.push({ anio: null, precio: null })">
+            <template #icon><PlusIcon class="size-[1em]" /></template>
+          </Button>
           <p v-if="filasMensuales" class="ayuda">
             Se expandirá a <strong>{{ filasMensuales }}</strong> filas mensuales de tarifa,
             recortadas al periodo del suministro.
@@ -128,8 +131,9 @@
 
     <template #footer>
       <Button label="Cancelar" text severity="secondary" :disabled="firmando" @click="cerrar(false)" />
-      <Button label="Firmar y crear contrato" icon="pi pi-file-check" :loading="firmando"
-              :disabled="errores.length > 0" @click="firmar" />
+      <Button label="Firmar y crear contrato" :loading="firmando" :disabled="errores.length > 0" @click="firmar">
+        <template #icon><FileCheckIcon class="size-[1em]" /></template>
+      </Button>
     </template>
   </Dialog>
 </template>
@@ -143,7 +147,8 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import SelectButton from 'primevue/selectbutton'
 import Message from 'primevue/message'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
+import { FileCheckIcon, ListIcon, PlusIcon, Trash2Icon } from '@lucide/vue'
 import {
   aFecha, aFechaStr, validarFirma, tarifasMensualesQueGenera, aniosDelPeriodo,
 } from './comercial.js'
@@ -155,7 +160,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:visible', 'firmada'])
 
-const toast = useToast()
 
 const MODOS_PRECIO = [
   { label: 'Tarifa única', value: 'unica' },
@@ -249,13 +253,11 @@ async function firmar() {
     errorServidor.value = r.error
     return
   }
-  toast.add({
-    severity: 'success',
-    summary: `Contrato PPA #${r.ppa_contrato_id} creado`,
-    detail: r.plantas_del_contrato
+  toast.success(`Contrato PPA #${r.ppa_contrato_id} creado`, {
+    description: r.plantas_del_contrato
       ? `${r.plantas_del_contrato} planta(s) · ${r.tarifas_creadas} tarifas mensuales`
       : 'Sin plantas: Cumplimiento no podrá medirlo hasta que vincules el proyecto.',
-    life: 6000,
+    duration: 6000,
   })
   emit('firmada', r)
   emit('update:visible', false)

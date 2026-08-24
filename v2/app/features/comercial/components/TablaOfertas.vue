@@ -7,8 +7,9 @@
   <div>
     <div class="flex items-center justify-between mb-2">
       <span class="text-xs" style="color:#9b89b5">{{ ofertas.length }} ofertas</span>
-      <Button label="Excel" icon="pi pi-file-excel" size="small" outlined
-              :loading="exportando" @click="exportar" />
+      <Button label="Excel" size="small" outlined :loading="exportando" @click="exportar">
+        <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <DataTable :value="ofertas" paginator :rows="25" :rowsPerPageOptions="[25, 50, 100]"
@@ -108,8 +109,9 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { exportarExcel } from '~/utils/exportarExcel'
+import { FileSpreadsheetIcon } from '@lucide/vue'
 import {
   labelEtapa, severidadEtapa, labelTipo, mwhMes, fmtMwh, fmtFecha,
   diasDesde, mesDelCodigo, alarmante,
@@ -118,7 +120,6 @@ import {
 const props = defineProps({ ofertas: { type: Array, default: () => [] } })
 defineEmits(['abrir'])
 
-const toast = useToast()
 const exportando = ref(false)
 
 // `columnas` es [{ header, value: fila => valor }] — ver utils/exportarExcel.js.
@@ -149,7 +150,7 @@ async function exportar() {
     const hoy = new Date().toISOString().slice(0, 10)
     await exportarExcel(props.ofertas, COLUMNAS_EXCEL, `comercial_ofertas_${hoy}`, 'Ofertas')
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo exportar', detail: err.message, life: 5000 })
+    toast.error('No se pudo exportar', { description: err.message, duration: 5000 })
   } finally {
     exportando.value = false
   }

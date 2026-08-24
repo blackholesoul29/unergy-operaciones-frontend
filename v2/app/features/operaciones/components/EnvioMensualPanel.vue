@@ -7,7 +7,7 @@
         <!-- Ícono + label mínimo -->
         <span class="em-header-label"
               v-tooltip.bottom="'Pipeline: Edición → Revisión → Comentarios → Aprobación → Envío'">
-          <i class="pi pi-send" /> Revisión y envío
+          <SendIcon class="size-[1em]" /> Revisión y envío
         </span>
 
         <!-- Envío masivo inline (solo cuando aplica) -->
@@ -16,14 +16,14 @@
                 :disabled="enviandoBatch"
                 @click="abrirConfirmEnvio"
                 v-tooltip.bottom="'Enviar todos los informes verificados al cliente'">
-          <i class="pi pi-send" />
+          <SendIcon class="size-[1em]" />
           Enviar {{ puedeEnviarBatch.length }} verificado{{ puedeEnviarBatch.length !== 1 ? 's' : '' }}
         </button>
 
         <!-- Controles -->
         <div class="em-header-controls">
           <div class="em-search-wrap">
-            <i class="pi pi-search em-search-icon" />
+            <SearchIcon class="em-search-icon size-[1em]" />
             <input v-model="busqueda" type="text" placeholder="Buscar…" class="em-search-input" />
             <button v-if="busqueda" class="em-search-clear" @click="busqueda = ''" title="Limpiar">✕</button>
           </div>
@@ -32,8 +32,9 @@
             <input type="month" v-model="mesSel" :max="mesMax" class="em-month-input" />
             <button class="em-month-nav" @click="cambiarMes(1)" :disabled="mesSel === mesMax" title="Mes siguiente">›</button>
           </div>
-          <Button icon="pi pi-refresh" text size="small" :loading="loading" @click="cargar"
-                  v-tooltip.bottom="'Actualizar'" />
+          <Button text size="small" :loading="loading" @click="cargar" v-tooltip.bottom="'Actualizar'">
+            <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </header>
 
@@ -52,7 +53,7 @@
               <ProgressSpinner style="width:24px;height:24px" />
             </div>
             <div v-else-if="!filtrados.length" class="em-compact-empty">
-              <i class="pi pi-inbox" style="font-size:20px;color:#A89EC0;margin-bottom:6px" />
+              <InboxIcon class="size-[1em]" style="font-size:20px;color:#A89EC0;margin-bottom:6px" />
               <p style="font-size:11px;color:#6B5A8A;margin:0">Sin resultados</p>
             </div>
             <div v-else class="em-compact-list">
@@ -75,7 +76,7 @@
                           @click="editar(inf)"
                           v-tooltip.right="'Editar informe'"
                           style="width:22px;height:22px;font-size:11px">
-                    <i class="pi pi-pencil" />
+                    <PencilIcon class="size-[1em]" />
                   </button>
                 </div>
               </button>
@@ -89,7 +90,7 @@
               <span>Cargando informes del mes…</span>
             </div>
             <div v-else-if="!filtrados.length" class="em-state em-state-empty">
-              <i class="pi pi-inbox text-3xl" style="color:#A89EC0" />
+              <InboxIcon class="text-3xl size-[1em]" style="color:#A89EC0" />
               <p class="em-state-title">{{ filtro ? 'Sin informes en este estado' : 'No hay informes guardados para este mes' }}</p>
               <p class="em-state-sub">
                 {{ filtro ? 'Quita el filtro para ver todos.' : 'Genera informes desde el wizard de arriba y aparecerán aquí.' }}
@@ -111,7 +112,7 @@
                 <template v-for="row in filasAgrupadas" :key="row._group || row.id">
                 <tr v-if="row._group" class="em-group-row">
                   <td colspan="7">
-                    <i class="pi" :class="row._icon" /> {{ row._group }}
+                    <component :is="row._icon" class="size-[1em]" /> {{ row._group }}
                     <span class="em-group-count">{{ row._count }}</span>
                   </td>
                 </tr>
@@ -150,7 +151,7 @@
                   <td class="em-td-acciones" @click.stop>
                     <button class="em-icon-btn em-btn-edit" @click="editar(row)"
                             v-tooltip.bottom="'Editar informe en pantalla completa'">
-                      <i class="pi pi-pencil" />
+                      <PencilIcon class="size-[1em]" />
                     </button>
                     <button class="em-icon-btn"
                             :class="{
@@ -160,7 +161,7 @@
                             }"
                             @click="abrirDrawer(row, 'comentarios')"
                             v-tooltip.bottom="comentariosTooltip(row)">
-                      <i class="pi pi-comments" />
+                      <MessagesSquareIcon class="size-[1em]" />
                       <span v-if="comentariosTotales(row) > 0" class="em-coms-badge"
                             :class="{ 'em-coms-badge--err': comentariosPendientes(row) > 0 }">
                         {{ comentariosPendientes(row) || comentariosTotales(row) }}
@@ -170,18 +171,19 @@
                             :disabled="!permisoVerificar"
                             @click="abrirDrawer(row, 'verificar')"
                             v-tooltip.bottom="permisoVerificar ? 'Revisar y verificar (aprobar)' : 'Sólo Juan José puede verificar'">
-                      <i class="pi pi-check-circle" />
+                      <CircleCheckIcon class="size-[1em]" />
                     </button>
                     <button v-if="row.estado === 'aprobado' && !row.correo_enviado" class="em-icon-btn em-btn-send"
                             :disabled="!permisoEnviar || enviandoIds.has(row.id)"
                             @click="enviarUno(row)"
                             v-tooltip.bottom="permisoEnviar ? 'Enviar al correo del cliente' : 'Sólo Laura H. (o admin) puede enviar'">
-                      <i :class="enviandoIds.has(row.id) ? 'pi pi-spin pi-spinner' : 'pi pi-send'" />
+                      <LoaderCircleIcon v-if="enviandoIds.has(row.id)" class="size-[1em] animate-spin" />
+                      <SendIcon v-else class="size-[1em]" />
                     </button>
                     <button v-if="row.estado !== 'aprobado' && !row.correo_enviado" class="em-icon-btn em-btn-del"
                             @click="eliminarInforme(row)"
                             v-tooltip.bottom="row.tipo === 'op' ? 'Eliminar (no afecta a los portafolios que lo incluyen)' : 'Eliminar informe'">
-                      <i class="pi pi-trash" />
+                      <Trash2Icon class="size-[1em]" />
                     </button>
                   </td>
                 </tr>
@@ -194,7 +196,8 @@
               <button class="em-faltantes-toggle" @click="showFaltantes = !showFaltantes">
                 <span class="em-faltantes-badge">{{ faltantes.length }}</span>
                 <span>Proyecto{{ faltantes.length !== 1 ? 's' : '' }} sin informe en {{ mesLabel }}</span>
-                <i :class="showFaltantes ? 'pi pi-chevron-up' : 'pi pi-chevron-down'" style="margin-left:auto;font-size:11px;color:#6B5A8A" />
+                <ChevronUpIcon v-if="showFaltantes" class="size-[1em]" style="margin-left:auto;font-size:11px;color:#6B5A8A" />
+                <ChevronDownIcon v-else class="size-[1em]" style="margin-left:auto;font-size:11px;color:#6B5A8A" />
               </button>
               <transition name="fade">
                 <div v-if="showFaltantes" class="em-faltantes-list">
@@ -240,11 +243,11 @@
               <div class="em-drawer-tabs">
                 <button class="em-drawer-tab" :class="{ 'em-drawer-tab--on': drawerTab === 'preview' }"
                         @click="drawerTab = 'preview'">
-                  <i class="pi pi-eye" /> Previsualización
+                  <EyeIcon class="size-[1em]" /> Previsualización
                 </button>
                 <button class="em-drawer-tab" :class="{ 'em-drawer-tab--on': drawerTab === 'comentarios' }"
                         @click="drawerTab = 'comentarios'">
-                  <i class="pi pi-comments" /> Comentarios
+                  <MessagesSquareIcon class="size-[1em]" /> Comentarios
                   <span v-if="comentariosTotales(drawerInf) > 0" class="em-drawer-tab-badge"
                         :class="{ 'em-drawer-tab-badge--err': comentariosPendientes(drawerInf) > 0 }">
                     {{ comentariosPendientes(drawerInf) || comentariosTotales(drawerInf) }}
@@ -253,7 +256,7 @@
                 <button v-if="puedeVerificar(drawerInf)" class="em-drawer-tab"
                         :class="{ 'em-drawer-tab--on': drawerTab === 'verificar' }"
                         @click="drawerTab = 'verificar'">
-                  <i class="pi pi-check-circle" /> Verificar
+                  <CircleCheckIcon class="size-[1em]" /> Verificar
                 </button>
               </div>
 
@@ -266,7 +269,7 @@
                     <span>Cargando informe…</span>
                   </div>
                   <div v-else-if="!detalleHtml" class="em-state em-state-empty">
-                    <i class="pi pi-file" />
+                    <FileIcon class="size-[1em]" />
                     <p>Sin contenido del informe</p>
                   </div>
                   <template v-else>
@@ -276,11 +279,12 @@
                         🔒 Aprobado — reabre desde Verificar para editar
                       </span>
                       <div class="em-preview-actions">
-                        <Button v-if="drawerInf?.estado !== 'aprobado'"
-                                label="Editar" icon="pi pi-pencil" outlined size="small"
-                                @click="editar(drawerInf)" />
-                        <Button label="PDF" icon="pi pi-print" outlined size="small" severity="warn"
-                                @click="imprimirDetalle" v-tooltip.bottom="'Imprimir / exportar PDF'" />
+                        <Button v-if="drawerInf?.estado !== 'aprobado'" label="Editar" outlined size="small" @click="editar(drawerInf)">
+                          <template #icon><PencilIcon class="size-[1em]" /></template>
+                        </Button>
+                        <Button label="PDF" outlined size="small" severity="warn" @click="imprimirDetalle" v-tooltip.bottom="'Imprimir / exportar PDF'">
+                          <template #icon><PrinterIcon class="size-[1em]" /></template>
+                        </Button>
                       </div>
                     </div>
                     <!-- Iframe con el informe renderizado -->
@@ -297,7 +301,7 @@
                 <!-- ── COMENTARIOS ──────────────────────────────────── -->
                 <div v-else-if="drawerTab === 'comentarios'" class="em-coms-wrap">
                   <div v-if="!drawerInf.comentarios?.length" class="em-state em-state-empty em-state-coms-empty">
-                    <i class="pi pi-comments text-3xl" style="color:#A89EC0" />
+                    <MessagesSquareIcon class="text-3xl size-[1em]" style="color:#A89EC0" />
                     <p class="em-state-title">Sin comentarios todavía</p>
                     <p class="em-state-sub">
                       {{ permisoVerificar
@@ -333,12 +337,12 @@
                         <button class="em-btn-sm em-btn-resolver"
                                 :disabled="actuandoComentarioId === c.id"
                                 @click="abrirResolver(c)">
-                          <i class="pi pi-check" /> Marcar subsanado
+                          <CheckIcon class="size-[1em]" /> Marcar subsanado
                         </button>
                         <button v-if="puedeBorrarComentario(c)" class="em-btn-sm em-btn-borrar"
                                 :disabled="actuandoComentarioId === c.id"
                                 @click="borrarComentario(c)">
-                          <i class="pi pi-trash" /> Eliminar
+                          <Trash2Icon class="size-[1em]" /> Eliminar
                         </button>
                       </div>
                       <!-- Inline form para subsanar -->
@@ -367,10 +371,9 @@
                               class="em-textarea"
                               :disabled="!permisoVerificar" />
                     <div class="em-com-add-actions">
-                      <Button label="Agregar comentario" icon="pi pi-plus" size="small"
-                              :disabled="!permisoVerificar || !nuevoComentario.trim() || agregandoComentario"
-                              :loading="agregandoComentario"
-                              @click="agregarComentario" />
+                      <Button label="Agregar comentario" size="small" :disabled="!permisoVerificar || !nuevoComentario.trim() || agregandoComentario" :loading="agregandoComentario" @click="agregarComentario">
+                        <template #icon><PlusIcon class="size-[1em]" /></template>
+                      </Button>
                     </div>
                   </div>
                   <div v-else class="em-aprobado-msg">
@@ -381,7 +384,7 @@
                 <!-- ── VERIFICAR ─────────────────────────────────────── -->
                 <div v-else-if="drawerTab === 'verificar'" class="em-verify-wrap">
                   <div v-if="!permisoVerificar" class="em-verify-blocked">
-                    <i class="pi pi-lock text-3xl" style="color:#D97706" />
+                    <LockIcon class="text-3xl size-[1em]" style="color:#D97706" />
                     <p class="em-state-title">Verificación restringida</p>
                     <p class="em-state-sub">
                       Sólo <b>Juan José Pacheco</b> ({{ EMAIL_VERIFICADOR }}) o un administrador pueden verificar informes.
@@ -482,9 +485,9 @@
             </div>
             <footer class="em-modal-foot">
               <Button v-if="!enviandoBatch && !resultadoBatch" label="Cancelar" outlined size="small" @click="cerrarConfirmEnvio" />
-              <Button v-if="!enviandoBatch && !resultadoBatch"
-                      :label="`Confirmar envío de ${puedeEnviarBatch.length}`"
-                      icon="pi pi-send" size="small" @click="ejecutarEnvioBatch" class="em-btn-send" />
+              <Button v-if="!enviandoBatch && !resultadoBatch" :label="`Confirmar envío de ${puedeEnviarBatch.length}`" size="small" @click="ejecutarEnvioBatch" class="em-btn-send">
+                <template #icon><SendIcon class="size-[1em]" /></template>
+              </Button>
               <Button v-if="resultadoBatch" label="Cerrar" size="small" @click="cerrarConfirmEnvio" />
             </footer>
           </div>
@@ -507,7 +510,7 @@
         <!-- Toolbar fija -->
         <div class="em-editor-bar">
           <div class="em-editor-bar-left">
-            <i class="pi pi-pencil" style="color:#915BD8;font-size:13px" />
+            <PencilIcon class="size-[1em]" style="color:#915BD8;font-size:13px" />
             <span class="em-editor-title">{{ editorInf?.proyecto_nombre || editorInf?.sub_project }}</span>
             <span class="em-tipo-tag" v-if="editorInf">{{ tipoLabel(editorInf.tipo) }}</span>
             <span v-if="editorInf" class="em-editor-periodo">
@@ -516,13 +519,14 @@
           </div>
           <div class="em-editor-bar-right">
             <button class="em-btn-sm em-btn-ghost" @click="imprimirEditor">
-              <i class="pi pi-print" /> PDF
+              <PrinterIcon class="size-[1em]" /> PDF
             </button>
             <button class="em-btn-sm em-btn-ghost" :disabled="guardandoEditor" @click="cerrarEditor">
-              <i class="pi pi-times" /> Cerrar sin guardar
+              <XIcon class="size-[1em]" /> Cerrar sin guardar
             </button>
             <button class="em-btn-sm em-btn-resolver" :disabled="guardandoEditor" @click="guardarEditor">
-              <i :class="guardandoEditor ? 'pi pi-spin pi-spinner' : 'pi pi-save'" />
+              <LoaderCircleIcon v-if="guardandoEditor" class="size-[1em] animate-spin" />
+              <SaveIcon v-else class="size-[1em]" />
               {{ guardandoEditor ? 'Guardando…' : 'Guardar versión' }}
             </button>
           </div>
@@ -537,7 +541,7 @@
         </div>
         <!-- Hint edición -->
         <div class="em-editor-hint">
-          <i class="pi pi-info-circle" />
+          <InfoIcon class="size-[1em]" />
           Haz clic en cualquier texto para editarlo directamente · Los cambios no se guardan hasta presionar "Guardar versión"
         </div>
       </div>
@@ -552,6 +556,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import { useAuthStore } from '~/stores/auth'
 import { buildReportHtmlDoc } from '~/utils/rptStyles'
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon, CircleCheckIcon, EyeIcon, FileIcon, FolderIcon, InboxIcon, InfoIcon, LoaderCircleIcon, LockIcon, MessagesSquareIcon, PencilIcon, PlusIcon, PrinterIcon, RefreshCwIcon, SaveIcon, SearchIcon, SendIcon, Trash2Icon, XIcon } from '@lucide/vue'
 
 const auth = useAuthStore()
 
@@ -680,11 +685,11 @@ const filtradosIndiv = computed(() => filtrados.value.filter(i => i.tipo !== 'po
 const filasAgrupadas = computed(() => {
   const out = []
   if (filtradosPort.value.length) {
-    out.push({ _group: 'Informes de portafolio', _icon: 'pi-folder', _count: filtradosPort.value.length })
+    out.push({ _group: 'Informes de portafolio', _icon: FolderIcon, _count: filtradosPort.value.length })
     filtradosPort.value.forEach(i => out.push(i))
   }
   if (filtradosIndiv.value.length) {
-    out.push({ _group: 'Informes individuales', _icon: 'pi-file', _count: filtradosIndiv.value.length })
+    out.push({ _group: 'Informes individuales', _icon: FileIcon, _count: filtradosIndiv.value.length })
     filtradosIndiv.value.forEach(i => out.push(i))
   }
   return out
@@ -1197,7 +1202,7 @@ async function ejecutarEnvioBatch() {
   white-space: nowrap; cursor: default;
   flex-shrink: 0;
 }
-.em-header-label i { color: #915BD8; font-size: 11px; }
+.em-header-label svg { color: #915BD8; font-size: 11px; }
 .em-header-controls {
   display: inline-flex; align-items: center; gap: 6px; margin-left: auto;
   flex-shrink: 0; flex-wrap: wrap;
@@ -1212,7 +1217,7 @@ async function ejecutarEnvioBatch() {
 }
 .em-batch-inline:hover:not(:disabled) { background: #15803D; }
 .em-batch-inline:disabled { opacity: .6; cursor: not-allowed; }
-.em-batch-inline i { font-size: 10px; }
+.em-batch-inline svg { font-size: 10px; }
 
 .em-month-picker {
   display: inline-flex; align-items: center;
@@ -1341,7 +1346,7 @@ async function ejecutarEnvioBatch() {
   text-transform: uppercase; color: #6D28D9; background: #FAF8FE;
   border-bottom: 1px solid #ECE7F2;
 }
-.em-group-row td .pi { font-size: 10px; margin-right: 4px; }
+.em-group-row td svg { font-size: 10px; margin-right: 4px; }
 .em-group-count {
   display: inline-block; margin-left: 6px; background: #EDE9FE; color: #6D28D9;
   border-radius: 9px; padding: 0 7px; font-size: 10px; font-weight: 800;
@@ -1744,7 +1749,7 @@ async function ejecutarEnvioBatch() {
   display: flex; align-items: center; gap: 6px;
   flex-shrink: 0;
 }
-.em-editor-hint i { color: #915BD8; }
+.em-editor-hint svg { color: #915BD8; }
 
 /* ── Transiciones ─────────────────────────────────────────────── */
 .slide-right-enter-active, .slide-right-leave-active { transition: all .25s ease; }

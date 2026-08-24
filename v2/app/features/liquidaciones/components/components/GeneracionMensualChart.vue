@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col h-full" style="border-color:#e8e0f0">
     <div class="px-3 py-2 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
-      <i class="pi pi-sun text-sm" style="color:#F0C040" />
+      <SunIcon class="text-sm size-[1em]" style="color:#F0C040" />
       <h3 class="text-sm font-bold" style="color:#2C2039">Generación del mes</h3>
       <span class="text-[10px]" style="color:#9b8fb0">kWh por día · datos en vivo</span>
     </div>
@@ -17,7 +17,7 @@
       </template>
 
       <div v-else class="text-center py-6">
-        <i class="pi pi-chart-bar text-3xl mb-2" style="color:#e0d5f0" />
+        <ChartColumnIcon class="text-3xl mb-2 size-[1em]" style="color:#e0d5f0" />
         <p class="text-xs" style="color:#9b8fb0">{{ mensaje || 'Sin generación registrada para este período.' }}</p>
       </div>
     </div>
@@ -54,6 +54,7 @@ import {
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import { formatPeriodo } from '~/utils/liquidaciones'
+import { ChartColumnIcon, SunIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 

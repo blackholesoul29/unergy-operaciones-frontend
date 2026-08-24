@@ -8,13 +8,14 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Proyecto…" class="w-64" />
         </IconField>
       </div>
       <div class="flex-1" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar'" @click="cargar" />
+      <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar'" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
       <div class="text-xs text-gray-400 self-center">
         {{ filtrados.length }} proyecto{{ filtrados.length === 1 ? '' : 's' }}
       </div>
@@ -27,7 +28,7 @@
       <div class="bg-white rounded-xl shadow-sm border p-4 flex items-center gap-3" style="border-color:#ECE7F2">
         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
              style="background:#10B98118">
-          <i class="pi pi-bolt text-lg" style="color:#10B981" />
+          <ZapIcon class="text-lg size-[1em]" style="color:#10B981" />
         </div>
         <div class="min-w-0">
           <p class="text-xs text-gray-500">AC Power generador</p>
@@ -47,7 +48,7 @@
       <div class="bg-white rounded-xl shadow-sm border p-4 flex items-center gap-3" style="border-color:#ECE7F2">
         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
              style="background:#915BD818">
-          <i class="pi pi-briefcase text-lg" style="color:#915BD8" />
+          <BriefcaseIcon class="text-lg size-[1em]" style="color:#915BD8" />
         </div>
         <div class="min-w-0">
           <p class="text-xs text-gray-500">AC Power comercializador</p>
@@ -68,7 +69,7 @@
     <!-- Aviso: la API cobra proyectos que esta base no reconoce por tópico -->
     <div v-if="!loading && topicosSinCruce.length" class="rounded-lg px-3 py-2 text-xs"
          style="background:#FFF8E6; border:1px solid #F5E3B3; color:#7A5C00">
-      <i class="pi pi-exclamation-triangle mr-1" />
+      <TriangleAlertIcon class="mr-1 size-[1em]" />
       <strong>{{ topicosSinCruce.length }}</strong> proyecto{{ topicosSinCruce.length === 1 ? '' : 's' }}
       de la API de Liquidaciones no cruza{{ topicosSinCruce.length === 1 ? '' : 'n' }} con esta base por su
       código base: <span class="font-mono">{{ topicosSinCruce.join(', ') }}</span>.
@@ -78,19 +79,21 @@
     <!-- Aviso: el reparto falla sin ac_power -->
     <div v-if="!loading && sinAcPower" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FFF8E6; border:1px solid #F5E3B3; color:#7A5C00">
-      <i class="pi pi-exclamation-triangle" />
+      <TriangleAlertIcon class="size-[1em]" />
       {{ sinAcPower }} proyecto{{ sinAcPower === 1 ? '' : 's' }} sin AC Power. El reparto de costos de XM
       lo usa como divisor de la prorrata y falla si falta.
     </div>
 
     <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center">
-      <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
+      <LoaderCircleIcon class="text-2xl text-gray-400 size-[1em] animate-spin" />
     </div>
 
     <div v-else-if="error" class="bg-white rounded-xl shadow-sm border p-6 text-center" style="border-color:#ECE7F2">
-      <i class="pi pi-exclamation-triangle text-2xl mb-2 block" style="color:#D97706" />
+      <TriangleAlertIcon class="text-2xl mb-2 block size-[1em]" style="color:#D97706" />
       <p class="text-sm text-gray-600">{{ error }}</p>
-      <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined class="mt-3" @click="cargar" />
+      <Button label="Reintentar" size="small" outlined class="mt-3" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
@@ -132,16 +135,15 @@
               </td>
               <td class="px-4 py-2">
                 <div class="flex justify-end">
-                  <Button icon="pi pi-pencil" text rounded size="small" severity="info"
-                          :disabled="!row.nombre_topico"
-                          v-tooltip.left="row.nombre_topico ? 'Editar' : 'Falta el código base del proyecto'"
-                          @click="abrirEditar(row)" />
+                  <Button text rounded size="small" severity="info" :disabled="!row.nombre_topico" v-tooltip.left="row.nombre_topico ? 'Editar' : 'Falta el código base del proyecto'" @click="abrirEditar(row)">
+                    <template #icon><PencilIcon class="size-[1em]" /></template>
+                  </Button>
                 </div>
               </td>
             </tr>
             <tr v-if="!filtrados.length">
               <td colspan="5" class="px-4 py-12 text-center text-sm text-gray-400">
-                <i class="pi pi-check-square text-2xl mb-2 block text-gray-300" />
+                <SquareCheckIcon class="text-2xl mb-2 block text-gray-300 size-[1em]" />
                 No hay proyectos GD/minigranja en operación.
               </td>
             </tr>
@@ -188,7 +190,9 @@
 
         <div class="flex justify-end gap-2 pt-1">
           <Button type="button" label="Cancelar" severity="secondary" @click="formVisible = false" />
-          <Button type="submit" label="Guardar" icon="pi pi-check" :loading="guardando" />
+          <Button type="submit" label="Guardar" :loading="guardando">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </form>
     </Dialog>
@@ -205,11 +209,11 @@ import Tag from 'primevue/tag'
 import ToggleSwitch from 'primevue/toggleswitch'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { formatearNombreProyecto } from '~/features/proyectos/components/proyectosUi'
+import { BriefcaseIcon, CheckIcon, LoaderCircleIcon, PencilIcon, RefreshCwIcon, SearchIcon, SquareCheckIcon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 const TIPOS_INCLUIDOS = ['gd', 'minigranja']
 const ESTADO_OPERATIVA = 'en_operacion'
@@ -289,9 +293,9 @@ async function guardar() {
     })
     formVisible.value = false
     await cargar()
-    toast.add({ severity: 'success', summary: 'Guardado', life: 2000 })
+    toast.success('Guardado', { duration: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo guardar', life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail || 'No se pudo guardar', duration: 4000 })
   } finally {
     guardando.value = false
   }

@@ -3,7 +3,7 @@
 
     <!-- ── SECCIÓN: Identificación ──────────────────────────── -->
     <div class="ff-section">
-      <div class="ff-section-title"><i class="pi pi-tag" /> Identificación</div>
+      <div class="ff-section-title"><TagIcon class="size-[1em]" /> Identificación</div>
       <div class="ff-grid">
 
         <!-- Al crear: MultiSelect (varios proyectos → una falla por cada uno) -->
@@ -36,7 +36,7 @@
             <button v-for="c in estructura" :key="c.codigo" type="button"
               :class="['ff-syscard', cls.categoria === c.codigo && 'ff-syscard--on']"
               @click="seleccionarCategoria(c.codigo)">
-              <i :class="c.icono" :style="{ color: c.color_hex }" />
+              <component :is="iconoCategoriaFalla(c.codigo)" class="size-[1em]" :style="{ color: c.color_hex }" />
               <span>{{ c.etiqueta }}</span>
             </button>
           </div>
@@ -50,7 +50,7 @@
               class="w-full" :class="{ 'p-invalid': errors.subtipo }" />
             <small v-if="errors.subtipo" class="ff-error">{{ errors.subtipo }}</small>
             <div v-if="opcionActual?.pendiente_reclasificar" class="ff-banner ff-banner--warn">
-              <i class="pi pi-clock" /> Quedará <strong>pendiente de reclasificar</strong> hasta conocer la causa definitiva.
+              <ClockIcon class="size-[1em]" /> Quedará <strong>pendiente de reclasificar</strong> hasta conocer la causa definitiva.
             </div>
             <div v-if="opcionActual?.requiere_detalle" class="ff-subfield">
               <label class="ff-label">{{ opcionActual.detalle_label || 'Detalle *' }}</label>
@@ -72,20 +72,20 @@
               <label class="ff-check"><input type="checkbox" v-model="cls.perdida_comunicacion" /> Pérdida de comunicación (datos) de la frontera</label>
             </div>
             <div v-if="cls.perdida_comunicacion" class="ff-banner ff-banner--info">
-              <i class="pi pi-bell" /> Generará una alarma de comunicaciones de frontera.
+              <BellIcon class="size-[1em]" /> Generará una alarma de comunicaciones de frontera.
             </div>
           </div>
 
           <!-- INVERSORES: selección múltiple + tipos + gestión parametrizable -->
           <div v-else-if="catActual && catActual.tipo === 'inversores'" class="ff-sub">
             <div v-if="!proyectoUnicoId" class="ff-banner ff-banner--warn">
-              <i class="pi pi-info-circle" /> Para reportar inversores selecciona <strong>un solo proyecto</strong> arriba.
+              <InfoIcon class="size-[1em]" /> Para reportar inversores selecciona <strong>un solo proyecto</strong> arriba.
             </div>
             <template v-else>
               <div class="ff-invhead">
                 <label class="ff-label" style="margin:0">Inversores afectados *</label>
                 <button type="button" class="ff-link" @click="gestionInversores = !gestionInversores">
-                  <i class="pi pi-cog" /> {{ gestionInversores ? 'Cerrar gestión' : 'Gestionar inversores' }}
+                  <SettingsIcon class="size-[1em]" /> {{ gestionInversores ? 'Cerrar gestión' : 'Gestionar inversores' }}
                 </button>
               </div>
               <div v-if="cargandoInv" class="ff-hint">Cargando inversores…</div>
@@ -111,12 +111,12 @@
                   <InputText v-model="inv.nombre" placeholder="Nombre" class="ff-invname" @blur="guardarInv(inv)" />
                   <InputNumber v-model="inv.potencia_nominal_kw" placeholder="kW" suffix=" kW" :min="0"
                     class="ff-invkw" @blur="guardarInv(inv)" />
-                  <button type="button" class="ff-invdel" @click="eliminarInv(inv)"><i class="pi pi-trash" /></button>
+                  <button type="button" class="ff-invdel" @click="eliminarInv(inv)"><Trash2Icon class="size-[1em]" /></button>
                 </div>
                 <div class="ff-invrow ff-invrow--new">
                   <InputText v-model="nuevoInv.nombre" placeholder="Nombre nuevo inversor" class="ff-invname" />
                   <InputNumber v-model="nuevoInv.potencia_nominal_kw" placeholder="kW" suffix=" kW" :min="0" class="ff-invkw" />
-                  <button type="button" class="ff-invadd" @click="agregarInv"><i class="pi pi-plus" /></button>
+                  <button type="button" class="ff-invadd" @click="agregarInv"><PlusIcon class="size-[1em]" /></button>
                 </div>
                 <small v-if="invError" class="ff-error">{{ invError }}</small>
               </div>
@@ -128,7 +128,7 @@
                   display="chip" class="w-full" :class="{ 'p-invalid': errors.invtipos }" />
                 <small v-if="errors.invtipos" class="ff-error">{{ errors.invtipos }}</small>
                 <div v-if="cls.inversores_tipos.includes('perdida_comunicacion')" class="ff-banner ff-banner--info">
-                  <i class="pi pi-bell" /> Generará una alarma de comunicaciones de inversores.
+                  <BellIcon class="size-[1em]" /> Generará una alarma de comunicaciones de inversores.
                 </div>
               </div>
             </template>
@@ -192,7 +192,7 @@
         <!-- Fecha programada — solo visible cuando el estado es "programado" -->
         <div v-if="esEstadoProgramado" class="ff-field ff-highlight">
           <label class="ff-label">
-            <i class="pi pi-calendar" style="color:#3B82F6" />
+            <CalendarIcon class="size-[1em]" style="color:#3B82F6" />
             Fecha programada *
             <span class="ff-hint">(fecha de intervención planificada)</span>
           </label>
@@ -207,7 +207,7 @@
 
     <!-- ── SECCIÓN: Descripción ─────────────────────────────── -->
     <div class="ff-section">
-      <div class="ff-section-title"><i class="pi pi-align-left" /> Descripción del evento</div>
+      <div class="ff-section-title"><AlignLeftIcon class="size-[1em]" /> Descripción del evento</div>
       <div class="ff-grid">
 
         <div class="ff-field ff-span2">
@@ -234,7 +234,7 @@
 
     <!-- ── SECCIÓN: Análisis ────────────────────────────────── -->
     <div class="ff-section">
-      <div class="ff-section-title"><i class="pi pi-search" /> Análisis</div>
+      <div class="ff-section-title"><SearchIcon class="size-[1em]" /> Análisis</div>
       <div class="ff-grid">
 
         <div class="ff-field ff-span2">
@@ -257,7 +257,7 @@
     <!-- ── SECCIÓN: Resolución (solo cuando el estado es final/cerrada) ── -->
     <div v-if="esEstadoFinal" class="ff-section ff-section--resolve">
       <div class="ff-section-title">
-        <i class="pi pi-check-circle" style="color:#16a34a" /> Resolución
+        <CircleCheckIcon class="size-[1em]" style="color:#16a34a" /> Resolución
         <span class="ff-hint" style="color:#dc2626">(obligatoria al cerrar la falla)</span>
       </div>
       <div class="ff-grid">
@@ -281,7 +281,7 @@
 
         <!-- Tiempo de afectación calculado automáticamente -->
         <div v-if="tiempoAfectacionTexto" class="ff-field ff-span2 ff-afectacion">
-          <i class="pi pi-clock" style="color:#16a34a" />
+          <ClockIcon class="size-[1em]" style="color:#16a34a" />
           <span>Tiempo de afectación: <strong>{{ tiempoAfectacionTexto }}</strong></span>
           <span class="ff-hint">(solución − ocurrencia, automático)</span>
         </div>
@@ -291,7 +291,7 @@
 
     <!-- ── SECCIÓN: Nota inicial (solo al crear) ────────────── -->
     <div v-if="!initial" class="ff-section">
-      <div class="ff-section-title"><i class="pi pi-comment" /> Nota inicial</div>
+      <div class="ff-section-title"><MessageSquareIcon class="size-[1em]" /> Nota inicial</div>
       <div class="ff-grid">
         <div class="ff-field ff-span2">
           <label class="ff-label">
@@ -307,7 +307,7 @@
 
     <!-- ── SECCIÓN: Archivos adjuntos ─────── -->
     <div class="ff-section">
-      <div class="ff-section-title"><i class="pi pi-paperclip" /> Archivos adjuntos</div>
+      <div class="ff-section-title"><PaperclipIcon class="size-[1em]" /> Archivos adjuntos</div>
       <!-- Dropzone -->
       <div class="ff-dropzone"
         :class="{ 'ff-dropzone--over': dropOver }"
@@ -315,7 +315,7 @@
         @dragleave.prevent="dropOver = false"
         @drop.prevent="onDrop"
         @click="fileInputRef.click()">
-        <i class="pi pi-upload" style="font-size:18px;color:#9b89b5" />
+        <UploadIcon class="size-[1em]" style="font-size:18px;color:#9b89b5" />
         <span class="ff-dropzone-text">Arrastra archivos aquí o <span class="ff-dropzone-link">haz clic</span></span>
         <span class="ff-dropzone-hint">Imágenes, PDF, Excel, Word, CSV</span>
         <input ref="fileInputRef" type="file" class="ff-hidden-input"
@@ -325,11 +325,11 @@
       <!-- Lista de archivos staged -->
       <div v-if="archivosStaged.length" class="ff-staged-list">
         <div v-for="(f, i) in archivosStaged" :key="i" class="ff-staged-row">
-          <i :class="iconoArchivo(f)" style="font-size:13px;color:#7c3aed" />
+          <component :is="iconoArchivo(f)" class="size-[1em]" style="font-size:13px;color:#7c3aed" />
           <span class="ff-staged-name">{{ f.name }}</span>
           <span class="ff-staged-size">{{ formatSize(f.size) }}</span>
           <button type="button" class="ff-staged-remove" @click="archivosStaged.splice(i, 1)">
-            <i class="pi pi-times" />
+            <XIcon class="size-[1em]" />
           </button>
         </div>
       </div>
@@ -339,7 +339,7 @@
     <div class="ff-notif-wrap">
       <label class="ff-notif-label">
         <input type="checkbox" v-model="form.notificacion" class="ff-notif-check" />
-        <i class="pi pi-send" style="color:#915BD8;font-size:13px" />
+        <SendIcon class="size-[1em]" style="color:#915BD8;font-size:13px" />
         <span>Enviar notificación por correo a los contactos operacionales del proyecto</span>
       </label>
       <span v-if="form.notificacion" class="ff-notif-hint">
@@ -349,8 +349,9 @@
 
     <div class="ff-footer">
       <Button label="Cancelar" severity="secondary" type="button" @click="$emit('cancel')" />
-      <Button :label="initial ? 'Guardar cambios' : 'Registrar falla'"
-        type="submit" :loading="saving" icon="pi pi-check" />
+      <Button :label="initial ? 'Guardar cambios' : 'Registrar falla'" type="submit" :loading="saving">
+        <template #icon><CheckIcon class="size-[1em]" /></template>
+      </Button>
     </div>
   </form>
 </template>
@@ -366,6 +367,8 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import api from '~/core/client'
 import { getEstructuraFallas } from '~/utils/fallasEstructuraCache'
+import { AlignLeftIcon, BellIcon, CalendarIcon, CheckIcon, CircleCheckIcon, ClockIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, FileTypeIcon, ImageIcon, InfoIcon, MessageSquareIcon, PaperclipIcon, PlusIcon, SearchIcon, SendIcon, SettingsIcon, TagIcon, Trash2Icon, UploadIcon, XIcon } from '@lucide/vue'
+import { iconoCategoriaFalla } from '~/utils/fallaTitulo'
 
 const TIPOS_SOLUCION = [
   'Reemplazo de componente',
@@ -397,11 +400,11 @@ const fileInputRef   = ref(null)
 
 function iconoArchivo(file) {
   const name = file.name || ''
-  if (/\.(pdf)$/i.test(name)) return 'pi pi-file-pdf'
-  if (/\.(xls|xlsx|csv)$/i.test(name)) return 'pi pi-file-excel'
-  if (/\.(doc|docx)$/i.test(name)) return 'pi pi-file-word'
-  if (/\.(png|jpg|jpeg|gif|webp|svg)$/i.test(name)) return 'pi pi-image'
-  return 'pi pi-file'
+  if (/\.(pdf)$/i.test(name)) return FileTextIcon
+  if (/\.(xls|xlsx|csv)$/i.test(name)) return FileSpreadsheetIcon
+  if (/\.(doc|docx)$/i.test(name)) return FileTypeIcon
+  if (/\.(png|jpg|jpeg|gif|webp|svg)$/i.test(name)) return ImageIcon
+  return FileIcon
 }
 function formatSize(bytes) {
   if (!bytes) return ''
@@ -837,7 +840,7 @@ onMounted(async () => {
   padding: 12px 6px; border: 1.5px solid #e8e0f0; border-radius: 10px; background: #fff;
   font-size: 12px; font-weight: 600; color: #4a3b6b; cursor: pointer; transition: all .12s;
 }
-.ff-syscard i { font-size: 18px; }
+.ff-syscard svg { font-size: 18px; }
 .ff-syscard:hover { border-color: #c9b6ee; }
 .ff-syscard--on { border-color: #915BD8; background: #f3ecff; box-shadow: 0 0 0 2px #915BD833; }
 @media (max-width: 640px) { .ff-sysgrid { grid-template-columns: repeat(2, 1fr); } }
@@ -855,7 +858,7 @@ onMounted(async () => {
 .ff-banner--warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .ff-banner--info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
 .ff-link { background: none; border: none; color: #915BD8; font-weight: 600; font-size: 12px; cursor: pointer; padding: 0; }
-.ff-link i { font-size: 11px; margin-right: 3px; }
+.ff-link svg { font-size: 11px; margin-right: 3px; }
 .ff-text-danger { color: #dc2626; }
 
 .ff-invhead { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
@@ -880,7 +883,7 @@ onMounted(async () => {
   gap: 6px;
   margin-bottom: 10px;
 }
-.ff-section-title i { font-size: 11px; }
+.ff-section-title svg { font-size: 11px; }
 
 .ff-grid {
   display: grid;

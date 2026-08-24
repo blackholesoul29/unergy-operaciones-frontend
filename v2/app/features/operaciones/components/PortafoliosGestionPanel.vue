@@ -8,17 +8,18 @@
     <!-- Barra superior: crear portafolio -->
     <div class="pg-toolbar">
       <div class="pg-hint">
-        <i class="pi pi-info-circle" />
+        <InfoIcon class="size-[1em]" />
         Arrastra proyectos entre capas. Cada capa es un portafolio; el cambio se guarda automáticamente.
       </div>
       <div class="pg-create">
         <input v-model="nuevoNombre" class="pg-input" placeholder="Nombre del nuevo portafolio…"
                @keyup.enter="crear" />
         <button class="pg-btn pg-btn-primary" :disabled="!nuevoNombre.trim() || creando" @click="crear">
-          <i class="pi pi-plus" /> Crear capa
+          <PlusIcon class="size-[1em]" /> Crear capa
         </button>
         <button class="pg-btn pg-btn-ghost" :disabled="loading" @click="cargar" v-tooltip.bottom="'Recargar'">
-          <i :class="loading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+          <LoaderCircleIcon v-if="loading" class="size-[1em] animate-spin" />
+          <RefreshCwIcon v-else class="size-[1em]" />
         </button>
       </div>
     </div>
@@ -31,7 +32,7 @@
       <!-- Pool: proyectos sin portafolio -->
       <section class="pg-col pg-col-pool">
         <header class="pg-col-head">
-          <div class="pg-col-title"><i class="pi pi-inbox" /> Sin portafolio</div>
+          <div class="pg-col-title"><InboxIcon class="size-[1em]" /> Sin portafolio</div>
           <span class="pg-col-count">{{ sinPortafolio.length }}</span>
         </header>
         <draggable v-model="sinPortafolio" :group="{ name: 'proyectos' }" item-key="id"
@@ -39,7 +40,7 @@
                    @change="onChange($event, null)">
           <template #item="{ element }">
             <div class="pg-card pg-card-pool">
-              <i class="pi pi-bolt pg-card-ico" />
+              <ZapIcon class="pg-card-ico size-[1em]" />
               <div class="pg-card-info">
                 <div class="pg-card-nombre">{{ element.nombre }}</div>
                 <div class="pg-card-sub" v-if="element.municipio">{{ element.municipio }}</div>
@@ -58,15 +59,15 @@
           <template v-if="editandoId === pt.id">
             <input v-model="editandoNombre" class="pg-input pg-input-sm" @keyup.enter="renombrar(pt)"
                    @keyup.esc="editandoId = null" />
-            <button class="pg-icon-btn" @click="renombrar(pt)" v-tooltip.bottom="'Guardar'"><i class="pi pi-check" /></button>
-            <button class="pg-icon-btn" @click="editandoId = null" v-tooltip.bottom="'Cancelar'"><i class="pi pi-times" /></button>
+            <button class="pg-icon-btn" @click="renombrar(pt)" v-tooltip.bottom="'Guardar'"><CheckIcon class="size-[1em]" /></button>
+            <button class="pg-icon-btn" @click="editandoId = null" v-tooltip.bottom="'Cancelar'"><XIcon class="size-[1em]" /></button>
           </template>
           <template v-else>
-            <div class="pg-col-title"><i class="pi pi-folder" /> {{ pt.nombre }}</div>
+            <div class="pg-col-title"><FolderIcon class="size-[1em]" /> {{ pt.nombre }}</div>
             <span class="pg-col-count">{{ pt.proyectos.length }}</span>
             <div class="pg-col-actions">
-              <button class="pg-icon-btn" @click="empezarEdicion(pt)" v-tooltip.bottom="'Renombrar'"><i class="pi pi-pencil" /></button>
-              <button class="pg-icon-btn pg-icon-del" @click="eliminar(pt)" v-tooltip.bottom="'Eliminar capa'"><i class="pi pi-trash" /></button>
+              <button class="pg-icon-btn" @click="empezarEdicion(pt)" v-tooltip.bottom="'Renombrar'"><PencilIcon class="size-[1em]" /></button>
+              <button class="pg-icon-btn pg-icon-del" @click="eliminar(pt)" v-tooltip.bottom="'Eliminar capa'"><Trash2Icon class="size-[1em]" /></button>
             </div>
           </template>
         </header>
@@ -75,7 +76,7 @@
                    @change="onChange($event, pt.id)">
           <template #item="{ element }">
             <div class="pg-card">
-              <i class="pi pi-bolt pg-card-ico" />
+              <ZapIcon class="pg-card-ico size-[1em]" />
               <div class="pg-card-info">
                 <div class="pg-card-nombre">{{ element.nombre }}</div>
                 <div class="pg-card-sub" v-if="element.municipio">{{ element.municipio }}</div>
@@ -89,7 +90,7 @@
       </section>
 
       <div v-if="!portafolios.length" class="pg-state pg-state-empty">
-        <i class="pi pi-folder-open text-3xl" style="color:#A89EC0" />
+        <FolderOpenIcon class="text-3xl size-[1em]" style="color:#A89EC0" />
         <p>No hay portafolios todavía. Crea uno arriba y arrástrale proyectos.</p>
       </div>
     </div>
@@ -101,6 +102,7 @@ import { ref, onMounted } from 'vue'
 import draggable from 'vuedraggable'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
+import { CheckIcon, FolderIcon, FolderOpenIcon, InboxIcon, InfoIcon, LoaderCircleIcon, PencilIcon, PlusIcon, RefreshCwIcon, Trash2Icon, XIcon, ZapIcon } from '@lucide/vue'
 
 const loading = ref(false)
 const creando = ref(false)
@@ -246,7 +248,7 @@ onMounted(cargar)
   font-size: 13px; font-weight: 800; color: #2C2039; display: inline-flex; align-items: center; gap: 6px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;
 }
-.pg-col-title .pi { color: #915BD8; font-size: 13px; }
+.pg-col-title svg { color: #915BD8; font-size: 13px; }
 .pg-col-count {
   background: #EDE9FE; color: #6D28D9; border-radius: 9px; padding: 0 8px;
   font-size: 11px; font-weight: 800;

@@ -8,16 +8,16 @@
           <div class="rs-header">
             <span :class="['rs-badge', accion === 'ON' ? 'rs-badge--on' : 'rs-badge--off']">{{ accion }}</span>
             <span class="rs-title">Reconectador · {{ nombre }}</span>
-            <button class="rs-close" @click="close"><i class="pi pi-times" /></button>
+            <button class="rs-close" @click="close"><XIcon class="size-[1em]" /></button>
           </div>
 
           <!-- Selector de acción (siempre disponible para que puedas encender o apagar) -->
           <div class="rs-action-sel">
             <button :class="['rs-action-btn', accion === 'ON' && 'rs-action-btn--on']" @click="accion = 'ON'">
-              <i class="pi pi-power-off" /> Encender
+              <PowerIcon class="size-[1em]" /> Encender
             </button>
             <button :class="['rs-action-btn', accion === 'OFF' && 'rs-action-btn--off']" @click="accion = 'OFF'">
-              <i class="pi pi-stop-circle" /> Apagar
+              <CircleStopIcon class="size-[1em]" /> Apagar
             </button>
           </div>
 
@@ -36,7 +36,7 @@
           </label>
 
           <div v-if="error" class="rs-error">
-            <i class="pi pi-exclamation-triangle" /> {{ error }}
+            <TriangleAlertIcon class="size-[1em]" /> {{ error }}
           </div>
 
           <button
@@ -44,9 +44,9 @@
             :disabled="loading || !username || !password"
             @click="submit"
           >
-            <i v-if="loading" class="pi pi-spin pi-spinner" />
-            <i v-else-if="accion === 'ON'" class="pi pi-power-off" />
-            <i v-else class="pi pi-stop-circle" />
+            <LoaderCircleIcon class="size-[1em] animate-spin" v-if="loading" />
+            <PowerIcon class="size-[1em]" v-else-if="accion === 'ON'" />
+            <CircleStopIcon class="size-[1em]" v-else />
             {{ loading ? 'Enviando…' : `Confirmar ${accion}` }}
           </button>
         </div>
@@ -58,6 +58,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import api from '~/core/client'
+import { CircleStopIcon, LoaderCircleIcon, PowerIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 
 const props = defineProps({
   open:       { type: Boolean, default: false },

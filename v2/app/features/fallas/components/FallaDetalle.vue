@@ -112,8 +112,9 @@
                   placeholder="Describe la causa raíz identificada…" />
       </div>
       <div class="flex justify-end">
-        <Button label="Guardar cambios" icon="pi pi-check" size="small"
-                :loading="saving" @click="saveEdit" />
+        <Button label="Guardar cambios" size="small" :loading="saving" @click="saveEdit">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -125,7 +126,7 @@
         </p>
         <label class="cursor-pointer text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
                style="background:#f0eaf8;color:#915BD8;">
-          <i class="pi pi-upload mr-1" /> Subir
+          <UploadIcon class="mr-1 size-[1em]" /> Subir
           <input type="file" class="hidden" accept="image/*,.pdf"
                  multiple @change="uploadFotos" />
         </label>
@@ -139,7 +140,7 @@
                class="w-full h-full object-cover" />
           <div v-else class="w-full h-full flex flex-col items-center justify-center"
                style="background:#f5f0fb;">
-            <i class="pi pi-file-pdf text-2xl" style="color:#915BD8;" />
+            <FileTextIcon class="text-2xl size-[1em]" style="color:#915BD8;" />
             <span class="text-[9px] mt-1 text-center px-1 truncate w-full text-center"
                   style="color:#9b89b5;">{{ foto.nombre_archivo }}</span>
           </div>
@@ -149,11 +150,11 @@
             <a :href="foto.url" target="_blank"
                class="p-1.5 rounded-lg bg-white text-xs" style="color:#2C2039;"
                title="Ver">
-              <i class="pi pi-eye" />
+              <EyeIcon class="size-[1em]" />
             </a>
             <button class="p-1.5 rounded-lg bg-red-500 text-white text-xs"
                     title="Eliminar" @click="deleteFoto(foto)">
-              <i class="pi pi-trash" />
+              <Trash2Icon class="size-[1em]" />
             </button>
           </div>
           <span v-if="foto.etapa"
@@ -208,9 +209,9 @@
         <Textarea v-model="newSeg.nota" rows="2" class="w-full"
                   placeholder="Escribe la actualización o novedad…" />
         <div class="flex justify-end">
-          <Button label="Agregar nota" icon="pi pi-plus" size="small"
-                  :disabled="!newSeg.nota.trim()" :loading="segLoading"
-                  @click="addSeguimiento" />
+          <Button label="Agregar nota" size="small" :disabled="!newSeg.nota.trim()" :loading="segLoading" @click="addSeguimiento">
+            <template #icon><PlusIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </div>
@@ -225,12 +226,12 @@ import Tag from 'primevue/tag'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
+import { CheckIcon, EyeIcon, FileTextIcon, PlusIcon, Trash2Icon, UploadIcon } from '@lucide/vue'
 
 const props  = defineProps({ falla: Object, catalogos: Object })
 const emit   = defineEmits(['update', 'close'])
-const toast  = useToast()
 
 // ── edit state ────────────────────────────────────────────────
 const editState = reactive({
@@ -303,10 +304,10 @@ async function saveEdit() {
   saving.value = true
   try {
     const { data } = await api.patch(`/fallas/${props.falla.id}`, editState)
-    toast.add({ severity: 'success', summary: 'Falla actualizada', life: 2500 })
+    toast.success('Falla actualizada', { duration: 2500 })
     emit('update', data)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     saving.value = false
   }
@@ -324,9 +325,9 @@ async function addSeguimiento() {
     newSeg.nota = ''
     newSeg.estado_nuevo = null
     emit('update', data)
-    toast.add({ severity: 'success', summary: 'Seguimiento guardado', life: 2000 })
+    toast.success('Seguimiento guardado', { duration: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     segLoading.value = false
   }
@@ -344,12 +345,12 @@ async function uploadFotos(event) {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
     } catch {
-      toast.add({ severity: 'warn', summary: `No se pudo subir ${file.name}`, life: 3000 })
+      toast.warning(`No se pudo subir ${file.name}`, { duration: 3000 })
     }
   }
   const { data } = await api.get(`/fallas/${props.falla.id}`)
   emit('update', data)
-  toast.add({ severity: 'success', summary: `${files.length} foto(s) subidas`, life: 2000 })
+  toast.success(`${files.length} foto(s) subidas`, { duration: 2000 })
   event.target.value = ''
 }
 
@@ -360,7 +361,7 @@ async function deleteFoto(foto) {
     const { data } = await api.get(`/fallas/${props.falla.id}`)
     emit('update', data)
   } catch {
-    toast.add({ severity: 'error', summary: 'No se pudo eliminar la foto', life: 3000 })
+    toast.error('No se pudo eliminar la foto', { duration: 3000 })
   }
 }
 </script>

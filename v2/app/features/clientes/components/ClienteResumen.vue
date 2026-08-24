@@ -1,6 +1,6 @@
 <template>
   <div v-if="loading" class="flex items-center justify-center py-16">
-    <i class="pi pi-spin pi-spinner text-2xl" style="color:#915BD8;" />
+    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color:#915BD8;" />
   </div>
 
   <div v-else-if="panel" class="space-y-5">
@@ -27,7 +27,7 @@
     <!-- Plantas contratadas -->
     <section class="seccion">
       <header class="seccion-head">
-        <i class="pi pi-sun text-xs" style="color:#915BD8;" />
+        <SunIcon class="text-xs size-[1em]" style="color:#915BD8;" />
         <span>Plantas contratadas</span>
         <span class="badge">{{ panel.plantas.length }}</span>
       </header>
@@ -62,7 +62,7 @@
     <!-- Condiciones económicas + histórico participación -->
     <section class="seccion">
       <header class="seccion-head">
-        <i class="pi pi-dollar text-xs" style="color:#915BD8;" />
+        <DollarSignIcon class="text-xs size-[1em]" style="color:#915BD8;" />
         <span>Condiciones económicas</span>
         <span class="badge">{{ panel.condiciones.length }}</span>
       </header>
@@ -122,7 +122,7 @@
     <!-- Contratos y documentos -->
     <section class="seccion">
       <header class="seccion-head">
-        <i class="pi pi-file text-xs" style="color:#915BD8;" />
+        <FileIcon class="text-xs size-[1em]" style="color:#915BD8;" />
         <span>Contratos y documentos</span>
         <span class="badge">{{ panel.contratos.length }}</span>
       </header>
@@ -154,7 +154,7 @@
             </div>
             <a v-if="c.link" :href="c.link" target="_blank" rel="noopener"
               class="text-xs font-semibold flex items-center gap-1 hover:underline shrink-0" style="color:#915BD8;">
-              <i class="pi pi-external-link text-xs" /> Abrir contrato
+              <ExternalLinkIcon class="text-xs size-[1em]" /> Abrir contrato
             </a>
             <span v-else class="text-xs italic shrink-0" style="color:#bba8d4;">Sin link</span>
           </div>
@@ -169,6 +169,7 @@ import { ref, computed, watch } from 'vue'
 import api from '~/core/client'
 import ParticipacionSparkline from './ParticipacionSparkline.vue'
 import { SEMAFORO, servicioLabel, fmt, fmtFecha } from './clientesUi'
+import { DollarSignIcon, ExternalLinkIcon, FileIcon, LoaderCircleIcon, SunIcon } from '@lucide/vue'
 
 const props = defineProps({ clienteId: { type: [Number, String], required: true } })
 const panel = ref(null)

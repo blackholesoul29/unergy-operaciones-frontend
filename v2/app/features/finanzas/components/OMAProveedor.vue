@@ -4,24 +4,24 @@
     <div class="bg-white rounded-xl shadow-sm p-3 flex items-center gap-3 border" style="border-color:#ECE7F2">
       <button type="button" @click="cambiarMes(-1)"
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-        <i class="pi pi-chevron-left text-xs text-gray-500" />
+        <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
       </button>
       <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
         {{ periodoLabel }}
       </span>
       <button type="button" @click="cambiarMes(1)"
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-        <i class="pi pi-chevron-right text-xs text-gray-500" />
+        <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
       </button>
       <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
     </div>
 
     <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center border" style="border-color:#ECE7F2">
-      <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
+      <LoaderCircleIcon class="text-2xl text-gray-400 size-[1em] animate-spin" />
     </div>
     <div v-else-if="!filas.length"
       class="bg-white rounded-xl shadow-sm p-10 text-center border" style="border-color:#ECE7F2">
-      <i class="pi pi-inbox text-2xl mb-2 block" style="color:#c4b5fd"/>
+      <InboxIcon class="text-2xl mb-2 block size-[1em]" style="color:#c4b5fd" />
       <p class="text-sm text-gray-500">No hay proyectos guardados para este período.</p>
       <p class="text-xs text-gray-400 mt-1">Operaciones aún no guardó la selección del mes.</p>
     </div>
@@ -62,7 +62,7 @@
                   class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium cursor-pointer hover:opacity-80"
                   style="background:#dcfce7;color:#166534"
                   @click="toggleFacturado(fila)">
-                  <i class="pi pi-check text-[10px]"/>FACTURADO
+                  <CheckIcon class="text-[10px] size-[1em]" />FACTURADO
                 </span>
               </td>
             </tr>
@@ -75,7 +75,7 @@
     <div class="rounded-xl border bg-white shadow-sm overflow-hidden" style="border-color:#ECE7F2">
       <div class="flex items-center justify-between px-4 py-2.5 border-b" style="border-color:#F3F0FA;background:#FDFCFF">
         <div class="flex items-center gap-2">
-          <i class="pi pi-file-pdf text-xs" style="color:#915BD8" />
+          <FileTextIcon class="text-xs size-[1em]" style="color:#915BD8" />
           <span class="text-sm font-semibold" style="color:#2C2039">Factura consolidada del mes</span>
           <Tag :value="periodoLabel" severity="secondary" class="text-xs font-mono" />
         </div>
@@ -83,7 +83,7 @@
         <span v-if="factura.nombre_archivo"
           class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
           style="background:#dcfce7;color:#166534">
-          <i class="pi pi-check text-[10px]"/>Subida
+          <CheckIcon class="text-[10px] size-[1em]" />Subida
         </span>
         <span v-else class="text-xs text-gray-400">Pendiente</span>
       </div>
@@ -92,7 +92,7 @@
         <!-- Si ya existe factura: mostrar y opción de reemplazar -->
         <div v-if="factura.nombre_archivo"
           class="flex items-center gap-3 p-2.5 rounded-lg" style="background:#f0fdf4;border:1px solid #bbf7d0">
-          <i class="pi pi-file-pdf text-sm flex-shrink-0" style="color:#16a34a"/>
+          <FileTextIcon class="text-sm flex-shrink-0 size-[1em]" style="color:#16a34a" />
           <div class="flex-1 min-w-0">
             <p class="text-xs font-semibold truncate" style="color:#15803d">{{ factura.nombre_archivo }}</p>
             <p v-if="factura.subido_en" class="text-[10px] text-gray-400 mt-0.5">
@@ -104,14 +104,14 @@
             @click="descargarFacturaConsolidada"
             class="flex items-center gap-1 text-xs font-medium hover:underline flex-shrink-0"
             style="color:#15803d;background:none;border:none;padding:0;cursor:pointer">
-            <i class="pi pi-download text-xs"/>Descargar
+            <DownloadIcon class="text-xs size-[1em]" />Descargar
           </button>
           <!-- Abrir link externo -->
           <a v-else-if="factura.enlace_pdf"
             :href="factura.enlace_pdf" target="_blank" rel="noopener"
             class="flex items-center gap-1 text-xs font-medium hover:underline flex-shrink-0"
             style="color:#915BD8">
-            <i class="pi pi-external-link text-xs"/>Ver
+            <ExternalLinkIcon class="text-xs size-[1em]" />Ver
           </a>
         </div>
 
@@ -124,7 +124,7 @@
           <!-- Opción A: subir archivo -->
           <label class="flex items-center gap-2 text-xs border border-dashed rounded-lg px-3 py-2 cursor-pointer hover:border-purple-400 transition-colors"
             :class="archivoSeleccionado ? 'border-purple-400 bg-purple-50' : 'border-gray-300'">
-            <i class="pi pi-paperclip text-xs" :style="archivoSeleccionado ? 'color:#915BD8' : 'color:#9ca3af'"/>
+            <PaperclipIcon class="text-xs size-[1em]" :style="archivoSeleccionado ? 'color:#915BD8' : 'color:#9ca3af'" />
             <span :style="archivoSeleccionado ? 'color:#7c3aed' : 'color:#9ca3af'" class="truncate">
               {{ archivoSeleccionado ? archivoSeleccionado.name : 'Seleccionar PDF…' }}
             </span>
@@ -147,7 +147,8 @@
             style="background:#915BD8;color:#fff;border:none"
             :style="!puedeSubir || subiendoFactura ? 'opacity:0.4;cursor:not-allowed' : 'cursor:pointer'"
             @click="subirFactura">
-            <i :class="subiendoFactura ? 'pi pi-spin pi-spinner' : 'pi pi-cloud-upload'" class="text-xs"/>
+            <LoaderCircleIcon v-if="subiendoFactura" class="text-xs size-[1em] animate-spin" />
+            <CloudUploadIcon v-else class="text-xs size-[1em]" />
             {{ subiendoFactura ? 'Subiendo…' : (factura.nombre_archivo ? 'Reemplazar' : 'Subir factura') }}
           </button>
         </div>
@@ -161,20 +162,20 @@
 
         <!-- Error de sistema -->
         <div v-if="splitResult.error" class="flex items-start gap-1.5">
-          <i class="pi pi-times-circle text-xs mt-0.5 flex-shrink-0" style="color:#dc2626"/>
+          <CircleXIcon class="text-xs mt-0.5 flex-shrink-0 size-[1em]" style="color:#dc2626" />
           <p class="text-xs text-red-700">Error al procesar el PDF: {{ splitResult.error }}</p>
         </div>
 
         <!-- Proyectos asociados correctamente -->
         <div v-else>
           <p class="text-xs font-semibold mb-1" style="color:#166534">
-            <i class="pi pi-check-circle mr-1"/>
+            <CircleCheckIcon class="mr-1 size-[1em]" />
             {{ splitResult.procesados }} {{ splitResult.procesados === 1 ? 'proyecto asociado' : 'proyectos asociados' }} correctamente
           </p>
           <div v-if="splitResult.detalle?.length" class="space-y-0.5 pl-3">
             <div v-for="(item, i) in splitResult.detalle" :key="i"
               class="flex items-center gap-2 text-[10px] text-gray-600">
-              <i class="pi pi-file-pdf text-[9px] flex-shrink-0" style="color:#16a34a"/>
+              <FileTextIcon class="text-[9px] flex-shrink-0 size-[1em]" style="color:#16a34a" />
               <span class="font-medium truncate" style="max-width:160px" :title="item.nombre">{{ item.nombre }}</span>
               <span v-if="item.numero_factura" class="font-mono text-gray-400">{{ item.numero_factura }}</span>
               <span v-if="item.total_pagar" class="ml-auto font-semibold tabular-nums" style="color:#7c3aed">
@@ -194,7 +195,7 @@
       <div v-if="sinMatchPendientes.length" class="mx-4 mb-3 rounded-lg border px-3 py-2.5 space-y-2"
         style="background:#fffbeb;border-color:#fcd34d40">
         <p class="text-xs font-semibold" style="color:#92400e">
-          <i class="pi pi-exclamation-triangle mr-1"/>
+          <TriangleAlertIcon class="mr-1 size-[1em]" />
           {{ sinMatchPendientes.length }} {{ sinMatchPendientes.length === 1 ? 'página pendiente de asignar' : 'páginas pendientes de asignar' }}
         </p>
         <div v-for="item in sinMatchPendientes" :key="item.id"
@@ -238,10 +239,10 @@
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import Tag             from 'primevue/tag'
-import { useToast }    from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api             from '~/core/client'
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleCheckIcon, CircleXIcon, CloudUploadIcon, DownloadIcon, ExternalLinkIcon, FileTextIcon, InboxIcon, LoaderCircleIcon, PaperclipIcon, TriangleAlertIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 const hoy = new Date()
 const periodoOffset = ref(0)
@@ -319,10 +320,10 @@ async function asignarSinMatch(item) {
     })
     sinMatchPendientes.value = sinMatchPendientes.value.filter(s => s.id !== item.id)
     delete asignacionSeleccionada[item.id]
-    toast.add({ severity: 'success', summary: 'Página asignada correctamente', life: 2500 })
+    toast.success('Página asignada correctamente', { duration: 2500 })
     await cargarDatos()
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al asignar la página', life: 3000 })
+    toast.error('Error al asignar la página', { duration: 3000 })
   } finally {
     asignando[item.id] = false
   }
@@ -342,10 +343,12 @@ async function descargarFacturaConsolidada() {
     setTimeout(() => URL.revokeObjectURL(url), 100)
   } catch (e) {
     if (e.response?.status === 404) {
-      toast.add({ severity: 'warn', summary: 'Archivo no disponible',
-        detail: 'La factura de este período ya no está en el servidor. Vuélvela a subir con "Reemplazar".', life: 6000 })
+      toast.warning('Archivo no disponible', {
+        description: 'La factura de este período ya no está en el servidor. Vuélvela a subir con "Reemplazar".',
+        duration: 6000,
+      })
     } else {
-      toast.add({ severity: 'error', summary: 'Error al descargar factura', life: 3000 })
+      toast.error('Error al descargar factura', { duration: 3000 })
     }
   }
 }
@@ -371,9 +374,9 @@ async function subirFactura() {
     archivoSeleccionado.value = null
     linkExterno.value = ''
     await cargarFactura()
-    toast.add({ severity: 'success', summary: 'Factura subida correctamente', life: 2500 })
+    toast.success('Factura subida correctamente', { duration: 2500 })
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al subir la factura', life: 3000 })
+    toast.error('Error al subir la factura', { duration: 3000 })
   } finally {
     subiendoFactura.value = false
   }
@@ -393,7 +396,7 @@ async function cargarDatos() {
     filas.value = res.data.filas.filter(f => f.incluido && f.habilitado)
   } catch {
     if (periodoReq !== periodoActual.value) return
-    toast.add({ severity: 'error', summary: 'Error al cargar', life: 3000 })
+    toast.error('Error al cargar', { duration: 3000 })
   } finally {
     if (periodoReq === periodoActual.value) loading.value = false
   }
@@ -405,7 +408,7 @@ async function toggleFacturado(fila) {
     await api.patch(`/om/seleccion/${periodoActual.value}/${fila.contrato_id}/facturado`)
     fila.facturado = !fila.facturado
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al actualizar estado', life: 3000 })
+    toast.error('Error al actualizar estado', { duration: 3000 })
   } finally {
     toggling[fila.contrato_id] = false
   }

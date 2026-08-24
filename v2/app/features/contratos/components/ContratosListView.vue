@@ -3,12 +3,12 @@
     <!-- Header con acción -->
     <PageHeader title="Servicios" subtitle="Gestión de contratos y servicios por tipo">
       <template #actions>
-        <Button v-if="servicioActivo === 'ppa'" label="Nuevo contrato PPA" icon="pi pi-plus" size="small"
-          class="bg-amber-500 border-amber-500 hover:bg-amber-600" @click="showWizard = true" />
-        <Button v-else-if="servicioActivo !== 'ppa' && servicioActivo !== 'representacion'"
-          :label="`Nuevo ${servicioInfo?.label}`" icon="pi pi-plus" size="small"
-          :style="`background:${servicioInfo?.color}; border-color:${servicioInfo?.color}`"
-          @click="showServicioWizard = true" />
+        <Button v-if="servicioActivo === 'ppa'" label="Nuevo contrato PPA" size="small" class="bg-amber-500 border-amber-500 hover:bg-amber-600" @click="showWizard = true">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-else-if="servicioActivo !== 'ppa' && servicioActivo !== 'representacion'" :label="`Nuevo ${servicioInfo?.label}`" size="small" :style="`background:${servicioInfo?.color}; border-color:${servicioInfo?.color}`" @click="showServicioWizard = true">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -18,7 +18,7 @@
         class="svc-tab" :class="{ 'svc-tab--on': servicioActivo === srv.key }"
         :style="servicioActivo === srv.key ? `background:${srv.bg}; border-color:${srv.color}55; color:${srv.color}` : ''"
         @click="seleccionarServicio(srv.key)">
-        <i :class="srv.icon" :style="servicioActivo === srv.key ? `color:${srv.color}` : ''" />
+        <component :is="srv.icon" class="size-[1em]" :style="servicioActivo === srv.key ? `color:${srv.color}` : ''" />
         <span>{{ srv.label }}</span>
         <span v-if="conteoServicio(srv.key) > 0" class="svc-tab-count"
           :style="servicioActivo === srv.key ? `background:${srv.color}22; color:${srv.color}` : ''">{{ conteoServicio(srv.key) }}</span>
@@ -29,7 +29,7 @@
     <template v-if="servicioActivo === 'ppa'">
       <div class="flex gap-3 items-center">
         <IconField class="flex-1 max-w-sm">
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="filtroQ" placeholder="Buscar por proyecto, nombre, comprador…"
             class="w-full" @input="buscar" />
         </IconField>
@@ -113,14 +113,15 @@
         </Column>
         <Column style="width:120px">
           <template #body="{ data }">
-            <Button icon="pi pi-copy" text size="small" severity="secondary"
-              v-tooltip.top="'Duplicar contrato'"
-              @click.stop="duplicarContrato(data)" />
-            <Button icon="pi pi-arrow-right" text size="small" severity="secondary"
-              @click.stop="irAContrato(data)" v-tooltip="'Ver detalle'" />
-            <Button icon="pi pi-trash" text size="small" severity="danger"
-              v-tooltip.top="'Eliminar contrato'"
-              @click.stop="confirmarEliminar(data)" />
+            <Button text size="small" severity="secondary" v-tooltip.top="'Duplicar contrato'" @click.stop="duplicarContrato(data)">
+              <template #icon><CopyIcon class="size-[1em]" /></template>
+            </Button>
+            <Button text size="small" severity="secondary" @click.stop="irAContrato(data)" v-tooltip="'Ver detalle'">
+              <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+            </Button>
+            <Button text size="small" severity="danger" v-tooltip.top="'Eliminar contrato'" @click.stop="confirmarEliminar(data)">
+              <template #icon><Trash2Icon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
       </DataTable>
@@ -130,7 +131,7 @@
     <template v-else-if="servicioActivo === 'representacion'">
       <div class="flex gap-3 items-center">
         <IconField class="flex-1 max-w-sm">
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="filtroRepresentacion" placeholder="Buscar por planta, representante, comercializador…"
             class="w-full" />
         </IconField>
@@ -191,14 +192,15 @@
         </Column>
         <Column header="CGM" style="width:60px">
           <template #body="{ data }">
-            <i v-if="data.srv_cgm" class="pi pi-check-circle text-green-500" v-tooltip="'Tiene CGM'" />
-            <i v-else class="pi pi-minus text-gray-300" />
+            <CircleCheckIcon class="text-green-500 size-[1em]" v-if="data.srv_cgm" v-tooltip="'Tiene CGM'" />
+            <MinusIcon class="text-gray-300 size-[1em]" v-else />
           </template>
         </Column>
         <Column style="width:50px">
           <template #body="{ data }">
-            <Button icon="pi pi-arrow-right" text size="small" severity="secondary"
-              @click.stop="irAProyecto(data)" v-tooltip="'Ver planta'" />
+            <Button text size="small" severity="secondary" @click.stop="irAProyecto(data)" v-tooltip="'Ver planta'">
+              <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
       </DataTable>
@@ -208,7 +210,7 @@
     <template v-else>
       <div class="flex gap-3 items-center">
         <IconField class="flex-1 max-w-sm">
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="filtroServicio" placeholder="Buscar por número, contratante, prestador…"
             class="w-full" @input="buscarServicio" />
         </IconField>
@@ -265,14 +267,16 @@
       @cerrar="showServicioWizard = false"
       @creado="onServicioCreado" />
 
-    <ConfirmDialog />
+    <ConfirmDialog>
+      <template #icon><TriangleAlertIcon class="size-8 shrink-0" /></template>
+    </ConfirmDialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -285,16 +289,16 @@ import ConfirmDialog from 'primevue/confirmdialog'
 import PPAContratoWizard from './PPAContratoWizard.vue'
 import ContratoServicioWizard from './ContratoServicioWizard.vue'
 import api from '~/core/client'
+import { ArrowRightIcon, BadgeCheckIcon, ChartColumnIcon, CircleCheckIcon, CopyIcon, FilePenIcon, MinusIcon, PlusIcon, SearchIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 
 const router = useRouter()
-const toast = useToast()
 const confirm = useConfirm()
 
 const SERVICIOS = [
-  { key: 'ppa',           label: 'PPA',           icon: 'pi pi-bolt',      color: '#f59e0b', bg: '#fffbeb' },
-  { key: 'representacion',label: 'Representación', icon: 'pi pi-file-edit', color: '#3b82f6', bg: '#eff6ff' },
-  { key: 'operacion',     label: 'Operación',      icon: 'pi pi-chart-bar', color: '#10b981', bg: '#f0fdf4' },
-  { key: 'rec',           label: 'REC',            icon: 'pi pi-verified',  color: '#14b8a6', bg: '#f0fdfa' },
+  { key: 'ppa',           label: 'PPA',           icon: ZapIcon,      color: '#f59e0b', bg: '#fffbeb' },
+  { key: 'representacion',label: 'Representación', icon: FilePenIcon, color: '#3b82f6', bg: '#eff6ff' },
+  { key: 'operacion',     label: 'Operación',      icon: ChartColumnIcon, color: '#10b981', bg: '#f0fdf4' },
+  { key: 'rec',           label: 'REC',            icon: BadgeCheckIcon,  color: '#14b8a6', bg: '#f0fdfa' },
 ]
 
 const ESTADO_LABELS = {
@@ -355,7 +359,6 @@ function confirmarEliminar(contrato) {
   confirm.require({
     message: `¿Seguro que deseas eliminar el contrato "${contrato.nombre_interno || contrato.numero_codigo_contrato || 'sin nombre'}"? Esta acción no se puede deshacer.`,
     header: 'Confirmar eliminación',
-    icon: 'pi pi-exclamation-triangle',
     acceptSeverity: 'danger',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -363,14 +366,12 @@ function confirmarEliminar(contrato) {
       try {
         await api.delete(`/ppa/${contrato.id}`)
         contratos.value = contratos.value.filter(c => c.id !== contrato.id)
-        toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2000 })
+        toast.success('Contrato eliminado', { duration: 2000 })
       } catch (e) {
         const detail = e.response?.data?.detail
-        toast.add({
-          severity: 'error',
-          summary: 'No se puede eliminar',
-          detail: detail || 'Error al eliminar el contrato.',
-          life: 6000,
+        toast.error('No se puede eliminar', {
+          description: detail || 'Error al eliminar el contrato.',
+          duration: 6000,
         })
       }
     },
@@ -488,7 +489,7 @@ async function cargar() {
     const { data } = await api.get('/ppa', { params })
     contratos.value = data
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos', detail: e.message, life: 3000 })
+    toast.error('Error al cargar contratos', { description: e.message, duration: 3000 })
   } finally {
     loading.value = false
   }
@@ -500,7 +501,7 @@ async function cargarPlantasRepresentacion() {
     const { data } = await api.get('/proyectos', { params: { servicio: 'representacion', size: 500 } })
     plantasRepresentacion.value = data.items
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar plantas', detail: e.message, life: 3000 })
+    toast.error('Error al cargar plantas', { description: e.message, duration: 3000 })
   } finally {
     loadingPlantas.value = false
   }
@@ -512,7 +513,7 @@ async function cargarServicio(tipo) {
     const { data } = await api.get('/contratos-servicio', { params: { tipo } })
     contratosServicio.value = data
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos', detail: e.message, life: 3000 })
+    toast.error('Error al cargar contratos', { description: e.message, duration: 3000 })
   } finally {
     loadingServicio.value = false
   }
@@ -529,7 +530,7 @@ onMounted(cargar)
   cursor: pointer; transition: border-color .12s, color .12s, background .12s; user-select: none;
 }
 .svc-tab:hover { border-color: #cbb8e8; color: #2C2039; }
-.svc-tab i { font-size: 14px; color: #9ca3af; }
+.svc-tab svg { font-size: 14px; color: #9ca3af; }
 .svc-tab--on { box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .svc-tab-count {
   background: #EEF0F2; color: #6b7280; border-radius: 999px;

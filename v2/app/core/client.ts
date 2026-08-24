@@ -18,6 +18,7 @@
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import axios from 'axios'
 import { clearTokens, getAccessToken, isPreviewToken } from '~/utils/security'
+import { toast } from 'vue-sonner'
 
 /** Rutas del propio frontend a las que se devuelve una sesión caducada. */
 const LOGIN_PATH = '/login'
@@ -60,11 +61,9 @@ api.interceptors.response.use(
 
     if (status === 403 && axios.isAxiosError(error)) {
       const detalle = error.response?.data as { detail?: string } | undefined
-      window.__primeToast?.({
-        severity: 'error',
-        summary: 'Acceso denegado',
-        detail: detalle?.detail || 'No tienes permisos para esta acción',
-        life: 4000,
+      toast.error('Acceso denegado', {
+        description: detalle?.detail || 'No tienes permisos para esta acción',
+        duration: 4000,
       })
     }
 

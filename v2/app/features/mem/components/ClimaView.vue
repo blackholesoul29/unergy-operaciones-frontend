@@ -6,7 +6,7 @@
     <!-- No data banner -->
     <div v-if="!oniData.length && !priceData.length" class="rounded-xl p-4 flex items-center gap-3"
          style="background: rgba(145,91,216,0.06); border: 1px solid rgba(145,91,216,0.15);">
-      <i class="pi pi-info-circle" style="color: #915BD8;" />
+      <InfoIcon class="size-[1em]" style="color: #915BD8;" />
       <p class="text-sm" style="color: #6b5a8a;">Datos climáticos no disponibles — EVO API no configurada. Se mostrarán cuando el servicio esté activo.</p>
     </div>
 
@@ -212,6 +212,7 @@ import { ref, computed, onMounted } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import api from '~/core/client'
+import { InfoIcon } from '@lucide/vue'
 
 const TABS = ['ENSO Timeline', 'Precio vs ENSO', 'Precipitación', 'Datos ONI']
 const REGIONS = ['Andina', 'Caribe', 'Pacifica', 'Orinoquia', 'Amazonia']

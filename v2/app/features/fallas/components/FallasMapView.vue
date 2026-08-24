@@ -4,7 +4,7 @@
     <!-- ── Header ─────────────────────────────────────────── -->
     <div class="fmv-header">
       <div class="fmv-header-left">
-        <i class="pi pi-map" style="color:#915BD8;font-size:14px" />
+        <MapIcon class="size-[1em]" style="color:#915BD8;font-size:14px" />
         <span class="font-bold text-sm text-gray-800">Mapa de fallas</span>
         <span class="text-xs text-gray-400 hidden sm:inline">· Proyectos con fallas activas</span>
       </div>
@@ -22,7 +22,8 @@
           @change="cargar"
         />
         <button class="fmv-btn-icon" @click="cargar" :disabled="loading" title="Recargar">
-          <i :class="loading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+          <LoaderCircleIcon v-if="loading" class="size-[1em] animate-spin" />
+          <RefreshCwIcon v-else class="size-[1em]" />
         </button>
       </div>
     </div>
@@ -39,21 +40,21 @@
         <span class="fmv-dot" style="background:#7c3aed;border-radius:2px"></span> Subestaciones
       </span>
       <span class="fmv-legend-item fmv-legend-item--muted" v-if="sinCoordenadas > 0">
-        <i class="pi pi-exclamation-triangle text-yellow-500" style="font-size:10px"/>
+        <TriangleAlertIcon class="text-yellow-500 size-[1em]" style="font-size:10px" />
         {{ sinCoordenadas }} sin coordenadas
       </span>
     </div>
 
     <!-- ── Error ───────────────────────────────────────────── -->
     <div v-if="error" class="fmv-empty">
-      <i class="pi pi-exclamation-circle text-3xl text-red-400"></i>
+      <CircleAlertIcon class="text-3xl text-red-400 size-[1em]" />
       <p class="text-sm text-red-500 mt-2">{{ error }}</p>
       <button class="fmv-retry" @click="cargar">Reintentar</button>
     </div>
 
     <!-- ── Loading inicial ─────────────────────────────────── -->
     <div v-else-if="loading && !mapListo" class="fmv-empty">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color:#915BD8"></i>
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color:#915BD8" />
       <p class="text-sm text-gray-500 mt-3">Cargando mapa…</p>
     </div>
 
@@ -65,7 +66,7 @@
       <div v-if="proyectoSel" class="fmv-panel">
         <div class="fmv-panel-header">
           <span class="font-bold text-sm text-gray-800 truncate flex-1">{{ proyectoSel.nombre_comercial }}</span>
-          <button class="fmv-close" @click="proyectoSel = null"><i class="pi pi-times text-xs" /></button>
+          <button class="fmv-close" @click="proyectoSel = null"><XIcon class="text-xs size-[1em]" /></button>
         </div>
         <div class="fmv-panel-body">
 
@@ -79,13 +80,13 @@
 
           <!-- Info proyecto -->
           <div class="fmv-info-row" v-if="proyectoSel.municipio">
-            <i class="pi pi-map-marker" /> {{ proyectoSel.municipio }}{{ proyectoSel.departamento ? ', ' + proyectoSel.departamento : '' }}
+            <MapPinIcon class="size-[1em]" /> {{ proyectoSel.municipio }}{{ proyectoSel.departamento ? ', ' + proyectoSel.departamento : '' }}
           </div>
           <div class="fmv-info-row" v-if="proyectoSel.potencia_instalada_kwp">
-            <i class="pi pi-sun" /> {{ Number(proyectoSel.potencia_instalada_kwp).toLocaleString('es-CO') }} kW AC
+            <SunIcon class="size-[1em]" /> {{ Number(proyectoSel.potencia_instalada_kwp).toLocaleString('es-CO') }} kW AC
           </div>
           <div class="fmv-info-row" v-if="proyectoSel.operador_red">
-            <i class="pi pi-bolt" /> OR: {{ proyectoSel.operador_red }}
+            <ZapIcon class="size-[1em]" /> OR: {{ proyectoSel.operador_red }}
           </div>
 
           <!-- Lista fallas activas -->
@@ -100,7 +101,7 @@
               <span class="fmv-falla-dias" :class="diasClass(f)">{{ f.dias_abierta ?? '?' }}d</span>
             </div>
           </template>
-          <p v-else class="fmv-ok"><i class="pi pi-check-circle" /> Sin fallas activas</p>
+          <p v-else class="fmv-ok"><CircleCheckIcon class="size-[1em]" /> Sin fallas activas</p>
 
         </div>
       </div>
@@ -110,19 +111,19 @@
     <transition name="fmv-slide">
       <div v-if="subSel" class="fmv-panel fmv-panel--sub">
         <div class="fmv-panel-header">
-          <i class="pi pi-building" style="color:#7c3aed;font-size:12px" />
+          <BuildingIcon class="size-[1em]" style="color:#7c3aed;font-size:12px" />
           <span class="font-bold text-sm text-gray-800 truncate flex-1">{{ subSel.name }}</span>
-          <button class="fmv-close" @click="subSel = null"><i class="pi pi-times text-xs" /></button>
+          <button class="fmv-close" @click="subSel = null"><XIcon class="text-xs size-[1em]" /></button>
         </div>
         <div class="fmv-panel-body">
           <div class="fmv-info-row" v-if="subSel.capacity138">
-            <i class="pi pi-bolt" /> 138 kV: {{ subSel.capacity138 }} MVA
+            <ZapIcon class="size-[1em]" /> 138 kV: {{ subSel.capacity138 }} MVA
           </div>
           <div class="fmv-info-row" v-if="subSel.capacity345">
-            <i class="pi pi-bolt" /> 345 kV: {{ subSel.capacity345 }} MVA
+            <ZapIcon class="size-[1em]" /> 345 kV: {{ subSel.capacity345 }} MVA
           </div>
           <div class="fmv-info-row">
-            <i class="pi pi-share-alt" /> {{ subSel.circuit_count }} circuito{{ subSel.circuit_count !== 1 ? 's' : '' }}
+            <Share2Icon class="size-[1em]" /> {{ subSel.circuit_count }} circuito{{ subSel.circuit_count !== 1 ? 's' : '' }}
           </div>
         </div>
       </div>
@@ -137,6 +138,7 @@ import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import Select from 'primevue/select'
 import api from '~/core/client'
+import { BuildingIcon, CircleAlertIcon, CircleCheckIcon, LoaderCircleIcon, MapIcon, MapPinIcon, RefreshCwIcon, Share2Icon, SunIcon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 const props = defineProps({
   fallas: { type: Array, default: () => [] },
@@ -533,7 +535,7 @@ onBeforeUnmount(() => {
 .fmv-stat-lbl { font-size: 12px; color: #6b5a8a; }
 
 .fmv-info-row { font-size: 11.5px; color: #6b5a8a; display: flex; align-items: center; gap: 5px; }
-.fmv-info-row i { font-size: 10px; }
+.fmv-info-row svg { font-size: 10px; }
 
 .fmv-fallas-title {
   font-size: 10px; font-weight: 700; text-transform: uppercase;

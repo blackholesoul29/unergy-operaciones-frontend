@@ -8,26 +8,29 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Nombre del proyecto…" class="w-64" />
         </IconField>
       </div>
       <div class="flex-1" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar'" @click="cargar" />
+      <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar'" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
       <div class="text-xs text-gray-400 self-center">
         {{ filtrados.length }} proyecto{{ filtrados.length === 1 ? '' : 's' }}
       </div>
     </div>
 
     <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center">
-      <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
+      <LoaderCircleIcon class="text-2xl text-gray-400 size-[1em] animate-spin" />
     </div>
 
     <div v-else-if="errorApi" class="bg-white rounded-xl shadow-sm border p-6 text-center" style="border-color:#ECE7F2">
-      <i class="pi pi-exclamation-triangle text-2xl mb-2 block" style="color:#D97706" />
+      <TriangleAlertIcon class="text-2xl mb-2 block size-[1em]" style="color:#D97706" />
       <p class="text-sm text-gray-600">{{ errorApi }}</p>
-      <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined class="mt-3" @click="cargar" />
+      <Button label="Reintentar" size="small" outlined class="mt-3" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <template v-else>
@@ -73,15 +76,13 @@
                     :style="col.groupStart ? 'border-left:1px solid #F1F1F1;' : ''"
                     @click="irAlDetalle(row.proyecto_id, col.tab)"
                     v-tooltip.bottom="tieneValor(row[col.key]) ? String(row[col.key]) : 'Sin registrar · clic para abrir el proyecto'">
-                  <i v-if="tieneValor(row[col.key])" class="pi pi-check-circle"
-                     style="color:#10B981; font-size:1rem;" />
+                  <CircleCheckIcon class="size-[1em]" v-if="tieneValor(row[col.key])" style="color:#10B981; font-size:1rem;" />
                   <span v-else class="text-gray-300">—</span>
                 </td>
                 <td class="px-3 py-2">
-                  <Button icon="pi pi-pencil" text rounded size="small" severity="info"
-                          :disabled="!row.nombre_topico"
-                          v-tooltip.left="row.nombre_topico ? 'Editar códigos SIC' : 'Falta el código base del proyecto'"
-                          @click="abrirEditar(row)" />
+                  <Button text rounded size="small" severity="info" :disabled="!row.nombre_topico" v-tooltip.left="row.nombre_topico ? 'Editar códigos SIC' : 'Falta el código base del proyecto'" @click="abrirEditar(row)">
+                    <template #icon><PencilIcon class="size-[1em]" /></template>
+                  </Button>
                 </td>
               </tr>
             </tbody>
@@ -109,7 +110,9 @@
         </div>
         <div class="flex justify-end gap-2 pt-1">
           <Button type="button" label="Cancelar" severity="secondary" @click="formVisible = false" />
-          <Button type="submit" label="Guardar" icon="pi pi-check" :loading="guardando" />
+          <Button type="submit" label="Guardar" :loading="guardando">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </form>
     </Dialog>
@@ -124,12 +127,12 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { formatearNombreProyecto } from '~/features/proyectos/components/proyectosUi'
+import { CheckIcon, CircleCheckIcon, LoaderCircleIcon, PencilIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const router = useRouter()
-const toast = useToast()
 
 // Solo GD y minigranjas en operación.
 const TIPOS_INCLUIDOS = ['gd', 'minigranja']
@@ -187,9 +190,9 @@ async function guardar() {
     })
     formVisible.value = false
     await cargar()
-    toast.add({ severity: 'success', summary: 'Códigos guardados', life: 2000 })
+    toast.success('Códigos guardados', { duration: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo guardar', life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail || 'No se pudo guardar', duration: 4000 })
   } finally {
     guardando.value = false
   }

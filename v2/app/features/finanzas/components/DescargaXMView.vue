@@ -1,13 +1,13 @@
 <template>
   <div class="gf-page">
     <div class="mon-tab-bar">
-      <i class="pi pi-cloud-download text-sm" style="color:#915BD8" />
+      <CloudDownloadIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Descarga de XM</span>
     </div>
 
     <div class="max-w-3xl mx-auto mt-4 space-y-4">
       <div class="rounded-xl border p-3 flex items-start gap-2" style="background:#F1EAF9;border-color:#E0D3F5">
-        <i class="pi pi-info-circle text-sm flex-shrink-0 mt-0.5" style="color:#6D28D9" />
+        <InfoIcon class="text-sm flex-shrink-0 mt-0.5 size-[1em]" style="color:#6D28D9" />
         <p class="text-xs" style="color:#4C1D95">
           Esta pestaña necesita el <strong>agente local</strong> corriendo en tu computador (el FTP de XM
           solo acepta conexiones desde tu máquina, no desde la plataforma). Abre
@@ -67,30 +67,25 @@
         </div>
 
         <div class="mt-4">
-          <Button
-            label="Descargar y unificar"
-            icon="pi pi-download"
-            :loading="enProceso"
-            :disabled="!formularioValido || enProceso"
-            @click="onDescargar"
-            style="background:#915BD8;border-color:#915BD8"
-          />
+          <Button label="Descargar y unificar" :loading="enProceso" :disabled="!formularioValido || enProceso" @click="onDescargar" style="background:#915BD8;border-color:#915BD8">
+            <template #icon><DownloadIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
 
       <div v-if="estado" class="rounded-xl border p-4" style="border-color:#ECE7F2">
         <div v-if="estado.estado === 'descargando'" class="text-sm text-gray-600">
-          <i class="pi pi-spin pi-spinner mr-2" style="color:#915BD8" />
+          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:#915BD8" />
           Descargando archivos… {{ estado.archivos_procesados }}/{{ estado.archivos_totales }}
         </div>
 
         <div v-else-if="estado.estado === 'unificando'" class="text-sm text-gray-600">
-          <i class="pi pi-spin pi-spinner mr-2" style="color:#915BD8" />
+          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:#915BD8" />
           Unificando archivos…
         </div>
 
         <div v-else-if="estado.estado === 'exportando'" class="text-sm text-gray-600">
-          <i class="pi pi-spin pi-spinner mr-2" style="color:#915BD8" />
+          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:#915BD8" />
           Generando el archivo final… con rangos grandes puede tardar uno o dos minutos.
         </div>
 
@@ -103,13 +98,17 @@
             Códigos sin match en fronteras: {{ estado.codigos_sin_match.join(', ') }}
           </div>
           <div class="flex gap-2">
-            <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" @click="onDescargarArchivo('xlsx')" />
-            <Button label="Descargar TXT" icon="pi pi-file" size="small" outlined @click="onDescargarArchivo('txt')" />
+            <Button label="Descargar Excel" size="small" @click="onDescargarArchivo('xlsx')">
+              <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+            </Button>
+            <Button label="Descargar TXT" size="small" outlined @click="onDescargarArchivo('txt')">
+              <template #icon><FileIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
 
         <div v-else-if="estado.estado === 'error'" class="text-sm text-red-600">
-          <i class="pi pi-exclamation-circle mr-2" />
+          <CircleAlertIcon class="mr-2 size-[1em]" />
           {{ estado.error_message || 'Ocurrió un error al procesar la descarga.' }}
         </div>
       </div>
@@ -123,6 +122,7 @@ import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
 import Button from 'primevue/button'
 import { XmAgenteLocalService } from '~/features/finanzas/services/xm'
+import { CircleAlertIcon, CloudDownloadIcon, DownloadIcon, FileIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon } from '@lucide/vue'
 
 const xm = new XmAgenteLocalService()
 

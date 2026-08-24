@@ -2,19 +2,18 @@
   <div class="space-y-4">
     <PageHeader title="GESCON — Contratos ASIC" :subtitle="`${total} registros`">
       <template #actions>
-        <Button label="Completar nombres internos" icon="pi pi-wand-magic-sparkles" size="small" outlined
-          @click="previewBackfill" :loading="backfillLoading"
-          v-tooltip.bottom="'Rellena el nombre interno de los registros que lo tengan vacío, tomándolo del contrato PPA'"
-          style="color:#6b5a8a; border-color:#d8cfe8;" />
-        <Button label="Completar terminaciones" icon="pi pi-flag" size="small" outlined
-          @click="previewBackfillTerm" :loading="backfillTermLoading"
-          v-tooltip.bottom="'Rellena contrato, nombre interno y demás datos de las terminaciones registradas antes, tomándolos de los registros del mismo código SIC'"
-          style="color:#6b5a8a; border-color:#d8cfe8;" />
-        <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" outlined
-          @click="descargarGesconExcel" :loading="exportando"
-          style="color:#915BD8; border-color:#915BD8;" />
-        <Button label="Registrar" icon="pi pi-plus" @click="abrirNuevo"
-          style="background:#915BD8; border-color:#915BD8;" size="small" />
+        <Button label="Completar nombres internos" size="small" outlined @click="previewBackfill" :loading="backfillLoading" v-tooltip.bottom="'Rellena el nombre interno de los registros que lo tengan vacío, tomándolo del contrato PPA'" style="color:#6b5a8a; border-color:#d8cfe8;">
+          <template #icon><WandSparklesIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Completar terminaciones" size="small" outlined @click="previewBackfillTerm" :loading="backfillTermLoading" v-tooltip.bottom="'Rellena contrato, nombre interno y demás datos de las terminaciones registradas antes, tomándolos de los registros del mismo código SIC'" style="color:#6b5a8a; border-color:#d8cfe8;">
+          <template #icon><FlagIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Descargar Excel" size="small" outlined @click="descargarGesconExcel" :loading="exportando" style="color:#915BD8; border-color:#915BD8;">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Registrar" @click="abrirNuevo" style="background:#915BD8; border-color:#915BD8;" size="small">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -25,7 +24,7 @@
     <div class="bg-white rounded-xl px-4 py-3 flex flex-nowrap gap-3 items-center overflow-x-auto"
       style="border: 1px solid #e8e0f0;">
       <IconField class="flex-1 min-w-[200px]">
-        <InputIcon class="pi pi-search" />
+        <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
         <InputText v-model="filtroTexto" placeholder="Buscar SIC, contrato, planta…" class="w-full" />
       </IconField>
 
@@ -43,8 +42,9 @@
         placeholder="Año" showClear class="flex-shrink-0 min-w-[110px]"
         v-tooltip.bottom="'Vigencia en ese año'" />
 
-      <Button v-if="filtroTexto || filtroTipo || filtroMes || filtroAnio" label="Limpiar" icon="pi pi-times"
-        severity="secondary" size="small" @click="limpiar" />
+      <Button v-if="filtroTexto || filtroTipo || filtroMes || filtroAnio" label="Limpiar" severity="secondary" size="small" @click="limpiar">
+        <template #icon><XIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- Tabla -->
@@ -105,7 +105,7 @@
               :style="{ color: esVencido(finEfectivo(data)) ? '#ef4444' : '#6b5a8a' }"
               v-tooltip.top="`Vigencia recortada: un relevo o modificación posterior en este SIC superó esta fila. Fecha registrada: ${fmt(data.fecha_fin)}`">
               {{ fmt(finEfectivo(data)) }}
-              <i class="pi pi-history" style="font-size:9px; color:#e6a817;" />
+              <HistoryIcon class="size-[1em]" style="font-size:9px; color:#e6a817;" />
             </span>
             <span v-else class="text-xs" :style="{ color: esVencido(data.fecha_fin) ? '#ef4444' : '#6b5a8a' }">
               {{ fmt(data.fecha_fin) }}
@@ -130,8 +130,7 @@
 
         <Column header="Coex." style="width:50px;">
           <template #body="{ data }">
-            <i v-if="!data.reemplaza_anterior" class="pi pi-link text-xs" style="color:#e6a817;"
-              v-tooltip.top="'Coexiste con otras plantas en este SIC'" />
+            <LinkIcon class="text-xs size-[1em]" v-if="!data.reemplaza_anterior" style="color:#e6a817;" v-tooltip.top="'Coexiste con otras plantas en este SIC'" />
           </template>
         </Column>
 
@@ -139,10 +138,10 @@
           <template #body="{ data }">
             <span v-if="data.uso_del_recurso" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
               style="background: rgba(2,132,199,0.14); color: #0369a1;"
-              v-tooltip.top="'Uso del recurso — planta en bolsa; se le paga al cliente a precio bolsa. No genera garantías.'"><i class="pi pi-sync" style="font-size:9px;" />Uso recurso</span>
+              v-tooltip.top="'Uso del recurso — planta en bolsa; se le paga al cliente a precio bolsa. No genera garantías.'"><RefreshCwIcon class="size-[1em]" style="font-size:9px;" />Uso recurso</span>
             <span v-else-if="data.es_duplicado" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
               style="background: rgba(240,192,64,0.22); color: #9a6700;"
-              v-tooltip.top="'Compra en bolsa (duplicado) — cuenta para el contrato, origen bolsa. Genera garantías.'"><i class="pi pi-shopping-cart" style="font-size:9px;" />Bolsa</span>
+              v-tooltip.top="'Compra en bolsa (duplicado) — cuenta para el contrato, origen bolsa. Genera garantías.'"><ShoppingCartIcon class="size-[1em]" style="font-size:9px;" />Bolsa</span>
           </template>
         </Column>
 
@@ -151,15 +150,15 @@
             <div class="flex items-center gap-1">
               <button @click="abrirEditar(data)" class="p-1 rounded hover:bg-purple-50 transition-colors"
                 title="Editar" style="color: #915BD8;">
-                <i class="pi pi-pencil text-xs" />
+                <PencilIcon class="text-xs size-[1em]" />
               </button>
               <a v-if="data.link_archivo" :href="data.link_archivo" target="_blank"
                 class="p-1 rounded hover:bg-purple-50 transition-colors text-purple-500 hover:text-purple-700">
-                <i class="pi pi-external-link text-xs" />
+                <ExternalLinkIcon class="text-xs size-[1em]" />
               </a>
               <button @click="confirmarEliminar(data)" class="p-1 rounded hover:bg-red-50 transition-colors"
                 title="Eliminar" style="color: #ef4444;">
-                <i class="pi pi-trash text-xs" />
+                <Trash2Icon class="text-xs size-[1em]" />
               </button>
             </div>
           </template>
@@ -167,7 +166,9 @@
       </DataTable>
     </div>
 
-    <ConfirmDialog />
+    <ConfirmDialog>
+      <template #icon><TriangleAlertIcon class="size-8 shrink-0" /></template>
+    </ConfirmDialog>
 
     <!-- ── Dialog Registro ─────────────────────────────────────── -->
     <Dialog v-model:visible="dialogVisible" :header="tituloDialogo" modal
@@ -211,7 +212,7 @@
         <template v-if="esTerminacion">
           <div class="rounded-lg px-3 py-2 text-xs flex items-start gap-2"
             style="background:#FFF7ED; border:1px solid #FED7AA; color:#9A3412;">
-            <i class="pi pi-info-circle mt-0.5" />
+            <InfoIcon class="mt-0.5 size-[1em]" />
             <span>Al publicar, el contrato con este código SIC terminará en la fecha indicada:
               dejará de aportar energía en Cumplimiento después de esa fecha (el histórico previo se conserva).</span>
           </div>
@@ -321,14 +322,12 @@
             <label for="reemplaza" class="text-xs font-medium cursor-pointer" style="color:#6b5a8a;">
               Reemplaza anterior
             </label>
-            <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
-              v-tooltip.top="'Activado: esta planta reemplaza la anterior en este SIC. Desactivado: coexiste con las demás plantas del mismo SIC.'" />
+            <InfoIcon class="text-xs cursor-help size-[1em]" style="color:#9b89b5;" v-tooltip.top="'Activado: esta planta reemplaza la anterior en este SIC. Desactivado: coexiste con las demás plantas del mismo SIC.'" />
           </div>
           <div class="flex flex-col gap-1 pb-1">
             <div class="flex items-center gap-2">
               <label class="text-xs font-medium" style="color:#6b5a8a;">Modalidad de suministro</label>
-              <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
-                v-tooltip.top="'Normal: suministro propio de la planta. Compra en bolsa (duplicado): la planta ya está comprometida en otro contrato; aquí su aporte cuenta pero se compra en bolsa (genera garantías). Uso del recurso: la planta está en bolsa y se mete al contrato pagándole al cliente su generación a precio bolsa (sin garantías).'" />
+              <InfoIcon class="text-xs cursor-help size-[1em]" style="color:#9b89b5;" v-tooltip.top="'Normal: suministro propio de la planta. Compra en bolsa (duplicado): la planta ya está comprometida en otro contrato; aquí su aporte cuenta pero se compra en bolsa (genera garantías). Uso del recurso: la planta está en bolsa y se mete al contrato pagándole al cliente su generación a precio bolsa (sin garantías).'" />
             </div>
             <SelectButton v-model="modalidadSuministro" :options="MODALIDADES_SUMINISTRO"
               optionLabel="label" optionValue="value" :allowEmpty="false"
@@ -367,7 +366,7 @@
             ? 'background:#FEF2F2; border:1px solid #FECACA; color:#991B1B;'
             : 'background:#FFF7ED; border:1px solid #FED7AA; color:#9A3412;'">
           <div class="flex items-start gap-2">
-            <i class="pi pi-exclamation-triangle mt-0.5" />
+            <TriangleAlertIcon class="mt-0.5 size-[1em]" />
             <div class="flex-1">
               <p class="font-medium">
                 Se detectó {{ conflictosSolapamiento.length }} contrato{{ conflictosSolapamiento.length > 1 ? 's' : '' }}
@@ -420,8 +419,7 @@
         <div class="flex flex-col gap-1">
           <div class="flex items-center gap-2">
             <label class="text-xs font-medium" style="color:#6b5a8a;">Modalidad de pago del contrato</label>
-            <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
-              v-tooltip.top="'Cuando una planta se reparte entre dos contratos, uno PLG y otro PLC, entre los dos cubren su 100%: marcarlos evita que se reporte como duplicada. Déjalo en “No aplica” si el contrato no es de ese par.'" />
+            <InfoIcon class="text-xs cursor-help size-[1em]" style="color:#9b89b5;" v-tooltip.top="'Cuando una planta se reparte entre dos contratos, uno PLG y otro PLC, entre los dos cubren su 100%: marcarlos evita que se reporte como duplicada. Déjalo en “No aplica” si el contrato no es de ese par.'" />
           </div>
           <SelectButton v-model="modalidadPago" :options="MODALIDADES_PAGO"
             optionLabel="label" optionValue="value" :allowEmpty="false"
@@ -456,10 +454,9 @@
 
         <div class="flex justify-end gap-2 pt-2">
           <Button label="Cancelar" severity="secondary" @click="dialogVisible = false" type="button" />
-          <Button :label="editandoId ? 'Actualizar' : 'Guardar'" icon="pi pi-check" type="submit" :loading="guardando"
-            :disabled="conflictoNoResuelto"
-            v-tooltip.top="conflictoNoResuelto ? 'Resuelve el solapamiento de fechas antes de guardar' : ''"
-            style="background:#915BD8; border-color:#915BD8;" />
+          <Button :label="editandoId ? 'Actualizar' : 'Guardar'" type="submit" :loading="guardando" :disabled="conflictoNoResuelto" v-tooltip.top="conflictoNoResuelto ? 'Resuelve el solapamiento de fechas antes de guardar' : ''" style="background:#915BD8; border-color:#915BD8;">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
         </form>
       </div>
@@ -525,9 +522,9 @@
       </div>
       <template #footer>
         <Button label="Cancelar" text @click="backfillTermDialog = false" :disabled="backfillTermExecuting" />
-        <Button label="Aplicar" icon="pi pi-check" :loading="backfillTermExecuting"
-          :disabled="!backfillTermPendiente" @click="applyBackfillTerm"
-          style="background:#915BD8; border-color:#915BD8;" />
+        <Button label="Aplicar" :loading="backfillTermExecuting" :disabled="!backfillTermPendiente" @click="applyBackfillTerm" style="background:#915BD8; border-color:#915BD8;">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
 
@@ -565,9 +562,9 @@
       </div>
       <template #footer>
         <Button label="Cancelar" text @click="backfillDialog = false" :disabled="backfillExecuting" />
-        <Button label="Aplicar" icon="pi pi-check" :loading="backfillExecuting"
-          :disabled="!backfillReport || !backfillReport.a_actualizar" @click="applyBackfill"
-          style="background:#915BD8; border-color:#915BD8;" />
+        <Button label="Aplicar" :loading="backfillExecuting" :disabled="!backfillReport || !backfillReport.a_actualizar" @click="applyBackfill" style="background:#915BD8; border-color:#915BD8;">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
   </div>
@@ -594,10 +591,10 @@ import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Checkbox from 'primevue/checkbox'
 import ConfirmDialog from 'primevue/confirmdialog'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
+import { CheckIcon, ExternalLinkIcon, FileSpreadsheetIcon, FlagIcon, HistoryIcon, InfoIcon, LinkIcon, PencilIcon, PlusIcon, RefreshCwIcon, SearchIcon, ShoppingCartIcon, Trash2Icon, TriangleAlertIcon, WandSparklesIcon, XIcon } from '@lucide/vue'
 
-const toast = useToast()
 const confirm = useConfirm()
 
 // ── Tabla ─────────────────────────────────────────────────────────
@@ -696,7 +693,7 @@ const exportando = ref(false)
 async function descargarGesconExcel() {
   if (exportando.value) return
   if (!rows.value.length) {
-    toast.add({ severity: 'warn', summary: 'Sin datos', detail: 'No hay registros GESCON para exportar.', life: 3000 })
+    toast.warning('Sin datos', { description: 'No hay registros GESCON para exportar.', duration: 3000 })
     return
   }
   exportando.value = true
@@ -811,9 +808,9 @@ async function descargarGesconExcel() {
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'GESCON')
     XLSX.writeFile(wb, `GESCON_Contratos_ASIC_${hoy}.xlsx`)
-    toast.add({ severity: 'success', summary: 'Excel descargado', detail: `${data.length} registros exportados`, life: 2500 })
+    toast.success('Excel descargado', { description: `${data.length} registros exportados`, duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo generar el Excel', detail: e?.message, life: 4000 })
+    toast.error('No se pudo generar el Excel', { description: e?.message, duration: 4000 })
   } finally {
     exportando.value = false
   }
@@ -825,7 +822,6 @@ function confirmarEliminar(row) {
   confirm.require({
     message: `¿Eliminar el registro GESCON "${label}"${planta}? Esta acción no se puede deshacer.`,
     header: 'Confirmar eliminación',
-    icon: 'pi pi-exclamation-triangle',
     acceptSeverity: 'danger',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -833,14 +829,12 @@ function confirmarEliminar(row) {
       try {
         await api.delete(`/asic/${row.id}`)
         rows.value = rows.value.filter(r => r.id !== row.id)
-        toast.add({ severity: 'success', summary: 'Registro eliminado', life: 2000 })
+        toast.success('Registro eliminado', { duration: 2000 })
       } catch (e) {
         const detail = e.response?.data?.detail
-        toast.add({
-          severity: 'error',
-          summary: 'No se puede eliminar',
-          detail: detail || 'Error al eliminar el registro GESCON.',
-          life: 6000,
+        toast.error('No se puede eliminar', {
+          description: detail || 'Error al eliminar el registro GESCON.',
+          duration: 6000,
         })
       }
     },
@@ -1084,11 +1078,9 @@ async function guardar() {
   // Solapamiento de generación sin resolver: bloquea el guardado para no duplicar
   // el aporte de la planta en Cumplimiento.
   if (conflictoNoResuelto.value) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Solapamiento sin resolver',
-      detail: 'Otra planta igual tiene fechas que se cruzan. Marca "Reemplaza anterior" si la sustituye, o define la modalidad ("Compra en bolsa" o "Uso del recurso") si coexiste.',
-      life: 6000,
+    toast.warning('Solapamiento sin resolver', {
+      description: 'Otra planta igual tiene fechas que se cruzan. Marca "Reemplaza anterior" si la sustituye, o define la modalidad ("Compra en bolsa" o "Uso del recurso") si coexiste.',
+      duration: 6000,
     })
     return
   }
@@ -1143,15 +1135,15 @@ async function guardar() {
       if (idx !== -1) rows.value.splice(idx, 1, data)
       else rows.value = [data, ...rows.value]
       rows.value = [...rows.value]
-      toast.add({ severity: 'success', summary: 'Actualizado', detail: 'Contrato ASIC actualizado', life: 3000 })
+      toast.success('Actualizado', { description: 'Contrato ASIC actualizado', duration: 3000 })
     } else {
       const { data } = await api.post('/asic', payload)
       rows.value = [data, ...rows.value]
-      toast.add({ severity: 'success', summary: 'Guardado', detail: 'Contrato ASIC registrado', life: 3000 })
+      toast.success('Guardado', { description: 'Contrato ASIC registrado', duration: 3000 })
     }
     dialogVisible.value = false
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'Error al guardar', life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail || 'Error al guardar', duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -1201,8 +1193,10 @@ async function previewBackfill() {
     backfillReport.value = data
     backfillDialog.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo previsualizar',
-      detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo previsualizar', {
+      description: e.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   } finally {
     backfillLoading.value = false
   }
@@ -1212,14 +1206,18 @@ async function applyBackfill() {
   backfillExecuting.value = true
   try {
     const { data } = await api.post('/asic/backfill-nombre-interno', null, { params: { dry_run: false } })
-    toast.add({ severity: 'success', summary: 'Nombres internos completados',
-      detail: `${data.a_actualizar} registro(s) actualizados.`, life: 4000 })
+    toast.success('Nombres internos completados', {
+      description: `${data.a_actualizar} registro(s) actualizados.`,
+      duration: 4000,
+    })
     backfillDialog.value = false
     backfillReport.value = null
     await cargar()  // recarga la tabla ya con los nombres completos
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'El backfill falló (se revirtió)',
-      detail: e.response?.data?.detail || e.message, life: 7000 })
+    toast.error('El backfill falló (se revirtió)', {
+      description: e.response?.data?.detail || e.message,
+      duration: 7000,
+    })
   } finally {
     backfillExecuting.value = false
   }
@@ -1243,8 +1241,10 @@ async function previewBackfillTerm() {
     backfillTermReport.value = data
     backfillTermDialog.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo previsualizar',
-      detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo previsualizar', {
+      description: e.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   } finally {
     backfillTermLoading.value = false
   }
@@ -1254,15 +1254,19 @@ async function applyBackfillTerm() {
   backfillTermExecuting.value = true
   try {
     const { data } = await api.post('/asic/backfill-terminaciones', null, { params: { dry_run: false } })
-    toast.add({ severity: 'success', summary: 'Terminaciones completadas',
-      detail: `${data.a_actualizar} terminación(es) con datos completados · `
-            + `${data.a_recortar || 0} registro(s) con la fecha estampada.`, life: 5000 })
+    toast.success('Terminaciones completadas', {
+      description: `${data.a_actualizar} terminación(es) con datos completados · `
+            + `${data.a_recortar || 0} registro(s) con la fecha estampada.`,
+      duration: 5000,
+    })
     backfillTermDialog.value = false
     backfillTermReport.value = null
     await cargar()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'El backfill falló (se revirtió)',
-      detail: e.response?.data?.detail || e.message, life: 7000 })
+    toast.error('El backfill falló (se revirtió)', {
+      description: e.response?.data?.detail || e.message,
+      duration: 7000,
+    })
   } finally {
     backfillTermExecuting.value = false
   }

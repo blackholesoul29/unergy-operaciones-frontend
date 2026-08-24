@@ -4,21 +4,21 @@
     <div class="flex items-center gap-3">
       <button type="button" @click="cambiarMes(-1)"
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-        <i class="pi pi-chevron-left text-xs text-gray-500" />
+        <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
       </button>
       <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
         {{ periodoLabel }}
       </span>
       <button type="button" @click="cambiarMes(1)"
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-        <i class="pi pi-chevron-right text-xs text-gray-500" />
+        <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
       </button>
       <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
     </div>
 
     <div v-if="!filas.length"
       class="rounded-xl border border-dashed p-8 text-center" style="border-color:#915BD840">
-      <i class="pi pi-inbox text-2xl mb-2 block" style="color:#c4b5fd"/>
+      <InboxIcon class="text-2xl mb-2 block size-[1em]" style="color:#c4b5fd" />
       <p class="text-sm text-gray-500">No hay proyectos guardados para este período.</p>
       <p class="text-xs text-gray-400 mt-1">Operaciones aún no guardó la selección del mes.</p>
     </div>
@@ -58,7 +58,7 @@
                   class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium cursor-pointer hover:opacity-80"
                   style="background:#dcfce7;color:#166534"
                   @click="toggleFacturado(fila.id)">
-                  <i class="pi pi-check text-[10px]"/>FACTURADO
+                  <CheckIcon class="text-[10px] size-[1em]" />FACTURADO
                 </span>
               </td>
             </tr>
@@ -72,28 +72,28 @@
       <div class="flex items-center justify-between px-4 py-2.5 border-b"
         style="border-color:#F3F0FA;background:#FDFCFF">
         <div class="flex items-center gap-2">
-          <i class="pi pi-file-pdf text-xs" style="color:#915BD8" />
+          <FileTextIcon class="text-xs size-[1em]" style="color:#915BD8" />
           <span class="text-sm font-semibold" style="color:#2C2039">Soporte del período</span>
           <Tag :value="periodoLabel" severity="secondary" class="text-xs font-mono" />
         </div>
         <span v-if="soporte.enlace"
           class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
           style="background:#dcfce7;color:#166534">
-          <i class="pi pi-check text-[10px]"/>Registrado
+          <CheckIcon class="text-[10px] size-[1em]" />Registrado
         </span>
         <span v-else class="text-xs text-gray-400">Pendiente</span>
       </div>
       <div class="px-4 py-3 space-y-2">
         <div v-if="soporte.enlace"
           class="flex items-center gap-3 p-2.5 rounded-lg" style="background:#f0fdf4;border:1px solid #bbf7d0">
-          <i class="pi pi-external-link text-sm flex-shrink-0" style="color:#16a34a"/>
+          <ExternalLinkIcon class="text-sm flex-shrink-0 size-[1em]" style="color:#16a34a" />
           <a :href="soporte.enlace" target="_blank" rel="noopener"
             class="flex-1 text-xs font-medium truncate hover:underline" style="color:#15803d">
             {{ soporte.enlace }}
           </a>
           <button type="button" @click="soporte.enlace = ''; persistSoporte()"
             class="text-gray-400 hover:text-red-500 text-xs">
-            <i class="pi pi-times"/>
+            <XIcon class="size-[1em]" />
           </button>
         </div>
         <p class="text-xs text-gray-500">{{ soporte.enlace ? 'Reemplazar enlace:' : 'Enlace al soporte (Drive, etc.):' }}</p>
@@ -107,7 +107,7 @@
             style="background:#915BD8;color:#fff;border:none"
             :style="!nuevoEnlace.startsWith('http') ? 'opacity:0.4;cursor:not-allowed' : 'cursor:pointer'"
             @click="guardarSoporte">
-            <i class="pi pi-save text-xs"/>Guardar
+            <SaveIcon class="text-xs size-[1em]" />Guardar
           </button>
         </div>
       </div>
@@ -120,6 +120,7 @@
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import Tag from 'primevue/tag'
 import api from '~/core/client'
+import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, ExternalLinkIcon, FileTextIcon, InboxIcon, SaveIcon, XIcon } from '@lucide/vue'
 
 const hoy           = new Date()
 const periodoOffset = ref(0)

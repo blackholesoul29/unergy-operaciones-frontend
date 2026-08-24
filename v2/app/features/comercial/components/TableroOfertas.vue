@@ -44,8 +44,9 @@
               <span v-if="resumen(col).alertas" style="color:#D64455">⚠ {{ resumen(col).alertas }}</span>
             </div>
           </div>
-          <Button v-if="col.value === 'cerradas'" icon="pi pi-times" text rounded size="small"
-                  v-tooltip.left="'Colapsar'" @click="cerradasAbierta = false" />
+          <Button v-if="col.value === 'cerradas'" text rounded size="small" v-tooltip.left="'Colapsar'" @click="cerradasAbierta = false">
+            <template #icon><XIcon class="size-[1em]" /></template>
+          </Button>
         </div>
 
         <div class="p-2 flex flex-col gap-2 overflow-y-auto flex-1">
@@ -90,7 +91,7 @@
               <span v-if="of.seguimientos" :class="alarmante(of) ? 'font-semibold' : ''"
                     :style="{ color: alarmante(of) ? '#D64455' : '#9b89b5' }"
                     v-tooltip.top="'Toques enviados al cliente'">
-                <i class="pi pi-send" style="font-size:9px" /> {{ of.seguimientos }}
+                <SendIcon class="size-[1em]" style="font-size:9px" /> {{ of.seguimientos }}
               </span>
               <span v-if="sinRespuesta(of)" style="color:#D64455">sin respuesta</span>
             </div>
@@ -109,6 +110,7 @@
 import { ref } from 'vue'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
+import { SendIcon, XIcon } from '@lucide/vue'
 import {
   COLUMNAS, colorEtapa, labelTipo, segmentoTipo, mwhMes, fmtMwh,
   sinRespuesta, alarmante, resumenColumna,

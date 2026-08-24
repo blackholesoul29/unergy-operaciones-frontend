@@ -3,7 +3,7 @@
 
     <!-- ══ TAB BAR ══════════════════════════════════════════════════════════ -->
     <div class="mon-tab-bar">
-      <i class="pi pi-credit-card text-sm" style="color:#915BD8" />
+      <CreditCardIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Costos</span>
       <div class="mon-tab-group">
         <button
@@ -13,7 +13,7 @@
           :class="{ 'mon-tab--active': activeTab === i }"
           @click="activeTab = i"
         >
-          <i :class="tab.icon" style="font-size:12px" />
+          <component :is="tab.icon" class="size-[1em]" style="font-size:12px" />
           {{ tab.label }}
         </button>
       </div>
@@ -22,9 +22,9 @@
       <div class="flex items-center gap-2 ml-auto">
         <input type="month" v-model="exportPeriodo"
           class="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-200" />
-        <Button label="Descargar Excel" icon="pi pi-file-excel" size="small"
-          :loading="exportando" @click="onExportExcel"
-          style="background:#915BD8;border-color:#915BD8" />
+        <Button label="Descargar Excel" size="small" :loading="exportando" @click="onExportExcel" style="background:#915BD8;border-color:#915BD8">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -36,7 +36,7 @@
         <!-- Header del panel — NO sticky, no hereda mon-tab-bar -->
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <i class="pi pi-calculator text-sm" style="color:#915BD8" />
+            <CalculatorIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <span class="text-sm font-semibold" style="color:#2C2039">Panel O&amp;M Mensual</span>
           </div>
           <div class="mon-tab-group">
@@ -47,7 +47,7 @@
               :class="{ 'mon-tab--active': activeSubTabOM === i }"
               @click="activeSubTabOM = i"
             >
-              <i :class="tab.icon" style="font-size:12px" />
+              <component :is="tab.icon" class="size-[1em]" style="font-size:12px" />
               {{ tab.label }}
             </button>
           </div>
@@ -72,7 +72,7 @@
 
       <!-- ── 3. Selector de proyecto ────────────────────────────────────── -->
       <div class="costos-selector-bar">
-        <i class="pi pi-bolt text-sm flex-shrink-0" style="color:#915BD8" />
+        <ZapIcon class="text-sm flex-shrink-0 size-[1em]" style="color:#915BD8" />
         <span class="text-sm font-semibold whitespace-nowrap" style="color:#2C2039">Proyecto</span>
         <Select
           v-model="proyectoSeleccionado"
@@ -95,7 +95,7 @@
 
       <!-- ── 4. Contenido del proyecto ─────────────────────────────────── -->
       <div v-if="loadingContrato" class="flex justify-center py-10">
-        <i class="pi pi-spin pi-spinner" style="font-size:1.5rem; color:#915BD8;" />
+        <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.5rem; color:#915BD8;" />
       </div>
 
       <div v-else-if="proyectoSeleccionado" class="space-y-4 mt-3">
@@ -110,14 +110,13 @@
         <div class="rounded-xl border bg-white overflow-hidden" style="border-color:#ECE7F2">
           <div class="flex items-center justify-between px-4 py-2.5 border-b" style="border-color:#F3F0FA">
             <div class="flex items-center gap-2">
-              <i class="pi pi-upload text-xs" style="color:#915BD8" />
+              <UploadIcon class="text-xs size-[1em]" style="color:#915BD8" />
               <span class="text-sm font-semibold" style="color:#2C2039">Cargar factura</span>
             </div>
             <button type="button"
               class="text-xs flex items-center gap-1 text-gray-400 hover:text-purple-600 transition-colors"
               @click="showCargarFactura = !showCargarFactura">
-              <i class="pi pi-chevron-down text-[10px] transition-transform duration-200"
-                :style="showCargarFactura ? 'transform:rotate(180deg)' : ''" />
+              <ChevronDownIcon class="text-[10px] transition-transform duration-200 size-[1em]" :style="showCargarFactura ? 'transform:rotate(180deg)' : ''" />
               {{ showCargarFactura ? 'Ocultar' : 'Mostrar' }}
             </button>
           </div>
@@ -181,7 +180,7 @@
               <div class="flex flex-col gap-1">
                 <label class="text-xs font-medium text-gray-500">Archivo (PDF / imagen)</label>
                 <label class="flex items-center gap-2 text-sm border border-dashed border-gray-300 rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-purple-400 transition-colors">
-                  <i class="pi pi-paperclip text-xs text-gray-400" />
+                  <PaperclipIcon class="text-xs text-gray-400 size-[1em]" />
                   <span class="text-xs text-gray-400 truncate">
                     {{ facturaForm.archivo ? facturaForm.archivo.name : 'Seleccionar archivo…' }}
                   </span>
@@ -216,11 +215,12 @@
                 style="background:#915BD8;color:#fff;border:none;cursor:pointer"
                 :style="!puedeGuardarFactura || guardandoFactura ? 'cursor:not-allowed' : 'cursor:pointer'"
                 @click="guardarFactura">
-                <i :class="guardandoFactura ? 'pi pi-spin pi-spinner' : 'pi pi-check'" class="text-xs" />
+                <LoaderCircleIcon v-if="guardandoFactura" class="text-xs size-[1em] animate-spin" />
+                <CheckIcon v-else class="text-xs size-[1em]" />
                 {{ guardandoFactura ? 'Guardando…' : 'Guardar factura' }}
               </button>
               <span v-if="facturaOk" class="text-xs text-green-600 flex items-center gap-1">
-                <i class="pi pi-check-circle text-xs" />Factura registrada
+                <CircleCheckIcon class="text-xs size-[1em]" />Factura registrada
               </span>
             </div>
           </div>
@@ -235,7 +235,7 @@
       <div class="om-panel-card">
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <i class="pi pi-building text-sm" style="color:#915BD8" />
+            <BuildingIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <span class="text-sm font-semibold" style="color:#2C2039">Panel Arriendos Mensual</span>
           </div>
           <div class="mon-tab-group">
@@ -246,7 +246,7 @@
               :class="{ 'mon-tab--active': activeSubTabArr === i }"
               @click="activeSubTabArr = i"
             >
-              <i :class="tab.icon" style="font-size:12px" />
+              <component :is="tab.icon" class="size-[1em]" style="font-size:12px" />
               {{ tab.label }}
             </button>
           </div>
@@ -263,7 +263,7 @@
       <div class="om-panel-card">
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <i class="pi pi-wifi text-sm" style="color:#915BD8" />
+            <WifiIcon class="text-sm size-[1em]" style="color:#915BD8" />
             <span class="text-sm font-semibold" style="color:#2C2039">Starlink — Procesador de facturas PDF</span>
           </div>
         </div>
@@ -285,7 +285,7 @@
 import { ref, computed, onMounted } from 'vue'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { generarExcelCostos } from './costosExcelExport.js'
 import FacturasMantenimiento from '~/features/contratos/components/FacturasMantenimiento.vue'
@@ -295,27 +295,27 @@ import ArriendosOperaciones  from './ArriendosOperaciones.vue'
 import ArriendosInfo          from './ArriendosInfo.vue'
 import StarlinkPDF            from './StarlinkPDF.vue'
 import MandatosOperaciones    from './MandatosOperaciones.vue'
+import { BuildingIcon, CalculatorIcon, CheckIcon, ChevronDownIcon, CircleCheckIcon, CreditCardIcon, FileCheckIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon, PaperclipIcon, TableIcon, TruckIcon, UploadIcon, UsersIcon, WifiIcon, WrenchIcon, ZapIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 const SUBTABS_OM = [
-  { label: 'Operaciones', icon: 'pi pi-users' },
-  { label: 'Proveedor',   icon: 'pi pi-truck' },
+  { label: 'Operaciones', icon: UsersIcon },
+  { label: 'Proveedor',   icon: TruckIcon },
 ]
 const activeSubTabOM = ref(0)
 
 const SUBTABS_ARR = [
-  { label: 'Panel',       icon: 'pi pi-table' },
-  { label: 'Información', icon: 'pi pi-info-circle' },
+  { label: 'Panel',       icon: TableIcon },
+  { label: 'Información', icon: InfoIcon },
 ]
 const activeSubTabArr = ref(0)
 
 
 const TABS = [
-  { label: 'Mantenimiento',         icon: 'pi pi-wrench' },
-  { label: 'Arriendos',             icon: 'pi pi-building' },
-  { label: 'Servicios de Internet', icon: 'pi pi-wifi' },
-  { label: 'Mandatos',              icon: 'pi pi-file-check' },
+  { label: 'Mantenimiento',         icon: WrenchIcon },
+  { label: 'Arriendos',             icon: BuildingIcon },
+  { label: 'Servicios de Internet', icon: WifiIcon },
+  { label: 'Mandatos',              icon: FileCheckIcon },
 ]
 const activeTab = ref(0)
 
@@ -341,26 +341,30 @@ async function onExportExcel() {
       const detalle = nombres.length > 5
         ? `${nombres.slice(0, 5).join(', ')} y ${nombres.length - 5} más`
         : nombres.join(', ')
-      toast.add({
-        severity: 'error',
-        summary: 'Hay sitios de Internet sin asignar',
-        detail: `Asigna primero: ${detalle}`,
-        life: 6000,
+      toast.error('Hay sitios de Internet sin asignar', {
+        description: `Asigna primero: ${detalle}`,
+        duration: 6000,
       })
       return
     }
 
     const res = await generarExcelCostos(exportPeriodo.value)
     if (!res.filas) {
-      toast.add({ severity: 'warn', summary: 'Sin datos para exportar',
-        detail: 'Ningún proyecto seleccionado en Mantenimiento o Arriendos para ese mes.', life: 4000 })
+      toast.warning('Sin datos para exportar', {
+        description: 'Ningún proyecto seleccionado en Mantenimiento o Arriendos para ese mes.',
+        duration: 4000,
+      })
     } else {
-      toast.add({ severity: 'success', summary: 'Excel generado',
-        detail: `${res.proyectos} proyectos · ${res.filas} filas`, life: 3000 })
+      toast.success('Excel generado', {
+        description: `${res.proyectos} proyectos · ${res.filas} filas`,
+        duration: 3000,
+      })
     }
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al generar el Excel',
-      detail: err?.message ?? 'Revisa la consola', life: 5000 })
+    toast.error('Error al generar el Excel', {
+      description: err?.message ?? 'Revisa la consola',
+      duration: 5000,
+    })
   } finally {
     exportando.value = false
   }
@@ -438,7 +442,7 @@ async function guardarFactura() {
     }
     setTimeout(() => { facturaOk.value = false }, 4000)
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al guardar la factura', life: 3000 })
+    toast.error('Error al guardar la factura', { duration: 3000 })
   } finally {
     guardandoFactura.value = false
   }
@@ -539,7 +543,7 @@ async function onProyectoChange() {
   transition: all .15s;
   white-space: nowrap;
 }
-.mon-tab i { font-size: 12px; }
+.mon-tab svg { font-size: 12px; }
 .mon-tab:hover:not(.mon-tab--active) { color: #2C2039; background: rgba(145,91,216,.08); }
 .mon-tab--active {
   background: #915BD8;

@@ -2,20 +2,20 @@
   <div class="mf-root">
     <!-- TOP BAR -->
     <header class="mf-topbar">
-      <span class="mf-brand"><i class="pi pi-wrench" /> Fallas</span>
+      <span class="mf-brand"><WrenchIcon class="size-[1em]" /> Fallas</span>
       <button class="mf-icon-btn mf-bell" @click="notifOpen = true" title="Notificaciones">
-        <i class="pi pi-bell" />
+        <BellIcon class="size-[1em]" />
         <span v-if="unreadCount > 0" class="mf-bell-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
       </button>
-      <button class="mf-icon-btn mf-add" @click="createOpen = true" title="Registrar falla"><i class="pi pi-plus" /></button>
+      <button class="mf-icon-btn mf-add" @click="createOpen = true" title="Registrar falla"><PlusIcon class="size-[1em]" /></button>
     </header>
 
     <!-- FILTROS -->
     <div class="mf-filters">
       <div class="mf-search">
-        <i class="pi pi-search" />
+        <SearchIcon class="size-[1em]" />
         <input v-model="search" placeholder="Buscar código, descripción, proyecto…" />
-        <i v-if="search" class="pi pi-times mf-clear" @click="search = ''" />
+        <XIcon class="mf-clear size-[1em]" v-if="search" @click="search = ''" />
       </div>
       <div class="mf-chips">
         <button :class="['mf-fchip', filtro === 'activas' && 'mf-fchip--on']" @click="filtro = 'activas'">Activas</button>
@@ -30,11 +30,11 @@
 
     <!-- LISTA -->
     <main class="mf-list">
-      <div v-if="loading" class="mf-state"><i class="pi pi-spin pi-spinner" /> Cargando fallas…</div>
+      <div v-if="loading" class="mf-state"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando fallas…</div>
       <div v-else-if="!filtradas.length" class="mf-state">
-        <i class="pi pi-check-circle" style="font-size:34px;color:#22c55e" />
+        <CircleCheckIcon class="size-[1em]" style="font-size:34px;color:#22c55e" />
         <span>{{ fallas.length ? 'Sin resultados con estos filtros' : 'No hay fallas registradas' }}</span>
-        <button class="mf-empty-add" @click="createOpen = true"><i class="pi pi-plus" /> Registrar falla</button>
+        <button class="mf-empty-add" @click="createOpen = true"><PlusIcon class="size-[1em]" /> Registrar falla</button>
       </div>
       <template v-else>
         <button v-for="f in filtradas" :key="f.id" class="mf-card" @click="openDetail(f)">
@@ -45,7 +45,7 @@
               <span class="mf-card-estado" :style="{ background: (f.estado?.color_hex || '#915BD8') + '22', color: f.estado?.color_hex || '#915BD8' }">{{ f.estado?.etiqueta }}</span>
             </div>
             <div class="mf-card-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</div>
-            <div class="mf-card-proj"><i class="pi pi-bolt" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
+            <div class="mf-card-proj"><ZapIcon class="size-[1em]" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
             <div class="mf-card-foot">
               <span class="mf-prio" :style="{ color: f.prioridad?.color_hex || '#6b5a8a' }">{{ f.prioridad?.etiqueta }}</span>
               <span class="mf-time">{{ relativeTime(f.fecha_identificacion) }}</span>
@@ -73,6 +73,8 @@ import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.v
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
 import FallaCreateSheet from '~/features/mobile/components/components/FallaCreateSheet.vue'
 import NotificationsSheet from '~/features/mobile/components/components/NotificationsSheet.vue'
+import { BellIcon, CircleCheckIcon, LoaderCircleIcon, PlusIcon, SearchIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 
 const fallas = ref([])
 const catalogos = reactive({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
@@ -146,7 +148,7 @@ async function cargar() {
     usuarios.value = usr.data.items ?? []
     await cargarFallas()
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'Error al cargar', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error al cargar', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     loading.value = false
   }
@@ -194,7 +196,7 @@ onMounted(() => { cargar(); fetchUnread() })
   background: #2C2039; color: #fff;
 }
 .mf-brand { flex: 1; font-size: clamp(15px, 4vw, 17px); font-weight: 700; }
-.mf-brand .pi { color: #F6FF72; margin-right: 6px; }
+.mf-brand svg { color: #F6FF72; margin-right: 6px; }
 .mf-icon-btn { width: 36px; height: 36px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; position: relative; }
 .mf-add { background: #915BD8; }
 .mf-bell-badge {
@@ -206,7 +208,7 @@ onMounted(() => { cargar(); fetchUnread() })
 /* Filtros */
 .mf-filters { flex-shrink: 0; background: #fff; padding: 12px 14px; border-bottom: 1px solid #eceaf2; }
 .mf-search { display: flex; align-items: center; gap: 9px; background: #f5f3fa; border-radius: 12px; padding: 11px 14px; }
-.mf-search .pi-search { color: #9ca3af; font-size: 15px; }
+.mf-search svg { color: #9ca3af; font-size: 15px; }
 .mf-search input { flex: 1; border: none; background: none; outline: none; font-size: 16px; color: #2C2039; }
 .mf-clear { color: #9ca3af; }
 .mf-chips { display: flex; gap: 8px; margin-top: 11px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
@@ -216,7 +218,7 @@ onMounted(() => { cargar(); fetchUnread() })
 /* Lista */
 .mf-list { flex: 1; overflow-y: auto; padding: 12px 14px; -webkit-overflow-scrolling: touch; }
 .mf-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; color: #6b5a8a; font-size: 15px; text-align: center; }
-.mf-state .pi-spinner { font-size: 26px; color: #915BD8; }
+.mf-state svg { font-size: 26px; color: #915BD8; }
 .mf-empty-add { margin-top: 6px; display: flex; align-items: center; gap: 8px; padding: 11px 20px; border: none; border-radius: 12px; background: #915BD8; color: #fff; font-weight: 700; font-size: 15px; }
 
 .mf-card {
@@ -230,7 +232,7 @@ onMounted(() => { cargar(); fetchUnread() })
 .mf-card-estado { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 7px; }
 .mf-card-tipo { font-size: 14px; font-weight: 700; color: #2C2039; line-height: 1.25; }
 .mf-card-proj { font-size: 12.5px; color: #6b5a8a; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
-.mf-card-proj .pi { font-size: 11px; color: #915BD8; }
+.mf-card-proj svg { font-size: 11px; color: #915BD8; }
 .mf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
 .mf-prio { font-size: 12.5px; font-weight: 700; }
 .mf-time { font-size: 12px; color: #9ca3af; }

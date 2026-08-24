@@ -3,10 +3,12 @@
     <!-- Header -->
     <PageHeader title="Fronteras Comerciales" :subtitle="`${filteredFronteras.length} fronteras registradas`">
       <template #actions>
-        <Button icon="pi pi-file-excel" label="Descargar Excel" size="small" severity="secondary" outlined
-                @click="descargarExcel" />
-        <Button icon="pi pi-plus" label="Nueva Frontera" size="small"
-                @click="abrirCrear" />
+        <Button label="Descargar Excel" size="small" severity="secondary" outlined @click="descargarExcel">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Nueva Frontera" size="small" @click="abrirCrear">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -18,7 +20,7 @@
       <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
         <span class="p-input-icon-left">
-          <i class="pi pi-search" />
+          <SearchIcon class="size-[1em]" />
           <InputText v-model="search" placeholder="Buscar frontera..." class="w-48" />
         </span>
       </div>
@@ -68,7 +70,7 @@
     <div v-if="pendientesQuoia.length" class="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
          style="background: rgba(214,68,85,0.06); border: 1.5px solid rgba(214,68,85,0.25);">
       <span class="text-sm font-medium" style="color: #D64455;">
-        <i class="pi pi-exclamation-triangle text-xs mr-1.5" />
+        <TriangleAlertIcon class="text-xs mr-1.5 size-[1em]" />
         {{ pendientesQuoia.length }} {{ pendientesQuoia.length === 1 ? 'frontera nueva detectada' : 'fronteras nuevas detectadas' }} en Quoia, sin registrar aquí
       </span>
       <Button label="Revisar" size="small" text style="color: #D64455;" @click="abrirPendientes" />
@@ -76,7 +78,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
     </div>
 
     <!-- Table -->
@@ -144,10 +146,12 @@
         <Column field="municipio" header="Municipio" sortable style="min-width: 130px" />
         <Column header="" style="width: 90px">
           <template #body="{ data }">
-            <Button icon="pi pi-pencil" text rounded size="small" severity="secondary"
-              @click="editFrontera(data)" v-tooltip="'Editar'" />
-            <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-              @click="deleteFrontera(data)" v-tooltip="'Eliminar'" />
+            <Button text rounded size="small" severity="secondary" @click="editFrontera(data)" v-tooltip="'Editar'">
+              <template #icon><PencilIcon class="size-[1em]" /></template>
+            </Button>
+            <Button text rounded size="small" severity="danger" @click="deleteFrontera(data)" v-tooltip="'Eliminar'">
+              <template #icon><Trash2Icon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
       </DataTable>
@@ -311,7 +315,7 @@
         o ignóralas si no aplican.
       </p>
       <div v-if="loadingPendientes" class="flex items-center justify-center py-8">
-        <i class="pi pi-spin pi-spinner text-2xl" style="color: #915BD8;" />
+        <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: #915BD8;" />
       </div>
       <div v-else-if="!pendientesQuoia.length" class="text-center py-8 text-sm" style="color: #9b89b5;">
         No hay fronteras pendientes por revisar.
@@ -325,11 +329,12 @@
           </div>
           <Dropdown v-model="p._proyectoId" :options="proyectosAll" optionLabel="nombre_comercial" optionValue="id"
             placeholder="Proyecto..." filter showClear class="w-64" />
-          <Button icon="pi pi-check" label="Agregar" size="small"
-            :loading="p._loading === 'confirmar'" :disabled="!p._proyectoId"
-            @click="confirmarPendiente(p)" style="background: #915BD8; border-color: #915BD8;" />
-          <Button icon="pi pi-times" text severity="secondary" size="small"
-            :loading="p._loading === 'ignorar'" @click="ignorarPendiente(p)" v-tooltip="'Ignorar'" />
+          <Button label="Agregar" size="small" :loading="p._loading === 'confirmar'" :disabled="!p._proyectoId" @click="confirmarPendiente(p)" style="background: #915BD8; border-color: #915BD8;">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
+          <Button text severity="secondary" size="small" :loading="p._loading === 'ignorar'" @click="ignorarPendiente(p)" v-tooltip="'Ignorar'">
+            <template #icon><XIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </Dialog>
@@ -339,7 +344,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import api from '~/core/client'
 import DataTable from 'primevue/datatable'
@@ -352,8 +357,8 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { formatearNombre } from '~/utils/nombreFormato'
 import { exportarExcel } from '~/utils/exportarExcel'
+import { CheckIcon, FileSpreadsheetIcon, LoaderCircleIcon, PencilIcon, PlusIcon, SearchIcon, Trash2Icon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 
-const toast = useToast()
 const confirm = useConfirm()
 
 const route = useRoute()
@@ -571,11 +576,11 @@ async function saveFrontera() {
   saving.value = true
   try {
     await api.patch(`/fronteras/${editingFrontera.value.id}`, editForm.value)
-    toast.add({ severity: 'success', summary: 'Frontera actualizada', life: 2000 })
+    toast.success('Frontera actualizada', { duration: 2000 })
     showEdit.value = false
     await loadData()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'Error al guardar', life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail || 'Error al guardar', duration: 4000 })
   } finally {
     saving.value = false
   }
@@ -595,7 +600,7 @@ async function crearFrontera() {
   const body = { ...createForm.value, codigo_frontera: createForm.value.codigo_frontera || null }
   try {
     await api.post('/fronteras', body)
-    toast.add({ severity: 'success', summary: 'Frontera creada', life: 2500 })
+    toast.success('Frontera creada', { duration: 2500 })
     showCreate.value = false
     await loadData()
   } catch (e) {
@@ -608,7 +613,10 @@ async function crearFrontera() {
       duplicadoVisible.value = true
       return
     }
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo crear la frontera', life: 4000 })
+    toast.error('Error', {
+      description: typeof detail === 'string' ? detail : 'No se pudo crear la frontera',
+      duration: 4000,
+    })
   } finally {
     creating.value = false
   }
@@ -618,13 +626,16 @@ async function crearFronteraForzado() {
   forzando.value = true
   try {
     await api.post('/fronteras', pendingCreatePayload.value, { params: { forzar: true } })
-    toast.add({ severity: 'success', summary: 'Frontera creada', life: 2500 })
+    toast.success('Frontera creada', { duration: 2500 })
     duplicadoVisible.value = false
     showCreate.value = false
     await loadData()
   } catch (e) {
     const detail = e.response?.data?.detail
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo crear la frontera', life: 4000 })
+    toast.error('Error', {
+      description: typeof detail === 'string' ? detail : 'No se pudo crear la frontera',
+      duration: 4000,
+    })
   } finally {
     forzando.value = false
   }
@@ -634,16 +645,15 @@ function deleteFrontera(f) {
   confirm.require({
     message: `¿Eliminar la frontera ${f.codigo_frontera}? Esta acción no se puede deshacer.`,
     header: 'Confirmar eliminación',
-    icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancelar', severity: 'secondary' },
     acceptProps: { label: 'Eliminar', severity: 'danger' },
     accept: async () => {
       try {
         await api.delete(`/fronteras/${f.id}`)
-        toast.add({ severity: 'success', summary: 'Frontera eliminada', life: 2000 })
+        toast.success('Frontera eliminada', { duration: 2000 })
         await loadData()
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'Error al eliminar', life: 4000 })
+        toast.error('Error', { description: e.response?.data?.detail || 'Error al eliminar', duration: 4000 })
       }
     },
   })
@@ -698,10 +708,13 @@ async function confirmarPendiente(p) {
   try {
     await api.post(`/fronteras/quoia/pendientes/${p.frt_code}/confirmar`, { proyecto_id: p._proyectoId })
     pendientesQuoia.value = pendientesQuoia.value.filter(x => x.frt_code !== p.frt_code)
-    toast.add({ severity: 'success', summary: 'Frontera agregada', life: 2500 })
+    toast.success('Frontera agregada', { duration: 2500 })
     await loadData()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo agregar la frontera', life: 4000 })
+    toast.error('Error', {
+      description: e.response?.data?.detail || 'No se pudo agregar la frontera',
+      duration: 4000,
+    })
   } finally {
     p._loading = null
   }
@@ -711,7 +724,6 @@ function ignorarPendiente(p) {
   confirm.require({
     message: `¿Ignorar "${p.nombre_quoia}" (${p.frt_code})? No volverá a aparecer como pendiente.`,
     header: 'Ignorar frontera de Quoia',
-    icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancelar', severity: 'secondary' },
     acceptProps: { label: 'Ignorar', severity: 'danger' },
     accept: async () => {
@@ -719,9 +731,9 @@ function ignorarPendiente(p) {
       try {
         await api.post(`/fronteras/quoia/pendientes/${p.frt_code}/ignorar`, {})
         pendientesQuoia.value = pendientesQuoia.value.filter(x => x.frt_code !== p.frt_code)
-        toast.add({ severity: 'success', summary: 'Ignorada', life: 2000 })
+        toast.success('Ignorada', { duration: 2000 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo ignorar', life: 4000 })
+        toast.error('Error', { description: 'No se pudo ignorar', duration: 4000 })
       } finally {
         p._loading = null
       }

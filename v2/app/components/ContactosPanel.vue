@@ -8,7 +8,7 @@
     <div v-for="tipo in TIPOS" :key="tipo.value" class="rounded-xl p-4 space-y-2" style="background:#f9f7ff;border:1.5px solid #e8e0f0;">
       <div class="flex items-center justify-between">
         <p class="text-xs font-bold uppercase tracking-wide flex items-center gap-2" style="color:#915BD8;">
-          <i :class="tipo.icon + ' text-xs'" />{{ tipo.label }}
+          <component :is="tipo.icon" class="text-xs size-[1em]" />{{ tipo.label }}
           <span v-if="porTipo[tipo.value].length" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:#f0ebfd;color:#915BD8;">
             {{ porTipo[tipo.value].length }}
           </span>
@@ -16,7 +16,7 @@
         <button v-if="nuevoTipo !== tipo.value" type="button" @click="nuevoTipo = tipo.value; nuevo = { email: '', nombre: '', telefono: '' }"
           class="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
           style="background:#915BD8;color:#fff;">
-          <i class="pi pi-plus text-xs" /> Agregar
+          <PlusIcon class="text-xs size-[1em]" /> Agregar
         </button>
       </div>
 
@@ -30,14 +30,14 @@
           class="flex-1 min-w-32 px-3 py-2 text-sm rounded-lg outline-none"
           style="border:1.5px solid #e8e0f0;background:#fff;" />
         <div class="flex-[2] min-w-48 relative">
-          <i class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color: #9b89b5;" />
+          <MailIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-xs size-[1em]" style="color: #9b89b5;" />
           <input v-model="c.email" type="email" placeholder="correo@empresa.com"
             @blur="guardarContacto(c)"
             class="w-full pl-8 pr-3 py-2 text-sm rounded-lg outline-none transition-colors"
             :style="emailValido(c.email) ? 'border:1.5px solid #e8e0f0;background:#fff;' : 'border:1.5px solid #fca5a5;background:#fff5f5;'" />
         </div>
         <div class="flex-1 min-w-36 relative">
-          <i class="pi pi-phone absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color: #9b89b5;" />
+          <PhoneIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-xs size-[1em]" style="color: #9b89b5;" />
           <input v-model="c.telefono" type="text" placeholder="Teléfono"
             @blur="guardarContacto(c)"
             class="w-full pl-8 pr-3 py-2 text-sm rounded-lg outline-none"
@@ -46,11 +46,11 @@
         <button type="button" @click="enviarPrueba(c.email)" :disabled="!emailValido(c.email)"
           title="Enviar correo de prueba"
           class="p-1.5 rounded-lg transition-colors hover:bg-gray-50 disabled:opacity-40">
-          <i class="pi pi-send text-xs" style="color: #915BD8;" />
+          <SendIcon class="text-xs size-[1em]" style="color: #915BD8;" />
         </button>
         <button type="button" @click="eliminarContacto(c)"
           class="p-1.5 rounded-lg transition-colors hover:bg-red-50">
-          <i class="pi pi-trash text-xs" style="color: #ef4444;" />
+          <Trash2Icon class="text-xs size-[1em]" style="color: #ef4444;" />
         </button>
       </div>
 
@@ -60,24 +60,24 @@
           class="flex-1 min-w-32 px-3 py-2 text-sm rounded-lg outline-none"
           style="border:1.5px solid #e8e0f0;background:#fff;" />
         <div class="flex-[2] min-w-48 relative">
-          <i class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color: #9b89b5;" />
+          <MailIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-xs size-[1em]" style="color: #9b89b5;" />
           <input v-model="nuevo.email" type="email" placeholder="correo@empresa.com" autofocus
             @keyup.enter="crearContacto"
             class="w-full pl-8 pr-3 py-2 text-sm rounded-lg outline-none transition-colors"
             style="border:1.5px solid #e8e0f0;background:#fff;" />
         </div>
         <div class="flex-1 min-w-36 relative">
-          <i class="pi pi-phone absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color: #9b89b5;" />
+          <PhoneIcon class="absolute left-3 top-1/2 -translate-y-1/2 text-xs size-[1em]" style="color: #9b89b5;" />
           <input v-model="nuevo.telefono" type="text" placeholder="Teléfono"
             @keyup.enter="crearContacto"
             class="w-full pl-8 pr-3 py-2 text-sm rounded-lg outline-none"
             style="border:1.5px solid #e8e0f0;background:#fff;" />
         </div>
         <button type="button" @click="crearContacto" class="p-1.5 rounded-lg hover:bg-green-50">
-          <i class="pi pi-check text-xs" style="color: #16a34a;" />
+          <CheckIcon class="text-xs size-[1em]" style="color: #16a34a;" />
         </button>
         <button type="button" @click="nuevoTipo = null; nuevo = null" class="p-1.5 rounded-lg hover:bg-gray-50">
-          <i class="pi pi-times text-xs" style="color: #9b89b5;" />
+          <XIcon class="text-xs size-[1em]" style="color: #9b89b5;" />
         </button>
       </div>
     </div>
@@ -86,11 +86,11 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
+import { BookIcon, BriefcaseIcon, CalculatorIcon, CheckIcon, MailIcon, PhoneIcon, PlusIcon, SendIcon, SettingsIcon, Trash2Icon, XIcon, ZapIcon } from '@lucide/vue'
 
 const props = defineProps({ clienteId: { type: [Number, String], required: true } })
-const toast = useToast()
 const contactos = ref([])
 const nuevoTipo = ref(null)
 const nuevo = ref(null)
@@ -98,11 +98,11 @@ const nuevo = ref(null)
 // Orden pedido por Operaciones: Liquidaciones, Operaciones, Comercial, CGM, Contable.
 // El valor 'operacional' se conserva (dato existente) aunque se etiquete "Operaciones".
 const TIPOS = [
-  { value: 'liquidacion', label: 'Liquidaciones', icon: 'pi pi-calculator' },
-  { value: 'operacional', label: 'Operaciones', icon: 'pi pi-cog' },
-  { value: 'comercial', label: 'Comercial', icon: 'pi pi-briefcase' },
-  { value: 'cgm', label: 'CGM', icon: 'pi pi-bolt' },
-  { value: 'contable', label: 'Contable', icon: 'pi pi-book' },
+  { value: 'liquidacion', label: 'Liquidaciones', icon: CalculatorIcon },
+  { value: 'operacional', label: 'Operaciones', icon: SettingsIcon },
+  { value: 'comercial', label: 'Comercial', icon: BriefcaseIcon },
+  { value: 'cgm', label: 'CGM', icon: ZapIcon },
+  { value: 'contable', label: 'Contable', icon: BookIcon },
 ]
 
 const porTipo = computed(() => {
@@ -136,7 +136,10 @@ async function crearContacto() {
     nuevoTipo.value = null
     nuevo.value = null
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo agregar el contacto', life: 4000 })
+    toast.error('Error', {
+      description: e.response?.data?.detail || 'No se pudo agregar el contacto',
+      duration: 4000,
+    })
   }
 }
 
@@ -149,7 +152,10 @@ async function guardarContacto(contacto) {
       telefono: contacto.telefono?.trim() || null,
     })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo guardar el contacto', life: 4000 })
+    toast.error('Error', {
+      description: e.response?.data?.detail || 'No se pudo guardar el contacto',
+      duration: 4000,
+    })
     cargar()
   }
 }
@@ -159,7 +165,7 @@ async function eliminarContacto(contacto) {
     await api.delete(`/clientes/${props.clienteId}/contactos/${contacto.id}`)
     contactos.value = contactos.value.filter(c => c.id !== contacto.id)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo eliminar el contacto', life: 4000 })
+    toast.error('Error', { description: 'No se pudo eliminar el contacto', duration: 4000 })
   }
 }
 
@@ -167,9 +173,9 @@ async function enviarPrueba(email) {
   if (!emailValido(email)) return
   try {
     await api.post(`/clientes/${props.clienteId}/test-correo`, { email })
-    toast.add({ severity: 'success', summary: 'Correo de prueba enviado', detail: `✓ Enviado a ${email}`, life: 4000 })
+    toast.success('Correo de prueba enviado', { description: `✓ Enviado a ${email}`, duration: 4000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al enviar', detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('Error al enviar', { description: e.response?.data?.detail || e.message, duration: 5000 })
   }
 }
 

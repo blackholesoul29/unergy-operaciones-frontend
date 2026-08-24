@@ -2,7 +2,9 @@
   <div class="space-y-4" :class="{ 'p-4 sm:p-5': embedded }">
     <PageHeader v-if="!embedded" title="Liquidaciones">
       <template #actions>
-        <Button label="Nueva liquidación" icon="pi pi-plus" size="small" @click="dialogNueva = true" />
+        <Button label="Nueva liquidación" size="small" @click="dialogNueva = true">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -12,7 +14,7 @@
       <RouterLink v-if="tipoLabel" to="/liquidaciones?tab=proyectos"
         class="text-xs hover:underline" style="color:#9b8fb0;">Ver todos</RouterLink>
       <IconField>
-        <InputIcon class="pi pi-search" />
+        <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
         <InputText v-model="q" placeholder="Buscar proyecto…" class="w-56" />
       </IconField>
       <Select v-model="estadoFiltro" :options="ESTADO_OPCIONES" optionLabel="label" optionValue="value"
@@ -20,7 +22,9 @@
       <span class="text-[11px] ml-auto" style="color:#9b8fb0">
         Espejo del Panel Contable · edición en Panel Contable
       </span>
-      <Button label="Nueva liquidación" icon="pi pi-plus" size="small" @click="dialogNueva = true" />
+      <Button label="Nueva liquidación" size="small" @click="dialogNueva = true">
+        <template #icon><PlusIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <ProgressSpinner v-if="loading" class="block mx-auto my-10" />
@@ -62,12 +66,12 @@
         </Column>
         <Column header="" style="width:56px">
           <template #body="{ data }">
-            <Button v-if="data.liquidacion_id" icon="pi pi-eye" text rounded size="small"
-              v-tooltip.left="'Ver detalle operativo'"
-              @click="router.push(`/liquidaciones/${data.liquidacion_id}`)" />
-            <Button v-else icon="pi pi-plus" text rounded size="small"
-              v-tooltip.left="'Crear detalle operativo'" :loading="creandoDesde === data.proyecto_id"
-              @click="crearDesdeProyecto(data)" />
+            <Button v-if="data.liquidacion_id" text rounded size="small" v-tooltip.left="'Ver detalle operativo'" @click="router.push(`/liquidaciones/${data.liquidacion_id}`)">
+              <template #icon><EyeIcon class="size-[1em]" /></template>
+            </Button>
+            <Button v-else text rounded size="small" v-tooltip.left="'Crear detalle operativo'" :loading="creandoDesde === data.proyecto_id" @click="crearDesdeProyecto(data)">
+              <template #icon><PlusIcon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
         <template #expansion="{ data }">
@@ -139,10 +143,11 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import InputText from 'primevue/inputtext'
 import ProgressSpinner from 'primevue/progressspinner'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { proyectoActivoEnMes } from '~/utils/proyectoActivo'
 import { fmtCompact, formatPeriodo, estadoFlujoPanel } from '~/utils/liquidaciones'
+import { EyeIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 
 const props = defineProps({
   embedded: { type: Boolean, default: false },
@@ -150,7 +155,6 @@ const props = defineProps({
   tipo: { type: String, default: 'preliquidacion' },
 })
 
-const toast = useToast()
 const router = useRouter()
 const route = useRoute()
 
@@ -243,10 +247,10 @@ async function crearLiquidacion() {
       tipo_venta: nueva.value.tipo_venta,
     })
     dialogNueva.value = false
-    toast.add({ severity: 'success', summary: 'Creada', life: 2000 })
+    toast.success('Creada', { duration: 2000 })
     router.push(`/liquidaciones/${data.id}`)
   } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear', life: 3000 })
+    toast.error('Error', { description: 'No se pudo crear', duration: 3000 })
   } finally {
     creando.value = false
   }
@@ -266,12 +270,8 @@ async function crearDesdeProyecto(row) {
   } catch (e) {
     // 409 = ya existe: recargar para traer el liquidacion_id y navegar
     const existente = e?.response?.status === 409
-    toast.add({
-      severity: existente ? 'info' : 'error',
-      summary: existente ? 'Ya existe' : 'Error',
-      detail: existente ? 'Recargando…' : 'No se pudo crear el detalle',
-      life: 2500,
-    })
+    if (existente) toast.info('Ya existe', { description: 'Recargando…', duration: 2500 })
+    else toast.error('Error', { description: 'No se pudo crear el detalle', duration: 2500 })
     if (existente) await load()
   } finally {
     creandoDesde.value = null

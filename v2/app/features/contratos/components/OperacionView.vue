@@ -3,7 +3,9 @@
 
     <!-- ── Header ───────────────────────────────────────────────────────────── -->
     <div class="flex items-center gap-2">
-      <Button icon="pi pi-arrow-left" text severity="secondary" @click="$router.back()" class="-ml-1" />
+      <Button text severity="secondary" @click="$router.back()" class="-ml-1">
+        <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+      </Button>
       <div>
         <p class="text-xs leading-none mb-0.5" style="color:#9b89b5">
           <span class="cursor-pointer hover:underline"
@@ -31,7 +33,7 @@
       <TabPanel>
         <template #header>
           <div class="flex items-center gap-1.5 px-1">
-            <i class="pi pi-wrench text-xs" />
+            <WrenchIcon class="text-xs size-[1em]" />
             <span>Mantenimiento</span>
           </div>
         </template>
@@ -44,7 +46,7 @@
               <div class="flex items-start justify-between mb-4 gap-3">
                 <div class="flex items-center gap-2.5 flex-wrap">
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#fef3c7">
-                    <i class="pi pi-wrench text-sm" style="color:#f59e0b" />
+                    <WrenchIcon class="text-sm size-[1em]" style="color:#f59e0b" />
                   </div>
                   <div>
                     <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Mantenimiento O&amp;M</p>
@@ -54,10 +56,12 @@
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <Tag :value="CONTRATO_LABELS[contratos.mantenimiento.estado]"
                        :severity="CONTRATO_SEVERITY[contratos.mantenimiento.estado]" class="text-xs" />
-                  <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
-                    @click="openMantenimientoDialog('editar')" />
-                  <Button icon="pi pi-file-excel" label="Cargar desde Excel" size="small" severity="secondary" outlined
-                    @click="triggerExcelInput" />
+                  <Button label="Editar" size="small" text severity="secondary" @click="openMantenimientoDialog('editar')">
+                    <template #icon><PencilIcon class="size-[1em]" /></template>
+                  </Button>
+                  <Button label="Cargar desde Excel" size="small" severity="secondary" outlined @click="triggerExcelInput">
+                    <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+                  </Button>
                   <input ref="excelInputRef" type="file" accept=".xlsx,.xls" class="hidden"
                     @change="cargarDesdeExcel" />
                 </div>
@@ -67,7 +71,7 @@
                 <!-- Contratante -->
                 <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-user text-xs" style="color:#f59e0b" />Contratante
+                    <UserIcon class="text-xs size-[1em]" style="color:#f59e0b" />Contratante
                   </p>
                   <p class="text-sm font-semibold leading-snug" style="color:#1c1917">
                     {{ contratos.mantenimiento.contratante_nombre || '—' }}
@@ -76,7 +80,7 @@
                 <!-- Prestador -->
                 <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-building text-xs" style="color:#f59e0b" />Prestador
+                    <BuildingIcon class="text-xs size-[1em]" style="color:#f59e0b" />Prestador
                   </p>
                   <p class="text-sm font-semibold leading-snug" style="color:#1c1917">
                     {{ contratos.mantenimiento.prestador_nombre || '—' }}
@@ -85,7 +89,7 @@
                 <!-- Fecha inicio -->
                 <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-calendar text-xs" style="color:#f59e0b" />Fecha de inicio O&amp;M
+                    <CalendarIcon class="text-xs size-[1em]" style="color:#f59e0b" />Fecha de inicio O&amp;M
                   </p>
                   <p class="text-sm font-semibold" style="color:#1c1917">
                     {{ formatFecha(contratos.mantenimiento.fecha_inicio_om || contratos.mantenimiento.fecha_inicio) || '—' }}
@@ -94,7 +98,7 @@
                 <!-- Valor anual -->
                 <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-dollar text-xs" style="color:#f59e0b" />Valor O&amp;M Anual (BASE)
+                    <DollarSignIcon class="text-xs size-[1em]" style="color:#f59e0b" />Valor O&amp;M Anual (BASE)
                   </p>
                   <p class="text-base font-bold" style="color:#d97706">
                     {{ formatCOP(getValorVigente(contratos.mantenimiento.indexacion_anual)?.valor ?? contratos.mantenimiento.tarifa_base) || '—' }}
@@ -103,15 +107,14 @@
                     class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
                     style="background:none;border:none;padding:0;cursor:pointer;color:#f59e0b"
                     @click="showIndexacion.anual = !showIndexacion.anual">
-                    <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                      :style="showIndexacion.anual ? 'transform:rotate(180deg)' : ''" />
+                    <ChevronDownIcon class="text-xs transition-transform duration-200 size-[1em]" :style="showIndexacion.anual ? 'transform:rotate(180deg)' : ''" />
                     {{ showIndexacion.anual ? 'Ocultar' : 'Ver indexación' }}
                   </button>
                 </div>
                 <!-- Valor mensual -->
                 <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-calculator text-xs" style="color:#f59e0b" />Valor mensual
+                    <CalculatorIcon class="text-xs size-[1em]" style="color:#f59e0b" />Valor mensual
                   </p>
                   <p class="text-base font-bold" style="color:#d97706">
                     {{ formatCOP(getValorVigente(contratos.mantenimiento.indexacion_mensual)?.valor ?? contratos.mantenimiento.tarifa_mensual ?? (contratos.mantenimiento.tarifa_base != null ? Math.round(contratos.mantenimiento.tarifa_base / 12) : null)) || '—' }}
@@ -120,24 +123,23 @@
                     class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
                     style="background:none;border:none;padding:0;cursor:pointer;color:#f59e0b"
                     @click="showIndexacion.mensual = !showIndexacion.mensual">
-                    <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                      :style="showIndexacion.mensual ? 'transform:rotate(180deg)' : ''" />
+                    <ChevronDownIcon class="text-xs transition-transform duration-200 size-[1em]" :style="showIndexacion.mensual ? 'transform:rotate(180deg)' : ''" />
                     {{ showIndexacion.mensual ? 'Ocultar' : 'Ver indexación' }}
                   </button>
                 </div>
                 <!-- Enlace Drive -->
                 <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-file-pdf text-xs" style="color:#f59e0b" />Contrato en Drive
+                    <FileTextIcon class="text-xs size-[1em]" style="color:#f59e0b" />Contrato en Drive
                   </p>
                   <a v-if="contratos.mantenimiento.enlace_drive && contratos.mantenimiento.enlace_drive.startsWith('http')"
                      :href="contratos.mantenimiento.enlace_drive" target="_blank" rel="noopener"
                      class="text-sm font-semibold flex items-center gap-1.5 hover:underline" style="color:#f59e0b">
-                    <i class="pi pi-external-link text-xs" />Ver contrato
+                    <ExternalLinkIcon class="text-xs size-[1em]" />Ver contrato
                   </a>
                   <button v-else @click="openMantenimientoDialog('editar')"
                     class="text-sm font-medium flex items-center gap-1.5" style="color:#f59e0b">
-                    <i class="pi pi-plus-circle text-xs" />Agregar enlace
+                    <CirclePlusIcon class="text-xs size-[1em]" />Agregar enlace
                   </button>
                 </div>
               </div>
@@ -150,7 +152,7 @@
                   <div class="rounded-xl border border-amber-200 overflow-hidden">
                     <div class="flex items-center justify-between px-4 py-2.5 bg-amber-50">
                       <span class="text-xs font-semibold" style="color:#92400e">
-                        <i class="pi pi-dollar text-xs mr-1.5" style="color:#f59e0b" />Indexación anual O&M
+                        <DollarSignIcon class="text-xs mr-1.5 size-[1em]" style="color:#f59e0b" />Indexación anual O&M
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
@@ -181,7 +183,7 @@
                               <span v-if="fila.anio === ANIO_ACTUAL"
                                 class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
                                 style="background:#fef3c7;color:#d97706">actual</span>
-                              <i v-if="fila.anio === ANIO_ACTUAL" class="pi pi-arrow-left text-xs" style="color:#d97706" />
+                              <ArrowLeftIcon class="text-xs size-[1em]" v-if="fila.anio === ANIO_ACTUAL" style="color:#d97706" />
                             </div>
                           </td>
                           <td class="px-4 py-2.5">
@@ -196,7 +198,7 @@
                             <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
                               class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                               style="background:#dcfce7;color:#166534">
-                              <i class="pi pi-check text-xs" />Pagado
+                              <CheckIcon class="text-xs size-[1em]" />Pagado
                             </span>
                             <span v-else-if="fila.anio === ANIO_ACTUAL"
                               class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
@@ -213,7 +215,7 @@
                       </tbody>
                     </table>
                     <div class="flex items-center gap-1.5 px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-xs text-gray-400">
-                      <i class="pi pi-bolt text-xs" style="color:#f59e0b" />
+                      <ZapIcon class="text-xs size-[1em]" style="color:#f59e0b" />
                       Calculado automáticamente desde la Fecha de inicio O&amp;M y el IPC por año.
                     </div>
                   </div>
@@ -226,7 +228,7 @@
                   <div class="rounded-xl border border-amber-200 overflow-hidden">
                     <div class="flex items-center justify-between px-4 py-2.5 bg-amber-50">
                       <span class="text-xs font-semibold" style="color:#92400e">
-                        <i class="pi pi-calculator text-xs mr-1.5" style="color:#f59e0b" />Indexación mensual O&M
+                        <CalculatorIcon class="text-xs mr-1.5 size-[1em]" style="color:#f59e0b" />Indexación mensual O&M
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
@@ -257,7 +259,7 @@
                               <span v-if="fila.anio === ANIO_ACTUAL"
                                 class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
                                 style="background:#fef3c7;color:#d97706">actual</span>
-                              <i v-if="fila.anio === ANIO_ACTUAL" class="pi pi-arrow-left text-xs" style="color:#d97706" />
+                              <ArrowLeftIcon class="text-xs size-[1em]" v-if="fila.anio === ANIO_ACTUAL" style="color:#d97706" />
                             </div>
                           </td>
                           <td class="px-4 py-2.5">
@@ -272,7 +274,7 @@
                             <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
                               class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                               style="background:#dcfce7;color:#166534">
-                              <i class="pi pi-check text-xs" />Pagado
+                              <CheckIcon class="text-xs size-[1em]" />Pagado
                             </span>
                             <span v-else-if="fila.anio === ANIO_ACTUAL"
                               class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
@@ -289,7 +291,7 @@
                       </tbody>
                     </table>
                     <div class="flex items-center gap-1.5 px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-xs text-gray-400">
-                      <i class="pi pi-bolt text-xs" style="color:#f59e0b" />
+                      <ZapIcon class="text-xs size-[1em]" style="color:#f59e0b" />
                       Calculado automáticamente desde la Fecha de inicio O&amp;M y el IPC por año.
                     </div>
                   </div>
@@ -302,13 +304,13 @@
             <div class="rounded-xl border border-dashed border-amber-200 bg-amber-50/40 p-10 text-center">
               <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style="background:#fef3c7">
-                <i class="pi pi-wrench text-xl" style="color:#f59e0b" />
+                <WrenchIcon class="text-xl size-[1em]" style="color:#f59e0b" />
               </div>
               <p class="text-sm font-medium text-gray-600 mb-1">Sin contrato de mantenimiento</p>
               <p class="text-xs text-gray-400 mb-4">Registra el contrato para iniciar el seguimiento de pagos</p>
-              <Button label="Crear contrato" icon="pi pi-plus" size="small"
-                style="background:#f59e0b;border-color:#f59e0b"
-                @click="openMantenimientoDialog('crear')" />
+              <Button label="Crear contrato" size="small" style="background:#f59e0b;border-color:#f59e0b" @click="openMantenimientoDialog('crear')">
+                <template #icon><PlusIcon class="size-[1em]" /></template>
+              </Button>
             </div>
           </template>
 
@@ -341,7 +343,7 @@
       <TabPanel>
         <template #header>
           <div class="flex items-center gap-1.5 px-1">
-            <i class="pi pi-home text-xs" />
+            <HouseIcon class="text-xs size-[1em]" />
             <span>Arriendos</span>
           </div>
         </template>
@@ -353,7 +355,7 @@
               <div class="flex items-start justify-between mb-4 gap-3">
                 <div class="flex items-center gap-2.5 flex-wrap">
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f5f3ff">
-                    <i class="pi pi-home text-sm" style="color:#8b5cf6" />
+                    <HouseIcon class="text-sm size-[1em]" style="color:#8b5cf6" />
                   </div>
                   <div>
                     <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Arriendo</p>
@@ -363,28 +365,29 @@
                 <div class="flex items-center gap-2 flex-shrink-0">
                   <Tag :value="CONTRATO_LABELS[contratos.arriendo.estado]"
                        :severity="CONTRATO_SEVERITY[contratos.arriendo.estado]" class="text-xs" />
-                  <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
-                    @click="openEditContrato('arriendo')" />
+                  <Button label="Editar" size="small" text severity="secondary" @click="openEditContrato('arriendo')">
+                    <template #icon><PencilIcon class="size-[1em]" /></template>
+                  </Button>
                 </div>
               </div>
               <!-- Mini-cards -->
               <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-user text-xs" style="color:#8b5cf6" />Arrendatario
+                    <UserIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Arrendatario
                   </p>
                   <p class="text-sm font-semibold leading-snug" style="color:#1c1917">{{ contratos.arriendo.contratante_nombre || '—' }}</p>
                 </div>
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-calendar text-xs" style="color:#8b5cf6" />Fecha de contrato
+                    <CalendarIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Fecha de contrato
                   </p>
                   <p class="text-sm font-semibold" style="color:#1c1917">{{ formatFecha(contratos.arriendo.fecha_firma_contrato) || '—' }}</p>
                 </div>
                 <!-- Valor anual con indexación -->
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-dollar text-xs" style="color:#8b5cf6" />Valor anual ({{ ANIO_ACTUAL }})
+                    <DollarSignIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Valor anual ({{ ANIO_ACTUAL }})
                   </p>
                   <p class="text-base font-bold" style="color:#7c3aed">
                     {{ formatCOP(getValorVigente(contratos.arriendo.indexacion_anual)?.valor ?? contratos.arriendo.tarifa_base) }}
@@ -393,15 +396,14 @@
                     class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
                     style="background:none;border:none;padding:0;cursor:pointer;color:#8b5cf6"
                     @click="showIndexacionArriendo.anual = !showIndexacionArriendo.anual">
-                    <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                      :style="showIndexacionArriendo.anual ? 'transform:rotate(180deg)' : ''" />
+                    <ChevronDownIcon class="text-xs transition-transform duration-200 size-[1em]" :style="showIndexacionArriendo.anual ? 'transform:rotate(180deg)' : ''" />
                     {{ showIndexacionArriendo.anual ? 'Ocultar' : 'Ver indexación' }}
                   </button>
                 </div>
                 <!-- Valor mensual -->
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-calculator text-xs" style="color:#8b5cf6" />Valor mensual ({{ ANIO_ACTUAL }})
+                    <CalculatorIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Valor mensual ({{ ANIO_ACTUAL }})
                   </p>
                   <p class="text-base font-bold" style="color:#7c3aed">
                     {{ formatCOP(getValorVigente(contratos.arriendo.indexacion_mensual)?.valor ?? contratos.arriendo.tarifa_mensual ?? (contratos.arriendo.tarifa_base != null ? Math.round(contratos.arriendo.tarifa_base / 12) : null)) }}
@@ -410,20 +412,19 @@
                     class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
                     style="background:none;border:none;padding:0;cursor:pointer;color:#8b5cf6"
                     @click="showIndexacionArriendo.mensual = !showIndexacionArriendo.mensual">
-                    <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                      :style="showIndexacionArriendo.mensual ? 'transform:rotate(180deg)' : ''" />
+                    <ChevronDownIcon class="text-xs transition-transform duration-200 size-[1em]" :style="showIndexacionArriendo.mensual ? 'transform:rotate(180deg)' : ''" />
                     {{ showIndexacionArriendo.mensual ? 'Ocultar' : 'Ver indexación' }}
                   </button>
                 </div>
                 <!-- Contrato en Drive -->
                 <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                   <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-file-pdf text-xs" style="color:#8b5cf6" />Contrato en Drive
+                    <FileTextIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Contrato en Drive
                   </p>
                   <a v-if="contratos.arriendo.enlace_drive?.startsWith('http')"
                      :href="contratos.arriendo.enlace_drive" target="_blank" rel="noopener"
                      class="text-sm font-semibold flex items-center gap-1.5 hover:underline" style="color:#8b5cf6">
-                    <i class="pi pi-external-link text-xs" />Ver contrato
+                    <ExternalLinkIcon class="text-xs size-[1em]" />Ver contrato
                   </a>
                   <span v-else class="text-sm text-gray-400">Sin enlace</span>
                 </div>
@@ -433,10 +434,11 @@
               <div class="rounded-xl border mt-3" style="border-color:#ddd6fe">
                 <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
                   <span class="text-xs font-semibold flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-users text-xs" style="color:#8b5cf6" />Arrendadores
+                    <UsersIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Arrendadores
                   </span>
-                  <Button icon="pi pi-plus" label="Agregar arrendador" size="small" text
-                    style="color:#8b5cf6" @click="openArrendadorDialog('crear')" />
+                  <Button label="Agregar arrendador" size="small" text style="color:#8b5cf6" @click="openArrendadorDialog('crear')">
+                    <template #icon><PlusIcon class="size-[1em]" /></template>
+                  </Button>
                 </div>
                 <div v-if="!arrendadores.length" class="px-4 py-6 text-center text-xs text-gray-400">
                   Sin arrendadores registrados.
@@ -453,10 +455,12 @@
                         style="background:#f3f4f6;color:#9ca3af">Inactivo</span>
                     </div>
                     <div class="flex items-center gap-1 flex-shrink-0">
-                      <Button icon="pi pi-pencil" size="small" text severity="secondary"
-                        @click="openArrendadorDialog('editar', a)" />
-                      <Button icon="pi pi-trash" size="small" text severity="danger"
-                        @click="eliminarArrendador(a)" />
+                      <Button size="small" text severity="secondary" @click="openArrendadorDialog('editar', a)">
+                        <template #icon><PencilIcon class="size-[1em]" /></template>
+                      </Button>
+                      <Button size="small" text severity="danger" @click="eliminarArrendador(a)">
+                        <template #icon><Trash2Icon class="size-[1em]" /></template>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -469,7 +473,7 @@
                   <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
                     <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
                       <span class="text-xs font-semibold" style="color:#5b21b6">
-                        <i class="pi pi-dollar text-xs mr-1.5" style="color:#8b5cf6" />Indexación anual de arriendo — {{ a.nombre }}
+                        <DollarSignIcon class="text-xs mr-1.5 size-[1em]" style="color:#8b5cf6" />Indexación anual de arriendo — {{ a.nombre }}
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
@@ -500,7 +504,7 @@
                               <span v-if="fila.anio === ANIO_ACTUAL"
                                 class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
                                 style="background:#ede9fe;color:#7c3aed">actual</span>
-                              <i v-if="fila.anio === ANIO_ACTUAL" class="pi pi-arrow-left text-xs" style="color:#7c3aed" />
+                              <ArrowLeftIcon class="text-xs size-[1em]" v-if="fila.anio === ANIO_ACTUAL" style="color:#7c3aed" />
                             </div>
                           </td>
                           <td class="px-4 py-2.5">
@@ -515,7 +519,7 @@
                             <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
                               class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                               style="background:#dcfce7;color:#166534">
-                              <i class="pi pi-check text-xs" />Pagado
+                              <CheckIcon class="text-xs size-[1em]" />Pagado
                             </span>
                             <span v-else-if="fila.anio === ANIO_ACTUAL"
                               class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
@@ -532,7 +536,7 @@
                       </tbody>
                     </table>
                     <div class="flex items-center gap-1.5 px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-xs text-gray-400">
-                      <i class="pi pi-bolt text-xs" style="color:#8b5cf6" />
+                      <ZapIcon class="text-xs size-[1em]" style="color:#8b5cf6" />
                       Calculado automáticamente desde la Fecha de contrato y el IPC por año.
                     </div>
                   </div>
@@ -546,7 +550,7 @@
                   <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
                     <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
                       <span class="text-xs font-semibold" style="color:#5b21b6">
-                        <i class="pi pi-calculator text-xs mr-1.5" style="color:#8b5cf6" />Indexación mensual de arriendo — {{ a.nombre }}
+                        <CalculatorIcon class="text-xs mr-1.5 size-[1em]" style="color:#8b5cf6" />Indexación mensual de arriendo — {{ a.nombre }}
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
@@ -577,7 +581,7 @@
                               <span v-if="fila.anio === ANIO_ACTUAL"
                                 class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
                                 style="background:#ede9fe;color:#7c3aed">actual</span>
-                              <i v-if="fila.anio === ANIO_ACTUAL" class="pi pi-arrow-left text-xs" style="color:#7c3aed" />
+                              <ArrowLeftIcon class="text-xs size-[1em]" v-if="fila.anio === ANIO_ACTUAL" style="color:#7c3aed" />
                             </div>
                           </td>
                           <td class="px-4 py-2.5">
@@ -592,7 +596,7 @@
                             <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
                               class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                               style="background:#dcfce7;color:#166534">
-                              <i class="pi pi-check text-xs" />Pagado
+                              <CheckIcon class="text-xs size-[1em]" />Pagado
                             </span>
                             <span v-else-if="fila.anio === ANIO_ACTUAL"
                               class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
@@ -609,7 +613,7 @@
                       </tbody>
                     </table>
                     <div class="flex items-center gap-1.5 px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-xs text-gray-400">
-                      <i class="pi pi-bolt text-xs" style="color:#8b5cf6" />
+                      <ZapIcon class="text-xs size-[1em]" style="color:#8b5cf6" />
                       Calculado automáticamente desde la Fecha de contrato y el IPC por año.
                     </div>
                   </div>
@@ -671,7 +675,7 @@
                 <div class="flex items-start justify-between mb-4 gap-3">
                   <div class="flex items-center gap-2.5 flex-wrap">
                     <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f5f3ff">
-                      <i class="pi pi-home text-sm" style="color:#8b5cf6" />
+                      <HouseIcon class="text-sm size-[1em]" style="color:#8b5cf6" />
                     </div>
                     <div>
                       <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Arriendo</p>
@@ -680,8 +684,9 @@
                   </div>
                   <div class="flex items-center gap-2 flex-shrink-0">
                     <Tag value="Vigente" severity="success" class="text-xs" />
-                    <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
-                      @click="openEditContrato('arriendo')" />
+                    <Button label="Editar" size="small" text severity="secondary" @click="openEditContrato('arriendo')">
+                      <template #icon><PencilIcon class="size-[1em]" /></template>
+                    </Button>
                   </div>
                 </div>
                 <!-- Mini-cards -->
@@ -689,7 +694,7 @@
                   <!-- Contratante -->
                   <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                     <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-user text-xs" style="color:#8b5cf6" />Contratante
+                      <UserIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Contratante
                     </p>
                     <p class="text-sm font-semibold leading-snug" style="color:#1c1917">
                       {{ buscarArriendoEstatico(proyectoNombre).contratante }}
@@ -698,7 +703,7 @@
                   <!-- Prestador -->
                   <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                     <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-building text-xs" style="color:#8b5cf6" />Prestador
+                      <BuildingIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Prestador
                     </p>
                     <p class="text-sm font-semibold leading-snug" style="color:#1c1917">
                       {{ buscarArriendoEstatico(proyectoNombre).prestador }}
@@ -707,7 +712,7 @@
                   <!-- Fecha firma -->
                   <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                     <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-calendar text-xs" style="color:#8b5cf6" />Fecha firma contrato
+                      <CalendarIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Fecha firma contrato
                     </p>
                     <p class="text-sm font-semibold" style="color:#1c1917">
                       {{ buscarArriendoEstatico(proyectoNombre).fecha_firma }}
@@ -716,7 +721,7 @@
                   <!-- Valor anual vigente -->
                   <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                     <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-dollar text-xs" style="color:#8b5cf6" />Valor anual ({{ ANIO_ACTUAL }})
+                      <DollarSignIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Valor anual ({{ ANIO_ACTUAL }})
                     </p>
                     <p class="text-base font-bold" style="color:#7c3aed">
                       {{ formatCOP(getValorVigente(buscarArriendoEstatico(proyectoNombre).indexacion_anual)?.valor ?? buscarArriendoEstatico(proyectoNombre).valor_anual) }}
@@ -730,15 +735,14 @@
                       class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
                       style="background:none;border:none;padding:0;cursor:pointer;color:#8b5cf6"
                       @click="showIndexacionArriendo.anual = !showIndexacionArriendo.anual">
-                      <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                        :style="showIndexacionArriendo.anual ? 'transform:rotate(180deg)' : ''" />
+                      <ChevronDownIcon class="text-xs transition-transform duration-200 size-[1em]" :style="showIndexacionArriendo.anual ? 'transform:rotate(180deg)' : ''" />
                       {{ showIndexacionArriendo.anual ? 'Ocultar' : 'Ver indexación' }}
                     </button>
                   </div>
                   <!-- Valor mensual vigente -->
                   <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                     <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-calculator text-xs" style="color:#8b5cf6" />Valor mensual ({{ ANIO_ACTUAL }})
+                      <CalculatorIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Valor mensual ({{ ANIO_ACTUAL }})
                     </p>
                     <p class="text-base font-bold" style="color:#7c3aed">
                       {{ formatCOP(getValorVigente(buscarArriendoEstatico(proyectoNombre).indexacion_mensual)?.valor ?? buscarArriendoEstatico(proyectoNombre).valor_mensual) }}
@@ -747,13 +751,13 @@
                   <!-- Contrato en Drive -->
                   <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
                     <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-file-pdf text-xs" style="color:#8b5cf6" />Contrato en Drive
+                      <FileTextIcon class="text-xs size-[1em]" style="color:#8b5cf6" />Contrato en Drive
                     </p>
                     <a v-if="buscarArriendoEstatico(proyectoNombre).enlace"
                        :href="buscarArriendoEstatico(proyectoNombre).enlace"
                        target="_blank" rel="noopener"
                        class="text-sm font-semibold flex items-center gap-1.5 hover:underline" style="color:#8b5cf6">
-                      <i class="pi pi-external-link text-xs" />Ver contrato
+                      <ExternalLinkIcon class="text-xs size-[1em]" />Ver contrato
                     </a>
                     <span v-else class="text-sm text-gray-400">Sin enlace</span>
                   </div>
@@ -765,7 +769,7 @@
                     <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
                       <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
                         <span class="text-xs font-semibold" style="color:#5b21b6">
-                          <i class="pi pi-dollar text-xs mr-1.5" style="color:#8b5cf6" />Indexación anual de arriendo
+                          <DollarSignIcon class="text-xs mr-1.5 size-[1em]" style="color:#8b5cf6" />Indexación anual de arriendo
                         </span>
                         <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                       </div>
@@ -797,8 +801,7 @@
                                 <span v-if="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1"
                                   class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
                                   style="background:#ede9fe;color:#7c3aed">actual</span>
-                                <i v-if="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1"
-                                  class="pi pi-arrow-left text-xs" style="color:#7c3aed" />
+                                <ArrowLeftIcon class="text-xs size-[1em]" v-if="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1" style="color:#7c3aed" />
                               </div>
                             </td>
                             <td class="px-4 py-2.5">
@@ -813,7 +816,7 @@
                               <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
                                 class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
                                 style="background:#dcfce7;color:#166534">
-                                <i class="pi pi-check text-xs" />Pagado
+                                <CheckIcon class="text-xs size-[1em]" />Pagado
                               </span>
                               <span v-else-if="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1"
                                 class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
@@ -841,13 +844,13 @@
               <div class="rounded-xl border border-dashed border-violet-200 bg-violet-50/40 p-10 text-center">
                 <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                   style="background:#f5f3ff">
-                  <i class="pi pi-home text-xl" style="color:#8b5cf6" />
+                  <HouseIcon class="text-xl size-[1em]" style="color:#8b5cf6" />
                 </div>
                 <p class="text-sm font-medium text-gray-600 mb-1">Sin contrato de arriendo registrado</p>
                 <p class="text-xs text-gray-400 mb-4">No se encontró contrato de arriendo para este proyecto</p>
-                <Button label="Crear contrato" icon="pi pi-plus" size="small"
-                  style="background:#8b5cf6;border-color:#8b5cf6"
-                  @click="openWizard('arriendo')" />
+                <Button label="Crear contrato" size="small" style="background:#8b5cf6;border-color:#8b5cf6" @click="openWizard('arriendo')">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
             </template>
           </template>
@@ -870,7 +873,7 @@
       <TabPanel>
         <template #header>
           <div class="flex items-center gap-1.5 px-1">
-            <i class="pi pi-wifi text-xs" />
+            <WifiIcon class="text-xs size-[1em]" />
             <span>Internet</span>
           </div>
         </template>
@@ -881,36 +884,37 @@
               <div class="flex items-center justify-between mb-5">
                 <div class="flex items-center gap-2.5">
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#ecfeff">
-                    <i class="pi pi-wifi text-sm" style="color:#06b6d4" />
+                    <WifiIcon class="text-sm size-[1em]" style="color:#06b6d4" />
                   </div>
                   <span class="text-sm font-semibold" style="color:#2C2039">Servicio de Internet</span>
                   <Tag :value="CONTRATO_LABELS[contratos.internet.estado]"
                        :severity="CONTRATO_SEVERITY[contratos.internet.estado]" class="text-xs" />
                 </div>
-                <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
-                  @click="openEditContrato('internet')" />
-                <Button icon="pi pi-plus" label="Nuevo servicio" size="small" outlined
-                  style="border-color:#06b6d4;color:#06b6d4"
-                  @click="openWizard('internet')" />
+                <Button label="Editar" size="small" text severity="secondary" @click="openEditContrato('internet')">
+                  <template #icon><PencilIcon class="size-[1em]" /></template>
+                </Button>
+                <Button label="Nuevo servicio" size="small" outlined style="border-color:#06b6d4;color:#06b6d4" @click="openWizard('internet')">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
-                <InfoIcon icon="pi pi-building" color="#06b6d4" label="Proveedor"
+                <InfoIcon :icon="BuildingIcon" color="#06b6d4" label="Proveedor"
                   :value="contratos.internet.prestador_nombre" />
-                <InfoIcon icon="pi pi-database" color="#06b6d4" label="Plan de datos"
+                <InfoIcon :icon="DatabaseIcon" color="#06b6d4" label="Plan de datos"
                   :value="contratos.internet.plan_datos_gb" />
-                <InfoIcon icon="pi pi-gauge" color="#06b6d4" label="Velocidad"
+                <InfoIcon :icon="GaugeIcon" color="#06b6d4" label="Velocidad"
                   :value="contratos.internet.velocidad_mbps != null ? `${contratos.internet.velocidad_mbps} Mbps` : null" />
-                <InfoIcon icon="pi pi-wifi" color="#06b6d4" label="Tipo de conexión"
+                <InfoIcon :icon="WifiIcon" color="#06b6d4" label="Tipo de conexión"
                   :value="contratos.internet.tipo_conexion" />
-                <InfoIcon icon="pi pi-sitemap" color="#06b6d4" label="Línea de servicio"
+                <InfoIcon :icon="NetworkIcon" color="#06b6d4" label="Línea de servicio"
                   :value="contratos.internet.linea_servicio" />
-                <InfoIcon icon="pi pi-desktop" color="#06b6d4" label="ID del router"
+                <InfoIcon :icon="MonitorIcon" color="#06b6d4" label="ID del router"
                   :value="contratos.internet.id_router" />
-                <InfoIcon icon="pi pi-box" color="#06b6d4" label="Número de kit"
+                <InfoIcon :icon="BoxIcon" color="#06b6d4" label="Número de kit"
                   :value="contratos.internet.numero_kit" />
-                <InfoIcon icon="pi pi-bolt" color="#06b6d4" label="Latencia"
+                <InfoIcon :icon="ZapIcon" color="#06b6d4" label="Latencia"
                   :value="contratos.internet.latencia_ms != null ? `${contratos.internet.latencia_ms} ms` : null" />
-                <InfoIcon icon="pi pi-shield" color="#06b6d4" label="Seguridad del wifi"
+                <InfoIcon :icon="ShieldIcon" color="#06b6d4" label="Seguridad del wifi"
                   :value="contratos.internet.wifi_seguridad" />
                 <InfoSecret color="#06b6d4" label="Contraseña wifi"
                   :value="contratos.internet.wifi_password" />
@@ -932,13 +936,13 @@
             <div class="rounded-xl border border-dashed border-cyan-200 bg-cyan-50/40 p-10 text-center">
               <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
                 style="background:#ecfeff">
-                <i class="pi pi-wifi text-xl" style="color:#06b6d4" />
+                <WifiIcon class="text-xl size-[1em]" style="color:#06b6d4" />
               </div>
               <p class="text-sm font-medium text-gray-600 mb-1">Sin servicio de internet registrado</p>
               <p class="text-xs text-gray-400 mb-4">Registra el proveedor para iniciar el seguimiento de pagos</p>
-              <Button label="Registrar servicio" icon="pi pi-plus" size="small"
-                style="background:#06b6d4;border-color:#06b6d4"
-                @click="openWizard('internet')" />
+              <Button label="Registrar servicio" size="small" style="background:#06b6d4;border-color:#06b6d4" @click="openWizard('internet')">
+                <template #icon><PlusIcon class="size-[1em]" /></template>
+              </Button>
             </div>
           </template>
         </div>
@@ -951,7 +955,7 @@
       :breakpoints="{ '560px': '95vw' }">
       <template #header>
         <div class="flex items-center gap-2">
-          <i class="pi pi-wrench text-sm" style="color:#f59e0b" />
+          <WrenchIcon class="text-sm size-[1em]" style="color:#f59e0b" />
           <span class="font-semibold text-sm" style="color:#2C2039">
             {{ dialogMant.modo === 'crear' ? 'Crear contrato de mantenimiento' : 'Editar contrato de mantenimiento' }}
           </span>
@@ -1033,10 +1037,9 @@
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" text @click="dialogMant.visible = false" />
-        <Button :label="dialogMant.modo === 'crear' ? 'Crear contrato' : 'Guardar cambios'"
-          icon="pi pi-check" :loading="guardandoMant"
-          style="background:#f59e0b;border-color:#f59e0b"
-          @click="saveMantenimiento" />
+        <Button :label="dialogMant.modo === 'crear' ? 'Crear contrato' : 'Guardar cambios'" :loading="guardandoMant" style="background:#f59e0b;border-color:#f59e0b" @click="saveMantenimiento">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
 
@@ -1055,7 +1058,7 @@
       :breakpoints="{ '520px': '95vw' }">
       <template #header>
         <div class="flex items-center gap-2">
-          <i class="pi pi-pencil text-sm" :style="`color:${DIALOG_EDIT_COLOR[dialogEdit.tipo]}`" />
+          <PencilIcon class="text-sm size-[1em]" :style="`color:${DIALOG_EDIT_COLOR[dialogEdit.tipo]}`" />
           <span class="font-semibold text-sm" style="color:#2C2039">
             Editar — {{ DIALOG_EDIT_LABEL[dialogEdit.tipo] }}
           </span>
@@ -1172,9 +1175,9 @@
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" text @click="dialogEdit.visible = false" />
-        <Button label="Guardar cambios" icon="pi pi-check" :loading="guardandoContrato"
-          @click="saveContrato"
-          :style="`background:${DIALOG_EDIT_COLOR[dialogEdit.tipo]};border-color:${DIALOG_EDIT_COLOR[dialogEdit.tipo]}`" />
+        <Button label="Guardar cambios" :loading="guardandoContrato" @click="saveContrato" :style="`background:${DIALOG_EDIT_COLOR[dialogEdit.tipo]};border-color:${DIALOG_EDIT_COLOR[dialogEdit.tipo]}`">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
 
@@ -1211,7 +1214,9 @@
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" text @click="dialogPago.visible = false" />
-        <Button label="Registrar" icon="pi pi-check" :loading="guardandoPago" @click="guardarPago" />
+        <Button label="Registrar" :loading="guardandoPago" @click="guardarPago">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
 
@@ -1219,6 +1224,7 @@
 </template>
 
 <script setup>
+import { ArrowLeftIcon, BoxIcon, BuildingIcon, CalculatorIcon, CalendarIcon, CheckIcon, ChevronDownIcon, CirclePlusIcon, CreditCardIcon, DatabaseIcon, DollarSignIcon, ExternalLinkIcon, EyeIcon, EyeOffIcon, FileIcon, FileInputIcon, FileOutputIcon, FileSpreadsheetIcon, FileTextIcon, FilterIcon, GaugeIcon, HouseIcon, LinkIcon, LockIcon, MonitorIcon, NetworkIcon, PencilIcon, PlusIcon, ShieldIcon, TableIcon, Trash2Icon, UserIcon, UsersIcon, WifiIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
@@ -1233,14 +1239,13 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import ContratoServicioWizard from '~/features/contratos/components/ContratoServicioWizard.vue'
 import ARRIENDOS_ESTATICOS from '~/assets/arriendos_data.js'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 
 // ── Arriendo estático (fallback desde JSON) ───────────────────────────────────
 function buscarArriendoEstatico(nombre) {
@@ -1495,7 +1500,7 @@ onMounted(async () => {
     await cargarIndexacionArriendo()
     await loadPagos('mantenimiento')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar', detail: e.message, life: 4000 })
+    toast.error('Error al cargar', { description: e.message, duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -1531,7 +1536,7 @@ async function guardarPago() {
   const tipo = dialogPago.tipo
   if (!contratos[tipo]) return
   if (!dialogPago.form.mes || !dialogPago.form.año) {
-    toast.add({ severity: 'warn', summary: 'Completa mes y año', life: 2500 })
+    toast.warning('Completa mes y año', { duration: 2500 })
     return
   }
   guardandoPago.value = true
@@ -1545,15 +1550,13 @@ async function guardarPago() {
     })
     await loadPagos(tipo)
     dialogPago.visible = false
-    toast.add({ severity: 'success', summary: 'Pago registrado', life: 2500 })
+    toast.success('Pago registrado', { duration: 2500 })
   } catch (e) {
     const msg = e.response?.data?.detail
     const isDup = typeof msg === 'string' && msg.includes('uq_pago_servicio')
-    toast.add({
-      severity: 'error',
-      summary: isDup ? 'Ya existe un pago para ese período' : 'Error al registrar',
-      detail: isDup ? undefined : String(msg ?? ''),
-      life: 4000,
+    toast.error(isDup ? 'Ya existe un pago para ese período' : 'Error al registrar', {
+      description: isDup ? undefined : String(msg ?? ''),
+      duration: 4000,
     })
   } finally {
     guardandoPago.value = false
@@ -1566,9 +1569,9 @@ async function eliminarPago(tipo, pagoId) {
   try {
     await api.delete(`/contratos-servicio/${contratos[tipo].id}/pagos/${pagoId}`)
     pagos[tipo] = pagos[tipo].filter(p => p.id !== pagoId)
-    toast.add({ severity: 'success', summary: 'Pago eliminado', life: 2000 })
+    toast.success('Pago eliminado', { duration: 2000 })
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
+    toast.error('Error al eliminar', { duration: 3000 })
   }
 }
 
@@ -1649,9 +1652,9 @@ async function saveContrato() {
       await initInternetMap(contratos.internet)
     }
     dialogEdit.visible = false
-    toast.add({ severity: 'success', summary: 'Contrato actualizado', life: 2500 })
+    toast.success('Contrato actualizado', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al guardar', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error al guardar', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     guardandoContrato.value = false
   }
@@ -1752,9 +1755,11 @@ async function saveMantenimiento() {
     // Recalcular la indexación automática (cambió tarifa/fecha inicio O&M)
     await cargarIndexacionOM()
     dialogMant.visible = false
-    toast.add({ severity: 'success', summary: dialogMant.modo === 'crear' ? 'Contrato creado' : 'Contrato actualizado', life: 2500 })
+    toast.success(dialogMant.modo === 'crear' ? 'Contrato creado' : 'Contrato actualizado', {
+      duration: 2500,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail ?? e.message, life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
   } finally {
     guardandoMant.value = false
   }
@@ -1782,11 +1787,9 @@ async function cargarDesdeExcel(event) {
     })
 
     if (!fila) {
-      toast.add({
-        severity: 'error',
-        summary: 'Proyecto no encontrado en el Excel',
-        detail: `No se encontró "${proyectoNombre.value}" en la columna "Proyecto". Verifica el archivo e intenta de nuevo.`,
-        life: 6000,
+      toast.error('Proyecto no encontrado en el Excel', {
+        description: `No se encontró "${proyectoNombre.value}" en la columna "Proyecto". Verifica el archivo e intenta de nuevo.`,
+        duration: 6000,
       })
       return
     }
@@ -1816,9 +1819,12 @@ async function cargarDesdeExcel(event) {
     dialogMant.modo                    = contratos.mantenimiento ? 'editar' : 'crear'
     dialogMant.visible                 = true
 
-    toast.add({ severity: 'info', summary: 'Datos cargados desde Excel', detail: 'Revisa los datos y confirma para guardar.', life: 4000 })
+    toast.info('Datos cargados desde Excel', {
+      description: 'Revisa los datos y confirma para guardar.',
+      duration: 4000,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al leer el Excel', detail: e.message, life: 4000 })
+    toast.error('Error al leer el Excel', { description: e.message, duration: 4000 })
   }
 }
 
@@ -1900,7 +1906,7 @@ function openArrendadorDialog(modo, arrendador = null) {
 async function guardarArrendador() {
   if (!contratos.arriendo?.id) return
   if (!arrendadorDialog.form.nombre?.trim()) {
-    toast.add({ severity: 'error', summary: 'El nombre es obligatorio', life: 3000 })
+    toast.error('El nombre es obligatorio', { duration: 3000 })
     return
   }
   arrendadorDialog.guardando = true
@@ -1923,9 +1929,9 @@ async function guardarArrendador() {
     arrendadorDialog.visible = false
     await cargarArrendadores()
     await cargarIndexacionArriendo()
-    toast.add({ severity: 'success', summary: 'Arrendador guardado', life: 2500 })
+    toast.success('Arrendador guardado', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al guardar arrendador', detail: e.response?.data?.detail, life: 3500 })
+    toast.error('Error al guardar arrendador', { description: e.response?.data?.detail, duration: 3500 })
   } finally {
     arrendadorDialog.guardando = false
   }
@@ -1937,13 +1943,11 @@ async function eliminarArrendador(arrendador) {
     await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
     await cargarArrendadores()
     await cargarIndexacionArriendo()
-    toast.add({ severity: 'success', summary: 'Arrendador eliminado', life: 2500 })
+    toast.success('Arrendador eliminado', { duration: 2500 })
   } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error al eliminar',
-      detail: e.response?.data?.detail || 'No se pudo eliminar el arrendador',
-      life: 3500,
+    toast.error('Error al eliminar', {
+      description: e.response?.data?.detail || 'No se pudo eliminar el arrendador',
+      duration: 3500,
     })
   }
 }
@@ -1984,14 +1988,16 @@ const AÑOS_STATIC = (() => {
 // Campo con ícono + etiqueta + valor
 const InfoIcon = {
   props: {
-    icon: String, color: String,
+    /** Componente de `@lucide/vue`. */
+    icon: { type: [Object, Function], default: null },
+    color: String,
     label: String, value: [String, Number],
   },
   template: `
     <div class="flex items-start gap-2.5 min-w-0">
       <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
         :style="'background:' + color + '18'">
-        <i :class="icon + ' text-xs'" :style="'color:' + color" />
+        <component :is="icon" class="text-xs size-[1em]" :style="'color:' + color" />
       </div>
       <div class="min-w-0">
         <p class="text-xs font-medium leading-none mb-0.5" style="color:#9b89b5">{{ label }}</p>
@@ -2003,7 +2009,7 @@ const InfoIcon = {
 
 // Badge de estado de pago con etiqueta
 const InfoBadge = {
-  components: { Tag },
+  components: { Tag, CreditCardIcon },
   props: { color: String, label: String, estado: String },
   data() {
     return { ESTADO_PAGO_LABELS_S, ESTADO_PAGO_SEVERITY_S }
@@ -2012,7 +2018,7 @@ const InfoBadge = {
     <div class="flex items-start gap-2.5">
       <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
         :style="'background:' + color + '18'">
-        <i class="pi pi-credit-card text-xs" :style="'color:' + color" />
+        <CreditCardIcon class="text-xs size-[1em]" :style="'color:' + color" />
       </div>
       <div>
         <p class="text-xs font-medium leading-none mb-1" style="color:#9b89b5">{{ label }}</p>
@@ -2027,11 +2033,12 @@ const InfoBadge = {
 const InfoSecret = {
   props: { color: String, label: String, value: String },
   data() { return { visible: false } },
+  components: { EyeIcon, EyeOffIcon, LockIcon },
   template: `
     <div class="flex items-start gap-2.5 min-w-0">
       <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
         :style="'background:' + color + '18'">
-        <i class="pi pi-lock text-xs" :style="'color:' + color" />
+        <LockIcon class="text-xs size-[1em]" :style="'color:' + color" />
       </div>
       <div class="min-w-0">
         <p class="text-xs font-medium leading-none mb-0.5" style="color:#9b89b5">{{ label }}</p>
@@ -2040,7 +2047,8 @@ const InfoSecret = {
           style="background:none;border:none;cursor:pointer;padding:0;color:#2C2039"
           @click="visible = !visible">
           {{ visible ? value : '••••••••' }}
-          <i :class="visible ? 'pi pi-eye-slash' : 'pi pi-eye'" class="text-xs" style="color:#9b89b5" />
+          <EyeOffIcon v-if="visible" class="text-xs size-[1em]" style="color:#9b89b5" />
+          <EyeIcon v-else class="text-xs size-[1em]" style="color:#9b89b5" />
         </button>
       </div>
     </div>
@@ -2051,18 +2059,19 @@ const InfoSecret = {
 const InfoLink = {
   props: { color: String, label: String, href: String, editable: Boolean },
   emits: ['editar'],
+  components: { CirclePlusIcon, ExternalLinkIcon, LinkIcon },
   template: `
     <div class="flex items-start gap-2.5">
       <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
         :style="'background:' + color + '18'">
-        <i class="pi pi-link text-xs" :style="'color:' + color" />
+        <LinkIcon class="text-xs size-[1em]" :style="'color:' + color" />
       </div>
       <div>
         <p class="text-xs font-medium leading-none mb-0.5" style="color:#9b89b5">{{ label }}</p>
         <a v-if="href" :href="href" target="_blank" rel="noopener noreferrer"
           class="text-sm font-medium hover:underline inline-flex items-center gap-1"
           style="color:#915BD8">
-          <i class="pi pi-external-link text-xs" />
+          <ExternalLinkIcon class="text-xs size-[1em]" />
           Ver en Drive
         </a>
         <template v-else>
@@ -2070,7 +2079,7 @@ const InfoLink = {
             class="text-xs font-medium inline-flex items-center gap-1 hover:underline transition-opacity"
             style="background:none;border:none;cursor:pointer;padding:0;color:#9b89b5"
             @click="$emit('editar')">
-            <i class="pi pi-plus-circle text-xs" />
+            <CirclePlusIcon class="text-xs size-[1em]" />
             Agregar enlace
           </button>
           <span v-else class="text-sm" style="color:#9ca3af">—</span>
@@ -2082,7 +2091,7 @@ const InfoLink = {
 
 // Tabla de pagos mensuales reutilizable
 const PagosTabla = {
-  components: { Tag, Button, DataTable, Column, Select },
+  components: { Tag, Button, DataTable, Column, Select, ExternalLinkIcon, FilterIcon, PlusIcon, TableIcon, Trash2Icon, XIcon },
   emits: ['open-pago', 'eliminar'],
   props: {
     tipo: String,
@@ -2127,18 +2136,18 @@ const PagosTabla = {
       <!-- Header de la tabla -->
       <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
         <div class="flex items-center gap-2">
-          <i class="pi pi-table text-sm" :style="'color:' + color" />
+          <TableIcon class="text-sm size-[1em]" :style="'color:' + color" />
           <span class="text-sm font-semibold" style="color:#2C2039">Historial de pagos</span>
         </div>
-        <Button v-if="contratoId" label="Registrar pago" icon="pi pi-plus" size="small"
-          :style="'background:' + color + ';border-color:' + color"
-          @click="$emit('open-pago')" />
+        <Button v-if="contratoId" label="Registrar pago" size="small" :style="'background:' + color + ';border-color:' + color" @click="$emit('open-pago')">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </div>
 
       <!-- Filtros -->
       <div class="flex flex-wrap items-center gap-3 px-5 py-3 border-b border-gray-50 bg-gray-50/60">
         <div class="flex items-center gap-1.5">
-          <i class="pi pi-filter text-xs text-gray-400" />
+          <FilterIcon class="text-xs text-gray-400 size-[1em]" />
           <span class="text-xs text-gray-400 font-medium">Filtrar por:</span>
         </div>
         <Select v-model="filtros.año" :options="AÑOS_STATIC" placeholder="Año"
@@ -2146,8 +2155,9 @@ const PagosTabla = {
         <Select v-model="filtros.mes" :options="MESES_OPCIONES_STATIC"
           optionLabel="label" optionValue="value" placeholder="Mes"
           showClear class="text-sm" style="height:32px;min-width:110px" />
-        <Button v-if="hayFiltros" label="Limpiar" text severity="secondary" size="small"
-          icon="pi pi-times" @click="limpiar" />
+        <Button v-if="hayFiltros" label="Limpiar" text severity="secondary" size="small" @click="limpiar">
+          <template #icon><XIcon class="size-[1em]" /></template>
+        </Button>
         <span v-if="hayFiltros" class="text-xs text-gray-400 ml-auto">
           {{ pagosFiltrados.length }} resultado{{ pagosFiltrados.length !== 1 ? 's' : '' }}
         </span>
@@ -2186,7 +2196,7 @@ const PagosTabla = {
               target="_blank" rel="noopener noreferrer"
               class="inline-flex items-center gap-1 text-xs font-medium hover:underline"
               style="color:#915BD8">
-              <i class="pi pi-external-link" />
+              <ExternalLinkIcon class="size-[1em]" />
               Ver
             </a>
             <span v-else class="text-gray-300 text-sm">—</span>
@@ -2194,8 +2204,9 @@ const PagosTabla = {
         </Column>
         <Column style="width:50px" bodyClass="text-right">
           <template #body="{ data }">
-            <Button icon="pi pi-trash" text severity="danger" size="small"
-              @click="$emit('eliminar', data.id)" v-tooltip.left="'Eliminar'" />
+            <Button text severity="danger" size="small" @click="$emit('eliminar', data.id)" v-tooltip.left="'Eliminar'">
+              <template #icon><Trash2Icon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
       </DataTable>
@@ -2207,13 +2218,15 @@ const PagosTabla = {
 const Acordeon = {
   props: {
     titulo: String,
-    icono: String,
+    /** Componente de `@lucide/vue`. */
+    icono: { type: [Object, Function], default: null },
     color: { type: String, default: '#f59e0b' },
     count: { type: Number, default: 0 },
   },
   data() {
     return { abierto: false }
   },
+  components: { ChevronDownIcon },
   template: `
     <div class="rounded-xl border bg-white overflow-hidden" style="border-color:#e5e7eb">
       <button type="button"
@@ -2222,14 +2235,13 @@ const Acordeon = {
         <div class="flex items-center gap-2.5">
           <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
             :style="'background:' + color + '18'">
-            <i :class="icono + ' text-xs'" :style="'color:' + color" />
+            <component :is="icono" class="text-xs size-[1em]" :style="'color:' + color" />
           </div>
           <span class="text-sm font-semibold" style="color:#2C2039">{{ titulo }}</span>
           <span class="inline-flex items-center justify-center rounded-full text-xs font-medium px-2 py-0.5 leading-none"
             :style="'background:' + color + '15; color:' + color">{{ count }}</span>
         </div>
-        <i class="pi pi-chevron-down text-xs text-gray-400 transition-transform duration-200"
-          :style="abierto ? 'transform:rotate(180deg)' : ''" />
+        <ChevronDownIcon class="text-xs text-gray-400 transition-transform duration-200 size-[1em]" :style="abierto ? 'transform:rotate(180deg)' : ''" />
       </button>
       <transition
         enter-active-class="transition-opacity duration-200 ease-out"
@@ -2248,7 +2260,7 @@ const Acordeon = {
 
 // Acordeón 1: Facturas cobradas
 const FacturasCobradas = {
-  components: { DataTable, Column, Select, Acordeon },
+  components: { DataTable, Column, Select, Acordeon, FileIcon, FilterIcon, XIcon },
   props: {
     datos: { type: Array, default: () => [] },
     proyectoNombre: String,
@@ -2279,10 +2291,10 @@ const FacturasCobradas = {
     },
   },
   template: `
-    <Acordeon titulo="Facturas cobradas" icono="pi pi-file-import" color="#f59e0b" :count="datos.length">
+    <Acordeon titulo="Facturas cobradas" :icono="FileInputIcon" color="#f59e0b" :count="datos.length">
       <div class="flex flex-wrap items-center gap-3 px-5 py-3 bg-gray-50/60 border-b border-gray-100">
         <div class="flex items-center gap-1.5">
-          <i class="pi pi-filter text-xs text-gray-400" />
+          <FilterIcon class="text-xs text-gray-400 size-[1em]" />
           <span class="text-xs text-gray-400 font-medium">Filtrar por:</span>
         </div>
         <Select v-model="filtroAño" :options="AÑOS_STATIC" placeholder="Año"
@@ -2293,7 +2305,7 @@ const FacturasCobradas = {
         <button v-if="hayFiltros" type="button"
           class="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
           @click="limpiarFiltros">
-          <i class="pi pi-times text-xs" /> Limpiar
+          <XIcon class="text-xs size-[1em]" /> Limpiar
         </button>
         <span v-if="hayFiltros" class="text-xs text-gray-400 ml-auto">
           {{ datosFiltrados.length }} resultado{{ datosFiltrados.length !== 1 ? 's' : '' }}
@@ -2319,7 +2331,7 @@ const FacturasCobradas = {
             <a v-if="data.soporteUrl" :href="data.soporteUrl" target="_blank" rel="noopener noreferrer"
               class="inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors hover:bg-amber-50"
               style="color:#f59e0b" title="Ver soporte">
-              <i class="pi pi-file text-sm" />
+              <FileIcon class="text-sm size-[1em]" />
             </a>
             <span v-else class="text-gray-300 text-sm">—</span>
           </template>
@@ -2331,7 +2343,7 @@ const FacturasCobradas = {
 
 // Acordeón 2: Facturas emitidas
 const FacturasEmitidas = {
-  components: { DataTable, Column, Select, Acordeon },
+  components: { DataTable, Column, Select, Acordeon, FileIcon, FilterIcon, XIcon },
   props: {
     datos: { type: Array, default: () => [] },
     proyectoNombre: String,
@@ -2371,10 +2383,10 @@ const FacturasEmitidas = {
     },
   },
   template: `
-    <Acordeon titulo="Facturas emitidas" icono="pi pi-file-export" color="#f59e0b" :count="datos.length">
+    <Acordeon titulo="Facturas emitidas" :icono="FileOutputIcon" color="#f59e0b" :count="datos.length">
       <div class="flex flex-wrap items-center gap-3 px-5 py-3 bg-gray-50/60 border-b border-gray-100">
         <div class="flex items-center gap-1.5">
-          <i class="pi pi-filter text-xs text-gray-400" />
+          <FilterIcon class="text-xs text-gray-400 size-[1em]" />
           <span class="text-xs text-gray-400 font-medium">Filtrar por:</span>
         </div>
         <Select v-model="filtroAño" :options="AÑOS_STATIC" placeholder="Año"
@@ -2385,7 +2397,7 @@ const FacturasEmitidas = {
         <button v-if="hayFiltros" type="button"
           class="text-xs text-gray-400 hover:text-gray-600 flex items-center gap-1 transition-colors"
           @click="limpiarFiltros">
-          <i class="pi pi-times text-xs" /> Limpiar
+          <XIcon class="text-xs size-[1em]" /> Limpiar
         </button>
         <span v-if="hayFiltros" class="text-xs text-gray-400 ml-auto">
           {{ datosFiltrados.length }} resultado{{ datosFiltrados.length !== 1 ? 's' : '' }}
@@ -2406,7 +2418,7 @@ const FacturasEmitidas = {
             <a v-if="data.soporteUrl" :href="data.soporteUrl" target="_blank" rel="noopener noreferrer"
               class="inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors hover:bg-amber-50"
               style="color:#f59e0b" title="Ver soporte">
-              <i class="pi pi-file text-sm" />
+              <FileIcon class="text-sm size-[1em]" />
             </a>
             <span v-else class="text-gray-300 text-sm">—</span>
           </template>

@@ -35,7 +35,7 @@
           <td class="px-3 py-1.5">
             <a v-if="fila.url" :href="fila.url" target="_blank"
               class="flex items-center gap-1 text-blue-600 hover:underline">
-              <i class="pi pi-file-pdf text-red-500 text-xs" />{{ fila.ref }}
+              <FileTextIcon class="text-red-500 text-xs size-[1em]" />{{ fila.ref }}
             </a>
             <span v-else class="text-gray-500">{{ fila.ref }}</span>
           </td>
@@ -65,7 +65,7 @@
           <td class="px-3 py-1.5">
             <a v-if="fila.url" :href="fila.url" target="_blank"
               class="flex items-center gap-1 text-blue-600 hover:underline">
-              <i class="pi pi-file-pdf text-red-500 text-xs" />{{ fila.ref }}
+              <FileTextIcon class="text-red-500 text-xs size-[1em]" />{{ fila.ref }}
             </a>
             <span v-else class="text-gray-500">{{ fila.ref }}</span>
           </td>
@@ -78,6 +78,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { FileTextIcon } from '@lucide/vue'
 
 const props = defineProps({
   liquidacion: { type: Object, required: true },

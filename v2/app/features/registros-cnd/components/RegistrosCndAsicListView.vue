@@ -3,7 +3,7 @@
     <PageHeader title="Registros CND/ASIC" :subtitle="`${rowsMostrar.length} proyecto(s)`">
       <template #actions>
         <IconField class="flex-1 sm:flex-none">
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="filtroTexto" placeholder="Buscar proyecto…" class="w-full sm:w-64" />
         </IconField>
       </template>
@@ -58,7 +58,9 @@
               <Tag v-if="!data.tiene_registro" value="Sin iniciar" severity="secondary" class="text-xs" />
               <Tag v-if="data.alertas_pendientes" :value="`⚠ ${data.alertas_pendientes}`" severity="warn" class="text-xs" />
               <Tag v-if="data.bloqueos" :value="`⛔ ${data.bloqueos}`" severity="danger" class="text-xs" />
-              <Button icon="pi pi-eye" text rounded size="small" @click.stop="irDetalle(data)" />
+              <Button text rounded size="small" @click.stop="irDetalle(data)">
+                <template #icon><EyeIcon class="size-[1em]" /></template>
+              </Button>
             </div>
           </template>
         </Column>
@@ -70,7 +72,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -79,9 +81,9 @@ import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import api from '~/core/client'
+import { EyeIcon, SearchIcon } from '@lucide/vue'
 
 const router = useRouter()
-const toast = useToast()
 
 const loading = ref(false)
 const rows = ref([])
@@ -103,7 +105,7 @@ async function cargar() {
     const { data } = await api.get('/registros-cnd')
     rows.value = data
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar', detail: e.response?.data?.detail ?? '', life: 5000 })
+    toast.error('Error al cargar', { description: e.response?.data?.detail ?? '', duration: 5000 })
   } finally {
     loading.value = false
   }

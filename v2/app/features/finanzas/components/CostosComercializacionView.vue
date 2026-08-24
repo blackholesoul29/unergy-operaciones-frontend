@@ -3,9 +3,12 @@
     <PageHeader title="Costos comercialización"
                 subtitle="Costos e ingresos fijos por proyecto">
       <template #actions>
-        <Button label="Subir Excel costos" icon="pi pi-file-excel" size="small" outlined
-                @click="abrirSubirExcel" />
-        <Button label="Repartir costos de XM" icon="pi pi-bolt" size="small" @click="abrirAcPower" />
+        <Button label="Subir Excel costos" size="small" outlined @click="abrirSubirExcel">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Repartir costos de XM" size="small" @click="abrirAcPower">
+          <template #icon><ZapIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -15,13 +18,13 @@
     <Dialog v-model:visible="excelVisible" header="Subir Excel de costos" modal class="w-full max-w-lg">
       <div class="space-y-4 pt-1">
         <button type="button" class="dropzone" :disabled="subiendoExcel" @click="seleccionarExcel">
-          <i class="pi pi-file-excel text-3xl" style="color:#915BD8" />
+          <FileSpreadsheetIcon class="text-3xl size-[1em]" style="color:#915BD8" />
           <p class="text-sm font-semibold text-gray-700 mt-2">Seleccionar Excel</p>
           <p class="text-xs text-gray-400">.xlsx o .xls · un archivo por carga</p>
         </button>
 
         <div v-if="excel" class="flex items-center gap-3 rounded-lg border px-3 py-2" style="border-color:#ECE7F2">
-          <i class="pi pi-file-excel text-sm shrink-0" style="color:#9b8fb0" />
+          <FileSpreadsheetIcon class="text-sm shrink-0 size-[1em]" style="color:#9b8fb0" />
           <span class="flex-1 min-w-0 text-xs font-medium text-gray-700 truncate">{{ excel.nombre }}</span>
           <span class="text-[10px] text-gray-400 shrink-0">{{ fmtTamano(excel.tamano) }}</span>
         </div>
@@ -32,7 +35,7 @@
         </div>
 
         <p class="text-[11px] text-gray-400">
-          <i class="pi pi-info-circle mr-1" />
+          <InfoIcon class="mr-1 size-[1em]" />
           No se aceptan los tipos del grupo <strong>xm</strong>: esos los genera el reparto.
           Los anuales se prorratean como valor ÷ 12.
         </p>
@@ -40,8 +43,9 @@
         <div class="flex justify-end gap-2 pt-1">
           <Button label="Cerrar" severity="secondary" size="small" :disabled="subiendoExcel"
                   @click="excelVisible = false" />
-          <Button label="Subir" icon="pi pi-upload" size="small" :disabled="!excel"
-                  :loading="subiendoExcel" @click="subirExcel" />
+          <Button label="Subir" size="small" :disabled="!excel" :loading="subiendoExcel" @click="subirExcel">
+            <template #icon><UploadIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </Dialog>
@@ -86,7 +90,7 @@
         </div>
 
         <p v-if="progresoReparto" class="text-[11px] text-gray-500 flex items-center gap-2">
-          <i class="pi pi-spin pi-spinner" /> {{ progresoReparto }}
+          <LoaderCircleIcon class="size-[1em] animate-spin" /> {{ progresoReparto }}
         </p>
 
         <div class="flex justify-end gap-2 pt-1">
@@ -129,17 +133,17 @@
       <div>
         <label class="field-label">Buscar en la página</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Proyecto, costo…" class="w-48" />
         </IconField>
       </div>
       <div class="flex-1" />
-      <Button label="Exportar" icon="pi pi-file-excel" size="small" outlined
-              :loading="exportando" :disabled="!total"
-              v-tooltip.top="'Exporta a Excel todo lo que coincide con los filtros'"
-              @click="exportar" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar'" @click="recargar" />
+      <Button label="Exportar" size="small" outlined :loading="exportando" :disabled="!total" v-tooltip.top="'Exporta a Excel todo lo que coincide con los filtros'" @click="exportar">
+        <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+      </Button>
+      <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar'" @click="recargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
       <div class="text-xs text-gray-400 self-center">
         {{ total.toLocaleString('es-CO') }} registro{{ total === 1 ? '' : 's' }}
       </div>
@@ -147,7 +151,7 @@
 
     <div v-if="error" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FEF2F2; border:1px solid #FECACA; color:#B42318">
-      <i class="pi pi-times-circle" /> {{ error }}
+      <CircleXIcon class="size-[1em]" /> {{ error }}
     </div>
 
     <!-- Tabla -->
@@ -180,12 +184,12 @@
             </tr>
             <tr v-if="loading">
               <td :colspan="COLUMNAS.length" class="px-4 py-12 text-center text-gray-400">
-                <i class="pi pi-spin pi-spinner text-2xl" />
+                <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" />
               </td>
             </tr>
             <tr v-else-if="!filtrados.length">
               <td :colspan="COLUMNAS.length" class="px-4 py-12 text-center text-sm text-gray-400">
-                <i class="pi pi-wallet text-2xl mb-2 block text-gray-300" />
+                <WalletIcon class="text-2xl mb-2 block text-gray-300 size-[1em]" />
                 No hay costos con esos filtros.
               </td>
             </tr>
@@ -201,10 +205,12 @@
             Math.min(filtros.page * filtros.size, total).toLocaleString('es-CO') }} de {{ total.toLocaleString('es-CO') }}
         </span>
         <div class="flex gap-1">
-          <Button icon="pi pi-chevron-left" text rounded size="small"
-                  :disabled="filtros.page === 1 || loading" @click="irA(filtros.page - 1)" />
-          <Button icon="pi pi-chevron-right" text rounded size="small"
-                  :disabled="filtros.page >= ultimaPagina || loading" @click="irA(filtros.page + 1)" />
+          <Button text rounded size="small" :disabled="filtros.page === 1 || loading" @click="irA(filtros.page - 1)">
+            <template #icon><ChevronLeftIcon class="size-[1em]" /></template>
+          </Button>
+          <Button text rounded size="small" :disabled="filtros.page >= ultimaPagina || loading" @click="irA(filtros.page + 1)">
+            <template #icon><ChevronRightIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </div>
@@ -222,14 +228,14 @@ import Checkbox from 'primevue/checkbox'
 import Tag from 'primevue/tag'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { VERSIONES, VERSION_INICIAL, AccionCiclo } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
 
 const liquidacionesApi = new LiquidacionesApiService()
 import api from '~/core/client'
+import { ChevronLeftIcon, ChevronRightIcon, CircleXIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon, UploadIcon, WalletIcon, ZapIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -344,15 +350,12 @@ async function subirExcel() {
   progresoExcel.value = 0
   try {
     await liquidacionesApi.subirExcelCostos(excel.value.file, { onProgreso: (p) => { progresoExcel.value = p } })
-    toast.add({ severity: 'success', summary: 'Excel cargado', life: 4000 })
+    toast.success('Excel cargado', { duration: 4000 })
     excelVisible.value = false
     excel.value = null
     await cargar()
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo cargar',
-      detail: e.response?.data?.detail || e.message, life: 8000,
-    })
+    toast.error('No se pudo cargar', { description: e.response?.data?.detail || e.message, duration: 8000 })
   } finally {
     subiendoExcel.value = false
   }
@@ -383,9 +386,9 @@ function abrirAcPower() {
 
 async function repartir() {
   if (ac.month == null || ac.year == null || !ac.version || ac.total_ac_power == null) {
-    toast.add({
-      severity: 'warn', summary: 'Faltan campos',
-      detail: 'Completa mes, año, versión y AC Power total.', life: 4000,
+    toast.warning('Faltan campos', {
+      description: 'Completa mes, año, versión y AC Power total.',
+      duration: 4000,
     })
     return
   }
@@ -397,17 +400,14 @@ async function repartir() {
       { ...ac },
       { onEstado: (t) => { progresoReparto.value = t.mensaje } },
     )
-    toast.add({
-      severity: 'success', summary: 'Costos repartidos',
-      detail: res.message || 'Terminó correctamente.', life: 6000,
+    toast.success('Costos repartidos', {
+      description: res.message || 'Terminó correctamente.',
+      duration: 6000,
     })
     acVisible.value = false
     recargar()
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'El reparto falló',
-      detail: e.response?.data?.detail || e.message, life: 10000,
-    })
+    toast.error('El reparto falló', { description: e.response?.data?.detail || e.message, duration: 10000 })
   } finally {
     repartiendo.value = false
     progresoReparto.value = ''
@@ -469,7 +469,7 @@ async function exportar() {
     })
     const filas = data.results || []
     if (!filas.length) {
-      toast.add({ severity: 'warn', summary: 'Nada que exportar', life: 3000 })
+      toast.warning('Nada que exportar', { duration: 3000 })
       return
     }
 
@@ -509,14 +509,13 @@ async function exportar() {
     XLSX.writeFile(wb, `Costos_comercializacion_${periodo}.xlsx`)
 
     if (data.total > filas.length) {
-      toast.add({
-        severity: 'warn', summary: 'Exportación parcial',
-        detail: `Se exportaron ${filas.length} de ${data.total}. Filtra por período para bajar el resto.`,
-        life: 6000,
+      toast.warning('Exportación parcial', {
+        description: `Se exportaron ${filas.length} de ${data.total}. Filtra por período para bajar el resto.`,
+        duration: 6000,
       })
     }
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo exportar', detail: e.message, life: 4000 })
+    toast.error('No se pudo exportar', { description: e.message, duration: 4000 })
   } finally {
     exportando.value = false
   }

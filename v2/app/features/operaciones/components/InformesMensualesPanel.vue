@@ -16,12 +16,12 @@
           <button v-for="t in TIPOS" :key="t.key" class="im-seg-btn"
                   :class="{ 'im-seg-btn--active': tipo === t.key }"
                   @click="cambiarTipo(t.key)">
-            <i :class="t.icon" /> {{ t.label }}
+            <component :is="t.icon" class="size-[1em]" /> {{ t.label }}
           </button>
         </div>
 
         <div class="im-tip">
-          <i class="pi pi-info-circle" />
+          <InfoIcon class="size-[1em]" />
           <span>{{ TIPOS.find(t => t.key === tipo)?.tip }}</span>
         </div>
       </div>
@@ -29,7 +29,7 @@
       <!-- Banner: días para entrega FMO -->
       <div v-if="tipo === 'fmo'" :class="['im-deadline', deadlineCls]">
         <div class="im-deadline-left">
-          <i class="pi pi-calendar-clock" />
+          <CalendarClockIcon class="size-[1em]" />
           <span>Entrega informe FMO — primeros <b>5 días</b> del mes</span>
         </div>
         <div class="im-deadline-right">{{ deadlineLabel }}</div>
@@ -109,8 +109,9 @@
 
         <!-- Acción principal -->
         <div class="im-field im-field-actions">
-          <Button label="Generar" icon="pi pi-cog" size="small" :loading="generando"
-                  :disabled="!puedeGenerar" @click="generar" class="im-btn-primary" />
+          <Button label="Generar" size="small" :loading="generando" :disabled="!puedeGenerar" @click="generar" class="im-btn-primary">
+            <template #icon><SettingsIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </section>
@@ -129,16 +130,18 @@
     </div>
 
     <div v-else-if="error" class="im-error im-no-print">
-      <i class="pi pi-exclamation-circle text-2xl text-red-500" />
+      <CircleAlertIcon class="text-2xl text-red-500 size-[1em]" />
       <div class="flex-1">
         <p class="font-semibold text-red-700">{{ error.title || 'No se pudo generar el informe' }}</p>
         <p class="text-sm text-gray-600 mt-0.5">{{ error.detail || error.message || '' }}</p>
       </div>
-      <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="generar" />
+      <Button label="Reintentar" outlined size="small" @click="generar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <div v-else-if="!htmlContent" class="im-empty im-no-print">
-      <i class="pi pi-file-edit text-4xl" style="color:#915BD8" />
+      <FilePenIcon class="text-4xl size-[1em]" style="color:#915BD8" />
       <p class="im-empty-title">Listo para generar</p>
       <p class="im-empty-sub">Selecciona el tipo de informe, proyecto/portafolio y período, luego presiona <b>Generar informe</b>.</p>
     </div>
@@ -154,19 +157,18 @@
           <span class="im-result-sub">· {{ rangeLabel }}</span>
         </div>
         <div class="im-result-actions">
-          <Button icon="pi pi-times" outlined severity="secondary" size="small"
-                  :disabled="guardando" @click="descartar"
-                  v-tooltip.bottom="'Descartar y volver al wizard'" />
-          <Button label="PDF" icon="pi pi-print" outlined size="small"
-                  severity="warn" @click="imprimir"
-                  v-tooltip.bottom="'Imprimir o exportar a PDF'" />
-          <Button :label="guardando ? 'Guardando…' : (informeIdGuardado ? 'Actualizar' : 'Guardar')"
-                  icon="pi pi-save" :loading="guardando" size="small"
-                  class="im-btn-primary" @click="guardar"
-                  v-tooltip.bottom="'Guardar como borrador para revisión/aprobación'" />
-          <Button v-if="informeIdGuardado" icon="pi pi-arrow-right" outlined size="small"
-                  @click="abrirEditor"
-                  v-tooltip.bottom="'Abrir en el editor (flujo de aprobación)'" />
+          <Button outlined severity="secondary" size="small" :disabled="guardando" @click="descartar" v-tooltip.bottom="'Descartar y volver al wizard'">
+            <template #icon><XIcon class="size-[1em]" /></template>
+          </Button>
+          <Button label="PDF" outlined size="small" severity="warn" @click="imprimir" v-tooltip.bottom="'Imprimir o exportar a PDF'">
+            <template #icon><PrinterIcon class="size-[1em]" /></template>
+          </Button>
+          <Button :label="guardando ? 'Guardando…' : (informeIdGuardado ? 'Actualizar' : 'Guardar')" :loading="guardando" size="small" class="im-btn-primary" @click="guardar" v-tooltip.bottom="'Guardar como borrador para revisión/aprobación'">
+            <template #icon><SaveIcon class="size-[1em]" /></template>
+          </Button>
+          <Button v-if="informeIdGuardado" outlined size="small" @click="abrirEditor" v-tooltip.bottom="'Abrir en el editor (flujo de aprobación)'">
+            <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </section>
 
@@ -188,15 +190,16 @@ import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import { buildReportHtmlDoc } from '~/utils/rptStyles'
 import { tituloFalla } from '~/utils/fallaTitulo'
+import { ArrowRightIcon, CalendarClockIcon, ChartColumnIcon, CircleAlertIcon, FilePenIcon, InfoIcon, LayoutGridIcon, PrinterIcon, RefreshCwIcon, SaveIcon, SettingsIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 const router = useRouter()
 
 // ── Constantes ─────────────────────────────────────────────────────────
 const TIPOS = [
-  { key: 'proyecto',   label: 'Por proyecto',    icon: 'pi pi-bolt',          tip: 'Operacional individual con KPIs, semanal y eventos.' },
-  { key: 'portafolio', label: 'Por portafolio',  icon: 'pi pi-th-large',      tip: 'Consolidado del cliente + páginas por proyecto.' },
-  { key: 'fmo',        label: 'FMO (O&M)',       icon: 'pi pi-file-edit',     tip: 'Contrato O&M: disponibilidad, SLA, multas, inversores.' },
-  { key: 'ranking',    label: 'Ranking vs P90',  icon: 'pi pi-chart-bar',     tip: 'Solo el gráfico de generación por proyecto vs P90 (un gráfico por mes).' },
+  { key: 'proyecto',   label: 'Por proyecto',    icon: ZapIcon,          tip: 'Operacional individual con KPIs, semanal y eventos.' },
+  { key: 'portafolio', label: 'Por portafolio',  icon: LayoutGridIcon,      tip: 'Consolidado del cliente + páginas por proyecto.' },
+  { key: 'fmo',        label: 'FMO (O&M)',       icon: FilePenIcon,     tip: 'Contrato O&M: disponibilidad, SLA, multas, inversores.' },
+  { key: 'ranking',    label: 'Ranking vs P90',  icon: ChartColumnIcon,     tip: 'Solo el gráfico de generación por proyecto vs P90 (un gráfico por mes).' },
 ]
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
@@ -1695,7 +1698,7 @@ watch(tipo, (t) => {
   font-size: 11px; color: #6B5A8A;
   display: inline-flex; align-items: center; gap: 5px;
 }
-.im-tip i { color: #915BD8; font-size: 11px; }
+.im-tip svg { color: #915BD8; font-size: 11px; }
 
 .im-field { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 200px; }
 .im-field-narrow { flex: 0 0 auto; min-width: 120px; }

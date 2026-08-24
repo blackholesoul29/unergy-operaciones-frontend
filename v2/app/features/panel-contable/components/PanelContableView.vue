@@ -14,19 +14,19 @@
           <label>Ver período</label>
           <div class="pc-period">
             <button class="pc-period-btn" @click="stepMes(-1)" v-tooltip.bottom="'Mes anterior'">
-              <i class="pi pi-chevron-left" />
+              <ChevronLeftIcon class="size-[1em]" />
             </button>
             <span class="pc-period-label">{{ periodoLabel || '—' }}</span>
             <button class="pc-period-btn" :disabled="esMesActual" @click="stepMes(1)" v-tooltip.bottom="'Mes siguiente'">
-              <i class="pi pi-chevron-right" />
+              <ChevronRightIcon class="size-[1em]" />
             </button>
           </div>
         </div>
         <button v-if="tab === 'preliquidacion' || tab === 'oficial'" class="btn-o" :disabled="loading || !paneles.length" @click="exportarExcel">
-          <i class="pi pi-file-excel" /> Exportar Excel
+          <FileSpreadsheetIcon class="size-[1em]" /> Exportar Excel
         </button>
         <button v-if="tab !== 'diferencia' && tab !== 'clasificacion'" class="btn-o" :disabled="loading" @click="abrirDialogoPeriodo">
-          <i class="pi pi-upload" /> Cargar ER
+          <UploadIcon class="size-[1em]" /> Cargar ER
         </button>
         <input ref="erInput" type="file" accept=".xlsx,.xls" multiple class="hidden" @change="onErSelected" />
       </div>
@@ -96,7 +96,7 @@
       <template #footer>
         <button class="mini" @click="showPeriodoDialog = false">Cancelar</button>
         <button class="btn" :disabled="!dlgMes || !dlgAnio || !dlgTipo || !dlgTipoCarga" @click="confirmarPeriodo">
-          Continuar <i class="pi pi-arrow-right" style="font-size:11px;" />
+          Continuar <ArrowRightIcon class="size-[1em]" style="font-size:11px;" />
         </button>
       </template>
     </Dialog>
@@ -111,14 +111,14 @@
     </div>
 
     <div v-if="uploading" class="banner">
-      <i class="pi pi-spin pi-spinner" /> Procesando ER ({{ uploading }})…
+      <LoaderCircleIcon class="size-[1em] animate-spin" /> Procesando ER ({{ uploading }})…
     </div>
     <div v-if="uploadMsg" class="banner banner-info" v-html="uploadMsg" />
 
     <!-- ER rechazados por clasificación cruzada -->
     <div v-if="rechazados.length" class="banner banner-rechazo">
       <div class="rechazo-h">
-        <i class="pi pi-exclamation-triangle" />
+        <TriangleAlertIcon class="size-[1em]" />
         <b>{{ rechazados.length }} ER no se cargaron</b> — clasificación distinta a la sección elegida
       </div>
       <ul class="rechazo-list">
@@ -128,13 +128,13 @@
 
     <!-- ── PRELIQUIDACIÓN / OFICIAL / SELECCIÓN ── -->
     <template v-if="tab === 'preliquidacion' || tab === 'oficial' || tab === 'seleccion'">
-      <div v-if="loading" class="empty"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
+      <div v-if="loading" class="empty"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando…</div>
 
       <template v-else>
         <!-- Filtros de la lista de proyectos -->
         <div v-if="paneles.length" class="filtros">
           <span class="filtro-busca">
-            <i class="pi pi-search" />
+            <SearchIcon class="size-[1em]" />
             <input v-model="fProyecto" placeholder="Buscar proyecto…" />
           </span>
           <select v-model="fTipo" class="filtro-sel">
@@ -476,7 +476,7 @@
 
             <div class="proj-foot">
               <button class="btn" :disabled="!dirty[p.id]" @click="guardar(p)">
-                <i class="pi pi-save" /> Guardar cambios
+                <SaveIcon class="size-[1em]" /> Guardar cambios
               </button>
               <span v-if="savedAt[p.id]" class="saved">✓ guardado</span>
             </div>
@@ -494,19 +494,19 @@
           <div class="pool-actions">
             <input v-model="clasSearch" class="search-in" placeholder="Buscar proyecto…" />
             <button class="btn" :disabled="!periodo || clasSaving || !clasDirty" @click="guardarClasificacion">
-              <i class="pi pi-save" /> Guardar clasificación
+              <SaveIcon class="size-[1em]" /> Guardar clasificación
             </button>
           </div>
         </div>
 
         <div class="banner-aviso">
-          <i class="pi pi-info-circle" />
+          <InfoIcon class="size-[1em]" />
           La clasificación es <b>por período</b> — un proyecto puede cambiar de
           tipo entre meses. El tipo define cómo se leen los ingresos del ER al cargarlo.
         </div>
 
         <div v-if="!periodo" class="empty sm">Selecciona un período arriba para clasificar.</div>
-        <div v-else-if="clasLoading" class="empty"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
+        <div v-else-if="clasLoading" class="empty"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando…</div>
         <div v-else-if="!clasFiltrados.length" class="empty sm">Sin proyectos.</div>
 
         <div v-else class="tbl-wrap">
@@ -540,12 +540,12 @@
 
     <!-- ── DIFERENCIA ── -->
     <template v-else-if="tab === 'diferencia'">
-      <div v-if="loading" class="empty"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
+      <div v-if="loading" class="empty"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando…</div>
 
       <!-- Sin liquidación oficial todavía -->
       <div v-else-if="!diff.tiene_oficial" class="card">
         <div class="empty">
-          <i class="pi pi-clock" style="font-size:22px; display:block; margin-bottom:8px; color:var(--p2);" />
+          <ClockIcon class="size-[1em]" style="font-size:22px; display:block; margin-bottom:8px; color:var(--p2);" />
           Aún no hay liquidación oficial para comparar.<br />
           Carga el ER oficial en la pestaña <b>Oficial</b>.
         </div>
@@ -630,10 +630,10 @@
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import XLSX from 'xlsx-js-style'
 import api from '~/core/client'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import Dialog from 'primevue/dialog'
+import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon, SaveIcon, SearchIcon, TriangleAlertIcon, UploadIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 // Grupos de VISUALIZACIÓN. `keys` son las claves de `grupo` del backend que
 // se renderizan juntas bajo un mismo encabezado. "COSTOS OPERATIVOS" combina
@@ -964,7 +964,7 @@ async function cargarPaneles () {
   } catch (e) {
     cargaError.value = true
     paneles.value = []
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los paneles', life: 4000 })
+    toast.error('Error', { description: 'No se pudieron cargar los paneles', duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -986,7 +986,7 @@ async function cargarDiferencia () {
     const { data } = await api.get('/panel-contable/diferencia', { params: { periodo: periodo.value } })
     diff.value = data
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la diferencia', life: 4000 })
+    toast.error('Error', { description: 'No se pudo cargar la diferencia', duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -1000,7 +1000,7 @@ async function cargarClasificacion () {
     const { data } = await api.get('/panel-contable/clasificacion', { params: { periodo: periodo.value } })
     clasProyectos.value = (data.proyectos || []).map(p => ({ ...p }))
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la clasificación', life: 4000 })
+    toast.error('Error', { description: 'No se pudo cargar la clasificación', duration: 4000 })
   } finally {
     clasLoading.value = false
   }
@@ -1015,9 +1015,9 @@ async function guardarClasificacion () {
       asignaciones: clasProyectos.value.map(c => ({ proyecto_id: c.proyecto_id, tipo: c.tipo })),
     })
     clasDirty.value = false
-    toast.add({ severity: 'success', summary: 'Clasificación guardada', detail: periodoLabel.value, life: 3000 })
+    toast.success('Clasificación guardada', { description: periodoLabel.value, duration: 3000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la clasificación', life: 4000 })
+    toast.error('Error', { description: 'No se pudo guardar la clasificación', duration: 4000 })
   } finally {
     clasSaving.value = false
   }
@@ -1056,7 +1056,10 @@ async function onErSelected (e) {
   const files = Array.from(e.target.files || [])
   if (!files.length) return
   if (!periodo.value) {
-    toast.add({ severity: 'warn', summary: 'Período requerido', detail: 'Selecciona el mes/año antes de cargar ER', life: 4000 })
+    toast.warning('Período requerido', {
+      description: 'Selecciona el mes/año antes de cargar ER',
+      duration: 4000,
+    })
     if (erInput.value) erInput.value.value = ''
     return
   }
@@ -1078,7 +1081,10 @@ async function onErSelected (e) {
     if (data.rechazados?.length) partes.push(`<span style="color:#d35400">${data.rechazados.length} rechazados por clasificación</span>`)
     if (data.errores?.length) partes.push(`<span style="color:#c0392b">${data.errores.length} con error</span>`)
     uploadMsg.value = partes.join(' · ')
-    toast.add({ severity: 'success', summary: 'ER procesados', detail: `${data.cargados?.length || 0} proyecto(s)`, life: 3500 })
+    toast.success('ER procesados', {
+      description: `${data.cargados?.length || 0} proyecto(s)`,
+      duration: 3500,
+    })
     // Tras cargar la OFICIAL, ir a Diferencia y mostrar la comparación al instante.
     if (tipoSubida === 'oficial') {
       tab.value = 'diferencia'
@@ -1087,7 +1093,10 @@ async function onErSelected (e) {
       await cargarPaneles()
     }
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err.response?.data?.detail || 'Fallo al procesar ER', life: 5000 })
+    toast.error('Error', {
+      description: err.response?.data?.detail || 'Fallo al procesar ER',
+      duration: 5000,
+    })
   } finally {
     uploading.value = 0
     if (erInput.value) erInput.value.value = ''
@@ -1107,8 +1116,10 @@ function _aplicarLoteFlags (campos, val, trasReasignar = true) {
     const fallidos = new Set(res.filter(Boolean))
     if (fallidos.size) {
       prev.forEach(({ p, old }) => { if (fallidos.has(p.id)) Object.assign(p, old) })
-      toast.add({ severity: 'warn', summary: 'Algunos no se guardaron',
-        detail: `${fallidos.size} panel(es) revertido(s)`, life: 3500 })
+      toast.warning('Algunos no se guardaron', {
+        description: `${fallidos.size} panel(es) revertido(s)`,
+        duration: 3500,
+      })
     }
     if (trasReasignar) reasignar()
   })
@@ -1136,7 +1147,7 @@ async function onFlag (p) {
     })
     reasignar()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se guardó', detail: 'Recargando estado…', life: 3000 })
+    toast.error('No se guardó', { description: 'Recargando estado…', duration: 3000 })
     cargarPaneles()
   }
 }
@@ -1164,7 +1175,10 @@ async function reasignar (soloFaltantes = true) {
       if (fresh) { p.consecutivo_ingresos = fresh.consecutivo_ingresos; p.consecutivo_costos = fresh.consecutivo_costos }
     })
   } catch (e) {
-    toast.add({ severity: 'warn', summary: 'Consecutivos', detail: 'No se pudieron reasignar los consecutivos', life: 3500 })
+    toast.warning('Consecutivos', {
+      description: 'No se pudieron reasignar los consecutivos',
+      duration: 3500,
+    })
   }
 }
 
@@ -1181,7 +1195,7 @@ function _reemplazarPanel (p, data) {
 async function cambiarCelda (p, ln, texto) {
   const m = String(texto).trim().match(/^([^!]+)!\s*([A-Za-z]+\d+)\s*$/)
   if (!m) {
-    toast.add({ severity: 'warn', summary: 'Formato inválido', detail: 'Usa hoja!celda, ej. Sheet1!H35', life: 3500 })
+    toast.warning('Formato inválido', { description: 'Usa hoja!celda, ej. Sheet1!H35', duration: 3500 })
     return
   }
   const [, hoja, celda] = m
@@ -1195,16 +1209,25 @@ async function cambiarCelda (p, ln, texto) {
       celda: celda.trim().toUpperCase(),
     })
     _reemplazarPanel(p, data)
-    toast.add({ severity: 'success', summary: 'Celda actualizada', detail: ln.concepto + ' ← ' + hoja + '!' + celda, life: 2500 })
+    toast.success('Celda actualizada', {
+      description: ln.concepto + ' ← ' + hoja + '!' + celda,
+      duration: 2500,
+    })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err.response?.data?.detail || 'No se pudo remapear la celda', life: 4500 })
+    toast.error('Error', {
+      description: err.response?.data?.detail || 'No se pudo remapear la celda',
+      duration: 4500,
+    })
   }
 }
 
 // ── Fase 2: gestión de fuentes de ingreso (solo grupo INGRESOS) ──
 async function renombrarFuente (p, ln, nuevaEtiqueta) {
   if (!ln.hoja || !ln.celda) {
-    toast.add({ severity: 'warn', summary: 'Sin celda de origen', detail: 'Esta fuente no tiene celda de origen; primero asígnale una', life: 4000 })
+    toast.warning('Sin celda de origen', {
+      description: 'Esta fuente no tiene celda de origen; primero asígnale una',
+      duration: 4000,
+    })
     return
   }
   nuevaEtiqueta = String(nuevaEtiqueta).trim()
@@ -1218,9 +1241,12 @@ async function renombrarFuente (p, ln, nuevaEtiqueta) {
       etiqueta: nuevaEtiqueta,
     })
     _reemplazarPanel(p, data)
-    toast.add({ severity: 'success', summary: 'Fuente renombrada', detail: nuevaEtiqueta, life: 2500 })
+    toast.success('Fuente renombrada', { description: nuevaEtiqueta, duration: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err.response?.data?.detail || 'No se pudo renombrar la fuente', life: 4500 })
+    toast.error('Error', {
+      description: err.response?.data?.detail || 'No se pudo renombrar la fuente',
+      duration: 4500,
+    })
   }
 }
 
@@ -1231,7 +1257,7 @@ async function agregarFuente (p) {
   if (!cel) return
   const m = String(cel).match(/^([^!]+)!\s*([A-Za-z]+\d+)\s*$/)
   if (!m) {
-    toast.add({ severity: 'warn', summary: 'Formato inválido', detail: 'Usa hoja!celda, ej. Sheet1!H35', life: 3500 })
+    toast.warning('Formato inválido', { description: 'Usa hoja!celda, ej. Sheet1!H35', duration: 3500 })
     return
   }
   const [, hoja, celda] = m
@@ -1245,9 +1271,12 @@ async function agregarFuente (p) {
       celda: celda.trim().toUpperCase(),
     })
     _reemplazarPanel(p, data)
-    toast.add({ severity: 'success', summary: 'Fuente agregada', detail: String(etiqueta).trim(), life: 2500 })
+    toast.success('Fuente agregada', { description: String(etiqueta).trim(), duration: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err.response?.data?.detail || 'No se pudo agregar la fuente', life: 4500 })
+    toast.error('Error', {
+      description: err.response?.data?.detail || 'No se pudo agregar la fuente',
+      duration: 4500,
+    })
   }
 }
 
@@ -1263,9 +1292,12 @@ async function quitarFuente (p, ln) {
       },
     })
     _reemplazarPanel(p, data)
-    toast.add({ severity: 'success', summary: 'Fuente quitada', detail: ln.concepto, life: 2500 })
+    toast.success('Fuente quitada', { description: ln.concepto, duration: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err.response?.data?.detail || 'No se pudo quitar la fuente', life: 4500 })
+    toast.error('Error', {
+      description: err.response?.data?.detail || 'No se pudo quitar la fuente',
+      duration: 4500,
+    })
   }
 }
 
@@ -1278,9 +1310,9 @@ async function guardar (p) {
     await api.patch(`/panel-contable/${p.id}`, { lineas })
     dirty[p.id] = false
     savedAt[p.id] = true
-    toast.add({ severity: 'success', summary: 'Guardado', detail: p.proyecto, life: 2500 })
+    toast.success('Guardado', { description: p.proyecto, duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar', life: 4000 })
+    toast.error('Error', { description: 'No se pudo guardar', duration: 4000 })
   }
 }
 
@@ -1320,7 +1352,10 @@ function exportarExcel () {
     }
   }
   if (!rows.length) {
-    toast.add({ severity: 'warn', summary: 'Nada que exportar', detail: 'No hay filas con los filtros actuales', life: 3000 })
+    toast.warning('Nada que exportar', {
+      description: 'No hay filas con los filtros actuales',
+      duration: 3000,
+    })
     return
   }
   const headers = ['Proyecto', 'Inversionista', 'Documento contable', 'Contrato', 'Concepto',
@@ -1362,7 +1397,7 @@ function exportarExcel () {
   XLSX.utils.book_append_sheet(wb, ws, 'Panel')
   const mes = (periodoLabel.value || periodo.value || 'periodo').replace(/\s+/g, '_')
   XLSX.writeFile(wb, `Panel_${mes}_${tipoDatos.value}.xlsx`)
-  toast.add({ severity: 'success', summary: 'Excel exportado', detail: `${rows.length} filas`, life: 2500 })
+  toast.success('Excel exportado', { description: `${rows.length} filas`, duration: 2500 })
 }
 
 onMounted(cargarPaneles)
@@ -1406,12 +1441,12 @@ onMounted(cargarPaneles)
 .banner-info { background:#faf8fd; border:1px solid var(--line); }
 .banner-rechazo { background:#fff4e8; border:1px solid #f5cda0; color:#8a4b00; }
 .rechazo-h { display:flex; align-items:center; gap:8px; }
-.rechazo-h .pi { color:#d35400; }
+.rechazo-h svg { color:#d35400; }
 .rechazo-list { margin:8px 0 0 26px; padding:0; list-style:disc; }
 .rechazo-list li { margin:2px 0; }
 .banner-aviso { display:flex; align-items:flex-start; gap:8px; background:#faf8fd; border-bottom:1px solid var(--line);
   padding:10px 18px; font-size:12px; color:var(--txt2); }
-.banner-aviso .pi { color:var(--p2); margin-top:1px; }
+.banner-aviso svg { color:var(--p2); margin-top:1px; }
 
 .card { background:#fff; border:1px solid var(--line); border-radius:12px; margin-bottom:16px; overflow:hidden; }
 .card-h { padding:13px 18px; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
@@ -1479,7 +1514,7 @@ onMounted(cargarPaneles)
 /* Barra de filtros de la lista de proyectos */
 .filtros { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
 .filtro-busca { position:relative; flex:1; min-width:220px; display:inline-flex; align-items:center; }
-.filtro-busca i { position:absolute; left:11px; color:var(--txt3); font-size:13px; }
+.filtro-busca svg { position:absolute; left:11px; color:var(--txt3); font-size:13px; }
 .filtro-busca input { width:100%; padding:8px 10px 8px 32px; border:1px solid var(--line2); border-radius:9px;
   font-size:13px; color:var(--p1); background:#fff; }
 .filtro-sel { padding:8px 10px; border:1px solid var(--line2); border-radius:9px; font-size:13px; color:var(--p1);

@@ -6,7 +6,7 @@
     <!-- Critical Alerts Banner -->
     <div v-if="criticalAlerts.length" class="rounded-xl overflow-hidden" style="border: 2px solid #D64455;">
       <div class="px-4 py-2.5 flex items-center gap-2" style="background-color: #D64455;">
-        <i class="pi pi-exclamation-triangle text-white" />
+        <TriangleAlertIcon class="text-white size-[1em]" />
         <span class="text-sm font-bold text-white">Alertas Operacionales</span>
         <span class="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(255,255,255,0.2); color: white;">
           {{ criticalAlerts.length }}
@@ -17,13 +17,13 @@
                     class="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-red-100/60">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
                :style="{ backgroundColor: alert.bgColor }">
-            <i :class="[alert.icon, 'text-sm']" :style="{ color: alert.iconColor }" />
+            <component :is="alert.icon" class="text-sm size-[1em]" :style="{ color: alert.iconColor }" />
           </div>
           <div class="min-w-0 flex-1">
             <p class="text-sm font-semibold" style="color: #2C2039;">{{ alert.title }}</p>
             <p class="text-xs" style="color: #6b5a8a;">{{ alert.detail }}</p>
           </div>
-          <i class="pi pi-angle-right text-sm" style="color: #D64455;" />
+          <ChevronRightIcon class="text-sm size-[1em]" style="color: #D64455;" />
         </RouterLink>
       </div>
     </div>
@@ -39,7 +39,7 @@
           <p v-if="kpi.sub" class="text-xs mt-0.5" :style="{ color: kpi.subColor || '#915BD8' }">{{ kpi.sub }}</p>
         </div>
         <div class="w-12 h-12 rounded-xl flex items-center justify-center" :style="{ backgroundColor: kpi.bg }">
-          <i :class="[kpi.icon, 'text-xl']" :style="{ color: kpi.color }" />
+          <component :is="kpi.icon" class="text-xl size-[1em]" :style="{ color: kpi.color }" />
         </div>
       </div>
     </div>
@@ -63,7 +63,7 @@
         </div>
         <p v-else class="text-sm" style="color: #6b5a8a;">Solenium no disponible</p>
         <div v-if="data.gen_solenium_last_date" class="mt-2 text-xs" style="color: #6b5a8a;">
-          <i class="pi pi-database text-[10px] mr-1" style="color: #10B981;" />
+          <DatabaseIcon class="text-[10px] mr-1 size-[1em]" style="color: #10B981;" />
           {{ data.gen_solenium_projects }} plantas sincronizadas · último dato {{ data.gen_solenium_last_date }}
         </div>
       </div>
@@ -151,7 +151,7 @@
           </div>
         </div>
         <div v-else-if="cumplimientoLoading" class="flex items-center gap-2">
-          <i class="pi pi-spin pi-spinner text-sm" style="color: #915BD8;" />
+          <LoaderCircleIcon class="text-sm size-[1em] animate-spin" style="color: #915BD8;" />
           <span class="text-sm" style="color: #6b5a8a;">Consultando generación...</span>
         </div>
         <div v-else>
@@ -166,7 +166,7 @@
                   class="bg-white rounded-xl shadow-sm p-4 flex items-center gap-3 transition-all duration-150 hover:shadow-md"
                   style="border: 1px solid #e8e0f0;">
         <div class="w-10 h-10 rounded-lg flex items-center justify-center" :style="{ backgroundColor: link.bg }">
-          <i :class="[link.icon, 'text-base']" :style="{ color: link.color }" />
+          <component :is="link.icon" class="text-base size-[1em]" :style="{ color: link.color }" />
         </div>
         <span class="text-sm font-medium" style="color: #2C2039;">{{ link.label }}</span>
       </RouterLink>
@@ -177,6 +177,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '~/core/client'
+import { BuildingIcon, ChevronRightIcon, DatabaseIcon, FilePenIcon, LoaderCircleIcon, PowerIcon, ShieldIcon, SunIcon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 
 const data = ref({})
 const cumplimiento = ref(null)
@@ -194,14 +195,14 @@ const topKpis = computed(() => [
     label: 'Proyectos',
     value: data.value.proyectos_total,
     sub: data.value.proyectos_operacion ? `${data.value.proyectos_operacion} en operación` : null,
-    icon: 'pi pi-bolt',
+    icon: ZapIcon,
     bg: 'rgba(145,91,216,0.1)',
     color: '#915BD8',
   },
   {
     label: 'Clientes',
     value: data.value.clientes_total,
-    icon: 'pi pi-building',
+    icon: BuildingIcon,
     bg: 'rgba(44,32,57,0.08)',
     color: '#2C2039',
   },
@@ -210,7 +211,7 @@ const topKpis = computed(() => [
     value: data.value.fallas_abiertas,
     sub: data.value.fallas_criticas_antiguas > 0 ? `${data.value.fallas_criticas_antiguas} críticas >7 días` : null,
     subColor: data.value.fallas_criticas_antiguas > 0 ? '#D64455' : '#915BD8',
-    icon: 'pi pi-exclamation-triangle',
+    icon: TriangleAlertIcon,
     bg: data.value.fallas_abiertas > 0 ? 'rgba(214,68,85,0.1)' : 'rgba(16,185,129,0.1)',
     color: data.value.fallas_abiertas > 0 ? '#D64455' : '#10B981',
   },
@@ -218,7 +219,7 @@ const topKpis = computed(() => [
     label: 'Generación mes',
     value: data.value.mwh_mes ? `${data.value.mwh_mes}` : '—',
     sub: 'MWh',
-    icon: 'pi pi-sun',
+    icon: SunIcon,
     bg: 'rgba(240,192,64,0.15)',
     color: '#D4A017',
   },
@@ -264,7 +265,7 @@ const criticalAlerts = computed(() => {
       detail: data.value.fallas_criticas_antiguas > 0
         ? `${data.value.fallas_criticas_antiguas} con más de 7 días sin atender`
         : 'Requieren atención inmediata',
-      icon: 'pi pi-exclamation-triangle',
+      icon: TriangleAlertIcon,
       iconColor: '#DC2626',
       bgColor: 'rgba(220,38,38,0.1)',
       to: '/fallas',
@@ -276,7 +277,7 @@ const criticalAlerts = computed(() => {
       key: 'cumplimiento-deficit',
       title: `${cumplimientoDeficits.value.length} contrato${cumplimientoDeficits.value.length > 1 ? 's' : ''} PPA en déficit`,
       detail: `${totalDeficit.toFixed(1)} MWh de compras en bolsa necesarias`,
-      icon: 'pi pi-shield',
+      icon: ShieldIcon,
       iconColor: '#D64455',
       bgColor: 'rgba(214,68,85,0.1)',
       to: '/mem/cumplimiento',
@@ -289,7 +290,7 @@ const criticalAlerts = computed(() => {
         key: 'fleet-offline',
         title: `${offline} planta${offline > 1 ? 's' : ''} sin generación`,
         detail: `${data.value.fleet_online}/${data.value.fleet_total} plantas reportando generación`,
-        icon: 'pi pi-power-off',
+        icon: PowerIcon,
         iconColor: '#CA8A04',
         bgColor: 'rgba(202,138,4,0.1)',
         to: '/generacion-solar',
@@ -301,7 +302,7 @@ const criticalAlerts = computed(() => {
       key: 'liquidaciones-pendientes',
       title: `${data.value.liquidaciones_pendientes} proyecto${data.value.liquidaciones_pendientes > 1 ? 's' : ''} sin liquidación este mes`,
       detail: 'Proyectos en operación que requieren liquidación',
-      icon: 'pi pi-file-edit',
+      icon: FilePenIcon,
       iconColor: '#915BD8',
       bgColor: 'rgba(145,91,216,0.1)',
       to: '/liquidaciones',
@@ -311,10 +312,10 @@ const criticalAlerts = computed(() => {
 })
 
 const quickLinks = [
-  { to: '/generacion-solar', label: 'Generación Solar', icon: 'pi pi-sun', bg: 'rgba(240,192,64,0.15)', color: '#D4A017' },
-  { to: '/mem/cumplimiento', label: 'Cumplimiento PPA', icon: 'pi pi-shield', bg: 'rgba(16,185,129,0.1)', color: '#10B981' },
-  { to: '/mem/descubrimientos', label: 'Descubrimientos', icon: 'pi pi-bolt', bg: 'rgba(240,192,64,0.1)', color: '#F0C040' },
-  { to: '/liquidaciones', label: 'Liquidaciones', icon: 'pi pi-file-edit', bg: 'rgba(145,91,216,0.08)', color: '#915BD8' },
+  { to: '/generacion-solar', label: 'Generación Solar', icon: SunIcon, bg: 'rgba(240,192,64,0.15)', color: '#D4A017' },
+  { to: '/mem/cumplimiento', label: 'Cumplimiento PPA', icon: ShieldIcon, bg: 'rgba(16,185,129,0.1)', color: '#10B981' },
+  { to: '/mem/descubrimientos', label: 'Descubrimientos', icon: ZapIcon, bg: 'rgba(240,192,64,0.1)', color: '#F0C040' },
+  { to: '/liquidaciones', label: 'Liquidaciones', icon: FilePenIcon, bg: 'rgba(145,91,216,0.08)', color: '#915BD8' },
 ]
 
 onMounted(async () => {

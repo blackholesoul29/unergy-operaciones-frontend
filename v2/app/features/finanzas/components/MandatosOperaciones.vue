@@ -2,10 +2,10 @@
   <div class="mand-root">
     <!-- B. Navegador de período -->
     <div class="mand-periodo-bar">
-      <i class="pi pi-calendar text-sm" style="color:#6D4AE8" />
-      <button class="mand-nav-btn" @click="cambiarMes(-1)"><i class="pi pi-chevron-left" /></button>
+      <CalendarIcon class="text-sm size-[1em]" style="color:#6D4AE8" />
+      <button class="mand-nav-btn" @click="cambiarMes(-1)"><ChevronLeftIcon class="size-[1em]" /></button>
       <span class="mand-periodo-label">{{ periodoLargo }}</span>
-      <button class="mand-nav-btn" @click="cambiarMes(1)"><i class="pi pi-chevron-right" /></button>
+      <button class="mand-nav-btn" @click="cambiarMes(1)"><ChevronRightIcon class="size-[1em]" /></button>
       <span class="mand-periodo-code">{{ periodo }}</span>
       <span v-if="badgeMes === 'correcciones' || badgeMes === 'cerrado'" class="mand-badge-mes" :class="`mand-badge-mes--${badgeMes}`">
         {{ badgeMes === 'correcciones' ? 'Correcciones pendientes' : 'Mes cerrado' }}
@@ -14,13 +14,13 @@
     </div>
 
     <div v-if="cargando" class="flex justify-center py-10">
-      <i class="pi pi-spin pi-spinner" style="font-size:1.5rem; color:#6D4AE8;" />
+      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.5rem; color:#6D4AE8;" />
     </div>
 
     <div v-else>
       <!-- C. Banner de correcciones -->
       <div v-if="hayBanner" class="mand-banner">
-        <i class="pi pi-envelope" />
+        <MailIcon class="size-[1em]" />
         <div class="mand-banner-txt">
           <strong>Vanessa (revisoría)</strong> reportó {{ correcciones.length }} mandato(s) con novedad.
           <span class="mand-banner-obs">{{ obsBanner }}</span>
@@ -51,7 +51,7 @@
           placeholder="Estado" showClear class="mand-filtro-sel" />
         <Select v-model="filtroTercero" :options="tercerosOpciones" placeholder="Tercero / inversionista"
           showClear filter class="mand-filtro-sel" />
-        <span class="mand-buscar"><i class="pi pi-search" /><input v-model="buscarCmu" type="text" placeholder="Buscar CMU…" /></span>
+        <span class="mand-buscar"><SearchIcon class="size-[1em]" /><input v-model="buscarCmu" type="text" placeholder="Buscar CMU…" /></span>
       </div>
 
       <!-- G. Tabla principal -->
@@ -72,7 +72,7 @@
               </td>
               <td>{{ m.periodo }}</td>
               <td><span class="mand-badge" :class="`mand-badge--${estadoMeta(m.estado).cls}`">
-                <i v-if="estadoMeta(m.estado).cls === 'neutro-alerta'" class="pi pi-exclamation-triangle" style="font-size:10px" />
+                <TriangleAlertIcon class="size-[1em]" v-if="estadoMeta(m.estado).cls === 'neutro-alerta'" style="font-size:10px" />
                 {{ estadoMeta(m.estado).label }}</span></td>
               <td class="mand-obs">{{ m.observacion || '—' }}</td>
               <td><span v-if="m.tiene_pdf" class="mand-doc-ok">Disponible</span><span v-else class="mand-guion">—</span></td>
@@ -84,9 +84,9 @@
               </td>
               <td>
                 <button v-if="m.tiene_pdf_zip || m.tiene_pdf" class="mand-clip-btn" title="Ver PDF" @click="descargarPdf(m)">
-                  <i class="pi pi-paperclip" style="color:#185FA5" />
+                  <PaperclipIcon class="size-[1em]" style="color:#185FA5" />
                 </button>
-                <i v-else class="pi pi-paperclip" style="color:#C9C2D6" />
+                <PaperclipIcon class="size-[1em]" v-else style="color:#C9C2D6" />
               </td>
             </tr>
             <tr v-if="mandatosFiltrados.length === 0">
@@ -98,18 +98,20 @@
 
       <!-- H. Barra de acciones -->
       <div class="mand-acciones">
-        <button class="mand-btn mand-btn--sec" @click="exportarCsv"><i class="pi pi-download" /> Exportar</button>
-        <button class="mand-btn mand-btn--sec" disabled title="Acción interna (Fase B)"><i class="pi pi-send" /> Correo a revisoría</button>
+        <button class="mand-btn mand-btn--sec" @click="exportarCsv"><DownloadIcon class="size-[1em]" /> Exportar</button>
+        <button class="mand-btn mand-btn--sec" disabled title="Acción interna (Fase B)"><SendIcon class="size-[1em]" /> Correo a revisoría</button>
         <span class="mand-acciones-sep" />
         <label class="mand-btn mand-btn--pri">
-          <i :class="subiendoPdf ? 'pi pi-spin pi-spinner' : 'pi pi-upload'" /> Subir firmados
+          <LoaderCircleIcon v-if="subiendoPdf" class="size-[1em] animate-spin" />
+          <UploadIcon v-else class="size-[1em]" /> Subir firmados
           <input type="file" accept=".pdf" class="hidden" @change="onSubirFirmado" />
         </label>
         <label class="mand-btn mand-btn--pri">
-          <i :class="subiendoZip ? 'pi pi-spin pi-spinner' : 'pi pi-file-import'" /> Cargar ZIP de mandatos
+          <LoaderCircleIcon v-if="subiendoZip" class="size-[1em] animate-spin" />
+          <FileInputIcon v-else class="size-[1em]" /> Cargar ZIP de mandatos
           <input type="file" accept=".zip" class="hidden" @change="abrirDialogoZip" />
         </label>
-        <button class="mand-btn mand-btn--pri" disabled title="Acción interna (Fase B)"><i class="pi pi-share-alt" /> Enviar a inversionistas</button>
+        <button class="mand-btn mand-btn--pri" disabled title="Acción interna (Fase B)"><Share2Icon class="size-[1em]" /> Enviar a inversionistas</button>
       </div>
     </div>
 
@@ -122,7 +124,8 @@
         <div class="mand-modal-acciones">
           <button class="mand-btn mand-btn--sec" @click="mostrarDialogoZip = false">Cancelar</button>
           <button class="mand-btn mand-btn--pri" :disabled="subiendoZip || !periodoZip" @click="confirmarCargaZip">
-            <i :class="subiendoZip ? 'pi pi-spin pi-spinner' : 'pi pi-check'" /> Confirmar
+            <LoaderCircleIcon v-if="subiendoZip" class="size-[1em] animate-spin" />
+            <CheckIcon v-else class="size-[1em]" /> Confirmar
           </button>
         </div>
       </div>
@@ -131,11 +134,11 @@
     <!-- Panel de resumen de la carga -->
     <div v-if="resumenZip" class="mand-resumen">
       <div class="mand-resumen-head">
-        <span><i class="pi pi-check-circle" style="color:#3B6D11" /> {{ resumenZip.detectados }} mandatos detectados</span>
-        <span><i class="pi pi-check-circle" style="color:#3B6D11" /> {{ resumenZip.identificados_auto }} inversionistas identificados</span>
-        <span v-if="resumenZip.sin_inversionista"><i class="pi pi-exclamation-triangle" style="color:#854F0B" /> {{ resumenZip.sin_inversionista }} sin inversionista</span>
+        <span><CircleCheckIcon class="size-[1em]" style="color:#3B6D11" /> {{ resumenZip.detectados }} mandatos detectados</span>
+        <span><CircleCheckIcon class="size-[1em]" style="color:#3B6D11" /> {{ resumenZip.identificados_auto }} inversionistas identificados</span>
+        <span v-if="resumenZip.sin_inversionista"><TriangleAlertIcon class="size-[1em]" style="color:#854F0B" /> {{ resumenZip.sin_inversionista }} sin inversionista</span>
         <span v-if="resumenZip.omitidos">· {{ resumenZip.omitidos }} omitidos (ya existían)</span>
-        <button class="mand-resumen-x" @click="resumenZip = null"><i class="pi pi-times" /></button>
+        <button class="mand-resumen-x" @click="resumenZip = null"><XIcon class="size-[1em]" /></button>
       </div>
       <div v-if="resumenZip.sugerencias?.length" class="mand-sugerencias">
         <p class="mand-sug-titulo">Sugerencias de inversionista (confirma cada una):</p>
@@ -157,9 +160,9 @@
 import { ref, computed, onMounted } from 'vue'
 import Select from 'primevue/select'
 import api from '~/core/client'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
+import { CalendarIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleCheckIcon, DownloadIcon, FileInputIcon, LoaderCircleIcon, MailIcon, PaperclipIcon, SearchIcon, SendIcon, Share2Icon, TriangleAlertIcon, UploadIcon, XIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 const MESES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
@@ -208,10 +211,9 @@ async function confirmarCargaZip() {
     const [y, m] = periodoZip.value.split('-')
     anio.value = Number(y); mes.value = Number(m)
     await cargar()
-    toast.add({ severity: 'success', summary: `ZIP cargado: ${data.creados} creados`, life: 4000 })
+    toast.success(`ZIP cargado: ${data.creados} creados`, { duration: 4000 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo cargar el ZIP',
-      detail: err.response?.data?.detail || '', life: 4000 })
+    toast.error('No se pudo cargar el ZIP', { description: err.response?.data?.detail || '', duration: 4000 })
   } finally {
     subiendoZip.value = false
     archivoZip.value = null
@@ -223,9 +225,9 @@ async function asignarSugerencia(s) {
     await api.patch(`/mandatos/${s.mandato_id}`, { inversionista_id: s.sugerido_id, estado: 'pendiente_envio' })
     resumenZip.value.sugerencias = resumenZip.value.sugerencias.filter(x => x.mandato_id !== s.mandato_id)
     await cargar()
-    toast.add({ severity: 'success', summary: `${s.cmu} → ${s.sugerido_nombre}`, life: 2500 })
+    toast.success(`${s.cmu} → ${s.sugerido_nombre}`, { duration: 2500 })
   } catch {
-    toast.add({ severity: 'error', summary: 'No se pudo asignar', life: 3000 })
+    toast.error('No se pudo asignar', { duration: 3000 })
   }
 }
 
@@ -236,7 +238,7 @@ async function descargarPdf(m) {
     window.open(url, '_blank')
     setTimeout(() => URL.revokeObjectURL(url), 60000)
   } catch {
-    toast.add({ severity: 'error', summary: 'No se pudo abrir el PDF', life: 3000 })
+    toast.error('No se pudo abrir el PDF', { duration: 3000 })
   }
 }
 
@@ -256,13 +258,13 @@ async function onSubirFirmado(e) {
     fd.append('file', archivo)
     const { data } = await api.post('/mandatos/upload-firmado', fd)
     if (data.asociado) {
-      toast.add({ severity: 'success', summary: `PDF asociado a ${data.mandato.cmu}`, life: 3000 })
+      toast.success(`PDF asociado a ${data.mandato.cmu}`, { duration: 3000 })
     } else {
-      toast.add({ severity: 'warn', summary: 'PDF subido', detail: data.mensaje, life: 5000 })
+      toast.warning('PDF subido', { description: data.mensaje, duration: 5000 })
     }
     await cargar()
   } catch {
-    toast.add({ severity: 'error', summary: 'No se pudo subir el PDF', life: 3000 })
+    toast.error('No se pudo subir el PDF', { duration: 3000 })
   } finally {
     subiendoPdf.value = false
     e.target.value = ''
@@ -413,7 +415,7 @@ defineExpose({ cargar })
 .mand-filtro-sel { min-width: 200px; }
 .mand-buscar { display: inline-flex; align-items: center; gap: 6px; background: #fff; border: 1px solid #E5E2EC; border-radius: 8px; padding: 6px 10px; }
 .mand-buscar input { border: none; outline: none; font-size: 13px; }
-.mand-buscar i { color: #B0A8C0; font-size: 12px; }
+.mand-buscar svg { color: #B0A8C0; font-size: 12px; }
 @media (max-width: 720px) { .mand-metricas { grid-template-columns: repeat(2, 1fr); } }
 .mand-tabla { width: 100%; border-collapse: collapse; font-size: 13px; }
 .mand-tabla thead th { text-align: left; font-size: 11px; font-weight: 700; color: #8B7BA8; padding: 10px 12px; border-bottom: 1px solid #ECE7F2; white-space: nowrap; }
@@ -437,7 +439,7 @@ defineExpose({ cargar })
 .mand-badge--neutro { background: #F0EEF4; color: #8B7BA8; }
 .mand-badge--neutro-alerta { background: #F0EEF4; color: #8B7BA8; }
 .mand-banner { display: flex; align-items: center; gap: 12px; background: #FAEEDA; border: 1px solid #F0DDB8; border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; color: #854F0B; }
-.mand-banner > i { font-size: 16px; }
+.mand-banner > svg { font-size: 16px; }
 .mand-banner-txt { font-size: 13px; flex: 1; }
 .mand-banner-obs { display: block; font-size: 12px; opacity: .85; }
 .mand-banner-btn { background: #fff; border: 1px solid #E6CF9E; color: #854F0B; font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 8px; cursor: pointer; }

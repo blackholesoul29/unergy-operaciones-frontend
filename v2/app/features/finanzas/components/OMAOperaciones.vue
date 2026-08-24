@@ -7,14 +7,14 @@
         <div class="flex items-center gap-2">
           <button type="button" @click="cambiarMes(-1)"
             class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-            <i class="pi pi-chevron-left text-xs text-gray-500" />
+            <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
           </button>
           <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
             {{ periodoLabel }}
           </span>
           <button type="button" @click="cambiarMes(1)"
             class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-            <i class="pi pi-chevron-right text-xs text-gray-500" />
+            <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
           </button>
         </div>
         <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
@@ -22,8 +22,9 @@
 
       <div class="flex items-center gap-2">
         <div class="relative">
-          <Button label="Columnas" icon="pi pi-table" size="small" outlined severity="secondary"
-            @click="showColMenu = !showColMenu" />
+          <Button label="Columnas" size="small" outlined severity="secondary" @click="showColMenu = !showColMenu">
+            <template #icon><TableIcon class="size-[1em]" /></template>
+          </Button>
           <div v-if="showColMenu"
             class="absolute right-0 top-8 z-50 bg-white border border-gray-200 rounded-xl shadow-lg p-3 space-y-1"
             style="min-width:240px">
@@ -35,13 +36,12 @@
             </label>
           </div>
         </div>
-        <Button label="IPC" icon="pi pi-chart-line" size="small" outlined
-          @click="showIPCDialog = true"
-          style="border-color:#915BD8;color:#915BD8" />
-        <Button label="Guardar selección" icon="pi pi-save" size="small"
-          :loading="guardando"
-          style="background:#915BD8;border-color:#915BD8"
-          @click="guardarSeleccion" />
+        <Button label="IPC" size="small" outlined @click="showIPCDialog = true" style="border-color:#915BD8;color:#915BD8">
+          <template #icon><ChartLineIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Guardar selección" size="small" :loading="guardando" style="background:#915BD8;border-color:#915BD8" @click="guardarSeleccion">
+          <template #icon><SaveIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -50,7 +50,7 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="filtroTexto" placeholder="Nombre del proyecto…" class="w-56" />
         </IconField>
       </div>
@@ -78,7 +78,7 @@
     <div v-if="notificacionIPC"
       class="rounded-xl border p-3 flex items-start gap-3"
       style="background:#fef3c7;border-color:#f59e0b40">
-      <i class="pi pi-exclamation-triangle text-sm flex-shrink-0 mt-0.5" style="color:#d97706"/>
+      <TriangleAlertIcon class="text-sm flex-shrink-0 mt-0.5 size-[1em]" style="color:#d97706" />
       <div class="flex-1 text-xs">
         <p class="font-semibold mb-1" style="color:#92400e">
           Nueva tasa IPC {{ notificacionIPC.año }}: {{ (notificacionIPC.tasa * 100).toFixed(2) }}%
@@ -95,13 +95,13 @@
         </div>
       </div>
       <button type="button" @click="notificacionIPC = null" class="text-gray-400 hover:text-gray-600">
-        <i class="pi pi-times text-xs"/>
+        <XIcon class="text-xs size-[1em]" />
       </button>
     </div>
 
     <!-- ── Tabla ──────────────────────────────────────────────────────── -->
     <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center border" style="border-color:#ECE7F2">
-      <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
+      <LoaderCircleIcon class="text-2xl text-gray-400 size-[1em] animate-spin" />
     </div>
     <div v-else-if="!filasFiltradas.length"
       class="bg-white rounded-xl shadow-sm p-10 text-center text-sm text-gray-400 border" style="border-color:#ECE7F2">
@@ -118,8 +118,7 @@
         <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ background: sec.dot }" />
         <span class="font-semibold text-gray-800 text-sm flex-1">{{ sec.label }}</span>
         <span class="text-xs text-gray-400 font-medium">({{ sec.items.length }})</span>
-        <i class="pi pi-chevron-down text-gray-400 text-xs ml-2 transition-transform duration-200"
-          :class="{ 'rotate-180': openSections.has(sec.tipo) }" />
+        <ChevronDownIcon class="text-gray-400 text-xs ml-2 transition-transform duration-200 size-[1em]" :class="{ 'rotate-180': openSections.has(sec.tipo) }" />
       </button>
 
       <!-- Tabla colapsable de la sección -->
@@ -189,19 +188,19 @@
                   class="inline-flex items-center gap-1 ml-1.5 text-[10px] font-normal px-1.5 py-0.5 rounded-full align-middle"
                   style="background:#fef3c7; color:#92400e"
                   :title="fila.historial_indexaciones">
-                  <i class="pi pi-exclamation-triangle text-[9px]" />{{ fila.historial_indexaciones }}
+                  <TriangleAlertIcon class="text-[9px] size-[1em]" />{{ fila.historial_indexaciones }}
                 </span>
                 <span v-else-if="!fila.aplica_este_mes"
                   class="inline-flex items-center gap-1 ml-1.5 text-[10px] font-normal px-1.5 py-0.5 rounded-full align-middle"
                   style="background:#e5e7eb; color:#4b5563"
                   title="Según su periodicidad, a este proyecto no le corresponde cobro este mes.">
-                  <i class="pi pi-clock text-[9px]" />no aplica este mes
+                  <ClockIcon class="text-[9px] size-[1em]" />no aplica este mes
                 </span>
                 <span v-if="fila.motivo_exclusion"
                   class="inline-flex items-center gap-1 ml-1.5 text-[10px] font-normal px-1.5 py-0.5 rounded-full align-middle cursor-help"
                   style="background:#fee2e2; color:#991b1b"
                   :title="'Excluido este mes — motivo: ' + fila.motivo_exclusion">
-                  <i class="pi pi-comment text-[9px]" />excluido
+                  <MessageSquareIcon class="text-[9px] size-[1em]" />excluido
                 </span>
               </td>
               <td class="px-4 py-2 whitespace-nowrap" :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
@@ -235,20 +234,14 @@
                 <!-- Valor a facturar: SOLO LECTURA (se edita en Proyecto>Detalle>Servicios) -->
                 <div class="flex items-center justify-end gap-1.5">
                   <span class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                    <i v-if="fila.habilitado" class="pi pi-info-circle text-[11px] cursor-pointer"
-                      style="color:#915BD8" title="Ver cálculo"
-                      @click="mostrarInfo($event, fila)" />
+                    <InfoIcon class="text-[11px] cursor-pointer size-[1em]" v-if="fila.habilitado" style="color:#915BD8" title="Ver cálculo" @click="mostrarInfo($event, fila)" />
                   </span>
                   <!-- Indicador de modificación manual (histórico) -->
                   <span v-if="esManual(fila)" title="Valor modificado manualmente"
                     style="color:#f59e0b; font-size:12px; line-height:1">●</span>
                   <!-- Avisos: IPC incompleto (#5) y override desactualizado (#6) -->
-                  <i v-if="fila.ipc_incompleto" class="pi pi-exclamation-triangle text-[10px]"
-                    style="color:#d97706"
-                    title="Falta la tasa IPC de algún año; la indexación de este proyecto es parcial." />
-                  <i v-if="fila.valor_manual_desactualizado" class="pi pi-exclamation-triangle text-[10px]"
-                    style="color:#dc2626"
-                    title="El valor manual difiere del recalculado; revísalo tras el cambio de IPC." />
+                  <TriangleAlertIcon class="text-[10px] size-[1em]" v-if="fila.ipc_incompleto" style="color:#d97706" title="Falta la tasa IPC de algún año; la indexación de este proyecto es parcial." />
+                  <TriangleAlertIcon class="text-[10px] size-[1em]" v-if="fila.valor_manual_desactualizado" style="color:#dc2626" title="El valor manual difiere del recalculado; revísalo tras el cambio de IPC." />
                   <span class="font-semibold tabular-nums"
                     :style="(fila.incluido && fila.habilitado) ? 'color:#7c3aed' : 'color:#9ca3af'">
                     {{ valorEfectivo(fila) != null ? formatCOP(valorEfectivo(fila)) : '—' }}
@@ -278,7 +271,8 @@
                   :title="fila.facturado
                     ? 'Facturado — clic para desmarcar (descongela y recalcula el valor)'
                     : 'Clic para marcar como facturado (congela el valor de este mes)'">
-                  <i :class="fila.facturado ? 'pi pi-check' : 'pi pi-circle'" class="text-[10px]"/>{{ fila.facturado ? 'Sí' : 'No' }}
+                  <CheckIcon v-if="fila.facturado" class="text-[10px] size-[1em]" />
+                  <CircleIcon v-else class="text-[10px] size-[1em]" />{{ fila.facturado ? 'Sí' : 'No' }}
                 </button>
                 <span v-else class="text-xs text-gray-300">—</span>
               </td>
@@ -323,8 +317,7 @@
       :style="facturaProveedor.nombre_archivo
         ? 'background:#f0fdf4;border-color:#bbf7d0'
         : 'background:#fafafa;border-color:#e5e7eb'">
-      <i class="pi pi-file-pdf text-sm flex-shrink-0"
-        :style="facturaProveedor.nombre_archivo ? 'color:#16a34a' : 'color:#d1d5db'"/>
+      <FileTextIcon class="text-sm flex-shrink-0 size-[1em]" :style="facturaProveedor.nombre_archivo ? 'color:#16a34a' : 'color:#d1d5db'" />
       <div class="flex-1 min-w-0">
         <p class="text-xs font-semibold"
           :style="facturaProveedor.nombre_archivo ? 'color:#15803d' : 'color:#9ca3af'">
@@ -341,13 +334,13 @@
         @click="descargarFacturaProveedor"
         class="flex items-center gap-1 text-xs font-medium hover:underline flex-shrink-0"
         style="color:#15803d;background:none;border:none;padding:0;cursor:pointer">
-        <i class="pi pi-download text-xs"/>Descargar
+        <DownloadIcon class="text-xs size-[1em]" />Descargar
       </button>
       <a v-else-if="facturaProveedor.enlace_pdf"
         :href="facturaProveedor.enlace_pdf" target="_blank" rel="noopener"
         class="flex items-center gap-1 text-xs font-medium hover:underline flex-shrink-0"
         style="color:#915BD8">
-        <i class="pi pi-external-link text-xs"/>Ver
+        <ExternalLinkIcon class="text-xs size-[1em]" />Ver
       </a>
     </div>
 
@@ -374,7 +367,7 @@
     <Popover ref="infoPopover">
       <div v-if="filaInfo" class="text-xs" style="min-width:280px; color:#2C2039">
         <p class="font-semibold mb-2 flex items-center gap-1.5" style="color:#7c3aed">
-          <i class="pi pi-chart-bar text-[11px]" /> Cálculo del Valor a Facturar
+          <ChartColumnIcon class="text-[11px] size-[1em]" /> Cálculo del Valor a Facturar
         </p>
         <div class="space-y-1 font-mono">
           <div class="flex justify-between gap-6">
@@ -403,7 +396,7 @@
         <div v-if="filaInfo.ipc_incompleto"
           class="mt-2 rounded-md p-2 text-[11px] flex items-start gap-1.5"
           style="background:#fffbeb; color:#92400e">
-          <i class="pi pi-exclamation-triangle text-[11px] mt-0.5" style="color:#d97706" />
+          <TriangleAlertIcon class="text-[11px] mt-0.5 size-[1em]" style="color:#d97706" />
           <span>Falta la tasa IPC de algún año del período; la indexación mostrada es parcial. Cárgala con el botón IPC.</span>
         </div>
         <div class="border-t mt-2 pt-2">
@@ -416,7 +409,7 @@
         <div v-if="esManual(filaInfo)"
           class="mt-2 pt-2 border-t rounded-md p-2 text-[11px] flex items-start gap-1.5"
           style="background:#fffbeb; color:#92400e">
-          <i class="pi pi-exclamation-triangle text-[11px] mt-0.5" style="color:#d97706" />
+          <TriangleAlertIcon class="text-[11px] mt-0.5 size-[1em]" style="color:#d97706" />
           <div class="flex-1">
             <p>⚠️ Valor modificado manualmente.</p>
             <p class="mt-0.5">Original calculado:
@@ -474,9 +467,9 @@
               <InputText v-model="ipcForm.fuente" class="w-full" placeholder="DANE" />
             </div>
           </div>
-          <Button label="Guardar tasa" icon="pi pi-check" size="small" :loading="guardandoIPC"
-            @click="guardarIPC"
-            style="background:#915BD8;border-color:#915BD8" />
+          <Button label="Guardar tasa" size="small" :loading="guardandoIPC" @click="guardarIPC" style="background:#915BD8;border-color:#915BD8">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </Dialog>
@@ -499,12 +492,12 @@ import Select        from 'primevue/select'
 import IconField     from 'primevue/iconfield'
 import InputIcon     from 'primevue/inputicon'
 import Popover       from 'primevue/popover'
-import { useToast }  from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api           from '~/core/client'
 import DocumentoIcon  from '~/components/DocumentoIcon.vue'
 import { parseCOP }   from '~/utils/parseCOP'
+import { ChartColumnIcon, ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, CircleIcon, ClockIcon, DownloadIcon, ExternalLinkIcon, FileTextIcon, InfoIcon, LoaderCircleIcon, MessageSquareIcon, SaveIcon, SearchIcon, TableIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 // Autofocus para el input de edición inline (expuesto como v-focus)
 const vFocus = { mounted: (el) => el.focus() }
@@ -748,7 +741,7 @@ async function cargarDatos() {
     })
   } catch (e) {
     if (periodoReq !== periodoActual.value) return   // error de una petición ya descartada
-    toast.add({ severity: 'error', summary: 'Error al cargar', life: 3000 })
+    toast.error('Error al cargar', { duration: 3000 })
   } finally {
     if (periodoReq === periodoActual.value) loading.value = false
   }
@@ -801,9 +794,9 @@ async function _ejecutarGuardado(motivos) {
     await api.post(`/om/seleccion/${periodoActual.value}`, { items })
     Object.keys(overrides).forEach(k => delete overrides[k])
     await cargarDatos()
-    toast.add({ severity: 'success', summary: 'Selección guardada', life: 2500 })
+    toast.success('Selección guardada', { duration: 2500 })
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al guardar', life: 3000 })
+    toast.error('Error al guardar', { duration: 3000 })
   } finally {
     guardando.value = false
   }
@@ -819,7 +812,7 @@ async function guardarIPC() {
       confirmado: true,
       fuente: ipcForm.fuente || 'manual',
     })
-    toast.add({ severity: 'success', summary: 'Tasa IPC guardada', life: 2500 })
+    toast.success('Tasa IPC guardada', { duration: 2500 })
     const ipcRes = await api.get('/om/ipc')
     ipcTasas.value = ipcRes.data
     await cargarDatos()
@@ -839,7 +832,7 @@ async function guardarIPC() {
       notificacionIPC.value = { año: ipcForm.año, tasa: ipcForm.tasaPct / 100, afectados }
     }
   } catch {
-    toast.add({ severity: 'error', summary: 'Error al guardar IPC', life: 3000 })
+    toast.error('Error al guardar IPC', { duration: 3000 })
   } finally {
     guardandoIPC.value = false
   }
@@ -877,10 +870,12 @@ async function descargarFacturaProveedor() {
     setTimeout(() => URL.revokeObjectURL(url), 100)
   } catch (e) {
     if (e.response?.status === 404) {
-      toast.add({ severity: 'warn', summary: 'Archivo no disponible',
-        detail: 'La factura de este período ya no está en el servidor. Vuelve a subirla desde la pestaña Proveedor.', life: 6000 })
+      toast.warning('Archivo no disponible', {
+        description: 'La factura de este período ya no está en el servidor. Vuelve a subirla desde la pestaña Proveedor.',
+        duration: 6000,
+      })
     } else {
-      toast.add({ severity: 'error', summary: 'Error al descargar factura', life: 3000 })
+      toast.error('Error al descargar factura', { duration: 3000 })
     }
   }
 }
@@ -895,7 +890,7 @@ async function toggleFacturado(fila) {
     await api.patch(`/om/seleccion/${periodoActual.value}/${fila.contrato_id}/facturado`)
     await cargarDatos()
   } catch {
-    toast.add({ severity: 'error', summary: 'No se pudo cambiar el estado facturado', life: 3000 })
+    toast.error('No se pudo cambiar el estado facturado', { duration: 3000 })
   } finally {
     togglingFacturado[fila.contrato_id] = false
   }
@@ -916,10 +911,12 @@ async function descargarDocumento(fila) {
     setTimeout(() => URL.revokeObjectURL(url), 100)
   } catch (e) {
     if (e.response?.status === 404) {
-      toast.add({ severity: 'warn', summary: 'Archivo no disponible',
-        detail: 'El documento de este proyecto ya no está en el servidor. Vuelve a subir la factura del período desde Proveedor.', life: 6000 })
+      toast.warning('Archivo no disponible', {
+        description: 'El documento de este proyecto ya no está en el servidor. Vuelve a subir la factura del período desde Proveedor.',
+        duration: 6000,
+      })
     } else {
-      toast.add({ severity: 'error', summary: 'Error al descargar documento', life: 3000 })
+      toast.error('Error al descargar documento', { duration: 3000 })
     }
   } finally {
     descargando[fila.contrato_id] = false
@@ -934,11 +931,9 @@ watch(periodoActual, () => {
   Object.keys(overrides).forEach(k => delete overrides[k])
   editando.value = null
   if (habiaSinGuardar) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Ediciones sin guardar descartadas',
-      detail: 'Cambiaste de período sin guardar — los valores editados de ese mes no se aplicaron.',
-      life: 4000,
+    toast.warning('Ediciones sin guardar descartadas', {
+      description: 'Cambiaste de período sin guardar — los valores editados de ese mes no se aplicaron.',
+      duration: 4000,
     })
   }
   cargarDatos()
@@ -950,11 +945,9 @@ onBeforeUnmount(() => {
   // Al cambiar de sub-tab (Operaciones/Proveedor) el v-if desmonta este componente y
   // se perderían las ediciones inline sin guardar. Avisamos, igual que al cambiar de mes.
   if (Object.values(overrides).some(o => o.dirty)) {
-    toast.add({
-      severity: 'warn',
-      summary: 'Ediciones sin guardar descartadas',
-      detail: 'Saliste de esta vista sin guardar — los valores editados no se aplicaron.',
-      life: 4000,
+    toast.warning('Ediciones sin guardar descartadas', {
+      description: 'Saliste de esta vista sin guardar — los valores editados no se aplicaron.',
+      duration: 4000,
     })
   }
 })

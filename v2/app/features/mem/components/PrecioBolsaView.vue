@@ -3,9 +3,11 @@
     <!-- Header -->
     <PageHeader title="Mercado de Energía" subtitle="Precios de bolsa XM + Pronóstico Clima">
       <template #lead>
-        <Button icon="pi pi-arrow-left" text @click="$router.back()" class="-ml-2" />
+        <Button text @click="$router.back()" class="-ml-2">
+          <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+        </Button>
         <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#915BD822">
-          <i class="pi pi-chart-line text-sm" style="color:#915BD8" />
+          <ChartLineIcon class="text-sm size-[1em]" style="color:#915BD8" />
         </div>
       </template>
     </PageHeader>
@@ -31,7 +33,7 @@
     <!-- ═══ TAB 0: Precios de Bolsa ═══ -->
     <template v-if="!loading && activeTab === 0">
       <div v-if="!spot" class="flex flex-col items-center py-12 gap-2 text-gray-400">
-        <i class="pi pi-cloud-download text-3xl" />
+        <CloudDownloadIcon class="text-3xl size-[1em]" />
         <p class="text-sm">Sin datos de predespacho disponibles.</p>
       </div>
 
@@ -142,7 +144,7 @@
     <!-- ═══ TAB 1: Clima / Pronóstico ═══ -->
     <template v-if="!loading && activeTab === 1">
       <div v-if="!clima || !clima.models_available" class="flex flex-col items-center py-12 gap-2 text-gray-400">
-        <i class="pi pi-cloud text-3xl" />
+        <CloudIcon class="text-3xl size-[1em]" />
         <p class="text-sm">Modelos de pronóstico no disponibles.</p>
         <p class="text-xs">Los endpoints están activos — ejecute el pipeline de entrenamiento.</p>
       </div>
@@ -177,7 +179,8 @@
                   'inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2 py-0.5',
                   data.direction?.includes('COMPRAR') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                 ]">
-                  <i :class="data.direction?.includes('COMPRAR') ? 'pi pi-arrow-down' : 'pi pi-arrow-up'" class="text-[10px]" />
+                  <ArrowDownIcon v-if="data.direction?.includes('COMPRAR')" class="text-[10px] size-[1em]" />
+                  <ArrowUpIcon v-else class="text-[10px] size-[1em]" />
                   {{ data.direction }}
                 </span>
               </template>
@@ -214,7 +217,7 @@
     <!-- ═══ TAB 2: Histórico ═══ -->
     <template v-if="!loading && activeTab === 2">
       <div v-if="!histPrices.length" class="flex flex-col items-center py-12 gap-2 text-gray-400">
-        <i class="pi pi-database text-3xl" />
+        <DatabaseIcon class="text-3xl size-[1em]" />
         <p class="text-sm">Sin datos históricos.</p>
       </div>
 
@@ -289,6 +292,7 @@ import ProgressSpinner from 'primevue/progressspinner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import api from '~/core/client'
+import { ArrowDownIcon, ArrowLeftIcon, ArrowUpIcon, ChartLineIcon, CloudDownloadIcon, CloudIcon, DatabaseIcon } from '@lucide/vue'
 
 const TABS = ['Precios de Bolsa', 'Clima / Pronóstico', 'Histórico']
 const activeTab = ref(0)

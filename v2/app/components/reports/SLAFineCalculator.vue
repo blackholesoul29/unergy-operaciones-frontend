@@ -1,8 +1,8 @@
 <template>
   <div class="slc-card" :class="metrics?.breached ? 'slc-card--warn' : 'slc-card--ok'">
     <div class="slc-head">
-      <i :class="metrics?.breached ? 'pi pi-exclamation-triangle' : 'pi pi-check-circle'"
-         :style="{ color: metrics?.breached ? '#D97706' : '#15803D' }" />
+      <TriangleAlertIcon v-if="metrics?.breached" class="size-[1em]" :style="{ color: metrics?.breached ? '#D97706' : '#15803D' }" />
+      <CircleCheckIcon v-else class="size-[1em]" :style="{ color: metrics?.breached ? '#D97706' : '#15803D' }" />
       <h3 class="slc-title">Calculadora de multa SLA</h3>
       <span class="slc-status" :class="metrics?.breached ? 'slc-status--warn' : 'slc-status--ok'">
         {{ metrics?.breached ? 'Umbral incumplido' : 'Dentro del umbral' }}
@@ -45,7 +45,7 @@
         </div>
       </div>
       <div v-else class="slc-okmsg">
-        <i class="pi pi-shield" /> Sin multa proyectada: la generación cumple la obligación contractual.
+        <ShieldIcon class="size-[1em]" /> Sin multa proyectada: la generación cumple la obligación contractual.
       </div>
     </div>
   </div>
@@ -54,6 +54,7 @@
 <script setup>
 import { computed } from 'vue'
 import { formatCurrency, formatMWh } from '~/utils/financialCalculations'
+import { CircleCheckIcon, ShieldIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const props = defineProps({
   // complianceMetrics del servicio agregador:

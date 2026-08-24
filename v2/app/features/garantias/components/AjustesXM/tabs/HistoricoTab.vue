@@ -2,21 +2,26 @@
   <div class="space-y-5">
     <!-- Barra superior -->
     <div class="flex flex-wrap gap-2 justify-end">
-      <Button label="Exportar a Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small"
-        @click="exportarExcel" />
+      <Button label="Exportar a Excel" severity="secondary" outlined size="small" @click="exportarExcel">
+        <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- Loading (solo en la primera carga, cuando aún no hay datos) -->
     <div v-if="loading && !historial.length" class="text-center py-6 space-y-3" style="color:#6b5a8a">
       <p>Cargando…</p>
       <p class="text-xs" style="color:#9ca3af">Si tarda, el servidor puede estar despertando (arranque en frío).</p>
-      <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined @click="cargar()" />
+      <Button label="Reintentar" size="small" outlined @click="cargar()">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- Error de carga (solo si no hay datos que mostrar) -->
     <div v-else-if="errorMsg && !historial.length" class="rounded-lg p-4 text-center space-y-2" style="background:#FEF2F2;border:1px solid rgba(214,68,85,0.2)">
       <p class="text-sm" style="color:#D64455">No se pudo cargar el historial: {{ errorMsg }}</p>
-      <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined @click="cargar()" />
+      <Button label="Reintentar" size="small" outlined @click="cargar()">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- Si ya hay datos, se renderizan siempre (una recarga en curso no oculta el contenido) -->
@@ -62,8 +67,8 @@
             class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/60 transition-colors"
             @click="toggleMes(grupo.mes)">
             <span class="flex items-center gap-2">
-              <i class="pi text-xs" :class="mesesAbiertos[grupo.mes] ? 'pi-chevron-down' : 'pi-chevron-right'"
-                style="color:#915BD8" />
+              <ChevronDownIcon v-if="mesesAbiertos[grupo.mes]" class="text-xs size-[1em]" style="color:#915BD8" />
+              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color:#915BD8" />
               <span class="text-sm font-semibold capitalize" style="color:#2C2039">{{ grupo.label }}</span>
             </span>
             <span class="text-[11px] font-medium px-2 py-0.5 rounded-full"
@@ -86,16 +91,18 @@
                   {{ cifraClave(r) }}
                 </span>
                 <div class="flex items-center gap-0.5 shrink-0">
-                  <Button v-if="r.snapshot" icon="pi pi-eye" text rounded size="small" severity="secondary"
-                    v-tooltip.top="'Ver hoja madre'"
-                    :style="snapshotAbierto === r.id ? 'color:#915BD8' : ''"
-                    @click="toggleSnapshot(r.id)" />
-                  <Button v-else icon="pi pi-eye-slash" text rounded size="small" severity="secondary" disabled
-                    v-tooltip.top="'Sin detalle guardado'" />
-                  <Button icon="pi pi-pencil" text rounded size="small" severity="secondary"
-                    @click="abrirEditar(r)" />
-                  <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-                    @click="eliminar(r.id)" />
+                  <Button v-if="r.snapshot" text rounded size="small" severity="secondary" v-tooltip.top="'Ver hoja madre'" :style="snapshotAbierto === r.id ? 'color:#915BD8' : ''" @click="toggleSnapshot(r.id)">
+                    <template #icon><EyeIcon class="size-[1em]" /></template>
+                  </Button>
+                  <Button v-else text rounded size="small" severity="secondary" disabled v-tooltip.top="'Sin detalle guardado'">
+                    <template #icon><EyeOffIcon class="size-[1em]" /></template>
+                  </Button>
+                  <Button text rounded size="small" severity="secondary" @click="abrirEditar(r)">
+                    <template #icon><PencilIcon class="size-[1em]" /></template>
+                  </Button>
+                  <Button text rounded size="small" severity="danger" @click="eliminar(r.id)">
+                    <template #icon><Trash2Icon class="size-[1em]" /></template>
+                  </Button>
                 </div>
               </div>
               <!-- Hoja madre expandida -->
@@ -108,7 +115,7 @@
       </div>
 
       <div v-else class="py-12 text-center" style="color:#6b5a8a">
-        <i class="pi pi-inbox text-3xl mb-2 block" style="color:#c4b8d4" />
+        <InboxIcon class="text-3xl mb-2 block size-[1em]" style="color:#c4b8d4" />
         No hay registros en el historial. Confirma un reporte desde Semanales, TXR o Mensuales.
       </div>
     </template>
@@ -135,6 +142,7 @@ import { exportHistorialExcel } from '../utils/excelExport.js'
 import Button from 'primevue/button'
 import HojaMadreView from '../HojaMadreView.vue'
 import EditAjusteDialog from '../EditAjusteDialog.vue'
+import { ChevronDownIcon, ChevronRightIcon, EyeIcon, EyeOffIcon, FileSpreadsheetIcon, InboxIcon, PencilIcon, RefreshCwIcon, Trash2Icon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 

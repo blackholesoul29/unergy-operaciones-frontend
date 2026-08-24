@@ -5,10 +5,10 @@
     <div class="sl-tabbar">
       <div class="sl-tabs">
         <button :class="['sl-tab', tab === 'live' && 'sl-tab--active']" @click="tab = 'live'">
-          <i class="pi pi-bolt" /> Tiempo Real
+          <ZapIcon class="size-[1em]" /> Tiempo Real
         </button>
         <button :class="['sl-tab', tab === 'hist' && 'sl-tab--active']" @click="tab = 'hist'">
-          <i class="pi pi-chart-line" /> Histórico
+          <ChartLineIcon class="size-[1em]" /> Histórico
         </button>
       </div>
     </div>
@@ -28,7 +28,7 @@
       <div class="sl-header-right">
         <!-- Filtro por proyecto -->
         <div class="sl-filter-wrap">
-          <i class="pi pi-search sl-filter-icon" />
+          <SearchIcon class="sl-filter-icon size-[1em]" />
           <AutoComplete
             v-model="filtro"
             :suggestions="projectSuggestions"
@@ -40,7 +40,7 @@
             class="sl-filter-ac"
             inputClass="sl-filter-input"
           />
-          <i v-if="filtro" class="pi pi-times sl-filter-clear" @click="filtro = ''" />
+          <XIcon class="sl-filter-clear size-[1em]" v-if="filtro" @click="filtro = ''" />
         </div>
         <!-- Toggle columnas -->
         <div class="sl-cols-toggle">
@@ -55,14 +55,15 @@
         <!-- Botón actualizar + auto-refresh -->
         <div class="sl-refresh-wrap">
           <button class="sl-refresh-btn" @click="cargar" :disabled="loading">
-            <i :class="loading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+            <LoaderCircleIcon v-if="loading" class="size-[1em] animate-spin" />
+            <RefreshCwIcon v-else class="size-[1em]" />
             Actualizar
           </button>
           <div class="sl-auto-wrap">
             <button class="sl-auto-btn" :class="autoInterval && 'sl-auto-btn--on'" @click="toggleAutoMenu" :title="autoInterval ? `Auto: ${autoLabel}` : 'Auto-actualizar'">
-              <i class="pi pi-clock" />
+              <ClockIcon class="size-[1em]" />
               <span v-if="autoInterval" class="sl-auto-label">{{ autoLabel }}</span>
-              <i class="pi pi-chevron-down sl-auto-caret" />
+              <ChevronDownIcon class="sl-auto-caret size-[1em]" />
             </button>
             <div v-if="autoMenuOpen" class="sl-auto-menu">
               <button class="sl-auto-option" :class="!autoInterval && 'sl-auto-option--active'" @click="setAuto(0)">Desactivado</button>
@@ -77,19 +78,19 @@
 
     <!-- ══ LOADING inicial ══ -->
     <div v-if="loading && !proyectos.length" class="sl-loading">
-      <i class="pi pi-spin pi-spinner" style="font-size:28px;color:#915BD8" />
+      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:28px;color:#915BD8" />
       <span>Cargando proyectos...</span>
     </div>
 
     <!-- ══ EMPTY ══ -->
     <div v-else-if="!loading && !proyectos.length" class="sl-empty">
-      <i class="pi pi-sun" style="font-size:32px;color:#cbd5e1" />
+      <SunIcon class="size-[1em]" style="font-size:32px;color:#cbd5e1" />
       <p>Sin proyectos disponibles</p>
     </div>
 
     <!-- ══ SIN COINCIDENCIAS ══ -->
     <div v-else-if="sinCoincidencias" class="sl-empty">
-      <i class="pi pi-search" style="font-size:32px;color:#cbd5e1" />
+      <SearchIcon class="size-[1em]" style="font-size:32px;color:#cbd5e1" />
       <p>Ningún proyecto coincide con "{{ filtro }}"</p>
     </div>
 
@@ -109,14 +110,14 @@
 
           <!-- Nombre + estado -->
           <div class="sl-project-name">
-            <i class="pi pi-bars sl-drag-handle" title="Arrastrar para reorganizar" />
+            <MenuIcon class="sl-drag-handle size-[1em]" title="Arrastrar para reorganizar" />
             <span class="sl-status-dot" :style="{ background: STATUS_COLORS[proy.status] || '#9ca3af' }" />
             <span class="sl-project-nombre">{{ proy.nombre }}</span>
           </div>
 
           <!-- Cargando detalle -->
           <div v-if="!detailMap[proy.proyecto_id]" class="sl-detail-loading">
-            <i class="pi pi-spin pi-spinner" style="font-size:14px;color:#6b5a8a" />
+            <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:14px;color:#6b5a8a" />
             <span>Cargando datos...</span>
           </div>
 
@@ -177,7 +178,7 @@
             <div class="sl-genhoy">
               <div class="sl-genhoy-head">
                 <span class="sl-genhoy-title">
-                  <i class="pi pi-sun" style="color:#f59e0b;font-size:11px" />
+                  <SunIcon class="size-[1em]" style="color:#f59e0b;font-size:11px" />
                   Generación de hoy
                 </span>
                 <div class="sl-genhoy-vals">
@@ -250,6 +251,7 @@ import draggable from 'vuedraggable'
 import AutoComplete from 'primevue/autocomplete'
 import api from '~/core/client'
 import GeneracionView from '~/features/operaciones/components/GeneracionView.vue'
+import { ChartLineIcon, ChevronDownIcon, ClockIcon, LoaderCircleIcon, MenuIcon, RefreshCwIcon, SearchIcon, SunIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler)
 
@@ -637,7 +639,7 @@ onUnmounted(() => {
 }
 .sl-tab:hover { color: #2C2039; }
 .sl-tab--active { color: #915BD8; border-bottom-color: #915BD8; }
-.sl-tab i { font-size: 12px; }
+.sl-tab svg { font-size: 12px; }
 
 /* ── Live tab content ── */
 .sl-page {

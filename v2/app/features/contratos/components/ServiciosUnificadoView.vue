@@ -14,30 +14,37 @@
     <PageHeader title="Proyectos" :subtitle="subtitulo">
       <template #actions>
         <IconField v-if="vista" class="ph-buscar">
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" :placeholder="placeholderBusqueda" size="small" class="w-full" />
         </IconField>
         <Button v-if="vista"
-                :icon="compacta ? 'pi pi-arrows-v' : 'pi pi-align-justify'"
                 severity="secondary" outlined size="small"
                 v-tooltip.bottom="compacta ? 'Densidad cómoda' : 'Densidad compacta'"
-                @click="compacta = !compacta" />
-        <Button v-if="vista"
-                label="Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small"
-                :disabled="!filasVisibles.length" @click="descargarExcel" />
-        <Button v-if="vista === 'clientes'" label="Nuevo cliente" icon="pi pi-plus" size="small"
-                @click="dialogCliente = true" />
-        <Button v-else-if="vista === 'proyectos'" label="Nuevo proyecto" icon="pi pi-plus" size="small"
-                @click="dialogProyecto = true" />
-        <Button v-else-if="vista === 'servicios' && servicio === 'ppa'" label="Nuevo PPA" icon="pi pi-plus" size="small"
-                class="bg-amber-500 border-amber-500 hover:bg-amber-600" @click="abrirWizardPPA(null)" />
+                @click="compacta = !compacta">
+          <template #icon><component :is="compacta ? MoveVerticalIcon : AlignJustifyIcon" class="size-[1em]" /></template>
+        </Button>
+        <Button v-if="vista" label="Excel" severity="secondary" outlined size="small" :disabled="!filasVisibles.length" @click="descargarExcel">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-if="vista === 'clientes'" label="Nuevo cliente" size="small" @click="dialogCliente = true">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-else-if="vista === 'proyectos'" label="Nuevo proyecto" size="small" @click="dialogProyecto = true">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-else-if="vista === 'servicios' && servicio === 'ppa'" label="Nuevo PPA" size="small" class="bg-amber-500 border-amber-500 hover:bg-amber-600" @click="abrirWizardPPA(null)">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
         <template v-else-if="vista === 'servicios'">
           <Button :label="`Nuevo ${servicioInfo?.label}`"
-                  :icon="tiposDelServicio.length > 1 ? 'pi pi-chevron-down' : 'pi pi-plus'"
                   size="small"
                   :style="`background:${servicioInfo?.color}; border-color:${servicioInfo?.color}`"
-                  @click="nuevoContrato($event)" />
-          <Menu ref="menuNuevoContrato" :model="opcionesNuevoContrato" :popup="true" />
+                  @click="nuevoContrato($event)">
+            <template #icon><component :is="tiposDelServicio.length > 1 ? ChevronDownIcon : PlusIcon" class="size-[1em]" /></template>
+          </Button>
+          <Menu ref="menuNuevoContrato" :model="opcionesNuevoContrato" :popup="true">
+            <template #itemicon="{ item }"><component :is="item.icon" class="size-[1em]" /></template>
+          </Menu>
         </template>
       </template>
     </PageHeader>
@@ -48,7 +55,7 @@
               class="svc-tab" :class="{ 'svc-tab--on': vista === v.key }"
               :style="vista === v.key ? `background:${v.bg}; border-color:${v.color}55; color:${v.color}` : ''"
               @click="seleccionarVista(v.key)">
-        <i :class="v.icon" :style="vista === v.key ? `color:${v.color}` : ''" />
+        <component :is="v.icon" class="size-[1em]" :style="vista === v.key ? `color:${v.color}` : ''" />
         <span>{{ v.label }}</span>
         <span v-if="conteoVista(v.key) !== null" class="svc-tab-count"
               :style="vista === v.key ? `background:${v.color}22; color:${v.color}` : ''">
@@ -62,7 +69,7 @@
                 class="svc-tab svc-tab--sm" :class="{ 'svc-tab--on': servicio === s.key }"
                 :style="servicio === s.key ? `background:${s.bg}; border-color:${s.color}55; color:${s.color}` : ''"
                 @click="seleccionarServicio(s.key)">
-          <i :class="s.icon" :style="servicio === s.key ? `color:${s.color}` : ''" />
+          <component :is="s.icon" class="size-[1em]" :style="servicio === s.key ? `color:${s.color}` : ''" />
           <span>{{ s.label }}</span>
         </button>
       </template>
@@ -141,11 +148,11 @@
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
                     v-tooltip.bottom="tipFalta(data, 'campos')">
-                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+                <ListIcon class="size-[1em]" />{{ faltanCampos(data).length }}
               </span>
               <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
                     v-tooltip.bottom="tipFalta(data, 'docs')">
-                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+                <PaperclipIcon class="size-[1em]" />{{ faltanDocs(data).length }}
               </span>
             </div>
           </template>
@@ -153,10 +160,12 @@
         <Column style="width:6%">
           <template #body="{ data }">
             <div class="acciones">
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="ir(`/clientes/${data.id}`)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarCliente(data)" />
+              <Button text size="small" severity="secondary" v-tooltip.bottom="'Editar'" @click.stop="ir(`/clientes/${data.id}`)">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text size="small" severity="danger" v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarCliente(data)">
+                <template #icon><Trash2Icon class="size-[1em]" /></template>
+              </Button>
             </div>
           </template>
         </Column>
@@ -249,11 +258,11 @@
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
                     v-tooltip.bottom="tipFalta(data, 'campos')">
-                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+                <ListIcon class="size-[1em]" />{{ faltanCampos(data).length }}
               </span>
               <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
                     v-tooltip.bottom="tipFalta(data, 'docs')">
-                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+                <PaperclipIcon class="size-[1em]" />{{ faltanDocs(data).length }}
               </span>
             </div>
           </template>
@@ -261,10 +270,12 @@
         <Column style="width:6%">
           <template #body="{ data }">
             <div class="acciones">
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="ir(`/proyectos/${data.id}?edit=true`)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarProyecto(data)" />
+              <Button text size="small" severity="secondary" v-tooltip.bottom="'Editar'" @click.stop="ir(`/proyectos/${data.id}?edit=true`)">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text size="small" severity="danger" v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarProyecto(data)">
+                <template #icon><Trash2Icon class="size-[1em]" /></template>
+              </Button>
             </div>
           </template>
         </Column>
@@ -362,11 +373,11 @@
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
                     v-tooltip.bottom="tipFalta(data, 'campos')">
-                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+                <ListIcon class="size-[1em]" />{{ faltanCampos(data).length }}
               </span>
               <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
                     v-tooltip.bottom="tipFalta(data, 'docs')">
-                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+                <PaperclipIcon class="size-[1em]" />{{ faltanDocs(data).length }}
               </span>
             </div>
           </template>
@@ -374,10 +385,12 @@
         <Column style="width:5%">
           <template #body="{ data }">
             <div class="acciones">
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="ir(`/contratos/${data.id}`)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarPpa(data)" />
+              <Button text size="small" severity="secondary" v-tooltip.bottom="'Editar'" @click.stop="ir(`/contratos/${data.id}`)">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text size="small" severity="danger" v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarPpa(data)">
+                <template #icon><Trash2Icon class="size-[1em]" /></template>
+              </Button>
             </div>
           </template>
         </Column>
@@ -392,7 +405,7 @@
            tienen son un error de datos, no un estado válido: la barra los cuenta
            y deja aislarlos para irlos cerrando hasta llegar a cero. -->
       <div v-if="esRepresentacion && nHuerfanos" class="barra-huerfanos">
-        <i class="pi pi-exclamation-triangle" />
+        <TriangleAlertIcon class="size-[1em]" />
         <span><strong>{{ nHuerfanos }}</strong> de {{ contratosServicio.length }} contratos sin proyecto asociado</span>
         <Button :label="soloHuerfanos ? 'Ver todos' : 'Ver solo estos'" text size="small"
                 class="ml-auto" @click="soloHuerfanos = !soloHuerfanos" />
@@ -401,7 +414,7 @@
       <!-- Duplicados: el mismo contrato escrito por varias fuentes. Se limpian
            desde acá porque ir planta por planta no es viable con 126 contratos. -->
       <div v-if="esRepresentacion && nDuplicados" class="barra-duplicados">
-        <i class="pi pi-clone" />
+        <CopyIcon class="size-[1em]" />
         <span>
           <strong>{{ nDuplicados }}</strong> registros duplicados en
           {{ duplicados.grupos_fusionables.length }}
@@ -414,8 +427,9 @@
                 @click="soloDuplicados = !soloDuplicados" v-if="!soloDuplicados" />
         <Button label="Ver todos" text size="small" class="ml-auto"
                 @click="soloDuplicados = false" v-else />
-        <Button label="Fusionar duplicados" icon="pi pi-check" size="small"
-                :loading="fusionando" @click="confirmarFusion" />
+        <Button label="Fusionar duplicados" size="small" :loading="fusionando" @click="confirmarFusion">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </div>
       <DataTable :value="contratosServicioFiltrados" :loading="loadingServicio" size="small"
                  class="tabla" :class="{ 'tabla--compacta': compacta }"
@@ -453,7 +467,7 @@
             <button v-else type="button" class="chip-huerfano"
                     v-tooltip.bottom="'Este contrato no está asociado a ninguna planta. Click para asociarlo.'"
                     @click.stop="abrirAsociarProyecto(data)">
-              <i class="pi pi-link" />Sin proyecto
+              <LinkIcon class="size-[1em]" />Sin proyecto
             </button>
           </template>
         </Column>
@@ -498,11 +512,11 @@
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
                     v-tooltip.bottom="tipFalta(data, 'campos')">
-                <i class="pi pi-list" />{{ faltanCampos(data).length }}
+                <ListIcon class="size-[1em]" />{{ faltanCampos(data).length }}
               </span>
               <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
                     v-tooltip.bottom="tipFalta(data, 'docs')">
-                <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
+                <PaperclipIcon class="size-[1em]" />{{ faltanDocs(data).length }}
               </span>
             </div>
           </template>
@@ -510,13 +524,15 @@
         <Column :style="esRepresentacion ? 'width:8%' : 'width:6%'">
           <template #body="{ data }">
             <div class="acciones">
-              <Button v-if="esRepresentacion" icon="pi pi-link" text size="small" severity="secondary"
-                      v-tooltip.bottom="data.proyecto ? 'Cambiar de proyecto' : 'Asociar a un proyecto'"
-                      @click.stop="abrirAsociarProyecto(data)" />
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="irAEditarContratoServicio(data)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarContratoServicio(data)" />
+              <Button v-if="esRepresentacion" text size="small" severity="secondary" v-tooltip.bottom="data.proyecto ? 'Cambiar de proyecto' : 'Asociar a un proyecto'" @click.stop="abrirAsociarProyecto(data)">
+                <template #icon><LinkIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text size="small" severity="secondary" v-tooltip.bottom="'Editar'" @click.stop="irAEditarContratoServicio(data)">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text size="small" severity="danger" v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarContratoServicio(data)">
+                <template #icon><Trash2Icon class="size-[1em]" /></template>
+              </Button>
             </div>
           </template>
         </Column>
@@ -591,7 +607,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -607,6 +623,7 @@ import { formatearNombre } from '~/utils/nombreFormato'
 import { exportarExcel } from '~/utils/exportarExcel'
 import { estadoVigenciaPPA } from '~/utils/ppaVigencia'
 import { SEMAFORO, servicioLabel, fmt } from '~/features/clientes/components/clientesUi'
+import { AlignJustifyIcon, BadgeCheckIcon, BuildingIcon, ChartColumnIcon, CheckIcon, ChevronDownIcon, CopyIcon, FilePenIcon, FileSpreadsheetIcon, LinkIcon, ListIcon, MoveVerticalIcon, PaperclipIcon, PencilIcon, PlusIcon, SearchIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 
 // Los formularios y wizards pesan; sólo se descargan cuando alguien crea algo.
 const ClienteForm = defineAsyncComponent(() => import('~/features/clientes/components/ClienteForm.vue'))
@@ -616,23 +633,22 @@ const ContratoServicioWizard = defineAsyncComponent(() => import('~/features/con
 
 const router = useRouter()
 const route = useRoute()
-const toast = useToast()
 const confirm = useConfirm()
 
 // ── Catálogos ────────────────────────────────────────────────────────────────
 const VISTAS = [
   // Proyectos va primero y es el que abre: la planta es la base, y clientes y
   // contratos son formas de mirar ese mismo portafolio.
-  { key: 'proyectos', label: 'Proyectos', icon: 'pi pi-bolt',      color: '#10b981', bg: '#f0fdf4' },
-  { key: 'clientes',  label: 'Clientes',  icon: 'pi pi-building',  color: '#915BD8', bg: '#f5f0fd' },
-  { key: 'servicios', label: 'Servicios', icon: 'pi pi-file-edit', color: '#0C447C', bg: '#eff6ff' },
+  { key: 'proyectos', label: 'Proyectos', icon: ZapIcon,      color: '#10b981', bg: '#f0fdf4' },
+  { key: 'clientes',  label: 'Clientes',  icon: BuildingIcon,  color: '#915BD8', bg: '#f5f0fd' },
+  { key: 'servicios', label: 'Servicios', icon: FilePenIcon, color: '#0C447C', bg: '#eff6ff' },
 ]
 
 const SERVICIOS = [
-  { key: 'ppa',            label: 'PPA',            icon: 'pi pi-bolt',      color: '#f59e0b', bg: '#fffbeb' },
-  { key: 'representacion', label: 'Representación', icon: 'pi pi-file-edit', color: '#3b82f6', bg: '#eff6ff' },
-  { key: 'operacion',      label: 'Operación',      icon: 'pi pi-chart-bar', color: '#10b981', bg: '#f0fdf4' },
-  { key: 'rec',            label: 'REC',            icon: 'pi pi-verified',  color: '#14b8a6', bg: '#f0fdfa' },
+  { key: 'ppa',            label: 'PPA',            icon: ZapIcon,      color: '#f59e0b', bg: '#fffbeb' },
+  { key: 'representacion', label: 'Representación', icon: FilePenIcon, color: '#3b82f6', bg: '#eff6ff' },
+  { key: 'operacion',      label: 'Operación',      icon: ChartColumnIcon, color: '#10b981', bg: '#f0fdf4' },
+  { key: 'rec',            label: 'REC',            icon: BadgeCheckIcon,  color: '#14b8a6', bg: '#f0fdfa' },
 ]
 
 // El enum `servicio_aplica` del backend NO tiene un valor "operacion": lo que
@@ -753,9 +769,9 @@ const TOPE_PAGINA = 500
 
 function avisarSiTrunca(total, mostrados, etiqueta) {
   if (total == null || total <= mostrados) return
-  toast.add({
-    severity: 'warn', summary: 'Listado incompleto', life: 8000,
-    detail: `Se muestran ${mostrados} de ${total} ${etiqueta}: la vista pide como máximo ${TOPE_PAGINA}.`,
+  toast.warning('Listado incompleto', {
+    description: `Se muestran ${mostrados} de ${total} ${etiqueta}: la vista pide como máximo ${TOPE_PAGINA}.`,
+    duration: 8000,
   })
 }
 
@@ -963,7 +979,7 @@ async function cargarClientes() {
     avisarSiTrunca(ficha.data.total, porId.size, 'clientes')
     clientesCargados.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar clientes', detail: e.message, life: 4000 })
+    toast.error('Error al cargar clientes', { description: e.message, duration: 4000 })
   } finally {
     loadingClientes.value = false
   }
@@ -1013,7 +1029,7 @@ async function cargarProyectos() {
     avisarSiTrunca(data.total, proyectos.value.length, 'plantas')
     proyectosCargados.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar proyectos', detail: e.message, life: 4000 })
+    toast.error('Error al cargar proyectos', { description: e.message, duration: 4000 })
   } finally {
     loadingProyectos.value = false
   }
@@ -1044,7 +1060,7 @@ async function cargarPpa() {
     ppa.value = data
     ppaCargados.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos PPA', detail: e.message, life: 4000 })
+    toast.error('Error al cargar contratos PPA', { description: e.message, duration: 4000 })
   } finally {
     loadingPpa.value = false
   }
@@ -1097,7 +1113,6 @@ function confirmarFusion() {
     message: `Se conservará un contrato por planta (${grupos}) con la unión de todos `
            + `los datos y se eliminarán ${n - grupos} registros sobrantes. Ningún `
            + `valor se sobreescribe, y los grupos que se contradicen no se tocan.`,
-    icon: 'pi pi-clone',
     acceptLabel: 'Fusionar',
     rejectLabel: 'Cancelar',
     accept: fusionarDuplicados,
@@ -1109,15 +1124,16 @@ async function fusionarDuplicados() {
   try {
     // Sin `ids`: fusiona todos los grupos limpios de una vez.
     const { data } = await api.post('/contratos-servicio/fusionar-representacion', {})
-    toast.add({ severity: 'success', summary: 'Duplicados fusionados',
-                detail: `${data.grupos_fusionados} contrato(s) consolidado(s), `
-                      + `${data.contratos_eliminados} registro(s) eliminado(s)`, life: 5000 })
+    toast.success('Duplicados fusionados', {
+      description: `${data.grupos_fusionados} contrato(s) consolidado(s), `
+                      + `${data.contratos_eliminados} registro(s) eliminado(s)`,
+      duration: 5000,
+    })
     soloDuplicados.value = false
     await cargarContratosServicio(servicio.value)
     await cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo fusionar',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('No se pudo fusionar', { description: e.response?.data?.detail || e.message, duration: 4000 })
   } finally {
     fusionando.value = false
   }
@@ -1158,7 +1174,7 @@ async function cargarContratosServicio(servicioKey) {
     soloDuplicados.value = false
     if (servicioKey === 'representacion') cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos', detail: e.message, life: 4000 })
+    toast.error('Error al cargar contratos', { description: e.message, duration: 4000 })
   } finally {
     loadingServicio.value = false
   }
@@ -1217,10 +1233,9 @@ async function guardarProyectoContrato() {
     const i = contratosServicio.value.findIndex(c => c.id === data.id)
     if (i !== -1) contratosServicio.value[i] = data
     dialogAsociarProyecto.value = false
-    toast.add({ severity: 'success', summary: 'Contrato asociado',
-                detail: data.proyecto?.nombre_comercial || '', life: 3000 })
+    toast.success('Contrato asociado', { description: data.proyecto?.nombre_comercial || '', duration: 3000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo asociar', detail: e.message, life: 4000 })
+    toast.error('No se pudo asociar', { description: e.message, duration: 4000 })
   } finally {
     guardandoProyecto.value = false
   }
@@ -1368,11 +1383,11 @@ const dialogCliente = ref(false)
 async function crearCliente(payload) {
   try {
     const { data } = await api.post('/clientes', payload)
-    toast.add({ severity: 'success', summary: 'Cliente creado', life: 3000 })
+    toast.success('Cliente creado', { duration: 3000 })
     dialogCliente.value = false
     router.push(`/clientes/${data.id}`)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
   }
 }
 
@@ -1380,7 +1395,6 @@ function confirmarBorrarCliente(row) {
   confirm.require({
     header: 'Eliminar cliente',
     message: `¿Eliminar "${formatearNombre(row.razon_social_nombre)}"? Esta acción no se puede deshacer.`,
-    icon: 'pi pi-exclamation-triangle',
     acceptSeverity: 'danger',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -1388,10 +1402,12 @@ function confirmarBorrarCliente(row) {
       try {
         await api.delete(`/clientes/${row.id}`)
         clientes.value = clientes.value.filter(c => c.id !== row.id)
-        toast.add({ severity: 'success', summary: 'Cliente eliminado', life: 2500 })
+        toast.success('Cliente eliminado', { duration: 2500 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'No se pudo eliminar',
-          detail: e.response?.data?.detail || 'Error al eliminar', life: 5000 })
+        toast.error('No se pudo eliminar', {
+          description: e.response?.data?.detail || 'Error al eliminar',
+          duration: 5000,
+        })
       }
     },
   })
@@ -1401,8 +1417,10 @@ function confirmarBorrarCliente(row) {
 // desde la pestaña Operación de su planta, que es donde viven tarifas y pagos.
 function irAEditarContratoServicio(row) {
   if (!row.proyecto_id) {
-    toast.add({ severity: 'warn', summary: 'Sin planta asociada',
-      detail: 'Este contrato no tiene proyecto_id, así que no hay página donde editarlo.', life: 5000 })
+    toast.warning('Sin planta asociada', {
+      description: 'Este contrato no tiene proyecto_id, así que no hay página donde editarlo.',
+      duration: 5000,
+    })
     return
   }
   ir(`/proyectos/${row.proyecto_id}/operacion`)
@@ -1413,7 +1431,6 @@ function confirmarBorrarContratoServicio(row) {
   confirm.require({
     header: 'Eliminar contrato',
     message: `¿Eliminar el contrato "${nombre}"? Esta acción no se puede deshacer.`,
-    icon: 'pi pi-exclamation-triangle',
     acceptSeverity: 'danger',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -1421,10 +1438,12 @@ function confirmarBorrarContratoServicio(row) {
       try {
         await api.delete(`/contratos-servicio/${row.id}`)
         contratosServicio.value = contratosServicio.value.filter(c => c.id !== row.id)
-        toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2500 })
+        toast.success('Contrato eliminado', { duration: 2500 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'No se pudo eliminar',
-          detail: e.response?.data?.detail || 'Error al eliminar', life: 5000 })
+        toast.error('No se pudo eliminar', {
+          description: e.response?.data?.detail || 'Error al eliminar',
+          duration: 5000,
+        })
       }
     },
   })
@@ -1447,8 +1466,10 @@ async function guardarInfoTecnicaSiAplica(proyectoId, infoTecnica) {
   try {
     await api.put(`/proyectos/${proyectoId}/info-tecnica`, infoTecnica)
   } catch (e) {
-    toast.add({ severity: 'warn', summary: 'Proyecto creado, pero la ficha técnica no se pudo guardar',
-      detail: e.response?.data?.detail, life: 5000 })
+    toast.warning('Proyecto creado, pero la ficha técnica no se pudo guardar', {
+      description: e.response?.data?.detail,
+      duration: 5000,
+    })
   }
 }
 
@@ -1456,7 +1477,7 @@ async function crearProyecto(payload, infoTecnica) {
   try {
     const { data } = await api.post('/proyectos', payload)
     await guardarInfoTecnicaSiAplica(data.id, infoTecnica)
-    toast.add({ severity: 'success', summary: 'Proyecto creado', life: 3000 })
+    toast.success('Proyecto creado', { duration: 3000 })
     dialogProyecto.value = false
     cargarProyectos()
   } catch (e) {
@@ -1470,8 +1491,10 @@ async function crearProyecto(payload, infoTecnica) {
       duplicadoVisible.value = true
       return
     }
-    toast.add({ severity: 'error', summary: 'Error',
-      detail: typeof detail === 'string' ? detail : 'Error al guardar', life: 4000 })
+    toast.error('Error', {
+      description: typeof detail === 'string' ? detail : 'Error al guardar',
+      duration: 4000,
+    })
   }
 }
 
@@ -1480,14 +1503,16 @@ async function crearProyectoForzado() {
   try {
     const { data } = await api.post('/proyectos', pendingPayload.value, { params: { forzar: true } })
     await guardarInfoTecnicaSiAplica(data.id, pendingInfoTecnica.value)
-    toast.add({ severity: 'success', summary: 'Proyecto creado', life: 3000 })
+    toast.success('Proyecto creado', { duration: 3000 })
     duplicadoVisible.value = false
     dialogProyecto.value = false
     cargarProyectos()
   } catch (e) {
     const detail = e.response?.data?.detail
-    toast.add({ severity: 'error', summary: 'Error',
-      detail: typeof detail === 'string' ? detail : 'Error al guardar', life: 4000 })
+    toast.error('Error', {
+      description: typeof detail === 'string' ? detail : 'Error al guardar',
+      duration: 4000,
+    })
   } finally {
     forzando.value = false
   }
@@ -1497,7 +1522,6 @@ function confirmarBorrarProyecto(row) {
   confirm.require({
     header: 'Eliminar proyecto',
     message: `¿Eliminar "${formatearNombre(row.nombre_comercial)}"? Esta acción no se puede deshacer.`,
-    icon: 'pi pi-exclamation-triangle',
     acceptSeverity: 'danger',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -1505,10 +1529,12 @@ function confirmarBorrarProyecto(row) {
       try {
         await api.delete(`/proyectos/${row.id}`)
         proyectos.value = proyectos.value.filter(p => p.id !== row.id)
-        toast.add({ severity: 'success', summary: 'Proyecto eliminado', life: 2500 })
+        toast.success('Proyecto eliminado', { duration: 2500 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'No se pudo eliminar',
-          detail: e.response?.data?.detail || 'Error al eliminar', life: 5000 })
+        toast.error('No se pudo eliminar', {
+          description: e.response?.data?.detail || 'Error al eliminar',
+          duration: 5000,
+        })
       }
     },
   })
@@ -1525,7 +1551,7 @@ const menuNuevoContrato = ref(null)
 
 const opcionesNuevoContrato = computed(() => tiposDelServicio.value.map(t => ({
   label: TIPO_CONTRATO_LABELS[t] || t,
-  icon: 'pi pi-plus',
+  icon: PlusIcon,
   command: () => { tipoAcrear.value = t; showWizardServicio.value = true },
 })))
 
@@ -1552,7 +1578,6 @@ function confirmarBorrarPpa(contrato) {
   confirm.require({
     header: 'Confirmar eliminación',
     message: `¿Seguro que deseas eliminar el contrato "${nombre}"? Esta acción no se puede deshacer.`,
-    icon: 'pi pi-exclamation-triangle',
     acceptSeverity: 'danger',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -1560,10 +1585,12 @@ function confirmarBorrarPpa(contrato) {
       try {
         await api.delete(`/ppa/${contrato.id}`)
         ppa.value = ppa.value.filter(c => c.id !== contrato.id)
-        toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2500 })
+        toast.success('Contrato eliminado', { duration: 2500 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'No se puede eliminar',
-          detail: e.response?.data?.detail || 'Error al eliminar el contrato.', life: 6000 })
+        toast.error('No se puede eliminar', {
+          description: e.response?.data?.detail || 'Error al eliminar el contrato.',
+          duration: 6000,
+        })
       }
     },
   })
@@ -1579,10 +1606,10 @@ function confirmarBorrarPpa(contrato) {
   cursor: pointer; transition: border-color .12s, color .12s, background .12s; user-select: none;
 }
 .svc-tab:hover { border-color: #cbb8e8; color: #2C2039; }
-.svc-tab i { font-size: 13px; color: #9ca3af; }
+.svc-tab svg { font-size: 13px; color: #9ca3af; }
 .svc-tab--on { box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .svc-tab--sm { padding: 4px 9px; font-size: 12px; font-weight: 600; }
-.svc-tab--sm i { font-size: 11px; }
+.svc-tab--sm svg { font-size: 11px; }
 .svc-tab-count {
   background: #EEF0F2; color: #6b7280; border-radius: 999px;
   font-size: 10px; font-weight: 800; padding: 0 6px; min-width: 18px; text-align: center;
@@ -1665,7 +1692,7 @@ function confirmarBorrarPpa(contrato) {
   font-size: 10px; font-weight: 700; line-height: 1.5;
   padding: 0 5px; border-radius: 999px; cursor: default; white-space: nowrap;
 }
-.falta-chip i { font-size: 8px; }
+.falta-chip svg { font-size: 8px; }
 .falta--ok  { background: #D1FAE5; color: #065F46; }
 .falta--mal { background: #FEF3C7; color: #92400E; }
 

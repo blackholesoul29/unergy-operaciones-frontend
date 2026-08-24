@@ -4,7 +4,7 @@
     <!-- ══ Topbar compacto con tabs (patrón TSF) ═══════════════════ -->
     <div class="liq-topbar">
       <div class="liq-topbar-title">
-        <i class="pi pi-dollar text-sm" style="color:#915BD8" />
+        <DollarSignIcon class="text-sm size-[1em]" style="color:#915BD8" />
         <h2 class="text-base font-bold text-gray-800 whitespace-nowrap">Liquidaciones</h2>
         <span class="hidden xl:inline text-xs text-gray-500">· Estado financiero por proyecto y período</span>
       </div>
@@ -12,7 +12,7 @@
       <div class="liq-tabs">
         <button v-for="t in TABS" :key="t.key" class="liq-tab"
           :class="{ 'liq-tab--on': tab === t.key }" @click="tab = t.key">
-          <i :class="t.icon" /><span>{{ t.label }}</span>
+          <component :is="t.icon" class="size-[1em]" /><span>{{ t.label }}</span>
         </button>
       </div>
 
@@ -29,18 +29,19 @@
       <!-- Exportar a Excel el resumen del período (#7) -->
       <button v-if="tab !== 'diferencia' && tab !== 'facturacion'" class="liq-export" :disabled="exportando" @click="exportarExcel"
         v-tooltip.bottom="'Exportar el resumen del período a Excel'">
-        <i :class="exportando ? 'pi pi-spin pi-spinner' : 'pi pi-file-excel'" class="text-xs" />
+        <LoaderCircleIcon v-if="exportando" class="text-xs size-[1em] animate-spin" />
+        <FileSpreadsheetIcon v-else class="text-xs size-[1em]" />
         <span>Excel</span>
       </button>
 
       <!-- Selector de período — aplica a todos los tabs (todos son espejo del Panel) -->
       <div class="liq-period">
         <button class="liq-period-btn" @click="stepMes(-1)" v-tooltip.bottom="'Mes anterior'">
-          <i class="pi pi-chevron-left text-xs" />
+          <ChevronLeftIcon class="text-xs size-[1em]" />
         </button>
         <span class="liq-period-label">{{ formatPeriodo(periodo) }}</span>
         <button class="liq-period-btn" :disabled="esMesActual" @click="stepMes(1)" v-tooltip.bottom="'Mes siguiente'">
-          <i class="pi pi-chevron-right text-xs" />
+          <ChevronRightIcon class="text-xs size-[1em]" />
         </button>
       </div>
     </div>
@@ -58,7 +59,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import ResumenPanel from './panels/ResumenPanel.vue'
 import LiquidacionesListView from './LiquidacionesListView.vue'
 import LiquidacionesPorInversionistaView from './LiquidacionesPorInversionistaView.vue'
@@ -66,13 +67,14 @@ import DiferenciaPanel from './panels/DiferenciaPanel.vue'
 import FacturacionPanel from './panels/FacturacionPanel.vue'
 import api from '~/core/client'
 import { formatPeriodo, mesActualISO } from '~/utils/liquidaciones'
+import { ChartColumnIcon, ChevronLeftIcon, ChevronRightIcon, DollarSignIcon, FileSpreadsheetIcon, FolderIcon, LoaderCircleIcon, MoveHorizontalIcon, UsersIcon, ZapIcon } from '@lucide/vue'
 
 const TABS = [
-  { key: 'resumen', label: 'Resumen', icon: 'pi pi-chart-bar' },
-  { key: 'proyectos', label: 'Proyectos', icon: 'pi pi-folder' },
-  { key: 'inversionistas', label: 'Inversionistas', icon: 'pi pi-users' },
-  { key: 'diferencia', label: 'Diferencia', icon: 'pi pi-arrows-h' },
-  { key: 'facturacion', label: 'Facturación', icon: 'pi pi-bolt' },
+  { key: 'resumen', label: 'Resumen', icon: ChartColumnIcon },
+  { key: 'proyectos', label: 'Proyectos', icon: FolderIcon },
+  { key: 'inversionistas', label: 'Inversionistas', icon: UsersIcon },
+  { key: 'diferencia', label: 'Diferencia', icon: MoveHorizontalIcon },
+  { key: 'facturacion', label: 'Facturación', icon: ZapIcon },
 ]
 const VALID = TABS.map(t => t.key)
 
@@ -122,7 +124,6 @@ function stepMes(delta) {
 }
 
 // ── Exportar Excel del resumen del período (#7) ─────────────────────────────────
-const toast = useToast()
 const exportando = ref(false)
 async function exportarExcel() {
   exportando.value = true
@@ -130,7 +131,7 @@ async function exportarExcel() {
     const per = periodo.value.slice(0, 7)
     const { data } = await api.get('/liquidaciones/resumen-panel', { params: { periodo: per, tipo: tipo.value } })
     const proyectos = data.proyectos || []
-    if (!proyectos.length) { toast.add({ severity: 'warn', summary: 'Sin datos', detail: 'No hay paneles en el período', life: 3000 }); return }
+    if (!proyectos.length) { toast.warning('Sin datos', { description: 'No hay paneles en el período', duration: 3000 }); return }
     const XLSX = await import('xlsx-js-style')
     const C = { morado: '915BD8', oscuro: '2C2039', lila: 'F4F1FA', blanco: 'FFFFFF', gris: '6B5A8A', borde: 'ECE4F5', neto: 'EAE0FB' }
     const COP = '"$"#,##0'
@@ -182,7 +183,7 @@ async function exportarExcel() {
     XLSX.utils.book_append_sheet(wb, ws, 'Liquidaciones')
     XLSX.writeFile(wb, `Liquidaciones_${tipo.value}_${per}.xlsx`)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo exportar', life: 3000 })
+    toast.error('Error', { description: 'No se pudo exportar', duration: 3000 })
   } finally {
     exportando.value = false
   }
@@ -234,7 +235,7 @@ async function exportarExcel() {
   transition: all .15s;
   white-space: nowrap;
 }
-.liq-tab i { font-size: 12px; }
+.liq-tab svg { font-size: 12px; }
 .liq-tab:hover:not(.liq-tab--on) { color: #2C2039; background: rgba(145,91,216,.08); }
 .liq-tab--on { background: #915BD8; color: #FDFAF7; box-shadow: 0 1px 4px rgba(145,91,216,.3); }
 

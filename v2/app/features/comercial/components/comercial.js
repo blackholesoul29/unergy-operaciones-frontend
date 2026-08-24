@@ -1,3 +1,4 @@
+import { FilePenIcon, MailIcon, MessageSquareIcon, PhoneIcon, UsersIcon } from '@lucide/vue'
 /**
  * Vocabulario y derivaciones del CRM comercial.
  *
@@ -64,11 +65,11 @@ export const RESULTADOS = [
 ]
 
 export const TIPOS_GESTION = [
-  { value: 'llamada', label: 'Llamada', icono: 'pi pi-phone' },
-  { value: 'correo', label: 'Correo', icono: 'pi pi-envelope' },
-  { value: 'reunion', label: 'Reunión', icono: 'pi pi-users' },
-  { value: 'whatsapp', label: 'WhatsApp', icono: 'pi pi-comment' },
-  { value: 'nota', label: 'Nota', icono: 'pi pi-file-edit' },
+  { value: 'llamada', label: 'Llamada', icono: PhoneIcon },
+  { value: 'correo', label: 'Correo', icono: MailIcon },
+  { value: 'reunion', label: 'Reunión', icono: UsersIcon },
+  { value: 'whatsapp', label: 'WhatsApp', icono: MessageSquareIcon },
+  { value: 'nota', label: 'Nota', icono: FilePenIcon },
 ]
 
 export const ORIGENES_CLIENTE = [

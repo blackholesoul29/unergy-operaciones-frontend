@@ -2,18 +2,20 @@
   <div class="ev-wrap">
     <div v-if="modelValue?.length" class="ev-list">
       <div v-for="archivo in modelValue" :key="archivo.id" class="ev-chip">
-        <i :class="iconoPara(archivo.tipo_mime)" />
+        <component :is="iconoPara(archivo.tipo_mime)" class="size-[1em]" />
         <a :href="archivo.url" target="_blank" rel="noopener" class="ev-chip-name" :title="archivo.nombre">
           {{ archivo.nombre }}
         </a>
         <button class="ev-chip-del" title="Quitar" :disabled="eliminando === archivo.id" @click="eliminar(archivo.id)">
-          <i :class="eliminando === archivo.id ? 'pi pi-spin pi-spinner' : 'pi pi-times'" />
+          <LoaderCircleIcon v-if="eliminando === archivo.id" class="size-[1em] animate-spin" />
+          <XIcon v-else class="size-[1em]" />
         </button>
       </div>
     </div>
 
     <label class="ev-upload" :class="{ 'ev-upload--busy': subiendo }">
-      <i :class="subiendo ? 'pi pi-spin pi-spinner' : 'pi pi-paperclip'" />
+      <LoaderCircleIcon v-if="subiendo" class="size-[1em] animate-spin" />
+      <PaperclipIcon v-else class="size-[1em]" />
       {{ subiendo ? 'Subiendo…' : (modelValue?.length ? 'Agregar otro archivo' : 'Subir evidencia') }}
       <input type="file" class="ev-input" accept=".pdf,.jpg,.jpeg,.png,.webp,.heic"
         :disabled="subiendo" @change="subir" />
@@ -24,6 +26,7 @@
 <script setup>
 import { ref } from 'vue'
 import api from '~/core/client'
+import { FileIcon, ImageIcon, LoaderCircleIcon, PaperclipIcon, XIcon } from '@lucide/vue'
 
 const props = defineProps({
   proyectoId: { type: [Number, String], required: true },
@@ -37,8 +40,8 @@ const subiendo = ref(false)
 const eliminando = ref(null)
 
 function iconoPara(mime) {
-  if (mime?.startsWith('image/')) return 'pi pi-image'
-  return 'pi pi-file'
+  if (mime?.startsWith('image/')) return ImageIcon
+  return FileIcon
 }
 
 async function subir(event) {
@@ -79,7 +82,7 @@ async function eliminar(archivoId) {
   background: #f5f3fa; border: 1px solid #e8e0f0; border-radius: 8px;
   padding: 5px 6px 5px 10px; font-size: 12.5px; color: #2C2039; max-width: 220px;
 }
-.ev-chip .pi { color: #915BD8; font-size: 12px; flex-shrink: 0; }
+.ev-chip svg { color: #915BD8; font-size: 12px; flex-shrink: 0; }
 .ev-chip-name { color: #2C2039; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ev-chip-name:hover { text-decoration: underline; color: #6E3FB8; }
 .ev-chip-del { border: none; background: none; color: #9ca3af; width: 20px; height: 20px; border-radius: 5px; cursor: pointer; flex-shrink: 0; }

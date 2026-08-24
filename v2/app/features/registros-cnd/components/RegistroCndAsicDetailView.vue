@@ -2,7 +2,9 @@
   <div class="space-y-4" v-if="reg">
     <!-- Cabecera -->
     <div class="flex items-center gap-3">
-      <Button icon="pi pi-arrow-left" text rounded @click="$router.push('/registros-cnd-asic')" />
+      <Button text rounded @click="$router.push('/registros-cnd-asic')">
+        <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+      </Button>
       <div class="flex-1">
         <h1 class="text-lg font-bold" style="color:#2C2039;">{{ reg.nombre_comercial }}</h1>
         <p class="text-xs mt-0.5" style="color:#9b89b5;">
@@ -94,8 +96,12 @@
             </div>
           </div>
           <div class="flex gap-2">
-            <Button v-if="seleccionada === 'ETAPA_5_REQ_9_3'" label="Editar parámetros 9.3" icon="pi pi-sliders-h" size="small" text @click="activeTab = 2" />
-            <Button v-if="seleccionada === 'ETAPA_6_FRONTERA' || seleccionada === 'ETAPA_7_REGISTRO_ASIC'" label="Equipos y documentos" icon="pi pi-box" size="small" text @click="activeTab = 3" />
+            <Button v-if="seleccionada === 'ETAPA_5_REQ_9_3'" label="Editar parámetros 9.3" size="small" text @click="activeTab = 2">
+              <template #icon><SlidersHorizontalIcon class="size-[1em]" /></template>
+            </Button>
+            <Button v-if="seleccionada === 'ETAPA_6_FRONTERA' || seleccionada === 'ETAPA_7_REGISTRO_ASIC'" label="Equipos y documentos" size="small" text @click="activeTab = 3">
+              <template #icon><BoxIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
 
@@ -156,8 +162,9 @@
                 <Checkbox v-model="general.comercializador_es_or" :binary="true" /> Comercializador es el OR</label>
             </div>
           </div>
-          <Button label="Guardar datos generales" icon="pi pi-save" size="small" class="mt-2" :loading="guardandoGeneral"
-            @click="guardarGeneral" style="background:#915BD8; border-color:#915BD8;" />
+          <Button label="Guardar datos generales" size="small" class="mt-2" :loading="guardandoGeneral" @click="guardarGeneral" style="background:#915BD8; border-color:#915BD8;">
+            <template #icon><SaveIcon class="size-[1em]" /></template>
+          </Button>
         </TabPanel>
 
         <!-- 1. HITOS -->
@@ -191,8 +198,9 @@
                   <input type="number" step="any" v-model.number="params[f.k]" class="w-full border rounded px-2 py-1 mt-0.5" style="border-color:#e8e0f0;" />
                 </label>
               </div>
-              <Button label="Guardar parámetros" icon="pi pi-save" size="small" class="mt-3" :loading="guardandoParams"
-                @click="guardarParams" style="background:#915BD8; border-color:#915BD8;" />
+              <Button label="Guardar parámetros" size="small" class="mt-3" :loading="guardandoParams" @click="guardarParams" style="background:#915BD8; border-color:#915BD8;">
+                <template #icon><SaveIcon class="size-[1em]" /></template>
+              </Button>
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
@@ -217,7 +225,9 @@
             <div>
               <div class="flex items-center justify-between mb-2">
                 <div class="text-sm font-semibold" style="color:#2C2039;">Equipos de frontera</div>
-                <Button label="Agregar equipo" icon="pi pi-plus" size="small" text @click="abrirEquipo" />
+                <Button label="Agregar equipo" size="small" text @click="abrirEquipo">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
               <DataTable :value="equipos" class="text-sm" rowHover>
                 <template #empty><div class="py-4 text-center text-xs" style="color:#9b89b5;">Sin equipos.</div></template>
@@ -228,7 +238,9 @@
                 <Column field="fecha_vencimiento_calibracion" header="Venc. calibración" />
                 <Column header="" style="width:48px">
                   <template #body="{ data }">
-                    <Button icon="pi pi-trash" text rounded size="small" severity="danger" @click="borrarEquipo(data)" />
+                    <Button text rounded size="small" severity="danger" @click="borrarEquipo(data)">
+                      <template #icon><Trash2Icon class="size-[1em]" /></template>
+                    </Button>
                   </template>
                 </Column>
               </DataTable>
@@ -236,7 +248,9 @@
             <div>
               <div class="flex items-center justify-between mb-2">
                 <div class="text-sm font-semibold" style="color:#2C2039;">Documentos</div>
-                <Button label="Agregar documento" icon="pi pi-plus" size="small" text @click="abrirDoc" />
+                <Button label="Agregar documento" size="small" text @click="abrirDoc">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
               <DataTable :value="documentos" class="text-sm" rowHover>
                 <template #empty><div class="py-4 text-center text-xs" style="color:#9b89b5;">Sin documentos.</div></template>
@@ -246,8 +260,10 @@
                 <Column field="firmado_por" header="Firmado por" />
                 <Column header="" style="width:90px">
                   <template #body="{ data }">
-                    <a v-if="data.url_drive" :href="data.url_drive" target="_blank" class="mr-1"><i class="pi pi-external-link" style="color:#915BD8;" /></a>
-                    <Button icon="pi pi-trash" text rounded size="small" severity="danger" @click="borrarDoc(data)" />
+                    <a v-if="data.url_drive" :href="data.url_drive" target="_blank" class="mr-1"><ExternalLinkIcon class="size-[1em]" style="color:#915BD8;" /></a>
+                    <Button text rounded size="small" severity="danger" @click="borrarDoc(data)">
+                      <template #icon><Trash2Icon class="size-[1em]" /></template>
+                    </Button>
                   </template>
                 </Column>
               </DataTable>
@@ -260,7 +276,9 @@
           <div class="p-1">
             <div class="flex items-center justify-between mb-2">
               <div class="text-sm font-semibold" style="color:#2C2039;">Alertas</div>
-              <Button label="Recomputar" icon="pi pi-refresh" size="small" :loading="recomputando" @click="recomputar" />
+              <Button label="Recomputar" size="small" :loading="recomputando" @click="recomputar">
+                <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+              </Button>
             </div>
             <div v-if="alertas.length" class="space-y-2">
               <div v-for="(a, i) in alertas" :key="i" class="rounded-lg p-2 text-sm" style="border-left:3px solid #f6b73c;background:#fffbf0;">
@@ -333,21 +351,23 @@
         <Textarea :modelValue="correo.cuerpo" rows="12" class="w-full text-sm" readonly />
       </div>
       <template #footer>
-        <Button label="Copiar cuerpo" icon="pi pi-copy" text @click="copiarCorreo" />
+        <Button label="Copiar cuerpo" text @click="copiarCorreo">
+          <template #icon><CopyIcon class="size-[1em]" /></template>
+        </Button>
         <Button label="Cerrar" @click="correoDialog = false" style="background:#915BD8; border-color:#915BD8;" />
       </template>
     </Dialog>
   </div>
 
   <div v-else class="flex items-center justify-center py-20">
-    <i class="pi pi-spin pi-spinner text-2xl" style="color:#915BD8;" />
+    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color:#915BD8;" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
@@ -360,9 +380,9 @@ import Checkbox from 'primevue/checkbox'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import api from '~/core/client'
+import { ArrowLeftIcon, BoxIcon, CopyIcon, ExternalLinkIcon, LoaderCircleIcon, PlusIcon, RefreshCwIcon, SaveIcon, SlidersHorizontalIcon, Trash2Icon } from '@lucide/vue'
 
 const route = useRoute()
-const toast = useToast()
 const proyectoId = route.params.proyectoId
 
 const reg = ref(null)
@@ -503,9 +523,9 @@ async function guardarGeneral() {
     for (const k of CAMPOS_GENERAL) if (payload[k] === '') payload[k] = null
     await api.patch(`/registros-cnd/${regId.value}`, payload)
     await recargarReg()
-    toast.add({ severity: 'success', summary: 'Datos guardados', life: 2500 })
+    toast.success('Datos guardados', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e.response?.data?.detail ?? '', life: 6000 })
+    toast.error('No se pudo guardar', { description: e.response?.data?.detail ?? '', duration: 6000 })
   } finally {
     guardandoGeneral.value = false
   }
@@ -518,9 +538,9 @@ async function hacerTransicion(etapa, aEstado) {
     const prevSel = seleccionada.value
     setReg(data)
     seleccionada.value = prevSel  // mantener el foco en la etapa que se estaba tocando
-    toast.add({ severity: 'success', summary: 'Estado actualizado', life: 2500 })
+    toast.success('Estado actualizado', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Transición no válida', detail: e.response?.data?.detail ?? '', life: 6000 })
+    toast.error('Transición no válida', { description: e.response?.data?.detail ?? '', duration: 6000 })
   } finally {
     transicionando.value = false
   }
@@ -533,9 +553,9 @@ async function guardarParams() {
     for (const f of campos93) if (params.value[f.k] !== undefined && params.value[f.k] !== '') payload[f.k] = params.value[f.k]
     await api.put(`/registros-cnd/${regId.value}/parametros-93`, payload)
     await cargarValidacion()
-    toast.add({ severity: 'success', summary: 'Parámetros guardados', life: 2500 })
+    toast.success('Parámetros guardados', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e.response?.data?.detail ?? '', life: 6000 })
+    toast.error('No se pudo guardar', { description: e.response?.data?.detail ?? '', duration: 6000 })
   } finally {
     guardandoParams.value = false
   }
@@ -546,9 +566,9 @@ async function recomputar() {
   try {
     const { data } = await api.post(`/registros-cnd/${regId.value}/alertas/recomputar`)
     alertas.value = data.alertas || []
-    toast.add({ severity: 'success', summary: `Alertas: ${data.alertas.length} (${data.creadas} nuevas)`, life: 3000 })
+    toast.success(`Alertas: ${data.alertas.length} (${data.creadas} nuevas)`, { duration: 3000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al recomputar', detail: e.response?.data?.detail ?? '', life: 5000 })
+    toast.error('Error al recomputar', { description: e.response?.data?.detail ?? '', duration: 5000 })
   } finally {
     recomputando.value = false
   }
@@ -564,9 +584,9 @@ async function crearEquipo() {
     await api.post(`/registros-cnd/${regId.value}/equipos`, payload)
     equipoDialog.value = false
     await cargarEquipos()
-    toast.add({ severity: 'success', summary: 'Equipo agregado', life: 2500 })
+    toast.success('Equipo agregado', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo agregar', detail: e.response?.data?.detail ?? '', life: 5000 })
+    toast.error('No se pudo agregar', { description: e.response?.data?.detail ?? '', duration: 5000 })
   }
 }
 async function borrarEquipo(row) {
@@ -585,9 +605,9 @@ async function crearDoc() {
     await api.post(`/registros-cnd/${regId.value}/documentos`, payload)
     docDialog.value = false
     await cargarDocumentos()
-    toast.add({ severity: 'success', summary: 'Documento agregado', life: 2500 })
+    toast.success('Documento agregado', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo agregar', detail: e.response?.data?.detail ?? '', life: 5000 })
+    toast.error('No se pudo agregar', { description: e.response?.data?.detail ?? '', duration: 5000 })
   }
 }
 async function borrarDoc(row) {
@@ -605,12 +625,12 @@ async function generarCorreo(tipo) {
     correo.value = data
     correoDialog.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo generar', detail: e.response?.data?.detail ?? '', life: 5000 })
+    toast.error('No se pudo generar', { description: e.response?.data?.detail ?? '', duration: 5000 })
   }
 }
 function copiarCorreo() {
   if (correo.value?.cuerpo) navigator.clipboard?.writeText(correo.value.cuerpo)
-  toast.add({ severity: 'success', summary: 'Cuerpo copiado', life: 2000 })
+  toast.success('Cuerpo copiado', { duration: 2000 })
 }
 
 onMounted(async () => {
@@ -618,7 +638,10 @@ onMounted(async () => {
     await materializar()
     await Promise.all([cargarCatalogos(), cargarParams(), cargarEquipos(), cargarDocumentos()])
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo abrir el proyecto', detail: e.response?.data?.detail ?? '', life: 6000 })
+    toast.error('No se pudo abrir el proyecto', {
+      description: e.response?.data?.detail ?? '',
+      duration: 6000,
+    })
   }
 })
 </script>

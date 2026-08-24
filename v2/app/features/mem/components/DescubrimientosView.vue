@@ -213,7 +213,8 @@
           </Column>
           <Column style="width: 44px; text-align: center;">
             <template #body="{ data: row }">
-              <i :class="expandedMonth === row.month ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs" style="color: #915BD8;" />
+              <ChevronDownIcon v-if="expandedMonth === row.month" class="text-xs size-[1em]" style="color: #915BD8;" />
+              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color: #915BD8;" />
             </template>
           </Column>
         </DataTable>
@@ -228,7 +229,7 @@
               <span class="ml-2 text-xs" style="color: #7a6e8a;">{{ expandedContratos.length }} contratos con descubrimientos</span>
             </div>
             <button class="rounded-lg p-1.5" style="color: #7a6e8a;" @click="expandedMonth = null">
-              <i class="pi pi-times text-sm" />
+              <XIcon class="text-sm size-[1em]" />
             </button>
           </div>
           <div class="px-5 py-4">
@@ -282,7 +283,7 @@
 
       <!-- Empty expanded state -->
       <div v-else-if="expandedMonth" class="text-center py-8 rounded-xl border" style="color: #7a6e8a; border-color: rgba(44,32,57,0.10);">
-        <i class="pi pi-check-circle text-3xl mb-2 block" style="color: #2e7d32;" />
+        <CircleCheckIcon class="text-3xl mb-2 block size-[1em]" style="color: #2e7d32;" />
         <p>Sin descubrimientos en {{ MESES[expandedMonth - 1] }} — toda la generación dentro de compromisos.</p>
       </div>
 
@@ -290,7 +291,7 @@
 
     <!-- Empty state -->
     <div v-else-if="!loading && !error" class="text-center py-16 rounded-xl border" style="color: #7a6e8a; border-color: rgba(44,32,57,0.10);">
-      <i class="pi pi-bolt text-4xl mb-3 block" style="color: #915BD8;" />
+      <ZapIcon class="text-4xl mb-3 block size-[1em]" style="color: #915BD8;" />
       <p>Selecciona un rango de meses para ver los descubrimientos.</p>
     </div>
 
@@ -305,6 +306,7 @@ import Column from 'primevue/column'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import client from '~/core/client'
+import { ChevronDownIcon, ChevronRightIcon, CircleCheckIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const MESES_CORTOS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']

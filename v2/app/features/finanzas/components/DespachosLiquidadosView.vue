@@ -3,12 +3,15 @@
     <PageHeader title="Despachos liquidados"
                 subtitle="Energía ya liquidada por proyecto y concepto">
       <template #actions>
-        <Button label="Consultar IPP" icon="pi pi-percentage" size="small" outlined
-                :loading="accion === 'ipp'" @click="abrir('ipp')" />
-        <Button label="Consultar FTP" icon="pi pi-download" size="small" outlined
-                :loading="accion === 'ftp'" @click="abrir('ftp')" />
-        <Button label="Liquidar" icon="pi pi-bolt" size="small"
-                :loading="accion === 'liquidar'" @click="abrir('liquidar')" />
+        <Button label="Consultar IPP" size="small" outlined :loading="accion === 'ipp'" @click="abrir('ipp')">
+          <template #icon><PercentIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Consultar FTP" size="small" outlined :loading="accion === 'ftp'" @click="abrir('ftp')">
+          <template #icon><DownloadIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Liquidar" size="small" :loading="accion === 'liquidar'" @click="abrir('liquidar')">
+          <template #icon><ZapIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -32,7 +35,7 @@
         </div>
 
         <p v-if="progreso" class="text-[11px] text-gray-500 flex items-center gap-2">
-          <i class="pi pi-spin pi-spinner" /> {{ progreso }}
+          <LoaderCircleIcon class="size-[1em] animate-spin" /> {{ progreso }}
         </p>
 
         <div class="flex justify-end gap-2 pt-1">
@@ -51,7 +54,7 @@
           de {{ filtros.month }}/{{ filtros.year }}.
         </p>
         <div v-if="diagCargando" class="py-8 text-center text-gray-400">
-          <i class="pi pi-spin pi-spinner text-2xl" />
+          <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" />
         </div>
         <div v-else-if="diag" class="space-y-1.5 max-h-96 overflow-y-auto">
           <div v-for="ch in diag.checks" :key="ch.key"
@@ -59,8 +62,8 @@
                :style="ch.status === 'ok'
                  ? 'border-color:#BBF7D0; background:#F0FDF4'
                  : 'border-color:#FECACA; background:#FEF2F2'">
-            <i :class="ch.status === 'ok' ? 'pi pi-check-circle' : 'pi pi-times-circle'"
-               :style="ch.status === 'ok' ? 'color:#10B981' : 'color:#D64455'" />
+            <CircleCheckIcon v-if="ch.status === 'ok'" class="size-[1em]" :style="ch.status === 'ok' ? 'color:#10B981' : 'color:#D64455'" />
+            <CircleXIcon v-else class="size-[1em]" :style="ch.status === 'ok' ? 'color:#10B981' : 'color:#D64455'" />
             <div class="min-w-0">
               <span class="font-mono text-[10px] text-gray-400">{{ ch.key }}</span>
               <p class="text-gray-700">{{ ch.message }}</p>
@@ -88,13 +91,14 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Proyecto, concepto, tipo…" class="w-64" />
         </IconField>
       </div>
       <div class="flex-1" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar'" @click="cargar" />
+      <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar'" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
       <div class="text-xs text-gray-400 self-center">
         {{ filtrados.length }} registro{{ filtrados.length === 1 ? '' : 's' }}
       </div>
@@ -104,7 +108,7 @@
     <div v-if="!loading && avisos.length" class="rounded-xl px-4 py-3 border text-xs"
          style="background:#FFF8E6; border-color:#F5E3B3; color:#7A5C00">
       <div class="flex items-center gap-2 font-semibold">
-        <i class="pi pi-exclamation-triangle" />
+        <TriangleAlertIcon class="size-[1em]" />
         {{ avisos.length }} proyecto{{ avisos.length === 1 ? '' : 's' }} con cifras incompletas
         <button class="underline ml-1" @click="avisosAbiertos = !avisosAbiertos">
           {{ avisosAbiertos ? 'ocultar' : 'ver detalle' }}
@@ -122,7 +126,7 @@
 
     <div v-if="error" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FEF2F2; border:1px solid #FECACA; color:#B42318">
-      <i class="pi pi-times-circle" /> {{ error }}
+      <CircleXIcon class="size-[1em]" /> {{ error }}
     </div>
 
     <!-- Tabla -->
@@ -152,19 +156,19 @@
                   :style="row.valor < 0 ? 'color:#D64455' : ''">{{ fmtNum(row.valor) }}</td>
               <td class="px-4 py-2 whitespace-nowrap uppercase text-xs">{{ row.version || '—' }}</td>
               <td class="px-4 py-2">
-                <Button icon="pi pi-search" text rounded size="small"
-                        v-tooltip.left="'Diagnosticar este proyecto'"
-                        @click="diagnosticar(row.proyecto)" />
+                <Button text rounded size="small" v-tooltip.left="'Diagnosticar este proyecto'" @click="diagnosticar(row.proyecto)">
+                  <template #icon><SearchIcon class="size-[1em]" /></template>
+                </Button>
               </td>
             </tr>
             <tr v-if="loading">
               <td :colspan="COLUMNAS.length + 1" class="px-4 py-12 text-center text-gray-400">
-                <i class="pi pi-spin pi-spinner text-2xl" />
+                <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" />
               </td>
             </tr>
             <tr v-else-if="!filtrados.length">
               <td :colspan="COLUMNAS.length + 1" class="px-4 py-12 text-center text-sm text-gray-400">
-                <i class="pi pi-bolt text-2xl mb-2 block text-gray-300" />
+                <ZapIcon class="text-2xl mb-2 block text-gray-300 size-[1em]" />
                 No hay despachos liquidados para este período.<br>
                 <span class="text-xs">Corre «Consultar FTP» y después «Liquidar».</span>
               </td>
@@ -185,13 +189,13 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { VERSIONES, VERSION_INICIAL, AccionCiclo } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+import { CircleCheckIcon, CircleXIcon, DownloadIcon, LoaderCircleIcon, PercentIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 
 const liquidacionesApi = new LiquidacionesApiService()
 
-const toast = useToast()
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -282,9 +286,9 @@ function abrir(m) {
 
 async function ejecutar() {
   if (c.mes == null || c.anio == null || (cfg.value.version && !c.version)) {
-    toast.add({
-      severity: 'warn', summary: 'Faltan campos',
-      detail: 'Completa mes, año' + (cfg.value.version ? ' y versión.' : '.'), life: 4000,
+    toast.warning('Faltan campos', {
+      description: 'Completa mes, año' + (cfg.value.version ? ' y versión.' : '.'),
+      duration: 4000,
     })
     return
   }
@@ -295,26 +299,23 @@ async function ejecutar() {
   try {
     if (modo.value === 'ipp') {
       const ipp = await liquidacionesApi.consultarIpp(periodo)
-      toast.add({
-        severity: 'success', summary: `IPP de ${c.mes}/${c.anio}`,
-        detail: String(ipp), life: 6000,
-      })
+      toast.success(`IPP de ${c.mes}/${c.anio}`, { description: String(ipp), duration: 6000 })
     } else {
       const opciones = { onEstado: (t) => { progreso.value = t.mensaje } }
       const res = modo.value === 'ftp'
         ? await liquidacionesApi.ejecutarAccionCiclo(AccionCiclo.DESCARGAR_XM, periodo, opciones)
         : await liquidacionesApi.ejecutarAccionCiclo(AccionCiclo.LIQUIDAR, periodo, opciones)
-      toast.add({
-        severity: 'success', summary: cfg.value.header,
-        detail: res.message || 'Terminó correctamente.', life: 6000,
+      toast.success(cfg.value.header, {
+        description: res.message || 'Terminó correctamente.',
+        duration: 6000,
       })
       await cargar()
     }
     dialogVisible.value = false
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: `${cfg.value.header} falló`,
-      detail: e.response?.data?.detail || e.message, life: 10000,
+    toast.error(`${cfg.value.header} falló`, {
+      description: e.response?.data?.detail || e.message,
+      duration: 10000,
     })
   } finally {
     accion.value = null
@@ -337,9 +338,9 @@ async function diagnosticar(project) {
     diag.value = await liquidacionesApi.diagnosticarProyecto({ project, ...filtros })
   } catch (e) {
     diagVisible.value = false
-    toast.add({
-      severity: 'error', summary: 'No se pudo diagnosticar',
-      detail: e.response?.data?.detail || e.message, life: 6000,
+    toast.error('No se pudo diagnosticar', {
+      description: e.response?.data?.detail || e.message,
+      duration: 6000,
     })
   } finally {
     diagCargando.value = false

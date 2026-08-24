@@ -6,7 +6,7 @@
     ════════════════════════════════════════════════════════════════ -->
     <aside class="filter-panel">
       <div class="filter-header">
-        <i class="pi pi-sliders-h" style="color:#915BD8" />
+        <SlidersHorizontalIcon class="size-[1em]" style="color:#915BD8" />
         <span>Filtros</span>
       </div>
 
@@ -63,21 +63,12 @@
       </div>
 
       <div class="filter-actions">
-        <Button
-          label="Aplicar filtros"
-          icon="pi pi-search"
-          class="w-full"
-          :loading="loading"
-          @click="applyFilters"
-        />
-        <Button
-          label="Limpiar"
-          icon="pi pi-times"
-          severity="secondary"
-          outlined
-          class="w-full mt-2 text-sm"
-          @click="clearFilters"
-        />
+        <Button label="Aplicar filtros" class="w-full" :loading="loading" @click="applyFilters">
+          <template #icon><SearchIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Limpiar" severity="secondary" outlined class="w-full mt-2 text-sm" @click="clearFilters">
+          <template #icon><XIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </aside>
 
@@ -93,46 +84,32 @@
           <p class="page-sub">Generación distribuida · Datos XM SinergoX</p>
         </div>
         <div class="flex gap-2 flex-wrap">
-          <Button
-            label="Recargar datos"
-            icon="pi pi-refresh"
-            size="small"
-            severity="secondary"
-            outlined
-            :loading="reloading"
-            @click="reloadCache"
-          />
-          <Button
-            label="Exportar CSV"
-            icon="pi pi-download"
-            size="small"
-            @click="exportCSV"
-            style="background:#915BD8;border-color:#915BD8;"
-          />
+          <Button label="Recargar datos" size="small" severity="secondary" outlined :loading="reloading" @click="reloadCache">
+            <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+          </Button>
+          <Button label="Exportar CSV" size="small" @click="exportCSV" style="background:#915BD8;border-color:#915BD8;">
+            <template #icon><DownloadIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
 
       <!-- Sin datos ──────────────────────────────────────────────── -->
       <div v-if="!loading && !genData.length && initialLoaded" class="empty-state">
-        <i class="pi pi-sun text-5xl mb-4" style="color:#915BD8;opacity:0.25" />
+        <SunIcon class="text-5xl mb-4 size-[1em]" style="color:#915BD8;opacity:0.25" />
         <h3 class="text-base font-semibold text-gray-600 mb-2">Sin datos disponibles</h3>
         <p class="text-sm text-gray-400 text-center max-w-xs leading-relaxed">
           Los archivos Excel no se encontraron en
           <code class="bg-gray-100 px-1 rounded">./datos/</code>.<br />
           Ejecuta <code class="bg-gray-100 px-1 rounded">solar_sin.py</code> para descargar los datos de XM SinergoX.
         </p>
-        <Button
-          label="Reintentar"
-          icon="pi pi-refresh"
-          class="mt-5"
-          :loading="reloading"
-          @click="reloadCache"
-        />
+        <Button label="Reintentar" class="mt-5" :loading="reloading" @click="reloadCache">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
       </div>
 
       <!-- Loader ─────────────────────────────────────────────────── -->
       <div v-else-if="loading && !initialLoaded" class="empty-state">
-        <i class="pi pi-spin pi-sun text-4xl mb-3" style="color:#915BD8" />
+        <SunIcon class="text-4xl mb-3 size-[1em] animate-spin" style="color:#915BD8" />
         <p class="text-sm text-gray-500">Cargando datos solares…</p>
       </div>
 
@@ -143,7 +120,7 @@
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-icon" style="background:rgba(145,91,216,0.1)">
-              <i class="pi pi-th-large" style="color:#915BD8" />
+              <LayoutGridIcon class="size-[1em]" style="color:#915BD8" />
             </div>
             <div>
               <p class="kpi-val">{{ kpis.proyectos }}</p>
@@ -152,7 +129,7 @@
           </div>
           <div class="kpi-card">
             <div class="kpi-icon" style="background:rgba(246,255,114,0.25)">
-              <i class="pi pi-bolt" style="color:#a16207" />
+              <ZapIcon class="size-[1em]" style="color:#a16207" />
             </div>
             <div>
               <p class="kpi-val">{{ fmtK(kpis.kwhTotal) }}</p>
@@ -161,7 +138,7 @@
           </div>
           <div class="kpi-card">
             <div class="kpi-icon" style="background:rgba(145,91,216,0.1)">
-              <i class="pi pi-chart-line" style="color:#915BD8" />
+              <ChartLineIcon class="size-[1em]" style="color:#915BD8" />
             </div>
             <div>
               <p class="kpi-val">{{ fmtK(kpis.promDiario) }}</p>
@@ -170,7 +147,7 @@
           </div>
           <div class="kpi-card">
             <div class="kpi-icon" style="background:rgba(74,222,128,0.1)">
-              <i class="pi pi-database" style="color:#16a34a" />
+              <DatabaseIcon class="size-[1em]" style="color:#16a34a" />
             </div>
             <div>
               <p class="kpi-val">{{ kpis.capacidadMW.toFixed(2) }}</p>
@@ -189,7 +166,7 @@
               :class="['ctab', activeTab === tab.id && 'ctab-active']"
               @click="activeTab = tab.id"
             >
-              <i :class="tab.icon + ' mr-1.5 text-xs'" />{{ tab.label }}
+              <component :is="tab.icon" class="mr-1.5 text-xs size-[1em]" />{{ tab.label }}
             </button>
           </div>
 
@@ -320,7 +297,7 @@
         <!-- Comparación Nacional XM vs. Interno BD ─────────────────── -->
         <div class="card mb-6">
           <h3 class="section-title">
-            <i class="pi pi-chart-bar mr-2" style="color:#915BD8" />
+            <ChartColumnIcon class="mr-2 size-[1em]" style="color:#915BD8" />
             Comparación: XM Nacional vs. Proyectos Internos
           </h3>
           <p class="text-xs text-gray-400 mb-4">
@@ -356,13 +333,9 @@
               />
             </div>
           </div>
-          <Button
-            label="Generar comparación"
-            icon="pi pi-refresh"
-            :loading="cmp.loading"
-            :disabled="!cmp.nacionales.length && !cmp.internos.length"
-            @click="loadComparacion"
-          />
+          <Button label="Generar comparación" :loading="cmp.loading" :disabled="!cmp.nacionales.length && !cmp.internos.length" @click="loadComparacion">
+            <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+          </Button>
 
           <!-- Chart comparación -->
           <div v-if="cmpChart.series.length" class="svg-wrap mt-5">
@@ -417,7 +390,7 @@
           <!-- Mapa Colombia -->
           <div class="card lg:col-span-2">
             <h3 class="section-title mb-3">
-              <i class="pi pi-map-marker mr-2" style="color:#915BD8" />
+              <MapPinIcon class="mr-2 size-[1em]" style="color:#915BD8" />
               Mapa de Generación
             </h3>
             <svg viewBox="0 0 420 520" class="w-full max-h-80">
@@ -458,7 +431,7 @@
           <!-- Tabla resumen por depto -->
           <div class="card lg:col-span-3 overflow-auto">
             <h3 class="section-title mb-3">
-              <i class="pi pi-chart-bar mr-2" style="color:#915BD8" />
+              <ChartColumnIcon class="mr-2 size-[1em]" style="color:#915BD8" />
               Resumen por Departamento
             </h3>
             <table class="sum-table">
@@ -489,7 +462,7 @@
         <div class="card">
           <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h3 class="section-title">
-              <i class="pi pi-list mr-2" style="color:#915BD8" />
+              <ListIcon class="mr-2 size-[1em]" style="color:#915BD8" />
               Detalle por Proyecto
               <span class="ml-2 text-xs font-normal text-gray-400">({{ tableRows.length }} proyectos)</span>
             </h3>
@@ -561,8 +534,9 @@ import Button     from 'primevue/button'
 import DataTable  from 'primevue/datatable'
 import Column     from 'primevue/column'
 import Tag        from 'primevue/tag'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
+import { ChartColumnIcon, ChartLineIcon, DatabaseIcon, DownloadIcon, GlobeIcon, LayoutGridIcon, ListIcon, MapIcon, MapPinIcon, RefreshCwIcon, SearchIcon, SlidersHorizontalIcon, SunIcon, TrophyIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 // ─── Constantes de diseño ────────────────────────────────────────────────────
 
@@ -571,10 +545,10 @@ const CMP_COLORS_NAC = ['#915BD8','#7c3aed','#6366f1','#3b82f6','#0891b2','#0ea5
 const CMP_COLORS_INT = ['#16a34a','#15803d','#166534','#65a30d','#84cc16','#22c55e','#4ade80','#86efac']
 
 const CHART_TABS = [
-  { id: 'lineas',       label: 'Comparación proyectos', icon: 'pi pi-chart-line' },
-  { id: 'municipio',    label: 'Por Municipio',          icon: 'pi pi-map' },
-  { id: 'departamento', label: 'Por Departamento',       icon: 'pi pi-globe' },
-  { id: 'top',          label: 'Top Generadores',        icon: 'pi pi-trophy' },
+  { id: 'lineas',       label: 'Comparación proyectos', icon: ChartLineIcon },
+  { id: 'municipio',    label: 'Por Municipio',          icon: MapIcon },
+  { id: 'departamento', label: 'Por Departamento',       icon: GlobeIcon },
+  { id: 'top',          label: 'Top Generadores',        icon: TrophyIcon },
 ]
 
 // Dimensiones SVG de los gráficos de líneas
@@ -618,7 +592,6 @@ const DEPT_POSITIONS = [
 
 // ─── Estado ──────────────────────────────────────────────────────────────────
 
-const toast        = useToast()
 const route        = useRoute()
 const router       = useRouter()
 const loading      = ref(false)
@@ -694,7 +667,7 @@ async function loadGeneracion() {
     const { data } = await api.get('/solar/generacion', { params })
     genData.value = data
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la generación solar', life: 4000 })
+    toast.error('Error', { description: 'No se pudo cargar la generación solar', duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -720,7 +693,7 @@ async function loadComparacion() {
     const { data } = await api.get('/solar/comparacion', { params })
     cmp.raw = data
   } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo generar la comparación', life: 4000 })
+    toast.error('Error', { description: 'No se pudo generar la comparación', duration: 4000 })
   } finally {
     cmp.loading = false
   }
@@ -730,18 +703,16 @@ async function reloadCache() {
   reloading.value = true
   try {
     const { data } = await api.post('/solar/reload-cache')
-    toast.add({
-      severity: 'success',
-      summary: 'Caché recargado',
-      detail: `${data.proyectos} proyectos · ${data.registros_generacion} registros`,
-      life: 4000,
+    toast.success('Caché recargado', {
+      description: `${data.proyectos} proyectos · ${data.registros_generacion} registros`,
+      duration: 4000,
     })
     await loadFiltros()
     await loadProyectos()
     await loadGeneracion()
     await loadRanking()
   } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo recargar el caché', life: 4000 })
+    toast.error('Error', { description: 'No se pudo recargar el caché', duration: 4000 })
   } finally {
     reloading.value = false
   }
@@ -1013,7 +984,7 @@ const cmpChart = computed(() => {
 function exportCSV() {
   const rows = tableRows.value
   if (!rows.length) {
-    toast.add({ severity: 'warn', summary: 'Sin datos', detail: 'No hay datos para exportar', life: 3000 })
+    toast.warning('Sin datos', { description: 'No hay datos para exportar', duration: 3000 })
     return
   }
   const cols = ['sic','nombre','municipio','departamento','agente','estado','capacidad_mw','kwh_total','kwh_dia_prom','dias']
@@ -1031,7 +1002,7 @@ function exportCSV() {
   a.download = `solar_${new Date().toISOString().slice(0,10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
-  toast.add({ severity: 'success', summary: 'CSV exportado', life: 2500 })
+  toast.success('CSV exportado', { duration: 2500 })
 }
 
 // ─── Helpers de formato ───────────────────────────────────────────────────────

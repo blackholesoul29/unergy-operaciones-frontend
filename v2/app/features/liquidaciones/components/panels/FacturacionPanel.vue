@@ -5,7 +5,7 @@
       <div class="fac-subtabs">
         <button v-for="s in SUBS" :key="s.key" class="fac-subtab"
           :class="{ on: sub === s.key }" @click="sub = s.key">
-          <i :class="s.icon" /><span>{{ s.label }}</span>
+          <component :is="s.icon" class="size-[1em]" /><span>{{ s.label }}</span>
         </button>
       </div>
       <span class="text-[11px]" style="color:#9b8fb0">
@@ -19,7 +19,7 @@
       <!-- Aviso IPP faltante -->
       <div v-if="!ippActual && sub !== 'ipp'" class="rounded-lg px-3 py-2.5 text-xs flex items-center gap-2"
         style="background:#fff7e6; border:1px solid #f5d99a; color:#8a5a12">
-        <i class="pi pi-exclamation-triangle" />
+        <TriangleAlertIcon class="size-[1em]" />
         Falta el <b>IPP</b> de {{ formatPeriodo(periodo) }}. La facturación no se puede calcular sin él.
         <button class="fac-link ml-1" @click="sub = 'ipp'">Cargarlo →</button>
       </div>
@@ -30,7 +30,7 @@
              contratos sin PPA, que es lo que hay que accionar. -->
         <div v-if="res.sin_ppa" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
              style="background:#fdecea; border:1px solid #f5c2bd; color:#a13527">
-          <i class="pi pi-exclamation-triangle" />
+          <TriangleAlertIcon class="size-[1em]" />
           <b>{{ res.sin_ppa }}</b> contrato{{ res.sin_ppa === 1 ? '' : 's' }} sin PPA marco: no se factura
           por esta vía hasta asociarle su PPA. Ver el detalle abajo.
         </div>
@@ -64,7 +64,7 @@
         <!-- No facturables: sin PPA marco, o con PPA pero sin tarifa/IPP. Antes solo
              se listaban los "sin PPA" y los otros casos no aparecían en ninguna parte. -->
         <div v-if="noFacturables.length" class="fac-card">
-          <p class="fac-note"><i class="pi pi-info-circle" /> No facturables por esta vía ({{ noFacturables.length }}):</p>
+          <p class="fac-note"><InfoIcon class="size-[1em]" /> No facturables por esta vía ({{ noFacturables.length }}):</p>
           <div class="tblwrap">
             <table class="dt">
               <thead><tr><th class="l">Planta / Contrato</th><th class="l">Comerc.</th><th class="l">Motivo</th><th>Energía (kWh)</th></tr></thead>
@@ -97,7 +97,8 @@
               {{ res.emitidas || 0 }}/{{ res.facturas || porFactura.length }} facturadas
             </span>
             <button v-if="ordenTocado" class="fac-btn" :disabled="guardandoOrden" @click="guardarOrden">
-              <i :class="guardandoOrden ? 'pi pi-spin pi-spinner' : 'pi pi-save'" class="text-xs" /> Guardar orden
+              <LoaderCircleIcon v-if="guardandoOrden" class="text-xs size-[1em] animate-spin" />
+              <SaveIcon v-else class="text-xs size-[1em]" /> Guardar orden
             </button>
             <button class="fac-link" @click="restablecerOrden">Orden por valor</button>
           </div>
@@ -106,7 +107,7 @@
         <!-- Buscador: por planta / PPA o por número de factura (para ubicar una rápido) -->
         <div class="fac-buscar">
           <span style="position:relative; flex:1; min-width:240px">
-            <i class="pi pi-search" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#9b8fb0; font-size:12px" />
+            <SearchIcon class="size-[1em]" style="position:absolute; left:11px; top:50%; transform:translateY(-50%); color:#9b8fb0; font-size:12px" />
             <input v-model="facFiltro" class="fac-in" style="width:100%; padding-left:32px"
                    placeholder="Buscar por planta, PPA, contrato o N° de factura…" />
           </span>
@@ -151,19 +152,20 @@
             <span v-if="!filtroActivo" class="fac-ord" @click.stop>
               <span class="fac-grip" draggable="true" v-tooltip.top="'Arrastra para reordenar'"
                     @dragstart="iniciarArrastre(i, $event)" @dragend="finArrastre">
-                <i class="pi pi-bars" />
+                <MenuIcon class="size-[1em]" />
               </span>
               <span class="fac-ord-arrows">
                 <button class="fac-ord-b" :disabled="i === 0" v-tooltip.top="'Subir'"
-                        @click="moverFactura(i, -1)"><i class="pi pi-chevron-up" /></button>
+                        @click="moverFactura(i, -1)"><ChevronUpIcon class="size-[1em]" /></button>
                 <button class="fac-ord-b" :disabled="i === porFactura.length - 1" v-tooltip.bottom="'Bajar'"
-                        @click="moverFactura(i, 1)"><i class="pi pi-chevron-down" /></button>
+                        @click="moverFactura(i, 1)"><ChevronDownIcon class="size-[1em]" /></button>
               </span>
             </span>
             <input type="checkbox" :checked="f.emitida" @click.stop
                    v-tooltip.top="f.emitida ? tooltipEmitida(f) : 'Marcar como facturada'"
                    @change="onCheck(f, $event)" />
-            <i :class="abiertas.has(f.factura) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-xs" style="color:#9b8fb0" />
+            <ChevronDownIcon v-if="abiertas.has(f.factura)" class="text-xs size-[1em]" style="color:#9b8fb0" />
+            <ChevronRightIcon v-else class="text-xs size-[1em]" style="color:#9b8fb0" />
             <span class="proj">{{ f.factura }}</span>
             <span v-if="f.sin_ppa" class="tag" style="background:#fbeede;color:#c9701a">sin PPA · XM (bolsa)</span>
             <span v-else-if="f.personalizada" class="tag" style="background:#e6f6ef;color:#1f9d6b">dividida</span>
@@ -171,16 +173,18 @@
             <!-- Número de factura: etiqueta no editable; el lápiz abre la ventana para cambiarlo. -->
             <span v-if="f.emitida && f.numero_factura" class="fac-numtag" @click.stop="abrirNumero(f)"
                   v-tooltip.top="'Editar el N° de factura'">
-              <i class="pi pi-hashtag text-[9px]" /> {{ f.numero_factura }}
+              <HashIcon class="text-[9px] size-[1em]" /> {{ f.numero_factura }}
             </span>
             <span v-else-if="f.emitida" class="tag" style="background:#e6f6ef;color:#1f9d6b; cursor:pointer" @click.stop="abrirNumero(f)"
                   v-tooltip.top="'Agregar el N° de factura'">facturada · N°?</span>
             <span class="fac-acts" @click.stop>
               <button class="fac-icobtn" @click="copiarMensaje(f)" v-tooltip.top="'Copiar el mensaje'">
-                <i :class="copiada === f.factura ? 'pi pi-check' : 'pi pi-copy'" />
+                <CheckIcon v-if="copiada === f.factura" class="size-[1em]" />
+                <CopyIcon v-else class="size-[1em]" />
               </button>
               <button class="fac-icobtn" @click="copiarImagen(f)" v-tooltip.top="'Copiar como imagen'">
-                <i :class="imagenId === f.factura ? 'pi pi-check' : 'pi pi-image'" />
+                <CheckIcon v-if="imagenId === f.factura" class="size-[1em]" />
+                <ImageIcon v-else class="size-[1em]" />
               </button>
             </span>
             <span class="ml-auto fac-fac-nums">
@@ -219,7 +223,8 @@
               <input v-model="nuevoPct[f.factura]" class="fac-in" style="width:110px"
                      placeholder="% (opcional)" inputmode="decimal" />
               <button class="fac-btn" :disabled="guardandoDiv" @click="moverSeleccionados(f.factura)">
-                <i :class="guardandoDiv ? 'pi pi-spin pi-spinner' : 'pi pi-arrow-right'" class="text-xs" /> Mover seleccionados
+                <LoaderCircleIcon v-if="guardandoDiv" class="text-xs size-[1em] animate-spin" />
+                <ArrowRightIcon v-else class="text-xs size-[1em]" /> Mover seleccionados
               </button>
               <span class="text-[10px]" style="color:#9b8fb0">
                 Sin % se mueve el contrato completo. Con % (ej. <b>22.8066</b>) se mueve esa
@@ -260,7 +265,7 @@
             Compromiso (mínimo mensual del PPA) vs energía despachada · {{ formatPeriodo(periodo) }}
           </span>
           <button class="fac-upload" :disabled="!cumpl.filas.length" @click="exportarCumplimiento">
-            <i class="pi pi-file-excel text-xs" /> Exportar Excel
+            <FileSpreadsheetIcon class="text-xs size-[1em]" /> Exportar Excel
           </button>
         </div>
         <div class="fac-kpis">
@@ -307,7 +312,7 @@
               </tbody>
             </table>
           </div>
-          <p class="fac-note"><i class="pi pi-info-circle" /> Compromiso por contrato marco (PPA), en MWh; despacho convertido de kWh. La energía sin PPA (bolsa/UNGC) no entra aquí.</p>
+          <p class="fac-note"><InfoIcon class="size-[1em]" /> Compromiso por contrato marco (PPA), en MWh; despacho convertido de kWh. La energía sin PPA (bolsa/UNGC) no entra aquí.</p>
         </div>
       </template>
 
@@ -322,7 +327,8 @@
             <template v-else>Sin despacho cargado para este mes.</template>
           </span>
           <button class="fac-upload" :disabled="subiendo" @click="pickDespacho">
-            <i :class="subiendo ? 'pi pi-spin pi-spinner' : 'pi pi-upload'" class="text-xs" />
+            <LoaderCircleIcon v-if="subiendo" class="text-xs size-[1em] animate-spin" />
+            <UploadIcon v-else class="text-xs size-[1em]" />
             {{ subiendo ? 'Subiendo…' : 'Subir despacho XM' }}
           </button>
         </div>
@@ -331,7 +337,7 @@
                su energía día a día (GET /facturacion/despacho/dias). -->
           <div class="fac-desp-filtro">
             <span class="p-input-icon-left" style="position:relative">
-              <i class="pi pi-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#9b8fb0; font-size:12px" />
+              <SearchIcon class="size-[1em]" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#9b8fb0; font-size:12px" />
               <input v-model="despFiltro" class="fac-in" style="width:280px; padding-left:30px"
                      placeholder="Buscar contrato, vendedor o comprador…" />
             </span>
@@ -345,7 +351,8 @@
               <tbody>
                 <template v-for="d in despachoFiltrado" :key="d.contrato">
                   <tr class="fac-desp-row" @click="toggleDias(d.contrato)">
-                    <td class="l"><i :class="diasAbiertos.has(d.contrato) ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" class="text-[10px]" style="color:#9b8fb0" /></td>
+                    <td class="l"><ChevronDownIcon v-if="diasAbiertos.has(d.contrato)" class="text-[10px] size-[1em]" style="color:#9b8fb0" />
+                    <ChevronRightIcon v-else class="text-[10px] size-[1em]" style="color:#9b8fb0" /></td>
                     <td class="l">{{ d.contrato }}</td><td class="l muted">{{ d.vendedor || '—' }}</td>
                     <td class="l"><span class="tag">{{ d.comprador || '—' }}</span></td>
                     <td>{{ fmtNum(d.kwh) }}</td>
@@ -354,7 +361,7 @@
                     <td></td>
                     <td class="l" colspan="4">
                       <div v-if="dias[d.contrato] === 'loading'" class="text-[11px] muted py-1">
-                        <i class="pi pi-spin pi-spinner text-[10px]" /> Cargando días…
+                        <LoaderCircleIcon class="text-[10px] size-[1em] animate-spin" /> Cargando días…
                       </div>
                       <div v-else-if="!dias[d.contrato] || !dias[d.contrato].length" class="text-[11px] muted py-1">
                         Sin detalle diario. Vuelve a subir el despacho de este mes para poblarlo.
@@ -387,7 +394,8 @@
               <input v-model.number="ippInput" type="number" step="0.01" class="fac-in" placeholder="187.43" />
             </div>
             <button class="fac-btn" :disabled="guardandoIpp || !ippInput" @click="guardarIpp">
-              <i :class="guardandoIpp ? 'pi pi-spin pi-spinner' : 'pi pi-save'" class="text-xs" /> Guardar
+              <LoaderCircleIcon v-if="guardandoIpp" class="text-xs size-[1em] animate-spin" />
+              <SaveIcon v-else class="text-xs size-[1em]" /> Guardar
             </button>
             <span v-if="ippActual" class="text-[11px] ml-1" style="color:#2C7a3f">Actual: {{ ippActual }}</span>
           </div>
@@ -406,7 +414,8 @@
               <input v-model.number="bolsaInput" type="number" step="0.01" class="fac-in" placeholder="$/kWh" />
             </div>
             <button class="fac-btn" :disabled="guardandoBolsa" @click="guardarBolsa">
-              <i :class="guardandoBolsa ? 'pi pi-spin pi-spinner' : 'pi pi-save'" class="text-xs" /> Guardar
+              <LoaderCircleIcon v-if="guardandoBolsa" class="text-xs size-[1em] animate-spin" />
+              <SaveIcon v-else class="text-xs size-[1em]" /> Guardar
             </button>
             <span class="text-[11px] ml-1" :style="{ color: bolsa.vigente != null ? '#2C7a3f' : '#c0392b' }">
               {{ bolsa.vigente != null ? 'Cargado: ' + fmtNum(bolsa.vigente) + ' $/kWh' : 'Sin precio — cárgalo para valorizar la bolsa' }}
@@ -445,7 +454,8 @@
       <template #footer>
         <button class="fac-link" :disabled="numModal.saving" @click="numModal.open = false">Cancelar</button>
         <button class="fac-btn ml-2" :disabled="numModal.saving" @click="confirmarNumero">
-          <i :class="numModal.saving ? 'pi pi-spin pi-spinner' : 'pi pi-check'" class="text-xs" />
+          <LoaderCircleIcon v-if="numModal.saving" class="text-xs size-[1em] animate-spin" />
+          <CheckIcon v-else class="text-xs size-[1em]" />
           {{ numModal.modo === 'editar' ? 'Guardar' : 'Marcar facturada' }}
         </button>
       </template>
@@ -457,21 +467,21 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import ProgressSpinner from 'primevue/progressspinner'
 import Dialog from 'primevue/dialog'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { fmtCOP, formatPeriodo } from '~/utils/liquidaciones'
 import { exportarExcel } from '~/utils/exportarExcel'
+import { ArrowRightIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, ChevronUpIcon, CircleCheckIcon, CopyIcon, DatabaseIcon, DollarSignIcon, FileIcon, FileSpreadsheetIcon, HashIcon, ImageIcon, InfoIcon, LoaderCircleIcon, MenuIcon, NetworkIcon, PercentIcon, SaveIcon, SearchIcon, TriangleAlertIcon, UploadIcon } from '@lucide/vue'
 
 const props = defineProps({ periodo: { type: String, required: true } })
-const toast = useToast()
 
 const SUBS = [
-  { key: 'facturas', label: 'Facturas', icon: 'pi pi-file' },
-  { key: 'facturacion', label: 'Detalle', icon: 'pi pi-dollar' },
-  { key: 'sic', label: 'Por código SIC', icon: 'pi pi-sitemap' },
-  { key: 'cumplimiento', label: 'Cumplimiento', icon: 'pi pi-check-circle' },
-  { key: 'despachos', label: 'Despachos', icon: 'pi pi-database' },
-  { key: 'ipp', label: 'IPP', icon: 'pi pi-percentage' },
+  { key: 'facturas', label: 'Facturas', icon: FileIcon },
+  { key: 'facturacion', label: 'Detalle', icon: DollarSignIcon },
+  { key: 'sic', label: 'Por código SIC', icon: NetworkIcon },
+  { key: 'cumplimiento', label: 'Cumplimiento', icon: CircleCheckIcon },
+  { key: 'despachos', label: 'Despachos', icon: DatabaseIcon },
+  { key: 'ipp', label: 'IPP', icon: PercentIcon },
 ]
 const sub = ref('facturas')
 const loading = ref(false)
@@ -627,10 +637,13 @@ async function subirDespacho (file) {
     fd.append('archivo', file)
     const { data } = await api.post(`/facturacion/despacho?periodo=${per.value}`, fd,
       { headers: { 'Content-Type': 'multipart/form-data' } })
-    toast.add({ severity: 'success', summary: 'Despacho cargado', detail: `${data.contratos} contratos · ${(data.kwh_total / 1000).toFixed(0)} MWh`, life: 4000 })
+    toast.success('Despacho cargado', {
+      description: `${data.contratos} contratos · ${(data.kwh_total / 1000).toFixed(0)} MWh`,
+      duration: 4000,
+    })
     await load()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo cargar', detail: e?.response?.data?.detail || e.message, life: 6000 })
+    toast.error('No se pudo cargar', { description: e?.response?.data?.detail || e.message, duration: 6000 })
   } finally { subiendo.value = false }
 }
 
@@ -640,15 +653,18 @@ function selDe (k) { if (!sel[k]) sel[k] = reactive(new Set()); return sel[k] }
 function toggleProy (k, contrato) { const s = selDe(k); s.has(contrato) ? s.delete(contrato) : s.add(contrato) }
 async function moverSeleccionados (k) {
   const s = selDe(k); const nombre = (nuevoNombre[k] || '').trim()
-  if (!s.size) { toast.add({ severity: 'warn', summary: 'Selecciona contratos', life: 3000 }); return }
-  if (!nombre) { toast.add({ severity: 'warn', summary: 'Escribe el nombre de la factura', life: 3000 }); return }
+  if (!s.size) { toast.warning('Selecciona contratos', { duration: 3000 }); return }
+  if (!nombre) { toast.warning('Escribe el nombre de la factura', { duration: 3000 }); return }
   // El % admite coma o punto (se escribe "22,8066" en teclado es-CO).
   const crudo = (nuevoPct[k] || '').toString().trim().replace(',', '.')
   let pct = null
   if (crudo) {
     pct = Number(crudo)
     if (!Number.isFinite(pct) || pct <= 0 || pct > 100) {
-      toast.add({ severity: 'warn', summary: 'Porcentaje inválido', detail: 'Debe ser un número entre 0 y 100.', life: 4000 })
+      toast.warning('Porcentaje inválido', {
+        description: 'Debe ser un número entre 0 y 100.',
+        duration: 4000,
+      })
       return
     }
   }
@@ -657,11 +673,14 @@ async function moverSeleccionados (k) {
     const rows = [...s].filter(Boolean).map(c => ({ codigo_sic_contrato: c, nombre, porcentaje: pct }))
     await api.put('/facturacion/agrupaciones', rows)
     const comoPct = pct != null ? ` (${fmtPct(pct)})` : ''
-    toast.add({ severity: 'success', summary: 'Factura dividida', detail: `${rows.length} contratos → "${nombre}"${comoPct}`, life: 3500 })
+    toast.success('Factura dividida', {
+      description: `${rows.length} contratos → "${nombre}"${comoPct}`,
+      duration: 3500,
+    })
     s.clear(); nuevoNombre[k] = ''; nuevoPct[k] = ''
     await load()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo dividir', detail: e?.response?.data?.detail || e.message, life: 6000 })
+    toast.error('No se pudo dividir', { description: e?.response?.data?.detail || e.message, duration: 6000 })
   } finally { guardandoDiv.value = false }
 }
 
@@ -707,9 +726,15 @@ async function guardarOrden () {
   try {
     await api.put('/facturacion/orden', { nombres: porFactura.value.map(f => f.factura) })
     ordenTocado.value = false
-    toast.add({ severity: 'success', summary: 'Orden guardado', detail: 'Se aplica también a los próximos meses.', life: 3500 })
+    toast.success('Orden guardado', {
+      description: 'Se aplica también a los próximos meses.',
+      duration: 3500,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar el orden', detail: e?.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo guardar el orden', {
+      description: e?.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   } finally { guardandoOrden.value = false }
 }
 
@@ -718,9 +743,12 @@ async function restablecerOrden () {
     await api.delete('/facturacion/orden')
     ordenTocado.value = false
     await load()
-    toast.add({ severity: 'success', summary: 'Orden restablecido', detail: 'Vuelve a ordenarse por valor.', life: 3000 })
+    toast.success('Orden restablecido', { description: 'Vuelve a ordenarse por valor.', duration: 3000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo restablecer', detail: e?.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo restablecer', {
+      description: e?.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   }
 }
 
@@ -759,9 +787,12 @@ async function confirmarNumero () {
     f.numero_factura = num
     if (!yaEmitida) res.value = { ...res.value, emitidas: (res.value.emitidas || 0) + 1 }
     numModal.open = false
-    toast.add({ severity: 'success', summary: yaEmitida ? 'N° actualizado' : 'Factura marcada', detail: num || 'Sin N°', life: 2500 })
+    toast.success(yaEmitida ? 'N° actualizado' : 'Factura marcada', {
+      description: num || 'Sin N°',
+      duration: 2500,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e?.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo guardar', { description: e?.response?.data?.detail || e.message, duration: 5000 })
   } finally { numModal.saving = false }
 }
 
@@ -773,7 +804,10 @@ async function desmarcarEmitida (f) {
     res.value = { ...res.value, emitidas: Math.max(0, (res.value.emitidas || 0) - 1) }
   } catch (e) {
     f.emitida = true; f.numero_factura = num                 // revertir si el backend falló
-    toast.add({ severity: 'error', summary: 'No se pudo desmarcar', detail: e?.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo desmarcar', {
+      description: e?.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   }
 }
 
@@ -797,7 +831,7 @@ const fmtDia = (iso) => {
 
 async function copiarMensaje (f) {
   const texto = f.mensaje || ''
-  if (!texto) { toast.add({ severity: 'warn', summary: 'Sin datos para el mensaje', life: 3000 }); return }
+  if (!texto) { toast.warning('Sin datos para el mensaje', { duration: 3000 }); return }
   try {
     await navigator.clipboard.writeText(texto)
   } catch {
@@ -810,8 +844,10 @@ async function copiarMensaje (f) {
   copiada.value = f.factura
   setTimeout(() => { if (copiada.value === f.factura) copiada.value = null }, 2500)
   if (f.tarifa_mixta) {
-    toast.add({ severity: 'warn', summary: 'Copiado — revisa la tarifa', life: 5000,
-      detail: 'Esta factura mezcla contratos con tarifas distintas; el mensaje usa una sola.' })
+    toast.warning('Copiado — revisa la tarifa', {
+      description: 'Esta factura mezcla contratos con tarifas distintas; el mensaje usa una sola.',
+      duration: 5000,
+    })
   }
 }
 // ── Copiar la factura como imagen ─────────────────────────────────────────────
@@ -902,7 +938,7 @@ function _renderFacturaCanvas (f) {
 async function copiarImagen (f) {
   let canvas
   try { canvas = _renderFacturaCanvas(f) }
-  catch (e) { toast.add({ severity: 'error', summary: 'No se pudo generar la imagen', detail: e.message, life: 5000 }); return }
+  catch (e) { toast.error('No se pudo generar la imagen', { description: e.message, duration: 5000 }); return }
   canvas.toBlob(async (blob) => {
     if (!blob) return
     try {
@@ -914,7 +950,10 @@ async function copiarImagen (f) {
       const a = document.createElement('a')
       a.href = url; a.download = `factura-${String(f.factura || 'factura').replace(/[^\w-]+/g, '_')}.png`
       document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url)
-      toast.add({ severity: 'info', summary: 'Imagen descargada', detail: 'El navegador no permite copiarla al portapapeles.', life: 4000 })
+      toast.info('Imagen descargada', {
+        description: 'El navegador no permite copiarla al portapapeles.',
+        duration: 4000,
+      })
     }
   }, 'image/png')
 }
@@ -924,7 +963,7 @@ async function quitarAsignacion (contrato) {
     await api.put('/facturacion/agrupaciones', [{ codigo_sic_contrato: contrato, nombre: '' }])
     await load()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo quitar', detail: e?.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo quitar', { description: e?.response?.data?.detail || e.message, duration: 5000 })
   }
 }
 
@@ -932,10 +971,13 @@ async function guardarIpp () {
   guardandoIpp.value = true
   try {
     await api.put('/ppa/ipp/mensual', [{ año: añoMes.value.a, mes: añoMes.value.m, valor: Number(ippInput.value) }])
-    toast.add({ severity: 'success', summary: 'IPP guardado', detail: `${formatPeriodo(props.periodo)} = ${ippInput.value}`, life: 3500 })
+    toast.success('IPP guardado', {
+      description: `${formatPeriodo(props.periodo)} = ${ippInput.value}`,
+      duration: 3500,
+    })
     await load()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e?.response?.data?.detail || e.message, life: 6000 })
+    toast.error('No se pudo guardar', { description: e?.response?.data?.detail || e.message, duration: 6000 })
   } finally { guardandoIpp.value = false }
 }
 
@@ -943,10 +985,10 @@ async function guardarBolsa () {
   guardandoBolsa.value = true
   try {
     await api.put('/facturacion/bolsa', { periodo: per.value, valor: bolsaInput.value ? Number(bolsaInput.value) : null })
-    toast.add({ severity: 'success', summary: 'Precio de bolsa guardado', life: 3000 })
+    toast.success('Precio de bolsa guardado', { duration: 3000 })
     await load()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: e?.response?.data?.detail || e.message, life: 6000 })
+    toast.error('No se pudo guardar', { description: e?.response?.data?.detail || e.message, duration: 6000 })
   } finally { guardandoBolsa.value = false }
 }
 
@@ -1010,10 +1052,10 @@ onMounted(load)
 .fac-grip { display:flex; align-items:center; color:#c9bede; cursor:grab; padding:2px 1px; border-radius:3px; }
 .fac-grip:hover { color:#915BD8; background:#f1eaf9; }
 .fac-grip:active { cursor:grabbing; }
-.fac-grip i { font-size:11px; }
+.fac-grip svg { font-size:11px; }
 .fac-ord-b { display:flex; align-items:center; justify-content:center; width:16px; height:11px;
   padding:0; border:none; background:none; color:#b9abcf; cursor:pointer; border-radius:3px; }
-.fac-ord-b i { font-size:9px; }
+.fac-ord-b svg { font-size:9px; }
 .fac-ord-b:hover:not(:disabled) { color:#915BD8; background:#f1eaf9; }
 .fac-ord-b:disabled { opacity:.3; cursor:default; }
 
@@ -1034,7 +1076,7 @@ onMounted(load)
 .fac-icobtn { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
   border-radius:7px; border:1px solid #e5e2ec; background:#fff; color:#6E3FB8; cursor:pointer; }
 .fac-icobtn:hover { background:#f4f1fa; }
-.fac-icobtn i { font-size:12px; }
+.fac-icobtn svg { font-size:12px; }
 
 /* Despachos: filtro + día a día */
 .fac-desp-filtro { display:flex; align-items:center; justify-content:space-between; gap:10px;

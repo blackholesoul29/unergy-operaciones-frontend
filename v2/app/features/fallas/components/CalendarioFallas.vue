@@ -4,9 +4,9 @@
     <!-- ── Filtros + navegación ─────────────────────────────────────────── -->
     <div class="cal-toolbar">
       <div class="cal-nav">
-        <button class="cal-nav-btn" @click="mesAnterior"><i class="pi pi-chevron-left" /></button>
+        <button class="cal-nav-btn" @click="mesAnterior"><ChevronLeftIcon class="size-[1em]" /></button>
         <span class="cal-mes-label">{{ mesLabel }}</span>
-        <button class="cal-nav-btn" @click="mesSiguiente"><i class="pi pi-chevron-right" /></button>
+        <button class="cal-nav-btn" @click="mesSiguiente"><ChevronRightIcon class="size-[1em]" /></button>
         <button class="cal-hoy-btn" @click="irAHoy">Hoy</button>
       </div>
 
@@ -18,7 +18,7 @@
         <Select v-model="filtroEstado" :options="estados" optionLabel="etiqueta"
           optionValue="codigo" placeholder="Estado" showClear class="cal-select" size="small" />
         <button v-if="hayFiltros" class="cal-clear-btn" @click="limpiarFiltros">
-          <i class="pi pi-times" /> Limpiar
+          <XIcon class="size-[1em]" /> Limpiar
         </button>
       </div>
 
@@ -64,7 +64,7 @@
 
     <!-- ── Loading ─────────────────────────────────────────────────────── -->
     <div v-if="loading" class="cal-loading">
-      <i class="pi pi-spin pi-spinner" style="font-size:24px;color:#915BD8" />
+      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:24px;color:#915BD8" />
       <span>Cargando fallas...</span>
     </div>
 
@@ -95,8 +95,8 @@
               @click="abrirDetalle(ev)"
               :title="`[${ev.estado?.etiqueta}] ${ev.proyecto?.nombre_comercial} — ${ev.descripcion}`"
             >
-              <i v-if="esFinal(ev)" class="pi pi-check-circle cal-evento-icon" style="color:#915BD8" />
-              <i v-else class="pi pi-clock cal-evento-icon" style="color:#9CA3AF" />
+              <CircleCheckIcon class="cal-evento-icon size-[1em]" v-if="esFinal(ev)" style="color:#915BD8" />
+              <ClockIcon class="cal-evento-icon size-[1em]" v-else style="color:#9CA3AF" />
               <span class="cal-evento-nombre">{{ ev.proyecto?.nombre_comercial }}</span>
             </div>
             <div v-if="cell.eventos.length > 3" class="cal-evento-mas"
@@ -120,48 +120,48 @@
                 {{ detalle.estado?.etiqueta }}
               </span>
             </div>
-            <button class="cal-modal-close" @click="detalle = null"><i class="pi pi-times" /></button>
+            <button class="cal-modal-close" @click="detalle = null"><XIcon class="size-[1em]" /></button>
           </div>
 
           <div class="cal-modal-body">
             <div class="cal-detail-grid">
               <div class="cal-detail-item">
-                <span class="cal-detail-lbl"><i class="pi pi-bolt" /> Proyecto</span>
+                <span class="cal-detail-lbl"><ZapIcon class="size-[1em]" /> Proyecto</span>
                 <span class="cal-detail-val">{{ detalle.proyecto?.nombre_comercial }}</span>
               </div>
               <div class="cal-detail-item">
-                <span class="cal-detail-lbl"><i class="pi pi-calendar" /> Fecha programada</span>
+                <span class="cal-detail-lbl"><CalendarIcon class="size-[1em]" /> Fecha programada</span>
                 <span class="cal-detail-val cal-detail-val--highlight">{{ detalle.fecha_programada ?? '—' }}</span>
               </div>
               <div class="cal-detail-item">
-                <span class="cal-detail-lbl"><i class="pi pi-flag" /> Prioridad</span>
+                <span class="cal-detail-lbl"><FlagIcon class="size-[1em]" /> Prioridad</span>
                 <span class="cal-detail-val">
                   <span class="cal-prio-dot" :style="{ background: prioColor(detalle.prioridad?.codigo) }" />
                   {{ detalle.prioridad?.etiqueta }}
                 </span>
               </div>
               <div class="cal-detail-item">
-                <span class="cal-detail-lbl"><i class="pi pi-user" /> Responsable</span>
+                <span class="cal-detail-lbl"><UserIcon class="size-[1em]" /> Responsable</span>
                 <span class="cal-detail-val">{{ detalle.asignado_a?.nombre ?? '—' }}</span>
               </div>
               <div class="cal-detail-item cal-detail-item--full">
-                <span class="cal-detail-lbl"><i class="pi pi-align-left" /> Descripción</span>
+                <span class="cal-detail-lbl"><AlignLeftIcon class="size-[1em]" /> Descripción</span>
                 <p class="cal-detail-desc">{{ detalle.descripcion }}</p>
               </div>
               <div v-if="detalle.causa_raiz" class="cal-detail-item cal-detail-item--full">
-                <span class="cal-detail-lbl"><i class="pi pi-search" /> Causa raíz</span>
+                <span class="cal-detail-lbl"><SearchIcon class="size-[1em]" /> Causa raíz</span>
                 <p class="cal-detail-desc">{{ detalle.causa_raiz }}</p>
               </div>
               <div v-if="detalle.acciones_correctivas" class="cal-detail-item cal-detail-item--full">
-                <span class="cal-detail-lbl"><i class="pi pi-check-square" /> Acciones correctivas</span>
+                <span class="cal-detail-lbl"><SquareCheckIcon class="size-[1em]" /> Acciones correctivas</span>
                 <p class="cal-detail-desc">{{ detalle.acciones_correctivas }}</p>
               </div>
               <div v-if="detalle.asignado_a" class="cal-detail-item">
-                <span class="cal-detail-lbl"><i class="pi pi-calendar-clock" /> Identificado</span>
+                <span class="cal-detail-lbl"><CalendarClockIcon class="size-[1em]" /> Identificado</span>
                 <span class="cal-detail-val">{{ detalle.fecha_identificacion }}</span>
               </div>
               <div v-if="detalle.sla_limite_horas" class="cal-detail-item">
-                <span class="cal-detail-lbl"><i class="pi pi-clock" /> SLA</span>
+                <span class="cal-detail-lbl"><ClockIcon class="size-[1em]" /> SLA</span>
                 <span class="cal-detail-val">{{ detalle.sla_limite_horas }}h ({{ detalle.sla_limite_dias }}d)</span>
               </div>
             </div>
@@ -169,10 +169,10 @@
 
           <div class="cal-modal-footer">
             <button class="cal-modal-link" @click="irAFalla(detalle)">
-              <i class="pi pi-arrow-right" /> Ver en Gestión de Fallas
+              <ArrowRightIcon class="size-[1em]" /> Ver en Gestión de Fallas
             </button>
             <button class="cal-modal-edit" @click="emitEditar(detalle)">
-              <i class="pi pi-pencil" /> Editar
+              <PencilIcon class="size-[1em]" /> Editar
             </button>
           </div>
         </div>
@@ -187,7 +187,7 @@
             <div class="cal-modal-title">
               Fallas — {{ diaModal.label }}
             </div>
-            <button class="cal-modal-close" @click="diaModal = null"><i class="pi pi-times" /></button>
+            <button class="cal-modal-close" @click="diaModal = null"><XIcon class="size-[1em]" /></button>
           </div>
           <div class="cal-modal-body">
             <div v-for="ev in diaModal.eventos" :key="ev.id"
@@ -211,6 +211,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import Select from 'primevue/select'
 import api from '~/core/client'
+import { AlignLeftIcon, ArrowRightIcon, CalendarClockIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon, CircleCheckIcon, ClockIcon, FlagIcon, LoaderCircleIcon, PencilIcon, SearchIcon, SquareCheckIcon, UserIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 // ── Props / Emits ─────────────────────────────────────────────────────────────
 const props = defineProps({

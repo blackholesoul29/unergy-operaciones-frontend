@@ -45,7 +45,9 @@
 
     <template #footer>
       <Button label="Cancelar" text severity="secondary" @click="$emit('close')" />
-      <Button label="Guardar" icon="pi pi-check" @click="guardar" style="background:#915BD8;border-color:#915BD8" />
+      <Button label="Guardar" @click="guardar" style="background:#915BD8;border-color:#915BD8">
+        <template #icon><CheckIcon class="size-[1em]" /></template>
+      </Button>
     </template>
   </Dialog>
 </template>
@@ -57,6 +59,7 @@ import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import { useGarantiasHistorial } from './composables/useGarantiasHistorial.js'
+import { CheckIcon } from '@lucide/vue'
 
 const props = defineProps({ visible: Boolean })
 const emit = defineEmits(['close'])

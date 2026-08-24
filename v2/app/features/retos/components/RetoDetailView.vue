@@ -3,7 +3,7 @@
     <!-- Miga + cabecera ──────────────────────────────────────────────── -->
     <div>
       <router-link to="/general/retos" class="rq-miga">
-        <i class="pi pi-chevron-left" />
+        <ChevronLeftIcon class="size-[1em]" />
         <span>Retos Q</span>
       </router-link>
 
@@ -14,26 +14,28 @@
 
         <template #actions>
           <template v-if="hayMetricas">
-            <Button label="Métrica" icon="pi pi-plus" size="small" outlined @click="abrirNuevaMetrica" />
+            <Button label="Métrica" size="small" outlined @click="abrirNuevaMetrica">
+              <template #icon><PlusIcon class="size-[1em]" /></template>
+            </Button>
             <button type="button" class="rq-cta" @click="abrirSemanaNumero(semanaCta)">
-              <i class="pi pi-flag-fill" />
+              <FlagIcon class="size-[1em] fill-current" />
               <span>Registrar semana {{ semanaCta }}</span>
             </button>
           </template>
 
           <!-- Sin métricas la acción útil del header es traerlas de otro Q -->
           <span v-else v-tooltip.bottom="hayOrigenCopiable ? '' : 'No hay otros trimestres con métricas'">
-            <Button
-              label="Copiar de otro Q" icon="pi pi-copy" size="small" outlined severity="secondary"
-              :disabled="!hayOrigenCopiable" @click="copiarVisible = true"
-            />
+            <Button label="Copiar de otro Q" size="small" outlined severity="secondary" :disabled="!hayOrigenCopiable" @click="copiarVisible = true">
+              <template #icon><CopyIcon class="size-[1em]" /></template>
+            </Button>
           </span>
 
-          <Button
-            icon="pi pi-ellipsis-h" text rounded size="small"
-            aria-label="Más acciones del trimestre" @click="menuHeader.toggle($event)"
-          />
-          <Menu ref="menuHeader" :model="itemsHeader" :popup="true" />
+          <Button text rounded size="small" aria-label="Más acciones del trimestre" @click="menuHeader.toggle($event)">
+            <template #icon><EllipsisIcon class="size-[1em]" /></template>
+          </Button>
+          <Menu ref="menuHeader" :model="itemsHeader" :popup="true">
+            <template #itemicon="{ item }"><component :is="item.icon" class="size-[1em]" /></template>
+          </Menu>
         </template>
       </PageHeader>
 
@@ -64,7 +66,7 @@
 
     <!-- Vacío: primer clic del usuario ───────────────────────────────── -->
     <div v-else-if="!hayMetricas" class="rq-card rq-vacio">
-      <div class="rq-vacio-tile"><i class="pi pi-flag" /></div>
+      <div class="rq-vacio-tile"><FlagIcon class="size-[1em]" /></div>
       <h2 class="rq-vacio-titulo">Este trimestre todavía no tiene métricas</h2>
       <p class="rq-vacio-parrafo">
         Define qué vas a medir entre el {{ fechaLarga(reto.fecha_inicio) }}
@@ -72,12 +74,13 @@
         Cada métrica se llena una vez por semana y el tablero calcula el consolidado.
       </p>
       <div class="rq-vacio-botones">
-        <Button label="Definir la primera métrica" icon="pi pi-plus" size="small" @click="abrirNuevaMetrica" />
+        <Button label="Definir la primera métrica" size="small" @click="abrirNuevaMetrica">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
         <span v-tooltip.bottom="hayOrigenCopiable ? '' : 'No hay otros trimestres con métricas'">
-          <Button
-            label="Copiar de otro trimestre" icon="pi pi-copy" size="small" outlined severity="secondary"
-            :disabled="!hayOrigenCopiable" @click="copiarVisible = true"
-          />
+          <Button label="Copiar de otro trimestre" size="small" outlined severity="secondary" :disabled="!hayOrigenCopiable" @click="copiarVisible = true">
+            <template #icon><CopyIcon class="size-[1em]" /></template>
+          </Button>
         </span>
       </div>
       <div class="rq-vacio-sep" />
@@ -176,7 +179,7 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import api from '~/core/client'
 import { useAuthStore } from '~/stores/auth'
@@ -185,6 +188,7 @@ import MetricaDialog from './MetricaDialog.vue'
 import CopiarMetricasDialog from './CopiarMetricasDialog.vue'
 import EditarTrimestreDialog from './EditarTrimestreDialog.vue'
 import { fmtRango, TIPOS_AGREGACION } from './retosUi'
+import { ChevronLeftIcon, CopyIcon, EllipsisIcon, FileSpreadsheetIcon, FlagIcon, PencilIcon, PlusIcon } from '@lucide/vue'
 
 // La matriz y el drawer son pesados y no siempre se necesitan (estado vacío):
 // se cargan bajo demanda.
@@ -192,7 +196,6 @@ const MatrizSemanal = defineAsyncComponent(() => import('./MatrizSemanal.vue'))
 const SemanaDrawer = defineAsyncComponent(() => import('./SemanaDrawer.vue'))
 
 const route = useRoute()
-const toast = useToast()
 const confirm = useConfirm()
 const auth = useAuthStore()
 
@@ -274,10 +277,10 @@ const semanaActivaObj = computed(
 )
 
 const itemsHeader = computed(() => [
-  { label: 'Editar trimestre', icon: 'pi pi-pencil', command: () => { editarVisible.value = true } },
-  { label: 'Copiar métricas de otro Q', icon: 'pi pi-copy', command: () => { copiarVisible.value = true } },
+  { label: 'Editar trimestre', icon: PencilIcon, command: () => { editarVisible.value = true } },
+  { label: 'Copiar métricas de otro Q', icon: CopyIcon, command: () => { copiarVisible.value = true } },
   { separator: true },
-  { label: 'Exportar a Excel', icon: 'pi pi-file-excel', command: exportarExcel },
+  { label: 'Exportar a Excel', icon: FileSpreadsheetIcon, command: exportarExcel },
 ])
 
 // ── Utilidades ──────────────────────────────────────────────────────────
@@ -434,17 +437,11 @@ async function submitMetrica(payload) {
       : await api.post(`/retos/${reto.value.id}/metricas`, payload)
     aplicarMetrica(data)
     metricaVisible.value = false
-    toast.add({
-      severity: 'success',
-      summary: editando ? 'Métrica actualizada' : 'Métrica creada',
-      life: 2500,
-    })
+    toast.success(editando ? 'Métrica actualizada' : 'Métrica creada', { duration: 2500 })
   } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: editando ? 'No se pudo actualizar la métrica' : 'No se pudo crear la métrica',
-      detail: mensajeError(e),
-      life: 5000,
+    toast.error(editando ? 'No se pudo actualizar la métrica' : 'No se pudo crear la métrica', {
+      description: mensajeError(e),
+      duration: 5000,
     })
   } finally {
     guardandoMetrica.value = false
@@ -455,12 +452,9 @@ async function alternarActiva(m) {
   try {
     const { data } = await api.patch(`/retos/metricas/${m.id}`, { activa: !m.activa })
     aplicarMetrica(data)
-    toast.add({ severity: 'success', summary: 'Métrica actualizada', life: 2500 })
+    toast.success('Métrica actualizada', { duration: 2500 })
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo actualizar la métrica',
-      detail: mensajeError(e), life: 5000,
-    })
+    toast.error('No se pudo actualizar la métrica', { description: mensajeError(e), duration: 5000 })
   }
 }
 
@@ -471,7 +465,6 @@ function confirmarEliminarMetrica(m) {
   confirm.require({
     header: 'Eliminar métrica',
     message: `Se eliminará “${m.nombre}”${cola}. Esta acción no se puede deshacer.`,
-    icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
     acceptClass: 'p-button-danger p-button-sm',
@@ -490,12 +483,9 @@ async function eliminarMetrica(m) {
       if (reto.value.valores) delete reto.value.valores[String(m.id)]
       recalcularSemanasConDatos()
     }
-    toast.add({ severity: 'success', summary: 'Métrica eliminada', life: 2500 })
+    toast.success('Métrica eliminada', { duration: 2500 })
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo eliminar la métrica',
-      detail: mensajeError(e), life: 5000,
-    })
+    toast.error('No se pudo eliminar la métrica', { description: mensajeError(e), duration: 5000 })
   }
 }
 
@@ -526,21 +516,16 @@ async function submitCopiar(origenId) {
     copiarVisible.value = false
     const nuevas = (reto.value?.metricas || []).filter(m => !antes.has(m.id)).length
     if (!nuevas) {
-      toast.add({ severity: 'info', summary: 'No había métricas nuevas por copiar', life: 3500 })
+      toast.info('No había métricas nuevas por copiar', { duration: 3500 })
     } else {
       const nombre = origen?.nombre || `Retos Q${origen?.trimestre ?? ''} ${origen?.anio ?? ''}`.trim()
-      toast.add({
-        severity: 'success',
-        summary: 'Métricas copiadas',
-        detail: `Se agregaron ${nuevas} ${nuevas === 1 ? 'métrica' : 'métricas'} desde ${nombre}`,
-        life: 4000,
+      toast.success('Métricas copiadas', {
+        description: `Se agregaron ${nuevas} ${nuevas === 1 ? 'métrica' : 'métricas'} desde ${nombre}`,
+        duration: 4000,
       })
     }
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudieron copiar las métricas',
-      detail: mensajeError(e), life: 5000,
-    })
+    toast.error('No se pudieron copiar las métricas', { description: mensajeError(e), duration: 5000 })
   } finally {
     copiando.value = false
   }
@@ -558,16 +543,13 @@ async function submitTrimestre(payload) {
     const { data } = await api.patch(`/retos/${reto.value.id}`, payload)
     reto.value = data
     editarVisible.value = false
-    toast.add({ severity: 'success', summary: 'Trimestre actualizado', life: 2500 })
+    toast.success('Trimestre actualizado', { duration: 2500 })
   } catch (e) {
     const msg = mensajeError(e, 'No se pudo actualizar el trimestre')
     errorTrimestre.value = msg
     // Los 400 del contrato ya se ven bajo el campo de fecha; el resto sí sorprende.
     if (e?.response?.status !== 400) {
-      toast.add({
-        severity: 'error', summary: 'No se pudo actualizar el trimestre',
-        detail: msg, life: 5000,
-      })
+      toast.error('No se pudo actualizar el trimestre', { description: msg, duration: 5000 })
     }
   } finally {
     guardandoTrimestre.value = false
@@ -683,9 +665,9 @@ async function exportarExcel() {
     XLSX.utils.book_append_sheet(wb, ws, `Q${r.trimestre} ${r.anio}`)
     XLSX.writeFile(wb, `Retos_Q${r.trimestre}_${r.anio}.xlsx`)
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo exportar',
-      detail: mensajeError(e, 'No se pudo generar el archivo de Excel'), life: 5000,
+    toast.error('No se pudo exportar', {
+      description: mensajeError(e, 'No se pudo generar el archivo de Excel'),
+      duration: 5000,
     })
   }
 }
@@ -711,7 +693,7 @@ async function exportarExcel() {
   margin-bottom: 4px;
 }
 .rq-miga:hover { text-decoration: underline; }
-.rq-miga .pi { font-size: 9px; }
+.rq-miga svg { font-size: 9px; }
 
 .rq-tile {
   width: 40px; height: 40px; flex: none;
@@ -736,7 +718,7 @@ async function exportarExcel() {
 }
 .rq-cta:hover { filter: brightness(.97); box-shadow: 0 3px 12px rgba(246, 255, 114, .55); }
 .rq-cta:focus-visible { outline: 2px solid #2C2039; outline-offset: 2px; }
-.rq-cta .pi { font-size: 12px; }
+.rq-cta svg { font-size: 12px; }
 
 @media (max-width: 640px) {
   .rq-cta { flex: 1; justify-content: center; }
@@ -756,7 +738,7 @@ async function exportarExcel() {
   display: grid; place-items: center;
   margin: 0 auto 16px;
 }
-.rq-vacio-tile .pi { font-size: 24px; color: #915BD8; }
+.rq-vacio-tile svg { font-size: 24px; color: #915BD8; }
 
 .rq-vacio-titulo { font-size: 15px; font-weight: 800; color: #2C2039; }
 

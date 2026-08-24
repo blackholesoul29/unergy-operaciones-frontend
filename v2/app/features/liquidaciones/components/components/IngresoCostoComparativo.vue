@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-xl shadow-sm border overflow-hidden" style="border-color:#e8e0f0">
     <div class="px-3 py-2 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
-      <i class="pi pi-chart-bar text-sm" style="color:#915BD8" />
+      <ChartColumnIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <h3 class="text-sm font-bold" style="color:#2C2039">Este mes vs promedio del proyecto</h3>
       <span v-if="mesesHist" class="ml-auto text-[10px]" style="color:#9b8fb0">promedio de {{ mesesHist }} mes(es) anteriores</span>
     </div>
@@ -28,7 +28,7 @@
     </div>
 
     <div v-else class="text-center py-10">
-      <i class="pi pi-chart-bar text-3xl mb-2" style="color:#e0d5f0" />
+      <ChartColumnIcon class="text-3xl mb-2 size-[1em]" style="color:#e0d5f0" />
       <p class="text-xs" style="color:#9b8fb0">Aún no hay cifras para este proyecto.</p>
     </div>
   </div>
@@ -41,6 +41,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Lege
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import { fmtCompact, fmtCOP } from '~/utils/liquidaciones'
+import { ChartColumnIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 

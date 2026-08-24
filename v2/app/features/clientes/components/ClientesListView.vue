@@ -3,11 +3,15 @@
     <PageHeader title="Clientes" :subtitle="`${filtrados.length} de ${items.length} cliente${items.length === 1 ? '' : 's'} · vista comercial`">
       <template #actions>
         <IconField class="flex-1 sm:flex-none">
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Buscar razón social o NIT..." class="w-full sm:w-64" />
         </IconField>
-        <Button label="Descargar Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small" @click="descargarExcel" />
-        <Button label="Nuevo cliente" icon="pi pi-plus" size="small" @click="openNew" />
+        <Button label="Descargar Excel" severity="secondary" outlined size="small" @click="descargarExcel">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Nuevo cliente" size="small" @click="openNew">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -71,7 +75,7 @@
         </Column>
         <Column header="" style="width:44px">
           <template #body>
-            <i class="pi pi-chevron-right text-xs" style="color:#c5b9db" />
+            <ChevronRightIcon class="text-xs size-[1em]" style="color:#c5b9db" />
           </template>
         </Column>
       </DataTable>
@@ -95,15 +99,15 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import MultiSelect from 'primevue/multiselect'
 import SelectButton from 'primevue/selectbutton'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import ClienteForm from './ClienteForm.vue'
 import { SEMAFORO, servicioLabel, fmt } from './clientesUi'
 import { formatearNombre } from '~/utils/nombreFormato'
 import { exportarExcel } from '~/utils/exportarExcel'
+import { ChevronRightIcon, FileSpreadsheetIcon, PlusIcon, SearchIcon } from '@lucide/vue'
 
 const router = useRouter()
-const toast = useToast()
 const items = ref([])
 const loading = ref(false)
 const dialogVisible = ref(false)
@@ -182,11 +186,11 @@ async function descargarExcel() {
 async function onSave(payload) {
   try {
     const { data } = await api.post('/clientes', payload)
-    toast.add({ severity: 'success', summary: 'Cliente creado', life: 3000 })
+    toast.success('Cliente creado', { duration: 3000 })
     dialogVisible.value = false
     router.push(`/clientes/${data.id}`)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
   }
 }
 </script>

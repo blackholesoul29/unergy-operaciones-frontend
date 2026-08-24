@@ -17,8 +17,9 @@
     <!-- Encabezado -->
     <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
       <div class="flex items-start gap-3">
-        <Button icon="pi pi-arrow-left" text rounded @click="$router.push('/comercial')"
-                v-tooltip.bottom="'Volver al tablero'" />
+        <Button text rounded @click="$router.push('/comercial')" v-tooltip.bottom="'Volver al tablero'">
+          <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+        </Button>
         <div>
           <h1 class="text-xl font-semibold" style="color:#2C2039">{{ op.nombre }}</h1>
           <div class="flex items-center gap-2 text-sm">
@@ -97,8 +98,9 @@
           <h3 class="text-sm font-semibold" style="color:#2C2039">
             {{ op.proyectos.length }} proyecto(s) vinculados
           </h3>
-          <Button label="Agregar proyecto" icon="pi pi-plus" size="small"
-                  @click="showAgregarProyecto = true" />
+          <Button label="Agregar proyecto" size="small" @click="showAgregarProyecto = true">
+            <template #icon><PlusIcon class="size-[1em]" /></template>
+          </Button>
         </div>
         <DataTable :value="proyectosFilas" class="text-sm mb-6" dataKey="id" selectionMode="single"
                    @row-click="$router.push(`/proyectos/${$event.data.id}`)">
@@ -134,8 +136,9 @@
 
         <div class="flex items-center justify-between mb-1">
           <h3 class="text-sm font-semibold" style="color:#2C2039">Contratos de representación</h3>
-          <Button label="Nuevo contrato de representación" icon="pi pi-plus" size="small"
-                  severity="secondary" outlined @click="showRepWizard = true" />
+          <Button label="Nuevo contrato de representación" size="small" severity="secondary" outlined @click="showRepWizard = true">
+            <template #icon><PlusIcon class="size-[1em]" /></template>
+          </Button>
         </div>
         <DataTable :value="contratosRepFilas" class="text-sm" dataKey="id" selectionMode="single"
                    @row-click="$router.push(`/contratos/${$event.data.id}`)">
@@ -180,8 +183,9 @@
                     </template>
                     <span v-else class="text-xs" style="color:#c4b8d4">sin registrar</span>
                   </div>
-                  <Button v-if="!docPorTipo(t.value)" label="Registrar" size="small" text icon="pi pi-plus"
-                          @click="crearDoc(t.value, t.label)" />
+                  <Button v-if="!docPorTipo(t.value)" label="Registrar" size="small" text @click="crearDoc(t.value, t.label)">
+                    <template #icon><PlusIcon class="size-[1em]" /></template>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -206,7 +210,7 @@ import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import ClienteForm from '~/features/clientes/components/ClienteForm.vue'
 import ContactosPanel from '~/components/ContactosPanel.vue'
@@ -215,9 +219,9 @@ import ProyectoDesdeCRMDialog from './ProyectoDesdeCRMDialog.vue'
 import BitacoraPanel from './BitacoraPanel.vue'
 import OfertasPanel from './OfertasPanel.vue'
 import { ETAPAS, severidadEtapa, aFecha, aFechaStr } from './comercial.js'
+import { ArrowLeftIcon, PlusIcon } from '@lucide/vue'
 
 const route = useRoute()
-const toast = useToast()
 
 const TIPOS_DOC = [
   { label: 'Oferta', value: 'oferta' },
@@ -302,11 +306,10 @@ function autosave() {
 async function patchCliente(payload) {
   try {
     await api.patch(`/clientes/${op.value.cliente_id}`, payload)
-    toast.add({ severity: 'success', summary: 'Cliente actualizado', life: 2500 })
+    toast.success('Cliente actualizado', { duration: 2500 })
     await cargarCliente()
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al guardar cliente',
-                detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.error('Error al guardar cliente', { description: err.response?.data?.detail ?? '', duration: 5000 })
   }
 }
 
@@ -320,8 +323,10 @@ async function crearDoc(tipo, label) {
     })
     await recargar()
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo registrar el documento',
-                detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.error('No se pudo registrar el documento', {
+      description: err.response?.data?.detail ?? '',
+      duration: 5000,
+    })
   }
 }
 

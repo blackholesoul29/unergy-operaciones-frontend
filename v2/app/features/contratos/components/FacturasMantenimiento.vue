@@ -11,7 +11,7 @@
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
             style="background:#fef3c7">
-            <i class="pi pi-receipt text-sm" style="color:#f59e0b" />
+            <ReceiptIcon class="text-sm size-[1em]" style="color:#f59e0b" />
           </div>
           <div>
             <p class="text-xs text-gray-400 leading-none mb-0.5">Proveedor O&amp;M</p>
@@ -26,8 +26,7 @@
           <span v-if="facturasSol.length" class="text-xs text-gray-400 hidden sm:block">
             Total: <strong style="color:#d97706">{{ formatCOP(totalSol) }}</strong>
           </span>
-          <i class="pi pi-chevron-down text-xs text-gray-400 transition-transform duration-200"
-            :style="openSol ? 'transform:rotate(180deg)' : ''" />
+          <ChevronDownIcon class="text-xs text-gray-400 transition-transform duration-200 size-[1em]" :style="openSol ? 'transform:rotate(180deg)' : ''" />
         </div>
       </button>
 
@@ -37,7 +36,7 @@
 
           <!-- Barra de filtros + botón agregar -->
           <div class="flex flex-wrap items-center gap-2 px-5 py-3 bg-gray-50/60 border-b border-gray-100">
-            <i class="pi pi-filter text-xs text-gray-400" />
+            <FilterIcon class="text-xs text-gray-400 size-[1em]" />
             <span class="text-xs text-gray-400 font-medium mr-1">Filtrar:</span>
             <Select v-model="filtroSol.año" :options="AÑOS_OPT" placeholder="Año"
               showClear class="text-sm" style="height:32px;min-width:88px" />
@@ -48,7 +47,7 @@
               class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded hover:bg-gray-100"
               style="background:none;border:none;cursor:pointer"
               @click="filtroSol.año = null; filtroSol.mes = null">
-              <i class="pi pi-times text-xs" /> Limpiar
+              <XIcon class="text-xs size-[1em]" /> Limpiar
             </button>
             <span v-if="filtroSol.año || filtroSol.mes"
               class="text-xs text-gray-400">
@@ -78,7 +77,7 @@
                 <!-- Loading -->
                 <tr v-if="loading">
                   <td colspan="5" class="px-4 py-8 text-center text-gray-400 text-xs">
-                    <i class="pi pi-spin pi-spinner mr-1" />Cargando…
+                    <LoaderCircleIcon class="mr-1 size-[1em] animate-spin" />Cargando…
                   </td>
                 </tr>
                 <!-- Empty state -->
@@ -86,7 +85,7 @@
                   <td colspan="5" class="px-4 py-10 text-center">
                     <div class="flex flex-col items-center gap-2.5">
                       <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#fef3c7">
-                        <i class="pi pi-receipt text-lg" style="color:#f59e0b" />
+                        <ReceiptIcon class="text-lg size-[1em]" style="color:#f59e0b" />
                       </div>
                       <p class="text-sm font-medium text-gray-500">
                         {{ facturasSol.length ? 'Sin resultados para los filtros aplicados' : 'Sin facturas Solenium registradas' }}
@@ -124,7 +123,7 @@
                       :href="fac.enlace_soporte" target="_blank" rel="noopener noreferrer"
                       class="inline-flex items-center gap-1 text-xs font-medium hover:underline transition-colors"
                       style="color:#f59e0b">
-                      <i class="pi pi-external-link text-xs" />Ver
+                      <ExternalLinkIcon class="text-xs size-[1em]" />Ver
                     </a>
                     <span v-else class="text-gray-300 text-xs">—</span>
                   </td>
@@ -133,7 +132,7 @@
                       class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                       style="background:none;border:none;cursor:pointer"
                       @click="eliminarFactura('solenium', fac.id)">
-                      <i class="pi pi-trash text-xs" />
+                      <Trash2Icon class="text-xs size-[1em]" />
                     </button>
                   </td>
                 </tr>
@@ -172,7 +171,7 @@
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
             style="background:#eff6ff">
-            <i class="pi pi-users text-sm" style="color:#3b82f6" />
+            <UsersIcon class="text-sm size-[1em]" style="color:#3b82f6" />
           </div>
           <div>
             <p class="text-xs text-gray-400 leading-none mb-0.5">Cobros a clientes</p>
@@ -187,8 +186,7 @@
           <span v-if="facturasInv.length" class="text-xs text-gray-400 hidden sm:block">
             Total: <strong style="color:#3b82f6">{{ formatCOP(totalInv) }}</strong>
           </span>
-          <i class="pi pi-chevron-down text-xs text-gray-400 transition-transform duration-200"
-            :style="openInv ? 'transform:rotate(180deg)' : ''" />
+          <ChevronDownIcon class="text-xs text-gray-400 transition-transform duration-200 size-[1em]" :style="openInv ? 'transform:rotate(180deg)' : ''" />
         </div>
       </button>
 
@@ -198,7 +196,7 @@
 
           <!-- Barra de filtros + botón agregar -->
           <div class="flex flex-wrap items-center gap-2 px-5 py-3 bg-gray-50/60 border-b border-gray-100">
-            <i class="pi pi-filter text-xs text-gray-400" />
+            <FilterIcon class="text-xs text-gray-400 size-[1em]" />
             <span class="text-xs text-gray-400 font-medium mr-1">Filtrar:</span>
             <Select v-model="filtroInv.año" :options="AÑOS_OPT" placeholder="Año"
               showClear class="text-sm" style="height:32px;min-width:88px" />
@@ -209,7 +207,7 @@
               class="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded hover:bg-gray-100"
               style="background:none;border:none;cursor:pointer"
               @click="filtroInv.año = null; filtroInv.mes = null">
-              <i class="pi pi-times text-xs" /> Limpiar
+              <XIcon class="text-xs size-[1em]" /> Limpiar
             </button>
             <span v-if="filtroInv.año || filtroInv.mes"
               class="text-xs text-gray-400">
@@ -240,7 +238,7 @@
                 <!-- Loading -->
                 <tr v-if="loading">
                   <td colspan="6" class="px-4 py-8 text-center text-gray-400 text-xs">
-                    <i class="pi pi-spin pi-spinner mr-1" />Cargando…
+                    <LoaderCircleIcon class="mr-1 size-[1em] animate-spin" />Cargando…
                   </td>
                 </tr>
                 <!-- Empty state -->
@@ -248,7 +246,7 @@
                   <td colspan="6" class="px-4 py-10 text-center">
                     <div class="flex flex-col items-center gap-2.5">
                       <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:#dbeafe">
-                        <i class="pi pi-users text-lg" style="color:#3b82f6" />
+                        <UsersIcon class="text-lg size-[1em]" style="color:#3b82f6" />
                       </div>
                       <p class="text-sm font-medium text-gray-500">
                         {{ facturasInv.length ? 'Sin resultados para los filtros aplicados' : 'Sin facturas de inversionistas registradas' }}
@@ -289,7 +287,7 @@
                       :href="fac.enlace_soporte" target="_blank" rel="noopener noreferrer"
                       class="inline-flex items-center gap-1 text-xs font-medium hover:underline transition-colors"
                       style="color:#3b82f6">
-                      <i class="pi pi-external-link text-xs" />Ver
+                      <ExternalLinkIcon class="text-xs size-[1em]" />Ver
                     </a>
                     <span v-else class="text-gray-300 text-xs">—</span>
                   </td>
@@ -298,7 +296,7 @@
                       class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                       style="background:none;border:none;cursor:pointer"
                       @click="eliminarFactura('inversionistas', fac.id)">
-                      <i class="pi pi-trash text-xs" />
+                      <Trash2Icon class="text-xs size-[1em]" />
                     </button>
                   </td>
                 </tr>
@@ -334,8 +332,7 @@
         <div class="flex items-center gap-2.5">
           <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
             :style="modal.tipo === 'solenium' ? 'background:#fef3c7' : 'background:#dbeafe'">
-            <i class="pi pi-receipt text-xs"
-              :style="modal.tipo === 'solenium' ? 'color:#f59e0b' : 'color:#3b82f6'" />
+            <ReceiptIcon class="text-xs size-[1em]" :style="modal.tipo === 'solenium' ? 'color:#f59e0b' : 'color:#3b82f6'" />
           </div>
           <span class="font-semibold text-sm" style="color:#2C2039">
             Agregar factura — {{ modal.tipo === 'solenium' ? 'Solenium' : 'Inversionistas' }}
@@ -391,11 +388,11 @@
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" text @click="modal.visible = false" />
-        <Button label="Agregar factura" icon="pi pi-check" :loading="saving"
-          :style="modal.tipo === 'solenium'
+        <Button label="Agregar factura" :loading="saving" :style="modal.tipo === 'solenium'
             ? 'background:#f59e0b;border-color:#f59e0b'
-            : 'background:#3b82f6;border-color:#3b82f6'"
-          @click="guardarFactura" />
+            : 'background:#3b82f6;border-color:#3b82f6'" @click="guardarFactura">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
 
@@ -409,10 +406,11 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import FACTURAS_SOL_ESTATICAS from '~/assets/facturas_solenium_data.js'
 import FACTURAS_INV_ESTATICAS from '~/assets/facturas_inversionistas_data.js'
+import { CheckIcon, ChevronDownIcon, ExternalLinkIcon, FilterIcon, LoaderCircleIcon, ReceiptIcon, Trash2Icon, UsersIcon, XIcon } from '@lucide/vue'
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 const props = defineProps({
@@ -420,7 +418,6 @@ const props = defineProps({
   proyectoNombre: { type: String, default: '' },
 })
 
-const toast = useToast()
 
 // ── Catálogos ──────────────────────────────────────────────────────────────────
 const MESES_NOMBRES = [
@@ -635,14 +632,9 @@ async function guardarFactura() {
     }
 
     modal.visible = false
-    toast.add({ severity: 'success', summary: 'Factura agregada', life: 2500 })
+    toast.success('Factura agregada', { duration: 2500 })
   } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: 'Error al guardar',
-      detail: e.response?.data?.detail ?? e.message,
-      life: 4000,
-    })
+    toast.error('Error al guardar', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
   } finally {
     saving.value = false
   }
@@ -660,9 +652,9 @@ async function eliminarFactura(tipo, id) {
       await api.patch(`/contratos-servicio/${props.contratoId}/facturas-inversionistas`, lista)
       facturasInv.value = lista
     }
-    toast.add({ severity: 'success', summary: 'Factura eliminada', life: 2000 })
+    toast.success('Factura eliminada', { duration: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', detail: e.message, life: 3000 })
+    toast.error('Error al eliminar', { description: e.message, duration: 3000 })
   }
 }
 

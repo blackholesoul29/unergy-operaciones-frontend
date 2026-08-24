@@ -4,10 +4,10 @@
 
     <div class="ret-tabs">
       <button :class="['ret-tab', tab === 'automatizacion' && 'ret-tab--on']" @click="tab = 'automatizacion'">
-        <i class="pi pi-cog" /> Reporte ASIC
+        <SettingsIcon class="size-[1em]" /> Reporte ASIC
       </button>
       <button :class="['ret-tab', tab === 'cgm' && 'ret-tab--on']" @click="tab = 'cgm'">
-        <i class="pi pi-envelope" /> Reporte CGM
+        <MailIcon class="size-[1em]" /> Reporte CGM
       </button>
     </div>
 
@@ -22,6 +22,7 @@
 import { ref } from 'vue'
 import ReporteEnergiaAutomatizacionView from '~/features/fronteras/components/ReporteEnergiaAutomatizacionView.vue'
 import ReporteCGMView from '~/features/operadores-red/components/ReporteCGMView.vue'
+import { MailIcon, SettingsIcon } from '@lucide/vue'
 
 const tab = ref('automatizacion')
 </script>
@@ -33,7 +34,7 @@ const tab = ref('automatizacion')
   font-size: 14px; font-weight: 700; color: #9b8db5; padding: 12px 16px; cursor: pointer;
   border-bottom: 2.5px solid transparent; margin-bottom: -1px;
 }
-.ret-tab .pi { font-size: 14px; }
+.ret-tab svg { font-size: 14px; }
 .ret-tab--on { color: #6E3FB8; border-bottom-color: #915BD8; }
 .ret-body { padding-top: 4px; }
 </style>

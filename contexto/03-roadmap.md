@@ -217,7 +217,8 @@ Los exports de `app/utils/` **no** chocaron con los del template (`date.ts`, `st
      `font-body`) como `@theme` en un `app/assets/css/legacy-theme.css`, para que
      `bg-unergy-purple`, `text-unergy-deep`, `font-body`… sigan resolviendo.
    - Barrido de utilidades renombradas o eliminadas en Tailwind 4 sobre los 177 SFC.
-   - `assets/main.css` y `primeicons/primeicons.css` se registran en `nuxt.config.css`.
+   - `assets/main.css` y `primeicons/primeicons.css` se registran en `nuxt.config.css`
+     (el de PrimeIcons salió en la ola 0 de la fase 3, §3.2.1).
    - Los ~2.528 hex inline **no se tocan en esta fase**: son fase 3.
 8. **Compilador de runtime.** `vue: { runtimeCompiler: true }` en `nuxt.config.ts` para que
    `OperacionView.vue` siga funcionando. Queda anotado como deuda a retirar.
@@ -468,7 +469,7 @@ Sin esto, cada slice reinventa lo mismo. No cambia nada visible para el usuario.
   | PrimeVue | Usos | Destino |
   | --- | --- | --- |
   | `Button` | 88 | `ui/button` |
-  | `useToast` | 75 | `vue-sonner` |
+  | `useToast` | 75 | `vue-sonner` — ✅ **hecho** (§3.2.2) |
   | `InputText` | 58 | `ui/input` |
   | `Select` / `Dropdown` | 60 | `ui/select` |
   | `Dialog` | 48 | `ui/dialog` |
@@ -493,13 +494,142 @@ Sin esto, cada slice reinventa lo mismo. No cambia nada visible para el usuario.
   ola 2**: un `blocks/DataTable` propio compuesto sobre `ui/table` + `usePagination` +
   `useFilters`, con o sin TanStack Table como dependencia nueva. Si esta pieza no está
   resuelta, cada slice la improvisará distinta y la migración se degrada.
-- **Mapa de iconos** PrimeIcons → `@lucide/vue` (`pi-bolt` → `ZapIcon`, `pi-wrench` →
-  `WrenchIcon`, …), como tabla única.
-- **Envoltorios de infraestructura**: notificación (sonner), confirmación (`AlertDialog`),
-  formato de moneda/fecha/número en `app/utils/`, y las utilidades de exportación como módulos
-  `client-only` con import dinámico.
+- **Mapa de iconos** PrimeIcons → `@lucide/vue` — ✅ **hecho** (ver §3.2.1).
+- **Envoltorios de infraestructura**: notificación (sonner) — ✅ **hecho** (§3.2.2);
+  quedan confirmación (`AlertDialog`), formato de moneda/fecha/número en `app/utils/`, y las
+  utilidades de exportación como módulos `client-only` con import dinámico.
 - **Tipos base del dominio** en `app/types/`: `Proyecto`, `Cliente`, `Contrato`, `Falla`,
   `Liquidacion`, `Frontera`, `Inversionista`, y los `enum` de estados y roles.
+
+#### 3.2.1 Iconos · PrimeIcons → `@lucide/vue` — ✅ completo (2026-08-24)
+
+**Estado:** cero `pi pi-*` en `app/`, `primeicons` desinstalado y fuera de `nuxt.config.ts`.
+1.822 apariciones en 159 archivos, 156 iconos distintos, todos con equivalente real en
+`@lucide/vue` (la lista se validó contra los exports del paquete, no a ojo).
+
+Se hizo con cuatro pasadas de codemod más un puñado de casos a mano; el mapa vive en el script,
+no en el runtime: **no hay componente `<Icon name="…">`**. Cada archivo importa por nombre lo
+que usa, que es la convención que ya tenían `NavUser.vue`, `AsyncView.vue` y
+`config/navigation.ts`. Un mapa string→componente habría sido un magic string con indirección y
+habría arrastrado los 156 iconos al bundle.
+
+**Formas convertidas**, por patrón:
+
+| Patrón de origen | Destino | Nº |
+| --- | --- | --- |
+| `<i class="pi pi-x …">` | `<XIcon class="…" />` | 1.032 |
+| `<i :class="c ? 'pi pi-a' : 'pi pi-b'">` | `<AIcon v-if="c" /><BIcon v-else />` | 53 |
+| `<i class="pi" :class="c ? 'pi-a' : 'pi-b'">` | igual que el anterior | 33 |
+| `<Button icon="pi pi-x" />` | `<Button><template #icon><XIcon /></template></Button>` | 417 |
+| `<InputIcon class="pi pi-x" />` | `<InputIcon><XIcon /></InputIcon>` | 27 |
+| `icon: 'pi pi-x'` en arrays de datos | `icon: XIcon` (un `Component`) | 163 |
+| `<i :class="tab.icon">` | `<component :is="tab.icon" />` | 37 |
+
+**Decisiones que hay que conocer antes de tocar un icono:**
+
+1. **Tamaño: `size-[1em]` en todos.** `primeicons.css` **no** fija `font-size` en `.pi`: el
+   glifo heredaba el del contenedor. Un SVG de Lucide, en cambio, mide 24 px fijos. `size-[1em]`
+   reproduce exactamente el comportamiento anterior y, de paso, hace que las ~200 clases
+   `text-xs`/`text-[10px]` y los `style="font-size:…"` que ya había sigan mandando sin tocarlos.
+   No es la convención del template (`size-4`, `size-3.5`): **cuando un slice se migre a
+   Gandalf/shadcn en su ola, sus iconos pasan a tamaño explícito.** Mientras tanto, paridad
+   visual por encima de estilo.
+2. **`pi-spin` → `animate-spin`**, y `pi-spinner` → `LoaderCircleIcon` (120 sitios). La
+   animación de PrimeIcons dura 2 s y la de Tailwind 1 s: gira más rápido, a propósito no se
+   compensó.
+3. **Selectores CSS.** 49 reglas apuntaban al elemento (`.dl-tab i { font-size: 11px }`) y 25 a
+   la clase (`.rs-card-head .pi`, `.cf-state .pi-spinner`). Todas pasaron a `svg`. **Este era el
+   modo de fallo silencioso de esta migración:** el marcado compila igual y el icono se
+   descoloca sin que nada avise. Riesgo residual conocido: un `svg` de PrimeVue dentro de esos
+   mismos contenedores hereda ahora la regla.
+4. **`iconPos="right"` (6 botones).** El slot `#icon` de PrimeVue siempre pinta antes del label,
+   y el `data-p` que invertía el orden solo se aplica al span interno. Se resolvió con
+   `class="flex-row-reverse"` sobre el botón.
+5. **`Menu` de PrimeVue (4 usos).** `item.icon` es una clase CSS, no admite componente. Se usa
+   el slot `#itemicon`, que sí recibe el `item`.
+6. **`ConfirmDialog`.** `confirm.require({ icon })` tampoco admite componente y su slot `#icon`
+   no recibe props, así que el icono se declaró una vez en cada montaje del diálogo
+   (`app.vue` y tres vistas) y se quitó de las 20 llamadas. **Cambio cosmético asumido:** la
+   confirmación de "duplicar" usaba `pi-clone` y ahora muestra el mismo triángulo que el resto.
+   Desaparece en la ola 2, cuando `useConfirm` pase a `ui/alert-dialog`.
+7. **Iconos que vienen del backend.** `GET /fallas/estructura` devuelve `icono: 'pi pi-server'`.
+   Se dejó de leer ese campo: `iconoCategoriaFalla(codigo)` en `~/utils/fallaTitulo.ts` traduce
+   del **código de categoría** al componente, que además es donde ya vivía `ICONO_CAT`. La API
+   no se tocó (ver restricciones del §7 de `01-contexto.md`).
+8. **Pérdidas de fidelidad, todas anotadas:** `pi-*-fill` no tiene relleno en Lucide → se
+   añadió `fill-current` en los 6 sitios de `pi-circle-fill`/`pi-flag-fill`; en
+   `config/navigation.ts` "Pipeline" y "Retos Q" comparten ahora `FlagIcon`. `pi-file-pdf` y
+   `pi-file-word` caen en `FileTextIcon`/`FileTypeIcon`; `pi-clone` y `pi-copy`, ambos en
+   `CopyIcon`.
+
+**Componentes con `template:` de runtime.** `OperacionView.vue` define 8 componentes como
+string; un `<XIcon>` ahí dentro **no se resuelve solo** y Vue lo omite con un warning en
+consola. Se registraron en el `components:` de cada uno. Si en la ola 2 se parte ese archivo,
+esa deuda se va con él.
+
+**Verificado**: `lint`, `typecheck`, `test` (214) y `build` en verde; auditoría de referencias
+—todo `<XIcon>` y todo `:is="…"` resuelve a un import o a un componente local— y barrido de
+`pi-` a cero. **Falta la revisión visual**, que necesita backend, igual que la de la fase 1.
+
+#### 3.2.2 Avisos · `useToast` de PrimeVue → `vue-sonner` — ✅ completo (2026-08-24)
+
+**Estado:** cero `toast.add(…)` y cero imports de `primevue/toast*` en `app/`. 557 llamadas en
+83 archivos, convertidas a la API real de `vue-sonner` — **no hay adaptador con forma de
+PrimeVue**. `ToastService` salió del plugin de arranque.
+
+El inventario ayudó: las 531 llamadas a `toast.add` eran **cuatro severidades y una sola forma**
+(`severity` + `summary` + `life`, con `detail` opcional). Ni un `group`, ni un `closable`, ni un
+toast pegajoso. Eso permitió un codemod con lectura real del objeto literal —comas de primer
+nivel, plantillas y propiedades abreviadas incluidas— en vez de un `sed`.
+
+| PrimeVue | vue-sonner |
+| --- | --- |
+| `severity: 'success' \| 'error' \| 'warn' \| 'info'` | `toast.success` / `.error` / `.warning` / `.info` |
+| `summary` | primer argumento (título) |
+| `detail` | `description` |
+| `life` | `duration` |
+
+**Lo que se cae de paso — y era deuda escrita:**
+
+- **`window.__primeToast` ya no existe.** El interceptor de axios de `~/core/client.ts` usaba ese
+  puente global porque no podía llamar a un composable fuera de un componente. El `toast` de
+  sonner es un import normal: el interceptor lo llama directo. Se borraron el puente de
+  `app.vue`, sus ~30 usos en móvil/operaciones y el archivo `app/types/window.d.ts` entero, que
+  existía solo para tiparlo.
+- **`ToastService` fuera de `app/plugins/legacy-primevue.client.ts`** y `<PrimeToast>` fuera de
+  `app.vue`. El plugin ya solo instala tema, `ConfirmationService`, `tooltip` y los dos
+  componentes globales.
+
+**Decisiones:**
+
+1. **`<Toaster position="top-right" rich-colors close-button />`.** El `<PrimeToast>` estaba en
+   `top-right` y Aura colorea por severidad; el defecto de sonner es abajo a la derecha y
+   monocromo. `rich-colors` es lo que más se le parece. Es el único sitio donde se decide la
+   apariencia de un aviso en toda la app.
+2. **`vue-sonner/style.css` registrado en `nuxt.config.ts`.** No lo importa nadie más:
+   `components/ui/sonner/Sonner.vue` (que es intocable) da por hecho que el CSS ya está. El
+   `<Toaster />` llevaba montado desde la fase 1 y habría salido sin estilo en cuanto alguien lo
+   usara. Verificado en el bundle: `entry.*.css` contiene los estilos de sonner.
+3. **Tres llamadas con severidad dinámica** (`conError.length ? 'warn' : 'success'`) se
+   reescribieron a mano como `if`/`else`: elegir el método por ternario se lee peor que la
+   condición explícita.
+
+**Diferencias de comportamiento asumidas:** sonner apila con un máximo de 3 avisos visibles y
+los colapsa (PrimeVue los mostraba todos, expandidos).
+
+**Fuera de alcance, decidido a propósito:** cinco vistas —`LiquidacionPdfView`,
+`InformesMensualesPanel`, `InformeDetailView`, `PortafoliosGestionPanel`, `EnvioMensualPanel`—
+tienen su **propio** toast hecho a mano (`function toast(msg, err)` + un `ref` + CSS
+`position: fixed`), que nunca pasó por PrimeVue. No se tocaron. Unificarlos con sonner es
+trabajo real y visible (cambian de posición y de estilo) y va en la ola de su slice.
+Ojo con `LiquidacionPdfView`: su toast se oculta con `@media print` y uno de sonner, que vive en
+un portal, no heredaría esa regla.
+
+**Verificado**: `lint`, `typecheck`, `test` (214) y `build` en verde; barrido a cero de
+`toast.add`, `__primeToast` y `primevue/toast`; auditoría cruzada de que no queda ni un `toast`
+importado sin usar ni usado sin importar, y de que las cinco vistas con `function toast` propia
+no reciben el import (habría sido una redeclaración). Los props del `<Toaster>` los validó
+`vue-tsc`, porque `app.vue` sí es TypeScript. **Falta la revisión visual.**
 
 ### 3.3 Ola 1 · Auth, permisos y shell
 
@@ -549,7 +679,9 @@ rebanada normal):
 
 Lo que solo se puede hacer cuando ya no queda nadie usándolo:
 
-- [ ] Desinstalar `primevue`, `@primevue/themes`, `primeicons`, `axios`, `vuedraggable`.
+- [x] Desinstalar `primeicons` — hecho en la ola 0 (§3.2.1), no hacía falta esperar aquí:
+      no lo usaba PrimeVue, solo nuestro marcado.
+- [ ] Desinstalar `primevue`, `@primevue/themes`, `axios`, `vuedraggable`.
 - [ ] Decidir y ejecutar Chart.js → `@unovis/vue` (12 archivos) o documentar la excepción.
 - [ ] Retirar `vue.runtimeCompiler`.
 - [ ] Retirar los layouts y el middleware `legacy-*`.
@@ -563,15 +695,25 @@ Lo que solo se puede hacer cuando ya no queda nadie usándolo:
 
 Métricas objetivas, verificables con un comando:
 
-| Métrica | Inicio | Meta |
-| --- | --- | --- |
-| Archivos en `app/legacy/` | 237 | 0 (al terminar la fase 2) |
-| Archivos que importan `primevue` | 120 | 0 |
-| Archivos `.js`/`.vue` sin `lang="ts"` | 237 | 0 |
-| Llamadas a la API fuera de un service | 341 | 0 |
-| Literales hex de la paleta | ~2.528 | 0 |
-| Rutas declaradas en `AUTH_ROUTE_PERMISSIONS` | 1 | 67 |
-| Slices que cumplen la receta completa | 0 | 21 |
+| Métrica | Inicio | Hoy | Meta |
+| --- | --- | --- | --- |
+| Archivos en `app/legacy/` | 237 | 0 | 0 (al terminar la fase 2) |
+| Archivos que importan `primevue` | 120 | 115 | 0 |
+| **Apariciones de `pi pi-*`** | **1.822** | **0** | **0** |
+| **Llamadas a `toast.add` de PrimeVue** | **557** | **0** | **0** |
+| Archivos `.js`/`.vue` sin `lang="ts"` | 237 | 237 | 0 |
+| Llamadas a la API fuera de un service | 341 | 341 | 0 |
+| Literales hex de la paleta | ~2.528 | ~2.528 | 0 |
+| Rutas declaradas en `AUTH_ROUTE_PERMISSIONS` | 1 | 1 | 67 |
+| Slices que cumplen la receta completa | 0 | 0 | 21 |
+
+Los comandos, desde `v2/`:
+
+```sh
+grep -rl "from 'primevue" app | wc -l           # archivos que importan PrimeVue
+grep -roP "(?<![-\w])pi pi-" app | wc -l        # clases de PrimeIcons que quedan
+grep -ro "toast\.add(" app | wc -l              # avisos aún en la API de PrimeVue
+```
 
 ---
 

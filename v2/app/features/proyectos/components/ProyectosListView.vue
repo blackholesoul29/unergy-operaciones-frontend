@@ -3,12 +3,15 @@
     <!-- Header -->
     <PageHeader title="Proyectos" subtitle="Portafolio de plantas y servicios">
       <template #actions>
-        <Button label="Inversores minigranja" icon="pi pi-bolt" size="small" severity="secondary" outlined
-                :loading="invBackfillLoading" @click="previewInversoresBackfill"
-                v-tooltip.bottom="'Crea los 5 inversores típicos para minigranjas'" />
-        <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" severity="secondary" outlined
-                @click="descargarExcel" />
-        <Button label="Nuevo proyecto" icon="pi pi-plus" size="small" @click="openNew" />
+        <Button label="Inversores minigranja" size="small" severity="secondary" outlined :loading="invBackfillLoading" @click="previewInversoresBackfill" v-tooltip.bottom="'Crea los 5 inversores típicos para minigranjas'">
+          <template #icon><ZapIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Descargar Excel" size="small" severity="secondary" outlined @click="descargarExcel">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Nuevo proyecto" size="small" @click="openNew">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -16,7 +19,7 @@
     <div v-if="pendientes.length" class="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
          style="background: rgba(214,68,85,0.06); border: 1.5px solid rgba(214,68,85,0.25);">
       <span class="text-sm font-medium" style="color: #D64455;">
-        <i class="pi pi-exclamation-triangle text-xs mr-1.5" />
+        <TriangleAlertIcon class="text-xs mr-1.5 size-[1em]" />
         Proyectos pendientes ({{ pendientes.length }})
       </span>
       <Button label="Revisar" size="small" text style="color: #D64455;" @click="abrirPendientes" />
@@ -27,7 +30,7 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="filters.q" placeholder="Nombre comercial…" class="w-56" />
         </IconField>
       </div>
@@ -56,7 +59,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center">
-      <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
+      <LoaderCircleIcon class="text-2xl text-gray-400 size-[1em] animate-spin" />
     </div>
 
     <!-- Sections by tipo -->
@@ -86,8 +89,7 @@
             ({{ section.items.length }})
           </span>
           <!-- chevron -->
-          <i class="pi pi-chevron-down text-gray-400 text-xs ml-2 chevron-icon transition-transform duration-200"
-             :class="{ 'rotate-180': openSections.has(section.tipo) }" />
+          <ChevronDownIcon class="text-gray-400 text-xs ml-2 chevron-icon transition-transform duration-200 size-[1em]" :class="{ 'rotate-180': openSections.has(section.tipo) }" />
         </button>
 
         <!-- Collapsible table -->
@@ -252,12 +254,15 @@
                   <!-- Acciones -->
                   <td class="px-4 py-2">
                     <div class="flex gap-0.5 justify-end">
-                      <Button icon="pi pi-eye" text size="small"
-                              @click="goDetail(row)" v-tooltip="'Ver detalle'" />
-                      <Button icon="pi pi-pencil" text size="small" severity="info"
-                              @click="goEdit(row)" v-tooltip="'Editar'" />
-                      <Button icon="pi pi-trash" text size="small" severity="danger"
-                              @click="confirmDelete(row)" v-tooltip="'Eliminar'" />
+                      <Button text size="small" @click="goDetail(row)" v-tooltip="'Ver detalle'">
+                        <template #icon><EyeIcon class="size-[1em]" /></template>
+                      </Button>
+                      <Button text size="small" severity="info" @click="goEdit(row)" v-tooltip="'Editar'">
+                        <template #icon><PencilIcon class="size-[1em]" /></template>
+                      </Button>
+                      <Button text size="small" severity="danger" @click="confirmDelete(row)" v-tooltip="'Eliminar'">
+                        <template #icon><Trash2Icon class="size-[1em]" /></template>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -322,8 +327,9 @@
 
       <template #footer>
         <Button label="Cancelar" text @click="invBackfillVisible = false" :disabled="invBackfillExecuting" />
-        <Button label="Sembrar" icon="pi pi-check" :loading="invBackfillExecuting"
-                :disabled="!invBackfillReport || !invBackfillReport.a_sembrar" @click="applyInversoresBackfill" />
+        <Button label="Sembrar" :loading="invBackfillExecuting" :disabled="!invBackfillReport || !invBackfillReport.a_sembrar" @click="applyInversoresBackfill">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
 
@@ -348,7 +354,7 @@
         actualizar el registro existente, o ignóralos si no aplican.
       </p>
       <div v-if="loadingPendientes" class="flex items-center justify-center py-8">
-        <i class="pi pi-spin pi-spinner text-2xl" style="color: #915BD8;" />
+        <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: #915BD8;" />
       </div>
       <div v-else-if="!pendientes.length" class="text-center py-8 text-sm" style="color: #9b89b5;">
         No hay proyectos pendientes por revisar.
@@ -370,8 +376,9 @@
                 Sugerido: {{ p.nombre_sugerido }}
               </p>
             </div>
-            <Button icon="pi pi-times" text severity="secondary" size="small"
-              :loading="p._loading === 'ignorar'" @click="ignorarPendiente(p)" v-tooltip="'Ignorar'" />
+            <Button text severity="secondary" size="small" :loading="p._loading === 'ignorar'" @click="ignorarPendiente(p)" v-tooltip="'Ignorar'">
+              <template #icon><XIcon class="size-[1em]" /></template>
+            </Button>
           </div>
 
           <!-- Cambios sugeridos -->
@@ -397,14 +404,14 @@
               <label class="field-label">Tipo</label>
               <Select v-model="p._tipo" :options="TIPOS_PROYECTO" class="w-40" placeholder="Tipo" />
             </div>
-            <Button icon="pi pi-check" label="Crear" size="small"
-              :loading="p._loading === 'confirmar'" :disabled="!p._nombre"
-              style="background:#915BD8; border-color:#915BD8;" @click="confirmarPendiente(p)" />
+            <Button label="Crear" size="small" :loading="p._loading === 'confirmar'" :disabled="!p._nombre" style="background:#915BD8; border-color:#915BD8;" @click="confirmarPendiente(p)">
+              <template #icon><CheckIcon class="size-[1em]" /></template>
+            </Button>
           </div>
           <div v-else class="flex justify-end">
-            <Button icon="pi pi-check" label="Actualizar" size="small"
-              :loading="p._loading === 'confirmar'"
-              style="background:#915BD8; border-color:#915BD8;" @click="confirmarPendiente(p)" />
+            <Button label="Actualizar" size="small" :loading="p._loading === 'confirmar'" style="background:#915BD8; border-color:#915BD8;" @click="confirmarPendiente(p)">
+              <template #icon><CheckIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
       </div>
@@ -422,15 +429,15 @@ import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import ProyectoForm from './ProyectoForm.vue'
 import { formatearNombreProyecto } from './proyectosUi'
 import { exportarExcel } from '~/utils/exportarExcel'
+import { CheckIcon, ChevronDownIcon, EyeIcon, FileSpreadsheetIcon, LoaderCircleIcon, PencilIcon, PlusIcon, SearchIcon, Trash2Icon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 const router = useRouter()
 const route  = useRoute()
-const toast  = useToast()
 
 // ── Backfill inversores típicos de minigranja ────────────────────────────────
 const invBackfillVisible   = ref(false)
@@ -447,8 +454,10 @@ async function previewInversoresBackfill() {
     invBackfillReport.value = data
     invBackfillVisible.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo previsualizar',
-      detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo previsualizar', {
+      description: e.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   } finally {
     invBackfillLoading.value = false
   }
@@ -459,14 +468,15 @@ async function applyInversoresBackfill() {
   try {
     const { data } = await api.post('/proyectos/inversores/backfill-minigranja', null,
       { params: { dry_run: false, solo_minigranja: invBackfillSoloMini.value } })
-    toast.add({ severity: 'success', summary: 'Inversores sembrados',
-      detail: `${data.a_sembrar} proyectos ahora tienen sus 5 inversores`, life: 5000 })
+    toast.success('Inversores sembrados', {
+      description: `${data.a_sembrar} proyectos ahora tienen sus 5 inversores`,
+      duration: 5000,
+    })
     invBackfillVisible.value = false
     invBackfillReport.value = null
     await load()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'El backfill falló',
-      detail: e.response?.data?.detail || e.message, life: 6000 })
+    toast.error('El backfill falló', { description: e.response?.data?.detail || e.message, duration: 6000 })
   } finally {
     invBackfillExecuting.value = false
   }
@@ -759,7 +769,10 @@ async function guardarInfoTecnicaSiAplica(proyectoId, infoTecnica) {
   try {
     await api.put(`/proyectos/${proyectoId}/info-tecnica`, infoTecnica)
   } catch (e) {
-    toast.add({ severity: 'warn', summary: 'Proyecto creado, pero la ficha técnica no se pudo guardar', detail: e.response?.data?.detail, life: 5000 })
+    toast.warning('Proyecto creado, pero la ficha técnica no se pudo guardar', {
+      description: e.response?.data?.detail,
+      duration: 5000,
+    })
   }
 }
 
@@ -767,7 +780,7 @@ async function onCreate(payload, infoTecnica) {
   try {
     const { data } = await api.post('/proyectos', payload)
     await guardarInfoTecnicaSiAplica(data.id, infoTecnica)
-    toast.add({ severity: 'success', summary: 'Proyecto creado', life: 3000 })
+    toast.success('Proyecto creado', { duration: 3000 })
     dialogVisible.value = false
     load()
   } catch (e) {
@@ -782,7 +795,10 @@ async function onCreate(payload, infoTecnica) {
       duplicadoVisible.value = true
       return
     }
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'Error al guardar', life: 4000 })
+    toast.error('Error', {
+      description: typeof detail === 'string' ? detail : 'Error al guardar',
+      duration: 4000,
+    })
   }
 }
 
@@ -791,13 +807,16 @@ async function crearForzado() {
   try {
     const { data } = await api.post('/proyectos', pendingPayload.value, { params: { forzar: true } })
     await guardarInfoTecnicaSiAplica(data.id, pendingInfoTecnica.value)
-    toast.add({ severity: 'success', summary: 'Proyecto creado', life: 3000 })
+    toast.success('Proyecto creado', { duration: 3000 })
     duplicadoVisible.value = false
     dialogVisible.value = false
     load()
   } catch (e) {
     const detail = e.response?.data?.detail
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'Error al guardar', life: 4000 })
+    toast.error('Error', {
+      description: typeof detail === 'string' ? detail : 'Error al guardar',
+      duration: 4000,
+    })
   } finally {
     forzando.value = false
   }
@@ -807,12 +826,12 @@ async function doDelete() {
   deleting.value = true
   try {
     await api.delete(`/proyectos/${deleteProyecto.value.id}`)
-    toast.add({ severity: 'success', summary: 'Proyecto eliminado', life: 3000 })
+    toast.success('Proyecto eliminado', { duration: 3000 })
     deleteVisible.value = false
     load()
   } catch (e) {
     const detail = e.response?.data?.detail || 'Error al eliminar'
-    toast.add({ severity: 'error', summary: 'No se pudo eliminar', detail, life: 5000 })
+    toast.error('No se pudo eliminar', { description: detail, duration: 5000 })
   } finally {
     deleting.value = false
   }
@@ -853,7 +872,9 @@ async function confirmarPendiente(p, forzar = false) {
     }, forzar ? { params: { forzar: true } } : undefined)
     pendientes.value = pendientes.value.filter(x => x.clave !== p.clave)
     duplicadoVisible.value = false
-    toast.add({ severity: 'success', summary: p.tipo_sugerencia === 'crear' ? 'Proyecto creado' : 'Proyecto actualizado', life: 3000 })
+    toast.success(p.tipo_sugerencia === 'crear' ? 'Proyecto creado' : 'Proyecto actualizado', {
+      duration: 3000,
+    })
     load()
   } catch (e) {
     const detail = e.response?.data?.detail
@@ -873,8 +894,10 @@ async function confirmarPendiente(p, forzar = false) {
       duplicadoVisible.value = true
       return
     }
-    toast.add({ severity: 'error', summary: 'No se pudo confirmar',
-      detail: typeof detail === 'string' ? detail : (detail?.mensaje || e.message), life: 5000 })
+    toast.error('No se pudo confirmar', {
+      description: typeof detail === 'string' ? detail : (detail?.mensaje || e.message),
+      duration: 5000,
+    })
   } finally {
     p._loading = null
   }
@@ -887,8 +910,10 @@ function ignorarPendiente(p) {
       pendientes.value = pendientes.value.filter(x => x.clave !== p.clave)
     })
     .catch(e => {
-      toast.add({ severity: 'error', summary: 'No se pudo ignorar',
-        detail: e.response?.data?.detail || e.message, life: 5000 })
+      toast.error('No se pudo ignorar', {
+        description: e.response?.data?.detail || e.message,
+        duration: 5000,
+      })
     })
     .finally(() => { p._loading = null })
 }

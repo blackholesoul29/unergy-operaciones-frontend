@@ -3,7 +3,9 @@
     <PageHeader title="Facturas de XM"
                 subtitle="Facturas del período y su estado de alistamiento para repartir">
       <template #actions>
-        <Button label="Subir facturas" icon="pi pi-upload" size="small" @click="abrirSubida" />
+        <Button label="Subir facturas" size="small" @click="abrirSubida">
+          <template #icon><UploadIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -14,7 +16,7 @@
     <Dialog v-model:visible="subidaVisible" header="Subir facturas de XM" modal class="w-full max-w-lg">
       <div class="space-y-4 pt-1">
         <button type="button" class="dropzone" :disabled="subiendo" @click="seleccionarArchivos">
-          <i class="pi pi-cloud-upload text-3xl" style="color:#915BD8" />
+          <CloudUploadIcon class="text-3xl size-[1em]" style="color:#915BD8" />
           <p class="text-sm font-semibold text-gray-700 mt-2">Seleccionar facturas</p>
           <p class="text-xs text-gray-400">
             Solo PDF · máximo {{ MAX_FACTURAS_POR_LOTE }} por lote, {{ MAX_MB_POR_FACTURA }} MB cada una
@@ -29,11 +31,12 @@
         <div v-if="archivos.length" class="space-y-2 max-h-56 overflow-y-auto">
           <div v-for="a in archivos" :key="a.nombre"
                class="flex items-center gap-3 rounded-lg border px-3 py-2" style="border-color:#ECE7F2">
-            <i class="pi pi-file-pdf text-sm shrink-0" style="color:#9b8fb0" />
+            <FileTextIcon class="text-sm shrink-0 size-[1em]" style="color:#9b8fb0" />
             <span class="flex-1 min-w-0 text-xs font-medium text-gray-700 truncate">{{ a.nombre }}</span>
             <span class="text-[10px] text-gray-400 shrink-0">{{ fmtTamano(a.tamano) }}</span>
-            <Button v-if="!subiendo" icon="pi pi-times" text rounded size="small"
-                    @click="quitarArchivo(a.nombre)" />
+            <Button v-if="!subiendo" text rounded size="small" @click="quitarArchivo(a.nombre)">
+              <template #icon><XIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
 
@@ -49,7 +52,7 @@
         </div>
 
         <p class="text-[11px] text-gray-400">
-          <i class="pi pi-info-circle mr-1" />
+          <InfoIcon class="mr-1 size-[1em]" />
           El mes y el año no se envían: los extrae la IA del PDF. El lote se procesa
           de a una factura, así que puede tardar.
         </p>
@@ -57,8 +60,9 @@
         <div class="flex justify-end gap-2 pt-1">
           <Button label="Cerrar" severity="secondary" size="small" :disabled="subiendo"
                   @click="subidaVisible = false" />
-          <Button label="Subir" icon="pi pi-upload" size="small"
-                  :disabled="!archivos.length" :loading="subiendo" @click="subir" />
+          <Button label="Subir" size="small" :disabled="!archivos.length" :loading="subiendo" @click="subir">
+            <template #icon><UploadIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </Dialog>
@@ -82,13 +86,14 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Código, nombre, agente…" class="w-64" />
         </IconField>
       </div>
       <div class="flex-1" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar'" @click="cargar" />
+      <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar'" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
       <div class="text-xs text-gray-400 self-center">
         {{ filtrados.length }} factura{{ filtrados.length === 1 ? '' : 's' }}
       </div>
@@ -100,7 +105,8 @@
            ? 'background:#F0FDF4; border-color:#BBF7D0; color:#166534'
            : 'background:#FFF8E6; border-color:#F5E3B3; color:#7A5C00'">
       <div class="flex items-center gap-2 font-semibold">
-        <i :class="readiness.lista_para_repartir ? 'pi pi-check-circle' : 'pi pi-exclamation-triangle'" />
+        <CircleCheckIcon v-if="readiness.lista_para_repartir" class="size-[1em]" />
+        <TriangleAlertIcon v-else class="size-[1em]" />
         <span v-if="readiness.lista_para_repartir">Listo para repartir los costos de XM</span>
         <span v-else>Todavía no se puede repartir</span>
         <span class="font-normal text-xs opacity-75">
@@ -116,7 +122,7 @@
 
     <div v-if="error" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FEF2F2; border:1px solid #FECACA; color:#B42318">
-      <i class="pi pi-times-circle" /> {{ error }}
+      <CircleXIcon class="size-[1em]" /> {{ error }}
     </div>
 
     <!-- Tabla -->
@@ -146,24 +152,22 @@
               <td class="px-4 py-2 whitespace-nowrap">
                 <Tag :value="row.estado_procesamiento || '—'"
                      :severity="SEVERIDAD_ESTADO[row.estado_procesamiento] || 'secondary'" />
-                <i v-if="row.error" class="pi pi-info-circle ml-1 text-xs" style="color:#D64455"
-                   v-tooltip.top="row.error" />
+                <InfoIcon class="ml-1 text-xs size-[1em]" v-if="row.error" style="color:#D64455" v-tooltip.top="row.error" />
               </td>
               <td class="px-4 py-2 text-center">
-                <i v-if="row.total_valido" class="pi pi-check-circle" style="color:#10B981" />
-                <i v-else class="pi pi-times-circle" style="color:#D64455"
-                   v-tooltip.top="'El total extraído no cuadra con la suma de los conceptos'" />
+                <CircleCheckIcon class="size-[1em]" v-if="row.total_valido" style="color:#10B981" />
+                <CircleXIcon class="size-[1em]" v-else style="color:#D64455" v-tooltip.top="'El total extraído no cuadra con la suma de los conceptos'" />
               </td>
               <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-500">{{ fmtFecha(row.vencimiento) }}</td>
             </tr>
             <tr v-if="loading">
               <td :colspan="COLUMNAS.length" class="px-4 py-12 text-center text-sm text-gray-400">
-                <i class="pi pi-spin pi-spinner text-2xl" />
+                <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" />
               </td>
             </tr>
             <tr v-else-if="!filtrados.length">
               <td :colspan="COLUMNAS.length" class="px-4 py-12 text-center text-sm text-gray-400">
-                <i class="pi pi-file-check text-2xl mb-2 block text-gray-300" />
+                <FileCheckIcon class="text-2xl mb-2 block text-gray-300 size-[1em]" />
                 No hay facturas de XM para este período.
               </td>
             </tr>
@@ -184,13 +188,13 @@ import Dialog from 'primevue/dialog'
 import Tag from 'primevue/tag'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { VERSIONES, VERSION_INICIAL, MAX_FACTURAS_POR_LOTE, MAX_MB_POR_FACTURA } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+import { CircleCheckIcon, CircleXIcon, CloudUploadIcon, FileCheckIcon, FileTextIcon, InfoIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon, UploadIcon, XIcon } from '@lucide/vue'
 
 const liquidacionesApi = new LiquidacionesApiService()
 
-const toast = useToast()
 
 const MESES = [
   'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -299,17 +303,17 @@ function onArchivosSeleccionados(e) {
 
   const invalido = nuevos.find(f => f.size > MAX_MB_POR_FACTURA * 1024 * 1024)
   if (invalido) {
-    toast.add({
-      severity: 'warn', summary: 'Archivo muy pesado',
-      detail: `«${invalido.name}» supera los ${MAX_MB_POR_FACTURA} MB.`, life: 5000,
+    toast.warning('Archivo muy pesado', {
+      description: `«${invalido.name}» supera los ${MAX_MB_POR_FACTURA} MB.`,
+      duration: 5000,
     })
     return
   }
   // La API procesa el lote de a una factura: mejor avisar antes de subir.
   if (archivos.value.length + nuevos.length > MAX_FACTURAS_POR_LOTE) {
-    toast.add({
-      severity: 'warn', summary: 'Lote muy grande',
-      detail: `Máximo ${MAX_FACTURAS_POR_LOTE} facturas por lote.`, life: 5000,
+    toast.warning('Lote muy grande', {
+      description: `Máximo ${MAX_FACTURAS_POR_LOTE} facturas por lote.`,
+      duration: 5000,
     })
     return
   }
@@ -339,17 +343,17 @@ async function subir() {
       onEstado: (t) => { progresoTarea.value = t.mensaje || progresoTarea.value },
     })
 
-    toast.add({
-      severity: 'success', summary: 'Facturas procesadas',
-      detail: `${res.files_queued} factura(s) cargadas.`, life: 4000,
+    toast.success('Facturas procesadas', {
+      description: `${res.files_queued} factura(s) cargadas.`,
+      duration: 4000,
     })
     subidaVisible.value = false
     archivos.value = []
     await cargar()
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudieron cargar',
-      detail: e.response?.data?.detail || e.message, life: 8000,
+    toast.error('No se pudieron cargar', {
+      description: e.response?.data?.detail || e.message,
+      duration: 8000,
     })
   } finally {
     subiendo.value = false

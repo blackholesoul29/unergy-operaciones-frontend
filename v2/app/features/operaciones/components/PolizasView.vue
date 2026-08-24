@@ -5,16 +5,18 @@
     <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
     <div class="pz-header">
       <div class="flex items-center gap-2">
-        <i class="pi pi-shield" style="color:#0F9D8C;font-size:16px" />
+        <ShieldIcon class="size-[1em]" style="color:#0F9D8C;font-size:16px" />
         <h2 class="pz-title">Pólizas</h2>
         <span class="pz-badge">{{ filas.length }}</span>
       </div>
-      <Button icon="pi pi-refresh" outlined size="small" :loading="loading" @click="cargar" class="pz-btn-refresh" />
+      <Button outlined size="small" :loading="loading" @click="cargar" class="pz-btn-refresh">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- ══ BANNER 30 DÍAS ═══════════════════════════════════════════════════ -->
     <button v-if="venceEn30.length && filtroEstado !== 'proxima'" class="pz-banner" @click="filtroEstado = 'proxima'">
-      <i class="pi pi-exclamation-triangle" />
+      <TriangleAlertIcon class="size-[1em]" />
       {{ venceEn30.length }} {{ venceEn30.length === 1 ? 'póliza vence' : 'pólizas vencen' }} en los próximos 30 días
     </button>
 
@@ -44,7 +46,7 @@
     <!-- ══ FILTROS ══════════════════════════════════════════════════════════ -->
     <div class="pz-filters">
       <div class="pz-search-wrap">
-        <i class="pi pi-search pz-search-ico" />
+        <SearchIcon class="pz-search-ico size-[1em]" />
         <input v-model="busqueda" placeholder="Buscar por proyecto o ciudad…" class="pz-search" />
       </div>
       <Select v-model="filtroTipo" :options="OPCIONES_TIPO" optionLabel="label" optionValue="value"
@@ -54,7 +56,7 @@
       <Select v-model="filtroOm" :options="OPCIONES_OM" optionLabel="label" optionValue="value"
         placeholder="Póliza O&M" showClear class="pz-sel" size="small" />
       <button v-if="hayFiltros" class="pz-clear-btn" @click="limpiarFiltros" title="Limpiar filtros">
-        <i class="pi pi-times text-[10px]" /> Limpiar
+        <XIcon class="text-[10px] size-[1em]" /> Limpiar
       </button>
     </div>
 
@@ -87,7 +89,7 @@
               <td><span class="pz-badge-estado" :style="estiloEstado(estadoDe(fila))">{{ ESTADO_LABELS[estadoDe(fila)] }}</span></td>
               <td>
                 <button class="pz-btn-editar" @click.stop="abrirEdicion(fila)" title="Editar">
-                  <i class="pi pi-pencil" />
+                  <PencilIcon class="size-[1em]" />
                 </button>
               </td>
             </tr>
@@ -150,7 +152,7 @@
           </template>
           <tr v-if="!ordenadas.length">
             <td colspan="9" class="pz-empty">
-              <i class="pi pi-inbox text-2xl mb-1" style="color:#9CA3AF" />
+              <InboxIcon class="text-2xl mb-1 size-[1em]" style="color:#9CA3AF" />
               <p>Sin resultados</p>
             </td>
           </tr>
@@ -164,7 +166,7 @@
         <div class="pz-panel">
           <div class="pz-panel-header">
             <h3>{{ edicion.nombre_comercial }}</h3>
-            <button class="pz-panel-close" @click="cerrarEdicion"><i class="pi pi-times" /></button>
+            <button class="pz-panel-close" @click="cerrarEdicion"><XIcon class="size-[1em]" /></button>
           </div>
 
           <div class="pz-panel-body">
@@ -223,7 +225,9 @@
 
           <div class="pz-panel-footer">
             <Button label="Cancelar" outlined size="small" @click="cerrarEdicion" />
-            <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando" @click="guardar" class="pz-btn-primary" />
+            <Button label="Guardar" size="small" :loading="guardando" @click="guardar" class="pz-btn-primary">
+              <template #icon><CheckIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
       </div>
@@ -240,6 +244,8 @@ import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
 import api from '~/core/client'
 import { formatCurrency } from '~/utils/financialCalculations'
+import { CheckIcon, InboxIcon, PencilIcon, RefreshCwIcon, SearchIcon, ShieldIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 
 const TIPO_LABELS = {
   minigranja: 'Minigranja',
@@ -285,9 +291,7 @@ async function cargar() {
     const { data } = await api.get('/polizas')
     filas.value = data
   } catch {
-    if (typeof window.__primeToast === 'function') {
-      window.__primeToast({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las pólizas', life: 4000 })
-    }
+    toast.error('Error', { description: 'No se pudieron cargar las pólizas', duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -448,9 +452,7 @@ async function guardar() {
     await cargar()
     cerrarEdicion()
   } catch {
-    if (typeof window.__primeToast === 'function') {
-      window.__primeToast({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la póliza', life: 4000 })
-    }
+    toast.error('Error', { description: 'No se pudo guardar la póliza', duration: 4000 })
   } finally {
     guardando.value = false
   }

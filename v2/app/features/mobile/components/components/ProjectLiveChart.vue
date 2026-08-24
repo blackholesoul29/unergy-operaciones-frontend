@@ -2,7 +2,7 @@
   <div class="plc-wrap" @click="flashNowLabel" @touchstart.passive="flashNowLabel">
     <Line v-if="hasData" ref="chartRef" :data="chartData" :options="chartOptions" :plugins="[nowLinePlugin]" />
     <div v-else class="plc-empty">
-      <i class="pi pi-chart-line" />
+      <ChartLineIcon class="size-[1em]" />
       <span>Sin datos de potencia hoy</span>
     </div>
   </div>
@@ -16,6 +16,7 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import { TIME_LABELS, inverterSeries, meterSeries } from '~/features/mobile/components/solarSeries'
+import { ChartLineIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Legend, Filler)
 
@@ -157,5 +158,5 @@ const chartOptions = {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 8px; height: 100%; color: #9ca3af; font-size: 14px;
 }
-.plc-empty .pi { font-size: 32px; color: #d1d5db; }
+.plc-empty svg { font-size: 32px; color: #d1d5db; }
 </style>

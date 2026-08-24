@@ -8,12 +8,12 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
     </div>
 
     <template v-else-if="!history.length && !loading">
       <div class="flex flex-col items-center py-16 gap-3" style="color: #6b5a8a;">
-        <i class="pi pi-cloud-download text-4xl" style="color: #c4b8d4;" />
+        <CloudDownloadIcon class="text-4xl size-[1em]" style="color: #c4b8d4;" />
         <p class="text-sm font-medium">Servicio de balance no disponible</p>
         <p class="text-xs">EVO API no configurada — los datos se mostrarán cuando DailySpot esté activo.</p>
       </div>
@@ -99,6 +99,7 @@ import api from '~/core/client'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Dropdown from 'primevue/dropdown'
+import { CloudDownloadIcon, LoaderCircleIcon } from '@lucide/vue'
 
 const days = ref(30)
 const dayOptions = [

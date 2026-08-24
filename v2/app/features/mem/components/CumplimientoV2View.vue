@@ -4,14 +4,14 @@
     <!-- Header -->
     <PageHeader title="Cumplimiento PPA" subtitle="Generación vs. compromisos contractuales de energía">
       <template #lead>
-        <div class="cv-icon-tile"><i class="pi pi-bolt" /></div>
+        <div class="cv-icon-tile"><ZapIcon class="size-[1em]" /></div>
       </template>
       <template #actions>
         <button @click="abrirResponsables"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
           style="border: 1px solid rgba(145,91,216,0.3); color: #915BD8; background: rgba(145,91,216,0.05);"
           v-tooltip.bottom="'Empresa responsable de cada PPA. Los contratos de un responsable no relevante se ocultan en toda esta página.'">
-          <i class="pi pi-building text-xs" />
+          <BuildingIcon class="text-xs size-[1em]" />
           Responsables
         </button>
         <label class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer"
@@ -29,7 +29,7 @@
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
           style="border: 1px solid rgba(214,68,85,0.3); color: #D64455; background: rgba(214,68,85,0.05);"
           :style="cacheClearing ? 'opacity: 0.6; pointer-events: none;' : ''">
-          <i class="pi pi-refresh text-xs" :class="{ 'pi-spin': cacheClearing }" />
+          <RefreshCwIcon class="text-xs size-[1em]" :class="{ 'animate-spin': cacheClearing }" />
           Borrar caché y consultar energía
         </button>
       </template>
@@ -68,18 +68,12 @@
           />
         </div>
         <div class="flex gap-2 ml-auto">
-          <Button label="Exportar (Excel)" icon="pi pi-file-excel" size="small" outlined
-            :disabled="!anualData || chartLoading || exportingExcel || exportingPdf"
-            :loading="exportingExcel"
-            @click="exportarAnualExcel"
-            v-tooltip.bottom="selectedContratoId === CONSOLIDADO_ID ? 'Una hoja por contrato + resumen consolidado, con plantas participantes' : 'Detalle mensual del contrato con plantas participantes'"
-            style="color:#915BD8; border-color:#915BD8;" />
-          <Button label="Descargar PDF" icon="pi pi-file-pdf" size="small" outlined
-            :disabled="!anualData || chartLoading || exportingExcel || exportingPdf"
-            :loading="exportingPdf"
-            @click="exportarAnualPdf"
-            v-tooltip.bottom="'PDF presentable para compartir con el inversionista'"
-            style="color:#2C2039; border-color:#2C2039;" />
+          <Button label="Exportar (Excel)" size="small" outlined :disabled="!anualData || chartLoading || exportingExcel || exportingPdf" :loading="exportingExcel" @click="exportarAnualExcel" v-tooltip.bottom="selectedContratoId === CONSOLIDADO_ID ? 'Una hoja por contrato + resumen consolidado, con plantas participantes' : 'Detalle mensual del contrato con plantas participantes'" style="color:#915BD8; border-color:#915BD8;">
+            <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+          </Button>
+          <Button label="Descargar PDF" size="small" outlined :disabled="!anualData || chartLoading || exportingExcel || exportingPdf" :loading="exportingPdf" @click="exportarAnualPdf" v-tooltip.bottom="'PDF presentable para compartir con el inversionista'" style="color:#2C2039; border-color:#2C2039;">
+            <template #icon><FileTextIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
 
@@ -252,7 +246,7 @@
 
       <!-- Empty chart state -->
       <div v-else-if="!chartLoading && !chartError" class="text-center py-16 cv-panel" style="color: #7a6e8a;">
-        <i class="pi pi-chart-bar text-4xl mb-3 block" style="color: #915BD8;" />
+        <ChartColumnIcon class="text-4xl mb-3 block size-[1em]" style="color: #915BD8;" />
         <p>Selecciona un año y un contrato para ver el cumplimiento anual.</p>
       </div>
 
@@ -300,7 +294,8 @@
           </Column>
           <Column style="width: 44px; text-align: center;">
             <template #body="{ data: row }">
-              <i :class="row.id === selectedContratoId ? 'pi pi-chart-bar' : 'pi pi-chevron-right'" class="text-xs" style="color: #915BD8;" />
+              <ChartColumnIcon v-if="row.id === selectedContratoId" class="text-xs size-[1em]" style="color: #915BD8;" />
+              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color: #915BD8;" />
             </template>
           </Column>
         </DataTable>
@@ -322,17 +317,18 @@
           <Select v-model="simMonth" :options="MESES_OPTIONS" optionLabel="label" optionValue="value" class="w-36" @change="loadSimulator" />
         </div>
         <button @click="resetSim" class="cv-btn">
-          <i class="pi pi-refresh text-xs" style="color: #915BD8;" />Resetear
+          <RefreshCwIcon class="text-xs size-[1em]" style="color: #915BD8;" />Resetear
         </button>
         <button v-if="hiddenContratos.size > 0" @click="showAllContratos" class="cv-btn">
-          <i class="pi pi-eye text-xs" style="color: #2e7d32;" />Mostrar ocultos ({{ hiddenContratos.size }})
+          <EyeIcon class="text-xs size-[1em]" style="color: #2e7d32;" />Mostrar ocultos ({{ hiddenContratos.size }})
         </button>
         <button
           @click="sortDesc = !sortDesc"
           class="cv-btn"
           v-tooltip="sortDesc ? 'Mayor cumplimiento primero' : 'Menor cumplimiento primero'"
         >
-          <i class="pi text-xs" :class="sortDesc ? 'pi-sort-amount-down' : 'pi-sort-amount-up'" style="color: #915BD8;" />
+          <ArrowDownWideNarrowIcon v-if="sortDesc" class="text-xs size-[1em]" style="color: #915BD8;" />
+          <ArrowUpNarrowWideIcon v-else class="text-xs size-[1em]" style="color: #915BD8;" />
           {{ sortDesc ? '↓ Mayor %' : '↑ Menor %' }}
         </button>
 
@@ -365,7 +361,7 @@
 
         <div class="flex-1"></div>
         <button @click="showNuevoForm = true" class="cv-btn-cta">
-          <i class="pi pi-plus text-xs" />PPA nuevo
+          <PlusIcon class="text-xs size-[1em]" />PPA nuevo
         </button>
         <span class="w-full text-xs" style="color: #9b8fb0;">Arrastra las plantas entre contratos para simular</span>
       </div>
@@ -373,7 +369,7 @@
       <!-- Formulario PPA nuevo -->
       <div v-if="showNuevoForm" class="rounded-xl border p-5" style="background: white; border-color: rgba(240,192,64,0.4);">
         <div class="flex items-center gap-2 mb-4">
-          <i class="pi pi-bolt" style="color: #F0C040;" />
+          <ZapIcon class="size-[1em]" style="color: #F0C040;" />
           <span class="font-bold text-sm" style="color: #2C2039;">Nuevo PPA nuevo</span>
         </div>
         <div class="flex flex-wrap items-end gap-4">
@@ -398,7 +394,7 @@
                 ? 'background: rgba(44,32,57,0.08); color: rgba(44,32,57,0.3); cursor: not-allowed;'
                 : 'background: #915BD8; color: white; cursor: pointer;'"
             >
-              <i class="pi pi-check text-xs" />Crear
+              <CheckIcon class="text-xs size-[1em]" />Crear
             </button>
             <button
               @click="showNuevoForm = false"
@@ -419,7 +415,7 @@
         <button @click="loadSimulator()"
           class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
           style="background: #915BD8; color: white;">
-          <i class="pi pi-refresh mr-1" /> Reintentar
+          <RefreshCwIcon class="mr-1 size-[1em]" /> Reintentar
         </button>
       </div>
 
@@ -442,11 +438,8 @@
                 @click="toggleExpand(c.id)"
               >
                 <div class="flex items-center gap-2 min-w-0">
-                  <i
-                    class="pi text-xs transition-transform flex-shrink-0"
-                    :class="expandedContratos.includes(c.id) ? 'pi-chevron-down' : 'pi-chevron-right'"
-                    style="color: #915BD8;"
-                  />
+                  <ChevronDownIcon v-if="expandedContratos.includes(c.id)" class="text-xs transition-transform flex-shrink-0 size-[1em]" style="color: #915BD8;" />
+                  <ChevronRightIcon v-else class="text-xs transition-transform flex-shrink-0 size-[1em]" style="color: #915BD8;" />
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="font-bold text-sm break-words" style="color: #2C2039;">{{ c.nombre }}</span>
@@ -472,7 +465,7 @@
                     style="color: #915BD8;"
                     v-tooltip="'Ver detalle de la capa'"
                   >
-                    <i class="pi pi-window-maximize text-xs" />
+                    <MaximizeIcon class="text-xs size-[1em]" />
                   </button>
                   <button
                     v-if="c._ficticio"
@@ -481,7 +474,7 @@
                     style="color: #D64455;"
                     v-tooltip="'Eliminar PPA'"
                   >
-                    <i class="pi pi-trash text-xs" />
+                    <Trash2Icon class="text-xs size-[1em]" />
                   </button>
                   <button
                     @click.stop="hideContrato(c.id)"
@@ -489,7 +482,7 @@
                     style="color: #b0a0c0;"
                     v-tooltip="'Ocultar contrato'"
                   >
-                    <i class="pi pi-eye-slash text-xs" />
+                    <EyeOffIcon class="text-xs size-[1em]" />
                   </button>
                 </div>
               </div>
@@ -506,7 +499,7 @@
                         class="inline-flex items-center gap-1 font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded"
                         style="background: rgba(240,192,64,0.22); color: #9a6700;"
                         v-tooltip="'De lo entregado, esta parte es compra en bolsa'"
-                      ><i class="pi pi-shopping-cart" style="font-size: 9px;" />{{ fmtMwh(simResults[c.id].genDup) }} bolsa</span>
+                      ><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />{{ fmtMwh(simResults[c.id].genDup) }} bolsa</span>
                     </div>
                   </div>
                   <div>
@@ -590,7 +583,7 @@
                     <span v-if="p.es_duplicado && !p.comprado_por_unergy" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5"
                       style="background: rgba(240,192,64,0.22); color: #9a6700;"
                       v-tooltip="'Compra en bolsa — cuenta para el contrato, origen bolsa'"
-                    ><i class="pi pi-shopping-cart" style="font-size: 9px;" />Compra bolsa</span>
+                    ><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra bolsa</span>
                     <span v-else-if="p.comprado_por_unergy" class="text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 inline-block"
                       style="background: rgba(240,192,64,0.25); color: #9a6700;"
                       v-tooltip="p.contrato_compra_nombre || 'Contrato de compra'"
@@ -722,10 +715,9 @@
             <span style="color: #D64455; font-weight: 600;">rojo</span> lo que terminó durante el mes.
           </span>
         </span>
-        <Button label="Exportar resumen (Excel)" icon="pi pi-file-excel" size="small" outlined class="ml-auto"
-          :disabled="!pcData || pcLoading" @click="exportarResumenPlantasContratos"
-          v-tooltip.bottom="'Descarga TODAS las categorías del mes, incl. plantas externas (todos los contratos y plantas), sin importar el filtro activo'"
-          style="color:#915BD8; border-color:#915BD8;" />
+        <Button label="Exportar resumen (Excel)" size="small" outlined class="ml-auto" :disabled="!pcData || pcLoading" @click="exportarResumenPlantasContratos" v-tooltip.bottom="'Descarga TODAS las categorías del mes, incl. plantas externas (todos los contratos y plantas), sin importar el filtro activo'" style="color:#915BD8; border-color:#915BD8;">
+          <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+        </Button>
       </div>
 
       <div v-if="pcLoading" class="flex flex-col items-center justify-center py-20 gap-3">
@@ -762,10 +754,10 @@
             <div class="flex items-center flex-wrap gap-x-3 gap-y-1">
               <span><b>{{ pcVentaDupInfo.total }}</b> plantas en total.</span>
               <span v-if="pcVentaDupInfo.dup" class="inline-flex items-center gap-1" style="color: #9a6700;">
-                <i class="pi pi-shopping-cart" style="font-size: 10px;" /><b>{{ pcVentaDupInfo.dup }}</b> duplicados (compra en bolsa)
+                <ShoppingCartIcon class="size-[1em]" style="font-size: 10px;" /><b>{{ pcVentaDupInfo.dup }}</b> duplicados (compra en bolsa)
               </span>
               <span v-if="pcVentaDupInfo.ur" class="inline-flex items-center gap-1" style="color: #0369a1;">
-                <i class="pi pi-sync" style="font-size: 10px;" /><b>{{ pcVentaDupInfo.ur }}</b> uso del recurso
+                <RefreshCwIcon class="size-[1em]" style="font-size: 10px;" /><b>{{ pcVentaDupInfo.ur }}</b> uso del recurso
               </span>
               <span style="color: #7a6e8a;">· resto suministro propio.</span>
             </div>
@@ -785,7 +777,7 @@
               <div>
                 <span class="font-bold text-sm" style="color: #2C2039;">{{ c.nombre }}</span>
                 <span class="ml-2 text-xs" style="color: #7a6e8a;">{{ c.comprador_nombre }}</span><span v-if="esOculto(c)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded ml-1.5" style="background: rgba(214,68,85,0.12); color: #b03446;" v-tooltip.top="'Responsable: ' + c.responsable + ' — normalmente oculto en Cumplimiento'">{{ c.responsable }}</span>
-                <i class="pi pi-info-circle ml-1.5" style="font-size: 11px; color: #9b89b5;" />
+                <InfoIcon class="ml-1.5 size-[1em]" style="font-size: 11px; color: #9b89b5;" />
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
                 <span class="text-xs font-mono px-2 py-0.5 rounded"
@@ -796,13 +788,13 @@
                   class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded"
                   style="background: rgba(240,192,64,0.22); color: #9a6700;"
                   v-tooltip.bottom="'Plantas de este contrato que son compra en bolsa (duplicados)'">
-                  <i class="pi pi-shopping-cart" style="font-size: 9px;" />{{ c.plantas.filter(p => p.es_duplicado && !p.uso_del_recurso).length }} duplicadas
+                  <ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />{{ c.plantas.filter(p => p.es_duplicado && !p.uso_del_recurso).length }} duplicadas
                 </span>
                 <span v-if="c.plantas.filter(p => p.uso_del_recurso).length"
                   class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded"
                   style="background: rgba(2,132,199,0.14); color: #0369a1;"
                   v-tooltip.bottom="'Plantas de este contrato marcadas como uso del recurso'">
-                  <i class="pi pi-sync" style="font-size: 9px;" />{{ c.plantas.filter(p => p.uso_del_recurso).length }} uso recurso
+                  <RefreshCwIcon class="size-[1em]" style="font-size: 9px;" />{{ c.plantas.filter(p => p.uso_del_recurso).length }} uso recurso
                 </span>
                 <button
                   @click.stop="copiarImagenVenta(c)"
@@ -810,7 +802,8 @@
                   :style="copiadoVentaId === c.id ? 'background: rgba(46,125,50,0.12); color: #2e7d32;' : 'background: #915BD8; color: white;'"
                   v-tooltip.left="'Copia la imagen al portapapeles (o la descarga si el navegador no lo permite)'"
                 >
-                  <i class="pi text-xs" :class="copiadoVentaId === c.id ? 'pi-check' : 'pi-image'" />
+                  <CheckIcon v-if="copiadoVentaId === c.id" class="text-xs size-[1em]" />
+                  <ImageIcon v-else class="text-xs size-[1em]" />
                   {{ copiadoVentaId === c.id ? '¡Copiado!' : 'Copiar imagen' }}
                 </button>
               </div>
@@ -824,13 +817,13 @@
                   <span class="font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</span>
                   <span v-if="filaTerminada(p)" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                     style="background: rgba(214,68,85,0.12); color: #D64455;"
-                    v-tooltip="'Salió de esta modalidad durante el mes — su tramo siguiente está en otra piscina'"><i class="pi pi-sign-out" style="font-size: 9px;" />Terminó</span>
+                    v-tooltip="'Salió de esta modalidad durante el mes — su tramo siguiente está en otra piscina'"><LogOutIcon class="size-[1em]" style="font-size: 9px;" />Terminó</span>
                   <span v-if="p.uso_del_recurso" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                     style="background: rgba(2,132,199,0.14); color: #0369a1;"
-                    v-tooltip="'Uso del recurso: la planta está en bolsa y se le paga al cliente su generación a precio bolsa — también listada en c. Compra en Bolsa (UNGG). No genera garantías.'"><i class="pi pi-sync" style="font-size: 9px;" />Uso del recurso</span>
+                    v-tooltip="'Uso del recurso: la planta está en bolsa y se le paga al cliente su generación a precio bolsa — también listada en c. Compra en Bolsa (UNGG). No genera garantías.'"><RefreshCwIcon class="size-[1em]" style="font-size: 9px;" />Uso del recurso</span>
                   <span v-else-if="p.es_duplicado" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                     style="background: rgba(240,192,64,0.22); color: #9a6700;"
-                    v-tooltip="'Duplicado: suministra a este contrato con origen bolsa — también listado en c. Compra en Bolsa (UNGG). Genera garantías.'"><i class="pi pi-shopping-cart" style="font-size: 9px;" />Duplicado</span>
+                    v-tooltip="'Duplicado: suministra a este contrato con origen bolsa — también listado en c. Compra en Bolsa (UNGG). Genera garantías.'"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Duplicado</span>
                   <span v-if="p.codigo_sic" class="text-xs font-mono px-1.5 py-0.5 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;">{{ p.codigo_sic }}</span>
                   <span v-if="p.pct_despacho != null" class="text-xs font-mono" style="color: #915BD8;">{{ (p.pct_despacho * 100).toFixed(0) }}%</span>
                 </div>
@@ -858,7 +851,7 @@
               <div>
                 <span class="font-bold text-sm" style="color: #9a6700;">{{ c.nombre }}</span>
                 <span class="ml-2 text-xs" style="color: #7a6e8a;">Vendedor: {{ c.vendedor_nombre }}</span>
-                <i class="pi pi-info-circle ml-1.5" style="font-size: 11px; color: #9b89b5;" />
+                <InfoIcon class="ml-1.5 size-[1em]" style="font-size: 11px; color: #9b89b5;" />
               </div>
               <span class="text-xs font-mono px-2 py-0.5 rounded"
                 style="background: rgba(240,192,64,0.18); color: #9a6700;">
@@ -906,7 +899,7 @@
                   Le compramos a: <span class="font-semibold" style="color: #2C2039;">{{ c.vendedor_nombre || '—' }}</span>
                   <span v-if="c.vendedor_nit"> · NIT {{ c.vendedor_nit }}</span>
                 </span>
-                <i class="pi pi-info-circle ml-1.5" style="font-size: 11px; color: #9b89b5;" />
+                <InfoIcon class="ml-1.5 size-[1em]" style="font-size: 11px; color: #9b89b5;" />
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
                 <span v-if="c.tarifa_base != null" class="text-xs font-mono px-2 py-0.5 rounded"
@@ -915,7 +908,7 @@
                 <span v-if="!c.plantas.length" class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded"
                   style="background: rgba(214,68,85,0.12); color: #D64455;"
                   v-tooltip="'No sabemos a qué planta le compramos — asóciala en el módulo PPA'">
-                  <i class="pi pi-exclamation-triangle" style="font-size: 10px;" />Sin plantas vinculadas
+                  <TriangleAlertIcon class="size-[1em]" style="font-size: 10px;" />Sin plantas vinculadas
                 </span>
                 <span v-else class="text-xs font-mono px-2 py-0.5 rounded" style="background: rgba(240,192,64,0.18); color: #9a6700;">
                   {{ c.plantas.length }} plantas
@@ -955,10 +948,10 @@
             </span>
             <div class="flex flex-wrap gap-x-4 gap-y-1">
               <span class="inline-flex items-center gap-1" style="color: #9a6700;">
-                <i class="pi pi-shopping-cart" style="font-size: 10px;" /><b>Duplicado</b> — su energía se compra en bolsa (genera garantías).
+                <ShoppingCartIcon class="size-[1em]" style="font-size: 10px;" /><b>Duplicado</b> — su energía se compra en bolsa (genera garantías).
               </span>
               <span class="inline-flex items-center gap-1" style="color: #0369a1;">
-                <i class="pi pi-sync" style="font-size: 10px;" /><b>Uso del recurso</b> — se le paga al cliente a precio bolsa (sin garantías).
+                <RefreshCwIcon class="size-[1em]" style="font-size: 10px;" /><b>Uso del recurso</b> — se le paga al cliente a precio bolsa (sin garantías).
               </span>
             </div>
           </div>
@@ -970,7 +963,7 @@
               <div>
                 <span class="font-bold text-sm" style="color: #9a6700;">{{ c.nombre }}</span>
                 <span class="ml-2 text-xs" style="color: #7a6e8a;">compra en bolsa para cumplir este contrato · {{ c.comprador_nombre }}</span>
-                <i class="pi pi-info-circle ml-1.5" style="font-size: 11px; color: #9b89b5;" />
+                <InfoIcon class="ml-1.5 size-[1em]" style="font-size: 11px; color: #9b89b5;" />
               </div>
               <span class="text-xs font-mono px-2 py-0.5 rounded" style="background: rgba(240,192,64,0.18); color: #9a6700;">
                 {{ c.plantas.length }} plantas
@@ -981,8 +974,8 @@
                 @click="abrirDetalleContrato(c, 'bolsa_compra_ungg')"
                 v-tooltip.left="'Ver detalle del contrato (PPA + GESCON)'">
                 <div class="flex items-center gap-2">
-                  <i class="pi" :class="p.uso_del_recurso ? 'pi-sync' : 'pi-shopping-cart'"
-                    :style="`font-size: 10px; color: ${p.uso_del_recurso ? '#0369a1' : '#9a6700'};`" />
+                  <RefreshCwIcon v-if="p.uso_del_recurso" class="size-[1em]" :style="`font-size: 10px; color: ${p.uso_del_recurso ? '#0369a1' : '#9a6700'};`" />
+                  <ShoppingCartIcon v-else class="size-[1em]" :style="`font-size: 10px; color: ${p.uso_del_recurso ? '#0369a1' : '#9a6700'};`" />
                   <span class="font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</span>
                   <span v-if="p.uso_del_recurso" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                     style="background: rgba(2,132,199,0.14); color: #0369a1;"
@@ -1004,7 +997,7 @@
         <template v-if="pcMode === 'bolsa_compra_ungc'">
           <div class="cv-card">
             <div class="px-4 py-10 text-center space-y-2">
-              <i class="pi pi-compass" style="font-size: 22px; color: #9b89b5;" />
+              <CompassIcon class="size-[1em]" style="font-size: 22px; color: #9b89b5;" />
               <p class="text-sm font-semibold" style="color: #2C2039;">Compra en Bolsa (UNGC) — reglas por definir</p>
               <p class="text-xs max-w-lg mx-auto" style="color: #7a6e8a;">
                 Ocurre cuando UNGC debe comprar en bolsa, pero todavía no hay reglas de negocio
@@ -1033,7 +1026,7 @@
                   <span class="font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</span>
                   <span v-if="filaTerminada(p)" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                     style="background: rgba(214,68,85,0.12); color: #D64455;"
-                    v-tooltip="'Estuvo libre en bolsa solo este tramo del mes; después entró a otra modalidad'"><i class="pi pi-sign-out" style="font-size: 9px;" />Terminó</span>
+                    v-tooltip="'Estuvo libre en bolsa solo este tramo del mes; después entró a otra modalidad'"><LogOutIcon class="size-[1em]" style="font-size: 9px;" />Terminó</span>
                 </div>
                 <div class="text-xs font-mono" :style="filaColorFecha(p) || 'color: #7a6e8a;'">
                   {{ ventanaFila(p) }}
@@ -1067,11 +1060,11 @@
                   <span v-if="p.codigo_sic" class="text-xs font-mono px-1.5 py-0.5 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;">{{ p.codigo_sic }}</span>
                   <span v-if="filaTerminada(p)" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded"
                     style="background: rgba(214,68,85,0.12); color: #D64455;"
-                    v-tooltip="'Estuvo en esta modalidad solo un tramo del mes'"><i class="pi pi-sign-out" style="font-size: 9px;" />Terminó</span>
+                    v-tooltip="'Estuvo en esta modalidad solo un tramo del mes'"><LogOutIcon class="size-[1em]" style="font-size: 9px;" />Terminó</span>
                 </div>
                 <div v-if="ventanaBolsa(p)" class="text-xs mt-0.5" style="color: #7a6e8a;"
                      v-tooltip.right="'Vigencia del registro SIC con comprador UNGC que pone la planta en esta modalidad'">
-                  <i class="pi pi-calendar" style="font-size: 10px;" /> {{ ventanaBolsa(p) }}
+                  <CalendarIcon class="size-[1em]" style="font-size: 10px;" /> {{ ventanaBolsa(p) }}
                 </div>
               </div>
             </div>
@@ -1103,7 +1096,7 @@
           {{ etPeriodoLabel }}
         </span>
         <span v-if="etFromCache" class="text-xs px-2 py-1 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;" title="Datos del histórico guardado en este navegador">
-          <i class="pi pi-history text-xs mr-1" />histórico local
+          <HistoryIcon class="text-xs mr-1 size-[1em]" />histórico local
         </span>
       </div>
 
@@ -1217,8 +1210,9 @@
         </div>
         <div class="flex items-center gap-2">
           <span v-if="matrizFilasCargando" class="text-xs" style="color:#7a6e8a;">Cargando contratos…</span>
-          <Button label="Exportar Excel" icon="pi pi-download" size="small" outlined
-                  :disabled="!anualMatrizData || matrizFilasCargando" @click="exportarMatrizExcel" />
+          <Button label="Exportar Excel" size="small" outlined :disabled="!anualMatrizData || matrizFilasCargando" @click="exportarMatrizExcel">
+            <template #icon><DownloadIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
       <ProgressSpinner v-if="anualMatrizLoading" />
@@ -1239,7 +1233,8 @@
               <!-- Fila contrato -->
               <tr class="cv-matriz-contrato cursor-pointer" @click="toggleMatriz(c.id)">
                 <td class="sticky-col px-3 py-1.5">
-                  <i class="pi text-xs mr-1" :class="expandedMatriz.includes(c.id) ? 'pi-chevron-down' : 'pi-chevron-right'" />
+                  <ChevronDownIcon v-if="expandedMatriz.includes(c.id)" class="text-xs mr-1 size-[1em]" />
+                  <ChevronRightIcon v-else class="text-xs mr-1 size-[1em]" />
                   <span class="font-semibold">{{ c.nombre_interno || c.numero_codigo_contrato }}</span>
                   <span class="text-xs ml-1" style="color:#7a6e8a;">{{ c.comprador_nombre }}<span v-if="c.n_plantas != null"> · {{ c.n_plantas }} pl.</span></span>
                   <span v-if="c.responsable" class="text-[10px] font-semibold px-1.5 py-0.5 rounded ml-1.5 align-middle"
@@ -1249,7 +1244,7 @@
                           : `Responsable: ${c.responsable}`">
                     {{ c.responsable }}
                   </span>
-                  <i v-if="c._loading" class="pi pi-spin pi-spinner text-xs ml-1" style="color:#915BD8;" />
+                  <LoaderCircleIcon class="text-xs ml-1 size-[1em] animate-spin" v-if="c._loading" style="color:#915BD8;" />
                 </td>
                 <td v-for="i in 12" :key="i" class="px-2 py-1.5 text-right font-mono"
                     :style="{ color: c.meses[i-1] ? estadoColor(c.meses[i-1].estado) : '#c9c0d8' }"
@@ -1370,7 +1365,7 @@
                   <tr class="be-linea" :class="{ activa: beFiltro === 'e' }" @click="beAbrirCapa('e')" :title="beTitulo('e')">
                     <td class="py-2">
                       <span class="font-medium" style="color: #2C2039;">Venta en bolsa</span>
-                      <span class="be-chip be-chip-alerta"><i class="pi pi-exclamation-triangle" /> cargos regulatorios</span>
+                      <span class="be-chip be-chip-alerta"><TriangleAlertIcon class="size-[1em]" /> cargos regulatorios</span>
                     </td>
                     <td class="text-right font-mono" style="color: #2C2039;">{{ fmtNum1(beB.ungg.venta_bolsa.real) }}</td>
                     <td class="text-right font-mono" style="color: #7a6e8a;">{{ fmtNum1(beB.ungg.venta_bolsa.proyectado) }}</td>
@@ -1383,7 +1378,7 @@
                   <tr class="be-linea" :class="{ activa: beFiltro === 'c' }" @click="beAbrirCapa('c')" :title="beTitulo('c')">
                     <td class="py-2 pl-3">
                       <span style="color: #2C2039;">· Directas — duplicados</span>
-                      <span class="be-chip be-chip-alerta"><i class="pi pi-shield" /> garantías</span>
+                      <span class="be-chip be-chip-alerta"><ShieldIcon class="size-[1em]" /> garantías</span>
                     </td>
                     <td class="text-right font-mono" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.real) }}</td>
                     <td class="text-right font-mono" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.proyectado) }}</td>
@@ -1519,7 +1514,7 @@
               </h3>
               <span v-if="beFiltro" class="text-xs px-2 py-1 rounded cursor-pointer"
                 style="background: rgba(145,91,216,0.12); color: #915BD8;" @click="beFiltro = null">
-                {{ BE_CATEGORIAS[beFiltro].label }} <i class="pi pi-times text-[10px] ml-1" />
+                {{ BE_CATEGORIAS[beFiltro].label }} <XIcon class="text-[10px] ml-1 size-[1em]" />
               </span>
             </div>
             <div class="flex flex-wrap items-center gap-2">
@@ -1527,7 +1522,7 @@
               <button @click="exportarBalanceExcel"
                 class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold"
                 style="background: #915BD8; color: #fff;">
-                <i class="pi pi-download text-xs" /> Exportar
+                <DownloadIcon class="text-xs size-[1em]" /> Exportar
               </button>
             </div>
           </div>
@@ -1882,16 +1877,16 @@
                 <div class="font-bold text-lg" style="color: #2C2039;">{{ BE_CATEGORIAS[beCapa].label }}</div>
                 <div class="text-sm mt-1" style="color: #7a6e8a;">{{ BE_AYUDA[beCapa] }}</div>
                 <span class="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(145,91,216,0.10); color: #915BD8;">
-                  <i class="pi pi-calendar text-[10px]" /> {{ MESES[beMonth - 1] }} {{ beYear }} · {{ bePeriodoLabel }}
+                  <CalendarIcon class="text-[10px] size-[1em]" /> {{ MESES[beMonth - 1] }} {{ beYear }} · {{ bePeriodoLabel }}
                 </span>
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
                 <button @click="beVerEnTabla"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
                   style="background: rgba(145,91,216,0.10); color: #915BD8;">
-                  <i class="pi pi-filter text-xs" /> Ver en la tabla
+                  <FilterIcon class="text-xs size-[1em]" /> Ver en la tabla
                 </button>
-                <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="beCerrarCapa"><i class="pi pi-times text-sm" /></button>
+                <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="beCerrarCapa"><XIcon class="text-sm size-[1em]" /></button>
               </div>
             </div>
           </div>
@@ -1996,7 +1991,7 @@
                 <div class="font-bold text-lg truncate" style="color: #2C2039;">{{ detalleCapa.c.nombre }}</div>
                 <div class="text-sm truncate" style="color: #7a6e8a;">{{ detalleCapa.c.comprador_nombre }}</div>
                 <span class="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(145,91,216,0.10); color: #915BD8;">
-                  <i class="pi pi-calendar text-[10px]" /> Período de consulta: {{ periodoSimLabel }}
+                  <CalendarIcon class="text-[10px] size-[1em]" /> Período de consulta: {{ periodoSimLabel }}
                 </span>
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
@@ -2008,10 +2003,11 @@
                   :style="copiadoCapaId === detalleCapa.c.id ? 'background: rgba(46,125,50,0.12); color: #2e7d32;' : 'background: #915BD8; color: white;'"
                   v-tooltip="'Copia la imagen al portapapeles (o la descarga si el navegador no lo permite)'"
                 >
-                  <i class="pi text-xs" :class="copiadoCapaId === detalleCapa.c.id ? 'pi-check' : 'pi-image'" />
+                  <CheckIcon v-if="copiadoCapaId === detalleCapa.c.id" class="text-xs size-[1em]" />
+                  <ImageIcon v-else class="text-xs size-[1em]" />
                   {{ copiadoCapaId === detalleCapa.c.id ? '¡Copiado!' : 'Copiar imagen' }}
                 </button>
-                <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="cerrarDetalleCapa"><i class="pi pi-times text-sm" /></button>
+                <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="cerrarDetalleCapa"><XIcon class="text-sm size-[1em]" /></button>
               </div>
             </div>
             <!-- Métricas (energía duplicada como 4ª columna si aplica) -->
@@ -2029,7 +2025,7 @@
                 <div class="font-mono text-sm font-bold mt-0.5" style="color: #2C2039;">{{ detalleCapa.res.genProy != null && detalleCapa.res.genProy > 0 ? fmtMwh(detalleCapa.res.genProy) : '—' }}</div>
               </div>
               <div v-if="detalleCapa.res.genDup > 0" v-tooltip.bottom="'De la energía entregada, esta parte se suministra con compra en bolsa (cuenta para el contrato, origen bolsa)'">
-                <div class="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide" style="color: #9a6700;"><i class="pi pi-shopping-cart" style="font-size: 9px;" />Compra en bolsa</div>
+                <div class="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide" style="color: #9a6700;"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra en bolsa</div>
                 <div class="font-mono text-sm font-bold mt-0.5" style="color: #9a6700;">{{ fmtMwh(detalleCapa.res.genDup) }}</div>
               </div>
             </div>
@@ -2050,7 +2046,7 @@
                 <tr v-for="p in detalleCapa.plantas" :key="p.id" style="border-top: 1px solid rgba(44,32,57,0.06);">
                   <td class="py-2 pr-2 font-medium" :style="p.es_duplicado ? 'color:#9a6700' : p.comprado_por_unergy ? 'color:#9a6700' : 'color:#2C2039'">
                     {{ p.nombre }}
-                    <span v-if="p.es_duplicado && !p.comprado_por_unergy" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;" v-tooltip="'Compra en bolsa'"><i class="pi pi-shopping-cart" style="font-size: 9px;" />Compra bolsa</span>
+                    <span v-if="p.es_duplicado && !p.comprado_por_unergy" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;" v-tooltip="'Compra en bolsa'"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra bolsa</span>
                     <span v-else-if="p.comprado_por_unergy" class="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.25); color: #9a6700;">Compra</span>
                   </td>
                   <td class="py-2 px-2 text-right font-mono text-xs" style="color: #7a6e8a;">{{ (p.pct_despacho * 100).toFixed(0) }}%</td>
@@ -2080,7 +2076,8 @@
             </table>
             <!-- Veredicto -->
             <div class="mt-4 flex items-start gap-2.5 rounded-xl px-4 py-3" :style="{ background: veredictoCapa(detalleCapa.res).bg }">
-              <i class="pi mt-0.5" :class="veredictoCapa(detalleCapa.res).icon" :style="{ color: veredictoCapa(detalleCapa.res).fg }" />
+              <component :is="veredictoCapa(detalleCapa.res).icon" class="mt-0.5 size-[1em]"
+                    :style="{ color: veredictoCapa(detalleCapa.res).fg }" />
               <div>
                 <div class="font-bold text-sm" :style="{ color: veredictoCapa(detalleCapa.res).fg }">{{ veredictoCapa(detalleCapa.res).txt }}</div>
                 <div v-if="veredictoCapa(detalleCapa.res).sub" class="text-xs mt-0.5" style="color: #7a6e8a;">{{ veredictoCapa(detalleCapa.res).sub }}</div>
@@ -2106,7 +2103,7 @@
               <span v-if="anualData.meses[selectedMonthIdx].tipo_datos !== 'real'" class="ml-2 text-xs px-2 py-0.5 rounded-full font-medium" style="background: rgba(145,91,216,0.12); color: #915BD8;">proyección</span>
             </div>
             <button class="rounded-lg p-1.5" style="color: #7a6e8a;" @click="selectedMonthIdx = null">
-              <i class="pi pi-times text-sm" />
+              <XIcon class="text-sm size-[1em]" />
             </button>
           </div>
           <div class="px-5 py-4">
@@ -2127,7 +2124,7 @@
                 >
                   <td class="py-2 pr-2 font-medium" style="color: #2C2039;">
                     {{ p.nombre }}
-                    <span v-if="p.es_duplicado" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;" v-tooltip="'Compra en bolsa'"><i class="pi pi-shopping-cart" style="font-size: 9px;" />Compra bolsa</span>
+                    <span v-if="p.es_duplicado" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;" v-tooltip="'Compra en bolsa'"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra bolsa</span>
                     <span v-if="p.contrato" class="ml-1 text-xs font-normal px-1.5 py-0.5 rounded" style="color: #915BD8; background: rgba(145,91,216,0.08);">{{ p.contrato }}</span>
                     <span v-if="p.dias_en_contrato && p.dias_mes && p.dias_en_contrato < p.dias_mes" class="ml-1 text-xs font-normal" style="color: #7a6e8a;">{{ p.dias_en_contrato }}/{{ p.dias_mes }} días</span>
                   </td>
@@ -2176,8 +2173,8 @@
                 <a v-if="dcPpa?.carpeta_link" :href="dcPpa.carpeta_link" target="_blank" rel="noopener"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
                   style="background: rgba(145,91,216,0.10); color: #915BD8;"
-                  v-tooltip.left="'Abrir la carpeta del contrato'"><i class="pi pi-folder-open text-xs" />Carpeta</a>
-                <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="cerrarDetalleContrato"><i class="pi pi-times text-sm" /></button>
+                  v-tooltip.left="'Abrir la carpeta del contrato'"><FolderOpenIcon class="text-xs size-[1em]" />Carpeta</a>
+                <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="cerrarDetalleContrato"><XIcon class="text-sm size-[1em]" /></button>
               </div>
             </div>
           </div>
@@ -2279,7 +2276,7 @@
                       :style="!r.es_version_vigente ? 'opacity: 0.55;' : ''">
                       <td class="px-3 py-1.5 font-medium" style="color: #2C2039;">
                         {{ r.planta_nombre || (r.proyecto_id ? `Proyecto ${r.proyecto_id}` : '—') }}
-                        <span v-if="r.es_duplicado" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;"><i class="pi pi-shopping-cart" style="font-size: 9px;" />Duplicado</span>
+                        <span v-if="r.es_duplicado" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Duplicado</span>
                         <span v-if="r.uso_del_recurso" class="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(20,184,166,0.14); color: #0f766e;">Uso del recurso</span>
                       </td>
                       <td class="px-2 py-1.5 font-mono text-xs" style="color: #7a6e8a;">{{ r.codigo_sic_contrato || '—' }}</td>
@@ -2312,7 +2309,7 @@
                     <span class="font-medium" style="color: #2C2039;">{{ p.nombre }}</span>
                     <span v-if="p.codigo_sic" class="text-xs font-mono px-1.5 py-0.5 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;">{{ p.codigo_sic }}</span>
                     <span v-if="p.pct_despacho != null" class="text-xs font-mono" style="color: #915BD8;">{{ (p.pct_despacho * 100).toFixed(0) }}%</span>
-                    <span v-if="p.es_duplicado" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;"><i class="pi pi-shopping-cart" style="font-size: 9px;" />Compra bolsa</span>
+                    <span v-if="p.es_duplicado" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra bolsa</span>
                   </div>
                   <div class="text-xs font-mono" style="color: #7a6e8a;">
                     <span v-if="p.fecha_inicio">{{ p.fecha_inicio }}</span>
@@ -2345,7 +2342,7 @@
                 Un contrato sin responsable siempre aparece.
               </div>
             </div>
-            <button class="text-sm px-2 py-1 rounded" style="color:#7a6e8a;" @click="cerrarResponsables"><i class="pi pi-times" /></button>
+            <button class="text-sm px-2 py-1 rounded" style="color:#7a6e8a;" @click="cerrarResponsables"><XIcon class="size-[1em]" /></button>
           </div>
 
           <div class="px-6 py-4 space-y-5">
@@ -2365,7 +2362,7 @@
                   <button class="text-xs px-2 py-1 rounded" :style="r.n_contratos ? 'color:#c9c0d8; cursor:not-allowed;' : 'color:#D64455;'"
                           :disabled="!!r.n_contratos" @click="borrarResponsable(r)"
                           v-tooltip.top="r.n_contratos ? 'Reasigna sus contratos primero' : 'Eliminar'">
-                    <i class="pi pi-trash" />
+                    <Trash2Icon class="size-[1em]" />
                   </button>
                 </div>
                 <div v-if="!responsables.length" class="px-3 py-4 text-sm text-center" style="color: rgba(44,32,57,0.35);">Sin responsables todavía</div>
@@ -2373,8 +2370,9 @@
               <div class="flex items-center gap-2 mt-2">
                 <InputText v-model="respNuevo" placeholder="Nueva empresa responsable…" class="text-sm flex-1"
                            @keyup.enter="crearResponsable" />
-                <Button label="Agregar" icon="pi pi-plus" size="small" outlined
-                        :disabled="!respNuevo.trim()" @click="crearResponsable" />
+                <Button label="Agregar" size="small" outlined :disabled="!respNuevo.trim()" @click="crearResponsable">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
             </div>
 
@@ -2431,6 +2429,7 @@ import Column from 'primevue/column'
 import Message from 'primevue/message'
 import ProgressSpinner from 'primevue/progressspinner'
 import client from '~/core/client'
+import { ArrowDownWideNarrowIcon, ArrowUpNarrowWideIcon, BuildingIcon, CalendarIcon, ChartColumnIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, CircleCheckIcon, CircleMinusIcon, CompassIcon, DownloadIcon, EyeIcon, EyeOffIcon, FileSpreadsheetIcon, FileTextIcon, FilterIcon, FolderOpenIcon, HistoryIcon, ImageIcon, InfoIcon, LoaderCircleIcon, LogOutIcon, MaximizeIcon, PlusIcon, RefreshCwIcon, ShieldIcon, ShoppingCartIcon, Trash2Icon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 // ── LocalStorage cache ───────────────────────────────────────────────────────
 const CACHE_PREFIX = 'cumpl_'
@@ -3915,19 +3914,19 @@ function veredictoCapa(res) {
   const proyOk = esMesActualSim.value && res.genProy != null && res.genProy > 0
   if (minDef && proyOk) {
     if (res.genProy >= res.min) {
-      return { icon: 'pi-check-circle', txt: 'Probabilidad de cumplimiento alta',
+      return { icon: CircleCheckIcon, txt: 'Probabilidad de cumplimiento alta',
         sub: `Proyección ${fmtMwh(res.genProy)} ≥ mínimo ${fmtMwh(res.min)}`,
         bg: 'rgba(46,125,50,0.10)', fg: '#2e7d32' }
     }
-    return { icon: 'pi-exclamation-triangle', txt: 'Riesgo de incumplimiento',
+    return { icon: TriangleAlertIcon, txt: 'Riesgo de incumplimiento',
       sub: `Proyección ${fmtMwh(res.genProy)} < mínimo ${fmtMwh(res.min)}`,
       bg: 'rgba(214,68,85,0.10)', fg: '#D64455' }
   }
   if (minDef) {
-    return { icon: 'pi-minus-circle', txt: 'Sin proyección del mes para evaluar',
+    return { icon: CircleMinusIcon, txt: 'Sin proyección del mes para evaluar',
       sub: `Mínimo ${fmtMwh(res.min)}`, bg: 'rgba(44,32,57,0.05)', fg: '#7a6e8a' }
   }
-  return { icon: 'pi-minus-circle', txt: 'Contrato sin energía mínima definida',
+  return { icon: CircleMinusIcon, txt: 'Contrato sin energía mínima definida',
     sub: '', bg: 'rgba(44,32,57,0.05)', fg: '#7a6e8a' }
 }
 

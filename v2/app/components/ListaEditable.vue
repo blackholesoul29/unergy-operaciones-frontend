@@ -3,13 +3,14 @@
     <span v-if="label" class="le-label">{{ label }}</span>
     <div v-for="(item, i) in modelValue" :key="i" class="le-row">
       <input :value="item" @input="setItem(i, $event.target.value)" :placeholder="placeholder" />
-      <button class="le-del" @click="quitar(i)" title="Quitar"><i class="pi pi-times" /></button>
+      <button class="le-del" @click="quitar(i)" title="Quitar"><XIcon class="size-[1em]" /></button>
     </div>
-    <button class="le-add" @click="agregar"><i class="pi pi-plus" /> Agregar</button>
+    <button class="le-add" @click="agregar"><PlusIcon class="size-[1em]" /> Agregar</button>
   </div>
 </template>
 
 <script setup>
+import { PlusIcon, XIcon } from '@lucide/vue'
 const props = defineProps({
   modelValue: { type: Array, default: () => [] },
   label: { type: String, default: '' },

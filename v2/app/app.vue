@@ -1,18 +1,7 @@
 <script setup lang="ts">
-import type { ToastMessageOptions } from 'primevue/toast'
 import PrimeConfirmDialog from 'primevue/confirmdialog'
-import PrimeToast from 'primevue/toast'
-import { useToast } from 'primevue/usetoast'
 import { APP_BRANDING } from '~/config/app'
-
-// MIGRACIÓN — Fase 1: el interceptor de axios del legacy (`~/core/client`)
-// avisa de los 403 a través de `window.__primeToast`, porque no puede usar el
-// composable de PrimeVue fuera de un componente. Se publica aquí, igual que hacía
-// `legacy/src/App.vue`. Sale con el interceptor, en la fase 3.
-const primeToast = useToast()
-onMounted(() => {
-  window.__primeToast = (opts: ToastMessageOptions) => primeToast.add(opts)
-})
+import { TriangleAlertIcon } from '@lucide/vue'
 
 // Fallback title/description: a page with its own `useHead` overrides this.
 useHead({
@@ -41,12 +30,14 @@ useHead({
       <NuxtPage />
     </NuxtLayout>
 
-    <Toaster />
+    <!-- `position` y `rich-colors` reproducen el Toast de PrimeVue que había aquí:
+         arriba a la derecha y con color por severidad. -->
+    <Toaster position="top-right" rich-colors close-button />
 
-    <!-- MIGRACIÓN — Fase 1: montados a nivel global igual que en `legacy/src/App.vue`.
-         Salen en la fase 3, cuando `useToast`/`useConfirm` pasen a vue-sonner y
-         AlertDialog. -->
-    <PrimeToast position="top-right" />
-    <PrimeConfirmDialog />
+    <!-- MIGRACIÓN — Fase 1: montado a nivel global igual que en `legacy/src/App.vue`.
+         Sale en la fase 3, cuando `useConfirm` pase a AlertDialog. -->
+    <PrimeConfirmDialog>
+      <template #icon><TriangleAlertIcon class="size-8 shrink-0" /></template>
+    </PrimeConfirmDialog>
   </div>
 </template>

@@ -2,12 +2,14 @@
   <div class="space-y-4">
     <PageHeader title="Operadores de Red" :subtitle="`${operadores.length} operadores · catálogo y correos de contacto para el reporte CGM`">
       <template #actions>
-        <Button icon="pi pi-plus" label="Nuevo Operador" size="small" @click="abrirCrear" />
+        <Button label="Nuevo Operador" size="small" @click="abrirCrear">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
     </div>
 
     <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
@@ -40,10 +42,12 @@
         </Column>
         <Column header="" style="width: 100px">
           <template #body="{ data }">
-            <Button icon="pi pi-pencil" text rounded size="small" v-tooltip.top="'Editar nombre'"
-              @click="abrirEditar(data)" />
-            <Button icon="pi pi-eye" text rounded size="small" v-tooltip.top="'Ver detalle'"
-              @click="$router.push(`/mem/operadores-red/${data.id}`)" />
+            <Button text rounded size="small" v-tooltip.top="'Editar nombre'" @click="abrirEditar(data)">
+              <template #icon><PencilIcon class="size-[1em]" /></template>
+            </Button>
+            <Button text rounded size="small" v-tooltip.top="'Ver detalle'" @click="$router.push(`/mem/operadores-red/${data.id}`)">
+              <template #icon><EyeIcon class="size-[1em]" /></template>
+            </Button>
           </template>
         </Column>
       </DataTable>
@@ -97,15 +101,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import api from '~/core/client'
+import { EyeIcon, LoaderCircleIcon, PencilIcon, PlusIcon } from '@lucide/vue'
 
-const toast = useToast()
 const operadores = ref([])
 const loading = ref(true)
 
@@ -158,11 +162,9 @@ async function _crearContactoSiAplica(operadorId) {
     })
   } catch (e) {
     const detail = e.response?.data?.detail
-    toast.add({
-      severity: 'warn',
-      summary: 'Operador creado, pero el contacto no se pudo agregar',
-      detail: typeof detail === 'string' ? detail : 'Revísalo desde el detalle del operador',
-      life: 5000,
+    toast.warning('Operador creado, pero el contacto no se pudo agregar', {
+      description: typeof detail === 'string' ? detail : 'Revísalo desde el detalle del operador',
+      duration: 5000,
     })
   }
 }
@@ -176,11 +178,11 @@ async function guardar() {
   try {
     if (editingId.value) {
       await api.patch(`/operadores-red/${editingId.value}`, body)
-      toast.add({ severity: 'success', summary: 'Operador actualizado', life: 2000 })
+      toast.success('Operador actualizado', { duration: 2000 })
     } else {
       const { data } = await api.post('/operadores-red', body)
       await _crearContactoSiAplica(data.id)
-      toast.add({ severity: 'success', summary: 'Operador creado', life: 2000 })
+      toast.success('Operador creado', { duration: 2000 })
     }
     showForm.value = false
     await loadData()
@@ -194,7 +196,10 @@ async function guardar() {
       duplicadoVisible.value = true
       return
     }
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo guardar', life: 4000 })
+    toast.error('Error', {
+      description: typeof detail === 'string' ? detail : 'No se pudo guardar',
+      duration: 4000,
+    })
   } finally {
     saving.value = false
   }
@@ -205,13 +210,16 @@ async function guardarForzado() {
   try {
     const { data } = await api.post('/operadores-red', pendingBody.value, { params: { forzar: true } })
     await _crearContactoSiAplica(data.id)
-    toast.add({ severity: 'success', summary: 'Operador creado', life: 2000 })
+    toast.success('Operador creado', { duration: 2000 })
     duplicadoVisible.value = false
     showForm.value = false
     await loadData()
   } catch (e) {
     const detail = e.response?.data?.detail
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo crear', life: 4000 })
+    toast.error('Error', {
+      description: typeof detail === 'string' ? detail : 'No se pudo crear',
+      duration: 4000,
+    })
   } finally {
     forzando.value = false
   }

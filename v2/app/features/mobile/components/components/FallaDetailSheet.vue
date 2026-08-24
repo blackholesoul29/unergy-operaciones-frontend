@@ -11,8 +11,8 @@
               <code class="fd-code">{{ fa.codigo_interno }}</code>
               <span class="fd-type">{{ titulo }}</span>
             </div>
-            <span v-if="saving" class="fd-saving"><i class="pi pi-spin pi-spinner" /></span>
-            <button class="fd-close" @click="close"><i class="pi pi-times" /></button>
+            <span v-if="saving" class="fd-saving"><LoaderCircleIcon class="size-[1em] animate-spin" /></span>
+            <button class="fd-close" @click="close"><XIcon class="size-[1em]" /></button>
           </div>
 
           <div class="fd-body">
@@ -22,7 +22,7 @@
             <div v-if="clasif" class="fd-clasif">
               <div class="fd-clasif-head">
                 <span class="fd-clasif-cat" :style="{ background: clasif.categoriaColor + '1a', color: clasif.categoriaColor }">
-                  <i :class="clasif.icono" /> {{ clasif.categoriaEtiqueta }}
+                  <component :is="clasif.icono" class="size-[1em]" /> {{ clasif.categoriaEtiqueta }}
                 </span>
                 <span v-if="clasif.subtitulo" class="fd-clasif-sub">{{ clasif.subtitulo }}</span>
                 <span v-if="clasif.pendienteReclasificar" class="fd-clasif-pend">Pendiente reclasificar</span>
@@ -44,7 +44,7 @@
               <div v-if="clasif.inversores.length" class="fd-inv-list">
                 <div v-for="(inv, idx) in clasif.inversores" :key="idx" class="fd-inv">
                   <div class="fd-inv-top">
-                    <i class="pi pi-server" />
+                    <ServerIcon class="size-[1em]" />
                     <b>{{ inv.nombre }}</b>
                     <span v-if="inv.potenciaKw != null" class="fd-inv-pot">{{ inv.potenciaKw }} kW</span>
                   </div>
@@ -111,7 +111,7 @@
                     <option v-for="e in catalogos.estados" :key="e.id" :value="e.id">→ {{ e.etiqueta }}</option>
                   </select>
                   <button class="fd-send" :disabled="addingSeg || (!nota.trim() && !notaEstadoId)" @click="agregarSeg">
-                    <i v-if="addingSeg" class="pi pi-spin pi-spinner" /><i v-else class="pi pi-send" />
+                    <LoaderCircleIcon class="size-[1em] animate-spin" v-if="addingSeg" /><SendIcon class="size-[1em]" v-else />
                   </button>
                 </div>
               </div>
@@ -128,10 +128,10 @@
 
           <!-- Acción principal -->
           <button v-if="!fa.estado?.es_estado_final" class="fd-resolve" :disabled="saving" @click="resolver">
-            <i class="pi pi-check-circle" /> Marcar resuelta
+            <CircleCheckIcon class="size-[1em]" /> Marcar resuelta
           </button>
           <button v-else class="fd-reopen" :disabled="saving" @click="reabrir">
-            <i class="pi pi-replay" /> Reabrir falla
+            <RotateCcwIcon class="size-[1em]" /> Reabrir falla
           </button>
         </div>
       </div>
@@ -143,6 +143,8 @@
 import { ref, computed, watch } from 'vue'
 import { tituloFalla, clasificacionDetalle } from '~/utils/fallaTitulo'
 import api from '~/core/client'
+import { CircleCheckIcon, LoaderCircleIcon, RotateCcwIcon, SendIcon, ServerIcon, XIcon } from '@lucide/vue'
+import { toast } from 'vue-sonner'
 
 const props = defineProps({
   open:      { type: Boolean, default: false },
@@ -209,7 +211,7 @@ async function cambiar(payload) {
     fa.value = data
     emit('updated', data)
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'No se pudo guardar', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('No se pudo guardar', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     saving.value = false
   }
@@ -227,9 +229,9 @@ async function agregarSeg() {
     notaEstadoId.value = null
     await refrescar()
     emit('updated', fa.value)
-    window.__primeToast?.({ severity: 'success', summary: 'Seguimiento agregado', life: 2000 })
+    toast.success('Seguimiento agregado', { duration: 2000 })
   } catch (e) {
-    window.__primeToast?.({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: e.response?.data?.detail, duration: 3000 })
   } finally {
     addingSeg.value = false
   }
@@ -237,9 +239,9 @@ async function agregarSeg() {
 
 async function resolver() {
   const final = (props.catalogos.estados || []).find((e) => e.es_estado_final)
-  if (!final) { window.__primeToast?.({ severity: 'warn', summary: 'Sin estado final configurado', life: 3000 }); return }
+  if (!final) { toast.warning('Sin estado final configurado', { duration: 3000 }); return }
   await cambiar({ estado_id: final.id, fecha_resolucion: new Date().toISOString() })
-  window.__primeToast?.({ severity: 'success', summary: 'Falla resuelta', life: 2500 })
+  toast.success('Falla resuelta', { duration: 2500 })
 }
 
 async function reabrir() {
@@ -283,7 +285,7 @@ async function reabrir() {
 .fd-inv-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .fd-inv { border: 1px solid #eee6fa; border-radius: 11px; padding: 10px 12px; background: #fff; }
 .fd-inv-top { display: flex; align-items: center; gap: 7px; font-size: 14px; color: #2C2039; }
-.fd-inv-top .pi { color: #915BD8; font-size: 12px; }
+.fd-inv-top svg { color: #915BD8; font-size: 12px; }
 .fd-inv-pot { color: #9b8db5; font-size: 12.5px; font-weight: 600; }
 .fd-inv-tipos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .fd-inv-tag { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 7px; background: #915BD81a; color: #6E3FB8; }

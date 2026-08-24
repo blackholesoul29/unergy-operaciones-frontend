@@ -3,24 +3,24 @@
     <!-- Coordinador y técnico no tienen acceso a generación/resumen -->
     <template v-if="rol === 'coordinador' || rol === 'tecnico'">
       <RouterLink :to="fallasPath" class="mtb-item" active-class="mtb-item--active">
-        <i class="pi pi-wrench" /><span>Fallas</span>
+        <WrenchIcon class="size-[1em]" /><span>Fallas</span>
       </RouterLink>
       <button class="mtb-item mtb-item--logout" @click="logout">
-        <i class="pi pi-sign-out" /><span>Salir</span>
+        <LogOutIcon class="size-[1em]" /><span>Salir</span>
       </button>
     </template>
     <template v-else>
       <RouterLink to="/m/solar" class="mtb-item" active-class="mtb-item--active">
-        <i class="pi pi-sun" /><span>Generación</span>
+        <SunIcon class="size-[1em]" /><span>Generación</span>
       </RouterLink>
       <RouterLink to="/m/fallas" class="mtb-item" active-class="mtb-item--active">
-        <i class="pi pi-wrench" /><span>Fallas</span>
+        <WrenchIcon class="size-[1em]" /><span>Fallas</span>
       </RouterLink>
       <RouterLink to="/m/reporte-cgm" class="mtb-item" active-class="mtb-item--active">
-        <i class="pi pi-envelope" /><span>CGM</span>
+        <MailIcon class="size-[1em]" /><span>CGM</span>
       </RouterLink>
       <RouterLink to="/m/resumen" class="mtb-item" active-class="mtb-item--active">
-        <i class="pi pi-chart-bar" /><span>Resumen</span>
+        <ChartColumnIcon class="size-[1em]" /><span>Resumen</span>
       </RouterLink>
     </template>
   </nav>
@@ -30,6 +30,7 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
+import { ChartColumnIcon, LogOutIcon, MailIcon, SunIcon, WrenchIcon } from '@lucide/vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -53,6 +54,6 @@ function logout() {
   gap: 3px; padding: 9px 0 7px; text-decoration: none;
   color: #9b8db5; font-size: 11px; font-weight: 600;
 }
-.mtb-item .pi { font-size: 20px; }
+.mtb-item svg { font-size: 20px; }
 .mtb-item--active { color: #915BD8; }
 </style>

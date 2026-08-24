@@ -3,14 +3,14 @@
 
     <!-- ══ TAB BAR (fuera del sticky) ═══════════════════════════════════ -->
     <div class="mon-tab-bar">
-      <i class="pi pi-bolt text-sm" style="color:#915BD8" />
+      <ZapIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Gestión de Fallas</span>
       <div class="mon-tab-group">
         <button v-for="(tab, i) in TABS" :key="i"
           class="mon-tab"
           :class="{ 'mon-tab--active': activeTab === i }"
           @click="activeTab = i">
-          <i :class="tab.icon" style="font-size:12px" />
+          <component :is="tab.icon" class="size-[1em]" style="font-size:12px" />
           {{ tab.label }}
         </button>
       </div>
@@ -38,16 +38,19 @@
           </div>
 
           <div class="gf-topbar-actions">
-            <Button icon="pi pi-refresh" outlined size="small" :loading="loading" @click="cargar"
-              v-tooltip.bottom="'Actualizar'" />
-            <Button label="Nueva falla" icon="pi pi-plus" size="small" @click="abrirCrear" />
+            <Button outlined size="small" :loading="loading" @click="cargar" v-tooltip.bottom="'Actualizar'">
+              <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+            </Button>
+            <Button label="Nueva falla" size="small" @click="abrirCrear">
+              <template #icon><PlusIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
 
         <!-- ── Toolbar ── -->
         <div class="gf-toolbar">
           <IconField class="flex-1 min-w-[200px] max-w-sm">
-            <InputIcon class="pi pi-search text-xs" />
+            <InputIcon><SearchIcon class="text-xs size-[1em]" /></InputIcon>
             <InputText ref="searchInputRef" v-model="search"
               placeholder="Buscar por código, descripción, proyecto, tipo..."
               class="w-full" size="small" />
@@ -62,8 +65,9 @@
             showButtonBar class="w-28" size="small" />
           <DatePicker v-model="filtroFechaHasta" placeholder="Hasta" dateFormat="yy-mm-dd"
             showButtonBar class="w-28" size="small" />
-          <Button v-if="hayFiltros" icon="pi pi-times" text size="small" severity="secondary"
-            @click="limpiarFiltros" v-tooltip.bottom="'Limpiar filtros'" />
+          <Button v-if="hayFiltros" text size="small" severity="secondary" @click="limpiarFiltros" v-tooltip.bottom="'Limpiar filtros'">
+            <template #icon><XIcon class="size-[1em]" /></template>
+          </Button>
           <span class="ml-auto text-[11px] text-gray-500 whitespace-nowrap" v-if="!loading">
             {{ filtradas.length }} / {{ porBucket.length }}
           </span>
@@ -83,7 +87,7 @@
               </span>
             </div>
             <div v-if="!filtradas.length" class="gf-compact-empty">
-              <i class="pi pi-inbox text-2xl mb-2" />
+              <InboxIcon class="text-2xl mb-2 size-[1em]" />
               <p class="text-xs">Sin resultados</p>
             </div>
             <div v-else class="gf-compact-list">
@@ -109,12 +113,14 @@
           <!-- ══ TABLA (oculta cuando hay panel en lg+) ════════════════ -->
           <div :class="['gf-table-wrap', drawerVisible && 'lg:!hidden']">
             <div v-if="error" class="p-6 flex items-center gap-3 text-red-600">
-              <i class="pi pi-exclamation-circle text-xl" />
+              <CircleAlertIcon class="text-xl size-[1em]" />
               <div class="flex-1">
                 <div class="font-semibold">Error al cargar</div>
                 <div class="text-sm text-gray-500">{{ error }}</div>
               </div>
-              <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="cargar" />
+              <Button label="Reintentar" outlined size="small" @click="cargar">
+                <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+              </Button>
             </div>
             <DataTable v-else :value="filtradas" :loading="loading" rowHover stripedRows
               size="small" class="gf-table text-xs" :rows="25" paginator
@@ -123,13 +129,15 @@
               :rowClass="rowClass" scrollable>
               <template #empty>
                 <div class="flex flex-col items-center py-14 gap-2 text-gray-400">
-                  <i :class="bucketActual.icon + ' text-4xl'" :style="{ color: bucketActual.color }" />
+                  <component :is="bucketActual.icon" class="text-4xl size-[1em]" :style="{ color: bucketActual.color }" />
                   <p class="text-sm font-semibold text-gray-700">{{ emptyTitulo }}</p>
                   <p class="text-xs">{{ emptySubtitulo }}</p>
-                  <Button v-if="bucket === 'activas' && !hayFiltros" label="Registrar primera falla"
-                    icon="pi pi-plus" outlined size="small" class="mt-2" @click="abrirCrear" />
-                  <Button v-else-if="hayFiltros" label="Limpiar filtros" icon="pi pi-times" text size="small"
-                    class="mt-2" @click="limpiarFiltros" />
+                  <Button v-if="bucket === 'activas' && !hayFiltros" label="Registrar primera falla" outlined size="small" class="mt-2" @click="abrirCrear">
+                    <template #icon><PlusIcon class="size-[1em]" /></template>
+                  </Button>
+                  <Button v-else-if="hayFiltros" label="Limpiar filtros" text size="small" class="mt-2" @click="limpiarFiltros">
+                    <template #icon><XIcon class="size-[1em]" /></template>
+                  </Button>
                 </div>
               </template>
 
@@ -161,7 +169,7 @@
                           class="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
                           style="background: rgba(234,88,12,0.12); color: #ea580c;"
                           v-tooltip.top="`${recurrencias(data)}× mismo tipo en este proyecto`">
-                          <i class="pi pi-replay" style="font-size:9px" />{{ recurrencias(data) }}×
+                          <RotateCcwIcon class="size-[1em]" style="font-size:9px" />{{ recurrencias(data) }}×
                         </span>
                       </div>
                       <div class="text-xs text-gray-500 line-clamp-1">{{ data.descripcion }}</div>
@@ -215,13 +223,15 @@
               <Column header="" style="width:120px">
                 <template #body="{ data }">
                   <div class="row-actions" @click.stop>
-                    <Button v-if="!data.estado?.es_estado_final" icon="pi pi-check-circle"
-                      text rounded size="small" severity="success"
-                      @click="quickResolve(data)" v-tooltip.left="'Marcar resuelta'" />
-                    <Button icon="pi pi-pencil" text rounded size="small" severity="info"
-                      @click="abrirEditar(data)" v-tooltip.left="'Editar'" />
-                    <Button icon="pi pi-arrow-right" text rounded size="small" severity="secondary"
-                      @click="abrirDrawer(data)" v-tooltip.left="'Ver detalle'" />
+                    <Button v-if="!data.estado?.es_estado_final" text rounded size="small" severity="success" @click="quickResolve(data)" v-tooltip.left="'Marcar resuelta'">
+                      <template #icon><CircleCheckIcon class="size-[1em]" /></template>
+                    </Button>
+                    <Button text rounded size="small" severity="info" @click="abrirEditar(data)" v-tooltip.left="'Editar'">
+                      <template #icon><PencilIcon class="size-[1em]" /></template>
+                    </Button>
+                    <Button text rounded size="small" severity="secondary" @click="abrirDrawer(data)" v-tooltip.left="'Ver detalle'">
+                      <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+                    </Button>
                   </div>
                 </template>
               </Column>
@@ -239,8 +249,9 @@
 
             <!-- Header panel -->
             <div class="gf-drawer-header">
-              <Button icon="pi pi-times" text rounded size="small" @click="drawerVisible = false"
-                v-tooltip.bottom="'Cerrar (Esc)'" />
+              <Button text rounded size="small" @click="drawerVisible = false" v-tooltip.bottom="'Cerrar (Esc)'">
+                <template #icon><XIcon class="size-[1em]" /></template>
+              </Button>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
                   <code class="font-mono text-sm text-purple-700 bg-purple-50 px-2 py-0.5 rounded">{{ drawerFalla.codigo_interno }}</code>
@@ -251,15 +262,18 @@
                   </span>
                 </div>
               </div>
-              <Button icon="pi pi-chevron-left" text rounded size="small" severity="secondary"
-                :disabled="navIndex <= 0" @click="navegar(-1)" v-tooltip.bottom="'Anterior (←)'" />
-              <Button icon="pi pi-chevron-right" text rounded size="small" severity="secondary"
-                :disabled="navIndex < 0 || navIndex >= filtradas.length - 1" @click="navegar(1)"
-                v-tooltip.bottom="'Siguiente (→)'" />
-              <Button icon="pi pi-external-link" text rounded size="small" severity="secondary"
-                @click="router.push(`/fallas/${drawerFalla.id}`)" v-tooltip.bottom="'Abrir página completa'" />
-              <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-                @click="confirmDelete(drawerFalla)" v-tooltip.bottom="'Eliminar'" />
+              <Button text rounded size="small" severity="secondary" :disabled="navIndex <= 0" @click="navegar(-1)" v-tooltip.bottom="'Anterior (←)'">
+                <template #icon><ChevronLeftIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text rounded size="small" severity="secondary" :disabled="navIndex < 0 || navIndex >= filtradas.length - 1" @click="navegar(1)" v-tooltip.bottom="'Siguiente (→)'">
+                <template #icon><ChevronRightIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text rounded size="small" severity="secondary" @click="router.push(`/fallas/${drawerFalla.id}`)" v-tooltip.bottom="'Abrir página completa'">
+                <template #icon><ExternalLinkIcon class="size-[1em]" /></template>
+              </Button>
+              <Button text rounded size="small" severity="danger" @click="confirmDelete(drawerFalla)" v-tooltip.bottom="'Eliminar'">
+                <template #icon><Trash2Icon class="size-[1em]" /></template>
+              </Button>
             </div>
 
             <!-- Body drawer -->
@@ -285,8 +299,7 @@
               <!-- ── EQUIPO QUE FALLÓ / CLASIFICACIÓN ──────────────────── -->
               <section class="gf-section">
                 <header class="gf-section-head">
-                  <i :class="clasifDrawer ? clasifDrawer.icono : 'pi pi-server'" class="gf-section-icon"
-                    :style="clasifDrawer ? { color: clasifDrawer.categoriaColor } : {}" />
+                  <component :is="clasifDrawer ? clasifDrawer.icono : ServerIcon" class="gf-section-icon size-[1em]" :style="clasifDrawer ? { color: clasifDrawer.categoriaColor } : {}" />
                   <h3 class="gf-section-title">Equipo / clasificación</h3>
                 </header>
 
@@ -300,11 +313,13 @@
                   <!-- Frontera: flags de medición / comunicación -->
                   <div v-if="clasifDrawer.frontera" class="flex flex-wrap gap-2 mt-3">
                     <span class="gf-flag" :class="clasifDrawer.frontera.afectaMedicion ? 'gf-flag--bad' : 'gf-flag--ok'">
-                      <i :class="clasifDrawer.frontera.afectaMedicion ? 'pi pi-times-circle' : 'pi pi-check-circle'" />
+                      <CircleXIcon v-if="clasifDrawer.frontera.afectaMedicion" class="size-[1em]" />
+                      <CircleCheckIcon v-else class="size-[1em]" />
                       {{ clasifDrawer.frontera.afectaMedicion ? 'Afecta la medición' : 'No afecta la medición' }}
                     </span>
                     <span class="gf-flag" :class="clasifDrawer.frontera.perdidaComunicacion ? 'gf-flag--warn' : 'gf-flag--ok'">
-                      <i :class="clasifDrawer.frontera.perdidaComunicacion ? 'pi pi-wifi' : 'pi pi-check-circle'" />
+                      <WifiIcon v-if="clasifDrawer.frontera.perdidaComunicacion" class="size-[1em]" />
+                      <CircleCheckIcon v-else class="size-[1em]" />
                       {{ clasifDrawer.frontera.perdidaComunicacion ? 'Pérdida de comunicación' : 'Comunicación OK' }}
                     </span>
                   </div>
@@ -322,7 +337,7 @@
                     <p class="gf-subhead">Inversores afectados ({{ clasifDrawer.inversores.length }})</p>
                     <div v-for="(inv, idx) in clasifDrawer.inversores" :key="idx" class="gf-inv">
                       <div class="gf-inv-top">
-                        <i class="pi pi-server" />
+                        <ServerIcon class="size-[1em]" />
                         <span class="gf-inv-name">{{ inv.nombre }}</span>
                         <span v-if="inv.potenciaKw != null" class="gf-inv-pot">· {{ inv.potenciaKw }} kW</span>
                       </div>
@@ -342,7 +357,7 @@
                     <span class="gf-clasif-sub">{{ drawerFalla.tipo?.etiqueta || drawerFalla.tipo_libre || 'Sin clasificación' }}</span>
                   </div>
                   <p class="gf-legacy-note">
-                    <i class="pi pi-info-circle" />
+                    <InfoIcon class="size-[1em]" />
                     Registrada sin desglose específico por equipo/inversor. Las fallas nuevas capturan el detalle (p. ej. inversor afectado y tipo de falla).
                   </p>
                 </template>
@@ -351,41 +366,41 @@
               <!-- ── FECHAS Y TIEMPOS ──────────────────────────────────── -->
               <section class="gf-section">
                 <header class="gf-section-head">
-                  <i class="pi pi-calendar gf-section-icon" />
+                  <CalendarIcon class="gf-section-icon size-[1em]" />
                   <h3 class="gf-section-title">Fechas y tiempos</h3>
                 </header>
                 <dl class="gf-facts gf-facts--flush">
                   <div class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-calendar-plus" /> Identificada</dt>
+                    <dt class="gf-fact-label"><CalendarPlusIcon class="size-[1em]" /> Identificada</dt>
                     <dd class="gf-fact-value">
                       {{ fmtFecha(drawerFalla.fecha_identificacion) }}<span v-if="drawerFalla.hora_identificacion"> · {{ String(drawerFalla.hora_identificacion).slice(0,5) }}</span>
                       <span class="text-gray-500">· {{ relativeTime(drawerFalla.fecha_identificacion) }}</span>
                     </dd>
                   </div>
                   <div v-if="drawerFalla.fecha_ocurrencia" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-clock" /> Ocurrencia</dt>
+                    <dt class="gf-fact-label"><ClockIcon class="size-[1em]" /> Ocurrencia</dt>
                     <dd class="gf-fact-value">{{ fmtFechaHora(drawerFalla.fecha_ocurrencia) }}</dd>
                   </div>
                   <div v-if="drawerFalla.fecha_programada" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-calendar" /> Programada</dt>
+                    <dt class="gf-fact-label"><CalendarIcon class="size-[1em]" /> Programada</dt>
                     <dd class="gf-fact-value">{{ fmtFecha(drawerFalla.fecha_programada) }}</dd>
                   </div>
                   <div v-if="drawerFalla.fecha_resolucion" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-check-circle" /> Resuelta</dt>
+                    <dt class="gf-fact-label"><CircleCheckIcon class="size-[1em]" /> Resuelta</dt>
                     <dd class="gf-fact-value text-emerald-700 font-semibold">{{ fmtFechaHora(drawerFalla.fecha_resolucion) }}</dd>
                   </div>
                   <div v-if="drawerFalla.dias_abierta != null" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-hourglass" /> Días abierta</dt>
+                    <dt class="gf-fact-label"><HourglassIcon class="size-[1em]" /> Días abierta</dt>
                     <dd class="gf-fact-value">
                       <span class="dias-badge" :class="diasClass(drawerFalla)">{{ drawerFalla.dias_abierta }}d</span>
                     </dd>
                   </div>
                   <div v-if="drawerFalla.tiempo_afectacion_horas != null" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-stopwatch" /> Tiempo de afectación</dt>
+                    <dt class="gf-fact-label"><TimerIcon class="size-[1em]" /> Tiempo de afectación</dt>
                     <dd class="gf-fact-value" style="color:#b45309;font-weight:600">{{ fmtHoras(drawerFalla.tiempo_afectacion_horas) }}</dd>
                   </div>
                   <div v-if="tiempoEnEstadoActual && !drawerFalla.estado?.es_estado_final" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-stopwatch" /> En estado actual</dt>
+                    <dt class="gf-fact-label"><TimerIcon class="size-[1em]" /> En estado actual</dt>
                     <dd class="gf-fact-value">{{ tiempoEnEstadoActual }}</dd>
                   </div>
                 </dl>
@@ -394,44 +409,44 @@
               <!-- ── GESTIÓN E IMPACTO ─────────────────────────────────── -->
               <section class="gf-section">
                 <header class="gf-section-head">
-                  <i class="pi pi-briefcase gf-section-icon" />
+                  <BriefcaseIcon class="gf-section-icon size-[1em]" />
                   <h3 class="gf-section-title">Gestión e impacto</h3>
                 </header>
                 <dl class="gf-facts gf-facts--flush">
                   <div class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-building" /> Proyecto</dt>
+                    <dt class="gf-fact-label"><BuildingIcon class="size-[1em]" /> Proyecto</dt>
                     <dd class="gf-fact-value">{{ drawerFalla.proyecto?.nombre_comercial || '—' }}</dd>
                   </div>
                   <div class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-user-edit" /> Registrado por</dt>
+                    <dt class="gf-fact-label"><UserPenIcon class="size-[1em]" /> Registrado por</dt>
                     <dd class="gf-fact-value">{{ drawerFalla.registrado_por?.nombre || '—' }}</dd>
                   </div>
                   <div class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-user" /> Asignado a</dt>
+                    <dt class="gf-fact-label"><UserIcon class="size-[1em]" /> Asignado a</dt>
                     <dd class="gf-fact-value">{{ drawerFalla.asignado_a?.nombre || 'Sin asignar' }}</dd>
                   </div>
                   <div v-if="drawerFalla.resolucion" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-wrench" /> Resolución</dt>
+                    <dt class="gf-fact-label"><WrenchIcon class="size-[1em]" /> Resolución</dt>
                     <dd class="gf-fact-value font-medium text-emerald-700">{{ drawerFalla.resolucion.etiqueta }}</dd>
                   </div>
                   <div v-if="drawerFalla.kwh_perdidos_estimado != null" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-bolt" /> Energía perdida</dt>
+                    <dt class="gf-fact-label"><ZapIcon class="size-[1em]" /> Energía perdida</dt>
                     <dd class="gf-fact-value text-red-700 font-semibold">
                       {{ Number(drawerFalla.kwh_perdidos_estimado).toLocaleString('es-CO') }} kWh
                     </dd>
                   </div>
                   <div v-if="drawerFalla.impacto_economico_cop != null" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-dollar" /> Impacto económico</dt>
+                    <dt class="gf-fact-label"><DollarSignIcon class="size-[1em]" /> Impacto económico</dt>
                     <dd class="gf-fact-value text-red-700 font-semibold">{{ fmtCOP(drawerFalla.impacto_economico_cop) }}</dd>
                   </div>
                   <div v-if="recurrencias(drawerFalla) > 1" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-replay" style="color:#ea580c" /> Reincidencia</dt>
+                    <dt class="gf-fact-label"><RotateCcwIcon class="size-[1em]" style="color:#ea580c" /> Reincidencia</dt>
                     <dd class="gf-fact-value font-semibold" style="color:#ea580c">
                       {{ recurrencias(drawerFalla) }}× mismo tipo en este proyecto
                     </dd>
                   </div>
                   <div v-if="origenFalla" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-bell" /> Origen</dt>
+                    <dt class="gf-fact-label"><BellIcon class="size-[1em]" /> Origen</dt>
                     <dd class="gf-fact-value">{{ origenFalla }}</dd>
                   </div>
                 </dl>
@@ -442,13 +457,13 @@
                 <!-- Quick edit con autosave -->
                 <section class="gf-section gf-section--filled">
                   <header class="gf-section-head">
-                    <i class="pi pi-bolt gf-section-icon" />
+                    <ZapIcon class="gf-section-icon size-[1em]" />
                     <h3 class="gf-section-title">Edición rápida</h3>
                     <span v-if="savingQuick" class="gf-save-flag">
-                      <i class="pi pi-spin pi-spinner" /> Guardando…
+                      <LoaderCircleIcon class="size-[1em] animate-spin" /> Guardando…
                     </span>
                     <span v-else-if="savedFlash" class="gf-save-flag gf-save-flag--ok">
-                      <i class="pi pi-check" /> Guardado
+                      <CheckIcon class="size-[1em]" /> Guardado
                     </span>
                   </header>
                   <div class="space-y-2">
@@ -470,7 +485,7 @@
                 <!-- SLA -->
                 <section class="gf-section gf-section--filled">
                   <header class="gf-section-head">
-                    <i class="pi pi-clock gf-section-icon" />
+                    <ClockIcon class="gf-section-icon size-[1em]" />
                     <h3 class="gf-section-title">SLA</h3>
                     <Tag v-if="drawerFalla.sla_limite_horas" class="ml-auto"
                       :value="slaText(drawerFalla)" :severity="slaSeverity(drawerFalla)" />
@@ -491,7 +506,7 @@
 
               <!-- ── ACCIÓN SUGERIDA ────────────────────────────────── -->
               <aside v-if="drawerFalla.tipo?.accion_sugerida" class="gf-suggestion">
-                <div class="gf-suggestion-icon"><i class="pi pi-lightbulb" /></div>
+                <div class="gf-suggestion-icon"><LightbulbIcon class="size-[1em]" /></div>
                 <div>
                   <p class="gf-suggestion-label">Acción sugerida</p>
                   <p class="gf-suggestion-text">{{ drawerFalla.tipo.accion_sugerida }}</p>
@@ -501,7 +516,7 @@
               <!-- ── ANÁLISIS ───────────────────────────────────────── -->
               <section v-if="drawerFalla.causa_raiz || drawerFalla.acciones_correctivas" class="gf-section">
                 <header class="gf-section-head">
-                  <i class="pi pi-search gf-section-icon" />
+                  <SearchIcon class="gf-section-icon size-[1em]" />
                   <h3 class="gf-section-title">Análisis</h3>
                 </header>
                 <div class="space-y-3">
@@ -519,7 +534,7 @@
               <!-- ── SEGUIMIENTOS ───────────────────────────────────── -->
               <section class="gf-section">
                 <header class="gf-section-head">
-                  <i class="pi pi-comments gf-section-icon" />
+                  <MessagesSquareIcon class="gf-section-icon size-[1em]" />
                   <h3 class="gf-section-title">Seguimientos</h3>
                   <span class="gf-section-count">{{ drawerFalla.seguimientos?.length || 0 }}</span>
                 </header>
@@ -532,9 +547,9 @@
                     <Select v-model="nuevaNota.estado_id" :options="catalogos.estados"
                       optionLabel="etiqueta" optionValue="id" placeholder="Cambiar estado (opcional)"
                       showClear class="flex-1" />
-                    <Button label="Agregar" icon="pi pi-send" size="small"
-                      :disabled="!nuevaNota.nota.trim() && !nuevaNota.estado_id"
-                      :loading="addingSeg" @click="agregarSeguimiento" />
+                    <Button label="Agregar" size="small" :disabled="!nuevaNota.nota.trim() && !nuevaNota.estado_id" :loading="addingSeg" @click="agregarSeguimiento">
+                      <template #icon><SendIcon class="size-[1em]" /></template>
+                    </Button>
                   </div>
                 </div>
 
@@ -564,13 +579,15 @@
 
               <!-- ── ACCIONES PRINCIPALES ───────────────────────────── -->
               <div class="gf-actions-inline">
-                <Button label="Editar completa" icon="pi pi-pencil" outlined class="flex-1"
-                  @click="editarDesdeDrawer" />
-                <Button v-if="!drawerFalla.estado?.es_estado_final" label="Marcar resuelta"
-                  icon="pi pi-check" severity="success" class="flex-1"
-                  :loading="resolvingFalla" @click="quickResolve(drawerFalla)" />
-                <Button v-else label="Reabrir" icon="pi pi-replay" severity="warn" outlined
-                  class="flex-1" @click="reabrirFalla" />
+                <Button label="Editar completa" outlined class="flex-1" @click="editarDesdeDrawer">
+                  <template #icon><PencilIcon class="size-[1em]" /></template>
+                </Button>
+                <Button v-if="!drawerFalla.estado?.es_estado_final" label="Marcar resuelta" severity="success" class="flex-1" :loading="resolvingFalla" @click="quickResolve(drawerFalla)">
+                  <template #icon><CheckIcon class="size-[1em]" /></template>
+                </Button>
+                <Button v-else label="Reabrir" severity="warn" outlined class="flex-1" @click="reabrirFalla">
+                  <template #icon><RotateCcwIcon class="size-[1em]" /></template>
+                </Button>
               </div>
 
             </div><!-- /gf-drawer-body -->
@@ -605,8 +622,9 @@
         </div>
         <template #footer>
           <Button label="Cancelar" severity="secondary" outlined @click="resolveDialogVisible = false" :disabled="resolvingFalla" />
-          <Button label="Marcar resuelta" icon="pi pi-check" severity="success"
-            :loading="resolvingFalla" @click="confirmarResolve" />
+          <Button label="Marcar resuelta" severity="success" :loading="resolvingFalla" @click="confirmarResolve">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </template>
       </Dialog>
 
@@ -632,7 +650,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
@@ -660,10 +678,10 @@ import {
 ChartJS.register(Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Filler)
 import api from '~/core/client'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/utils/fallaTitulo'
+import { ArrowRightIcon, BellIcon, BriefcaseIcon, BuildingIcon, CalendarIcon, CalendarPlusIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, ClockIcon, DollarSignIcon, ExternalLinkIcon, HourglassIcon, InboxIcon, InfoIcon, LightbulbIcon, ListIcon, LoaderCircleIcon, MessagesSquareIcon, PencilIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, SendIcon, ServerIcon, TimerIcon, Trash2Icon, UserIcon, UserPenIcon, WifiIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 const route          = useRoute()
 const router         = useRouter()
-const toast          = useToast()
 const confirmService = useConfirm()
 
 // ── Calendario: refresh automático al guardar fallas ─────────────────────
@@ -671,17 +689,17 @@ const calRefreshKey = ref(0)
 
 // ── Tabs ─────────────────────────────────────────────────────────────────
 const TABS = [
-  { label: 'Fallas',     icon: 'pi pi-bolt' },
-  { label: 'Calendario', icon: 'pi pi-calendar' },
+  { label: 'Fallas',     icon: ZapIcon },
+  { label: 'Calendario', icon: CalendarIcon },
 ]
 const activeTab = ref(0)
 
 // ── Buckets ───────────────────────────────────────────────────────────────
 const BUCKETS = [
-  { key: 'activas',  label: 'Activas',    icon: 'pi pi-bolt',              color: '#dc2626' },
-  { key: 'alerta',   label: 'Alerta SLA', icon: 'pi pi-exclamation-circle', color: '#d97706' },
-  { key: 'cerradas', label: 'Cerradas',   icon: 'pi pi-check-circle',      color: '#16a34a' },
-  { key: 'todas',    label: 'Todas',      icon: 'pi pi-list',              color: '#915BD8' },
+  { key: 'activas',  label: 'Activas',    icon: ZapIcon,              color: '#dc2626' },
+  { key: 'alerta',   label: 'Alerta SLA', icon: CircleAlertIcon, color: '#d97706' },
+  { key: 'cerradas', label: 'Cerradas',   icon: CircleCheckIcon,      color: '#16a34a' },
+  { key: 'todas',    label: 'Todas',      icon: ListIcon,              color: '#915BD8' },
 ]
 
 const PRIO_COLORS = {
@@ -1195,29 +1213,23 @@ async function _mostrarResultadoNotificacion(fallaIds) {
   const errores     = resultados.flatMap(r => r.errores || []).filter(Boolean)
 
   if (todosOk) {
-    toast.add({
-      severity: 'success',
-      summary: '✉️ Notificación enviada',
-      detail: `Correo enviado a: ${enviados.join(', ')}`,
-      life: 5000,
+    toast.success('✉️ Notificación enviada', {
+      description: `Correo enviado a: ${enviados.join(', ')}`,
+      duration: 5000,
     })
   } else if (sinCorreos) {
-    toast.add({
-      severity: 'warn',
-      summary: '⚠️ Sin correos configurados',
-      detail: 'La falla fue guardada pero el cliente no tiene correos operacionales configurados. Agrégalos en Clientes → Correos Operacionales.',
-      life: 8000,
+    toast.warning('⚠️ Sin correos configurados', {
+      description: 'La falla fue guardada pero el cliente no tiene correos operacionales configurados. Agrégalos en Clientes → Correos Operacionales.',
+      duration: 8000,
     })
   } else {
     // Obtener el error SMTP más descriptivo
     const errorSmtp = errores.find(e => e.includes('534') || e.includes('Application-specific') || e.includes('password'))
-    toast.add({
-      severity: 'error',
-      summary: '✉️ Error al enviar notificación',
-      detail: errorSmtp
+    toast.error('✉️ Error al enviar notificación', {
+      description: errorSmtp
         ? 'Error de autenticación SMTP: Gmail requiere una App Password (contraseña de aplicación). Configúrala en las variables de Railway.'
         : `Error: ${errores[0] || 'Error desconocido'}`,
-      life: 10000,
+      duration: 10000,
     })
   }
 }
@@ -1254,7 +1266,7 @@ async function onSaveForm(payload) {
           return api.post(`/fallas/${editingFalla.value.id}/archivos`, fd)
         }))
       }
-      toast.add({ severity: 'success', summary: 'Falla actualizada', life: 2500 })
+      toast.success('Falla actualizada', { duration: 2500 })
 
       // Notificación tras edición
       if (notificar) {
@@ -1291,11 +1303,9 @@ async function onSaveForm(payload) {
         )
       }
       const n = nuevas.length
-      toast.add({
-        severity: 'success',
-        summary: n === 1 ? 'Falla registrada' : `${n} fallas registradas`,
-        detail: n > 1 ? `Se creó una falla independiente por cada proyecto seleccionado` : undefined,
-        life: 3000,
+      toast.success(n === 1 ? 'Falla registrada' : `${n} fallas registradas`, {
+        description: n > 1 ? `Se creó una falla independiente por cada proyecto seleccionado` : undefined,
+        duration: 3000,
       })
 
       // Notificación tras creación
@@ -1312,7 +1322,7 @@ async function onSaveForm(payload) {
     }
   } catch (err) {
     const msg = err?.response?.data?.detail ?? 'Error al guardar'
-    toast.add({ severity: 'error', summary: 'Error', detail: msg, life: 4000 })
+    toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     savingForm.value = false
   }
@@ -1341,7 +1351,7 @@ async function guardarQuickEdit() {
     savedFlash.value = true
     setTimeout(() => { savedFlash.value = false }, 1500)
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: err?.response?.data?.detail, life: 3000 })
+    toast.error('No se pudo guardar', { description: err?.response?.data?.detail, duration: 3000 })
     quickEdit.estado_id     = drawerFalla.value.estado?.id ?? null
     quickEdit.prioridad_id  = drawerFalla.value.prioridad?.id ?? null
   } finally {
@@ -1352,7 +1362,7 @@ async function guardarQuickEdit() {
 function quickResolve(falla) {
   const estadoFinal = catalogos.value.estados.find(e => e.es_estado_final)
   if (!estadoFinal) {
-    toast.add({ severity: 'warn', summary: 'Sin estado final configurado', life: 3000 })
+    toast.warning('Sin estado final configurado', { duration: 3000 })
     return
   }
   resolveFallaTarget.value  = falla
@@ -1379,9 +1389,9 @@ async function confirmarResolve() {
     if (drawerFalla.value?.id === data.id) drawerFalla.value = data
     resolveDialogVisible.value = false
     calRefreshKey.value++
-    toast.add({ severity: 'success', summary: 'Falla resuelta', life: 2500 })
+    toast.success('Falla resuelta', { duration: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
   } finally {
     resolvingFalla.value = false
   }
@@ -1391,7 +1401,7 @@ async function reabrirFalla() {
   const abierta = catalogos.value.estados.find(e => e.codigo === 'abierta')
     || catalogos.value.estados.find(e => !e.es_estado_final)
   if (!abierta) {
-    toast.add({ severity: 'warn', summary: 'Sin estado abierto configurado', life: 3000 })
+    toast.warning('Sin estado abierto configurado', { duration: 3000 })
     return
   }
   try {
@@ -1403,9 +1413,9 @@ async function reabrirFalla() {
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     quickEdit.estado_id = data.estado?.id ?? null
-    toast.add({ severity: 'success', summary: 'Falla reabierta', life: 2500 })
+    toast.success('Falla reabierta', { duration: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
   }
 }
 
@@ -1425,9 +1435,9 @@ async function agregarSeguimiento() {
     if (idx >= 0) allFallas.value[idx] = data
     quickEdit.estado_id = data.estado?.id ?? null
     if (payload.estado_nuevo_id) calRefreshKey.value++
-    toast.add({ severity: 'success', summary: 'Seguimiento agregado', life: 2000 })
+    toast.success('Seguimiento agregado', { duration: 2000 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
   } finally {
     addingSeg.value = false
   }
@@ -1437,7 +1447,6 @@ function confirmDelete(falla) {
   confirmService.require({
     message: `¿Eliminar la falla ${falla.codigo_interno}? Esta acción no se puede deshacer.`,
     header: 'Eliminar falla',
-    icon: 'pi pi-exclamation-triangle',
     rejectProps: { label: 'Cancelar', severity: 'secondary' },
     acceptProps: { label: 'Eliminar', severity: 'danger' },
     accept: async () => {
@@ -1445,9 +1454,9 @@ function confirmDelete(falla) {
         await api.delete(`/fallas/${falla.id}`)
         allFallas.value     = allFallas.value.filter(f => f.id !== falla.id)
         drawerVisible.value = false
-        toast.add({ severity: 'success', summary: 'Falla eliminada', life: 2500 })
+        toast.success('Falla eliminada', { duration: 2500 })
       } catch (err) {
-        toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+        toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
       }
     },
   })
@@ -1934,7 +1943,7 @@ watch(bucket, (newBucket) => {
   transition: all .15s;
   white-space: nowrap;
 }
-.mon-tab i { font-size: 12px; }
+.mon-tab svg { font-size: 12px; }
 .mon-tab:hover:not(.mon-tab--active) { color: #2C2039; background: rgba(145,91,216,.08); }
 .mon-tab--active {
   background: #915BD8;
@@ -2278,14 +2287,14 @@ watch(bucket, (newBucket) => {
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 8px;
 }
-.gf-flag i { font-size: 11px; }
+.gf-flag svg { font-size: 11px; }
 .gf-flag--ok  { background: #f3f4f6; color: #6b7280; }
 .gf-flag--bad { background: #fee2e2; color: #b91c1c; }
 .gf-flag--warn{ background: #fef3c7; color: #b45309; }
 .gf-inv-list { display: flex; flex-direction: column; gap: 8px; }
 .gf-inv { border: 1px solid #eee6fa; border-radius: 9px; padding: 9px 11px; background: #faf9fc; }
 .gf-inv-top { display: flex; align-items: center; gap: 6px; }
-.gf-inv-top .pi { color: #915BD8; font-size: 12px; }
+.gf-inv-top svg { color: #915BD8; font-size: 12px; }
 .gf-inv-name { font-size: 13.5px; font-weight: 700; color: #2C2039; }
 .gf-inv-pot { font-size: 12.5px; color: #6b5a8a; }
 .gf-inv-tipos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
@@ -2305,7 +2314,7 @@ watch(bucket, (newBucket) => {
   display: flex; align-items: flex-start; gap: 6px;
   font-size: 12px; color: #9ca3af; margin: 8px 0 0; line-height: 1.4;
 }
-.gf-legacy-note i { font-size: 11px; margin-top: 2px; flex-shrink: 0; }
+.gf-legacy-note svg { font-size: 11px; margin-top: 2px; flex-shrink: 0; }
 .gf-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2327,7 +2336,7 @@ watch(bucket, (newBucket) => {
   align-items: center;
   gap: 5px;
 }
-.gf-fact-label i { font-size: 11px; }
+.gf-fact-label svg { font-size: 11px; }
 .gf-fact-value {
   font-size: 14px;
   color: #2C2039;
@@ -2390,7 +2399,7 @@ watch(bucket, (newBucket) => {
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
-.gf-suggestion-icon i { font-size: 14px; }
+.gf-suggestion-icon svg { font-size: 14px; }
 .gf-suggestion-label {
   font-size: 11.5px; font-weight: 700; color: #92400e;
   text-transform: uppercase; letter-spacing: 0.4px; margin: 0 0 3px;

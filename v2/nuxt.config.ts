@@ -33,8 +33,10 @@ export default defineNuxtConfig({
 
   css: [
     '~/assets/css/tailwind.css',
+    // vue-sonner publica su CSS aparte y `components/ui/sonner/Sonner.vue` no lo
+    // importa: sin esta línea los avisos salen sin estilo.
+    'vue-sonner/style.css',
     // MIGRACIÓN — Fase 1: estilos del legacy. Salen en la fase 3.
-    'primeicons/primeicons.css',
     '~/assets/main.css',
   ],
 

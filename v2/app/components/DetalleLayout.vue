@@ -28,7 +28,7 @@
     <!-- Migas: volver / titulo / codigo / chips ............ acciones -->
     <div class="dl-cabecera">
       <button type="button" class="dl-volver" @click="router.push(volver.to)">
-        <i class="pi pi-arrow-left" /> {{ volver.label }}
+        <ArrowLeftIcon class="size-[1em]" /> {{ volver.label }}
       </button>
       <span class="dl-sep">/</span>
 
@@ -48,7 +48,7 @@
         <button v-for="t in tabsVisibles" :key="t.key" type="button"
                 class="dl-tab" :class="{ 'dl-tab--on': tabActiva === t.key }"
                 @click="seleccionar(t.key)">
-          <i v-if="t.icon" :class="t.icon" />
+          <component :is="t.icon" class="size-[1em]" v-if="t.icon" />
           <span>{{ t.label }}</span>
           <span v-if="t.badge != null && t.badge !== ''" class="dl-badge">{{ t.badge }}</span>
         </button>
@@ -64,6 +64,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { ArrowLeftIcon } from '@lucide/vue'
 
 const props = defineProps({
   // { to: '/clientes', label: 'Clientes' }
@@ -145,7 +146,7 @@ watch(() => props.modelValue, (v) => {
   font-size: 13px; font-weight: 600; color: #915BD8; cursor: pointer;
 }
 .dl-volver:hover { text-decoration: underline; text-underline-offset: 2px; }
-.dl-volver i { font-size: 10px; }
+.dl-volver svg { font-size: 10px; }
 .dl-sep { color: #c5b9db; }
 .dl-titulo {
   font-size: 14px; font-weight: 700; color: #2C2039;
@@ -181,9 +182,9 @@ watch(() => props.modelValue, (v) => {
   transition: color .12s, border-color .12s, background .12s;
 }
 .dl-tab:hover { color: #2C2039; background: #FAF9FC; }
-.dl-tab i { font-size: 11px; }
+.dl-tab svg { font-size: 11px; }
 .dl-tab--on { color: #915BD8; border-bottom-color: #915BD8; }
-.dl-tab--on i { color: #915BD8; }
+.dl-tab--on svg { color: #915BD8; }
 .dl-badge {
   background: #EEF0F2; color: #6b7280; border-radius: 999px;
   font-size: 10px; font-weight: 800; padding: 0 6px; min-width: 18px; text-align: center;

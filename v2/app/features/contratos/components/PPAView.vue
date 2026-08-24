@@ -3,18 +3,22 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <Button icon="pi pi-arrow-left" text @click="$router.back()" class="-ml-2" />
+        <Button text @click="$router.back()" class="-ml-2">
+          <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+        </Button>
         <div>
           <div class="flex items-center gap-2">
             <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-              <i class="pi pi-bolt text-amber-500 text-sm" />
+              <ZapIcon class="text-amber-500 text-sm size-[1em]" />
             </div>
             <h2 class="text-xl font-bold text-gray-800">Contratos PPA</h2>
           </div>
           <p v-if="proyectoNombre" class="text-xs text-gray-400 mt-0.5 ml-11">{{ proyectoNombre }}</p>
         </div>
       </div>
-      <Button v-if="tabActivo === 0" label="Nuevo contrato" icon="pi pi-plus" @click="abrirFormNuevo" />
+      <Button v-if="tabActivo === 0" label="Nuevo contrato" @click="abrirFormNuevo">
+        <template #icon><PlusIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- Tabs -->
@@ -25,9 +29,11 @@
         <div v-if="loading" class="flex justify-center py-16"><ProgressSpinner /></div>
 
         <div v-else-if="contratos.length === 0" class="flex flex-col items-center py-16 gap-3 text-gray-400">
-          <i class="pi pi-bolt text-4xl text-amber-300" />
+          <ZapIcon class="text-4xl text-amber-300 size-[1em]" />
           <p class="text-sm">No hay contratos PPA registrados para este proyecto.</p>
-          <Button label="Registrar primer contrato" icon="pi pi-plus" outlined @click="abrirFormNuevo" />
+          <Button label="Registrar primer contrato" outlined @click="abrirFormNuevo">
+            <template #icon><PlusIcon class="size-[1em]" /></template>
+          </Button>
         </div>
 
         <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
@@ -40,8 +46,12 @@
               </div>
               <div class="flex items-center gap-1">
                 <Tag :value="c.tipo_contrato || '—'" :severity="c.tipo_contrato === 'venta' ? 'success' : 'info'" class="text-xs" />
-                <Button icon="pi pi-pencil" text size="small" severity="secondary" @click="abrirFormEditar(c)" />
-                <Button icon="pi pi-trash" text size="small" severity="danger" @click="confirmarEliminar(c)" />
+                <Button text size="small" severity="secondary" @click="abrirFormEditar(c)">
+                  <template #icon><PencilIcon class="size-[1em]" /></template>
+                </Button>
+                <Button text size="small" severity="danger" @click="confirmarEliminar(c)">
+                  <template #icon><Trash2Icon class="size-[1em]" /></template>
+                </Button>
               </div>
             </div>
             <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500">
@@ -65,7 +75,7 @@
         <div v-if="loadingAsic" class="flex justify-center py-16"><ProgressSpinner /></div>
 
         <div v-else-if="asicRows.length === 0" class="flex flex-col items-center py-16 gap-3 text-gray-400">
-          <i class="pi pi-file-edit text-4xl text-blue-300" />
+          <FilePenIcon class="text-4xl text-blue-300 size-[1em]" />
           <p class="text-sm">No hay registros GESCON/ASIC asociados a este proyecto.</p>
         </div>
 
@@ -105,15 +115,16 @@
               <template #body="{ data }">
                 <a v-if="data.link_archivo" :href="data.link_archivo" target="_blank"
                   class="text-blue-500 hover:text-blue-700">
-                  <i class="pi pi-external-link" />
+                  <ExternalLinkIcon class="size-[1em]" />
                 </a>
                 <span v-else class="text-gray-300">—</span>
               </template>
             </Column>
             <Column style="min-width:60px">
               <template #body="{ data }">
-                <Button icon="pi pi-trash" text size="small" severity="danger"
-                  v-tooltip.top="'Eliminar registro'" @click="confirmarEliminarAsic(data)" />
+                <Button text size="small" severity="danger" v-tooltip.top="'Eliminar registro'" @click="confirmarEliminarAsic(data)">
+                  <template #icon><Trash2Icon class="size-[1em]" /></template>
+                </Button>
               </template>
             </Column>
           </DataTable>
@@ -275,20 +286,23 @@
 
       <template #footer>
         <Button label="Cancelar" severity="secondary" outlined @click="showForm = false" />
-        <Button :label="editando ? 'Guardar cambios' : 'Crear contrato'" icon="pi pi-check"
-          :loading="guardando" @click="guardar" />
+        <Button :label="editando ? 'Guardar cambios' : 'Crear contrato'" :loading="guardando" @click="guardar">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </Dialog>
 
     <!-- Confirm eliminar -->
-    <ConfirmDialog />
+    <ConfirmDialog>
+      <template #icon><TriangleAlertIcon class="size-8 shrink-0" /></template>
+    </ConfirmDialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
@@ -305,9 +319,9 @@ import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import api from '~/core/client'
+import { ArrowLeftIcon, CheckIcon, ExternalLinkIcon, FilePenIcon, PencilIcon, PlusIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 
 const route = useRoute()
-const toast = useToast()
 const confirm = useConfirm()
 
 const TIPOS_CONTRATO = [
@@ -412,15 +426,15 @@ async function guardar() {
 
     if (editando.value) {
       await api.patch(`/ppa/${editando.value}`, payload)
-      toast.add({ severity: 'success', summary: 'Contrato actualizado', life: 3000 })
+      toast.success('Contrato actualizado', { duration: 3000 })
     } else {
       await api.post('/ppa', { ...payload, proyecto_id: proyectoId })
-      toast.add({ severity: 'success', summary: 'Contrato creado', life: 3000 })
+      toast.success('Contrato creado', { duration: 3000 })
     }
     showForm.value = false
     await cargarContratos()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail || e.message, duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -430,7 +444,6 @@ function confirmarEliminar(contrato) {
   confirm.require({
     message: `¿Eliminar el contrato "${contrato.nombre_interno || contrato.numero_codigo_contrato || 'sin nombre'}"? Esta acción no se puede deshacer.`,
     header: 'Confirmar eliminación',
-    icon: 'pi pi-exclamation-triangle',
     acceptSeverity: 'danger',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -438,14 +451,12 @@ function confirmarEliminar(contrato) {
       try {
         await api.delete(`/ppa/${contrato.id}`)
         contratos.value = contratos.value.filter(c => c.id !== contrato.id)
-        toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2000 })
+        toast.success('Contrato eliminado', { duration: 2000 })
       } catch (e) {
         const detail = e.response?.data?.detail
-        toast.add({
-          severity: 'error',
-          summary: 'No se puede eliminar',
-          detail: detail || 'Error al eliminar el contrato.',
-          life: 6000,
+        toast.error('No se puede eliminar', {
+          description: detail || 'Error al eliminar el contrato.',
+          duration: 6000,
         })
       }
     },
@@ -457,7 +468,6 @@ function confirmarEliminarAsic(registro) {
   confirm.require({
     message: `¿Eliminar el registro GESCON "${label}"? Esta acción no se puede deshacer.`,
     header: 'Confirmar eliminación GESCON',
-    icon: 'pi pi-exclamation-triangle',
     acceptSeverity: 'danger',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -465,14 +475,12 @@ function confirmarEliminarAsic(registro) {
       try {
         await api.delete(`/asic/${registro.id}`)
         asicRows.value = asicRows.value.filter(r => r.id !== registro.id)
-        toast.add({ severity: 'success', summary: 'Registro GESCON eliminado', life: 2000 })
+        toast.success('Registro GESCON eliminado', { duration: 2000 })
       } catch (e) {
         const detail = e.response?.data?.detail
-        toast.add({
-          severity: 'error',
-          summary: 'No se puede eliminar',
-          detail: detail || 'Error al eliminar el registro GESCON.',
-          life: 6000,
+        toast.error('No se puede eliminar', {
+          description: detail || 'Error al eliminar el registro GESCON.',
+          duration: 6000,
         })
       }
     },
@@ -490,7 +498,7 @@ async function cargarAsic() {
     const { data } = await api.get('/asic', { params: { proyecto_id: proyectoId, size: 200 } })
     asicRows.value = Array.isArray(data) ? data : (data.items ?? [])
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error ASIC', detail: e.message, life: 4000 })
+    toast.error('Error ASIC', { description: e.message, duration: 4000 })
   } finally {
     loadingAsic.value = false
   }
@@ -505,7 +513,7 @@ onMounted(async () => {
     ])
     proyectoNombre.value = proyRes.data.nombre_comercial
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar', detail: e.message, life: 4000 })
+    toast.error('Error al cargar', { description: e.message, duration: 4000 })
   } finally {
     loading.value = false
   }

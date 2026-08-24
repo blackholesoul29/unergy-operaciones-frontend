@@ -8,16 +8,18 @@
       <div class="gen-titlebar">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(145,91,216,0.12)">
-            <i class="pi pi-chart-line text-sm" style="color:#915BD8" />
+            <ChartLineIcon class="text-sm size-[1em]" style="color:#915BD8" />
           </div>
           <h2 class="text-base font-bold text-gray-800">Generación</h2>
           <span class="text-xs text-gray-500 hidden sm:inline">· Compara la energía generada por proyecto</span>
         </div>
         <div class="flex items-center gap-2 ml-auto">
-          <Button label="Excel" icon="pi pi-file-excel" size="small" severity="success" outlined
-            :disabled="!datasets.length" @click="exportarExcel" />
-          <Button icon="pi pi-refresh" size="small" outlined :loading="loading" @click="cargar"
-            v-tooltip.bottom="'Actualizar'" />
+          <Button label="Excel" size="small" severity="success" outlined :disabled="!datasets.length" @click="exportarExcel">
+            <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+          </Button>
+          <Button size="small" outlined :loading="loading" @click="cargar" v-tooltip.bottom="'Actualizar'">
+            <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
 
@@ -29,7 +31,7 @@
             class="gen-seg-btn"
             :class="{ 'gen-seg-btn--active': granularidad === g.key }"
             @click="onGranularidadChange(g.key)">
-            <i :class="g.icon" />
+            <component :is="g.icon" class="size-[1em]" />
             <span>{{ g.label }}</span>
           </button>
         </div>
@@ -76,14 +78,14 @@
           placeholder="Día inicial → final" @update:modelValue="aplicarModo" />
 
         <!-- Etiqueta del rango resuelto -->
-        <span class="gen-range-label"><i class="pi pi-calendar-clock" /> {{ rangoLabel }}</span>
+        <span class="gen-range-label"><CalendarClockIcon class="size-[1em]" /> {{ rangoLabel }}</span>
 
         <!-- Avisos -->
         <span v-if="rangoError && rangoError !== 'Selecciona un rango'" class="gen-err">
-          <i class="pi pi-exclamation-circle" /> {{ rangoError }}
+          <CircleAlertIcon class="size-[1em]" /> {{ rangoError }}
         </span>
         <span v-else-if="avisoRango" class="gen-aviso">
-          <i class="pi pi-info-circle" /> {{ avisoRango }}
+          <InfoIcon class="size-[1em]" /> {{ avisoRango }}
         </span>
 
         <!-- Project multi-select (valor = sub_project = ID de API Unergy) -->
@@ -103,16 +105,14 @@
         </div>
 
         <!-- Consultar (dispara la query del intervalo seleccionado) -->
-        <Button label="Consultar" icon="pi pi-search" size="small"
-          class="gen-consultar" :class="{ 'gen-consultar--pendiente': pendiente && proyectosSel.length && !rangoError }"
-          :disabled="!proyectosSel.length || !!rangoError" :loading="loading"
-          @click="cargar"
-          v-tooltip.bottom="!proyectosSel.length ? 'Selecciona al menos un proyecto' : (rangoError ? 'Corrige el rango de fechas' : 'Consultar generación')" />
+        <Button label="Consultar" size="small" class="gen-consultar" :class="{ 'gen-consultar--pendiente': pendiente && proyectosSel.length && !rangoError }" :disabled="!proyectosSel.length || !!rangoError" :loading="loading" @click="cargar" v-tooltip.bottom="!proyectosSel.length ? 'Selecciona al menos un proyecto' : (rangoError ? 'Corrige el rango de fechas' : 'Consultar generación')">
+          <template #icon><SearchIcon class="size-[1em]" /></template>
+        </Button>
       </div>
 
       <!-- Fuente de datos -->
       <div v-if="proyectos.length" class="gen-datahint">
-        <i class="pi pi-bolt" />
+        <ZapIcon class="size-[1em]" />
         <span>{{ proyectos.length }} proyectos disponibles · generación en vivo desde la API de Unergy</span>
       </div>
 
@@ -120,7 +120,7 @@
 
     <!-- ══ EMPTY STATE / GUIDE ════════════════════════════════════════ -->
     <div v-if="!proyectosSel.length" class="gen-empty">
-      <i class="pi pi-info-circle text-3xl mb-3" style="color:#915BD8" />
+      <InfoIcon class="text-3xl mb-3 size-[1em]" style="color:#915BD8" />
       <p class="text-base font-semibold text-gray-700">Selecciona uno o más proyectos para comenzar</p>
       <p class="text-sm text-gray-500 mt-1">Elige proyectos y un rango, luego presiona <strong>Consultar</strong>.</p>
     </div>
@@ -133,29 +133,34 @@
 
     <!-- ══ ERROR ═════════════════════════════════════════════════════ -->
     <div v-else-if="error" class="gen-error">
-      <i class="pi pi-exclamation-circle text-2xl text-red-500" />
+      <CircleAlertIcon class="text-2xl text-red-500 size-[1em]" />
       <div class="flex-1">
         <p class="font-semibold text-red-700">No se pudo consultar la generación</p>
         <p class="text-sm text-gray-600 mt-0.5">{{ error }}</p>
       </div>
-      <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="cargar" />
+      <Button label="Reintentar" outlined size="small" @click="cargar">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- ══ READY TO QUERY (proyectos elegidos, aún sin consultar) ═════ -->
     <div v-else-if="!hasQueried" class="gen-empty">
-      <i class="pi pi-search text-3xl mb-3" style="color:#915BD8" />
+      <SearchIcon class="text-3xl mb-3 size-[1em]" style="color:#915BD8" />
       <p class="text-base font-semibold text-gray-700">Listo para consultar</p>
       <p class="text-sm text-gray-500 mt-1">Ajusta el rango y la granularidad, luego presiona Consultar.</p>
-      <Button label="Consultar" icon="pi pi-search" size="small" class="mt-3"
-        :disabled="!!rangoError" :loading="loading" @click="cargar" />
+      <Button label="Consultar" size="small" class="mt-3" :disabled="!!rangoError" :loading="loading" @click="cargar">
+        <template #icon><SearchIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- ══ NO DATA ═══════════════════════════════════════════════════ -->
     <div v-else-if="!datasets.length || datasets.every(d => !d.points.length)" class="gen-empty">
-      <i class="pi pi-database text-3xl mb-3 text-gray-300" />
+      <DatabaseIcon class="text-3xl mb-3 text-gray-300 size-[1em]" />
       <p class="text-base font-semibold text-gray-700">Sin datos para el rango seleccionado</p>
       <p class="text-sm text-gray-500 mt-1">Los proyectos seleccionados no tienen generación registrada en este intervalo. Prueba con un rango más amplio o fechas anteriores.</p>
-      <Button label="Ver el año en curso (mensual)" icon="pi pi-calendar" outlined size="small" class="mt-3" @click="verEsteAnioMensual" />
+      <Button label="Ver el año en curso (mensual)" outlined size="small" class="mt-3" @click="verEsteAnioMensual">
+        <template #icon><CalendarIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- ══ MAIN CONTENT ══════════════════════════════════════════════ -->
@@ -164,28 +169,28 @@
       <!-- KPI cards -->
       <div class="gen-kpis">
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(212,160,23,0.12); color:#D4A017"><i class="pi pi-bolt" /></div>
+          <div class="gen-kpi-icon" style="background:rgba(212,160,23,0.12); color:#D4A017"><ZapIcon class="size-[1em]" /></div>
           <div>
             <div class="gen-kpi-val">{{ fmtNum(totalKwh) }}</div>
             <div class="gen-kpi-lbl">kWh totales</div>
           </div>
         </div>
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(145,91,216,0.12); color:#915BD8"><i class="pi pi-chart-bar" /></div>
+          <div class="gen-kpi-icon" style="background:rgba(145,91,216,0.12); color:#915BD8"><ChartColumnIcon class="size-[1em]" /></div>
           <div>
             <div class="gen-kpi-val">{{ fmtNum(totalKwh / Math.max(1, datasets.length) / Math.max(1, periodos.length), 1) }}</div>
             <div class="gen-kpi-lbl">Promedio kWh / {{ unidadPeriodo }}</div>
           </div>
         </div>
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(16,185,129,0.12); color:#10b981"><i class="pi pi-trophy" /></div>
+          <div class="gen-kpi-icon" style="background:rgba(16,185,129,0.12); color:#10b981"><TrophyIcon class="size-[1em]" /></div>
           <div>
             <div class="gen-kpi-val text-sm">{{ topProyecto?.nombre || '—' }}</div>
             <div class="gen-kpi-lbl">Mayor generación</div>
           </div>
         </div>
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(59,130,246,0.12); color:#3b82f6"><i class="pi pi-calendar" /></div>
+          <div class="gen-kpi-icon" style="background:rgba(59,130,246,0.12); color:#3b82f6"><CalendarIcon class="size-[1em]" /></div>
           <div>
             <div class="gen-kpi-val text-sm">{{ periodos.length }} {{ unidadPeriodoPlural }}</div>
             <div class="gen-kpi-lbl">Período cubierto</div>
@@ -196,13 +201,14 @@
       <!-- Chart card -->
       <section class="gen-card">
         <header class="gen-card-head">
-          <i class="pi pi-chart-line text-sm" style="color:#915BD8" />
+          <ChartLineIcon class="text-sm size-[1em]" style="color:#915BD8" />
           <h3 class="gen-card-title">{{ tituloGrafico }}</h3>
           <div class="flex items-center gap-2 ml-auto">
             <button v-for="t in ['line', 'bar']" :key="t"
               class="gen-toggle-btn" :class="{ 'gen-toggle-btn--active': tipoGrafico === t }"
               @click="tipoGrafico = t">
-              <i :class="t === 'line' ? 'pi pi-chart-line' : 'pi pi-chart-bar'" />
+              <ChartLineIcon v-if="t === 'line'" class="size-[1em]" />
+              <ChartColumnIcon v-else class="size-[1em]" />
             </button>
           </div>
         </header>
@@ -294,7 +300,7 @@
               <span class="gen-tooltip-val">{{ fmtNum(hoverTotal, 1) }} kWh</span>
             </div>
             <div v-if="hoverFalla" class="gen-tooltip-fault">
-              <i class="pi pi-exclamation-triangle" />
+              <TriangleAlertIcon class="size-[1em]" />
               {{ hoverFalla.count }} falla{{ hoverFalla.count !== 1 ? 's' : '' }} de generación · {{ fmtNum(hoverFalla.kwh) }} kWh perdidos
             </div>
           </div>
@@ -304,7 +310,7 @@
       <!-- Fallas reportadas en el período (cruce con generación) -->
       <section class="gen-card">
         <header class="gen-card-head">
-          <i class="pi pi-exclamation-triangle text-sm" style="color:#dc2626" />
+          <TriangleAlertIcon class="text-sm size-[1em]" style="color:#dc2626" />
           <h3 class="gen-card-title">Fallas reportadas en el período</h3>
           <div class="ml-auto flex items-center gap-1.5 flex-wrap">
             <span class="gen-fchip">{{ fallasDelPeriodo.length }} en total</span>
@@ -320,7 +326,7 @@
           <p>Cargando fallas…</p>
         </div>
         <div v-else-if="!fallasDelPeriodo.length" class="gen-fallas-empty">
-          <i class="pi pi-check-circle text-2xl" style="color:#16a34a" />
+          <CircleCheckIcon class="text-2xl size-[1em]" style="color:#16a34a" />
           <p>Sin fallas reportadas en este intervalo para los proyectos seleccionados.</p>
         </div>
         <div v-else class="overflow-x-auto">
@@ -360,7 +366,7 @@
             <Column header="Energía perdida" style="width:140px">
               <template #body="{ data }">
                 <span v-if="involucraGeneracion(data)" class="gen-energy-badge">
-                  <i class="pi pi-bolt" /> {{ fmtNum(energiaPerdida(data)) }} kWh
+                  <ZapIcon class="size-[1em]" /> {{ fmtNum(energiaPerdida(data)) }} kWh
                 </span>
                 <span v-else class="text-gray-300">—</span>
               </template>
@@ -375,7 +381,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import MultiSelect from 'primevue/multiselect'
@@ -387,8 +393,8 @@ import ProgressSpinner from 'primevue/progressspinner'
 import * as XLSX from 'xlsx'
 import { useRouter } from 'vue-router'
 import api from '~/core/client'
+import { CalendarClockIcon, CalendarIcon, ChartColumnIcon, ChartLineIcon, CircleAlertIcon, CircleCheckIcon, ClockIcon, DatabaseIcon, FileSpreadsheetIcon, InfoIcon, ListIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon, TrophyIcon, ZapIcon } from '@lucide/vue'
 
-const toast = useToast()
 const router = useRouter()
 
 // ── Constantes ────────────────────────────────────────────────────────
@@ -396,9 +402,9 @@ const MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','N
 const PALETTE = ['#915BD8', '#2563eb', '#10b981', '#D4A017', '#dc2626', '#0891b2', '#7c3aed', '#db2777', '#65a30d', '#0d9488']
 
 const GRANULARIDADES = [
-  { key: 'mensual', label: 'Mensual', icon: 'pi pi-calendar' },
-  { key: 'diaria',  label: 'Diaria',  icon: 'pi pi-list' },
-  { key: 'horaria', label: 'Horaria', icon: 'pi pi-clock' },
+  { key: 'mensual', label: 'Mensual', icon: CalendarIcon },
+  { key: 'diaria',  label: 'Diaria',  icon: ListIcon },
+  { key: 'horaria', label: 'Horaria', icon: ClockIcon },
 ]
 
 // Modos de selección por granularidad: presets rápidos + intervalo libre.
@@ -661,7 +667,7 @@ async function cargar() {
       return
     }
     if (errores.length) {
-      toast.add({ severity: 'warn', summary: 'Algunos proyectos no cargaron', detail: errores.join(' · '), life: 6000 })
+      toast.warning('Algunos proyectos no cargaron', { description: errores.join(' · '), duration: 6000 })
     }
 
     // Eje común continuo → todas las series quedan alineadas en chart y tabla.
@@ -1019,9 +1025,9 @@ function exportarExcel() {
 
     const filename = `generacion_${granularidad.value}_${isoDate(fechaDesde.value)}_${isoDate(fechaHasta.value)}.xlsx`
     XLSX.writeFile(wb, filename)
-    toast.add({ severity: 'success', summary: 'Excel descargado', detail: filename, life: 2500 })
+    toast.success('Excel descargado', { description: filename, duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al exportar', detail: e?.message, life: 4000 })
+    toast.error('Error al exportar', { description: e?.message, duration: 4000 })
   }
 }
 
@@ -1193,7 +1199,7 @@ watch(chartWrapRef, (el) => {
   padding: 3px 10px;
   white-space: nowrap;
 }
-.gen-range-label i { font-size: 11px; color: #915BD8; }
+.gen-range-label svg { font-size: 11px; color: #915BD8; }
 
 /* Aviso no bloqueante */
 .gen-aviso {
@@ -1229,7 +1235,7 @@ watch(chartWrapRef, (el) => {
   font-size: 11.5px;
   color: #6b5a8a;
 }
-.gen-datahint > i { font-size: 11px; }
+.gen-datahint > svg { font-size: 11px; }
 .gen-datahint-btn {
   border: 1px solid #e9ddff;
   background: #faf5ff;
@@ -1339,7 +1345,7 @@ watch(chartWrapRef, (el) => {
   justify-content: center;
 }
 .gen-toggle-btn--active { background: #915BD8; color: #fff; border-color: #915BD8; }
-.gen-toggle-btn i { font-size: 12px; }
+.gen-toggle-btn svg { font-size: 12px; }
 
 /* Legend */
 .gen-legend {
@@ -1434,7 +1440,7 @@ watch(chartWrapRef, (el) => {
   align-items: center;
   gap: 5px;
 }
-.gen-tooltip-fault i { font-size: 11px; }
+.gen-tooltip-fault svg { font-size: 11px; }
 
 /* Marcadores de falla en la gráfica (subrayado rojo del día/período) */
 .gen-fault-underline { stroke: #dc2626; stroke-width: 3; stroke-linecap: round; }
@@ -1530,5 +1536,5 @@ watch(chartWrapRef, (el) => {
   border-radius: 6px;
   padding: 2px 8px;
 }
-.gen-energy-badge i { font-size: 10px; }
+.gen-energy-badge svg { font-size: 10px; }
 </style>

@@ -16,6 +16,7 @@
  */
 import AppSidebar from '~/components/AppSidebar.vue'
 import { useSidebar } from '~/composables/useSidebar'
+import { ChevronsRightIcon, MenuIcon } from '@lucide/vue'
 
 const route = useRoute()
 const { mobileOpen, toggle, collapsed, toggleCollapsed } = useSidebar()
@@ -35,7 +36,7 @@ const isSolar = computed(() => route.path === '/solar-live')
         title="Menú"
         @click="toggle"
       >
-        <i class="pi pi-bars" />
+        <MenuIcon class="size-[1em]" />
       </button>
 
       <!-- Reabrir el sidebar (escritorio, cuando está oculto) -->
@@ -45,7 +46,7 @@ const isSolar = computed(() => route.path === '/solar-live')
         title="Mostrar barra lateral"
         @click="toggleCollapsed"
       >
-        <i class="pi pi-angle-double-right" />
+        <ChevronsRightIcon class="size-[1em]" />
       </button>
 
       <main
@@ -86,7 +87,7 @@ const isSolar = computed(() => route.path === '/solar-live')
   width: 32px;
   padding-left: 4px;
 }
-.sb-reopen .pi {
+.sb-reopen svg {
   font-size: 13px;
 }
 </style>

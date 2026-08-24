@@ -45,14 +45,9 @@
 
     <template #footer>
       <Button label="Cancelar" severity="secondary" text size="small" @click="emit('update:visible', false)" />
-      <Button
-        label="Copiar métricas"
-        icon="pi pi-copy"
-        size="small"
-        :disabled="!origenId || guardando"
-        :loading="guardando"
-        @click="emit('submit', origenId)"
-      />
+      <Button label="Copiar métricas" size="small" :disabled="!origenId || guardando" :loading="guardando" @click="emit('submit', origenId)">
+        <template #icon><CopyIcon class="size-[1em]" /></template>
+      </Button>
     </template>
   </Dialog>
 </template>
@@ -62,6 +57,7 @@ import { computed, ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
+import { CopyIcon } from '@lucide/vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },

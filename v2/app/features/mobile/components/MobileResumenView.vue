@@ -2,9 +2,10 @@
   <div class="rs-root">
     <!-- ══ TOP BAR ══ -->
     <header class="rs-topbar">
-      <span class="rs-brand"><i class="pi pi-chart-bar" /> Resumen del día</span>
+      <span class="rs-brand"><ChartColumnIcon class="size-[1em]" /> Resumen del día</span>
       <button class="rs-icon-btn" :disabled="loading" @click="cargar(true)" title="Actualizar">
-        <i :class="loading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+        <LoaderCircleIcon v-if="loading" class="size-[1em] animate-spin" />
+        <RefreshCwIcon v-else class="size-[1em]" />
       </button>
     </header>
 
@@ -30,26 +31,26 @@
       </div>
 
       <!-- Top Medidores -->
-      <TopCard title="Top generación — Medidores" icon="pi-gauge" accent="#14B8A6"
+      <TopCard title="Top generación — Medidores" :icon="GaugeIcon" accent="#14B8A6"
         :items="gen.medidor?.top || []" :loading="loadingGen" :max="maxMedidor" />
 
       <!-- Top Inversores -->
-      <TopCard title="Top generación — Inversores" icon="pi-bolt" accent="#915BD8"
+      <TopCard title="Top generación — Inversores" :icon="ZapIcon" accent="#915BD8"
         :items="gen.inversor?.top || []" :loading="loadingGen" :max="maxInversor" />
 
       <!-- Fallas de hoy -->
       <section class="rs-card">
         <div class="rs-card-head">
-          <i class="pi pi-wrench" style="color:#f59e0b" />
+          <WrenchIcon class="size-[1em]" style="color:#f59e0b" />
           <h3 class="rs-card-title">Fallas de hoy</h3>
         </div>
 
-        <div v-if="loadingFallas" class="rs-loading"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
+        <div v-if="loadingFallas" class="rs-loading"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando…</div>
 
         <template v-else>
           <!-- Creadas -->
           <div class="rs-group-label">
-            <i class="pi pi-plus-circle" /> Creadas
+            <CirclePlusIcon class="size-[1em]" /> Creadas
             <span class="rs-group-count">{{ fallas.creadas?.length || 0 }}</span>
           </div>
           <div v-if="(fallas.creadas?.length || 0) === 0" class="rs-empty-row">Ninguna creada hoy</div>
@@ -59,12 +60,12 @@
               <span class="rs-falla-proj">{{ f.proyecto?.nombre_comercial || '—' }}</span>
               <span class="rs-falla-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</span>
             </span>
-            <i class="pi pi-chevron-right rs-falla-arrow" />
+            <ChevronRightIcon class="rs-falla-arrow size-[1em]" />
           </button>
 
           <!-- Cambios de estado -->
           <div class="rs-group-label rs-group-label--mt">
-            <i class="pi pi-sync" /> Cambiaron de estado
+            <RefreshCwIcon class="size-[1em]" /> Cambiaron de estado
             <span class="rs-group-count">{{ fallas.cambios_estado?.length || 0 }}</span>
           </div>
           <div v-if="(fallas.cambios_estado?.length || 0) === 0" class="rs-empty-row">Ningún cambio hoy</div>
@@ -73,12 +74,12 @@
               <span class="rs-falla-proj">{{ c.falla?.proyecto?.nombre_comercial || '—' }}</span>
               <span class="rs-falla-transition">
                 <span class="rs-falla-estado rs-sm" :style="estadoStyle(c.estado_anterior)">{{ c.estado_anterior?.etiqueta || '—' }}</span>
-                <i class="pi pi-arrow-right rs-trans-arrow" />
+                <ArrowRightIcon class="rs-trans-arrow size-[1em]" />
                 <span class="rs-falla-estado rs-sm" :style="estadoStyle(c.estado_nuevo)">{{ c.estado_nuevo?.etiqueta || '—' }}</span>
               </span>
             </span>
             <span class="rs-falla-hora">{{ horaCorta(c.hora) }}</span>
-            <i class="pi pi-chevron-right rs-falla-arrow" />
+            <ChevronRightIcon class="rs-falla-arrow size-[1em]" />
           </button>
         </template>
       </section>
@@ -98,11 +99,15 @@ import { ref, reactive, computed, onMounted, h } from 'vue'
 import api from '~/core/client'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
+import { ArrowRightIcon, ChartColumnIcon, ChevronRightIcon, CirclePlusIcon, GaugeIcon, LoaderCircleIcon, RefreshCwIcon, WrenchIcon, ZapIcon } from '@lucide/vue'
 
 // ── Tarjeta de "top" reutilizable (medidores / inversores) ───────────────────
 const TopCard = {
   props: {
-    title: String, icon: String, accent: String,
+    title: String,
+    /** Componente de `@lucide/vue`. */
+    icon: { type: [Object, Function], default: null },
+    accent: String,
     items: { type: Array, default: () => [] },
     loading: Boolean, max: Number,
   },
@@ -111,11 +116,11 @@ const TopCard = {
     const fmt = (kwh) => (kwh == null ? '—' : kwh >= 1000 ? (kwh / 1000).toFixed(2) + ' MWh' : kwh.toFixed(1) + ' kWh')
     return () => h('section', { class: 'rs-card' }, [
       h('div', { class: 'rs-card-head' }, [
-        h('i', { class: `pi ${props.icon}`, style: { color: props.accent } }),
+        h(props.icon, { class: 'size-[1em]', style: { color: props.accent } }),
         h('h3', { class: 'rs-card-title' }, props.title),
       ]),
       props.loading
-        ? h('div', { class: 'rs-loading' }, [h('i', { class: 'pi pi-spin pi-spinner' }), ' Cargando…'])
+        ? h('div', { class: 'rs-loading' }, [h(LoaderCircleIcon, { class: 'size-[1em] animate-spin' }), ' Cargando…'])
         : props.items.length === 0
           ? h('div', { class: 'rs-empty-row' }, 'Sin datos de generación hoy')
           : h('div', { class: 'rs-top-list' }, props.items.map((it, i) =>
@@ -259,7 +264,7 @@ onMounted(() => {
   background: #2C2039; color: #fff;
 }
 .rs-brand { flex: 1; font-size: clamp(15px, 4.2vw, 17px); font-weight: 700; letter-spacing: .2px; }
-.rs-brand .pi { color: #F6FF72; margin-right: 6px; }
+.rs-brand svg { color: #F6FF72; margin-right: 6px; }
 .rs-icon-btn {
   width: 36px; height: 36px; border-radius: 10px; border: none;
   background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; flex-shrink: 0;
@@ -287,11 +292,11 @@ onMounted(() => {
   padding: 13px 13px 8px; margin-bottom: 14px;
 }
 .rs-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-.rs-card-head .pi { font-size: 16px; }
+.rs-card-head svg { font-size: 16px; }
 .rs-card-title { font-size: 14px; font-weight: 800; color: #2C2039; margin: 0; }
 
 .rs-loading { display: flex; align-items: center; gap: 8px; color: #6b5a8a; font-size: 13.5px; padding: 14px 4px; }
-.rs-loading .pi-spinner { color: #915BD8; }
+.rs-loading svg { color: #915BD8; }
 .rs-empty-row { color: #9ca3af; font-size: 13px; padding: 10px 4px; }
 
 /* Lista top */
@@ -312,7 +317,7 @@ onMounted(() => {
 /* Grupos de fallas */
 .rs-group-label { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: #6b5a8a; text-transform: uppercase; letter-spacing: .4px; margin: 4px 2px 6px; }
 .rs-group-label--mt { margin-top: 14px; }
-.rs-group-label .pi { font-size: 13px; }
+.rs-group-label svg { font-size: 13px; }
 .rs-group-count { margin-left: auto; background: #f3edfb; color: #7a6e8a; font-size: 11px; font-weight: 800; padding: 1px 8px; border-radius: 9px; text-transform: none; }
 
 .rs-falla {

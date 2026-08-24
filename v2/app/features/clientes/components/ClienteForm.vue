@@ -90,7 +90,7 @@
             <button type="button" @click="agregarContacto"
               class="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
               style="background:#915BD8;color:#fff;">
-              <i class="pi pi-plus text-xs" /> Agregar
+              <PlusIcon class="text-xs size-[1em]" /> Agregar
             </button>
           </div>
           <div class="rounded-xl p-4 space-y-3" style="background:#f9f7ff;border:1.5px solid #e8e0f0;">
@@ -105,7 +105,7 @@
               <Select v-model="c.tipo" :options="TIPOS_CONTACTO" optionLabel="label" optionValue="value"
                 class="w-40 shrink-0" size="small" />
               <button type="button" @click="eliminarContacto(idx)" class="p-1.5 rounded-lg hover:bg-red-50 shrink-0">
-                <i class="pi pi-trash text-xs" style="color:#ef4444;" />
+                <Trash2Icon class="text-xs size-[1em]" style="color:#ef4444;" />
               </button>
             </div>
           </div>
@@ -137,6 +137,7 @@ import MultiSelect from 'primevue/multiselect'
 import Dropdown from 'primevue/dropdown'
 import Button from 'primevue/button'
 import divipola from '~/data/colombia-divipola.json'
+import { PlusIcon, Trash2Icon } from '@lucide/vue'
 
 const ORIGENES = [
   { label: 'Prospección propia', value: 'prospeccion_propia' },

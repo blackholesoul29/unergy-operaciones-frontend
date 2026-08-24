@@ -17,8 +17,9 @@
                    :codigo="cliente.nit_cedula || ''"
                    :tabs="tabs" v-model="activeTab">
       <template #acciones>
-        <Button icon="pi pi-trash" label="Eliminar" text size="small" severity="danger"
-                @click="deleteVisible = true" />
+        <Button label="Eliminar" text size="small" severity="danger" @click="deleteVisible = true">
+          <template #icon><Trash2Icon class="size-[1em]" /></template>
+        </Button>
       </template>
       <template #default>
 
@@ -46,7 +47,7 @@
               Servicios contratados
             </h3>
             <div v-if="loadingServiciosContratos" class="flex justify-center py-6">
-              <i class="pi pi-spin pi-spinner text-xl" style="color: #915BD8;" />
+              <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: #915BD8;" />
             </div>
             <div v-else-if="serviciosContratos.length === 0"
               class="text-sm text-center py-4 rounded-xl" style="color:#bba8d4; border: 1.5px dashed #e8e0f0;">
@@ -85,7 +86,7 @@
                       </span>
                       <a v-if="c.enlace_drive" :href="c.enlace_drive" target="_blank" rel="noopener"
                         class="text-xs font-semibold flex items-center gap-1 hover:underline" style="color: #915BD8;">
-                        <i class="pi pi-external-link text-xs" /> Abrir contrato
+                        <ExternalLinkIcon class="text-xs size-[1em]" /> Abrir contrato
                       </a>
                       <span v-else class="text-xs italic" style="color:#bba8d4;">Sin link</span>
                     </div>
@@ -101,7 +102,7 @@
             <button @click="abrirDialogoServicio"
               class="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5"
               style="background: #915BD8;">
-              <i class="pi pi-plus text-xs" /> Agregar servicio
+              <PlusIcon class="text-xs size-[1em]" /> Agregar servicio
             </button>
           </div>
 
@@ -127,7 +128,7 @@
                   </div>
                 </div>
                 <button @click="confirmarEliminarServicio(s)" class="text-red-400 hover:text-red-600 transition-colors">
-                  <i class="pi pi-trash text-sm" />
+                  <Trash2Icon class="text-sm size-[1em]" />
                 </button>
               </div>
 
@@ -150,12 +151,12 @@
                       <a v-if="docDeServicio(s.id, tipo)?.archivo_url"
                         :href="docDeServicio(s.id, tipo).archivo_url" target="_blank"
                         class="text-xs hover:underline flex items-center gap-0.5" style="color: #915BD8;">
-                        <i class="pi pi-external-link text-xs" />
+                        <ExternalLinkIcon class="text-xs size-[1em]" />
                       </a>
                       <button v-if="docDeServicio(s.id, tipo)"
                         @click="abrirDialogoDocumento(docDeServicio(s.id, tipo))"
                         class="text-xs hover:text-purple-700" style="color:#6b5a8a;">
-                        <i class="pi pi-pencil" />
+                        <PencilIcon class="size-[1em]" />
                       </button>
                       <button v-else @click="abrirDialogoDocumento(null, tipo, s.id)"
                         class="text-xs font-medium" style="color:#915BD8;">
@@ -176,7 +177,7 @@
             <button @click="abrirDialogoDocumento(null)"
               class="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5"
               style="background: #915BD8;">
-              <i class="pi pi-plus text-xs" /> Agregar documento
+              <PlusIcon class="text-xs size-[1em]" /> Agregar documento
             </button>
           </div>
 
@@ -208,13 +209,13 @@
                 <div class="flex items-center gap-2">
                   <a v-if="doc.archivo_url" :href="doc.archivo_url" target="_blank"
                     class="text-xs hover:underline flex items-center gap-1" style="color: #915BD8;">
-                    <i class="pi pi-external-link text-xs" /> Ver
+                    <ExternalLinkIcon class="text-xs size-[1em]" /> Ver
                   </a>
                   <button @click="abrirDialogoDocumento(doc)" style="color: #6b5a8a;" class="hover:text-purple-700">
-                    <i class="pi pi-pencil text-sm" />
+                    <PencilIcon class="text-sm size-[1em]" />
                   </button>
                   <button @click="eliminarDocumento(doc)" class="text-red-400 hover:text-red-600">
-                    <i class="pi pi-trash text-sm" />
+                    <Trash2Icon class="text-sm size-[1em]" />
                   </button>
                 </div>
               </div>
@@ -245,13 +246,13 @@
                 <div class="flex items-center gap-2">
                   <a v-if="doc.archivo_url" :href="doc.archivo_url" target="_blank"
                     class="text-xs hover:underline flex items-center gap-1" style="color: #915BD8;">
-                    <i class="pi pi-external-link text-xs" /> Ver
+                    <ExternalLinkIcon class="text-xs size-[1em]" /> Ver
                   </a>
                   <button @click="abrirDialogoDocumento(doc)" style="color: #6b5a8a;" class="hover:text-purple-700">
-                    <i class="pi pi-pencil text-sm" />
+                    <PencilIcon class="text-sm size-[1em]" />
                   </button>
                   <button @click="eliminarDocumento(doc)" class="text-red-400 hover:text-red-600">
-                    <i class="pi pi-trash text-sm" />
+                    <Trash2Icon class="text-sm size-[1em]" />
                   </button>
                 </div>
               </div>
@@ -264,7 +265,7 @@
         <div v-if="activeTab === 'proyectos'" class="space-y-4">
           <p class="text-sm" style="color: #6b5a8a;">Proyectos asociados a este cliente.</p>
           <div v-if="loadingRelated" class="flex justify-center py-8">
-            <i class="pi pi-spin pi-spinner text-xl" style="color: #915BD8;" />
+            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: #915BD8;" />
           </div>
           <div v-else-if="clienteProyectos.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
             No hay proyectos vinculados a este cliente.
@@ -275,7 +276,7 @@
               style="border: 1.5px solid #e8e0f0;">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(145,91,216,0.1);">
-                  <i class="pi pi-bolt text-sm" style="color: #915BD8;" />
+                  <ZapIcon class="text-sm size-[1em]" style="color: #915BD8;" />
                 </div>
                 <div>
                   <p class="text-sm font-semibold" style="color: #2C2039;">{{ p.nombre_comercial }}</p>
@@ -290,7 +291,7 @@
                   :style="p.estado === 'en_operacion' ? 'background:rgba(16,185,129,0.1);color:#10B981' : 'background:rgba(240,192,64,0.1);color:#CA8A04'">
                   {{ p.estado === 'en_operacion' ? 'En operación' : p.estado }}
                 </span>
-                <i class="pi pi-chevron-right text-xs" style="color: #915BD8;" />
+                <ChevronRightIcon class="text-xs size-[1em]" style="color: #915BD8;" />
               </div>
             </RouterLink>
           </div>
@@ -300,7 +301,7 @@
         <div v-if="activeTab === 'fronteras'" class="space-y-4">
           <p class="text-sm" style="color: #6b5a8a;">Fronteras comerciales del cliente.</p>
           <div v-if="loadingRelated" class="flex justify-center py-8">
-            <i class="pi pi-spin pi-spinner text-xl" style="color: #915BD8;" />
+            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: #915BD8;" />
           </div>
           <div v-else-if="clienteFronteras.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
             No hay fronteras registradas para este cliente.
@@ -311,7 +312,7 @@
               style="border: 1.5px solid #e8e0f0;">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(59,130,246,0.1);">
-                  <i class="pi pi-globe text-sm" style="color: #3B82F6;" />
+                  <GlobeIcon class="text-sm size-[1em]" style="color: #3B82F6;" />
                 </div>
                 <div>
                   <p class="text-sm font-semibold font-mono" style="color: #2C2039;">{{ f.codigo_frontera }}</p>
@@ -330,7 +331,7 @@
         <div v-if="activeTab === 'ppa'" class="space-y-4">
           <p class="text-sm" style="color: #6b5a8a;">Contratos PPA vinculados al cliente.</p>
           <div v-if="loadingRelated" class="flex justify-center py-8">
-            <i class="pi pi-spin pi-spinner text-xl" style="color: #915BD8;" />
+            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: #915BD8;" />
           </div>
           <div v-else-if="clientePPA.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
             No hay contratos PPA para este cliente.
@@ -341,7 +342,7 @@
               style="border: 1.5px solid #e8e0f0;">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(245,158,11,0.1);">
-                  <i class="pi pi-file-edit text-sm" style="color: #F59E0B;" />
+                  <FilePenIcon class="text-sm size-[1em]" style="color: #F59E0B;" />
                 </div>
                 <div>
                   <p class="text-sm font-semibold" style="color: #2C2039;">{{ c.nombre_interno || c.numero_codigo_contrato || 'Sin nombre' }}</p>
@@ -351,7 +352,7 @@
                   </p>
                 </div>
               </div>
-              <i class="pi pi-chevron-right text-xs" style="color: #915BD8;" />
+              <ChevronRightIcon class="text-xs size-[1em]" style="color: #915BD8;" />
             </RouterLink>
           </div>
         </div>
@@ -362,7 +363,7 @@
 
   <!-- Loading -->
   <div v-else class="flex items-center justify-center py-20">
-    <i class="pi pi-spin pi-spinner text-2xl" style="color: #915BD8;" />
+    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: #915BD8;" />
   </div>
 
   <!-- ── Dialog: Agregar servicio ── -->
@@ -461,7 +462,7 @@
           <div class="flex items-center gap-3">
             <label class="cursor-pointer px-4 py-2 rounded-lg text-sm font-medium text-white flex items-center gap-1.5"
               style="background: #6b5a8a;">
-              <i class="pi pi-upload text-xs" />
+              <UploadIcon class="text-xs size-[1em]" />
               {{ archivoSeleccionado ? 'Cambiar' : 'Seleccionar archivo' }}
               <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" class="hidden" @change="onArchivoChange" />
             </label>
@@ -503,7 +504,7 @@
 <script setup>
 import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import Select from 'primevue/select'
@@ -517,10 +518,10 @@ import ClienteResumen from './ClienteResumen.vue'
 import ContactosPanel from '~/components/ContactosPanel.vue'
 import { formatearNombre } from '~/utils/nombreFormato'
 import { SEMAFORO, servicioLabel as servicioAplicaLabel } from './clientesUi'
+import { BriefcaseIcon, ChevronRightIcon, ExternalLinkIcon, FilePenIcon, FolderIcon, GlobeIcon, LayoutGridIcon, LoaderCircleIcon, MailIcon, PencilIcon, PlusIcon, Trash2Icon, UploadIcon, UserIcon, ZapIcon } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
-const toast = useToast()
 const cliente = ref(null)
 const deleteVisible = ref(false)
 const deleting = ref(false)
@@ -529,14 +530,14 @@ const guardando = ref(false)
 const archivoSeleccionado = ref(null)
 
 const tabs = [
-  { key: 'resumen',    label: 'Resumen',       icon: 'pi pi-th-large' },
-  { key: 'info',       label: 'Información',  icon: 'pi pi-user' },
-  { key: 'contactos',  label: 'Contactos',     icon: 'pi pi-envelope' },
-  { key: 'servicios',  label: 'Servicios',     icon: 'pi pi-briefcase' },
-  { key: 'documentos', label: 'Documentos',    icon: 'pi pi-folder' },
-  { key: 'proyectos',  label: 'Proyectos',     icon: 'pi pi-bolt' },
-  { key: 'fronteras',  label: 'Fronteras',     icon: 'pi pi-globe' },
-  { key: 'ppa',        label: 'Contratos PPA', icon: 'pi pi-file-edit' },
+  { key: 'resumen',    label: 'Resumen',       icon: LayoutGridIcon },
+  { key: 'info',       label: 'Información',  icon: UserIcon },
+  { key: 'contactos',  label: 'Contactos',     icon: MailIcon },
+  { key: 'servicios',  label: 'Servicios',     icon: BriefcaseIcon },
+  { key: 'documentos', label: 'Documentos',    icon: FolderIcon },
+  { key: 'proyectos',  label: 'Proyectos',     icon: ZapIcon },
+  { key: 'fronteras',  label: 'Fronteras',     icon: GlobeIcon },
+  { key: 'ppa',        label: 'Contratos PPA', icon: FilePenIcon },
 ]
 
 const clienteProyectos = ref([])
@@ -631,17 +632,17 @@ async function guardarServicio() {
       notas: nuevoServicio.notas || null,
     })
     dialogConfirmServicio.value = false
-    toast.add({ severity: 'success', summary: 'Servicio agregado', life: 3000 })
+    toast.success('Servicio agregado', { duration: 3000 })
     await cargar()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
   }
 }
 
 async function confirmarEliminarServicio(s) {
   if (!confirm(`¿Eliminar el servicio "${servicioLabel(s.tipo)}"?`)) return
   await api.delete(`/clientes/${route.params.id}/servicios/${s.id}`)
-  toast.add({ severity: 'success', summary: 'Servicio eliminado', life: 3000 })
+  toast.success('Servicio eliminado', { duration: 3000 })
   await cargar()
 }
 
@@ -736,10 +737,10 @@ async function guardarDocumento() {
     }
 
     dialogDocumento.value = false
-    toast.add({ severity: 'success', summary: 'Documento guardado', life: 3000 })
+    toast.success('Documento guardado', { duration: 3000 })
     await cargar()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail, life: 4000 })
+    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -748,7 +749,7 @@ async function guardarDocumento() {
 async function eliminarDocumento(doc) {
   if (!confirm(`¿Eliminar "${doc.archivo_nombre || doc.nombre}"?`)) return
   await api.delete(`/clientes/${route.params.id}/documentos/${doc.id}`)
-  toast.add({ severity: 'success', summary: 'Eliminado', life: 3000 })
+  toast.success('Eliminado', { duration: 3000 })
   await cargar()
 }
 
@@ -756,7 +757,7 @@ async function eliminarDocumento(doc) {
 
 async function saveInfo(payload) {
   await api.patch(`/clientes/${route.params.id}`, payload)
-  toast.add({ severity: 'success', summary: 'Información actualizada', life: 3000 })
+  toast.success('Información actualizada', { duration: 3000 })
   await cargar()
 }
 
@@ -764,11 +765,11 @@ async function doDelete() {
   deleting.value = true
   try {
     await api.delete(`/clientes/${route.params.id}`)
-    toast.add({ severity: 'success', summary: 'Cliente eliminado', life: 3000 })
+    toast.success('Cliente eliminado', { duration: 3000 })
     router.push('/clientes')
   } catch (e) {
     const detail = e.response?.data?.detail || 'Error al eliminar'
-    toast.add({ severity: 'error', summary: 'No se pudo eliminar', detail, life: 5000 })
+    toast.error('No se pudo eliminar', { description: detail, duration: 5000 })
   } finally {
     deleting.value = false
   }
@@ -832,9 +833,9 @@ async function loadRelatedData(tab) {
       clientePPA.value = Array.isArray(data) ? data : (data.items ?? [])
     }
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo cargar',
-      detail: e.response?.data?.detail || 'Intenta de nuevo en un momento', life: 4000,
+    toast.error('No se pudo cargar', {
+      description: e.response?.data?.detail || 'Intenta de nuevo en un momento',
+      duration: 4000,
     })
   } finally {
     loadingRelated.value = false

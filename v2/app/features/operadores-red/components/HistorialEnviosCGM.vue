@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
     </div>
 
     <template v-else>
@@ -16,7 +16,7 @@
       <div v-if="faltantesUltimoEnvio.length" class="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
         style="background: rgba(199,119,0,0.08); border: 1.5px solid rgba(199,119,0,0.3);">
         <span class="text-sm font-medium" style="color: #A8590B;">
-          <i class="pi pi-exclamation-triangle text-xs mr-1.5" />
+          <TriangleAlertIcon class="text-xs mr-1.5 size-[1em]" />
           {{ faltantesUltimoEnvio.length }} destinatario{{ faltantesUltimoEnvio.length === 1 ? '' : 's' }}
           no recibi{{ faltantesUltimoEnvio.length === 1 ? 'ó' : 'eron' }} su reporte más reciente
         </span>
@@ -63,7 +63,8 @@
             <span class="flex items-center gap-3 text-xs">
               <span class="font-bold" style="color: #10B981;">{{ batch.ok }} enviados</span>
               <span v-if="batch.err" class="font-bold" style="color: #D64455;">{{ batch.err }} con error</span>
-              <i class="pi text-[10px]" :class="batchesAbiertos.has(batch.enviadoEn) ? 'pi-chevron-down' : 'pi-chevron-right'" style="color:#9b89b5;" />
+              <ChevronDownIcon v-if="batchesAbiertos.has(batch.enviadoEn)" class="text-[10px] size-[1em]" style="color:#9b89b5;" />
+              <ChevronRightIcon v-else class="text-[10px] size-[1em]" style="color:#9b89b5;" />
             </span>
           </button>
           <div v-if="batchesAbiertos.has(batch.enviadoEn)" class="border-t" style="border-color: #e8e0f0;">
@@ -97,7 +98,7 @@
       <!-- Por destinatario -->
       <template v-else>
         <IconField style="max-width: 280px;">
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="busquedaDest" placeholder="Buscar destinatario…" class="w-full" />
         </IconField>
 
@@ -116,7 +117,7 @@
                 Último intento falló — {{ d.ultima.error }}
               </p>
               <p v-if="d.faltoUltimoEnvio" class="text-xs font-semibold mt-0.5" style="color: #A8590B;">
-                <i class="pi pi-exclamation-triangle text-[10px] mr-1" />No recibió el reporte del {{ d.periodoEsperado }}
+                <TriangleAlertIcon class="text-[10px] mr-1 size-[1em]" />No recibió el reporte del {{ d.periodoEsperado }}
               </p>
             </div>
             <div class="text-right flex-shrink-0">
@@ -137,6 +138,7 @@ import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import api from '~/core/client'
+import { ChevronDownIcon, ChevronRightIcon, LoaderCircleIcon, SearchIcon, TriangleAlertIcon } from '@lucide/vue'
 
 // Ventana para agrupar filas de email_envios en un solo "envio" (accion de
 // clic en Enviar): cada fila se guarda con su propio enviado_at (segundos

@@ -1,3 +1,5 @@
+import type { Component } from 'vue'
+import { CircleQuestionMarkIcon, GaugeIcon, ServerIcon, TagIcon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 // Título y categoría de una falla, derivados de la CLASIFICACIÓN ESTRUCTURADA
 // reportada (equipo / evento / detalle del elemento), con respaldo al tipo legacy
 // para fallas viejas sin clasificación. Evita que el tipo_id legacy muestre títulos
@@ -46,12 +48,22 @@ const COLOR_CAT: Record<string, string> = {
 }
 
 // Ícono por sistema (coincide con ESTRUCTURA_FALLAS del backend).
-const ICONO_CAT: Record<string, string> = {
-  red: 'pi pi-bolt',
-  frontera: 'pi pi-gauge',
-  inversores: 'pi pi-server',
-  generando_sin_datos: 'pi pi-question-circle',
-  eventos_adversos: 'pi pi-exclamation-triangle',
+//
+// El backend manda además un `icono` propio en `GET /fallas/estructura`, pero es
+// una clase de PrimeIcons y ya no hay icon-font que la pinte.
+// La traducción vive aquí, del código de categoría al componente de `@lucide/vue`,
+// para no depender de la forma de ese campo.
+const ICONO_CAT: Record<string, Component> = {
+  red: ZapIcon,
+  frontera: GaugeIcon,
+  inversores: ServerIcon,
+  generando_sin_datos: CircleQuestionMarkIcon,
+  eventos_adversos: TriangleAlertIcon,
+}
+
+/** Ícono del sistema afectado, por código de categoría del backend. */
+export function iconoCategoriaFalla(codigo: string | null | undefined): Component {
+  return (codigo && ICONO_CAT[codigo]) || TagIcon
 }
 
 // Título específico: el equipo/evento/detalle reportado.
@@ -106,7 +118,8 @@ export interface ClasificacionDetalle {
   categoria: string
   categoriaEtiqueta: string
   categoriaColor: string
-  icono: string
+  /** Componente de `@lucide/vue`. */
+  icono: Component
   subtitulo: string
   detalle: string | null
   pendienteReclasificar: boolean
@@ -147,7 +160,7 @@ export function clasificacionDetalle(f: Falla | null | undefined): Clasificacion
     categoria: cat,
     categoriaEtiqueta: c.categoria_etiqueta || cat,
     categoriaColor: COLOR_CAT[cat] || f?.tipo?.categoria?.color_hex || '#915BD8',
-    icono: ICONO_CAT[cat] || 'pi pi-tag',
+    icono: iconoCategoriaFalla(cat),
     subtitulo: c.subtipo_etiqueta || '',
     detalle: c.detalle || null,
     pendienteReclasificar: !!f?.pendiente_reclasificar,

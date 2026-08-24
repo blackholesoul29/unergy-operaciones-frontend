@@ -6,9 +6,9 @@
         <div class="mf-sub">Estado de firma de mandatos de ingresos y costos · {{ periodoLabel }}</div>
       </div>
       <div class="mf-period">
-        <button class="mf-arrow" @click="stepMes(-1)" title="Mes anterior"><i class="pi pi-chevron-left" /></button>
+        <button class="mf-arrow" @click="stepMes(-1)" title="Mes anterior"><ChevronLeftIcon class="size-[1em]" /></button>
         <span class="mf-perlabel">{{ periodoLabel }}</span>
-        <button class="mf-arrow" :disabled="esMesActual" @click="stepMes(1)" title="Mes siguiente"><i class="pi pi-chevron-right" /></button>
+        <button class="mf-arrow" :disabled="esMesActual" @click="stepMes(1)" title="Mes siguiente"><ChevronRightIcon class="size-[1em]" /></button>
       </div>
     </div>
 
@@ -60,6 +60,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '~/core/client'
+import { ChevronLeftIcon, ChevronRightIcon } from '@lucide/vue'
 
 function mesISO (delta = 0) {
   const n = new Date()

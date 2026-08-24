@@ -1,9 +1,10 @@
 <template>
   <div class="cgm-root">
     <header class="cgm-topbar">
-      <span class="cgm-brand"><i class="pi pi-envelope" /> Reporte CGM</span>
+      <span class="cgm-brand"><MailIcon class="size-[1em]" /> Reporte CGM</span>
       <button class="cgm-icon-btn" :disabled="loading" @click="loadData" title="Actualizar">
-        <i :class="loading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+        <LoaderCircleIcon v-if="loading" class="size-[1em] animate-spin" />
+        <RefreshCwIcon v-else class="size-[1em]" />
       </button>
     </header>
 
@@ -29,7 +30,7 @@
 
       <input v-model="busqueda" type="text" placeholder="Buscar destinatario…" class="cgm-search" />
 
-      <div v-if="loading" class="cgm-loading"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
+      <div v-if="loading" class="cgm-loading"><LoaderCircleIcon class="size-[1em] animate-spin" /> Cargando…</div>
 
       <template v-else>
         <div v-if="!destinatariosFiltrados.length" class="cgm-empty">Ningún destinatario coincide con el filtro.</div>
@@ -46,7 +47,7 @@
                 {{ row.tipo }}
               </span>
               <span class="cgm-proj-count">
-                <i class="pi pi-chevron-down cgm-chev" :class="{ 'cgm-chev--open': expanded.has(row.key) }" />
+                <ChevronDownIcon class="cgm-chev size-[1em]" :class="{ 'cgm-chev--open': expanded.has(row.key) }" />
                 {{ labelProyectos(row) }}
               </span>
             </div>
@@ -86,7 +87,8 @@
 
     <div class="cgm-send-bar">
       <button class="cgm-send-btn" :disabled="!totalSeleccionados || enviando" @click="enviarSeleccionados">
-        <i :class="['pi', enviando ? 'pi-spin pi-spinner' : 'pi-send']" />
+        <LoaderCircleIcon v-if="enviando" class="size-[1em] animate-spin" />
+        <SendIcon v-else class="size-[1em]" />
         {{ enviando ? 'Enviando…' : `Enviar a ${totalSeleccionados}` }}
       </button>
     </div>
@@ -97,12 +99,12 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { formatearNombre } from '~/utils/nombreFormato'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
+import { ChevronDownIcon, LoaderCircleIcon, MailIcon, RefreshCwIcon, SendIcon } from '@lucide/vue'
 
-const toast = useToast()
 
 function fechaStr(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -259,14 +261,17 @@ async function enviarSeleccionados() {
     })
     const ok = data.resultados.filter(r => r.ok)
     const conError = data.resultados.filter(r => !r.ok)
-    toast.add({
-      severity: conError.length ? 'warn' : 'success',
-      summary: `${ok.length} enviado${ok.length === 1 ? '' : 's'}${conError.length ? `, ${conError.length} con error` : ''}`,
-      detail: conError.length ? conError.map(r => `${r.nombre}: ${r.error}`).join(' · ') : undefined,
-      life: 6000,
-    })
+    const resumen = `${ok.length} enviado${ok.length === 1 ? '' : 's'}${conError.length ? `, ${conError.length} con error` : ''}`
+    if (conError.length) {
+      toast.warning(resumen, {
+        description: conError.map(r => `${r.nombre}: ${r.error}`).join(' · '),
+        duration: 6000,
+      })
+    } else {
+      toast.success(resumen, { duration: 6000 })
+    }
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al enviar', detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('Error al enviar', { description: e.response?.data?.detail || e.message, duration: 5000 })
   } finally {
     enviando.value = false
   }
@@ -290,7 +295,7 @@ onMounted(loadData)
   background: #2C2039; color: #fff;
 }
 .cgm-brand { flex: 1; font-size: clamp(15px, 4.2vw, 17px); font-weight: 700; letter-spacing: .2px; }
-.cgm-brand .pi { color: #F6FF72; margin-right: 6px; }
+.cgm-brand svg { color: #F6FF72; margin-right: 6px; }
 .cgm-icon-btn {
   width: 36px; height: 36px; border-radius: 10px; border: none;
   background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; flex-shrink: 0;
@@ -320,7 +325,7 @@ onMounted(loadData)
 .cgm-search::placeholder { color: #c4b8d4; }
 
 .cgm-loading { display: flex; align-items: center; gap: 8px; color: #6b5a8a; font-size: 13.5px; padding: 14px 4px; }
-.cgm-loading .pi-spinner { color: #915BD8; }
+.cgm-loading svg { color: #915BD8; }
 .cgm-empty { color: #9ca3af; font-size: 13px; padding: 20px 4px; text-align: center; }
 
 .cgm-card {

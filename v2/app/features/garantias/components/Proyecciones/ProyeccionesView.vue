@@ -12,8 +12,12 @@
         <InputNumber v-model="kwhPlantaNueva" :min="0" :step="10" suffix=" kWh"
           style="width:11rem" @update:modelValue="cargar" />
       </div>
-      <Button label="Recalcular" icon="pi pi-refresh" :loading="cargando" @click="cargar" outlined />
-      <Button label="Guardar snapshot" icon="pi pi-save" :loading="guardando" @click="guardar" />
+      <Button label="Recalcular" :loading="cargando" @click="cargar" outlined>
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
+      <Button label="Guardar snapshot" :loading="guardando" @click="guardar">
+        <template #icon><SaveIcon class="size-[1em]" /></template>
+      </Button>
       <div v-if="data" class="ml-auto text-xs" style="color:#6b5a8a">
         Corte: <b>{{ data.fecha_corte }}</b> · Precio bolsa:
         <b>{{ data.precio_bolsa_cop_kwh != null ? fmtCOP(data.precio_bolsa_cop_kwh) + '/kWh' : '—' }}</b>
@@ -50,8 +54,9 @@
             <InputNumber v-model="v.pagado" :min="0" mode="currency" currency="COP" locale="es-CO"
               :maxFractionDigits="0" size="small" style="width:11rem"
               @keyup.enter="guardarPagado(v)" />
-            <Button label="Calcular saldo" icon="pi pi-calculator" size="small" outlined
-              :loading="v._guardando" @click="guardarPagado(v)" />
+            <Button label="Calcular saldo" size="small" outlined :loading="v._guardando" @click="guardarPagado(v)">
+              <template #icon><CalculatorIcon class="size-[1em]" /></template>
+            </Button>
           </div>
           <div v-if="v.saldo != null" class="text-sm font-semibold"
             :style="v.saldo >= 0 ? 'color:#059669' : 'color:#DC2626'">
@@ -65,7 +70,9 @@
     <div class="mt-6">
       <div class="flex items-center justify-between mb-2">
         <span class="text-sm font-semibold" style="color:#2C2039">Histórico de snapshots</span>
-        <Button label="Refrescar" icon="pi pi-history" text size="small" @click="cargarHistorial" />
+        <Button label="Refrescar" text size="small" @click="cargarHistorial">
+          <template #icon><HistoryIcon class="size-[1em]" /></template>
+        </Button>
       </div>
       <div v-if="historial.length" class="overflow-x-auto rounded-lg border" style="border-color:rgba(44,32,57,0.10)">
         <table class="w-full text-xs">
@@ -95,15 +102,15 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import { fmtCOP } from '../AjustesXM/utils/formatters.js'
 import { ProyeccionesGarantiasService } from '~/features/garantias/services/proyecciones'
+import { CalculatorIcon, HistoryIcon, RefreshCwIcon, SaveIcon } from '@lucide/vue'
 
 const proyeccionesApi = new ProyeccionesGarantiasService()
 
-const toast = useToast()
 const MESES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
   'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
 
@@ -133,8 +140,10 @@ async function cargar() {
       kwhPlantaNueva: kwhPlantaNueva.value || 0,
     })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo calcular la proyección',
-      detail: e.response?.data?.detail || e.message, life: 6000 })
+    toast.error('No se pudo calcular la proyección', {
+      description: e.response?.data?.detail || e.message,
+      duration: 6000,
+    })
   } finally {
     cargando.value = false
   }
@@ -145,8 +154,10 @@ async function cargarHistorial() {
     const r = await proyeccionesApi.obtenerHistorial()
     historial.value = r.snapshots || []
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo cargar el histórico',
-      detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo cargar el histórico', {
+      description: e.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   }
 }
 
@@ -158,8 +169,10 @@ async function guardarPagado(v) {
     // pierde el foco): saldo = pagado − garantía estimada.
     v.saldo = (v.pagado || 0) - (v.garantia_total || 0)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar el pagado',
-      detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('No se pudo guardar el pagado', {
+      description: e.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   } finally {
     v._guardando = false
   }
@@ -172,11 +185,13 @@ async function guardar() {
       plantasNuevas: plantasNuevas.value || 0,
       kwhPlantaNueva: kwhPlantaNueva.value || 0,
     })
-    toast.add({ severity: 'success', summary: 'Snapshot guardado', life: 3000 })
+    toast.success('Snapshot guardado', { duration: 3000 })
     await cargarHistorial()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar el snapshot',
-      detail: e.response?.data?.detail || e.message, life: 6000 })
+    toast.error('No se pudo guardar el snapshot', {
+      description: e.response?.data?.detail || e.message,
+      duration: 6000,
+    })
   } finally {
     guardando.value = false
   }

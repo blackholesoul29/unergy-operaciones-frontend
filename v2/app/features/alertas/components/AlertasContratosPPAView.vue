@@ -2,9 +2,11 @@
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center gap-3">
-      <Button icon="pi pi-arrow-left" text @click="$router.back()" class="-ml-2" />
+      <Button text @click="$router.back()" class="-ml-2">
+        <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+      </Button>
       <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
-        <i class="pi pi-bolt text-amber-500 text-sm" />
+        <ZapIcon class="text-amber-500 text-sm size-[1em]" />
       </div>
       <div>
         <h2 class="text-xl font-bold text-gray-800">Alertas — Contratos PPA</h2>
@@ -23,7 +25,7 @@
       <div class="grid grid-cols-2 gap-4">
         <div class="rounded-xl border border-orange-100 bg-orange-50 p-5 flex items-center gap-4">
           <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
-            <i class="pi pi-user-minus text-orange-500 text-xl" />
+            <UserMinusIcon class="text-orange-500 text-xl size-[1em]" />
           </div>
           <div>
             <p class="text-2xl font-bold text-orange-600">{{ huerfanos.length }}</p>
@@ -33,7 +35,7 @@
         </div>
         <div class="rounded-xl border border-red-100 bg-red-50 p-5 flex items-center gap-4">
           <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-            <i class="pi pi-copy text-red-500 text-xl" />
+            <CopyIcon class="text-red-500 text-xl size-[1em]" />
           </div>
           <div>
             <p class="text-2xl font-bold text-red-600">{{ duplicados.length }}</p>
@@ -46,7 +48,7 @@
       <!-- ── Sección Huérfanos ── -->
       <div class="space-y-3">
         <div class="flex items-center gap-2">
-          <i class="pi pi-user-minus text-orange-500" />
+          <UserMinusIcon class="text-orange-500 size-[1em]" />
           <h3 class="font-semibold text-gray-700">Proyectos huérfanos</h3>
           <Tag :value="`${huerfanos.length}`" severity="warn" class="text-xs" />
         </div>
@@ -57,7 +59,7 @@
 
         <div v-if="huerfanos.length === 0"
           class="flex flex-col items-center py-8 gap-2 text-gray-400">
-          <i class="pi pi-check-circle text-green-400 text-3xl" />
+          <CircleCheckIcon class="text-green-400 text-3xl size-[1em]" />
           <p class="text-sm">Todos los proyectos tienen contrato activo en GESCON.</p>
         </div>
 
@@ -84,8 +86,9 @@
           <Column header="" style="width:60px">
             <template #body="{ data }">
               <RouterLink :to="`/proyectos/${data.proyecto_id}/ppa`">
-                <Button icon="pi pi-bolt" text size="small" severity="warning"
-                  v-tooltip="'Ver PPA'" />
+                <Button text size="small" severity="warning" v-tooltip="'Ver PPA'">
+                  <template #icon><ZapIcon class="size-[1em]" /></template>
+                </Button>
               </RouterLink>
             </template>
           </Column>
@@ -97,7 +100,7 @@
       <!-- ── Sección Duplicados ── -->
       <div class="space-y-3">
         <div class="flex items-center gap-2">
-          <i class="pi pi-copy text-red-500" />
+          <CopyIcon class="text-red-500 size-[1em]" />
           <h3 class="font-semibold text-gray-700">Proyectos duplicados</h3>
           <Tag :value="`${duplicados.length}`" severity="danger" class="text-xs" />
         </div>
@@ -108,7 +111,7 @@
 
         <div v-if="duplicados.length === 0"
           class="flex flex-col items-center py-8 gap-2 text-gray-400">
-          <i class="pi pi-check-circle text-green-400 text-3xl" />
+          <CircleCheckIcon class="text-green-400 text-3xl size-[1em]" />
           <p class="text-sm">No hay proyectos con contratos duplicados.</p>
         </div>
 
@@ -148,8 +151,9 @@
               <Column header="" style="width:50px">
                 <template #body="{ data }">
                   <RouterLink :to="`/mem/gescon`">
-                    <Button icon="pi pi-external-link" text size="small" severity="secondary"
-                      v-tooltip="`SIC ${data.codigo_sic_contrato}`" />
+                    <Button text size="small" severity="secondary" v-tooltip="`SIC ${data.codigo_sic_contrato}`">
+                      <template #icon><ExternalLinkIcon class="size-[1em]" /></template>
+                    </Button>
                   </RouterLink>
                 </template>
               </Column>
@@ -171,6 +175,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Divider from 'primevue/divider'
 import api from '~/core/client'
+import { ArrowLeftIcon, CircleCheckIcon, CopyIcon, ExternalLinkIcon, UserMinusIcon, ZapIcon } from '@lucide/vue'
 
 const loading = ref(true)
 const fechaConsulta = ref('')

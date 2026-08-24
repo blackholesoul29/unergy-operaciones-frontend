@@ -1,6 +1,6 @@
 <template>
   <div v-if="loading" class="flex items-center justify-center py-12">
-    <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+    <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
   </div>
   <div v-else-if="detalle" class="space-y-5">
     <div class="flex items-center justify-between flex-wrap gap-2">
@@ -23,8 +23,8 @@
       <div class="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <p class="text-sm font-semibold" style="color: #2C2039;">
-            <i :class="detalle.medidor_usado === 'excel_terceros' ? 'pi pi-check-circle' : 'pi pi-file-excel'"
-               class="text-xs mr-1.5" :style="detalle.medidor_usado === 'excel_terceros' ? 'color: #059669;' : ''" />
+            <CircleCheckIcon v-if="detalle.medidor_usado === 'excel_terceros'" class="text-xs mr-1.5 size-[1em]" :style="detalle.medidor_usado === 'excel_terceros' ? 'color: #059669;' : ''" />
+            <FileSpreadsheetIcon v-else class="text-xs mr-1.5 size-[1em]" :style="detalle.medidor_usado === 'excel_terceros' ? 'color: #059669;' : ''" />
             {{ detalle.medidor_usado === 'excel_terceros' ? 'Cargado desde Excel de terceros' : 'Esperando Excel de terceros' }}
           </p>
           <p v-if="detalle.medidor_usado === 'excel_terceros'" class="text-xs mt-1" style="color: #6b5a8a;">
@@ -39,11 +39,12 @@
         <div class="flex items-center gap-2">
           <input ref="fileInputExcelTerceros" type="file" accept=".xlsx,.xls" class="hidden"
                  @change="onArchivoExcelTercerosSeleccionado" />
-          <Button label="Cargar Excel" size="small" icon="pi pi-upload"
-                  :loading="subiendoExcelTerceros" @click="fileInputExcelTerceros?.click()" />
-          <Button v-if="detalle.medidor_usado === 'excel_terceros'" label="Eliminar carga" size="small"
-                  icon="pi pi-trash" severity="danger" outlined
-                  :loading="eliminandoExcelTerceros" @click="eliminarExcelTerceros" />
+          <Button label="Cargar Excel" size="small" :loading="subiendoExcelTerceros" @click="fileInputExcelTerceros?.click()">
+            <template #icon><UploadIcon class="size-[1em]" /></template>
+          </Button>
+          <Button v-if="detalle.medidor_usado === 'excel_terceros'" label="Eliminar carga" size="small" severity="danger" outlined :loading="eliminandoExcelTerceros" @click="eliminarExcelTerceros">
+            <template #icon><Trash2Icon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </div>
@@ -103,7 +104,7 @@
           class="text-xs underline" style="color: #915BD8;">Ver todas</RouterLink>
       </div>
       <p v-if="!fallasActivas.length" class="text-xs" style="color: #9b89b5;">
-        <i class="pi pi-check-circle text-xs mr-1" style="color: #10B981;" />Sin fallas activas registradas.
+        <CircleCheckIcon class="text-xs mr-1 size-[1em]" style="color: #10B981;" />Sin fallas activas registradas.
       </p>
       <div v-else class="space-y-2">
         <RouterLink v-for="f in fallasActivas" :key="f.id" :to="`/fallas/${f.id}`"
@@ -149,8 +150,9 @@
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <div class="flex items-center justify-between mb-3">
         <p class="text-xs font-semibold uppercase" style="color: #6b5a8a;">Detalle de las fuentes</p>
-        <Button label="Recuperar medidor" icon="pi pi-refresh" size="small" severity="secondary" outlined
-          :loading="recuperandoMedidor" @click="recuperarMedidor" />
+        <Button label="Recuperar medidor" size="small" severity="secondary" outlined :loading="recuperandoMedidor" @click="recuperarMedidor">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
       </div>
       <div v-for="aviso in avisosMedidor" :key="aviso.etiqueta" class="flex items-start gap-2.5 rounded-lg px-3 py-2.5 mb-3"
            style="background: rgba(37,124,214,0.08); border: 1px solid #257CD6;">
@@ -222,8 +224,9 @@
       </p>
       <div class="flex items-center justify-between mt-2">
         <div class="flex items-center gap-2">
-          <Button label="Limpiar curva" icon="pi pi-eraser" size="small" severity="danger" outlined
-            @click="limpiarCurva" />
+          <Button label="Limpiar curva" size="small" severity="danger" outlined @click="limpiarCurva">
+            <template #icon><EraserIcon class="size-[1em]" /></template>
+          </Button>
           <!-- El relleno horario (medidor cruzado / reconectador / Solenium
                × FP / histórico) ya no aplica solo durante la clasificación
                -- queda a criterio de la persona: reportar la curva tal como
@@ -237,12 +240,15 @@
                2026-08-20: 6h vacía después de rellenar 7h-11h/17h-18h). -->
           <Button v-if="hayHuecosSinRellenar && !hayHorasRelleno(detalle)" label="Rellenar horas" size="small" severity="secondary" outlined
             :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
-          <Button v-if="hayHorasRelleno(detalle)" label="Deshacer relleno" icon="pi pi-undo" size="small" severity="secondary" outlined
-            :loading="deshaciendoRelleno" :disabled="hayCambiosSinGuardar" @click="deshacerRelleno" />
+          <Button v-if="hayHorasRelleno(detalle)" label="Deshacer relleno" size="small" severity="secondary" outlined :loading="deshaciendoRelleno" :disabled="hayCambiosSinGuardar" @click="deshacerRelleno">
+            <template #icon><UndoIcon class="size-[1em]" /></template>
+          </Button>
           <div v-if="!esCasoConfiado" class="relative">
-            <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
+            <Button label="Reportar con otra fuente" class="flex-row-reverse" size="small"
               style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
-              @click="mostrarMenuReportar = !mostrarMenuReportar" />
+              @click="mostrarMenuReportar = !mostrarMenuReportar">
+              <template #icon><ChevronDownIcon class="size-[1em]" /></template>
+            </Button>
             <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
             <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
                  style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
@@ -275,7 +281,7 @@
         <div class="flex items-start justify-between gap-3">
           <div>
             <p class="text-sm font-semibold" style="color: #A8590B;">
-              <i class="pi pi-ban text-xs mr-1.5" />Excluida temporalmente
+              <BanIcon class="text-xs mr-1.5 size-[1em]" />Excluida temporalmente
             </p>
             <p class="text-xs mt-1" style="color: #6b5a8a;">
               {{ exclusionActiva.motivo }}
@@ -286,7 +292,7 @@
             </p>
           </div>
           <button type="button" class="text-xs font-semibold flex-none" style="color: #6E3FB8;" @click="iniciarEdicionExclusion">
-            <i class="pi pi-pencil text-[10px] mr-1" />Editar
+            <PencilIcon class="text-[10px] mr-1 size-[1em]" />Editar
           </button>
         </div>
         <Button label="Marcar resuelta" severity="secondary" outlined size="small" class="mt-3"
@@ -343,7 +349,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
@@ -351,6 +357,7 @@ import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
 import Textarea from 'primevue/textarea'
 import CurvaChart from './ReporteEnergiaCurvaChart.vue'
+import { BanIcon, ChevronDownIcon, CircleCheckIcon, EraserIcon, FileSpreadsheetIcon, LoaderCircleIcon, PencilIcon, RefreshCwIcon, Trash2Icon, UndoIcon, UploadIcon } from '@lucide/vue'
 
 const props = defineProps({
   fronteraId: { type: Number, required: true },
@@ -358,7 +365,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['actualizado'])
 
-const toast = useToast()
 const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
@@ -420,10 +426,10 @@ async function crearExclusionActual() {
     })
     nuevaExclusionMotivo.value = ''
     nuevaExclusionFechaFin.value = null
-    toast.add({ severity: 'success', summary: 'Frontera excluida', life: 2500 })
+    toast.success('Frontera excluida', { duration: 2500 })
     await cargarExclusiones()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear la exclusión.', life: 4000 })
+    toast.error('Error', { description: 'No se pudo crear la exclusión.', duration: 4000 })
   } finally {
     creandoExclusion.value = false
   }
@@ -434,10 +440,10 @@ async function resolverExclusionActual() {
   resolviendoExclusion.value = true
   try {
     await api.post(`/reporte-energia/exclusiones/${exclusionActiva.value.id}/resolver`)
-    toast.add({ severity: 'success', summary: 'Exclusión resuelta', life: 2500 })
+    toast.success('Exclusión resuelta', { duration: 2500 })
     await cargarExclusiones()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo resolver la exclusión.', life: 4000 })
+    toast.error('Error', { description: 'No se pudo resolver la exclusión.', duration: 4000 })
   } finally {
     resolviendoExclusion.value = false
   }
@@ -460,13 +466,13 @@ async function guardarEdicionExclusion() {
       motivo: nuevaExclusionMotivo.value.trim(),
       fecha_fin_estimada: nuevaExclusionFechaFin.value ? nuevaExclusionFechaFin.value.toISOString().slice(0, 10) : null,
     })
-    toast.add({ severity: 'success', summary: 'Exclusión actualizada', life: 2500 })
+    toast.success('Exclusión actualizada', { duration: 2500 })
     editandoExclusion.value = false
     nuevaExclusionMotivo.value = ''
     nuevaExclusionFechaFin.value = null
     await cargarExclusiones()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo actualizar la exclusión.', life: 4000 })
+    toast.error('Error', { description: 'No se pudo actualizar la exclusión.', duration: 4000 })
   } finally {
     editandoExclusionGuardando.value = false
   }
@@ -485,7 +491,7 @@ async function cargar() {
     fuenteManualElegida.value = null
     cargarFallasActivas(data.proyecto_id)
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el detalle.', life: 4000 })
+    toast.error('Error', { description: 'No se pudo cargar el detalle.', duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -574,15 +580,17 @@ async function onArchivoExcelTercerosSeleccionado(event) {
     const fd = new FormData()
     fd.append('archivo', file)
     const { data } = await api.post(`/reporte-energia/fronteras/${props.fronteraId}/cargar-excel-terceros`, fd)
-    toast.add({
-      severity: 'success', summary: 'Excel cargado',
-      detail: `Se cargaron ${data.fechas_cargadas.length} día(s): ${data.fechas_cargadas.join(', ')}`,
-      life: 4000,
+    toast.success('Excel cargado', {
+      description: `Se cargaron ${data.fechas_cargadas.length} día(s): ${data.fechas_cargadas.join(', ')}`,
+      duration: 4000,
     })
     await cargar()
     emit('actualizado')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo cargar el Excel.', life: 5000 })
+    toast.error('Error', {
+      description: e?.response?.data?.detail || 'No se pudo cargar el Excel.',
+      duration: 5000,
+    })
   } finally {
     subiendoExcelTerceros.value = false
   }
@@ -597,11 +605,14 @@ async function eliminarExcelTerceros() {
     await api.delete(`/reporte-energia/fronteras/${props.fronteraId}/cargar-excel-terceros`, {
       params: { fecha: props.fecha },
     })
-    toast.add({ severity: 'success', summary: 'Carga eliminada', life: 2500 })
+    toast.success('Carga eliminada', { duration: 2500 })
     await cargar()
     emit('actualizado')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e?.response?.data?.detail || 'No se pudo eliminar la carga.', life: 5000 })
+    toast.error('Error', {
+      description: e?.response?.data?.detail || 'No se pudo eliminar la carga.',
+      duration: 5000,
+    })
   } finally {
     eliminandoExcelTerceros.value = false
   }
@@ -678,12 +689,12 @@ async function rellenarHorario() {
     )
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
-    toast.add({ severity: 'success', summary: 'Horas rellenadas', life: 2500 })
+    toast.success('Horas rellenadas', { duration: 2500 })
     emit('actualizado')
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo rellenar',
-      detail: e?.response?.data?.detail || 'Ninguna fuente tenía dato para las horas faltantes.', life: 4000,
+    toast.error('No se pudo rellenar', {
+      description: e?.response?.data?.detail || 'Ninguna fuente tenía dato para las horas faltantes.',
+      duration: 4000,
     })
   } finally {
     rellenando.value = false
@@ -699,12 +710,12 @@ async function deshacerRelleno() {
     )
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
-    toast.add({ severity: 'success', summary: 'Relleno deshecho', life: 2500 })
+    toast.success('Relleno deshecho', { duration: 2500 })
     emit('actualizado')
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo deshacer',
-      detail: e?.response?.data?.detail || 'No se pudo deshacer el relleno.', life: 4000,
+    toast.error('No se pudo deshacer', {
+      description: e?.response?.data?.detail || 'No se pudo deshacer el relleno.',
+      duration: 4000,
     })
   } finally {
     deshaciendoRelleno.value = false
@@ -719,21 +730,21 @@ async function deshacerRelleno() {
 // 'Reportar con otra fuente' reflejen el valor recuperado (2026-08-20).
 async function recuperarMedidor() {
   recuperandoMedidor.value = true
-  toast.add({ severity: 'info', summary: 'Recuperando medidor', detail: 'Puede tardar hasta 90 segundos...', life: 4000 })
+  toast.info('Recuperando medidor', { description: 'Puede tardar hasta 90 segundos...', duration: 4000 })
   try {
     const { data } = await api.post(
       `/reporte-energia/fronteras/${props.fronteraId}/recuperar-medidor`, null,
       { params: { fecha: props.fecha }, timeout: 120000 },
     )
     detalle.value = data
-    toast.add({
-      severity: 'success', summary: 'Recuperación completada',
-      detail: data.recuperacion_datos || 'Sin medidores para recuperar.', life: 5000,
+    toast.success('Recuperación completada', {
+      description: data.recuperacion_datos || 'Sin medidores para recuperar.',
+      duration: 5000,
     })
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo recuperar',
-      detail: e?.response?.data?.detail || 'Falló la recuperación del medidor.', life: 4000,
+    toast.error('No se pudo recuperar', {
+      description: e?.response?.data?.detail || 'Falló la recuperación del medidor.',
+      duration: 4000,
     })
   } finally {
     recuperandoMedidor.value = false
@@ -800,9 +811,9 @@ function elegirFuenteReportar(op) {
   mostrarMenuReportar.value = false
   curvaEditable.value = [...op.curva]
   fuenteManualElegida.value = op.key === 'tipica' ? 'historico' : op.key
-  toast.add({
-    severity: 'info', summary: `${op.nombre} aplicado`,
-    detail: `${fmtKwh(op.valor)} -- revisa y guarda si está bien.`, life: 4000,
+  toast.info(`${op.nombre} aplicado`, {
+    description: `${fmtKwh(op.valor)} -- revisa y guarda si está bien.`,
+    duration: 4000,
   })
 }
 
@@ -824,10 +835,10 @@ async function guardarCurva() {
       { params: { fecha: props.fecha } },
     )
     detalle.value = data
-    toast.add({ severity: 'success', summary: 'Corrección guardada', life: 2500 })
+    toast.success('Corrección guardada', { duration: 2500 })
     emit('actualizado')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la corrección.', life: 4000 })
+    toast.error('Error', { description: 'No se pudo guardar la corrección.', duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -840,10 +851,10 @@ async function validar() {
       params: { fecha: props.fecha },
     })
     detalle.value.revisar_manualmente = false
-    toast.add({ severity: 'success', summary: 'Validado', life: 2000 })
+    toast.success('Validado', { duration: 2000 })
     emit('actualizado')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo validar.', life: 4000 })
+    toast.error('Error', { description: 'No se pudo validar.', duration: 4000 })
   } finally {
     validando.value = false
   }

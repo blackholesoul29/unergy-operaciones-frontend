@@ -71,8 +71,7 @@
     <div v-if="inscritas.length > 1" class="flex flex-col gap-1">
       <label class="text-xs font-medium" style="color:#6b5a8a;">
         Planta que modifica esta solicitud *
-        <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
-          v-tooltip.top="'Este SIC tiene varias plantas inscritas a la vez. Las demás siguen intactas: solo se releva la que elijas aquí.'" />
+        <InfoIcon class="text-xs cursor-help size-[1em]" style="color:#9b89b5;" v-tooltip.top="'Este SIC tiene varias plantas inscritas a la vez. Las demás siguen intactas: solo se releva la que elijas aquí.'" />
       </label>
       <Select v-model="proyectoSalienteId" :options="inscritas" optionValue="proyecto_id"
         optionLabel="planta_nombre" placeholder="Seleccionar" class="w-full"
@@ -124,8 +123,7 @@
       <div class="flex flex-col gap-1">
         <div class="flex items-center gap-2">
           <label class="text-xs font-medium" style="color:#6b5a8a;">Modalidad de suministro de la planta</label>
-          <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
-            v-tooltip.top="'Normal: suministro propio de la planta. Compra en bolsa: la planta ya está comprometida en otro contrato; su aporte aquí se cubre comprando en bolsa (genera garantías). Uso del recurso: el cliente está en bolsa y se le paga su generación a precio bolsa (sin garantías).'" />
+          <InfoIcon class="text-xs cursor-help size-[1em]" style="color:#9b89b5;" v-tooltip.top="'Normal: suministro propio de la planta. Compra en bolsa: la planta ya está comprometida en otro contrato; su aporte aquí se cubre comprando en bolsa (genera garantías). Uso del recurso: el cliente está en bolsa y se le paga su generación a precio bolsa (sin garantías).'" />
         </div>
         <SelectButton v-model="modalidad" :options="MODALIDADES" optionLabel="label" optionValue="value"
           :allowEmpty="false" :disabled="!codigoSic"
@@ -136,7 +134,7 @@
     <!-- 4 · Resumen de lo que va a pasar -->
     <div v-if="resumen" class="rounded-lg px-3 py-2 text-xs flex items-start gap-2"
       style="background:#F3EEFB; border:1px solid #DCCFF2; color:#4A3570;">
-      <i class="pi pi-arrow-right-arrow-left mt-0.5" />
+      <ArrowRightLeftIcon class="mt-0.5 size-[1em]" />
       <span>{{ resumen }}</span>
     </div>
 
@@ -163,8 +161,9 @@
 
     <div class="flex justify-end gap-2 pt-2">
       <Button label="Cancelar" severity="secondary" type="button" @click="$emit('cancelar')" />
-      <Button label="Registrar modificación" icon="pi pi-check" type="submit" :loading="guardando"
-        style="background:#915BD8; border-color:#915BD8;" />
+      <Button label="Registrar modificación" type="submit" :loading="guardando" style="background:#915BD8; border-color:#915BD8;">
+        <template #icon><CheckIcon class="size-[1em]" /></template>
+      </Button>
     </div>
   </form>
 </template>
@@ -179,7 +178,8 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
+import { ArrowRightLeftIcon, CheckIcon, InfoIcon } from '@lucide/vue'
 import {
   opcionesSicVigentes, plantasInscritas,
   toIso, parseIso, fmtFecha as fmt, pctTexto, modalidadTexto,
@@ -191,7 +191,6 @@ const props = defineProps({
   estado: { type: String, default: 'publicado' },
 })
 const emit = defineEmits(['guardado', 'cancelar'])
-const toast = useToast()
 
 const MODALIDADES = [
   { label: 'Normal', value: 'normal' },
@@ -303,14 +302,12 @@ async function guardar() {
       observaciones: observaciones.value || null,
     }
     const { data } = await api.post('/asic/modificacion', payload)
-    toast.add({ severity: 'success', summary: 'Modificación registrada', detail: data.resumen, life: 6000 })
+    toast.success('Modificación registrada', { description: data.resumen, duration: 6000 })
     emit('guardado', data)
   } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: 'No se pudo registrar la modificación',
-      detail: e.response?.data?.detail || e.message,
-      life: 8000,
+    toast.error('No se pudo registrar la modificación', {
+      description: e.response?.data?.detail || e.message,
+      duration: 8000,
     })
   } finally {
     guardando.value = false

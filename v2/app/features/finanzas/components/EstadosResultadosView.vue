@@ -3,8 +3,12 @@
     <PageHeader title="Estados de resultados"
                 subtitle="Archivos generados en Drive · estados de resultados y cruce de facturas">
       <template #actions>
-        <Button label="Crear cruce facturas" icon="pi pi-file" size="small" outlined @click="abrirCrudo" />
-        <Button label="Generar estado de resultados" icon="pi pi-chart-line" size="small" @click="abrirEstado" />
+        <Button label="Crear cruce facturas" size="small" outlined @click="abrirCrudo">
+          <template #icon><FileIcon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Generar estado de resultados" size="small" @click="abrirEstado">
+          <template #icon><ChartLineIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -37,19 +41,19 @@
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
-          <InputIcon class="pi pi-search" />
+          <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
           <InputText v-model="q" placeholder="Cliente o proyecto…" class="w-64" />
         </IconField>
       </div>
 
       <div class="flex-1" />
 
-      <Button label="Descargar ZIP" icon="pi pi-download" size="small" outlined
-              :loading="descargandoZip" :disabled="!archivos.length"
-              v-tooltip.top="'Descarga en un ZIP todo lo que coincide con los filtros'"
-              @click="descargarZip" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar desde Drive'" @click="cargar(true)" />
+      <Button label="Descargar ZIP" size="small" outlined :loading="descargandoZip" :disabled="!archivos.length" v-tooltip.top="'Descarga en un ZIP todo lo que coincide con los filtros'" @click="descargarZip">
+        <template #icon><DownloadIcon class="size-[1em]" /></template>
+      </Button>
+      <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar desde Drive'" @click="cargar(true)">
+        <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+      </Button>
       <div class="text-xs text-gray-400 self-center">
         {{ filas.length }} archivo{{ filas.length === 1 ? '' : 's' }}
       </div>
@@ -58,20 +62,22 @@
     <!-- Aviso de listado recortado -->
     <div v-if="truncado" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FFF8E6; border:1px solid #F5E3B3; color:#7A5C00">
-      <i class="pi pi-exclamation-triangle" />
+      <TriangleAlertIcon class="size-[1em]" />
       Se muestran los {{ archivos.length }} más recientes de {{ totalFiltrados }}. Filtra por período para ver el resto.
     </div>
 
     <!-- Tabla -->
     <div class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
       <div v-if="loading" class="p-10 flex justify-center">
-        <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
+        <LoaderCircleIcon class="text-2xl text-gray-400 size-[1em] animate-spin" />
       </div>
 
       <div v-else-if="error" class="p-10 text-center">
-        <i class="pi pi-times-circle text-2xl mb-2 block" style="color:#DC2626" />
+        <CircleXIcon class="text-2xl mb-2 block size-[1em]" style="color:#DC2626" />
         <p class="text-sm text-gray-600">{{ error }}</p>
-        <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined class="mt-3" @click="cargar(true)" />
+        <Button label="Reintentar" size="small" outlined class="mt-3" @click="cargar(true)">
+          <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+        </Button>
       </div>
 
       <div v-else class="overflow-x-auto">
@@ -91,7 +97,7 @@
             <tr v-for="a in filas" :key="a.id"
                 class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
               <td class="px-4 py-2">
-                <i class="pi pi-file-excel mr-2 text-xs" style="color:#1D6F42" />
+                <FileSpreadsheetIcon class="mr-2 text-xs size-[1em]" style="color:#1D6F42" />
                 <span :title="a.nombre">{{ a.descripcion || 'Cruce de facturas' }}</span>
                 <span v-if="a.es_copia" class="ml-2 text-[10px] px-1.5 py-0.5 rounded"
                       style="background:#F1EAF9; color:#6E3FB8" title="Duplicado creado en Drive">copia</span>
@@ -102,19 +108,20 @@
               <td class="px-4 py-2 text-right text-xs font-mono text-gray-500">{{ fmtTamano(a.tamano) }}</td>
               <td class="px-4 py-2">
                 <div class="flex justify-end gap-1">
-                  <Button icon="pi pi-download" text rounded size="small" severity="secondary"
-                          :loading="descargando === a.id"
-                          v-tooltip.left="'Descargar archivo'" @click="descargarUno(a)" />
+                  <Button text rounded size="small" severity="secondary" :loading="descargando === a.id" v-tooltip.left="'Descargar archivo'" @click="descargarUno(a)">
+                    <template #icon><DownloadIcon class="size-[1em]" /></template>
+                  </Button>
                   <a v-if="a.link" :href="a.link" target="_blank" rel="noopener">
-                    <Button icon="pi pi-external-link" text rounded size="small" severity="info"
-                            v-tooltip.left="'Abrir en Drive'" />
+                    <Button text rounded size="small" severity="info" v-tooltip.left="'Abrir en Drive'">
+                      <template #icon><ExternalLinkIcon class="size-[1em]" /></template>
+                    </Button>
                   </a>
                 </div>
               </td>
             </tr>
             <tr v-if="!filas.length">
               <td :colspan="tipo === 'cruce_facturas' ? 6 : 5" class="px-4 py-12 text-center text-sm text-gray-400">
-                <i class="pi pi-folder-open text-2xl mb-2 block text-gray-300" />
+                <FolderOpenIcon class="text-2xl mb-2 block text-gray-300 size-[1em]" />
                 {{ q ? 'Ningún archivo coincide con la búsqueda.' : 'No hay archivos para este período.' }}
               </td>
             </tr>
@@ -141,17 +148,19 @@
           <Select v-model="er.version" :options="VERSIONES" class="w-full" />
         </div>
         <p class="text-[11px] text-gray-500">
-          <i class="pi pi-info-circle mr-1" />
+          <InfoIcon class="mr-1 size-[1em]" />
           Genera el archivo para todos los proyectos del período y lo deja en Drive.
           Puede tardar varios minutos.
         </p>
         <p v-if="progresoEr" class="text-[11px] text-gray-500 flex items-center gap-2">
-          <i class="pi pi-spin pi-spinner" /> {{ progresoEr }}
+          <LoaderCircleIcon class="size-[1em] animate-spin" /> {{ progresoEr }}
         </p>
         <div class="flex justify-end gap-2 pt-1">
           <Button type="button" label="Cancelar" severity="secondary" :disabled="generandoEr"
                   @click="estadoVisible = false" />
-          <Button type="submit" label="Generar" icon="pi pi-check" :loading="generandoEr" />
+          <Button type="submit" label="Generar" :loading="generandoEr">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </form>
     </Dialog>
@@ -174,16 +183,18 @@
           <Select v-model="cr.version" :options="VERSIONES" class="w-full" />
         </div>
         <p class="text-[11px] text-gray-500">
-          <i class="pi pi-info-circle mr-1" />
+          <InfoIcon class="mr-1 size-[1em]" />
           Verifica que lo repartido cuadre con la factura real de XM. Falla si falta cualquier insumo.
         </p>
         <p v-if="progresoCruce" class="text-[11px] text-gray-500 flex items-center gap-2">
-          <i class="pi pi-spin pi-spinner" /> {{ progresoCruce }}
+          <LoaderCircleIcon class="size-[1em] animate-spin" /> {{ progresoCruce }}
         </p>
         <div class="flex justify-end gap-2 pt-1">
           <Button type="button" label="Cancelar" severity="secondary" :disabled="generandoCruce"
                   @click="crudoVisible = false" />
-          <Button type="submit" label="Generar" icon="pi pi-check" :loading="generandoCruce" />
+          <Button type="submit" label="Generar" :loading="generandoCruce">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </form>
     </Dialog>
@@ -199,14 +210,14 @@ import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { VERSIONES, VERSION_INICIAL, AccionCiclo } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+import { ChartLineIcon, CheckIcon, CircleXIcon, DownloadIcon, ExternalLinkIcon, FileIcon, FileSpreadsheetIcon, FolderOpenIcon, InfoIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const liquidacionesApi = new LiquidacionesApiService()
 
-const toast = useToast()
 
 const TIPOS = [
   { key: 'estado_resultados', label: 'Estados de resultados' },
@@ -335,7 +346,7 @@ async function descargarUno(archivo) {
       { responseType: 'blob' })
     guardarBlob(resp.data, archivo.nombre)
   } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo descargar el archivo', life: 4000 })
+    toast.error('Error', { description: 'No se pudo descargar el archivo', duration: 4000 })
   } finally {
     descargando.value = null
   }
@@ -355,7 +366,7 @@ async function descargarZip() {
     // (si no, el tope de 600 archivos se vería como un error genérico).
     let detalle = 'No se pudo generar el ZIP'
     try { detalle = JSON.parse(await e.response.data.text()).detail || detalle } catch { /* noop */ }
-    toast.add({ severity: 'warn', summary: 'ZIP no generado', detail: detalle, life: 6000 })
+    toast.warning('ZIP no generado', { description: detalle, duration: 6000 })
   } finally {
     descargandoZip.value = false
   }
@@ -372,7 +383,7 @@ function periodoPorDefecto() {
 
 function faltanCampos(p) {
   if (p.mes != null && p.anio != null && p.version) return false
-  toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año y versión.', life: 4000 })
+  toast.warning('Faltan campos', { description: 'Completa mes, año y versión.', duration: 4000 })
   return true
 }
 
@@ -387,21 +398,14 @@ async function generarArchivo({ accion, periodo, titulo, enCurso, progreso, cerr
       { month: periodo.mes, year: periodo.anio, version: periodo.version },
       { onEstado: (t) => { progreso.value = t.mensaje } },
     )
-    toast.add({
-      severity: 'success',
-      summary: titulo,
-      detail: res.file_name ? `Generado: ${res.file_name}` : (res.message || 'Terminó correctamente.'),
-      life: 8000,
+    toast.success(titulo, {
+      description: res.file_name ? `Generado: ${res.file_name}` : (res.message || 'Terminó correctamente.'),
+      duration: 8000,
     })
     cerrar()
     await cargar(true)
   } catch (e) {
-    toast.add({
-      severity: 'error',
-      summary: `${titulo} falló`,
-      detail: e.response?.data?.detail || e.message,
-      life: 10000,
-    })
+    toast.error(`${titulo} falló`, { description: e.response?.data?.detail || e.message, duration: 10000 })
   } finally {
     enCurso.value = false
     progreso.value = ''

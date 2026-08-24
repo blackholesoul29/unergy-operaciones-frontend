@@ -58,7 +58,7 @@
       <p v-if="vistaPrevia" class="rq-preview">{{ vistaPrevia }}</p>
 
       <p v-if="avisoValores" class="rq-aviso">
-        <i class="pi pi-exclamation-triangle" />
+        <TriangleAlertIcon class="size-[1em]" />
         <span>
           Los valores que queden fuera del nuevo rango dejan de mostrarse.
           No se borran: vuelven a aparecer si restauras las fechas.
@@ -68,14 +68,9 @@
 
     <template #footer>
       <Button label="Cancelar" severity="secondary" text size="small" @click="emit('update:visible', false)" />
-      <Button
-        label="Guardar"
-        icon="pi pi-check"
-        size="small"
-        :loading="guardando"
-        :disabled="guardando || !!errorLocal || !f.fechaInicio || !f.fechaFin"
-        @click="enviar"
-      />
+      <Button label="Guardar" size="small" :loading="guardando" :disabled="guardando || !!errorLocal || !f.fechaInicio || !f.fechaFin" @click="enviar">
+        <template #icon><CheckIcon class="size-[1em]" /></template>
+      </Button>
     </template>
   </Dialog>
 </template>
@@ -87,6 +82,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
+import { CheckIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -247,5 +243,5 @@ function enviar() {
   color: #A16207;
   line-height: 1.5;
 }
-.rq-aviso .pi { font-size: 10px; margin-top: 2px; flex: none; }
+.rq-aviso svg { font-size: 10px; margin-top: 2px; flex: none; }
 </style>

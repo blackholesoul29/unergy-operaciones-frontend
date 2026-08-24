@@ -1,7 +1,7 @@
 <template>
   <div class="ppc-card">
     <div class="ppc-head">
-      <i class="pi pi-chart-line text-sm" style="color:#915BD8" />
+      <ChartLineIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <h3 class="ppc-title">Generación real vs. contratada</h3>
       <span class="ppc-sub">MWh por día · {{ periodoLabel }}</span>
     </div>
@@ -19,7 +19,7 @@
       </template>
 
       <div v-else class="ppc-empty">
-        <i class="pi pi-chart-line text-3xl mb-2" style="color:#e0d5f0" />
+        <ChartLineIcon class="text-3xl mb-2 size-[1em]" style="color:#e0d5f0" />
         <p>Sin datos de generación para este período.</p>
       </div>
     </div>
@@ -34,6 +34,7 @@ import {
   Tooltip, Legend, Filler,
 } from 'chart.js'
 import { formatMWh } from '~/utils/financialCalculations'
+import { ChartLineIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend, Filler)
 

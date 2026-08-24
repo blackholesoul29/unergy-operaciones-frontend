@@ -3,7 +3,7 @@
   <Popover ref="pop">
     <div class="text-xs" style="min-width:280px; color:#2C2039">
       <p class="font-semibold mb-2 flex items-center gap-1.5" style="color:#7c3aed">
-        <i class="pi pi-chart-bar text-[11px]" /> Cálculo del Valor a Facturar
+        <ChartColumnIcon class="text-[11px] size-[1em]" /> Cálculo del Valor a Facturar
       </p>
       <div class="space-y-1 font-mono">
         <div class="flex justify-between gap-6">
@@ -36,6 +36,7 @@
 <script setup>
 import { ref } from 'vue'
 import Popover from 'primevue/popover'
+import { ChartColumnIcon } from '@lucide/vue'
 
 defineProps({
   valorBaseAnual: { type: Number, default: null },

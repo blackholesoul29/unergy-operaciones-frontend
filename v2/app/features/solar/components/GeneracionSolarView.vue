@@ -18,12 +18,13 @@
       <div class="gs-header-right">
         <!-- Auto-refresh countdown chip -->
         <div class="gs-countdown-chip" :class="{ 'gs-countdown-chip--urgent': countdown <= 30 }">
-          <i class="pi pi-clock" style="font-size:11px" />
+          <ClockIcon class="size-[1em]" style="font-size:11px" />
           {{ countdownDisplay }}
         </div>
         <!-- Refresh button -->
         <button class="gs-refresh-btn" @click="cargar" :disabled="loading">
-          <i :class="loading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+          <LoaderCircleIcon v-if="loading" class="size-[1em] animate-spin" />
+          <RefreshCwIcon v-else class="size-[1em]" />
           Actualizar
         </button>
       </div>
@@ -78,7 +79,7 @@
       <!-- Potencia total -->
       <div class="gs-kpi">
         <div class="gs-kpi-icon">
-          <i class="pi pi-bolt" style="color:#915BD8;font-size:14px;" />
+          <ZapIcon class="size-[1em]" style="color:#915BD8;font-size:14px;" />
         </div>
         <div class="gs-kpi-body">
           <span class="gs-kpi-value" style="color:#915BD8">{{ formatPower(monitoringData.fleet.total_power_kw) }}</span>
@@ -89,7 +90,7 @@
       <!-- Utilización -->
       <div class="gs-kpi">
         <div class="gs-kpi-icon">
-          <i class="pi pi-chart-bar" style="color:#2C2039;font-size:14px;" />
+          <ChartColumnIcon class="size-[1em]" style="color:#2C2039;font-size:14px;" />
         </div>
         <div class="gs-kpi-body">
           <div class="gs-kpi-util-row">
@@ -122,7 +123,7 @@
         </button>
       </div>
       <div class="gs-search-wrap">
-        <i class="pi pi-search gs-search-icon" />
+        <SearchIcon class="gs-search-icon size-[1em]" />
         <AutoComplete
           v-model="searchText"
           :suggestions="projectSuggestions"
@@ -147,7 +148,7 @@
 
           <!-- Loading inicial -->
           <div v-if="!detailData && loadingDetail" class="gs-overlay-loading">
-            <i class="pi pi-spin pi-spinner" style="font-size:32px;color:#915BD8" />
+            <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:32px;color:#915BD8" />
             <span style="color:#6b5a8a;font-size:14px">Cargando datos del proyecto...</span>
           </div>
 
@@ -164,11 +165,11 @@
               </div>
               <div class="gs-detail-header-right">
                 <button class="gs-card-falla-btn gs-card-falla-btn--lg" @click="openFallaDialog(null)">
-                  <i class="pi pi-bolt" style="font-size:11px" />
+                  <ZapIcon class="size-[1em]" style="font-size:11px" />
                   Crear falla
                 </button>
                 <button class="gs-close-btn" @click="closeDetail">
-                  <i class="pi pi-times" />
+                  <XIcon class="size-[1em]" />
                 </button>
               </div>
             </div>
@@ -176,7 +177,7 @@
             <!-- Body scrollable -->
             <div class="gs-overlay-body">
               <div v-if="loadingDetail" class="gs-detail-loading">
-                <i class="pi pi-spin pi-spinner" style="font-size:22px;color:#915BD8" />
+                <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:22px;color:#915BD8" />
                 <span style="color:#6b5a8a">Actualizando...</span>
               </div>
 
@@ -206,7 +207,8 @@
                           {{ inv.power_kw != null ? inv.power_kw.toFixed(2) : '—' }}
                         </span>
                         <span class="gs-inv-power-unit">kW</span>
-                        <i class="pi gs-inv-chevron" :class="expandedInv === inv.name ? 'pi-chevron-up' : 'pi-chevron-down'" />
+                        <ChevronUpIcon v-if="expandedInv === inv.name" class="gs-inv-chevron size-[1em]" />
+                        <ChevronDownIcon v-else class="gs-inv-chevron size-[1em]" />
                       </div>
                     </div>
                   </div>
@@ -223,7 +225,7 @@
                           </span>
                         </h4>
                         <button class="gs-close-btn gs-close-btn--sm" @click="expandedInv = null">
-                          <i class="pi pi-times" />
+                          <XIcon class="size-[1em]" />
                         </button>
                       </div>
 
@@ -284,13 +286,13 @@
                       <div class="gs-chart-card" style="margin-top:12px">
                         <h4 class="gs-section-title">Potencia del inversor — {{ invRangeLabel }}</h4>
                         <div v-if="invPowerLoading" class="gs-chart-empty">
-                          <i class="pi pi-spin pi-spinner" style="font-size:22px;color:#915BD8" />
+                          <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:22px;color:#915BD8" />
                         </div>
                         <div v-else-if="invIndividualData.labels.length" class="gs-chart-container">
                           <Line :data="invIndividualData" :options="invPowerOptions" />
                         </div>
                         <div v-else class="gs-chart-empty">
-                          <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
+                          <ChartLineIcon class="size-[1em]" style="font-size:28px;color:#d1d5db" />
                           <p>Sin datos de potencia para este inversor en el rango</p>
                         </div>
                       </div>
@@ -307,7 +309,8 @@
                       <span class="gs-date-sep">→</span>
                       <input v-model="invDateTo" type="date" class="gs-date-input" :max="todayStr" />
                       <button class="gs-refresh-btn gs-refresh-btn--sm" @click="reloadInverterPower" :disabled="invPowerLoading">
-                        <i :class="invPowerLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+                        <LoaderCircleIcon v-if="invPowerLoading" class="size-[1em] animate-spin" />
+                        <RefreshCwIcon v-else class="size-[1em]" />
                         Aplicar
                       </button>
                     </div>
@@ -316,7 +319,7 @@
                     <Line :data="invComparativeData" :options="invComparativeOptions" />
                   </div>
                   <div v-else class="gs-chart-empty">
-                    <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
+                    <ChartLineIcon class="size-[1em]" style="font-size:28px;color:#d1d5db" />
                     <p>Sin datos de potencia por inversor en el rango</p>
                   </div>
                 </div>
@@ -357,7 +360,7 @@
                       <Line :data="powerCurveData" :options="powerCurveOptions" />
                     </div>
                     <div v-else class="gs-chart-empty">
-                      <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
+                      <ChartLineIcon class="size-[1em]" style="font-size:28px;color:#d1d5db" />
                       <p>Sin datos de potencia para hoy</p>
                     </div>
                   </div>
@@ -367,7 +370,7 @@
                       <Bar :data="generation30dData" :options="generation30dOptions" />
                     </div>
                     <div v-else class="gs-chart-empty">
-                      <i class="pi pi-chart-bar" style="font-size:28px;color:#d1d5db" />
+                      <ChartColumnIcon class="size-[1em]" style="font-size:28px;color:#d1d5db" />
                       <p>Sin datos de generación</p>
                     </div>
                   </div>
@@ -381,7 +384,7 @@
                       <Line :data="gaiaPowerChartData" :options="gaiaPowerOptions" />
                     </div>
                     <div v-else class="gs-chart-empty">
-                      <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
+                      <ChartLineIcon class="size-[1em]" style="font-size:28px;color:#d1d5db" />
                       <p v-if="detailData.gaia_node_id === null">Medidor no registrado en Gaia para este proyecto</p>
                       <p v-else>Sin datos de potencia del medidor para hoy</p>
                     </div>
@@ -392,7 +395,7 @@
                       <Line :data="gaiaEnergyChartData" :options="gaiaEnergyOptions" />
                     </div>
                     <div v-else class="gs-chart-empty">
-                      <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
+                      <ChartLineIcon class="size-[1em]" style="font-size:28px;color:#d1d5db" />
                       <p v-if="detailData.gaia_node_id === null">Medidor no registrado en Gaia para este proyecto</p>
                       <p v-else>Sin datos de energía del medidor para hoy</p>
                     </div>
@@ -421,7 +424,7 @@
                   <div class="gs-section-header">
                     <h3 class="gs-section-title">Medidor eléctrico — Datos en tiempo real</h3>
                     <span v-if="detailData.gaia_snapshot.last_time" class="gs-gaia-ts">
-                      <i class="pi pi-clock" style="font-size:10px" />
+                      <ClockIcon class="size-[1em]" style="font-size:10px" />
                       {{ fmtGaiaTime(detailData.gaia_snapshot.last_time) }}
                     </span>
                   </div>
@@ -534,7 +537,7 @@
 
                 <!-- Sin nodo Gaia -->
                 <div v-else-if="detailData.gaia_node_id === null" class="gs-gaia-empty">
-                  <i class="pi pi-info-circle" style="font-size:16px;color:#9ca3af" />
+                  <InfoIcon class="size-[1em]" style="font-size:16px;color:#9ca3af" />
                   <span>Medidor eléctrico no registrado en Gaia para este proyecto</span>
                 </div>
 
@@ -548,7 +551,7 @@
     <!-- ══ PROJECT CARDS GRID ════════════════════════════════════════════════ -->
     <div v-if="monitoringData" class="gs-cards-grid">
       <div v-if="!filteredProjects.length" class="gs-empty">
-        <i class="pi pi-search text-3xl mb-2" style="color:#9ca3af" />
+        <SearchIcon class="text-3xl mb-2 size-[1em]" style="color:#9ca3af" />
         <p style="color:#6b5a8a">Sin proyectos que coincidan con el filtro</p>
       </div>
 
@@ -601,7 +604,7 @@
         </div>
 
         <button class="gs-card-falla-btn" @click.stop="openFallaDialog(proj)">
-          <i class="pi pi-bolt" style="font-size:10px" />
+          <ZapIcon class="size-[1em]" style="font-size:10px" />
           Crear falla
         </button>
       </div>
@@ -616,7 +619,7 @@
     <div class="gs-genhoy-card">
       <div class="gs-genhoy-head">
         <div class="gs-genhoy-title">
-          <i class="pi pi-sun" style="color:#f59e0b;font-size:13px" />
+          <SunIcon class="size-[1em]" style="color:#f59e0b;font-size:13px" />
           <span>Generación de hoy</span>
           <span class="gs-genhoy-sub">· Real vs P90 por proyecto · {{ hoyLabel }}</span>
         </div>
@@ -631,20 +634,21 @@
           </span>
         </div>
         <button class="gs-genhoy-reload" @click="cargarGenHoy" :disabled="genHoyLoading">
-          <i :class="genHoyLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+          <LoaderCircleIcon v-if="genHoyLoading" class="size-[1em] animate-spin" />
+          <RefreshCwIcon v-else class="size-[1em]" />
         </button>
       </div>
 
       <div v-if="genHoyLoading" class="gs-genhoy-state">
-        <i class="pi pi-spin pi-spinner" style="color:#915BD8;font-size:22px" />
+        <LoaderCircleIcon class="size-[1em] animate-spin" style="color:#915BD8;font-size:22px" />
       </div>
       <div v-else-if="!genHoyRows.length" class="gs-genhoy-state">
-        <i class="pi pi-sun" style="color:#f59e0b;font-size:24px" />
+        <SunIcon class="size-[1em]" style="color:#f59e0b;font-size:24px" />
         <span>Sin proyectos en operación configurados.</span>
       </div>
       <div v-else>
         <div v-if="genHoyError" class="gs-genhoy-warn">
-          <i class="pi pi-exclamation-triangle" style="color:#d97706" />
+          <TriangleAlertIcon class="size-[1em]" style="color:#d97706" />
           {{ genHoyError }}
         </div>
         <div class="gs-genhoy-rows">
@@ -714,12 +718,13 @@ import {
 import { Bar, Line } from 'vue-chartjs'
 import Dialog from 'primevue/dialog'
 import AutoComplete from 'primevue/autocomplete'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 // Cruza de slice: el formulario de fallas vive en su propio slice, así que se
 // importa por ruta absoluta. Era `./Fallas/FallaForm.vue` cuando ambos colgaban
 // de `views/`.
 import FallaForm from '~/features/fallas/components/FallaForm.vue'
+import { ChartColumnIcon, ChartLineIcon, ChevronDownIcon, ChevronUpIcon, ClockIcon, InfoIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon, SunIcon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 // ── Register Chart.js components ────────────────────────────────────────────
 ChartJS.register(
@@ -735,7 +740,6 @@ ChartJS.register(
 )
 
 // ── Toast ────────────────────────────────────────────────────────────────────
-const toast = useToast()
 
 // ── Status config ────────────────────────────────────────────────────────────
 const STATUS_CFG = {
@@ -1451,7 +1455,7 @@ async function cargar() {
     const now = new Date()
     lastUpdated.value = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al cargar monitoreo', detail: err?.message, life: 4000 })
+    toast.error('Error al cargar monitoreo', { description: err?.message, duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -1473,7 +1477,7 @@ async function loadDetail(proyectoId) {
     detailData.value = res.data
     loadInverterPower(proyectoId)   // potencia por inversor (no bloquea el render)
   } catch (err) {
-    toast.add({ severity: 'warn', summary: 'Sin detalle', detail: 'No se pudo cargar el detalle del proyecto', life: 3000 })
+    toast.warning('Sin detalle', { description: 'No se pudo cargar el detalle del proyecto', duration: 3000 })
     detailData.value = null
   } finally {
     loadingDetail.value = false
@@ -1547,7 +1551,7 @@ async function onSaveFalla(payload) {
     const archivos = _archivos ?? []
 
     if (!ids.length) {
-      toast.add({ severity: 'warn', summary: 'Sin proyecto', detail: 'Selecciona un proyecto para la falla', life: 3000 })
+      toast.warning('Sin proyecto', { description: 'Selecciona un proyecto para la falla', duration: 3000 })
       return
     }
 
@@ -1577,16 +1581,15 @@ async function onSaveFalla(payload) {
     }
 
     const n = nuevas.length
-    toast.add({
-      severity: 'success',
-      summary: n === 1 ? 'Falla registrada' : `${n} fallas registradas`,
-      life: 3000,
-    })
+    toast.success(n === 1 ? 'Falla registrada' : `${n} fallas registradas`, { duration: 3000 })
     fallaDialogVisible.value = false
     // Reload monitoring data to reflect any status changes
     cargar()
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al guardar', detail: err?.response?.data?.detail || err?.message, life: 4000 })
+    toast.error('Error al guardar', {
+      description: err?.response?.data?.detail || err?.message,
+      duration: 4000,
+    })
   } finally {
     savingFalla.value = false
   }

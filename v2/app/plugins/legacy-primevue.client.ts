@@ -1,7 +1,9 @@
 /**
  * MIGRACIÓN — Fase 1. El arranque que hacía `legacy/src/main.js`, traducido a un
- * plugin de Nuxt: el tema de PrimeVue, sus dos servicios, la directiva `tooltip`
- * y los dos componentes que el legacy registra globalmente.
+ * plugin de Nuxt: el tema de PrimeVue, `ConfirmationService`, la directiva
+ * `tooltip` y los dos componentes que el legacy registra globalmente.
+ *
+ * `ToastService` ya no está: los avisos pasaron a vue-sonner en la fase 3, ola 0.
  *
  * Todo lo de aquí es temporal. PrimeVue sale en la fase 3, a medida que cada
  * slice pasa a Gandalf/shadcn; cuando no quede ningún import de `primevue`, este
@@ -18,7 +20,6 @@ import { definePreset } from '@primevue/themes'
 import Aura from '@primevue/themes/aura'
 import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
-import ToastService from 'primevue/toastservice'
 import Tooltip from 'primevue/tooltip'
 import InfoField from '~/components/InfoField.vue'
 import PageHeader from '~/components/PageHeader.vue'
@@ -49,7 +50,6 @@ export default defineNuxtPlugin((nuxtApp) => {
       options: { darkModeSelector: '.dark', cssLayer: false },
     },
   })
-  nuxtApp.vueApp.use(ToastService)
   nuxtApp.vueApp.use(ConfirmationService)
   nuxtApp.vueApp.directive('tooltip', Tooltip)
 

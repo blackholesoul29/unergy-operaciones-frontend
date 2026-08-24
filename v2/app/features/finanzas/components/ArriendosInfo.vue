@@ -58,8 +58,7 @@
           <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" :style="{ background: sec.dot }" />
           <span class="font-semibold text-gray-800 text-sm flex-1">{{ sec.label }}</span>
           <span class="text-xs text-gray-400 font-medium">({{ sec.items.length }})</span>
-          <i class="pi pi-chevron-down text-gray-400 text-xs ml-2 transition-transform duration-200"
-            :class="{ 'rotate-180': openSections.has(sec.tipo) }" />
+          <ChevronDownIcon class="text-gray-400 text-xs ml-2 transition-transform duration-200 size-[1em]" :class="{ 'rotate-180': openSections.has(sec.tipo) }" />
         </button>
 
         <div class="section-collapse" :class="{ open: openSections.has(sec.tipo) }">
@@ -116,6 +115,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import Tag from 'primevue/tag'
 import api from '~/core/client'
+import { ChevronDownIcon } from '@lucide/vue'
 
 // ── Período (mismo criterio de "período actual" que Panel, sin selector — vista informativa) ──
 const hoy = new Date()

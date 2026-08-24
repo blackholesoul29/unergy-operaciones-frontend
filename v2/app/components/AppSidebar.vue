@@ -17,7 +17,7 @@
       <div class="flex items-center shrink-0">
         <!-- Ocultar barra (escritorio) -->
         <button class="hidden lg:flex sb-icon-btn" @click="toggleCollapsed" title="Ocultar barra lateral">
-          <i class="pi pi-angle-double-left" />
+          <ChevronsLeftIcon class="size-[1em]" />
         </button>
       </div>
     </div>
@@ -33,7 +33,7 @@
           @click="toggleGroup(group.label)"
         >
           <span class="truncate">{{ group.label }}</span>
-          <i class="pi pi-chevron-down sb-group-chev" />
+          <ChevronDownIcon class="sb-group-chev size-[1em]" />
         </button>
 
         <transition name="sb-collapse">
@@ -46,10 +46,9 @@
                   class="sb-item sb-item--parent"
                   @click="toggleItem(item.label)"
                 >
-                  <i :class="[item.icon, 'sb-item-ico']" />
+                  <component :is="item.icon" class="sb-item-ico size-[1em]" />
                   <span class="truncate flex-1 text-left">{{ item.label }}</span>
-                  <i class="pi pi-chevron-down sb-item-chev"
-                    :class="{ 'sb-item-chev--open': isItemExpanded(item.label) }" />
+                  <ChevronDownIcon class="sb-item-chev size-[1em]" :class="{ 'sb-item-chev--open': isItemExpanded(item.label) }" />
                 </button>
                 <transition name="sb-collapse">
                   <div v-show="isItemExpanded(item.label)" class="sb-subitems">
@@ -75,7 +74,7 @@
                 active-class="sb-item--active"
                 @click="mobileOpen = false"
               >
-                <i :class="[item.icon, 'sb-item-ico']" />
+                <component :is="item.icon" class="sb-item-ico size-[1em]" />
                 <span class="truncate">{{ item.label }}</span>
               </RouterLink>
             </template>
@@ -95,7 +94,7 @@
         <!-- Bell -->
         <div class="relative" ref="bellRef">
           <button @click="toggleNotifications" class="sb-icon-btn relative" title="Notificaciones">
-            <i class="pi pi-bell" />
+            <BellIcon class="size-[1em]" />
             <span v-if="unreadCount > 0" class="sb-badge">
               {{ unreadCount > 99 ? '99+' : unreadCount }}
             </span>
@@ -113,7 +112,7 @@
             </div>
             <div class="max-h-80 overflow-y-auto">
               <div v-if="notifications.length === 0" class="py-8 text-center">
-                <i class="pi pi-bell-slash text-2xl mb-2 block" style="color: #c4b8d4;" />
+                <BellOffIcon class="text-2xl mb-2 block size-[1em]" style="color: #c4b8d4;" />
                 <p class="text-xs" style="color: #6b5a8a;">Sin notificaciones</p>
               </div>
               <div v-for="n in notifications" :key="n.id"
@@ -122,7 +121,7 @@
                 :style="{ borderColor: '#f3f0f7', backgroundColor: n.leida ? 'transparent' : 'rgba(145,91,216,0.04)' }">
                 <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                   :style="{ backgroundColor: severityBg(n.severidad), color: severityColor(n.severidad) }">
-                  <i :class="severityIcon(n.severidad)" class="text-xs" />
+                  <component :is="severityIcon(n.severidad)" class="text-xs size-[1em]" />
                 </div>
                 <div class="min-w-0 flex-1">
                   <p class="text-sm leading-snug" :style="{ color: '#2C2039', fontWeight: n.leida ? '400' : '600' }">{{ n.titulo || n.mensaje }}</p>
@@ -142,7 +141,7 @@
         </div>
         <!-- Logout -->
         <button @click="handleLogout" class="sb-icon-btn" title="Cerrar sesión">
-          <i class="pi pi-sign-out" />
+          <LogOutIcon class="size-[1em]" />
         </button>
       </div>
     </div>
@@ -160,6 +159,7 @@ import {
   LEGACY_NAV_ITEMS,
 } from '~/config/navigation'
 import api from '~/core/client'
+import { BellIcon, BellOffIcon, ChevronDownIcon, ChevronsLeftIcon, CircleAlertIcon, CircleCheckIcon, InfoIcon, LogOutIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const auth = useAuthStore()
 const router = useRouter()
@@ -222,8 +222,8 @@ function severityColor(sev) {
   return map[sev] || '#915BD8'
 }
 function severityIcon(sev) {
-  const map = { critica: 'pi pi-exclamation-triangle', alta: 'pi pi-exclamation-circle', media: 'pi pi-info-circle', baja: 'pi pi-check-circle' }
-  return map[sev] || 'pi pi-bell'
+  const map = { critica: TriangleAlertIcon, alta: CircleAlertIcon, media: InfoIcon, baja: CircleCheckIcon }
+  return map[sev] || BellIcon
 }
 
 function formatTimeAgo(dateStr) {
@@ -369,7 +369,7 @@ const navGroups = computed(() => {
   transition: background .12s, color .12s;
 }
 .sb-icon-btn:hover { background: #F1ECF8; color: #6D28D9; }
-.sb-icon-btn .pi { font-size: 14px; }
+.sb-icon-btn svg { font-size: 14px; }
 .sb-badge {
   position: absolute; top: -2px; right: -2px; min-width: 15px; height: 15px;
   display: flex; align-items: center; justify-content: center; padding: 0 3px;

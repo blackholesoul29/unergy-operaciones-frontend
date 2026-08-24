@@ -20,8 +20,9 @@
         <Textarea v-model.trim="nueva.descripcion" rows="2" autoResize class="w-full"
                   placeholder="Qué se habló / acordó *" />
         <div class="flex items-center gap-2 flex-wrap">
-          <Button label="Registrar" icon="pi pi-send" size="small" :loading="guardando"
-                  :disabled="!nueva.tipo || !nueva.descripcion" @click="registrar" />
+          <Button label="Registrar" size="small" :loading="guardando" :disabled="!nueva.tipo || !nueva.descripcion" @click="registrar">
+            <template #icon><SendIcon class="size-[1em]" /></template>
+          </Button>
           <small style="color:#9b89b5">
             {{ nueva.oferta_id
                 ? 'Apaga la alerta solo de esa oferta.'
@@ -53,7 +54,7 @@
       <p v-if="!historial.length" class="text-sm" style="color:#9b89b5">Sin movimientos.</p>
       <ul class="flex flex-col gap-1.5 text-sm">
         <li v-for="h in historial" :key="h.id" class="flex items-center gap-2 flex-wrap">
-          <i class="pi pi-arrow-right text-xs" style="color:#c4b8d4" />
+          <ArrowRightIcon class="text-xs size-[1em]" style="color:#c4b8d4" />
           <span v-if="h.estado_anterior">
             {{ labelEtapa(h.estado_anterior) }} → <b>{{ labelEtapa(h.estado_nuevo) }}</b>
           </span>
@@ -76,9 +77,10 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import Tag from 'primevue/tag'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { TIPOS_GESTION, labelGestion, labelEtapa } from './comercial.js'
+import { ArrowRightIcon, SendIcon } from '@lucide/vue'
 
 const props = defineProps({
   oportunidadId: { type: [Number, String], required: true },
@@ -87,7 +89,6 @@ const props = defineProps({
   ofertas: { type: Array, default: () => [] },
 })
 const emit = defineEmits(['registrada'])
-const toast = useToast()
 
 const nueva = reactive({ tipo: null, descripcion: '', oferta_id: null })
 const guardando = ref(false)
@@ -122,8 +123,7 @@ async function registrar() {
     nueva.oferta_id = null
     emit('registrada')
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo registrar',
-                detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.error('No se pudo registrar', { description: err.response?.data?.detail ?? '', duration: 5000 })
   } finally {
     guardando.value = false
   }

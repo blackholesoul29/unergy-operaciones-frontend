@@ -4,7 +4,7 @@
     <div class="rq-header-wrap">
       <PageHeader title="Retos Q" :subtitle="subtituloAnio">
         <template #lead>
-          <div class="rq-icon-tile"><i class="pi pi-flag-fill" /></div>
+          <div class="rq-icon-tile"><FlagIcon class="size-[1em] fill-current" /></div>
         </template>
         <template #actions>
           <Select
@@ -18,13 +18,14 @@
           <Button
             v-if="retoEnCurso"
             label="Ir al Q en curso"
-            icon="pi pi-arrow-right"
-            iconPos="right"
+            class="flex-row-reverse"
             size="small"
             outlined
             severity="secondary"
             @click="abrir(retoEnCurso)"
-          />
+          >
+            <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+          </Button>
         </template>
       </PageHeader>
       <!-- Recarga (cambio de año): barra indeterminada pegada bajo el header -->
@@ -65,6 +66,7 @@ import Skeleton from 'primevue/skeleton'
 import Message from 'primevue/message'
 import api from '~/core/client'
 import RetoQCard from './RetoQCard.vue'
+import { ArrowRightIcon, FlagIcon } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()

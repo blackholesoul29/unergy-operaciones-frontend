@@ -13,7 +13,7 @@
                 'bg-amber-400 text-white': step > i,
                 'bg-gray-100 text-gray-400': step < i,
               }">
-              <i v-if="step > i" class="pi pi-check text-xs" />
+              <CheckIcon class="text-xs size-[1em]" v-if="step > i" />
               <span v-else>{{ i + 1 }}</span>
             </div>
             <span class="text-[10px] text-center leading-tight px-0.5"
@@ -104,11 +104,12 @@
                   class="flex-1"
                   inputClass="w-full"
                 />
-                <Button icon="pi pi-plus" severity="secondary" outlined size="small"
-                  v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('comprador')" />
+                <Button severity="secondary" outlined size="small" v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('comprador')">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
               <div v-if="form.comprador_id" class="flex items-center gap-1 text-xs text-green-600">
-                <i class="pi pi-link text-xs" /> Cliente vinculado (id {{ form.comprador_id }})
+                <LinkIcon class="text-xs size-[1em]" /> Cliente vinculado (id {{ form.comprador_id }})
               </div>
             </div>
             <div class="flex flex-col gap-1">
@@ -131,11 +132,12 @@
                   class="flex-1"
                   inputClass="w-full"
                 />
-                <Button icon="pi pi-plus" severity="secondary" outlined size="small"
-                  v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('vendedor')" />
+                <Button severity="secondary" outlined size="small" v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('vendedor')">
+                  <template #icon><PlusIcon class="size-[1em]" /></template>
+                </Button>
               </div>
               <div v-if="form.vendedor_id" class="flex items-center gap-1 text-xs text-green-600">
-                <i class="pi pi-link text-xs" /> Cliente vinculado (id {{ form.vendedor_id }})
+                <LinkIcon class="text-xs size-[1em]" /> Cliente vinculado (id {{ form.vendedor_id }})
               </div>
             </div>
             <div class="flex flex-col gap-1">
@@ -220,8 +222,12 @@
           @paste="onPasteTarifas"
         />
         <div class="flex items-center gap-2 mt-2">
-          <Button label="Procesar" icon="pi pi-refresh" size="small" severity="secondary" outlined @click="parseTarifas" />
-          <Button v-if="tarifasRows.length" label="Limpiar" icon="pi pi-times" size="small" severity="danger" text @click="tarifasRows = []; tarifasPaste = ''" />
+          <Button label="Procesar" size="small" severity="secondary" outlined @click="parseTarifas">
+            <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+          </Button>
+          <Button v-if="tarifasRows.length" label="Limpiar" size="small" severity="danger" text @click="tarifasRows = []; tarifasPaste = ''">
+            <template #icon><XIcon class="size-[1em]" /></template>
+          </Button>
           <span v-if="tarifasRows.length" class="text-xs text-green-600 font-medium">
             ✓ {{ tarifasRows.length }} filas listas
           </span>
@@ -267,9 +273,15 @@
           @paste="onPasteEnergia"
         />
         <div class="flex items-center gap-2 mt-2 flex-wrap">
-          <Button label="Procesar" icon="pi pi-refresh" size="small" severity="secondary" outlined @click="parseEnergia" />
-          <Button label="Descargar plantilla" icon="pi pi-download" size="small" severity="secondary" text @click="descargarPlantillaEnergia" />
-          <Button v-if="energiaRows.length" label="Limpiar" icon="pi pi-times" size="small" severity="danger" text @click="energiaRows = []; energiaPaste = ''" />
+          <Button label="Procesar" size="small" severity="secondary" outlined @click="parseEnergia">
+            <template #icon><RefreshCwIcon class="size-[1em]" /></template>
+          </Button>
+          <Button label="Descargar plantilla" size="small" severity="secondary" text @click="descargarPlantillaEnergia">
+            <template #icon><DownloadIcon class="size-[1em]" /></template>
+          </Button>
+          <Button v-if="energiaRows.length" label="Limpiar" size="small" severity="danger" text @click="energiaRows = []; energiaPaste = ''">
+            <template #icon><XIcon class="size-[1em]" /></template>
+          </Button>
           <span v-if="energiaRows.length" class="text-xs text-green-600 font-medium">
             ✓ {{ energiaRows.length }} filas listas
           </span>
@@ -366,20 +378,27 @@
 
     <!-- Footer -->
     <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
-      <Button v-if="step > 0" label="Anterior" icon="pi pi-arrow-left" severity="secondary" outlined @click="step--" />
+      <Button v-if="step > 0" label="Anterior" severity="secondary" outlined @click="step--">
+        <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+      </Button>
       <span v-else />
       <div class="flex gap-2">
         <Button label="Cancelar" severity="secondary" text @click="$emit('cerrar')" />
-        <Button v-if="step < STEPS.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right" @click="avanzar" />
-        <Button v-else label="Guardar contrato" icon="pi pi-check" :loading="guardando" @click="guardar" />
+        <Button v-if="step < STEPS.length - 1" label="Siguiente" class="flex-row-reverse" @click="avanzar">
+          <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+        </Button>
+        <Button v-else label="Guardar contrato" :loading="guardando" @click="guardar">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
   </Dialog>
 </template>
 
 <script setup>
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, DownloadIcon, LinkIcon, PlusIcon, RefreshCwIcon, XIcon } from '@lucide/vue'
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -401,7 +420,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:visible', 'cerrar', 'creado', 'editado'])
 
-const toast = useToast()
 const PREVIEW_ROWS = 5
 
 const STEPS = [
@@ -686,7 +704,7 @@ async function guardar() {
     }
 
     if (props.editandoId) {
-      toast.add({ severity: 'success', summary: 'Contrato actualizado', life: 3000 })
+      toast.success('Contrato actualizado', { duration: 3000 })
       emit('editado', contrato)
     } else {
       const msg = [
@@ -694,12 +712,12 @@ async function guardar() {
         tarifasRows.value.length ? `${tarifasRows.value.length} tarifas` : null,
         energiaRows.value.length ? `${energiaRows.value.length} compromisos` : null,
       ].filter(Boolean).join(' · ')
-      toast.add({ severity: 'success', summary: 'Contrato creado', detail: msg, life: 4000 })
+      toast.success('Contrato creado', { description: msg, duration: 4000 })
       emit('creado', contrato)
     }
     emit('cerrar')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al guardar', detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.error('Error al guardar', { description: e.response?.data?.detail || e.message, duration: 5000 })
   } finally {
     guardando.value = false
   }

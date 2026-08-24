@@ -17,7 +17,9 @@
 
     <!-- Migas -->
     <div class="flex items-center gap-2">
-      <Button icon="pi pi-arrow-left" text severity="secondary" @click="$router.back()" class="-ml-1" />
+      <Button text severity="secondary" @click="$router.back()" class="-ml-1">
+        <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+      </Button>
       <div>
         <p class="text-xs leading-none mb-0.5" style="color:#9b89b5">
           <span class="cursor-pointer hover:underline"
@@ -29,9 +31,12 @@
         <h2 class="text-lg font-bold" style="color:#2C2039">Representación CGM</h2>
       </div>
       <div class="ml-auto flex items-center gap-2">
-        <Button v-if="c" label="Eliminar" icon="pi pi-trash" size="small" outlined
-          severity="danger" @click="confirmarEliminar" />
-        <Button label="Nuevo contrato" icon="pi pi-plus" size="small" @click="nuevoContrato" />
+        <Button v-if="c" label="Eliminar" size="small" outlined severity="danger" @click="confirmarEliminar">
+          <template #icon><Trash2Icon class="size-[1em]" /></template>
+        </Button>
+        <Button label="Nuevo contrato" size="small" @click="nuevoContrato">
+          <template #icon><PlusIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -40,13 +45,15 @@
     <div v-else-if="!contratos.length"
       class="rounded-xl border border-dashed p-10 text-center" style="border-color:#3b82f640">
       <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style="background:#eff6ff">
-        <i class="pi pi-file-edit text-xl" style="color:#3b82f6" />
+        <FilePenIcon class="text-xl size-[1em]" style="color:#3b82f6" />
       </div>
       <p class="text-sm font-medium text-gray-600 mb-1">Sin contratos de representación</p>
       <p class="text-xs text-gray-400">
         Esta planta no tiene contratos de representación asociados.
       </p>
-      <Button label="Crear el primero" icon="pi pi-plus" size="small" class="mt-3" @click="nuevoContrato" />
+      <Button label="Crear el primero" size="small" class="mt-3" @click="nuevoContrato">
+        <template #icon><PlusIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <template v-else>
@@ -67,7 +74,7 @@
            Los sembraron tres fuentes distintas (los dos seeds y el wizard) sin
            que ninguna reconociera a las otras. -->
       <div v-if="grupoDuplicado" class="dup-aviso">
-        <i class="pi pi-clone" />
+        <CopyIcon class="size-[1em]" />
         <div class="min-w-0">
           <p class="font-semibold">
             {{ grupoDuplicado.ids.length }} registros de esta planta son el mismo contrato
@@ -77,12 +84,13 @@
             eliminan los demás. Ningún valor se sobreescribe.
           </p>
         </div>
-        <Button label="Fusionar" icon="pi pi-check" size="small" class="ml-auto shrink-0"
-          :loading="fusionando" @click="fusionar" />
+        <Button label="Fusionar" size="small" class="ml-auto shrink-0" :loading="fusionando" @click="fusionar">
+          <template #icon><CheckIcon class="size-[1em]" /></template>
+        </Button>
       </div>
 
       <div v-else-if="grupoEnConflicto" class="dup-aviso dup-aviso--frena">
-        <i class="pi pi-exclamation-triangle" />
+        <TriangleAlertIcon class="size-[1em]" />
         <div class="min-w-0">
           <p class="font-semibold">
             {{ grupoEnConflicto.ids.length }} registros parecen el mismo contrato, pero se contradicen
@@ -100,20 +108,20 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div class="cd-stat" :style="`background:${vigencia.bg};border-color:${vigencia.borde}`">
             <p class="cd-stat-lbl" :style="`color:${vigencia.color}`">
-              <i class="pi pi-circle-fill" style="font-size:6px" />Estado
+              <CircleIcon class="size-[1em] fill-current" style="font-size:6px" />Estado
             </p>
             <p class="cd-stat-val" :style="`color:${vigencia.color}`">{{ vigencia.label }}</p>
             <p class="cd-stat-sub" :style="`color:${vigencia.color};opacity:.7`">{{ vigencia.detalle }}</p>
           </div>
 
           <div class="cd-stat">
-            <p class="cd-stat-lbl"><i class="pi pi-clock" style="font-size:9px" />Duración</p>
+            <p class="cd-stat-lbl"><ClockIcon class="size-[1em]" style="font-size:9px" />Duración</p>
             <p class="cd-stat-val">{{ duracion || '—' }}</p>
             <p class="cd-stat-sub">{{ fmtFecha(c.fecha_inicio) }} → {{ fmtFecha(c.fecha_fin) }}</p>
           </div>
 
           <div class="cd-stat">
-            <p class="cd-stat-lbl"><i class="pi pi-chart-line" style="font-size:9px" />Tarifa CGM</p>
+            <p class="cd-stat-lbl"><ChartLineIcon class="size-[1em]" style="font-size:9px" />Tarifa CGM</p>
             <p class="cd-stat-val">{{ fmtVal(valorVigente(idxCgm) ?? c.tarifa_cgm) }}
               <span class="text-[10px] font-normal" style="color:#9b89b5">$/kWh</span>
             </p>
@@ -121,7 +129,7 @@
           </div>
 
           <div class="cd-stat">
-            <p class="cd-stat-lbl"><i class="pi pi-chart-line" style="font-size:9px" />Tarifa Repr.</p>
+            <p class="cd-stat-lbl"><ChartLineIcon class="size-[1em]" style="font-size:9px" />Tarifa Repr.</p>
             <p class="cd-stat-val">{{ fmtVal(valorVigente(idxRep) ?? c.tarifa_representacion) }}
               <span class="text-[10px] font-normal" style="color:#9b89b5">$/kWh</span>
             </p>
@@ -132,16 +140,18 @@
         <!-- ── Identificación ───────────────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#915BD818"><i class="pi pi-id-card" style="color:#915BD8" /></span>
+            <span class="cd-ico" style="background:#915BD818"><IdCardIcon class="size-[1em]" style="color:#915BD8" /></span>
             <h3 class="cd-sec-title">Identificación</h3>
             <div class="cd-sec-act">
-              <Button v-if="edit !== 'id'" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrir('id')" />
+              <Button v-if="edit !== 'id'" label="Editar" size="small" text severity="secondary" @click="abrir('id')">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
               <template v-else>
                 <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardar(['numero_contrato', 'inversionista_nombre', 'portafolio',
-                                   'codigo_sun_factory', 'nombre_proyecto_ref'])" />
+                <Button label="Guardar" size="small" :loading="guardando" @click="guardar(['numero_contrato', 'inversionista_nombre', 'portafolio',
+                                   'codigo_sun_factory', 'nombre_proyecto_ref'])">
+                  <template #icon><CheckIcon class="size-[1em]" /></template>
+                </Button>
               </template>
             </div>
           </header>
@@ -188,36 +198,38 @@
         <!-- ── Partes del contrato ──────────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#3b82f618"><i class="pi pi-users" style="color:#3b82f6" /></span>
+            <span class="cd-ico" style="background:#3b82f618"><UsersIcon class="size-[1em]" style="color:#3b82f6" /></span>
             <h3 class="cd-sec-title">Partes del contrato</h3>
             <div class="cd-sec-act">
-              <Button v-if="edit !== 'partes'" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrir('partes')" />
+              <Button v-if="edit !== 'partes'" label="Editar" size="small" text severity="secondary" @click="abrir('partes')">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
               <template v-else>
                 <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardar(['contratante_nombre', 'contratante_nit',
-                                   'prestador_nombre', 'prestador_nit'])" />
+                <Button label="Guardar" size="small" :loading="guardando" @click="guardar(['contratante_nombre', 'contratante_nit',
+                                   'prestador_nombre', 'prestador_nit'])">
+                  <template #icon><CheckIcon class="size-[1em]" /></template>
+                </Button>
               </template>
             </div>
           </header>
           <div class="cd-sec-body">
             <div v-if="edit !== 'partes'" class="cd-partes">
               <div class="cd-parte">
-                <p class="cd-parte-rol"><i class="pi pi-building" style="font-size:9px" />Contratante</p>
+                <p class="cd-parte-rol"><BuildingIcon class="size-[1em]" style="font-size:9px" />Contratante</p>
                 <p class="cd-parte-nom">{{ c.contratante_nombre || '—' }}</p>
                 <p class="cd-parte-nit">NIT {{ c.contratante_nit || '—' }}</p>
               </div>
-              <i class="pi pi-arrow-right cd-partes-flecha" />
+              <ArrowRightIcon class="cd-partes-flecha size-[1em]" />
               <div class="cd-parte">
-                <p class="cd-parte-rol"><i class="pi pi-briefcase" style="font-size:9px" />Prestador</p>
+                <p class="cd-parte-rol"><BriefcaseIcon class="size-[1em]" style="font-size:9px" />Prestador</p>
                 <p class="cd-parte-nom">{{ c.prestador_nombre || '—' }}</p>
                 <p class="cd-parte-nit">NIT {{ c.prestador_nit || '—' }}</p>
               </div>
             </div>
             <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="cd-parte space-y-3">
-                <p class="cd-parte-rol"><i class="pi pi-building" style="font-size:9px" />Contratante</p>
+                <p class="cd-parte-rol"><BuildingIcon class="size-[1em]" style="font-size:9px" />Contratante</p>
                 <div class="flex flex-col gap-1">
                   <label class="cd-lbl">Nombre / Razón social</label>
                   <InputText v-model="form.contratante_nombre" class="w-full" />
@@ -228,7 +240,7 @@
                 </div>
               </div>
               <div class="cd-parte space-y-3">
-                <p class="cd-parte-rol"><i class="pi pi-briefcase" style="font-size:9px" />Prestador</p>
+                <p class="cd-parte-rol"><BriefcaseIcon class="size-[1em]" style="font-size:9px" />Prestador</p>
                 <div class="flex flex-col gap-1">
                   <label class="cd-lbl">Nombre / Razón social</label>
                   <InputText v-model="form.prestador_nombre" class="w-full" />
@@ -245,16 +257,18 @@
         <!-- ── Vigencia ─────────────────────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#10b98118"><i class="pi pi-calendar" style="color:#10b981" /></span>
+            <span class="cd-ico" style="background:#10b98118"><CalendarIcon class="size-[1em]" style="color:#10b981" /></span>
             <h3 class="cd-sec-title">Vigencia</h3>
             <div class="cd-sec-act">
-              <Button v-if="edit !== 'vigencia'" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrir('vigencia')" />
+              <Button v-if="edit !== 'vigencia'" label="Editar" size="small" text severity="secondary" @click="abrir('vigencia')">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
               <template v-else>
                 <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardar(['estado', 'fecha_firma_contrato', 'fecha_inicio', 'fecha_fin',
-                                   'renovacion_automatica'])" />
+                <Button label="Guardar" size="small" :loading="guardando" @click="guardar(['estado', 'fecha_firma_contrato', 'fecha_inicio', 'fecha_fin',
+                                   'renovacion_automatica'])">
+                  <template #icon><CheckIcon class="size-[1em]" /></template>
+                </Button>
               </template>
             </div>
           </header>
@@ -316,17 +330,19 @@
         <!-- ── Condiciones comerciales ──────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#f59e0b18"><i class="pi pi-dollar" style="color:#f59e0b" /></span>
+            <span class="cd-ico" style="background:#f59e0b18"><DollarSignIcon class="size-[1em]" style="color:#f59e0b" /></span>
             <h3 class="cd-sec-title">Condiciones comerciales</h3>
             <div class="cd-sec-act">
-              <Button v-if="edit !== 'comercial'" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrir('comercial')" />
+              <Button v-if="edit !== 'comercial'" label="Editar" size="small" text severity="secondary" @click="abrir('comercial')">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
               <template v-else>
                 <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardar(['tarifa_admin', 'tarifa_cgm', 'tarifa_representacion',
+                <Button label="Guardar" size="small" :loading="guardando" @click="guardar(['tarifa_admin', 'tarifa_cgm', 'tarifa_representacion',
                                    'indice_indexacion', 'periodicidad_pago', 'responsable_iva',
-                                   'enlace_drive'])" />
+                                   'enlace_drive'])">
+                  <template #icon><CheckIcon class="size-[1em]" /></template>
+                </Button>
               </template>
             </div>
           </header>
@@ -349,7 +365,7 @@
                 <span class="cd-campo-lbl">Contrato en Drive</span>
                 <a v-if="c.enlace_drive" :href="c.enlace_drive" target="_blank" rel="noopener"
                   class="text-sm inline-flex items-center gap-1 hover:underline" style="color:#3b82f6">
-                  <i class="pi pi-external-link text-[10px]" />Ver contrato
+                  <ExternalLinkIcon class="text-[10px] size-[1em]" />Ver contrato
                 </a>
                 <span v-else class="text-sm" style="color:#2C2039">—</span>
               </div>
@@ -396,16 +412,18 @@
         <!-- ── Indexación ───────────────────────────────────────────────── -->
         <section v-for="t in TABLAS_IDX" :key="t.clave" class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#1e40af18"><i class="pi pi-table" style="color:#1e40af" /></span>
+            <span class="cd-ico" style="background:#1e40af18"><TableIcon class="size-[1em]" style="color:#1e40af" /></span>
             <h3 class="cd-sec-title">{{ t.titulo }}</h3>
             <div class="cd-sec-act">
               <span v-if="edit !== t.clave" class="text-xs mr-1" style="color:#9b89b5">Hoy: {{ hoy }}</span>
-              <Button v-if="edit !== t.clave" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrirIdx(t.clave)" />
+              <Button v-if="edit !== t.clave" label="Editar" size="small" text severity="secondary" @click="abrirIdx(t.clave)">
+                <template #icon><PencilIcon class="size-[1em]" /></template>
+              </Button>
               <template v-else>
                 <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardarIdx(t.clave)" />
+                <Button label="Guardar" size="small" :loading="guardando" @click="guardarIdx(t.clave)">
+                  <template #icon><CheckIcon class="size-[1em]" /></template>
+                </Button>
               </template>
             </div>
           </header>
@@ -432,12 +450,15 @@
                 <label class="cd-lbl">Base</label>
                 <div class="flex items-center gap-2 h-9">
                   <Checkbox v-model="f.esBase" :binary="true" @change="marcarBase(i)" />
-                  <Button icon="pi pi-trash" text severity="danger" size="small"
-                    v-tooltip.bottom="'Quitar fila'" @click="filasEdit.splice(i, 1)" />
+                  <Button text severity="danger" size="small" v-tooltip.bottom="'Quitar fila'" @click="filasEdit.splice(i, 1)">
+                    <template #icon><Trash2Icon class="size-[1em]" /></template>
+                  </Button>
                 </div>
               </div>
             </div>
-            <Button label="Agregar año" icon="pi pi-plus" size="small" text @click="agregarFilaIdx" />
+            <Button label="Agregar año" size="small" text @click="agregarFilaIdx">
+              <template #icon><PlusIcon class="size-[1em]" /></template>
+            </Button>
             <p class="text-[11px]" style="color:#9b89b5">
               El año marcado como base es la tarifa inicial y no lleva IPC. Los demás llevan el
               IPC con que se indexó ese aniversario.
@@ -504,7 +525,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import { useConfirm } from 'primevue/useconfirm'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
@@ -516,9 +537,9 @@ import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import InfoField from '~/components/InfoField.vue'
+import { ArrowLeftIcon, ArrowRightIcon, BriefcaseIcon, BuildingIcon, CalendarIcon, ChartLineIcon, CheckIcon, CircleIcon, ClockIcon, CopyIcon, DollarSignIcon, ExternalLinkIcon, FilePenIcon, IdCardIcon, PencilIcon, PlusIcon, TableIcon, Trash2Icon, TriangleAlertIcon, UsersIcon } from '@lucide/vue'
 
 const route = useRoute()
-const toast = useToast()
 const confirm = useConfirm()
 
 const ESTADO_LABELS = {
@@ -591,8 +612,10 @@ async function cargarDuplicados() {
   } catch (e) {
     // Antes esto se tragaba el error y el aviso simplemente no aparecía, sin
     // forma de saber si no había duplicados o si la consulta había fallado.
-    toast.add({ severity: 'warn', summary: 'No se pudo revisar duplicados',
-                detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.warning('No se pudo revisar duplicados', {
+      description: e.response?.data?.detail || e.message,
+      duration: 5000,
+    })
   }
 }
 
@@ -605,7 +628,6 @@ function confirmarEliminar() {
     header: 'Eliminar contrato',
     message: `Se eliminará "${etiquetaContrato(x)}" de ${proyectoNombre.value || 'esta planta'}. `
            + 'Esta acción no se puede deshacer.',
-    icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
     acceptProps: { severity: 'danger' },
@@ -618,11 +640,10 @@ async function eliminar(id) {
     await api.delete(`/contratos-servicio/${id}`)
     contratos.value = contratos.value.filter(x => x.id !== id)
     idSeleccionado.value = contratos.value[0]?.id ?? null
-    toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2500 })
+    toast.success('Contrato eliminado', { duration: 2500 })
     await cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo eliminar',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('No se pudo eliminar', { description: e.response?.data?.detail || e.message, duration: 4000 })
   }
 }
 
@@ -631,13 +652,14 @@ async function fusionar() {
   try {
     const { data } = await api.post('/contratos-servicio/fusionar-representacion',
                                     { ids: grupoDuplicado.value.ids })
-    toast.add({ severity: 'success', summary: 'Registros fusionados',
-                detail: `${data.contratos_eliminados} duplicado(s) eliminado(s)`, life: 3500 })
+    toast.success('Registros fusionados', {
+      description: `${data.contratos_eliminados} duplicado(s) eliminado(s)`,
+      duration: 3500,
+    })
     await cargar()
     await cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo fusionar',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('No se pudo fusionar', { description: e.response?.data?.detail || e.message, duration: 4000 })
   } finally {
     fusionando.value = false
   }
@@ -791,10 +813,9 @@ async function enviar(payload) {
     const i = contratos.value.findIndex(x => x.id === data.id)
     if (i !== -1) contratos.value[i] = data
     edit.value = null
-    toast.add({ severity: 'success', summary: 'Cambios guardados', life: 2500 })
+    toast.success('Cambios guardados', { duration: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('No se pudo guardar', { description: e.response?.data?.detail || e.message, duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -856,11 +877,9 @@ async function nuevoContrato() {
     })
     contratos.value.push(data)
     idSeleccionado.value = data.id
-    toast.add({ severity: 'success', summary: 'Contrato creado',
-                detail: 'Completa los datos con Editar', life: 3000 })
+    toast.success('Contrato creado', { description: 'Completa los datos con Editar', duration: 3000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo crear',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('No se pudo crear', { description: e.response?.data?.detail || e.message, duration: 4000 })
   }
 }
 
@@ -888,8 +907,10 @@ onMounted(async () => {
     await cargar()
     await cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.error('Error al cargar contratos', {
+      description: e.response?.data?.detail || e.message,
+      duration: 4000,
+    })
   } finally {
     loading.value = false
   }
@@ -932,7 +953,7 @@ onMounted(async () => {
   width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
   display: inline-flex; align-items: center; justify-content: center;
 }
-.cd-ico i { font-size: 11px; }
+.cd-ico svg { font-size: 11px; }
 
 .cd-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 @media (min-width: 768px) { .cd-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -967,7 +988,7 @@ onMounted(async () => {
   background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
 }
 .dup-aviso--frena { background: #fffbeb; border-color: #fde68a; color: #92400E; }
-.dup-aviso i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+.dup-aviso svg { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
 
 .idx-fila {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
@@ -979,7 +1000,7 @@ onMounted(async () => {
   background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
 }
 .dup-aviso--frena { background: #fffbeb; border-color: #fde68a; color: #92400E; }
-.dup-aviso i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+.dup-aviso svg { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
 
 .idx-fila { grid-template-columns: 1fr 1fr 1fr auto; } }
 

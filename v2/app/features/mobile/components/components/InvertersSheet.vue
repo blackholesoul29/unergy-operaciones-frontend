@@ -4,13 +4,14 @@
       <div v-if="open" class="is-root">
         <!-- Encabezado -->
         <header class="is-head">
-          <button class="is-back" @click="close"><i class="pi pi-chevron-left" /></button>
+          <button class="is-back" @click="close"><ChevronLeftIcon class="size-[1em]" /></button>
           <div class="is-titles">
             <span class="is-title">Potencia por inversor</span>
             <span class="is-sub">{{ nombre || '—' }}</span>
           </div>
           <button class="is-icon-btn" :disabled="loading" @click="cargar(true)" title="Actualizar">
-            <i :class="loading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
+            <LoaderCircleIcon v-if="loading" class="size-[1em] animate-spin" />
+            <RefreshCwIcon v-else class="size-[1em]" />
           </button>
         </header>
 
@@ -25,25 +26,26 @@
             <span class="is-chip-peak">{{ fmtKw(inv.peak_kw) }}</span>
           </button>
           <button class="is-chip is-chip--all" @click="todos">
-            <i :class="['pi', ocultos.size ? 'pi-eye' : 'pi-eye-slash']" />
+            <EyeIcon v-if="ocultos.size" class="size-[1em]" />
+            <EyeOffIcon v-else class="size-[1em]" />
             {{ ocultos.size ? 'Todos' : 'Ninguno' }}
           </button>
         </div>
 
         <!-- Gráfica -->
         <main class="is-chart">
-          <div v-if="loading" class="is-state"><i class="pi pi-spin pi-spinner" /> <span>Cargando inversores…</span></div>
+          <div v-if="loading" class="is-state"><LoaderCircleIcon class="size-[1em] animate-spin" /> <span>Cargando inversores…</span></div>
           <div v-else-if="error" class="is-state">
-            <i class="pi pi-exclamation-triangle" style="font-size:30px;color:#f59e0b" />
+            <TriangleAlertIcon class="size-[1em]" style="font-size:30px;color:#f59e0b" />
             <span>{{ error }}</span>
             <button class="is-retry" @click="cargar(true)">Reintentar</button>
           </div>
           <div v-else-if="!inversores.length" class="is-state">
-            <i class="pi pi-chart-line" style="font-size:32px;color:#d1d5db" />
+            <ChartLineIcon class="size-[1em]" style="font-size:32px;color:#d1d5db" />
             <span>Sin datos de inversores hoy</span>
           </div>
           <div v-else-if="!datasetsVisibles.length" class="is-state">
-            <i class="pi pi-eye-slash" style="font-size:30px;color:#d1d5db" />
+            <EyeOffIcon class="size-[1em]" style="font-size:30px;color:#d1d5db" />
             <span>Todas las líneas están ocultas</span>
           </div>
           <Line v-else :data="chartData" :options="chartOptions" />
@@ -51,9 +53,9 @@
 
         <!-- Pie -->
         <footer class="is-foot">
-          <span><i class="pi pi-calendar" /> {{ fecha }}</span>
+          <span><CalendarIcon class="size-[1em]" /> {{ fecha }}</span>
           <span v-if="granularidad">{{ granularidad === 'hour' ? 'por hora' : 'cada 5 min' }}</span>
-          <span v-if="actualizado" class="is-foot-upd"><i class="pi pi-clock" /> {{ actualizado }}</span>
+          <span v-if="actualizado" class="is-foot-upd"><ClockIcon class="size-[1em]" /> {{ actualizado }}</span>
         </footer>
       </div>
     </Transition>
@@ -68,6 +70,7 @@ import {
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import api from '~/core/client'
+import { CalendarIcon, ChartLineIcon, ChevronLeftIcon, ClockIcon, EyeIcon, EyeOffIcon, LoaderCircleIcon, RefreshCwIcon, TriangleAlertIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Legend, Tooltip)
 
@@ -266,7 +269,7 @@ function close() { emit('close') }
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 11px; padding: 0 24px; text-align: center; color: #6b5a8a; font-size: 14px;
 }
-.is-state .pi-spinner { font-size: 24px; color: #915BD8; }
+.is-state svg { font-size: 24px; color: #915BD8; }
 .is-retry {
   margin-top: 2px; padding: 10px 20px; border: none; border-radius: 11px;
   background: #915BD8; color: #fff; font-weight: 600; font-size: 14px;
@@ -279,7 +282,7 @@ function close() { emit('close') }
   background: #fff; border-top: 1px solid #eceaf2;
   font-size: 11px; color: #9ca3af;
 }
-.is-foot .pi { margin-right: 4px; }
+.is-foot svg { margin-right: 4px; }
 .is-foot-upd { margin-left: auto; }
 
 .isheet-enter-active, .isheet-leave-active { transition: opacity .2s ease, transform .25s ease; }

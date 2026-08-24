@@ -117,14 +117,9 @@
 
     <template #footer>
       <Button label="Cancelar" severity="secondary" text size="small" @click="cerrar(false)" />
-      <Button
-        :label="esEdicion ? 'Guardar cambios' : 'Crear métrica'"
-        icon="pi pi-check"
-        size="small"
-        :loading="guardando"
-        :disabled="!nombreValido || guardando"
-        @click="enviar"
-      />
+      <Button :label="esEdicion ? 'Guardar cambios' : 'Crear métrica'" size="small" :loading="guardando" :disabled="!nombreValido || guardando" @click="enviar">
+        <template #icon><CheckIcon class="size-[1em]" /></template>
+      </Button>
     </template>
   </Dialog>
 </template>
@@ -139,6 +134,7 @@ import Textarea from 'primevue/textarea'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import { TIPOS_AGREGACION, DIRECCIONES, fmtValor } from './retosUi'
+import { CheckIcon } from '@lucide/vue'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },

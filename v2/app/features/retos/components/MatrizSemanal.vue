@@ -6,7 +6,8 @@
 
       <span class="rq-guardado" :style="{ color: guardado.color }">
         <template v-if="guardado.texto">
-          <i v-if="guardado.icono" :class="guardado.icono" />
+          <component :is="guardado.icono" v-if="guardado.icono" class="size-[1em]"
+            :class="{ 'animate-spin': guardado.girando }" />
           <button v-if="guardado.esError" type="button" class="rq-guardado-link" @click="irAPrimerError">
             {{ guardado.texto }}
           </button>
@@ -21,14 +22,9 @@
         <span>Ocultar semanas futuras</span>
       </label>
 
-      <Button
-        icon="pi pi-question-circle"
-        text
-        rounded
-        size="small"
-        aria-label="Ayuda de teclado"
-        v-tooltip.left="{ value: AYUDA_TECLADO, escape: false }"
-      />
+      <Button text rounded size="small" aria-label="Ayuda de teclado" v-tooltip.left="{ value: AYUDA_TECLADO, escape: false }">
+        <template #icon><CircleQuestionMarkIcon class="size-[1em]" /></template>
+      </Button>
     </div>
 
     <!-- ── Banner "sin datos todavía" (§5.9) ────────────────────────────── -->
@@ -57,7 +53,7 @@
         <span class="rq-angosto-s">{{ s.etiqueta || `S${s.numero}` }}</span>
         <span class="rq-angosto-rango">{{ s.rango_label }}</span>
         <span class="rq-angosto-llenado" :style="{ color: colorLlenado(s) }">{{ textoLlenado(s) }}</span>
-        <i class="pi pi-chevron-right" />
+        <ChevronRightIcon class="size-[1em]" />
       </button>
     </div>
 
@@ -139,16 +135,9 @@
                   </span>
                   <span class="rq-metrica-meta" :title="metaLinea(m)">{{ metaLinea(m) }}</span>
                 </div>
-                <Button
-                  icon="pi pi-ellipsis-h"
-                  text
-                  rounded
-                  size="small"
-                  tabindex="-1"
-                  class="rq-fila-menu"
-                  :aria-label="`Acciones de ${m.nombre}`"
-                  @click="abrirMenu($event, m)"
-                />
+                <Button text rounded size="small" tabindex="-1" class="rq-fila-menu" :aria-label="`Acciones de ${m.nombre}`" @click="abrirMenu($event, m)">
+                  <template #icon><EllipsisIcon class="size-[1em]" /></template>
+                </Button>
               </div>
             </th>
 
@@ -190,22 +179,13 @@
                   @blur="onBlurInput"
                 />
                 <template v-else>
-                  <i
-                    v-if="esInusual(m, s)"
-                    class="pi pi-exclamation-triangle rq-inusual"
-                    v-tooltip.top="'Valor inusual para esta métrica. Se guardó de todas formas.'"
-                  />
+                  <TriangleAlertIcon class="rq-inusual size-[1em]" v-if="esInusual(m, s)" v-tooltip.top="'Valor inusual para esta métrica. Se guardó de todas formas.'" />
                   <span v-if="valorDe(m, s) === null" class="rq-vacio">·</span>
                   <span v-else class="rq-num">{{ fmtNumero(valorDe(m, s), m.decimales) }}</span>
                 </template>
 
                 <span v-if="notaDe(m, s)" class="rq-nota" v-tooltip.top="tooltipNota(m, s)" />
-                <i
-                  v-if="errores[clave(m, s)]"
-                  class="pi pi-exclamation-circle rq-err-icon"
-                  v-tooltip.top="errores[clave(m, s)]"
-                  @click.stop="reintentar(m, s)"
-                />
+                <CircleAlertIcon class="rq-err-icon size-[1em]" v-if="errores[clave(m, s)]" v-tooltip.top="errores[clave(m, s)]" @click.stop="reintentar(m, s)" />
                 <span v-if="estados[clave(m, s)] === 'guardando'" class="rq-progress" />
               </div>
             </td>
@@ -259,7 +239,9 @@
       </table>
     </div>
 
-    <Menu ref="menuEl" :model="itemsMenu" :popup="true" />
+    <Menu ref="menuEl" :model="itemsMenu" :popup="true">
+      <template #itemicon="{ item }"><component :is="item.icon" class="size-[1em]" /></template>
+    </Menu>
 
     <!-- El flash verde no puede ser la única confirmación (§9) -->
     <div aria-live="polite" class="sr-only">{{ anuncio }}</div>
@@ -285,6 +267,7 @@ import Button from 'primevue/button'
 import Menu from 'primevue/menu'
 import ToggleSwitch from 'primevue/toggleswitch'
 import { fmtNumero, fmtValor, fmtPct, fmtPctEntero, parseValor, estadoColor } from './retosUi'
+import { CheckIcon, ChevronRightIcon, CircleAlertIcon, CircleQuestionMarkIcon, EllipsisIcon, LoaderCircleIcon, PencilIcon, Trash2Icon, TriangleAlertIcon } from '@lucide/vue'
 
 const props = defineProps({
   metricas: { type: Array, required: true },
@@ -716,14 +699,14 @@ const nErrores = computed(() => Object.keys(errores).length)
 
 const guardado = computed(() => {
   if (enVuelo.value > 0) {
-    return { icono: 'pi pi-spin pi-spinner', texto: 'Guardando…', color: '#915BD8', esError: false }
+    return { icono: LoaderCircleIcon, girando: true, texto: 'Guardando…', color: '#915BD8', esError: false }
   }
   if (nErrores.value > 0) {
     const t = nErrores.value === 1 ? '1 cambio sin guardar' : `${nErrores.value} cambios sin guardar`
-    return { icono: 'pi pi-exclamation-circle', texto: t, color: '#B0364A', esError: true }
+    return { icono: CircleAlertIcon, texto: t, color: '#B0364A', esError: true }
   }
   if (ultimoOk.value) {
-    return { icono: 'pi pi-check', texto: `Guardado ${horaCorta(ultimoOk.value)}`, color: '#6b5a8a', esError: false }
+    return { icono: CheckIcon, texto: `Guardado ${horaCorta(ultimoOk.value)}`, color: '#6b5a8a', esError: false }
   }
   return { icono: '', texto: '', color: '#6b5a8a', esError: false }
 })
@@ -927,9 +910,9 @@ async function pegar(r, c) {
 const menuEl = ref(null)
 const metricaMenu = ref(null)
 const itemsMenu = computed(() => [
-  { label: 'Editar métrica', icon: 'pi pi-pencil', command: () => emit('editar-metrica', metricaMenu.value) },
+  { label: 'Editar métrica', icon: PencilIcon, command: () => emit('editar-metrica', metricaMenu.value) },
   { separator: true },
-  { label: 'Eliminar métrica', icon: 'pi pi-trash', class: 'rq-menu-danger', command: () => emit('eliminar-metrica', metricaMenu.value) },
+  { label: 'Eliminar métrica', icon: Trash2Icon, class: 'rq-menu-danger', command: () => emit('eliminar-metrica', metricaMenu.value) },
 ])
 function abrirMenu(ev, m) {
   metricaMenu.value = m
@@ -990,7 +973,7 @@ defineExpose({ enfocarMetrica })
   align-items: center;
   gap: 5px;
 }
-.rq-guardado i { font-size: 10px; }
+.rq-guardado svg { font-size: 10px; }
 .rq-guardado-link {
   background: none; border: 0; padding: 0; cursor: pointer;
   font: inherit; color: inherit; text-decoration: underline;
@@ -1250,7 +1233,7 @@ tr.rq-fila-hover { --rq-bg: rgba(44, 32, 57, .025); }
 .rq-angosto-s { font-size: 11.5px; font-weight: 800; color: #2C2039; width: 34px; }
 .rq-angosto-rango { flex: 1; font-size: 11px; color: #6b5a8a; }
 .rq-angosto-llenado { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.rq-angosto-fila .pi { font-size: 10px; color: #c7bdd8; }
+.rq-angosto-fila svg { font-size: 10px; color: #c7bdd8; }
 
 @media (prefers-reduced-motion: reduce) {
   .rq-progress, .rq-cell-ok { animation: none; }

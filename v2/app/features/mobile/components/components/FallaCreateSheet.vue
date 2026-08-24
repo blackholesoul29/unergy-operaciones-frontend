@@ -5,8 +5,8 @@
         <div class="fc-sheet">
           <div class="fc-grab" />
           <div class="fc-header">
-            <span class="fc-title"><i class="pi pi-plus-circle" /> Registrar falla</span>
-            <button class="fc-close" @click="close"><i class="pi pi-times" /></button>
+            <span class="fc-title"><CirclePlusIcon class="size-[1em]" /> Registrar falla</span>
+            <button class="fc-close" @click="close"><XIcon class="size-[1em]" /></button>
           </div>
 
           <div class="fc-body">
@@ -26,7 +26,7 @@
                   :class="['fc-chip', f.categoria === c.codigo && 'fc-chip--on']"
                   :style="f.categoria === c.codigo ? chipOn(c.color_hex) : {}"
                   @click="seleccionarCategoria(c.codigo)">
-                  <i :class="c.icono" /> {{ c.etiqueta }}
+                  <component :is="iconoCategoriaFalla(c.codigo)" class="size-[1em]" /> {{ c.etiqueta }}
                 </button>
               </div>
               <small v-if="err.categoria" class="fc-fielderr">Selecciona el sistema</small>
@@ -85,7 +85,7 @@
                 <div v-if="inversores.length" class="fc-invadd">
                   <input v-model="nuevoInv.nombre" class="fc-input fc-invname" placeholder="Nuevo inversor" />
                   <input v-model.number="nuevoInv.potencia_nominal_kw" type="number" class="fc-input fc-invkw" placeholder="kW" />
-                  <button type="button" class="fc-invaddbtn" @click="agregarInv"><i class="pi pi-plus" /></button>
+                  <button type="button" class="fc-invaddbtn" @click="agregarInv"><PlusIcon class="size-[1em]" /></button>
                 </div>
                 <small v-if="invError" class="fc-fielderr">{{ invError }}</small>
 
@@ -139,11 +139,11 @@
               <textarea v-model="f.nota" rows="2" class="fc-textarea" placeholder="Detalle / observación…"></textarea>
             </label>
 
-            <div v-if="error" class="fc-error"><i class="pi pi-exclamation-triangle" /> {{ error }}</div>
+            <div v-if="error" class="fc-error"><TriangleAlertIcon class="size-[1em]" /> {{ error }}</div>
           </div>
 
           <button class="fc-submit" :disabled="saving" @click="submit">
-            <i v-if="saving" class="pi pi-spin pi-spinner" /><i v-else class="pi pi-check" />
+            <LoaderCircleIcon class="size-[1em] animate-spin" v-if="saving" /><CheckIcon class="size-[1em]" v-else />
             {{ saving ? 'Registrando…' : 'Registrar falla' }}
           </button>
         </div>
@@ -155,6 +155,8 @@
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
 import api from '~/core/client'
+import { CheckIcon, CirclePlusIcon, LoaderCircleIcon, PlusIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
+import { iconoCategoriaFalla } from '~/utils/fallaTitulo'
 
 const props = defineProps({
   open:            { type: Boolean, default: false },
@@ -342,7 +344,7 @@ async function submit() {
 .fc-grab { width: 40px; height: 4px; border-radius: 2px; background: #e5e7eb; margin: 4px auto 12px; }
 .fc-header { display: flex; align-items: center; margin-bottom: 12px; }
 .fc-title { flex: 1; font-size: 16px; font-weight: 700; color: #2C2039; }
-.fc-title .pi { color: #915BD8; margin-right: 6px; }
+.fc-title svg { color: #915BD8; margin-right: 6px; }
 .fc-close { background: none; border: none; color: #9ca3af; font-size: 16px; padding: 4px; }
 
 .fc-body { overflow-y: auto; flex: 1; }
@@ -367,7 +369,7 @@ async function submit() {
   padding: 9px 14px; border-radius: 11px; border: 1.5px solid #e5e7eb; background: #fff;
   font-size: 14px; font-weight: 600; color: #6b5a8a;
 }
-.fc-chip .pi { font-size: 12px; margin-right: 4px; }
+.fc-chip svg { font-size: 12px; margin-right: 4px; }
 
 .fc-check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #4a3b6b; margin: 10px 0 0; }
 .fc-check input { accent-color: #915BD8; width: 18px; height: 18px; }

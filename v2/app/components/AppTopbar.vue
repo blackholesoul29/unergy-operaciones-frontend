@@ -2,7 +2,7 @@
   <header class="h-14 bg-white border-b flex items-center justify-between px-4 sm:px-6 shrink-0" style="border-color: #e8e0f0;">
     <div class="flex items-center gap-3">
       <button class="lg:hidden p-1 -ml-1" @click="toggle" style="color: #2C2039;">
-        <i class="pi pi-bars text-lg" />
+        <MenuIcon class="text-lg size-[1em]" />
       </button>
       <h1 class="text-sm font-semibold" style="color: #2C2039;">{{ pageTitle }}</h1>
     </div>
@@ -11,7 +11,7 @@
       <!-- Notification Bell -->
       <div class="relative" ref="bellRef">
         <button @click="toggleNotifications" class="relative p-1.5 rounded-lg transition-colors hover:bg-gray-100">
-          <i class="pi pi-bell text-lg" style="color: #6b5a8a;" />
+          <BellIcon class="text-lg size-[1em]" style="color: #6b5a8a;" />
           <span v-if="unreadCount > 0"
             class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full text-[10px] font-bold text-white px-1"
             style="background-color: #D64455;">
@@ -32,7 +32,7 @@
           </div>
           <div class="max-h-80 overflow-y-auto">
             <div v-if="notifications.length === 0" class="py-8 text-center">
-              <i class="pi pi-bell-slash text-2xl mb-2 block" style="color: #c4b8d4;" />
+              <BellOffIcon class="text-2xl mb-2 block size-[1em]" style="color: #c4b8d4;" />
               <p class="text-xs" style="color: #6b5a8a;">Sin notificaciones</p>
             </div>
             <div v-for="n in notifications" :key="n.id"
@@ -41,7 +41,7 @@
               :style="{ borderColor: '#f3f0f7', backgroundColor: n.leida ? 'transparent' : 'rgba(145,91,216,0.04)' }">
               <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                 :style="{ backgroundColor: severityBg(n.severidad), color: severityColor(n.severidad) }">
-                <i :class="severityIcon(n.severidad)" class="text-xs" />
+                <component :is="severityIcon(n.severidad)" class="text-xs size-[1em]" />
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-sm leading-snug" :style="{ color: '#2C2039', fontWeight: n.leida ? '400' : '600' }">{{ n.titulo || n.mensaje }}</p>
@@ -76,7 +76,7 @@
         onmouseout="this.style.backgroundColor='transparent';this.style.color='#915BD8'"
         title="Cerrar sesión"
       >
-        <i class="pi pi-sign-out text-xs" />
+        <LogOutIcon class="text-xs size-[1em]" />
         <span class="hidden sm:inline">Salir</span>
       </button>
     </div>
@@ -89,6 +89,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { useSidebar } from '~/composables/useSidebar'
 import api from '~/core/client'
+import { BellIcon, BellOffIcon, CircleAlertIcon, CircleCheckIcon, InfoIcon, LogOutIcon, MenuIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -145,8 +146,8 @@ function severityColor(sev) {
   return map[sev] || '#915BD8'
 }
 function severityIcon(sev) {
-  const map = { critica: 'pi pi-exclamation-triangle', alta: 'pi pi-exclamation-circle', media: 'pi pi-info-circle', baja: 'pi pi-check-circle' }
-  return map[sev] || 'pi pi-bell'
+  const map = { critica: TriangleAlertIcon, alta: CircleAlertIcon, media: InfoIcon, baja: CircleCheckIcon }
+  return map[sev] || BellIcon
 }
 
 function formatTimeAgo(dateStr) {

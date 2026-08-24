@@ -49,7 +49,7 @@
         <p class="text-xs font-semibold" style="color:#6b5a8a">Facturas XM (PDF) — opcional</p>
         <label class="border-2 border-dashed rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer text-xs"
           style="border-color:#c4b8d4;background:#fafafa;color:#6b5a8a">
-          <i class="pi pi-file-pdf" style="color:#D64455" />
+          <FileTextIcon class="size-[1em]" style="color:#D64455" />
           <span v-if="!files.pdfs.length">Arrastra o haz clic para subir uno o varios PDF</span>
           <span v-else>{{ files.pdfs.length }} PDF(s) seleccionado(s)</span>
           <input type="file" accept=".pdf" multiple class="hidden" @change="onPdfsSelect" />
@@ -61,14 +61,9 @@
       </div>
 
       <div class="flex justify-end">
-        <Button
-          label="Procesar"
-          icon="pi pi-bolt"
-          :loading="loading"
-          :disabled="!allFilesLoaded"
-          @click="procesar"
-          style="background:#915BD8;border-color:#915BD8"
-        />
+        <Button label="Procesar" :loading="loading" :disabled="!allFilesLoaded" @click="procesar" style="background:#915BD8;border-color:#915BD8">
+          <template #icon><ZapIcon class="size-[1em]" /></template>
+        </Button>
       </div>
     </div>
 
@@ -92,12 +87,19 @@
         </div>
 
         <div class="flex justify-between mt-4">
-          <Button label="Volver" icon="pi pi-arrow-left" text severity="secondary" @click="activeStep = 0" />
+          <Button label="Volver" text severity="secondary" @click="activeStep = 0">
+            <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+          </Button>
           <div class="flex gap-2">
-            <Button label="Exportar Excel" icon="pi pi-file-excel" outlined severity="secondary" size="small" @click="exportar" />
-            <Button label="Guardar en histórico" icon="pi pi-save" outlined size="small" :loading="guardando"
-              @click="guardarRegistro" style="color:#915BD8;border-color:#915BD8" />
-            <Button label="Generar mensaje" icon="pi pi-arrow-right" icon-pos="right" @click="generarYAvanzar" style="background:#915BD8;border-color:#915BD8" />
+            <Button label="Exportar Excel" outlined severity="secondary" size="small" @click="exportar">
+              <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
+            </Button>
+            <Button label="Guardar en histórico" outlined size="small" :loading="guardando" @click="guardarRegistro" style="color:#915BD8;border-color:#915BD8">
+              <template #icon><SaveIcon class="size-[1em]" /></template>
+            </Button>
+            <Button label="Generar mensaje" icon-pos="right" @click="generarYAvanzar" style="background:#915BD8;border-color:#915BD8">
+              <template #icon><ArrowRightIcon class="size-[1em]" /></template>
+            </Button>
           </div>
         </div>
       </div>
@@ -147,10 +149,16 @@
       </div>
 
       <div class="flex justify-between">
-        <Button label="Volver" icon="pi pi-arrow-left" text severity="secondary" @click="activeStep = 1" />
+        <Button label="Volver" text severity="secondary" @click="activeStep = 1">
+          <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
+        </Button>
         <div class="flex gap-2">
-          <Button label="Copiar" icon="pi pi-copy" outlined severity="secondary" @click="copiar" />
-          <Button label="Confirmar y guardar" icon="pi pi-check" :loading="guardando" @click="guardarRegistro" style="background:#915BD8;border-color:#915BD8" />
+          <Button label="Copiar" outlined severity="secondary" @click="copiar">
+            <template #icon><CopyIcon class="size-[1em]" /></template>
+          </Button>
+          <Button label="Confirmar y guardar" :loading="guardando" @click="guardarRegistro" style="background:#915BD8;border-color:#915BD8">
+            <template #icon><CheckIcon class="size-[1em]" /></template>
+          </Button>
         </div>
       </div>
     </div>
@@ -162,7 +170,7 @@ import { ref, computed } from 'vue'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
-import { useToast } from 'primevue/usetoast'
+import { toast } from 'vue-sonner'
 import DropZone from '../DropZone.vue'
 import HojaMadreView from '../HojaMadreView.vue'
 import FacturasDescuento from '../FacturasDescuento.vue'
@@ -171,8 +179,8 @@ import { parseSemanales } from '../composables/useGarantiasParser.js'
 import { useGarantiasHistorial } from '../composables/useGarantiasHistorial.js'
 import { fmtCOP, fmtISODate } from '../utils/formatters.js'
 import { exportHojaMadreExcel } from '../utils/excelExport.js'
+import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, CopyIcon, FileSpreadsheetIcon, FileTextIcon, SaveIcon, ZapIcon } from '@lucide/vue'
 
-const toast = useToast()
 const store = useGarantiasHistorial()
 
 const PATTERNS = {
@@ -351,7 +359,7 @@ ${pbLinea}${tendLinea}${menc}`
 
 async function copiar() {
   await navigator.clipboard.writeText(mensajeEditable.value)
-  toast.add({ severity: 'success', summary: 'Mensaje copiado', life: 2000 })
+  toast.success('Mensaje copiado', { duration: 2000 })
 }
 
 function exportar() {
@@ -394,11 +402,11 @@ async function guardarRegistro() {
       snapshot: vistaActual.value,
     })
     if (p?.pb != null) store.setPbAnterior(p.pb)
-    toast.add({ severity: 'success', summary: 'Guardado en historial', detail: `Reporte del ${fecha}`, life: 3000 })
+    toast.success('Guardado en historial', { description: `Reporte del ${fecha}`, duration: 3000 })
   } catch (e) {
     const detalle = e?.response?.data?.detail || e?.message || 'Error desconocido'
     console.error('[garantias] error al guardar registro:', e?.response?.data || e)
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: String(detalle), life: 6000 })
+    toast.error('No se pudo guardar', { description: String(detalle), duration: 6000 })
   } finally {
     guardando.value = false
   }

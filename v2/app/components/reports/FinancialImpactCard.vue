@@ -1,10 +1,9 @@
 <template>
   <div class="fic-card">
     <div class="fic-head">
-      <i class="pi pi-wallet text-sm" style="color:#915BD8" />
+      <WalletIcon class="text-sm size-[1em]" style="color:#915BD8" />
       <h3 class="fic-title">Impacto financiero</h3>
-      <i class="pi pi-info-circle fic-info"
-         v-tooltip.top="data?.liquidada
+      <InfoIcon class="fic-info size-[1em]" v-tooltip.top="data?.liquidada
            ? 'Estado de Resultados (espejo del Panel Contable del período). Ingreso neto = Ingresos − Costos totales.'
            : 'Neto = Ingresos PPA + Liquidaciones XM − Multas SLA (proyectadas). Las liquidaciones XM pueden ser positivas (spot > PPA) o negativas.'" />
     </div>
@@ -65,6 +64,7 @@
 <script setup>
 import { computed } from 'vue'
 import { formatCurrency } from '~/utils/financialCalculations'
+import { InfoIcon, WalletIcon } from '@lucide/vue'
 
 const props = defineProps({
   // Mock: { ingresoPPA, liquidacionXM, multaSLA, neto }
