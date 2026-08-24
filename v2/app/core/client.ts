@@ -5,7 +5,7 @@
  * comportamiento no es solo "hacer peticiones": los interceptores son parte del
  * contrato que asumen las ~130 vistas que lo usan.
  *
- *   - adjunta el Bearer desde `~/utils/security` en cada petición;
+ *   - adjunta el Bearer desde `~/core/security` en cada petición;
  *   - un 401 limpia la sesión y devuelve al login que corresponde (la app móvil
  *     tiene el suyo);
  *   - un 403 avisa con un toast sin cerrar la sesión.
@@ -17,7 +17,7 @@
  */
 import type { AxiosInstance, InternalAxiosRequestConfig } from 'axios'
 import axios from 'axios'
-import { clearTokens, getAccessToken, isPreviewToken } from '~/utils/security'
+import { clearTokens, getAccessToken, isPreviewToken } from '~/core/security'
 import { toast } from 'vue-sonner'
 
 /** Rutas del propio frontend a las que se devuelve una sesión caducada. */
