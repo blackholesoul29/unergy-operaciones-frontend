@@ -203,15 +203,20 @@ async function guardar() {
 async function guardarForzado() {
   forzando.value = true
   try {
-    const { data } = await api.post('/operadores-red', pendingBody.value, { params: { forzar: true } })
-    await _crearContactoSiAplica(data.id)
-    toast.add({ severity: 'success', summary: 'Operador creado', life: 2000 })
+    if (editingId.value) {
+      await api.patch(`/operadores-red/${editingId.value}`, pendingBody.value, { params: { forzar: true } })
+      toast.add({ severity: 'success', summary: 'Operador actualizado', life: 2000 })
+    } else {
+      const { data } = await api.post('/operadores-red', pendingBody.value, { params: { forzar: true } })
+      await _crearContactoSiAplica(data.id)
+      toast.add({ severity: 'success', summary: 'Operador creado', life: 2000 })
+    }
     duplicadoVisible.value = false
     showForm.value = false
     await loadData()
   } catch (e) {
     const detail = e.response?.data?.detail
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo crear', life: 4000 })
+    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo guardar', life: 4000 })
   } finally {
     forzando.value = false
   }
