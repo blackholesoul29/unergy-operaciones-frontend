@@ -43,13 +43,14 @@ No se toca código de producto.
 
 ### 0.1 Cerrar las decisiones abiertas
 
-Están enumeradas en `02-specs.md §20`. Las tres que bloquean el arranque:
+Están enumeradas en `02-specs.md §20`. Las tres que bloquean el arranque, **decididas el
+2026-08-24**:
 
-| Decisión | Recomendación | Por qué |
+| Decisión | ✅ Resuelto | Por qué |
 | --- | --- | --- |
-| **Modo de render** | `ssr: false` (SPA) en fases 1–2; evaluar SSR por página en fase 3 | Hoy la app es una SPA. Activar SSR de entrada convierte 70 archivos que tocan `window`/`document`/`localStorage` en 70 fallos simultáneos de una fase que debía ser un traslado. Nuxt sigue aportando file-based routing, auto-imports, Nitro y el ecosistema aunque el render sea de cliente. |
-| **Auth** | Migrar a cookies `httpOnly` en la **fase 3, ola 1** — no en la 1 | Exige coordinación con backend. Hasta entonces, el store legacy funciona sin cambios. |
-| **App móvil** | Entra en el alcance, pero **al final** (ola 7) | Es un producto aparte con su propio layout y ciclo; migrarla pronto no desbloquea nada. |
+| **Modo de render** | **`ssr: false` (SPA)** en fases 1–2; evaluar SSR por página en fase 3 | Hoy la app es una SPA. Activar SSR de entrada convierte 70 archivos que tocan `window`/`document`/`localStorage` en 70 fallos simultáneos de una fase que debía ser un traslado. Nuxt sigue aportando file-based routing, auto-imports, Nitro y el ecosistema aunque el render sea de cliente. |
+| **Auth** | **Migrar a cookies `httpOnly` en la fase 3, ola 1** — no en la 1 | Exige coordinación con backend. Hasta entonces, el store legacy funciona sin cambios. |
+| **App móvil** | **Entra en el alcance, al final (ola 7)** | Es un producto aparte con su propio layout y ciclo; migrarla pronto no desbloquea nada. |
 
 Las demás (rol `admin`, restricción por email, Chart.js vs. Unovis, placeholders,
 `OperacionView.vue`) pueden decidirse durante la fase 2 sin bloquear.
