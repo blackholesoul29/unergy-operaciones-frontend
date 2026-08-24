@@ -88,7 +88,7 @@ import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { useSidebar } from '~/composables/useSidebar'
-import api from '~/legacy/api/client'
+import api from '~/api/client'
 
 const route = useRoute()
 const router = useRouter()

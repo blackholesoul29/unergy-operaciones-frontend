@@ -1,0 +1,344 @@
+<!--
+  Ficha comercial del CLIENTE. Deja de ser el destino de cada click del tablero
+  (eso ahora es el drawer de la oferta, que no te saca de la vista) y vuelve a ser
+  lo que es: el cliente, sus contactos, sus ofertas, sus proyectos y contratos.
+
+  Cambios frente a la versión anterior:
+  · Se fue el dropdown «Tipo de servicio», que mandaba valores del enum de la
+    OFERTA (servicios_operacionales…) contra el enum de la oportunidad
+    (representacion | comunidad_energetica): cada autosave respondía 422. Además
+    quedó vestigial cuando la etapa se mudó a la oferta, que ya tiene su `tipo`.
+  · De 7 pestañas a 4: «Oferta» (documentos) y «Ofertas» (sub-ofertas) se llamaban
+    casi igual, y Proyectos y Contratos se leen juntos.
+  · Un cliente NO tiene etapa: arriba se resume en qué etapa está cada oferta.
+-->
+<template>
+  <div class="p-4 md:p-6" v-if="op">
+    <!-- Encabezado -->
+    <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+      <div class="flex items-start gap-3">
+        <Button icon="pi pi-arrow-left" text rounded @click="$router.push('/comercial')"
+                v-tooltip.bottom="'Volver al tablero'" />
+        <div>
+          <h1 class="text-xl font-semibold" style="color:#2C2039">{{ op.nombre }}</h1>
+          <div class="flex items-center gap-2 text-sm">
+            <router-link :to="`/clientes/${op.cliente_id}`" class="underline" style="color:#915BD8">
+              {{ op.cliente_razon_social }}
+            </router-link>
+            <span v-if="op.cliente_nit" style="color:#9b89b5">NIT {{ op.cliente_nit }}</span>
+          </div>
+        </div>
+        <Tag v-if="op.alerta" severity="danger" :value="`⚠ ${op.dias_sin_respuesta} días sin movimiento`" />
+      </div>
+    </div>
+
+    <!-- En qué etapa está cada oferta del cliente -->
+    <div class="flex items-center gap-2 mb-5 flex-wrap">
+      <span class="text-sm" style="color:#7a6e8a">{{ totalOfertas }} oferta(s):</span>
+      <Tag v-for="e in etapasPresentes" :key="e.value" :value="`${e.n} ${e.label.toLowerCase()}`"
+           :severity="severidadEtapa(e.value)" />
+      <span v-if="!totalOfertas" class="text-sm" style="color:#9b89b5">
+        todavía sin ofertas — se agregan en la pestaña Ofertas
+      </span>
+    </div>
+
+    <!-- Datos del negocio: pocos y de identificación, no merecen pestaña -->
+    <details class="mb-5 rounded-lg" style="background:#FAF8FC;border:1px solid #e8e0f0">
+      <summary class="px-3 py-2 text-xs font-semibold cursor-pointer select-none" style="color:#7a6e8a">
+        DATOS DEL NEGOCIO
+        <span class="font-normal" style="color:#9b89b5">— {{ estadoGuardado || 'nombre, consecutivo, fechas tentativas, notas' }}</span>
+      </summary>
+      <div class="px-3 pb-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="etiqueta">Nombre del negocio</label>
+          <InputText v-model.trim="seg.nombre" class="w-full" @update:modelValue="autosave" />
+        </div>
+        <div>
+          <label class="etiqueta">Nº de oferta (consecutivo manual)</label>
+          <InputText v-model.trim="seg.numero_oferta" class="w-full" @update:modelValue="autosave" />
+        </div>
+        <div>
+          <label class="etiqueta">Fecha estimada de firma</label>
+          <DatePicker v-model="seg.fecha_estimada_firma" dateFormat="yy-mm-dd" showIcon class="w-full"
+                      @update:modelValue="autosave" />
+        </div>
+        <div>
+          <label class="etiqueta">Inicio tentativo — representación</label>
+          <DatePicker v-model="seg.fecha_tentativa_inicio_representacion" dateFormat="yy-mm-dd" showIcon
+                      class="w-full" @update:modelValue="autosave" />
+        </div>
+        <div>
+          <label class="etiqueta">Inicio tentativo — compra de energía</label>
+          <DatePicker v-model="seg.fecha_tentativa_inicio_compra_energia" dateFormat="yy-mm-dd" showIcon
+                      class="w-full" @update:modelValue="autosave" />
+        </div>
+        <div class="md:col-span-3">
+          <label class="etiqueta">Notas</label>
+          <Textarea v-model="seg.notas" rows="2" autoResize class="w-full" @update:modelValue="autosave" />
+        </div>
+      </div>
+    </details>
+
+    <TabView>
+      <!-- Las ofertas primero: son la unidad del negocio -->
+      <TabPanel header="Ofertas">
+        <OfertasPanel :oportunidad-id="op.id" :ofertas="op.ofertas || []" @changed="recargar" />
+      </TabPanel>
+
+      <TabPanel header="Cliente y contactos">
+        <div class="max-w-4xl flex flex-col gap-6">
+          <ClienteForm :initial="clienteFull" @save="patchCliente" @cancel="() => {}" />
+          <ContactosPanel :cliente-id="op.cliente_id" />
+        </div>
+      </TabPanel>
+
+      <TabPanel header="Proyectos y contratos">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold" style="color:#2C2039">
+            {{ op.proyectos.length }} proyecto(s) vinculados
+          </h3>
+          <Button label="Agregar proyecto" icon="pi pi-plus" size="small"
+                  @click="showAgregarProyecto = true" />
+        </div>
+        <DataTable :value="proyectosFilas" class="text-sm mb-6" dataKey="id" selectionMode="single"
+                   @row-click="$router.push(`/proyectos/${$event.data.id}`)">
+          <Column field="nombre_comercial" header="Nombre" />
+          <Column header="Potencia AC">
+            <template #body="{ data }">
+              {{ data.potencia_instalada_kwp ? `${data.potencia_instalada_kwp} kW` : '—' }}
+            </template>
+          </Column>
+          <Column field="municipio" header="Municipio" />
+          <Column field="operador_red" header="Operador de red" />
+          <Column header="Gen. proyectada (MWh/mes)">
+            <template #body="{ data }">{{ data.mwh_mes_estimado ?? '—' }}</template>
+          </Column>
+          <Column field="fecha_estimada_energizacion" header="Operación estimada" />
+          <Column field="fecha_inicio_comercializacion" header="Inicio compra energía" />
+          <template #empty><span style="color:#9b89b5">Sin proyectos vinculados.</span></template>
+        </DataTable>
+
+        <h3 class="text-sm font-semibold mb-1" style="color:#2C2039">Contratos PPA del cliente</h3>
+        <p class="text-xs mb-2" style="color:#9b89b5">
+          Los que salen de una oferta se crean con <strong>Firmar → crear PPA</strong> desde el
+          tablero, para que queden enlazados a ella.
+        </p>
+        <DataTable :value="contratosPpaFilas" class="text-sm mb-6" dataKey="id" selectionMode="single"
+                   @row-click="$router.push(`/contratos/${$event.data.id}`)">
+          <Column field="numero_codigo_contrato" header="Código" />
+          <Column field="nombre_interno" header="Nombre interno" />
+          <Column field="fecha_inicio" header="Inicio" />
+          <Column field="fecha_fin" header="Fin" />
+          <template #empty><span style="color:#9b89b5">Sin contratos PPA.</span></template>
+        </DataTable>
+
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="text-sm font-semibold" style="color:#2C2039">Contratos de representación</h3>
+          <Button label="Nuevo contrato de representación" icon="pi pi-plus" size="small"
+                  severity="secondary" outlined @click="showRepWizard = true" />
+        </div>
+        <DataTable :value="contratosRepFilas" class="text-sm" dataKey="id" selectionMode="single"
+                   @row-click="$router.push(`/contratos/${$event.data.id}`)">
+          <Column field="numero_contrato" header="Número" />
+          <Column field="contratante_nombre" header="Contratante" />
+          <Column field="fecha_inicio" header="Inicio" />
+          <Column field="fecha_fin" header="Fin" />
+          <template #empty><span style="color:#9b89b5">Sin contratos de representación.</span></template>
+        </DataTable>
+
+        <ProyectoDesdeCRMDialog v-model:visible="showAgregarProyecto" :oportunidad-id="op.id"
+                                @creado="recargar" />
+        <!-- ContratoServicioWizard no expone prop de cliente (solo `tipo` y
+             `proyectoIdDefault`): el cliente se selecciona dentro del wizard. -->
+        <ContratoServicioWizard v-model:visible="showRepWizard" tipo="representacion"
+                                @creado="recargarContratos" @cerrar="showRepWizard = false" />
+      </TabPanel>
+
+      <TabPanel header="Documentos y bitácora">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <h3 class="text-sm font-semibold mb-1" style="color:#2C2039">Documentos comerciales</h3>
+            <p class="text-xs mb-3" style="color:#9b89b5">
+              Se guardan como documentos del cliente, vinculados a este negocio. La subida
+              del archivo y el cambio de estado se hacen en la ficha del cliente.
+            </p>
+            <div class="flex flex-col gap-2">
+              <div v-for="t in TIPOS_DOC" :key="t.value" class="rounded-md p-3"
+                   style="border:1px solid #e8e0f0">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium text-sm">{{ t.label }}</span>
+                    <template v-if="docPorTipo(t.value)">
+                      <Tag :value="docPorTipo(t.value).estado" />
+                      <span v-if="docPorTipo(t.value).numero" class="text-xs" style="color:#9b89b5">
+                        Nº {{ docPorTipo(t.value).numero }}
+                      </span>
+                      <a v-if="docPorTipo(t.value).archivo_url" :href="docPorTipo(t.value).archivo_url"
+                         target="_blank" rel="noopener" class="text-xs underline" style="color:#915BD8">
+                        {{ docPorTipo(t.value).archivo_nombre || 'archivo' }}
+                      </a>
+                    </template>
+                    <span v-else class="text-xs" style="color:#c4b8d4">sin registrar</span>
+                  </div>
+                  <Button v-if="!docPorTipo(t.value)" label="Registrar" size="small" text icon="pi pi-plus"
+                          @click="crearDoc(t.value, t.label)" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <BitacoraPanel :oportunidad-id="op.id" :gestiones="op.gestiones" :historial="op.historial"
+                         :ofertas="op.ofertas || []" @registrada="recargar" />
+        </div>
+      </TabPanel>
+    </TabView>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { useRoute } from 'vue-router'
+import Button from 'primevue/button'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
+import DatePicker from 'primevue/datepicker'
+import Tag from 'primevue/tag'
+import TabView from 'primevue/tabview'
+import TabPanel from 'primevue/tabpanel'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import { useToast } from 'primevue/usetoast'
+import api from '~/api/client'
+import ClienteForm from '~/views/Clientes/ClienteForm.vue'
+import ContactosPanel from '~/components/ContactosPanel.vue'
+import ContratoServicioWizard from '~/views/Contratos/ContratoServicioWizard.vue'
+import ProyectoDesdeCRMDialog from './ProyectoDesdeCRMDialog.vue'
+import BitacoraPanel from './BitacoraPanel.vue'
+import OfertasPanel from './OfertasPanel.vue'
+import { ETAPAS, severidadEtapa, aFecha, aFechaStr } from './comercial.js'
+
+const route = useRoute()
+const toast = useToast()
+
+const TIPOS_DOC = [
+  { label: 'Oferta', value: 'oferta' },
+  { label: 'Cámara de Comercio', value: 'camara_comercio' },
+  { label: 'RUT', value: 'rut' },
+]
+
+const op = ref(null)
+const clienteFull = ref({})
+const seg = ref({})
+const proyectosFilas = ref([])
+const contratosPpaFilas = ref([])
+const contratosRepFilas = ref([])
+const showAgregarProyecto = ref(false)
+const showRepWizard = ref(false)
+const estadoGuardado = ref('')
+let saveTimer = null
+
+watch(op, (v) => { proyectosFilas.value = v?.proyectos ?? [] })
+
+// `etapas` viene del backend como {etapa: n}; se ordena según el pipeline.
+const totalOfertas = computed(() =>
+  Object.values(op.value?.etapas ?? {}).reduce((a, b) => a + b, 0))
+const etapasPresentes = computed(() => ETAPAS
+  .filter((e) => (op.value?.etapas ?? {})[e.value])
+  .map((e) => ({ ...e, n: op.value.etapas[e.value] })))
+
+function docPorTipo(tipo) { return (op.value?.documentos ?? []).find((d) => d.tipo === tipo) }
+
+async function recargar() {
+  const { data } = await api.get(`/comercial/oportunidades/${route.params.id}`)
+  op.value = data
+  seg.value = {
+    nombre: data.nombre === data.cliente_razon_social ? '' : data.nombre,
+    numero_oferta: data.numero_oferta,
+    fecha_estimada_firma: aFecha(data.fecha_estimada_firma),
+    fecha_tentativa_inicio_representacion: aFecha(data.fecha_tentativa_inicio_representacion),
+    fecha_tentativa_inicio_compra_energia: aFecha(data.fecha_tentativa_inicio_compra_energia),
+    notas: data.notas,
+  }
+}
+
+async function cargarCliente() {
+  const { data } = await api.get(`/clientes/${op.value.cliente_id}`)
+  clienteFull.value = data
+}
+
+async function recargarContratos() {
+  showRepWizard.value = false
+  const cid = op.value.cliente_id
+  const [{ data: ppa }, { data: rep }] = await Promise.all([
+    api.get(`/clientes/${cid}/contratos-ppa`),
+    api.get('/contratos-servicio', { params: { tipo: 'representacion' } }),
+  ])
+  contratosPpaFilas.value = ppa.items ?? ppa
+  const repArr = rep.items ?? rep
+  contratosRepFilas.value = repArr.filter((c) => c.contratante_id === cid || c.prestador_id === cid)
+}
+
+function autosave() {
+  estadoGuardado.value = 'Guardando…'
+  clearTimeout(saveTimer)
+  saveTimer = setTimeout(async () => {
+    try {
+      // `tipo_servicio` NO se envía: era el campo que respondía 422 y quedó
+      // vestigial cuando la etapa se mudó a la oferta.
+      await api.patch(`/comercial/oportunidades/${op.value.id}`, {
+        nombre: seg.value.nombre || null,
+        numero_oferta: seg.value.numero_oferta || null,
+        fecha_estimada_firma: aFechaStr(seg.value.fecha_estimada_firma),
+        fecha_tentativa_inicio_representacion: aFechaStr(seg.value.fecha_tentativa_inicio_representacion),
+        fecha_tentativa_inicio_compra_energia: aFechaStr(seg.value.fecha_tentativa_inicio_compra_energia),
+        notas: seg.value.notas || null,
+      })
+      estadoGuardado.value = 'Guardado ✓'
+    } catch (err) {
+      estadoGuardado.value = `No se guardó: ${err.response?.data?.detail ?? 'error'}`
+    }
+  }, 800)
+}
+
+async function patchCliente(payload) {
+  try {
+    await api.patch(`/clientes/${op.value.cliente_id}`, payload)
+    toast.add({ severity: 'success', summary: 'Cliente actualizado', life: 2500 })
+    await cargarCliente()
+  } catch (err) {
+    toast.add({ severity: 'error', summary: 'Error al guardar cliente',
+                detail: err.response?.data?.detail ?? '', life: 5000 })
+  }
+}
+
+async function crearDoc(tipo, label) {
+  try {
+    await api.post(`/clientes/${op.value.cliente_id}/documentos`, {
+      tipo,
+      nombre: label,
+      numero: tipo === 'oferta' ? (seg.value.numero_oferta || op.value.numero_oferta || null) : null,
+      oportunidad_id: op.value.id,
+    })
+    await recargar()
+  } catch (err) {
+    toast.add({ severity: 'error', summary: 'No se pudo registrar el documento',
+                detail: err.response?.data?.detail ?? '', life: 5000 })
+  }
+}
+
+onMounted(async () => {
+  await recargar()
+  await Promise.all([cargarCliente(), recargarContratos()])
+})
+
+// Evita que un PATCH de autosave pendiente dispare tras desmontar la vista.
+onBeforeUnmount(() => clearTimeout(saveTimer))
+</script>
+
+<style scoped>
+.etiqueta {
+  display: block;
+  font-size: 11px;
+  color: #7a6e8a;
+  margin-bottom: 0.15rem;
+}
+</style>

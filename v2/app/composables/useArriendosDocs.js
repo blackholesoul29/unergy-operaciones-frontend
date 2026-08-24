@@ -7,7 +7,7 @@
  * viniendo en la respuesta por compatibilidad, pero ya no se usa para agrupar).
  */
 import { ref } from 'vue'
-import api from '~/legacy/api/client'
+import api from '~/api/client'
 
 // Estado reactivo compartido: { [proyecto_id]: ArrDocumento[] }
 export const docsPorProyecto = ref({})

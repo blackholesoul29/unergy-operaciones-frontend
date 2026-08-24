@@ -62,7 +62,7 @@
 import { ref, computed, watch } from 'vue'
 import Select from 'primevue/select'
 import { useToast } from 'primevue/usetoast'
-import api from '~/legacy/api/client'
+import api from '~/api/client'
 
 const props = defineProps({
   proyectoId: { type: [Number, String], required: true },

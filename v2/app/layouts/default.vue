@@ -1,3 +1,11 @@
+<script setup lang="ts">
+// MIGRACIÓN — Fase 1: el sidebar del legacy vive en `~/components/AppSidebar.vue`
+// y comparte nombre con el del template. Se importa por ruta para que no haya
+// ambigüedad de auto-import. Se resuelve solo en la fase 3, ola 1, cuando el
+// shell del legacy se retire.
+import LayoutAppSidebar from '~/components/layout/AppSidebar.vue'
+</script>
+
 <template>
   <SidebarProvider
     class="h-screen"
@@ -6,7 +14,7 @@
       '--header-height': 'calc(var(--spacing) * 12)',
     }"
   >
-    <AppSidebar variant="inset" />
+    <LayoutAppSidebar variant="inset" />
 
     <SidebarInset class="flex h-[calc(100%-1rem)] min-h-0 flex-col overflow-hidden">
       <SiteHeader />

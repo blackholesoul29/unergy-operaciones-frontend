@@ -35,7 +35,7 @@ export default defineNuxtConfig({
     '~/assets/css/tailwind.css',
     // MIGRACIÓN — Fase 1: estilos del legacy. Salen en la fase 3.
     'primeicons/primeicons.css',
-    '~/legacy/assets/main.css',
+    '~/assets/main.css',
   ],
 
   // Nuxt prefixes a component's name with its folder path by default
