@@ -171,7 +171,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import api from '~/core/client.js'
+import api from '~/core/client'
 import Select from 'primevue/select'
 import SelectButton from 'primevue/selectbutton'
 import InputText from 'primevue/inputtext'

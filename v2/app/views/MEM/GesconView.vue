@@ -575,7 +575,7 @@
 
 <script setup>
 import { ref, watch, computed, onMounted } from 'vue'
-import api from '~/core/client.js'
+import api from '~/core/client'
 import { conflictosAtribucion } from '~/utils/validacionContratos.js'
 import GesconModificacionForm from './GesconModificacionForm.vue'
 import GesconTerminacionForm from './GesconTerminacionForm.vue'

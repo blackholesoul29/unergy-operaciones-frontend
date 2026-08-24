@@ -5,7 +5,7 @@ import PrimeToast from 'primevue/toast'
 import { useToast } from 'primevue/usetoast'
 import { APP_BRANDING } from '~/config/app'
 
-// MIGRACIÓN — Fase 1: el interceptor de axios del legacy (`~/core/client.js`)
+// MIGRACIÓN — Fase 1: el interceptor de axios del legacy (`~/core/client`)
 // avisa de los 403 a través de `window.__primeToast`, porque no puede usar el
 // composable de PrimeVue fuera de un componente. Se publica aquí, igual que hacía
 // `legacy/src/App.vue`. Sale con el interceptor, en la fase 3.
