@@ -1,7 +1,11 @@
 /**
  * MIGRACIÓN — Fase 1. El arranque que hacía `legacy/src/main.js`, traducido a un
- * plugin de Nuxt: el tema de PrimeVue, `ConfirmationService`, la directiva
- * `tooltip` y los dos componentes que el legacy registra globalmente.
+ * plugin de Nuxt: el tema de PrimeVue, `ConfirmationService` y la directiva
+ * `tooltip`.
+ *
+ * `InfoField` y `PageHeader` ya no se registran aquí: viven en
+ * `components/blocks/`, que Nuxt auto-importa. El registro global era lo que
+ * hacía `main.js` porque en una SPA de Vite no había auto-import.
  *
  * `ToastService` ya no está: los avisos pasaron a vue-sonner en la fase 3, ola 0.
  *
@@ -21,8 +25,6 @@ import Aura from '@primevue/themes/aura'
 import PrimeVue from 'primevue/config'
 import ConfirmationService from 'primevue/confirmationservice'
 import Tooltip from 'primevue/tooltip'
-import InfoField from '~/components/InfoField.vue'
-import PageHeader from '~/components/PageHeader.vue'
 
 /** Mapea el `primary` de PrimeVue al morado de marca. Copiado de `main.js`. */
 const UnergPreset = definePreset(Aura, {
@@ -52,9 +54,4 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
   nuxtApp.vueApp.use(ConfirmationService)
   nuxtApp.vueApp.directive('tooltip', Tooltip)
-
-  // Registrados globalmente igual que en `main.js`: las ~150 vistas del legacy
-  // los usan sin importarlos.
-  nuxtApp.vueApp.component('InfoField', InfoField)
-  nuxtApp.vueApp.component('PageHeader', PageHeader)
 })
