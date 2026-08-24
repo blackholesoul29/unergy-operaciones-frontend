@@ -366,5 +366,9 @@ async function deleteFoto(foto) {
 </script>
 
 <style scoped>
+/* MIGRACIÓN — Fase 1: en Tailwind 4 cada bloque <style> se procesa aislado y no
+   ve el tema, así que `@apply` falla con "unknown utility class". `@reference`
+   le da acceso al tema sin emitir CSS. Era innecesario en Tailwind 3. */
+@reference 'tailwindcss';
 .field-label { @apply block text-[10px] font-semibold uppercase tracking-wide mb-1; color: #9b89b5; }
 </style>

@@ -187,6 +187,10 @@ onMounted(() => { cargar(); cargarProyectos() })
 </script>
 
 <style scoped>
+/* MIGRACIÓN — Fase 1: en Tailwind 4 cada bloque <style> se procesa aislado y no
+   ve el tema, así que `@apply` falla con "unknown utility class". `@reference`
+   le da acceso al tema sin emitir CSS. Era innecesario en Tailwind 3. */
+@reference 'tailwindcss';
 .field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
 
 /* Proyecto, fecha y versión quedan fijas: con 24 horas la tabla se desplaza

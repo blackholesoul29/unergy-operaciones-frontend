@@ -895,6 +895,10 @@ function ignorarPendiente(p) {
 </script>
 
 <style scoped>
+/* MIGRACIÓN — Fase 1: en Tailwind 4 cada bloque <style> se procesa aislado y no
+   ve el tema, así que `@apply` falla con "unknown utility class". `@reference`
+   le da acceso al tema sin emitir CSS. Era innecesario en Tailwind 3. */
+@reference 'tailwindcss';
 /* ── Misc ────────────────────────────────────────────────────────────────────── */
 .field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
 

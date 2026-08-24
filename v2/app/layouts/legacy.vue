@@ -26,11 +26,11 @@ const isSolar = computed(() => route.path === '/solar-live')
 <template>
   <div class="flex h-screen overflow-hidden bg-gray-100">
     <AppSidebar />
-    <div class="flex flex-col flex-1 overflow-hidden">
+    <div class="flex flex-1 flex-col overflow-hidden">
       <!-- Menú móvil (solo en <lg cuando el sidebar está cerrado) -->
       <button
         v-if="!mobileOpen"
-        class="lg:hidden fixed top-3 left-3 z-30 w-9 h-9 rounded-lg bg-white shadow-md border border-gray-200 flex items-center justify-center"
+        class="fixed top-3 left-3 z-30 flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-md lg:hidden"
         style="color: #2c2039"
         title="Menú"
         @click="toggle"
@@ -41,7 +41,7 @@ const isSolar = computed(() => route.path === '/solar-live')
       <!-- Reabrir el sidebar (escritorio, cuando está oculto) -->
       <button
         v-if="collapsed"
-        class="hidden lg:flex sb-reopen"
+        class="sb-reopen hidden lg:flex"
         title="Mostrar barra lateral"
         @click="toggleCollapsed"
       >

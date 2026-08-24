@@ -122,19 +122,56 @@ modificación de lógica**, y que la aplicación arranque y sirva las 75 rutas.
 **Regla de la fase:** si un archivo de `legacy/src/` cambia de contenido, hay que poder
 explicar por qué en una línea. El objetivo es cero diffs de producto.
 
-### 1.1 El truco que hace viable el «tal cual»
+### 1.1 Dónde aterriza el código — **corregido durante la ejecución**
 
-Todo el legacy importa con el alias `@/…`. Si el código aterriza en `app/legacy/` y se declara
-`@` → `~/legacy`, **ningún import hay que tocar**. Es una sola línea de configuración en lugar
-de miles de ediciones.
+> El plan original decía: dejar el árbol en una carpeta de cuarentena `app/legacy/` y declarar
+> el alias `@` → `~/legacy`, para no tocar ni un import. **Ese truco no funciona y el plan se
+> cambió.** Queda escrito porque la razón importa.
 
-```ts
-// nuxt.config.ts
-alias: { '@': fileURLToPath(new URL('./app/legacy', import.meta.url)) }
-```
+**Por qué no funcionaba:** `@` ya está tomado. Los componentes de shadcn (`app/components/ui/`,
+que son intocables) hacen **440 imports** de `@/lib/utils` y `@/components/ui`. Repuntar `@` a la
+cuarentena los habría roto todos.
 
-`app/legacy/` es una **carpeta de cuarentena**: se sabe que no cumple las reglas del template,
-está excluida de lint y format igual que `ui/` y `gandalf/`, y su único destino es vaciarse.
+**Lo que se hizo en su lugar:** el código del legacy aterriza **directamente en la estructura de
+`app/`**, cada carpeta en su sitio:
+
+| Origen (`legacy/src/`) | Destino (`v2/app/`) |
+| --- | --- |
+| `components/` | `components/` (junto a `ui/`, `gandalf/`, `blocks/`, `layout/`) |
+| `composables/` | `composables/` |
+| `utils/` | `utils/` |
+| `stores/` | `stores/` |
+| `assets/`, `constants/`, `data/`, `api/`, `mobile/`, `router/`, `views/` | mismo nombre en `app/` |
+| `main.js`, `App.vue` | `legacy/` — sustituidos por un plugin y dos layouts, se borran en la fase 2 |
+
+Y entonces el problema del alias **desaparece solo**: el `@` del legacy significaba `src/`, y el
+contenido de `src/` ahora *es* `app/`, que es exactamente a donde Nuxt apunta `@` y `~`. Los dos
+resuelven a `app/*`; `tsconfig.json` no se tocó. Los 338 imports se reescribieron a `~/…`, que es
+la convención que pide `AGENTS.md`.
+
+**Lo que esto cuesta:** adelanta a la fase 1 buena parte de la reubicación que era fase 2, y
+elimina la red de la carpeta de cuarentena — el legacy ya comparte carpeta con el template. A
+cambio, la fase 2 se reduce a repartir `views/` y `mobile/` en slices.
+
+**Cómo se sostiene la separación sin cuarentena:** el legacy es JavaScript y el template es
+TypeScript, así que `app/utils/*.js`, `app/composables/*.js` y `app/components/*.vue` los
+separan limpiamente. Esa es la lista de exclusión de `eslint.config.mjs` y `.prettierignore`, y
+**se vacía sola**: cuando la fase 3 convierte un archivo a `.ts`, deja de estar excluido y el
+linter empieza a exigirle. La lista encogiendo *es* la métrica de avance.
+
+#### Colisiones de auto-import resueltas
+
+`app/components/`, `app/composables/` y `app/utils/` son de auto-import en Nuxt, así que los
+nombres compiten. Dos choques reales:
+
+- **`PageHeader`** — el del legacy (props `title`/`subtitle`, slot `lead`) contra el del template
+  (props `title`/`description`/`class`). APIs incompatibles: si ganaba el del template, ~100
+  vistas perdían el subtítulo **en silencio**. El del template no tenía ni un consumidor, así que
+  se borró (`AGENTS.md`: cero exports sin consumidor). Se rehace en la fase 3, ola 0.
+- **`AppSidebar`** — el del legacy contra `layout/AppSidebar.vue`. Solo lo usaba
+  `layouts/default.vue`, que pasó a importarlo por ruta explícita.
+
+Los exports de `app/utils/` **no** chocaron con los del template (`date.ts`, `string.ts`).
 
 ### 1.2 Pasos
 
