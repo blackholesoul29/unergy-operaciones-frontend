@@ -83,7 +83,8 @@
     <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
       <DataTable :value="filteredFronteras" :paginator="true" :rows="20"
                  :rowsPerPageOptions="[10, 20, 50]" responsiveLayout="scroll"
-                 stripedRows class="p-datatable-sm">
+                 stripedRows class="p-datatable-sm" rowHover
+                 @row-click="(e) => $router.push(`/mem/fronteras/${e.data.id}`)">
         <Column field="codigo_frontera" header="Código" sortable style="min-width: 140px">
           <template #body="{ data }">
             <span class="font-mono text-sm font-semibold" style="color: #915BD8;">{{ data.codigo_frontera || '—' }}</span>
@@ -96,7 +97,7 @@
         </Column>
         <Column field="proyecto_nombre" header="Proyecto" sortable style="min-width: 180px">
           <template #body="{ data }">
-            <RouterLink v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`"
+            <RouterLink v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`" @click.stop
                         class="text-sm underline" style="color: #915BD8;">
               {{ data.proyecto_nombre || `#${data.proyecto_id}` }}
             </RouterLink>
@@ -145,9 +146,9 @@
         <Column header="" style="width: 90px">
           <template #body="{ data }">
             <Button icon="pi pi-pencil" text rounded size="small" severity="secondary"
-              @click="editFrontera(data)" v-tooltip="'Editar'" />
+              @click.stop="editFrontera(data)" v-tooltip="'Editar'" />
             <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-              @click="deleteFrontera(data)" v-tooltip="'Eliminar'" />
+              @click.stop="deleteFrontera(data)" v-tooltip="'Eliminar'" />
           </template>
         </Column>
       </DataTable>
