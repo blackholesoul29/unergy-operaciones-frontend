@@ -220,49 +220,48 @@
       <p class="text-xs mt-1" style="color: #9b89b5;">
         Tip: pega varios valores seguidos (ej. una columna copiada de Excel) en cualquier celda -- se reparten en las horas siguientes en orden.
       </p>
-      <div class="flex items-center justify-between flex-wrap gap-y-2 gap-x-3 mt-2">
-        <div class="flex items-center flex-wrap gap-2">
-          <Button label="Limpiar curva" icon="pi pi-eraser" size="small" severity="danger" outlined
-            @click="limpiarCurva" />
-          <!-- El relleno horario (medidor cruzado / reconectador / Solenium
-               × FP / histórico) ya no aplica solo durante la clasificación
-               -- queda a criterio de la persona: reportar la curva tal como
-               está (con el hueco) o rellenarla con este botón. Generación y
-               Consumo. -->
-          <!-- Si ya hubo un relleno antes (hayHorasRelleno) y todavía queda
-               un hueco, es porque esa hora YA se intentó contra las 4
-               fuentes en cascada y ninguna tenía dato -- un dato histórico
-               que no cambia. Mostrar el botón otra vez solo invita a un
-               clic que va a fallar con el mismo error (ver captura
-               2026-08-20: 6h vacía después de rellenar 7h-11h/17h-18h). -->
-          <Button v-if="hayHuecosSinRellenar && !hayHorasRelleno(detalle)" label="Rellenar horas" size="small" severity="secondary" outlined
-            :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
-          <Button v-if="hayHorasRelleno(detalle)" label="Deshacer relleno" icon="pi pi-undo" size="small" severity="secondary" outlined
-            :loading="deshaciendoRelleno" :disabled="hayCambiosSinGuardar" @click="deshacerRelleno" />
-          <div v-if="!esCasoConfiado" class="relative">
-            <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
-              style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
-              @click="mostrarMenuReportar = !mostrarMenuReportar" />
-            <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
-            <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
-                 style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
-              <div v-for="op in opcionesReportarCon" :key="op.key"
-                   class="flex items-center justify-between gap-3 px-3 py-2.5"
-                   :class="op.disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-[#f9f7ff]'"
-                   style="border-bottom: 1px solid #e8e0f0;"
-                   @click="!op.disabled && elegirFuenteReportar(op)">
-                <div class="min-w-0">
-                  <div class="text-xs font-semibold" style="color: #2C2039;">{{ op.nombre }}</div>
-                  <div v-if="op.nota" class="text-[10.5px]" style="color: #9b89b5;">{{ op.nota }}</div>
-                </div>
-                <div class="text-xs font-mono flex-none" style="color: #2C2039;">
-                  {{ op.valor != null ? fmtKwh(op.valor) : 'Sin dato' }}
-                </div>
+      <div class="flex items-center flex-wrap gap-2 mt-2">
+        <Button label="Limpiar curva" icon="pi pi-eraser" size="small" severity="danger" outlined
+          @click="limpiarCurva" />
+        <!-- El relleno horario (medidor cruzado / reconectador / Solenium
+             × FP / histórico) ya no aplica solo durante la clasificación
+             -- queda a criterio de la persona: reportar la curva tal como
+             está (con el hueco) o rellenarla con este botón. Generación y
+             Consumo. -->
+        <!-- Si ya hubo un relleno antes (hayHorasRelleno) y todavía queda
+             un hueco, es porque esa hora YA se intentó contra las 4
+             fuentes en cascada y ninguna tenía dato -- un dato histórico
+             que no cambia. Mostrar el botón otra vez solo invita a un
+             clic que va a fallar con el mismo error (ver captura
+             2026-08-20: 6h vacía después de rellenar 7h-11h/17h-18h). -->
+        <Button v-if="hayHuecosSinRellenar && !hayHorasRelleno(detalle)" label="Rellenar horas" size="small" severity="secondary" outlined
+          :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
+        <Button v-if="hayHorasRelleno(detalle)" label="Deshacer relleno" icon="pi pi-undo" size="small" severity="secondary" outlined
+          :loading="deshaciendoRelleno" :disabled="hayCambiosSinGuardar" @click="deshacerRelleno" />
+        <div v-if="!esCasoConfiado" class="relative">
+          <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
+            style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
+            @click="mostrarMenuReportar = !mostrarMenuReportar" />
+          <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
+          <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
+               style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
+            <div v-for="op in opcionesReportarCon" :key="op.key"
+                 class="flex items-center justify-between gap-3 px-3 py-2.5"
+                 :class="op.disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-[#f9f7ff]'"
+                 style="border-bottom: 1px solid #e8e0f0;"
+                 @click="!op.disabled && elegirFuenteReportar(op)">
+              <div class="min-w-0">
+                <div class="text-xs font-semibold" style="color: #2C2039;">{{ op.nombre }}</div>
+                <div v-if="op.nota" class="text-[10.5px]" style="color: #9b89b5;">{{ op.nota }}</div>
+              </div>
+              <div class="text-xs font-mono flex-none" style="color: #2C2039;">
+                {{ op.valor != null ? fmtKwh(op.valor) : 'Sin dato' }}
               </div>
             </div>
           </div>
         </div>
-        <Button label="Guardar corrección" size="small" :loading="guardando" :disabled="!hayCambiosSinGuardar" @click="guardarCurva" />
+        <Button label="Guardar corrección" size="small"
+          :loading="guardando" :disabled="!hayCambiosSinGuardar" @click="guardarCurva" />
       </div>
     </div>
 
