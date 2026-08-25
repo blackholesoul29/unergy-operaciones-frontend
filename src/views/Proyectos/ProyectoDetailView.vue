@@ -157,6 +157,7 @@
                 <InfoField label="Producción específica (kWh/kWp)" :value="proyecto.produccion_especifica_kwh_kwp" />
                 <InfoField label="Latitud" :value="proyecto.latitud" />
                 <InfoField label="Longitud" :value="proyecto.longitud" />
+                <InfoField label="Altitud (msnm)" :value="proyecto.altitud_msnm" />
               </div>
             </div>
             <!-- Paneles -->
@@ -226,6 +227,10 @@
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Longitud</label>
                   <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Altitud (msnm)</label>
+                  <InputNumber v-model="editForm.altitud_msnm" class="w-full" />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Dirección</label>
@@ -888,6 +893,7 @@ const editForm = reactive({
   municipio: null,
   latitud: null,
   longitud: null,
+  altitud_msnm: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
   carpeta_drive_codigo: null,

@@ -138,9 +138,9 @@
               <InfoField label="Departamento" :value="frontera.proyecto_departamento" />
               <InfoField label="Centro poblado" :value="frontera.centro_poblado" />
               <InfoField label="Dirección" :value="frontera.proyecto_direccion" />
-              <InfoField label="Latitud" :value="frontera.latitud" />
-              <InfoField label="Longitud" :value="frontera.longitud" />
-              <InfoField label="Altitud (msnm)" :value="frontera.altitud_msnm" />
+              <InfoField label="Latitud" :value="frontera.proyecto_latitud" />
+              <InfoField label="Longitud" :value="frontera.proyecto_longitud" />
+              <InfoField label="Altitud (msnm)" :value="frontera.proyecto_altitud_msnm" />
             </div>
           </div>
 
