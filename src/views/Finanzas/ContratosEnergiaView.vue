@@ -184,6 +184,15 @@
         <div class="border border-gray-200 rounded-lg p-4 space-y-4">
           <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Proyectos del contrato</p>
 
+          <!-- Sin esto, un fallo al cargar la lista se ve igual que "no hay
+               proyectos": el desplegable sale vacío y no se sabe por qué. -->
+          <div v-if="errorProyectos" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+               style="background:#FEF2F2; border:1px solid #FECACA; color:#B42318">
+            <i class="pi pi-times-circle" />
+            <span>{{ errorProyectos }}</span>
+            <button class="underline font-medium ml-auto" @click="cargarProyectos">Reintentar</button>
+          </div>
+
           <div v-for="(linea, idx) in f.proyectos" :key="idx" class="space-y-2 pb-3"
                :class="idx < f.proyectos.length - 1 ? 'border-b border-gray-100' : ''">
             <div class="grid grid-cols-12 gap-2 items-end">
@@ -297,6 +306,7 @@ const preciosOptions = ref([])
 // Tópico → nombre comercial, para no mostrar identificadores crudos en la tabla.
 const nombrePorTopico = ref({})
 const proyectosOptions = ref([])
+const errorProyectos = ref('')
 
 const filtrados = computed(() => {
   const term = q.value.trim().toLowerCase()
@@ -407,7 +417,16 @@ async function cargarProyectos() {
     proyectosOptions.value = conTopico
       .map(p => ({ value: p.nombre_topico, label: formatearNombreProyecto(p.nombre_comercial) }))
       .sort((a, b) => a.label.localeCompare(b.label))
-  } catch { /* la tabla sigue sirviendo mostrando el tópico crudo */ }
+    errorProyectos.value = conTopico.length
+      ? ''
+      : 'Ningún proyecto tiene tópico de liquidaciones cargado.'
+  } catch (e) {
+    // Antes esto se tragaba el error y el desplegable de proyectos quedaba
+    // vacío sin explicación: parecía que no había plantas, no que la consulta
+    // hubiera fallado. La tabla sigue sirviendo con el tópico crudo.
+    errorProyectos.value = e?.response?.data?.detail
+      || 'No se pudo cargar la lista de proyectos.'
+  }
 }
 
 // ── Formulario ───────────────────────────────────────────────────────────────
