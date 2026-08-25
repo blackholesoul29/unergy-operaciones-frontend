@@ -133,7 +133,7 @@
         </Column>
         <Column field="operador_comercial" header="Operador" sortable style="min-width: 120px">
           <template #body="{ data }">
-            {{ data.operador_comercial || data.operador_red || '—' }}
+            {{ data.operador_comercial || '—' }}
           </template>
         </Column>
         <Column field="capacidad_efectiva_mw" header="Cap. MW" sortable style="min-width: 100px">
@@ -438,7 +438,7 @@ const proyectoOptions = computed(() => {
 const operadorOptions = computed(() => {
   const seen = new Set()
   for (const f of fronteras.value) {
-    const nombre = f.operador_comercial || f.operador_red
+    const nombre = f.operador_comercial
     if (nombre) seen.add(nombre)
   }
   return [...seen].sort().map(v => ({ label: v, value: v }))
@@ -461,7 +461,7 @@ const filteredFronteras = computed(() => {
   let list = fronteras.value
   if (estadoFilter.value) list = list.filter(f => f.estado === estadoFilter.value)
   if (proyectoFilter.value) list = list.filter(f => f.proyecto_id === proyectoFilter.value)
-  if (operadorFilter.value) list = list.filter(f => (f.operador_comercial || f.operador_red) === operadorFilter.value)
+  if (operadorFilter.value) list = list.filter(f => f.operador_comercial === operadorFilter.value)
   if (mesFilter.value || anioFilter.value) {
     list = list.filter(f => {
       if (!f.fecha_registro_asic) return false
@@ -479,7 +479,6 @@ const filteredFronteras = computed(() => {
       (f.codigo_frontera || '').toLowerCase().includes(s) ||
       (f.nombre_frontera || '').toLowerCase().includes(s) ||
       (f.proyecto_nombre || '').toLowerCase().includes(s) ||
-      (f.operador_red || '').toLowerCase().includes(s) ||
       (f.operador_comercial || '').toLowerCase().includes(s) ||
       (f.municipio || '').toLowerCase().includes(s)
     )
@@ -537,7 +536,7 @@ async function descargarExcel() {
     { header: 'Fecha Registro ASIC', value: f => f.fecha_registro_asic || '' },
     { header: 'Serial Medidor Principal', value: f => f.nro_serie_med_ppal || '' },
     { header: 'Serial Medidor Respaldo', value: f => f.nro_serie_med_resp || '' },
-    { header: 'Operador', value: f => f.operador_comercial || f.operador_red || '' },
+    { header: 'Operador', value: f => f.operador_comercial || '' },
     { header: 'Cap. MW', value: f => f.capacidad_efectiva_mw ? Number(f.capacidad_efectiva_mw).toFixed(3) : '' },
     { header: 'Municipio', value: f => f.municipio || '' },
   ], `fronteras_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Fronteras')
