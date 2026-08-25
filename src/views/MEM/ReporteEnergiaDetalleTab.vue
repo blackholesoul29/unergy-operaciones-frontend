@@ -220,8 +220,8 @@
       <p class="text-xs mt-1" style="color: #9b89b5;">
         Tip: pega varios valores seguidos (ej. una columna copiada de Excel) en cualquier celda -- se reparten en las horas siguientes en orden.
       </p>
-      <div class="flex items-center justify-between mt-2">
-        <div class="flex items-center gap-2">
+      <div class="flex items-center justify-between flex-wrap gap-y-2 gap-x-3 mt-2">
+        <div class="flex items-center flex-wrap gap-2">
           <Button label="Limpiar curva" icon="pi pi-eraser" size="small" severity="danger" outlined
             @click="limpiarCurva" />
           <!-- El relleno horario (medidor cruzado / reconectador / Solenium
