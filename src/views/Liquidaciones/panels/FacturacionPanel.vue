@@ -381,15 +381,31 @@
         <div class="fac-card p-4">
           <p class="text-sm font-bold mb-1" style="color:#2C2039">IPP del mes — {{ formatPeriodo(periodo) }}</p>
           <p class="text-[11px] mb-3" style="color:#9b8fb0">Índice de Precios al Productor (DANE). Numerador de la indexación de las tarifas de energía.</p>
-          <div class="flex items-end gap-2">
+          <div class="flex items-end gap-2 flex-wrap">
             <div>
               <label class="fac-lbl">Valor IPP</label>
               <input v-model.number="ippInput" type="number" step="0.01" class="fac-in" placeholder="187.43" />
             </div>
+            <!-- El DANE es la fuente; teclearlo a mano es el respaldo para cuando
+                 aún no lo han publicado. -->
+            <button class="fac-btn-sec" :disabled="trayendoDane" @click="traerIppDane">
+              <i :class="trayendoDane ? 'pi pi-spin pi-spinner' : 'pi pi-cloud-download'" class="text-xs" />
+              Traer del DANE
+            </button>
             <button class="fac-btn" :disabled="guardandoIpp || !ippInput" @click="guardarIpp">
               <i :class="guardandoIpp ? 'pi pi-spin pi-spinner' : 'pi pi-save'" class="text-xs" /> Guardar
             </button>
             <span v-if="ippActual" class="text-[11px] ml-1" style="color:#2C7a3f">Actual: {{ ippActual }}</span>
+          </div>
+
+          <!-- Si lo guardado no coincide con el DANE, las tarifas quedaron
+               indexadas con otro número: vale la pena verlo antes que después. -->
+          <div v-if="ippDane != null && ippActual != null && Number(ippActual) !== Number(ippDane)"
+               class="mt-3 rounded-lg px-3 py-2 text-[11px] flex items-center gap-2"
+               style="background:#FFF8E6; border:1px solid #F5E3B3; color:#7A5C00">
+            <i class="pi pi-exclamation-triangle" />
+            Lo guardado (<b>{{ ippActual }}</b>) no coincide con lo que reporta el DANE
+            (<b>{{ ippDane }}</b>). Las tarifas de este período están indexadas con el guardado.
           </div>
         </div>
 
@@ -460,6 +476,7 @@ import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import { fmtCOP, formatPeriodo } from '@/utils/liquidaciones'
+import { consultarIpp } from '@/api/liquidacionesApi'
 import { exportarExcel } from '@/utils/exportarExcel'
 
 const props = defineProps({ periodo: { type: String, required: true } })
@@ -499,6 +516,10 @@ const ippHist = ref([])
 const ippInput = ref(null)
 const subiendo = ref(false)
 const guardandoIpp = ref(false)
+// El IPP que reporta el DANE, traído por la API de Liquidaciones. No se guarda
+// solo: se deja en el campo para que quien lo carga lo vea antes de confirmar.
+const ippDane = ref(null)
+const trayendoDane = ref(false)
 const bolsa = ref({ manual: null, sugerido: null, vigente: null })
 const bolsaInput = ref(null)
 const guardandoBolsa = ref(false)
@@ -928,6 +949,34 @@ async function quitarAsignacion (contrato) {
   }
 }
 
+/**
+ * Trae el IPP del período desde el DANE, vía la API de Liquidaciones.
+ *
+ * Solo llena el campo: guardarlo sigue siendo un acto explícito, porque este
+ * número indexa todas las tarifas de PPA y conviene verlo antes de confirmarlo.
+ */
+async function traerIppDane () {
+  trayendoDane.value = true
+  try {
+    const valor = await consultarIpp({ month: añoMes.value.m, year: añoMes.value.a })
+    ippDane.value = valor
+    ippInput.value = valor
+    toast.add({
+      severity: 'success', summary: `IPP del DANE — ${formatPeriodo(props.periodo)}`,
+      detail: `${valor}. Revísalo y dale Guardar.`, life: 5000,
+    })
+  } catch (e) {
+    toast.add({
+      severity: 'warn', summary: 'El DANE no tiene ese período',
+      detail: e?.response?.data?.detail
+        || 'Aún no publican el IPP de este mes; cárgalo a mano cuando salga.',
+      life: 6000,
+    })
+  } finally {
+    trayendoDane.value = false
+  }
+}
+
 async function guardarIpp () {
   guardandoIpp.value = true
   try {
@@ -994,6 +1043,13 @@ onMounted(load)
 .fac-upload, .fac-btn { display:inline-flex; align-items:center; gap:6px; background:#915BD8; color:#fff; border:none;
   padding:7px 14px; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer; }
 .fac-upload:disabled, .fac-btn:disabled { opacity:.6; cursor:default; }
+/* Secundario: traer el dato no es lo mismo que confirmarlo, y guardar es la
+   acción que de verdad cambia las tarifas. */
+.fac-btn-sec { display:inline-flex; align-items:center; gap:6px; background:#fff; color:#6E3FB8;
+  border:1px solid #D9C9F2; padding:6px 13px; border-radius:9px; font-size:12px;
+  font-weight:700; cursor:pointer; }
+.fac-btn-sec:hover:not(:disabled) { background:#F6F1FC; }
+.fac-btn-sec:disabled { opacity:.6; cursor:default; }
 .fac-lbl { display:block; font-size:11px; color:#6b5a8a; font-weight:600; margin-bottom:3px; }
 .fac-in { width:140px; padding:6px 10px; border:1px solid #ddd6e8; border-radius:8px; font-size:13px;
   font-variant-numeric:tabular-nums; }

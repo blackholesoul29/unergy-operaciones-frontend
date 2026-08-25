@@ -145,6 +145,27 @@
       </div>
     </div>
 
+    <!-- Los costos en cero se ocultan por defecto, pero nunca en silencio: en algo
+         contable, una fila ausente tiene que poder distinguirse de una inexistente. -->
+    <div v-if="ocultosEnCero" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
+         style="background:#F1EAF9; color:#5B3391">
+      <i class="pi pi-eye-slash" />
+      <span v-if="filtros.solo_con_valor">
+        Hay <b>{{ ocultosEnCero.toLocaleString('es-CO') }}</b>
+        concepto{{ ocultosEnCero === 1 ? '' : 's' }} en cero que no se
+        {{ ocultosEnCero === 1 ? 'está mostrando' : 'están mostrando' }}.
+        Son proyectos a los que el reparto les creó la fila aunque el concepto no les aplique.
+      </span>
+      <span v-else>
+        Se están mostrando los <b>{{ ocultosEnCero.toLocaleString('es-CO') }}</b>
+        concepto{{ ocultosEnCero === 1 ? '' : 's' }} en cero.
+      </span>
+      <button class="underline font-medium ml-auto whitespace-nowrap"
+              @click="alternarCeros">
+        {{ filtros.solo_con_valor ? 'Mostrarlos' : 'Ocultarlos' }}
+      </button>
+    </div>
+
     <div v-if="error" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FEF2F2; border:1px solid #FECACA; color:#B42318">
       <i class="pi pi-times-circle" /> {{ error }}
@@ -255,6 +276,10 @@ const GRUPO_COMERCIALIZACION = 'xm'
 const filtros = reactive({
   project: null, payment_type: null, mes: null, anio: null,
   version: null, page: 1, size: 100,
+  // Más de la mitad de los costos valen cero: el reparto le crea una fila de
+  // cada concepto a todos los proyectos, así que uno que no es comercializador
+  // arrastra igual su IVA en cero. Se ocultan, pero se dice cuántos son.
+  solo_con_valor: true,
 })
 
 // Catálogos de los selects.
@@ -269,6 +294,7 @@ const loading = ref(false)
 const error = ref(null)
 const costos = ref([])
 const total = ref(0)
+const ocultosEnCero = ref(0)
 
 const ultimaPagina = computed(() => Math.max(1, Math.ceil(total.value / filtros.size)))
 
@@ -292,15 +318,18 @@ async function cargar() {
       mes: filtros.mes || undefined,
       anio: filtros.anio || undefined,
       version: filtros.version || undefined,
+      solo_con_valor: filtros.solo_con_valor,
       page: filtros.page,
       size: filtros.size,
     })
     costos.value = data.results || []
     total.value = data.total || 0
+    ocultosEnCero.value = data.ocultos_en_cero || 0
   } catch (e) {
     error.value = e.response?.data?.detail || 'No se pudieron cargar los costos.'
     costos.value = []
     total.value = 0
+    ocultosEnCero.value = 0
   } finally {
     loading.value = false
   }
@@ -311,6 +340,11 @@ async function cargar() {
 function recargar() {
   filtros.page = 1
   cargar()
+}
+
+function alternarCeros() {
+  filtros.solo_con_valor = !filtros.solo_con_valor
+  recargar()
 }
 
 function irA(pagina) {
@@ -464,6 +498,9 @@ async function exportar() {
       mes: filtros.mes || undefined,
       anio: filtros.anio || undefined,
       version: filtros.version || undefined,
+      // Se exporta lo mismo que se está viendo: si los ceros están ocultos en
+      // pantalla, aparecer en el archivo sería una sorpresa desagradable.
+      solo_con_valor: filtros.solo_con_valor,
       page: 1,
       size: 5000,
     })
