@@ -74,11 +74,6 @@
               </div>
             </div>
           </div>
-
-          <p v-if="!isEditMode" class="text-xs" style="color: #9b89b5;">
-            <i class="pi pi-info-circle mr-1" />
-            Los campos de identidad se editan con el botón "Editar" arriba.
-          </p>
         </div>
       </div>
 
