@@ -77,7 +77,7 @@
         <div class="p-4 space-y-6 text-sm">
           <p class="text-xs" style="color: #9b89b5;">
             <i class="pi pi-info-circle mr-1" />
-            Estos datos los sincroniza Quoia automáticamente (backfill de medidor) -- no se editan a mano aquí.
+            Estos datos los sincroniza Quoia automáticamente
           </p>
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Medidor principal</p>
@@ -124,8 +124,18 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <InfoField label="Potencia instalada (MW)" :value="frontera.proyecto_potencia_instalada_mw" />
               <InfoField label="Factor de pérdidas" :value="frontera.factor_perdidas" />
-              <InfoField label="Clase CT" :value="frontera.clase_ct" />
-              <InfoField label="Clase PT" :value="frontera.clase_pt" />
+              <InfoField v-if="!isEditMode" label="Clase CT" :value="frontera.clase_ct" />
+              <div v-else class="flex flex-col gap-1">
+                <label class="text-xs font-medium" style="color: #9b89b5;">Clase CT</label>
+                <Dropdown v-model="editForm.clase_ct" :options="claseCtOptions" showClear
+                          class="w-full" placeholder="Seleccionar" />
+              </div>
+              <InfoField v-if="!isEditMode" label="Clase PT" :value="frontera.clase_pt" />
+              <div v-else class="flex flex-col gap-1">
+                <label class="text-xs font-medium" style="color: #9b89b5;">Clase PT</label>
+                <Dropdown v-model="editForm.clase_pt" :options="clasePtOptions" showClear
+                          class="w-full" placeholder="Seleccionar" />
+              </div>
             </div>
           </div>
 
@@ -154,7 +164,12 @@
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Medidor — ficha regulatoria</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <InfoField label="Clase medidor" :value="frontera.clase_medidor" />
+              <InfoField v-if="!isEditMode" label="Clase medidor" :value="frontera.clase_medidor" />
+              <div v-else class="flex flex-col gap-1">
+                <label class="text-xs font-medium" style="color: #9b89b5;">Clase medidor</label>
+                <Dropdown v-model="editForm.clase_medidor" :options="claseMedidorOptions" showClear
+                          class="w-full" placeholder="Seleccionar" />
+              </div>
               <InfoField label="N° elementos ppal" :value="frontera.num_elementos_med_ppal" />
               <InfoField label="Fecha cambio ppal" :value="fmtFecha(frontera.fecha_cambio_med_ppal)" />
               <InfoField label="Entidad calibradora ppal" :value="frontera.entidad_calibradora_med_ppal" />
@@ -251,7 +266,7 @@ const activeTab = ref('general')
 const TABS = [
   { key: 'general', label: 'General',                       icon: 'pi pi-info-circle' },
   { key: 'quoia',   label: 'Información Quoia',              icon: 'pi pi-link' },
-  { key: 'gescon',  label: 'Información regulatoria (GESCON)', icon: 'pi pi-file' },
+  { key: 'gescon',  label: 'Información regulatoria', icon: 'pi pi-file' },
 ]
 
 // ── Edición (inline, en el mismo detalle -- reemplaza el diálogo aparte
@@ -260,6 +275,7 @@ const isEditMode = computed(() => route.query.edit === 'true')
 const editForm = reactive({
   codigo_frontera: null, nombre_frontera: null, tipo_frontera: null,
   estado: null, proyecto_id: null, operador_red_id: null,
+  clase_ct: null, clase_pt: null, clase_medidor: null,
 })
 const guardando = ref(false)
 const duplicadoVisible = ref(false)
@@ -278,6 +294,12 @@ const tipoOptions = [
   { label: 'Auxiliar', value: 'consumo_auxiliar' },
   { label: 'Propio', value: 'consumo_propio' },
 ]
+// Acotadas a las clases de precision de metrologia YA en uso (auditoria de
+// integridad de Fronteras, 2026-08-25) -- si hace falta una clase nueva, se
+// agrega puntualmente (ver backend: ClaseCtEnum/ClasePtEnum/ClaseMedidorEnum).
+const claseCtOptions = ['0.2', '0.2s', '0.5s']
+const clasePtOptions = ['0.2', '0.5']
+const claseMedidorOptions = ['0.2s', '0.5s']
 
 const proyectosAll = ref([])
 const operadoresRed = ref([])
@@ -305,6 +327,9 @@ function entrarEdicion() {
   editForm.estado = frontera.value.estado
   editForm.proyecto_id = frontera.value.proyecto_id
   editForm.operador_red_id = frontera.value.operador_red_id
+  editForm.clase_ct = frontera.value.clase_ct
+  editForm.clase_pt = frontera.value.clase_pt
+  editForm.clase_medidor = frontera.value.clase_medidor
   cargarCatalogos()
   router.replace({ query: { edit: 'true' } })
 }
