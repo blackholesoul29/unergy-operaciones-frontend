@@ -143,10 +143,8 @@
           </template>
         </Column>
         <Column field="proyecto_municipio" header="Municipio" sortable style="min-width: 130px" />
-        <Column header="" style="width: 90px">
+        <Column header="" style="width: 60px">
           <template #body="{ data }">
-            <Button icon="pi pi-pencil" text rounded size="small" severity="secondary"
-              @click.stop="$router.push(`/mem/fronteras/${data.id}?edit=true`)" v-tooltip="'Editar'" />
             <Button icon="pi pi-trash" text rounded size="small" severity="danger"
               @click.stop="deleteFrontera(data)" v-tooltip="'Eliminar'" />
           </template>
