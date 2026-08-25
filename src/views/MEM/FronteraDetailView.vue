@@ -114,7 +114,6 @@
               <InfoField label="Nivel de tensión (kV)" :value="frontera.nivel_tension_kv" />
               <InfoField label="Tipo punto de medición" :value="frontera.tipo_punto_medicion" />
               <InfoField label="Transferencia máxima (kWh)" :value="frontera.transferencia_maxima_kwh" />
-              <InfoField label="Representante anterior" :value="frontera.representante_anterior" />
               <InfoField label="Fecha inicio representación" :value="fmtFecha(frontera.fecha_inicio_representacion)" />
             </div>
           </div>
@@ -123,7 +122,6 @@
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Capacidad y transporte</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <InfoField label="Potencia instalada (MW)" :value="frontera.proyecto_potencia_instalada_mw" />
-              <InfoField label="Factor de pérdidas" :value="frontera.factor_perdidas" />
               <InfoField v-if="!isEditMode" label="Clase CT" :value="frontera.clase_ct" />
               <div v-else class="flex flex-col gap-1">
                 <label class="text-xs font-medium" style="color: #9b89b5;">Clase CT</label>
@@ -156,8 +154,6 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <InfoField label="Agente exportador" :value="frontera.agente_exportador" />
               <InfoField label="Agente importador" :value="frontera.agente_importador" />
-              <InfoField label="Nombre recurso generación" :value="frontera.nombre_recurso_generacion" />
-              <InfoField label="Clasificación recurso" :value="frontera.clasificacion_recurso" />
             </div>
           </div>
 
@@ -184,29 +180,11 @@
           </div>
 
           <div>
-            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Agrupación / embebido</p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <InfoField label="Es agrupadora" :value="frontera.es_agrupadora ? 'Sí' : 'No'" />
-              <InfoField label="Factor PSF" :value="frontera.factor_psf" />
-              <InfoField label="Es principal embebido" :value="frontera.es_principal_embebido ? 'Sí' : 'No'" />
-              <InfoField label="Factor acordado" :value="frontera.factor_acordado" />
-              <InfoField label="Factor de ajuste" :value="frontera.factor_ajuste" />
-              <InfoField label="Factor pérdidas frontera principal" :value="frontera.factor_perdidas_frontera_principal" />
-            </div>
-          </div>
-
-          <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Clasificación industrial y SIC</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <InfoField label="Código CIIU" :value="frontera.codigo_ciiu" />
-              <InfoField label="Clasificación industrial general" :value="frontera.clasificacion_industrial_general" />
-              <InfoField label="Clasificación industrial específica" :value="frontera.clasificacion_industrial_especifica" />
               <InfoField label="Tipo tecnología" :value="frontera.proyecto_tipo_tecnologia" />
               <InfoField label="SIC submercado exportador" :value="frontera.codigo_sic_submercado_exportador" />
               <InfoField label="SIC submercado consumo" :value="frontera.codigo_sic_submercado_consumo" />
-              <InfoField label="SIC frontera generación" :value="frontera.codigo_sic_frontera_generacion" />
-              <InfoField label="SIC frontera usuario" :value="frontera.codigo_sic_frontera_usuario" />
-              <InfoField label="Potencia máxima declarada" :value="frontera.potencia_maxima_declarada" />
             </div>
           </div>
         </div>
