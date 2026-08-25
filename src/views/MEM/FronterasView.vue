@@ -137,9 +137,9 @@
             {{ data.operador_comercial || '—' }}
           </template>
         </Column>
-        <Column field="capacidad_efectiva_mw" header="Cap. MW" sortable style="min-width: 100px">
+        <Column field="proyecto_potencia_instalada_mw" header="Cap. MW" sortable style="min-width: 100px">
           <template #body="{ data }">
-            {{ data.capacidad_efectiva_mw ? Number(data.capacidad_efectiva_mw).toFixed(3) : '—' }}
+            {{ data.proyecto_potencia_instalada_mw ? Number(data.proyecto_potencia_instalada_mw).toFixed(3) : '—' }}
           </template>
         </Column>
         <Column field="municipio" header="Municipio" sortable style="min-width: 130px" />
@@ -408,7 +408,7 @@ const stats = computed(() => {
     { label: 'Activas', value: all.filter(f => f.estado === 'activa').length, color: '#10B981' },
     { label: 'En registro', value: all.filter(f => f.estado === 'en_registro').length, color: '#F0C040' },
     { label: 'Generando actualmente', value: all.filter(generaDeVerdad).length, color: '#3B82F6', clave: 'generando' },
-    { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.capacidad_efectiva_mw) || 0), 0).toFixed(1), color: '#915BD8' },
+    { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.proyecto_potencia_instalada_mw) || 0), 0).toFixed(1), color: '#915BD8' },
   ]
 })
 
@@ -437,7 +437,7 @@ async function descargarExcel() {
     { header: 'Serial Medidor Principal', value: f => f.nro_serie_med_ppal || '' },
     { header: 'Serial Medidor Respaldo', value: f => f.nro_serie_med_resp || '' },
     { header: 'Operador', value: f => f.operador_comercial || '' },
-    { header: 'Cap. MW', value: f => f.capacidad_efectiva_mw ? Number(f.capacidad_efectiva_mw).toFixed(3) : '' },
+    { header: 'Cap. MW', value: f => f.proyecto_potencia_instalada_mw ? Number(f.proyecto_potencia_instalada_mw).toFixed(3) : '' },
     { header: 'Municipio', value: f => f.municipio || '' },
   ], `fronteras_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Fronteras')
 }

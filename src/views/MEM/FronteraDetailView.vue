@@ -124,8 +124,7 @@
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Capacidad y transporte</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <InfoField label="Capacidad transporte (MW)" :value="frontera.capacidad_transporte_mw" />
-              <InfoField label="Capacidad efectiva (MW)" :value="frontera.capacidad_efectiva_mw" />
+              <InfoField label="Potencia instalada (MW)" :value="frontera.proyecto_potencia_instalada_mw" />
               <InfoField label="Factor de pérdidas" :value="frontera.factor_perdidas" />
               <InfoField label="Clase CT" :value="frontera.clase_ct" />
               <InfoField label="Clase PT" :value="frontera.clase_pt" />
