@@ -1,31 +1,28 @@
 <template>
-  <div v-if="proyecto" class="space-y-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <div>
-        <Button icon="pi pi-arrow-left" text @click="$router.back()" class="-ml-2 mb-1" />
-        <div v-if="!isEditMode">
-          <h2 class="text-xl font-bold text-gray-800">{{ proyecto.nombre_comercial }}</h2>
-          <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="mt-1" />
-        </div>
-        <div v-else class="flex flex-col gap-2 mt-1">
-          <InputText v-model="editForm.nombre_comercial" class="text-base font-semibold w-80" />
-          <Select v-model="editForm.estado" :options="ESTADOS" class="w-48" />
-        </div>
-      </div>
-      <div class="flex gap-2">
+  <div v-if="proyecto">
+    <DetalleLayout :volver="{ to: '/servicios-unificado?vista=proyectos', label: 'Proyectos' }"
+                   :titulo="proyecto.nombre_comercial"
+                   :codigo="proyecto.codigo_tsf || ''"
+                   :tabs="TABS" v-model="activeTab">
+      <!-- En modo edicion, nombre y estado se editan en la misma miga -->
+      <template v-if="isEditMode" #titulo>
+        <InputText v-model="editForm.nombre_comercial" size="small" class="w-64" />
+        <Select v-model="editForm.estado" :options="ESTADOS" optionLabel="label" optionValue="value"
+                size="small" class="w-40" />
+      </template>
+      <template v-if="!isEditMode" #chips>
+        <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="text-[10px]" />
+      </template>
+      <template #acciones>
         <template v-if="isEditMode">
-          <Button label="Cancelar" severity="secondary" outlined @click="cancelEdit" />
-          <Button label="Guardar cambios" icon="pi pi-check" :loading="guardando" @click="saveEdit" />
+          <Button label="Cancelar" severity="secondary" outlined size="small" @click="cancelEdit" />
+          <Button label="Guardar cambios" icon="pi pi-check" size="small" :loading="guardando" @click="saveEdit" />
         </template>
-        <Button v-else label="Editar" icon="pi pi-pencil" outlined @click="enterEditMode" />
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <TabView v-model:activeIndex="activeTab" scrollable>
+        <Button v-else label="Editar" icon="pi pi-pencil" outlined size="small" @click="enterEditMode" />
+      </template>
+      <template #default="{ tab }">
       <!-- ══ GENERAL ══ -->
-      <TabPanel header="General">
+      <div v-if="tab === 'general'">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
           <template v-if="!isEditMode">
             <InfoField label="Tipo" :value="proyecto.tipo_proyecto" />
@@ -33,7 +30,7 @@
             <InfoField label="Capacidad instalada (kWp)" :value="proyecto.info_tecnica?.capacidad_instalada_kwp" />
             <InfoField label="Departamento" :value="proyecto.departamento" />
             <InfoField label="Municipio" :value="proyecto.municipio" />
-            <InfoField label="Operador de red" :value="proyecto.operador_red_legal || proyecto.operador_red" />
+            <InfoField label="Operador de red" :value="proyecto.operador_red_legal" />
             <InfoField label="Clasificación" :value="proyecto.clasificacion_regulatoria" />
             <InfoField label="Carpeta Drive" :value="proyecto.carpeta_drive_codigo" />
             <InfoField label="API ID Unergy" :value="proyecto.sub_project" />
@@ -44,7 +41,7 @@
               :value="proyecto.fecha_inicio_comercializacion ? (fmtFecha(proyecto.fecha_inicio_comercializacion) + (proyecto.fecha_comercializacion_editada_manual ? ' (manual)' : ' (auto)')) : '—'" />
             <InfoField label="Fecha fin de representación" :value="proyecto.fecha_fin_representacion ? fmtFecha(proyecto.fecha_fin_representacion) : '—'" />
             <div class="flex flex-col gap-1">
-              <label class="field-label">Comunidad energética</label>
+              <p class="text-xs text-gray-400 uppercase tracking-wide">Comunidad energética</p>
               <div>
                 <Tag v-if="proyecto.es_comunidad_energetica" severity="success"
                      :value="proyecto.nombre_comunidad ? ('🏘 ' + proyecto.nombre_comunidad) : '🏘 Sí'" />
@@ -121,10 +118,10 @@
             </div>
           </template>
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ TÉCNICO ══ -->
-      <TabPanel header="Técnico">
+      <div v-if="tab === 'tecnico'">
         <div class="p-4 space-y-6 text-sm">
 
           <!-- Vista lectura -->
@@ -166,7 +163,7 @@
             <div>
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Paneles</p>
               <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Cantidad de paneles" :value="proyecto.info_tecnica?.cantidad_total_paneles ?? proyecto.cantidad_total_paneles" />
+                <InfoField label="Cantidad de paneles" :value="proyecto.info_tecnica?.cantidad_total_paneles" />
                 <InfoField label="Potencia panel (kWp)" :value="proyecto.info_tecnica?.potencia_panel_kwp" />
                 <InfoField label="Marca paneles" :value="proyecto.info_tecnica?.marca_paneles" />
               </div>
@@ -222,6 +219,14 @@
             <div>
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ubicación</p>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Latitud</label>
+                  <InputNumber v-model="editForm.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Longitud</label>
+                  <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
+                </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Dirección</label>
                   <InputText v-model="editForm.direccion_vereda" class="w-full" />
@@ -387,10 +392,10 @@
           </template>
 
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ SIMULACIÓN ══ -->
-      <TabPanel header="Simulación">
+      <div v-if="tab === 'simulacion'">
         <div class="p-4 space-y-6">
           <div v-if="!isEditMode && hasSimulacionData" class="flex justify-end">
             <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" outlined
@@ -418,10 +423,10 @@
             </div>
           </div>
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ INVERSIONISTAS ══ -->
-      <TabPanel header="Inversionistas">
+      <div v-if="tab === 'inversionistas'">
         <div class="p-4 space-y-4">
           <DataTable :value="proyecto.inversionistas" class="text-sm" stripedRows>
             <Column field="cliente_nombre" header="Inversionista" />
@@ -546,10 +551,10 @@
           <Button label="Agregar" icon="pi pi-plus" :loading="guardando"
             :disabled="!nuevoInv.cliente_id" @click="agregarInversionista" class="mt-2" />
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ CONTACTOS ══ -->
-      <TabPanel header="Contactos">
+      <div v-if="tab === 'contactos'">
         <div class="p-4">
           <ProyectoAreaContactosPanel
             :proyecto-id="proyecto.id"
@@ -557,10 +562,10 @@
             :clientes-options="clientes"
           />
         </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ SERVICIOS ══ -->
-      <TabPanel header="Servicios">
+      <div v-if="tab === 'servicios'">
         <div class="p-6 space-y-4">
 
           <!-- Cards de servicio -->
@@ -666,10 +671,10 @@
           @cerrar="showContratoWizard = false"
           @creado="onContratoServicioCreado"
         />
-      </TabPanel>
+      </div>
 
       <!-- ══ FRONTERAS ══ -->
-      <TabPanel v-if="fronteras.length" header="Fronteras">
+      <div v-if="tab === 'fronteras'">
         <div class="p-4">
           <DataTable :value="fronteras" class="text-sm" stripedRows>
             <Column field="codigo_frontera" header="Código">
@@ -687,115 +692,79 @@
             Ve a la pestaña Fronteras del menú si deseas reasignar el proyecto.
           </p>
         </div>
-      </TabPanel>
-
-      <!-- ══ CROSS-DB ══ -->
-      <TabPanel header="Datos Externos">
-        <div v-if="crossLoading" class="flex justify-center py-8">
-          <ProgressSpinner />
-        </div>
-        <div v-else-if="!crossData" class="text-center py-8 text-gray-400">
-          <i class="pi pi-link text-3xl mb-2 block" />
-          <p class="text-sm">Sin datos cruzados disponibles</p>
-          <Button label="Sincronizar" icon="pi pi-sync" size="small" outlined class="mt-3" @click="syncCross" :loading="syncing" />
-        </div>
-        <div v-else class="space-y-4 p-4">
-          <!-- Origina data -->
-          <div v-if="crossData.origina" class="rounded-xl border p-4" style="border-color: #e8e0f0;">
-            <h4 class="text-sm font-semibold mb-3" style="color: #915BD8;">
-              <i class="pi pi-database mr-1" />OriginabotDB
-            </h4>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              <div><span class="text-xs text-gray-400 block">Código</span><span class="font-mono font-medium">{{ crossData.origina.name }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Stage</span><Tag :value="crossData.origina.stage" :severity="crossData.origina.stage === 'operation' ? 'success' : 'info'" /></div>
-              <div><span class="text-xs text-gray-400 block">kW AC</span><span class="font-medium">{{ crossData.origina.kw_ac?.toLocaleString() }}</span></div>
-              <div><span class="text-xs text-gray-400 block">kW DC</span><span class="font-medium">{{ crossData.origina.kw_dc?.toLocaleString() }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Paneles</span><span class="font-medium">{{ crossData.origina.panels?.toLocaleString() }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Contrato</span><span class="font-medium">{{ crossData.origina.contract_type }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Circuito</span><span class="font-medium">{{ crossData.origina.circuit || '—' }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Op. Red</span><span class="font-medium">{{ crossData.origina.grid_operator || '—' }}</span></div>
-            </div>
-          </div>
-
-          <!-- Viabilities -->
-          <div v-if="crossData.origina_viabilities?.length" class="rounded-xl border p-4" style="border-color: #e8e0f0;">
-            <h4 class="text-sm font-semibold mb-3" style="color: #2C2039;">Viabilidades</h4>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-              <div v-for="v in crossData.origina_viabilities" :key="v.type"
-                   class="flex items-center gap-2 text-sm">
-                <Tag :value="v.status"
-                     :severity="v.status === 'viable' ? 'success' : v.status === 'not_viable' ? 'danger' : v.status === 'viable_conditional' ? 'warn' : 'secondary'" />
-                <span class="text-gray-600 capitalize">{{ v.type }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- RequestsDB data -->
-          <div v-if="crossData.requestsdb" class="rounded-xl border p-4" style="border-color: #e8e0f0;">
-            <h4 class="text-sm font-semibold mb-3" style="color: #3B82F6;">
-              <i class="pi pi-sitemap mr-1" />RequestsDB — Solicitud de Conexión
-            </h4>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-              <div><span class="text-xs text-gray-400 block">Código externo</span><span class="font-mono font-medium">{{ crossData.requestsdb.external_code || '—' }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Op. Red</span><span class="font-medium">{{ crossData.requestsdb.grid_operator_name || '—' }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Circuito</span><span class="font-medium">{{ crossData.requestsdb.circuit_name || '—' }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Subestación</span><span class="font-medium">{{ crossData.requestsdb.substation_name || '—' }}</span></div>
-              <div><span class="text-xs text-gray-400 block">kWp</span><span class="font-medium">{{ crossData.requestsdb.kwp?.toLocaleString() || '—' }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Doc. Status</span><span class="font-medium">{{ crossData.requestsdb.documentation_status || '—' }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Red Proyecto</span><span class="font-medium">{{ crossData.requestsdb.network_project_status || '—' }}</span></div>
-              <div><span class="text-xs text-gray-400 block">Ciudad</span><span class="font-medium">{{ crossData.requestsdb.city_name || '—' }}</span></div>
-            </div>
-          </div>
-
-          <!-- RequestsDB status -->
-          <div v-if="crossData.requestsdb_status?.length" class="rounded-xl border p-4" style="border-color: #e8e0f0;">
-            <h4 class="text-sm font-semibold mb-2" style="color: #2C2039;">Último estado solicitud</h4>
-            <div v-for="s in crossData.requestsdb_status" :key="s.date" class="text-sm">
-              <Tag :value="s.status" severity="info" /> <span class="text-gray-400 ml-2">{{ s.date }}</span>
-              <span v-if="s.by" class="text-gray-400"> · {{ s.by }}</span>
-            </div>
-          </div>
-
-          <!-- Grid info -->
-          <div v-if="crossData.grid_info" class="rounded-xl border p-4" style="border-color: #e8e0f0;">
-            <h4 class="text-sm font-semibold mb-2" style="color: #2C2039;">Info de Red (MGS Grid Map)</h4>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-              <div v-for="(val, key) in crossData.grid_info" :key="key">
-                <span class="text-xs text-gray-400 block capitalize">{{ key.replace(/_/g, ' ') }}</span>
-                <span class="font-medium">{{ val || '—' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- No external data -->
-          <div v-if="!crossData.origina && !crossData.requestsdb && !crossData.grid_info"
-               class="text-center py-6 text-gray-400">
-            <p class="text-sm">No se encontraron datos cruzados para este proyecto.</p>
-            <Button label="Ejecutar sincronización" icon="pi pi-sync" size="small" outlined class="mt-3" @click="syncCross" :loading="syncing" />
-          </div>
-        </div>
-      </TabPanel>
+      </div>
 
       <!-- ══ ID LIQUIDACIONES ══ -->
-      <TabPanel header="ID liquidaciones">
+      <div v-if="tab === 'id-liquidaciones'">
+        <div class="p-4 space-y-3 text-sm">
+          <p class="text-[11px] text-gray-400">
+            <i class="pi pi-info-circle mr-1" />
+            Estos códigos viven en la API de Liquidaciones de Unergy, no en esta base.
+            <span v-if="liqConfig?.nombre_topico"> Tópico: <b>{{ liqConfig.nombre_topico }}</b>.</span>
+          </p>
+
+          <div v-if="!proyecto.sub_project && !proyecto.topico_liquidaciones" class="rounded-lg px-3 py-2 text-xs"
+               style="background:#FEF3C7; color:#92400E">
+            El proyecto no tiene <b>API ID Unergy</b> (código base), así que no se puede
+            identificar en la API de Liquidaciones. Complétalo en la pestaña General.
+          </div>
+
+          <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <template v-if="!isEditMode">
+              <InfoField label="SIC generación" :value="liqConfig?.sic_gen" />
+              <InfoField label="SIC consumo" :value="liqConfig?.sic_con" />
+              <InfoField label="Tópico en Liquidaciones"
+                         :value="proyecto.topico_liquidaciones || '(usa el API ID Unergy)'" />
+            </template>
+            <template v-else>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">SIC generación</label>
+                <InputText v-model="editLiq.sic_gen" class="w-full" placeholder="ej: 3A44" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">SIC consumo</label>
+                <InputText v-model="editLiq.sic_con" class="w-full" placeholder="ej: 3A3P" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Tópico en Liquidaciones</label>
+                <InputText v-model="editForm.topico_liquidaciones" class="w-full"
+                           :placeholder="proyecto.sub_project || 'ej: mgs18'" />
+                <small class="text-[11px] text-gray-400">
+                  Solo si esta planta se llama distinto allá que en generación. Vacío = se
+                  usa el API ID Unergy.
+                </small>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ID QUOIA ══ -->
+      <div v-if="tab === 'id-quoia'">
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
           <template v-if="!isEditMode">
-            <InfoField label="SIC generación" :value="proyecto.codigo_sic_generacion" />
-            <InfoField label="SIC consumo" :value="proyecto.codigo_sic_consumo" />
+            <InfoField label="ID Reporte Generación Quoia" :value="proyecto.quoia_reporte_generacion_id" />
+            <InfoField label="ID Reporte Consumo Quoia" :value="proyecto.quoia_reporte_consumo_id" />
+            <InfoField label="ID de Nodo Quoia" :value="proyecto.quoia_nodo_id" />
           </template>
           <template v-else>
             <div class="flex flex-col gap-1">
-              <label class="field-label">SIC generación</label>
-              <InputText v-model="editForm.codigo_sic_generacion" class="w-full" placeholder="Código SIC de generación" />
+              <label class="field-label">ID Reporte Generación Quoia</label>
+              <InputNumber v-model="editForm.quoia_reporte_generacion_id" :useGrouping="false" class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="field-label">SIC consumo</label>
-              <InputText v-model="editForm.codigo_sic_consumo" class="w-full" placeholder="Código SIC de consumo" />
+              <label class="field-label">ID Reporte Consumo Quoia</label>
+              <InputNumber v-model="editForm.quoia_reporte_consumo_id" :useGrouping="false" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">ID de Nodo Quoia</label>
+              <InputNumber v-model="editForm.quoia_nodo_id" :useGrouping="false" class="w-full" />
             </div>
           </template>
         </div>
-      </TabPanel>
-    </TabView>
+      </div>
+      </template>
+    </DetalleLayout>
 
   </div>
 
@@ -813,8 +782,6 @@
 <script setup>
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import TabView from 'primevue/tabview'
-import TabPanel from 'primevue/tabpanel'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -829,20 +796,25 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
-import Dialog from 'primevue/dialog'
 import { useToast } from 'primevue/usetoast'
 import * as XLSX from 'xlsx'
 import api from '@/api/client'
 import divipola from '@/data/colombia-divipola.json'
 import ContratoServicioWizard from '@/views/Contratos/ContratoServicioWizard.vue'
 import ProyectoAreaContactosPanel from '@/components/ProyectoAreaContactosPanel.vue'
+import DetalleLayout from '@/components/DetalleLayout.vue'
 
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
 
 // ── Constantes (sin hardcode en template) ────────────────────────────────────
-const ESTADOS = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const ESTADOS = [
+  { label: 'En desarrollo', value: 'en_desarrollo' },
+  { label: 'En operacion', value: 'en_operacion' },
+  { label: 'Suspendido', value: 'suspendido' },
+  { label: 'Cancelado', value: 'cancelado' },
+]
 const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
 const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
@@ -864,6 +836,9 @@ const FRONTERA_ESTADO_SEVERITY = { activa: 'success', en_registro: 'warn', en_fa
 
 // ── Estado base ───────────────────────────────────────────────────────────────
 const proyecto = ref(null)
+// Configuración de liquidaciones: vive en la API de Unergy, no en esta base.
+const liqConfig = ref(null)
+const editLiq = reactive({ sic_gen: '', sic_con: '' })
 const fronteras = ref([])
 const clientes = ref([])
 const loading = ref(true)
@@ -880,43 +855,25 @@ const showContratoWizard = ref(false)
 // vista "IDs proyectos", que enlaza a las pestañas de IDs).
 // La pestaña Fronteras solo se muestra si el proyecto tiene fronteras
 // asociadas -- los índices de las pestañas siguientes dependen de eso.
-const activeTab = ref(0)
-const TAB_INDEX = computed(() => {
-  const idx = { general: 0, tecnico: 1, simulacion: 2, inversionistas: 3, contactos: 4, servicios: 5 }
-  let n = 6
-  if (fronteras.value.length) idx.fronteras = n++
-  idx['datos-externos'] = n++
-  idx['id-liquidaciones'] = n++
-  return idx
-})
-watch([() => route.query.tab, fronteras], ([t]) => {
-  if (t && TAB_INDEX.value[t] != null) activeTab.value = TAB_INDEX.value[t]
-}, { immediate: true })
-
-// ── Cross-DB ─────────────────────────────────────────────────────────────────
-const crossData = ref(null)
-const crossLoading = ref(false)
-const syncing = ref(false)
-
-async function loadCrossData() {
-  crossLoading.value = true
-  try {
-    const { data } = await api.get(`/correlation/project/${route.params.id}`)
-    crossData.value = data.error ? null : data
-  } catch { /* graceful degrade */ }
-  finally { crossLoading.value = false }
-}
-
-async function syncCross() {
-  syncing.value = true
-  try {
-    await api.post('/correlation/sync')
-    await loadCrossData()
-    toast.add({ severity: 'success', summary: 'Sincronización completada', life: 3000 })
-  } catch {
-    toast.add({ severity: 'error', summary: 'Error al sincronizar', life: 3000 })
-  } finally { syncing.value = false }
-}
+const activeTab = ref('general')
+// Las pestanas se identifican por llave de texto, asi que Fronteras puede
+// aparecer o no sin desplazar a las demas. Antes habia un TAB_INDEX numerico
+// que se recalculaba, y un ?tab=id-liquidaciones o ?tab=id-quoia podia caer en
+// la pestana equivocada segun si la planta tenia fronteras.
+const TABS = computed(() => [
+  { key: 'general',          label: 'General',          icon: 'pi pi-info-circle' },
+  { key: 'tecnico',          label: 'Técnico',          icon: 'pi pi-wrench' },
+  { key: 'simulacion',       label: 'Simulación',       icon: 'pi pi-chart-line' },
+  // Mismo orden que el detalle de Cliente: identidad -> contactos -> servicios
+  // -> relaciones -> integracion. Asi las tres vistas se leen igual.
+  { key: 'contactos',        label: 'Contactos',        icon: 'pi pi-envelope' },
+  { key: 'servicios',        label: 'Servicios',        icon: 'pi pi-briefcase' },
+  { key: 'inversionistas',   label: 'Inversionistas',   icon: 'pi pi-users' },
+  { key: 'fronteras',        label: 'Fronteras',        icon: 'pi pi-globe',
+    badge: fronteras.value.length || null, oculta: !fronteras.value.length },
+  { key: 'id-liquidaciones', label: 'ID liquidaciones', icon: 'pi pi-dollar' },
+  { key: 'id-quoia',         label: 'ID Quoia',         icon: 'pi pi-link' },
+])
 
 // ── Modo edición ──────────────────────────────────────────────────────────────
 const isEditMode = computed(() => route.query.edit === 'true')
@@ -929,14 +886,18 @@ const editForm = reactive({
   potencia_instalada_kwp: null,
   departamento: null,
   municipio: null,
+  latitud: null,
+  longitud: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
   carpeta_drive_codigo: null,
   sub_project: null,
   codigo_tsf: null,
-  codigo_sic_generacion: null,
-  codigo_sic_consumo: null,
-  cantidad_total_paneles: null,
+  topico_liquidaciones: null,
+  // IDs de Quoia: viven en esta base (no en la API de Liquidaciones).
+  quoia_reporte_generacion_id: null,
+  quoia_reporte_consumo_id: null,
+  quoia_nodo_id: null,
   produccion_especifica_kwh_kwp: null,
   es_comunidad_energetica: false,
   nombre_comunidad: '',
@@ -1034,7 +995,7 @@ function descargarSimulacionExcel() {
     })
     const aoa = [
       [`Simulación de generación — ${proyecto.value.nombre_comercial || ''}`],
-      [`Potencia instalada: ${proyecto.value.potencia_instalada_kwp ?? '—'} kWp`],
+      [`Potencia AC instalada: ${proyecto.value.potencia_instalada_kwp ?? '—'} kW`],
       [`Exportado: ${new Date().toLocaleString('es-CO')}`],
       [],
       header,
@@ -1085,10 +1046,21 @@ function populateEditForm() {
   editFechaEntrada.value = toDate(p.fecha_entrada_operacion)
   editFechaComerc.value = toDate(p.fecha_inicio_comercializacion)
   editFechaFinRep.value = toDate(p.fecha_fin_representacion)
+  editLiq.sic_gen = liqConfig.value?.sic_gen ?? ''
+  editLiq.sic_con = liqConfig.value?.sic_con ?? ''
 }
 
 watch(isEditMode, (entering) => {
   if (entering && proyecto.value) populateEditForm()
+})
+
+// Autocompleta el link de Google Maps con las coordenadas en cuanto haya
+// latitud y longitud -- solo si el campo está vacío, nunca pisa un link
+// ya cargado a mano.
+watch([() => editForm.latitud, () => editForm.longitud], ([lat, lon]) => {
+  if (lat != null && lon != null && !editInfoTecnica.url_ubicacion) {
+    editInfoTecnica.url_ubicacion = `https://www.google.com/maps?q=${lat},${lon}`
+  }
 })
 
 function enterEditMode() {
@@ -1103,11 +1075,21 @@ function cancelEdit() {
 }
 
 async function saveEdit() {
+  if (!editForm.nombre_comercial?.trim()) {
+    toast.add({ severity: 'error', summary: 'Falta el nombre', detail: 'El nombre comercial no puede quedar vacío.', life: 4000 })
+    return
+  }
   guardando.value = true
   try {
+    // Siempre se envían todas las claves (no solo las no-vacías): editForm ya
+    // viene pre-poblado con el estado actual del proyecto (populateEditForm),
+    // así que reenviarlas sin filtrar preserva lo que no se tocó Y permite
+    // limpiar un campo a null -- filtrar por "!= ''" (como antes) hacía que
+    // borrar un valor y guardar nunca lo limpiara de verdad (bug real
+    // encontrado con "Capacidad instalada" en Bayunca, 2026-08-11).
     const payload = {}
     for (const [k, v] of Object.entries(editForm)) {
-      if (v !== null && v !== undefined && v !== '') payload[k] = v
+      payload[k] = v === '' ? null : v
     }
     const p90json = serializeMonthArray(editP90.value)
     const p50json = serializeMonthArray(editP50.value)
@@ -1126,15 +1108,32 @@ async function saveEdit() {
     const comercActual = proyecto.value?.fecha_inicio_comercializacion || null
     if (comercNueva !== comercActual) payload.fecha_inicio_comercializacion = comercNueva
     // Comunidad energética: enviar siempre el flag y el nombre (permite limpiarlo).
+    // Se envía siempre para poder dejarlo vacío: el loop de arriba omite lo
+    // vacío, y sin esto no habría forma de quitar un tópico ya puesto.
+    payload.topico_liquidaciones = editForm.topico_liquidaciones || null
     payload.es_comunidad_energetica = !!editForm.es_comunidad_energetica
     payload.nombre_comunidad = editForm.es_comunidad_energetica ? (editForm.nombre_comunidad || null) : null
 
     await api.patch(`/proyectos/${route.params.id}`, payload)
+    // Los códigos SIC se guardan en la API de Liquidaciones, no en esta base.
+    if (proyecto.value?.sub_project) {
+      const sicCambio =
+        (editLiq.sic_gen || null) !== (liqConfig.value?.sic_gen || null) ||
+        (editLiq.sic_con || null) !== (liqConfig.value?.sic_con || null)
+      if (sicCambio) {
+        await api.patch(`/liquidaciones-api/proyectos/${route.params.id}`, {
+          sic_gen: editLiq.sic_gen || null,
+          sic_con: editLiq.sic_con || null,
+        })
+      }
+    }
+    // Mismo criterio que arriba -- sin filtrar, para poder limpiar un campo
+    // (ver comentario en el payload de editForm).
     const itPayload = {}
     for (const [k, v] of Object.entries(editInfoTecnica)) {
-      if (v !== null && v !== undefined && v !== '') itPayload[k] = v
+      itPayload[k] = v === '' ? null : v
     }
-    if (Object.keys(itPayload).length) await api.put(`/proyectos/${route.params.id}/info-tecnica`, itPayload)
+    await api.put(`/proyectos/${route.params.id}/info-tecnica`, itPayload)
     const [proyRes, invRes] = await Promise.all([
       api.get(`/proyectos/${route.params.id}`),
       api.get(`/proyectos/${route.params.id}/inversionistas`),
@@ -1143,6 +1142,10 @@ async function saveEdit() {
       ...proyRes.data,
       inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
     }
+    try {
+      const { data } = await api.get(`/liquidaciones-api/proyectos/${route.params.id}`)
+      liqConfig.value = data
+    } catch { /* la API externa puede no responder; no bloquea el guardado */ }
     router.replace({ query: {} })
     toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
   } catch (e) {
@@ -1369,6 +1372,9 @@ onMounted(async () => {
       api.get('/operadores-red').catch(() => ({ data: [] })),
       api.get('/fronteras', { params: { proyecto_id: route.params.id } }).catch(() => ({ data: [] })),
     ])
+    api.get(`/liquidaciones-api/proyectos/${route.params.id}`)
+      .then(r => { liqConfig.value = r.data; if (isEditMode.value) populateEditForm() })
+      .catch(() => { liqConfig.value = null })
     proyecto.value = {
       ...proyRes.data,
       inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
@@ -1378,7 +1384,6 @@ onMounted(async () => {
     operadoresRed.value = Array.isArray(operadoresRes.data) ? operadoresRes.data : (operadoresRes.data.items ?? [])
     for (const s of SERVICIOS_FLAGS) srvFlags[s.key] = proyRes.data[s.key]
     if (isEditMode.value) populateEditForm()
-    loadCrossData()
   } catch (e) {
     errorMsg.value = e.response?.data?.detail || e.message || 'Error de conexión con el servidor'
   } finally {

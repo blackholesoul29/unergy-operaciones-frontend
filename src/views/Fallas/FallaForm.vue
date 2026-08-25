@@ -44,7 +44,7 @@
 
           <!-- RED / EVENTOS ADVERSOS: opción única -->
           <div v-if="catActual && catActual.tipo === 'opcion'" class="ff-sub">
-            <label class="ff-label">{{ catActual.codigo === 'red' ? 'Evento de red *' : 'Evento *' }}</label>
+            <label class="ff-label">{{ labelOpciones }} *</label>
             <Select v-model="cls.subtipo" :options="catActual.opciones"
               optionLabel="etiqueta" optionValue="codigo" placeholder="Seleccionar…"
               class="w-full" :class="{ 'p-invalid': errors.subtipo }" />
@@ -365,6 +365,7 @@ import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import api from '@/api/client'
+import { getEstructuraFallas } from '@/utils/fallasEstructuraCache'
 
 const TIPOS_SOLUCION = [
   'Reemplazo de componente',
@@ -383,10 +384,11 @@ const props = defineProps({
   initial:            { type: Object, default: null },
   catalogos:          { type: Object, required: true },
   prefillProyectoIds: { type: Array,  default: () => [] },  // pre-seleccionar proyectos al crear
+  proyectos:          { type: Array,  default: () => [] },  // si el padre ya los tiene cargados, se reusan (evita refetch cada vez que se abre el diálogo)
 })
 const emit = defineEmits(['save', 'cancel'])
 
-const proyectos      = ref([])
+const proyectos      = ref(props.proyectos)
 const saving         = ref(false)
 const errors         = ref({})
 const archivosStaged = ref([])  // File[] — solo al crear
@@ -513,6 +515,11 @@ const proyectoUnicoId = computed(() => {
   if (props.initial) return form.value.proyecto_id
   return form.value.proyecto_ids?.length === 1 ? form.value.proyecto_ids[0] : null
 })
+// Etiqueta del selector de opciones: la define la propia estructura
+// (`opciones_label`) para categorías cuyas opciones no son "eventos"
+// (p.ej. la verificación en sitio de "generando pero sin datos").
+const labelOpciones = computed(() =>
+  catActual.value?.opciones_label || (catActual.value?.codigo === 'red' ? 'Evento de red' : 'Evento'))
 
 function seleccionarCategoria(codigo) {
   if (cls.value.categoria === codigo) return
@@ -788,14 +795,15 @@ async function submit() {
 }
 
 onMounted(async () => {
-  try {
-    const { data } = await api.get('/proyectos', { params: { size: 500 } })
-    proyectos.value = data.items ?? []
-  } catch { /* no crítico */ }
-  try {
-    const { data } = await api.get('/fallas/estructura')
-    estructura.value = data.categorias ?? []
-  } catch { /* no crítico */ }
+  // Si el padre ya cargó proyectos (ej. GestionFallasView), se reusan --
+  // solo se pide aparte si no llegaron (uso del form fuera de esa vista).
+  if (!proyectos.value.length) {
+    try {
+      const { data } = await api.get('/proyectos', { params: { size: 500 } })
+      proyectos.value = data.items ?? []
+    } catch { /* no crítico */ }
+  }
+  estructura.value = await getEstructuraFallas()
 })
 </script>
 

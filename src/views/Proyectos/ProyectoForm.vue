@@ -11,7 +11,7 @@
       </div>
       <div>
         <label class="field-label">Estado</label>
-        <Select v-model="f.estado" :options="estados" class="w-full" />
+        <Select v-model="f.estado" :options="estados" optionLabel="label" optionValue="value" class="w-full" />
       </div>
       <div>
         <label class="field-label">Potencia AC (kW)</label>
@@ -39,13 +39,41 @@
           :disabled="!f.departamento" />
       </div>
       <div>
-        <label class="field-label">Operador de red</label>
+        <label class="field-label">Operador de red{{ operadorRedObligatorio ? ' *' : '' }}</label>
         <Select v-model="f.operador_red_id" :options="operadoresRedOptions" optionLabel="label"
           optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
       </div>
       <div>
         <label class="field-label">Clasificación regulatoria</label>
         <Select v-model="f.clasificacion_regulatoria" :options="clasificaciones" class="w-full" placeholder="Seleccionar" showClear />
+      </div>
+      <div class="col-span-2">
+        <label class="field-label">Dirección / vereda</label>
+        <InputText v-model="f.direccion_vereda" class="w-full" placeholder="Ej: Vereda El Cerrito, km 4 vía Planeta Rica" />
+      </div>
+      <!-- Coordenadas: hasta ahora solo se podían cargar EDITANDO el proyecto, así
+           que toda planta nacía sin ubicación en el mapa y sin coordenadas para
+           quien integra por API. -->
+      <div>
+        <label class="field-label">Latitud</label>
+        <InputNumber v-model="f.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" placeholder="8.748000" />
+      </div>
+      <div>
+        <label class="field-label">Longitud</label>
+        <InputNumber v-model="f.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" placeholder="-75.881000" />
+      </div>
+      <!-- Ortogonal al tipo y a la clasificación: cualquier planta puede o no
+           pertenecer a una comunidad energética. -->
+      <div>
+        <label class="field-label">Comunidad energética</label>
+        <div class="flex items-center gap-2 h-[38px]">
+          <ToggleSwitch v-model="f.es_comunidad_energetica" />
+          <span class="text-sm text-gray-500">{{ f.es_comunidad_energetica ? 'Sí' : 'No' }}</span>
+        </div>
+      </div>
+      <div v-if="f.es_comunidad_energetica">
+        <label class="field-label">Nombre de la comunidad</label>
+        <InputText v-model="f.nombre_comunidad" class="w-full" placeholder="Opcional" />
       </div>
       <div>
         <label class="field-label">Carpeta Drive (código)</label>
@@ -108,77 +136,15 @@
       </div>
     </div>
 
-    <!-- Inversionistas (solo modo edición) -->
-    <div v-if="proyectoId" class="border border-gray-200 rounded-lg p-4 space-y-3">
-      <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Inversionistas</p>
-
-      <DataTable :value="inversionistas" class="text-xs" stripedRows>
-        <Column field="cliente_nombre" header="Inversionista" />
-        <Column header="Participación (%)">
-          <template #body="{ data }">
-            {{ data.porcentaje_participacion != null ? (data.porcentaje_participacion * 100).toFixed(2) + '%' : '—' }}
-          </template>
-        </Column>
-        <Column header="Inicio">
-          <template #body="{ data }">{{ data.fecha_inicio ? String(data.fecha_inicio).slice(0, 10) : '—' }}</template>
-        </Column>
-        <Column header="Fin">
-          <template #body="{ data }">{{ data.fecha_fin ? String(data.fecha_fin).slice(0, 10) : 'Vigente' }}</template>
-        </Column>
-        <Column header="Pat. autónomo">
-          <template #body="{ data }">
-            <Tag :value="data.es_patrimonio_autonomo ? 'Sí' : 'No'"
-              :severity="data.es_patrimonio_autonomo ? 'info' : 'secondary'" />
-          </template>
-        </Column>
-        <Column header="" style="width:50px">
-          <template #body="{ data }">
-            <Button icon="pi pi-trash" text severity="danger" size="small"
-              @click="eliminarInversionista(data.id)" />
-          </template>
-        </Column>
-        <template #empty>
-          <p class="text-center text-gray-400 py-2 text-xs">Sin inversionistas registrados.</p>
-        </template>
-      </DataTable>
-
-      <Divider />
-      <p class="text-xs font-medium text-gray-600">Agregar inversionista</p>
-      <div class="grid grid-cols-2 gap-2">
-        <div class="col-span-2">
-          <label class="field-label">Cliente</label>
-          <Select v-model="nuevoInv.cliente_id" :options="clientes" optionLabel="razon_social_nombre"
-            optionValue="id" class="w-full" placeholder="Seleccionar" filter />
-        </div>
-        <div>
-          <label class="field-label">% Participación</label>
-          <InputNumber v-model="nuevoInv.porcentaje_pct" :min="0" :max="100" :maxFractionDigits="2"
-            suffix="%" class="w-full" />
-        </div>
-        <div>
-          <label class="field-label">Fecha inicio</label>
-          <DatePicker v-model="nuevoInv.fecha_inicio" dateFormat="yy-mm-dd" showIcon showClear class="w-full" placeholder="—" />
-        </div>
-        <div>
-          <label class="field-label">Fecha fin (opcional = vigente)</label>
-          <DatePicker v-model="nuevoInv.fecha_fin" dateFormat="yy-mm-dd" showIcon showClear class="w-full" placeholder="Vigente" />
-        </div>
-        <div>
-          <label class="field-label">Patrimonio autónomo</label>
-          <div class="flex items-center gap-2 h-10">
-            <ToggleSwitch v-model="nuevoInv.es_patrimonio_autonomo" />
-            <span class="text-xs text-gray-600">{{ nuevoInv.es_patrimonio_autonomo ? 'Sí' : 'No' }}</span>
-          </div>
-        </div>
-      </div>
-      <Button label="Agregar" icon="pi pi-plus" size="small" :loading="guardandoInv"
-        :disabled="!nuevoInv.cliente_id" @click="agregarInversionista" />
-    </div>
-
     <div class="flex justify-end gap-2 pt-2">
-      <Button type="button" label="Cancelar" severity="secondary" @click="$emit('cancel')" />
-      <Button type="submit" :label="editMode ? 'Guardar cambios' : 'Crear proyecto'" />
+      <Button type="button" label="Cancelar" severity="secondary" :disabled="guardando"
+        @click="$emit('cancel')" />
+      <Button type="submit" label="Crear proyecto"
+        :loading="guardando" :disabled="!puedeGuardar" />
     </div>
+    <p v-if="operadorRedObligatorio && !f.operador_red_id" class="text-xs text-gray-500 text-right">
+      Falta el operador de red: sin él no se puede crear la planta.
+    </p>
   </form>
 </template>
 
@@ -189,27 +155,32 @@ import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
-import DataTable from 'primevue/datatable'
-import Column from 'primevue/column'
 import ToggleSwitch from 'primevue/toggleswitch'
-import Divider from 'primevue/divider'
-import Tag from 'primevue/tag'
-import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import divipola from '@/data/colombia-divipola.json'
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
 const props = defineProps({
-  clientes: Array,
-  proyecto: { type: Object, default: null },
-  proyectoId: { type: Number, default: null },
+  /**
+   * El CRM comercial exige operador de red del catálogo (validación bloqueante:
+   * el backend responde 422 sin él). En /proyectos es opcional y se deja así,
+   * para no volver obligatorio un campo que hoy no lo es.
+   */
+  operadorRedObligatorio: { type: Boolean, default: false },
+  guardando: { type: Boolean, default: false },
 })
 const emit = defineEmits(['save', 'cancel'])
 
-const editMode = computed(() => !!props.proyecto)
+const puedeGuardar = computed(() =>
+  !!f.nombre_comercial && (!props.operadorRedObligatorio || !!f.operador_red_id))
 
-const estados = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const estados = [
+  { label: 'En desarrollo', value: 'en_desarrollo' },
+  { label: 'En operacion', value: 'en_operacion' },
+  { label: 'Suspendido', value: 'suspendido' },
+  { label: 'Cancelado', value: 'cancelado' },
+]
 const tipos = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
 const tecnologias = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const clasificaciones = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
@@ -221,11 +192,16 @@ const f = reactive({
   tipo_tecnologia: null,
   departamento: null,
   municipio: null,
+  direccion_vereda: null,
+  latitud: null,
+  longitud: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
   carpeta_drive_codigo: null,
   sub_project: null,
   codigo_tsf: null,
+  es_comunidad_energetica: false,
+  nombre_comunidad: null,
 })
 
 // Departamento/municipio -- select en vez de texto libre (DIVIPOLA), para
@@ -255,8 +231,9 @@ onMounted(async () => {
 // Técnico), que requiere un proyecto_id existente, así que no son parte de `f`
 // (el payload de POST/PATCH /proyectos). El submit las emite aparte para que
 // quien las reciba haga el PUT a /proyectos/{id}/info-tecnica después de crear.
-// capacidad_instalada_kwp también se copia a proyectos.potencia_instalada_kwp
-// (el campo que usan los cálculos de generación esperada en el resto del backend).
+// Ese PUT ya espeja capacidad_instalada_kwp a proyectos.potencia_instalada_kwp
+// del lado del backend (ver app/api/v1/proyectos.py::upsert_info_tecnica) --
+// no hace falta duplicarlo aquí.
 const potenciaAcKw = ref(null)
 const capacidadInstaladaKwp = ref(null)
 // Cantidad de paneles -- también vive en proyecto_info_tecnica; opcional al crear.
@@ -297,68 +274,6 @@ function parseMonthArray(jsonStr) {
 const p90Array = ref(Array(12).fill(null))
 const p50Array = ref(Array(12).fill(null))
 
-watch(() => props.proyecto, (p) => {
-  if (p) {
-    Object.keys(f).forEach(k => { if (k in p) f[k] = p[k] })
-    potenciaAcKw.value = p.info_tecnica?.potencia_ac_kw ?? null
-    capacidadInstaladaKwp.value = p.info_tecnica?.capacidad_instalada_kwp ?? p.potencia_instalada_kwp ?? null
-    cantidadTotalPaneles.value = p.info_tecnica?.cantidad_total_paneles ?? p.cantidad_total_paneles ?? null
-    p90Array.value = parseMonthArray(p.p90_mensual_kwh)
-    p50Array.value = parseMonthArray(p.p50_mensual_kwh)
-    fechaEntrada.value = toDate(p.fecha_entrada_operacion)
-    fechaFinRep.value = toDate(p.fecha_fin_representacion)
-  }
-}, { immediate: true })
-
-const toast = useToast()
-const inversionistas = ref([])
-const guardandoInv = ref(false)
-const nuevoInv = reactive({ cliente_id: null, porcentaje_pct: null, es_patrimonio_autonomo: false, fecha_inicio: null, fecha_fin: null })
-
-watch(() => props.proyectoId, async (id) => {
-  if (id) {
-    const { data } = await api.get(`/proyectos/${id}/inversionistas`)
-    inversionistas.value = data
-  }
-}, { immediate: true })
-
-async function agregarInversionista() {
-  if (!nuevoInv.cliente_id) return
-  guardandoInv.value = true
-  try {
-    await api.post(`/proyectos/${props.proyectoId}/inversionistas`, {
-      cliente_id: nuevoInv.cliente_id,
-      porcentaje_participacion: nuevoInv.porcentaje_pct != null ? nuevoInv.porcentaje_pct / 100 : null,
-      es_patrimonio_autonomo: nuevoInv.es_patrimonio_autonomo,
-      fecha_inicio: formatFecha(nuevoInv.fecha_inicio),
-      fecha_fin: formatFecha(nuevoInv.fecha_fin),
-    })
-    const { data } = await api.get(`/proyectos/${props.proyectoId}/inversionistas`)
-    inversionistas.value = data
-    nuevoInv.cliente_id = null
-    nuevoInv.porcentaje_pct = null
-    nuevoInv.es_patrimonio_autonomo = false
-    nuevoInv.fecha_inicio = null
-    nuevoInv.fecha_fin = null
-    toast.add({ severity: 'success', summary: 'Inversionista agregado', life: 2000 })
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al agregar', detail: e.response?.data?.detail, life: 3000 })
-  } finally {
-    guardandoInv.value = false
-  }
-}
-
-async function eliminarInversionista(invId) {
-  if (!confirm('¿Estás seguro de que deseas eliminar este inversionista?')) return
-  try {
-    await api.delete(`/proyectos/${props.proyectoId}/inversionistas/${invId}`)
-    inversionistas.value = inversionistas.value.filter(i => i.id !== invId)
-    toast.add({ severity: 'success', summary: 'Inversionista eliminado', life: 2000 })
-  } catch {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
-  }
-}
-
 function serializeMonthArray(arr) {
   if (arr.every(v => v === null || v === undefined)) return null
   return JSON.stringify(arr.map(v => (v === null || v === undefined ? null : v)))
@@ -376,9 +291,13 @@ function submit() {
   // Fechas del proyecto (null = sin fecha / vigente)
   payload.fecha_entrada_operacion = formatFecha(fechaEntrada.value)
   payload.fecha_fin_representacion = formatFecha(fechaFinRep.value)
-  // Capacidad instalada (DC) es la que usan los cálculos de generación esperada
-  // en el resto del backend -- se guarda también aquí, no solo en info-tecnica.
-  if (capacidadInstaladaKwp.value !== null) payload.potencia_instalada_kwp = capacidadInstaladaKwp.value
+  // potencia_instalada_kwp NO se manda: el dual-write se quitó en d68837e
+  // porque ahora lo sincroniza el backend desde info-tecnica.
+  // Comunidad energética: el flag viaja siempre (el bucle de arriba lo dejaría
+  // fuera cuando es false) y el nombre solo si el flag está prendido, para que
+  // apagarlo no deje colgado el nombre de una comunidad a la que ya no pertenece.
+  payload.es_comunidad_energetica = !!f.es_comunidad_energetica
+  payload.nombre_comunidad = f.es_comunidad_energetica ? (f.nombre_comunidad || null) : null
 
   const infoTecnica = {}
   if (potenciaAcKw.value !== null) infoTecnica.potencia_ac_kw = potenciaAcKw.value

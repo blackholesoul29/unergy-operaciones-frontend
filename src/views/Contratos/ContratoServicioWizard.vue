@@ -31,8 +31,88 @@
     <!-- Content -->
     <div class="px-6 py-5 min-h-72">
 
+      <!-- PASO 0 (internet): solo los datos técnicos del servicio -->
+      <template v-if="step === 0 && tipo === 'internet'">
+        <p class="step-title">Datos del servicio</p>
+        <div class="space-y-4">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Plan de datos</label>
+              <InputText v-model="form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Velocidad contratada</label>
+              <InputNumber v-model="form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="field-label">Tipo de conexión</label>
+            <Select v-model="form.tipo_conexion"
+              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
+              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Línea de servicio</label>
+              <InputText v-model="form.linea_servicio" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">ID del router</label>
+              <InputText v-model="form.id_router" class="w-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Número de kit</label>
+              <InputText v-model="form.numero_kit" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Latencia</label>
+              <InputNumber v-model="form.latencia_ms" suffix=" ms" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Seguridad del wifi</label>
+              <Select v-model="form.wifi_seguridad" :options="WIFI_SEGURIDAD_OPTS"
+                optionLabel="label" optionValue="value" showClear placeholder="Selecciona…" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="field-label">Contraseña wifi</label>
+              <InputText v-model="form.wifi_password" class="w-full" />
+            </div>
+          </div>
+
+          <!-- Ubicación del servicio -->
+          <div class="rounded-lg border border-gray-200 p-3">
+            <div class="flex items-center justify-between mb-2">
+              <div>
+                <p class="text-xs font-semibold text-gray-500">Ubicación del servicio</p>
+                <p class="text-sm text-gray-700">Ubicación: {{ ubicacionLabel }}</p>
+              </div>
+              <Button type="button" :label="editandoUbicacion ? 'Listo' : 'Editar'" text size="small"
+                @click="editandoUbicacion = !editandoUbicacion" />
+            </div>
+            <div v-if="editandoUbicacion" class="grid grid-cols-2 gap-4 mb-2">
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Latitud</label>
+                <InputNumber v-model="form.ubicacion_lat" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Longitud</label>
+                <InputNumber v-model="form.ubicacion_lng" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
+              </div>
+            </div>
+            <p v-if="editandoUbicacion" class="text-xs text-gray-400 mb-2">
+              Haz clic en el mapa para ubicar el servicio.
+            </p>
+            <div ref="ubicacionMapEl" class="rounded-md overflow-hidden" style="height:220px; background:#e5e3df"></div>
+          </div>
+        </div>
+      </template>
+
       <!-- PASO 0: Identificación -->
-      <template v-if="step === 0">
+      <template v-if="step === 0 && tipo !== 'internet'">
         <p class="step-title">Identificación del contrato</p>
         <div class="space-y-4">
           <div class="flex flex-col gap-1">
@@ -78,7 +158,7 @@
       </template>
 
       <!-- PASO 1: Partes -->
-      <template v-if="step === 1">
+      <template v-if="step === 1 && tipo !== 'internet'">
         <p class="step-title">Partes del contrato</p>
         <div class="grid grid-cols-2 gap-1 mb-1 px-1">
           <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Contratante</span>
@@ -149,7 +229,7 @@
       </template>
 
       <!-- PASO 2: Términos económicos -->
-      <template v-if="step === 2">
+      <template v-if="step === 2 && tipo !== 'internet'">
         <p class="step-title">Términos económicos</p>
         <div class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
@@ -173,6 +253,7 @@
                 optionLabel="label" optionValue="value" showClear class="w-full" />
             </div>
           </div>
+
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Índice de indexación</label>
@@ -239,6 +320,82 @@
         </div>
       </template>
 
+      <!-- PASO 3: Arrendadores (solo ARRIENDO) -->
+      <template v-if="tipo === 'arriendo' && step === STEPS.length - 1">
+        <p class="step-title">Arrendadores</p>
+        <p class="text-xs text-gray-400 mb-3">
+          El contrato ya se creó. Agrega al menos un arrendador (persona/entidad que recibe el pago) antes de finalizar.
+        </p>
+        <div class="rounded-xl border" style="border-color:#ddd6fe">
+          <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
+            <span class="text-xs font-semibold flex items-center gap-1.5" style="color:#5b21b6">
+              <i class="pi pi-users text-xs" style="color:#8b5cf6" />Arrendadores
+            </span>
+            <Button icon="pi pi-plus" label="Agregar arrendador" size="small" text
+              style="color:#8b5cf6" @click="openArrendadorDialog('crear')" />
+          </div>
+          <div v-if="!arrendadores.length" class="px-4 py-6 text-center text-xs text-gray-400">
+            Sin arrendadores registrados.
+          </div>
+          <div v-else class="divide-y divide-gray-100">
+            <div v-for="a in arrendadores" :key="a.id"
+              class="flex items-center justify-between gap-3 px-4 py-3 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-sm font-semibold" style="color:#1c1917">{{ a.nombre }}</span>
+                <span class="text-sm font-mono tabular-nums" style="color:#7c3aed">{{ formatCOP(a.valor_base) }}</span>
+                <span v-if="a.responsable_iva" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
+                  style="background:#ede9fe;color:#7c3aed">Responsable IVA</span>
+              </div>
+              <div class="flex items-center gap-1 flex-shrink-0">
+                <Button icon="pi pi-pencil" size="small" text severity="secondary"
+                  @click="openArrendadorDialog('editar', a)" />
+                <Button icon="pi pi-trash" size="small" text severity="danger"
+                  @click="eliminarArrendadorWizard(a)" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dialog Arrendador (crear/editar) -->
+        <Dialog v-model:visible="arrendadorDialog.visible" modal
+          :header="arrendadorDialog.modo === 'editar' ? 'Editar arrendador' : 'Agregar arrendador'"
+          style="width: 26rem">
+          <div class="flex flex-col gap-3 pt-2">
+            <div>
+              <label class="text-xs font-medium text-gray-600">Nombre <span class="text-red-400">*</span></label>
+              <InputText v-model="arrendadorDialog.form.nombre" class="w-full" placeholder="Nombre o razón social" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Valor base</label>
+              <InputNumber v-model="arrendadorDialog.form.valor_base" class="w-full" mode="currency"
+                currency="COP" locale="es-CO" :maxFractionDigits="0" />
+            </div>
+            <div>
+              <label class="text-xs font-medium text-gray-600">Responsable IVA</label>
+              <Select v-model="arrendadorDialog.form.responsable_iva"
+                :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+                optionLabel="label" optionValue="value" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Anticipo pagado desde</label>
+              <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_desde" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Anticipo pagado hasta</label>
+              <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_hasta" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Observaciones</label>
+              <Textarea v-model="arrendadorDialog.form.observaciones" rows="2" class="w-full" />
+            </div>
+          </div>
+          <template #footer>
+            <Button label="Cancelar" text severity="secondary" @click="arrendadorDialog.visible = false" />
+            <Button label="Guardar" :loading="arrendadorDialog.guardando" @click="guardarArrendadorWizard" />
+          </template>
+        </Dialog>
+      </template>
+
       <!-- PASO 3: CGM y Promotor (solo REPRESENTACIÓN) -->
       <template v-if="step === 3 && tipo === 'representacion'">
         <p class="step-title">CGM y Promotor <span class="normal-case font-normal text-gray-400">(opcional)</span></p>
@@ -295,11 +452,18 @@
 
     <!-- Footer -->
     <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
-      <Button v-if="step > 0" label="Anterior" icon="pi pi-arrow-left" severity="secondary" outlined @click="step--" />
+      <Button v-if="step > 0 && !contratoIdCreado" label="Anterior" icon="pi pi-arrow-left" severity="secondary" outlined @click="step--" />
       <span v-else />
       <div class="flex gap-2">
         <Button label="Cancelar" severity="secondary" text @click="$emit('cerrar')" />
-        <Button v-if="step < STEPS.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
+        <Button v-if="tipo === 'arriendo' && step === STEPS.length - 2" label="Crear y continuar" icon="pi pi-arrow-right" iconPos="right"
+          :loading="guardando"
+          :style="`background:${tipoColor}; border-color:${tipoColor}`"
+          @click="crearYContinuarArriendo" />
+        <Button v-else-if="tipo === 'arriendo' && step === STEPS.length - 1" label="Finalizar" icon="pi pi-check"
+          :style="`background:${tipoColor}; border-color:${tipoColor}`"
+          @click="finalizarArriendo" />
+        <Button v-else-if="step < STEPS.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
           :style="`background:${tipoColor}; border-color:${tipoColor}`"
           @click="step++" />
         <Button v-else label="Crear contrato" icon="pi pi-check" :loading="guardando"
@@ -312,7 +476,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
@@ -356,12 +520,14 @@ const tipoColor = computed(() => TIPO_CONFIG[props.tipo]?.color ?? '#6b7280')
 const tipoLabel = computed(() => TIPO_CONFIG[props.tipo]?.label ?? props.tipo)
 
 const STEPS = computed(() => {
+  if (props.tipo === 'internet') return [{ label: 'Datos del servicio' }]
   const base = [
     { label: 'Identificación' },
     { label: 'Partes' },
     { label: 'Términos' },
   ]
   if (props.tipo === 'representacion') return [...base, { label: 'CGM y Promotor' }]
+  if (props.tipo === 'arriendo') return [...base, { label: 'Arrendadores' }]
   return base
 })
 
@@ -412,6 +578,103 @@ const form = reactive({
   specific_service_terms: '',
   slas: '',
   responsibilities: '',
+  plan_datos_gb: '',
+  velocidad_mbps: null,
+  tipo_conexion: null,
+  linea_servicio: '',
+  id_router: '',
+  numero_kit: '',
+  latencia_ms: null,
+  wifi_seguridad: null,
+  wifi_password: '',
+  ubicacion_lat: null,
+  ubicacion_lng: null,
+})
+
+const WIFI_SEGURIDAD_OPTS = [
+  { label: 'WPA2',            value: 'WPA2' },
+  { label: 'WPA3',            value: 'WPA3' },
+  { label: 'WPA2/WPA3',       value: 'WPA2/WPA3' },
+  { label: 'WPA3-OWE',        value: 'WPA3-OWE' },
+  { label: 'Remoto RADIUS',   value: 'Remoto RADIUS' },
+  { label: 'A bordo RADIUS',  value: 'A bordo RADIUS' },
+  { label: 'Abierta',         value: 'Abierta' },
+]
+
+// ── Mapa de ubicación (solo servicio de internet) ─────────────────────────────
+const editandoUbicacion = ref(false)
+const ubicacionMapEl = ref(null)
+let ubicacionMap = null
+let ubicacionMarker = null
+let ubicacionMapRO = null
+
+const ubicacionLabel = computed(() => {
+  if (form.ubicacion_lat == null || form.ubicacion_lng == null) return 'Sin definir'
+  return `${form.ubicacion_lat},${form.ubicacion_lng}`
+})
+
+async function initUbicacionMap() {
+  if (!ubicacionMapEl.value || ubicacionMap) return
+  const { default: maplibregl } = await import('maplibre-gl')
+  await import('maplibre-gl/dist/maplibre-gl.css')
+  if (!ubicacionMapEl.value || ubicacionMap) return   // pudo cerrarse el diálogo mientras cargaba
+
+  const centro = (form.ubicacion_lat != null && form.ubicacion_lng != null)
+    ? [form.ubicacion_lng, form.ubicacion_lat]
+    : [-74.297, 4.571]   // centro de Colombia por defecto
+
+  ubicacionMap = new maplibregl.Map({
+    container: ubicacionMapEl.value,
+    style: {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        },
+      },
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+    },
+    center: centro,
+    zoom: (form.ubicacion_lat != null && form.ubicacion_lng != null) ? 12 : 5,
+    attributionControl: false,
+  })
+
+  if (form.ubicacion_lat != null && form.ubicacion_lng != null) {
+    ubicacionMarker = new maplibregl.Marker({ color: '#06b6d4' })
+      .setLngLat([form.ubicacion_lng, form.ubicacion_lat])
+      .addTo(ubicacionMap)
+  }
+
+  ubicacionMap.on('click', (e) => {
+    if (!editandoUbicacion.value) return
+    const { lng, lat } = e.lngLat
+    form.ubicacion_lat = Number(lat.toFixed(6))
+    form.ubicacion_lng = Number(lng.toFixed(6))
+    if (ubicacionMarker) {
+      ubicacionMarker.setLngLat([lng, lat])
+    } else {
+      ubicacionMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([lng, lat]).addTo(ubicacionMap)
+    }
+  })
+
+  ubicacionMapRO = new ResizeObserver(() => ubicacionMap?.resize())
+  ubicacionMapRO.observe(ubicacionMapEl.value)
+}
+
+watch(step, async (s) => {
+  if (s === 0 && props.tipo === 'internet') {
+    await nextTick()
+    await initUbicacionMap()
+  }
+})
+
+onBeforeUnmount(() => {
+  ubicacionMapRO?.disconnect()
+  ubicacionMap?.remove()
+  ubicacionMap = null
 })
 
 function buscarCliente(event, rol) {
@@ -458,10 +721,93 @@ function formatFecha(v) {
   return String(v).slice(0, 10)
 }
 
-async function guardar() {
-  guardando.value = true
+// ── Arrendadores (solo tipo === 'arriendo') ──────────────────────────────────
+const contratoIdCreado = ref(null)
+const arrendadores = ref([])
+const arrendadorDialog = reactive({
+  visible: false,
+  modo: 'crear',
+  editId: null,
+  guardando: false,
+  form: {
+    nombre: '', valor_base: null, responsable_iva: false, activo: true,
+    anticipo_pagado_desde: null, anticipo_pagado_hasta: null, observaciones: '',
+  },
+})
+
+function formatCOP(v) {
+  if (v == null) return '—'
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
+}
+
+async function cargarArrendadoresWizard() {
+  if (!contratoIdCreado.value) { arrendadores.value = []; return }
   try {
+    const { data } = await api.get(`/arriendos/contratos/${contratoIdCreado.value}/arrendadores`)
+    arrendadores.value = data || []
+  } catch {
+    arrendadores.value = []
+  }
+}
+
+function openArrendadorDialog(modo, arrendador = null) {
+  arrendadorDialog.modo = modo
+  arrendadorDialog.editId = arrendador?.id ?? null
+  arrendadorDialog.form.nombre = arrendador?.nombre || ''
+  arrendadorDialog.form.valor_base = arrendador?.valor_base ?? null
+  arrendadorDialog.form.responsable_iva = arrendador?.responsable_iva ?? false
+  arrendadorDialog.form.activo = arrendador?.activo ?? true
+  arrendadorDialog.form.anticipo_pagado_desde = arrendador?.anticipo_pagado_desde ? new Date(arrendador.anticipo_pagado_desde) : null
+  arrendadorDialog.form.anticipo_pagado_hasta = arrendador?.anticipo_pagado_hasta ? new Date(arrendador.anticipo_pagado_hasta) : null
+  arrendadorDialog.form.observaciones = arrendador?.observaciones || ''
+  arrendadorDialog.visible = true
+}
+
+async function guardarArrendadorWizard() {
+  if (!contratoIdCreado.value) return
+  if (!arrendadorDialog.form.nombre?.trim()) {
+    toast.add({ severity: 'error', summary: 'El nombre es obligatorio', life: 3000 })
+    return
+  }
+  arrendadorDialog.guardando = true
+  try {
+    const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
     const payload = {
+      nombre: arrendadorDialog.form.nombre.trim(),
+      valor_base: arrendadorDialog.form.valor_base,
+      responsable_iva: arrendadorDialog.form.responsable_iva ?? false,
+      activo: arrendadorDialog.form.activo ?? true,
+      anticipo_pagado_desde: toISO(arrendadorDialog.form.anticipo_pagado_desde),
+      anticipo_pagado_hasta: toISO(arrendadorDialog.form.anticipo_pagado_hasta),
+      observaciones: arrendadorDialog.form.observaciones?.trim() || null,
+    }
+    if (arrendadorDialog.modo === 'editar' && arrendadorDialog.editId) {
+      await api.put(`/arriendos/arrendadores/${arrendadorDialog.editId}`, payload)
+    } else {
+      await api.post(`/arriendos/contratos/${contratoIdCreado.value}/arrendadores`, payload)
+    }
+    arrendadorDialog.visible = false
+    await cargarArrendadoresWizard()
+    toast.add({ severity: 'success', summary: 'Arrendador guardado', life: 2500 })
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error al guardar arrendador', detail: e.response?.data?.detail, life: 3500 })
+  } finally {
+    arrendadorDialog.guardando = false
+  }
+}
+
+async function eliminarArrendadorWizard(arrendador) {
+  if (!confirm(`¿Eliminar al arrendador "${arrendador.nombre}"?`)) return
+  try {
+    await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
+    await cargarArrendadoresWizard()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error al eliminar', detail: e.response?.data?.detail, life: 3500 })
+  }
+}
+
+async function crearContrato() {
+  const payload = {
       servicio_aplica: props.tipo,
       proyecto_id: form.proyecto_id ?? null,
       numero_contrato: form.numero_contrato?.trim() || null,
@@ -495,8 +841,26 @@ async function guardar() {
       specific_service_terms: form.specific_service_terms?.trim() || null,
       slas: form.slas?.trim() || null,
       responsibilities: form.responsibilities?.trim() || null,
+      plan_datos_gb: props.tipo === 'internet' ? (form.plan_datos_gb?.trim() || null) : null,
+      velocidad_mbps: props.tipo === 'internet' ? (form.velocidad_mbps ?? null) : null,
+      tipo_conexion: props.tipo === 'internet' ? (form.tipo_conexion || null) : null,
+      linea_servicio: props.tipo === 'internet' ? (form.linea_servicio?.trim() || null) : null,
+      id_router: props.tipo === 'internet' ? (form.id_router?.trim() || null) : null,
+      numero_kit: props.tipo === 'internet' ? (form.numero_kit?.trim() || null) : null,
+      latencia_ms: props.tipo === 'internet' ? (form.latencia_ms ?? null) : null,
+      wifi_seguridad: props.tipo === 'internet' ? (form.wifi_seguridad || null) : null,
+      wifi_password: props.tipo === 'internet' ? (form.wifi_password?.trim() || null) : null,
+      ubicacion_lat: props.tipo === 'internet' ? (form.ubicacion_lat ?? null) : null,
+      ubicacion_lng: props.tipo === 'internet' ? (form.ubicacion_lng ?? null) : null,
     }
-    await api.post('/contratos-servicio', payload)
+  const { data } = await api.post('/contratos-servicio', payload)
+  return data
+}
+
+async function guardar() {
+  guardando.value = true
+  try {
+    await crearContrato()
     toast.add({ severity: 'success', summary: 'Contrato creado', life: 2500 })
     emit('creado')
     emit('cerrar')
@@ -507,6 +871,25 @@ async function guardar() {
   }
 }
 
+async function crearYContinuarArriendo() {
+  guardando.value = true
+  try {
+    const data = await crearContrato()
+    contratoIdCreado.value = data.id
+    toast.add({ severity: 'success', summary: 'Contrato creado — agrega los arrendadores', life: 3000 })
+    step.value++
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail ?? e.message, life: 4000 })
+  } finally {
+    guardando.value = false
+  }
+}
+
+function finalizarArriendo() {
+  emit('creado')
+  emit('cerrar')
+}
+
 onMounted(async () => {
   const [{ data: proyectos }, { data: clientes }] = await Promise.all([
     api.get('/proyectos', { params: { size: 500 } }),
@@ -515,6 +898,10 @@ onMounted(async () => {
   todosProyectos.value = proyectos
   todosClientes.value = clientes
   if (props.proyectoIdDefault) form.proyecto_id = props.proyectoIdDefault
+  if (props.tipo === 'internet') {
+    await nextTick()
+    await initUbicacionMap()
+  }
 })
 </script>
 

@@ -83,7 +83,6 @@
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
         <div class="flex items-center justify-between mb-3">
           <h3 class="text-sm font-semibold" style="color: #2C2039;">Alarmas MGS</h3>
-          <RouterLink to="/alertas/monitoreo" class="text-xs font-medium" style="color: #915BD8;">Ver alertas →</RouterLink>
         </div>
         <div class="flex items-baseline gap-2">
           <span class="text-3xl font-bold" :style="{ color: data.alarmas_mgs > 0 ? '#D64455' : '#10B981' }">
@@ -161,65 +160,6 @@
       </div>
     </div>
 
-    <!-- Cumplimiento PPA Summary Card -->
-    <div v-if="data.cumplimiento_ppa" class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold" style="color: #2C2039;">Cumplimiento PPA — Resumen</h3>
-        <RouterLink to="/mem/cumplimiento" class="text-xs font-medium" style="color: #915BD8;">Ver detalle →</RouterLink>
-      </div>
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="rounded-lg p-3" style="background: rgba(214,68,85,0.05);">
-          <p class="text-xs uppercase font-semibold" style="color: #6b5a8a;">Contratos en déficit</p>
-          <p class="text-2xl font-bold mt-1" :style="{ color: data.cumplimiento_ppa.contratos_con_deficit > 0 ? '#D64455' : '#10B981' }">
-            {{ data.cumplimiento_ppa.contratos_con_deficit ?? 0 }}
-          </p>
-        </div>
-        <div class="rounded-lg p-3" style="background: rgba(16,185,129,0.05);">
-          <p class="text-xs uppercase font-semibold" style="color: #6b5a8a;">Contratos cumplidos</p>
-          <p class="text-2xl font-bold mt-1" style="color: #10B981;">
-            {{ data.cumplimiento_ppa.contratos_cumplidos ?? 0 }}
-          </p>
-        </div>
-        <div class="rounded-lg p-3" style="background: rgba(240,192,64,0.08);">
-          <p class="text-xs uppercase font-semibold" style="color: #6b5a8a;">Exposición bolsa</p>
-          <p class="text-lg font-bold mt-1" style="color: #CA8A04;">
-            {{ fmtCOP(data.cumplimiento_ppa.exposicion_bolsa_cop) }}
-          </p>
-        </div>
-        <div class="rounded-lg p-3" style="background: rgba(145,91,216,0.05);">
-          <p class="text-xs uppercase font-semibold" style="color: #6b5a8a;">Cobertura</p>
-          <div class="mt-1">
-            <div class="flex items-center gap-2">
-              <div class="flex-1 h-3 rounded-full overflow-hidden" style="background: #f3f0f7;">
-                <div class="h-full rounded-full transition-all"
-                  :style="{
-                    width: Math.min(data.cumplimiento_ppa.cobertura_pct || 0, 100) + '%',
-                    backgroundColor: (data.cumplimiento_ppa.cobertura_pct || 0) >= 90 ? '#10B981' : (data.cumplimiento_ppa.cobertura_pct || 0) >= 70 ? '#F0C040' : '#D64455'
-                  }" />
-              </div>
-              <span class="text-sm font-bold" style="color: #2C2039;">{{ (data.cumplimiento_ppa.cobertura_pct || 0).toFixed(0) }}%</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pipeline overview -->
-    <div v-if="pipeline.stages?.length" class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold" style="color: #2C2039;">Pipeline Originación ({{ pipeline.total_projects }} proyectos)</h3>
-        <RouterLink to="/proyectos" class="text-xs font-medium" style="color: #915BD8;">Ver proyectos →</RouterLink>
-      </div>
-      <div class="flex flex-wrap gap-2">
-        <div v-for="stage in pipelineStages" :key="stage.stage"
-             class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm"
-             :style="{ background: stage.bg }">
-          <span class="font-bold" :style="{ color: stage.color }">{{ stage.count }}</span>
-          <span class="text-xs" style="color: #6b5a8a;">{{ stage.label }}</span>
-        </div>
-      </div>
-    </div>
-
     <!-- Quick links -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <RouterLink v-for="link in quickLinks" :key="link.to" :to="link.to"
@@ -239,22 +179,8 @@ import { ref, computed, onMounted } from 'vue'
 import api from '@/api/client'
 
 const data = ref({})
-const pipeline = ref({})
 const cumplimiento = ref(null)
 const cumplimientoLoading = ref(false)
-
-const STAGE_CONFIG = {
-  operation:     { label: 'Operación',     color: '#10B981', bg: 'rgba(16,185,129,0.1)' },
-  construction:  { label: 'Construcción',  color: '#F0C040', bg: 'rgba(240,192,64,0.1)' },
-  deploy:        { label: 'Deploy',        color: '#3B82F6', bg: 'rgba(59,130,246,0.1)' },
-  signed:        { label: 'Firmado',       color: '#915BD8', bg: 'rgba(145,91,216,0.1)' },
-  portfolio:     { label: 'Portafolio',    color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)' },
-  due_diligence: { label: 'Due Diligence', color: '#6366F1', bg: 'rgba(99,102,241,0.1)' },
-  negociation:   { label: 'Negociación',   color: '#14B8A6', bg: 'rgba(20,184,166,0.1)' },
-  prospect:      { label: 'Prospecto',     color: '#94A3B8', bg: 'rgba(148,163,184,0.1)' },
-  paused:        { label: 'Pausado',       color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' },
-  dead:          { label: 'Muerto',        color: '#9CA3AF', bg: 'rgba(156,163,175,0.05)' },
-}
 
 const PRIORIDAD_CONFIG = {
   critica: { label: 'Crítica', color: '#DC2626' },
@@ -262,18 +188,6 @@ const PRIORIDAD_CONFIG = {
   media:   { label: 'Media',   color: '#CA8A04' },
   leve:    { label: 'Leve',    color: '#16A34A' },
 }
-
-const pipelineStages = computed(() => {
-  if (!pipeline.value.stages) return []
-  return pipeline.value.stages
-    .filter(s => s.stage !== 'dead')
-    .map(s => ({
-      ...s,
-      label: STAGE_CONFIG[s.stage]?.label || s.stage,
-      color: STAGE_CONFIG[s.stage]?.color || '#6b5a8a',
-      bg: STAGE_CONFIG[s.stage]?.bg || 'rgba(107,90,138,0.08)',
-    }))
-})
 
 const topKpis = computed(() => [
   {
@@ -356,17 +270,6 @@ const criticalAlerts = computed(() => {
       to: '/fallas',
     })
   }
-  if (data.value.alarmas_mgs_criticas > 0) {
-    alerts.push({
-      key: 'mgs-criticas',
-      title: `${data.value.alarmas_mgs_criticas} alarma${data.value.alarmas_mgs_criticas > 1 ? 's' : ''} MGS crítica${data.value.alarmas_mgs_criticas > 1 ? 's' : ''}`,
-      detail: 'Plantas con posible falla de generación',
-      icon: 'pi pi-bell',
-      iconColor: '#EA580C',
-      bgColor: 'rgba(234,88,12,0.1)',
-      to: '/alertas/monitoreo',
-    })
-  }
   if (cumplimientoDeficits.value.length > 0) {
     const totalDeficit = cumplimientoDeficits.value.reduce((s, c) => s + (c.compras_bolsa_mwh || 0), 0)
     alerts.push({
@@ -393,17 +296,6 @@ const criticalAlerts = computed(() => {
       })
     }
   }
-  if (data.value.garantias_por_vencer > 0) {
-    alerts.push({
-      key: 'garantias-vencimiento',
-      title: `${data.value.garantias_por_vencer} garantía${data.value.garantias_por_vencer > 1 ? 's' : ''} por vencer`,
-      detail: 'Vencimiento dentro de los próximos 30 días',
-      icon: 'pi pi-wallet',
-      iconColor: '#CA8A04',
-      bgColor: 'rgba(202,138,4,0.1)',
-      to: '/garantias',
-    })
-  }
   if (data.value.liquidaciones_pendientes > 0) {
     alerts.push({
       key: 'liquidaciones-pendientes',
@@ -423,18 +315,12 @@ const quickLinks = [
   { to: '/mem/cumplimiento', label: 'Cumplimiento PPA', icon: 'pi pi-shield', bg: 'rgba(16,185,129,0.1)', color: '#10B981' },
   { to: '/mem/descubrimientos', label: 'Descubrimientos', icon: 'pi pi-bolt', bg: 'rgba(240,192,64,0.1)', color: '#F0C040' },
   { to: '/liquidaciones', label: 'Liquidaciones', icon: 'pi pi-file-edit', bg: 'rgba(145,91,216,0.08)', color: '#915BD8' },
-  { to: '/garantias', label: 'Garantías', icon: 'pi pi-wallet', bg: 'rgba(145,91,216,0.1)', color: '#915BD8' },
-  { to: '/alertas', label: 'Centro de Alertas', icon: 'pi pi-exclamation-circle', bg: 'rgba(214,68,85,0.08)', color: '#D64455' },
 ]
 
 onMounted(async () => {
   try {
-    const [kpiRes, pipeRes] = await Promise.all([
-      api.get('/dashboard/kpis').catch(() => null),
-      api.get('/correlation/pipeline').catch(() => null),
-    ])
+    const kpiRes = await api.get('/dashboard/kpis').catch(() => null)
     if (kpiRes?.data) data.value = kpiRes.data
-    if (pipeRes?.data?.available) pipeline.value = pipeRes.data
   } catch {
     // degrade gracefully
   }

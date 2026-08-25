@@ -3,13 +3,13 @@ import api from '@/api/client'
 
 // ── Fuente de datos ─────────────────────────────────────────────────────────
 // "Proyectos próximos a energizarse" vive 100% en la BD de operaciones. Un job
-// sincroniza el pipeline de TSF (Sun Factory + originabotdb + generación Unergy)
-// hacia la tabla `proyectos` (ver backend app/services/tsf_sync.py). Este
+// sincroniza el pipeline de TSF (directo desde Sun Factory) hacia la tabla
+// `proyectos` (ver backend app/services/tsf_sync.py). Este
 // composable solo lee contra esa BD vía la API — SIN localStorage. Todos los
 // campos son de solo lectura: vienen tal cual de la fuente, sin edición manual.
 //
 //   GET   /proximos-energizar         → lista (pipeline + fechas futuras)
-//   POST  /proximos-energizar/sync    → re-sincroniza con Solenium (force opc.)
+//   POST  /proximos-energizar/sync    → re-sincroniza con Sun Factory (force opc.)
 // ──────────────────────────────────────────────────────────────────────────────
 
 function rehydrate(p) {
@@ -62,7 +62,7 @@ export function useEnergizationProjects() {
     }
   }
 
-  // Re-sincroniza con Solenium.
+  // Re-sincroniza con Sun Factory.
   async function syncNow() {
     syncing.value = true
     try {
@@ -70,8 +70,8 @@ export function useEnergizationProjects() {
       await loadProjects()
       return data
     } catch (e) {
-      console.error('Error al sincronizar con Solenium', e)
-      warning.value = e?.response?.data?.detail || 'No se pudo sincronizar con Solenium.'
+      console.error('Error al sincronizar con Sun Factory', e)
+      warning.value = e?.response?.data?.detail || 'No se pudo sincronizar con Sun Factory.'
       return null
     } finally {
       syncing.value = false

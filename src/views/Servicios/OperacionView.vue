@@ -25,7 +25,7 @@
     </div>
 
     <!-- ── Tabs ──────────────────────────────────────────────────────────────── -->
-    <TabView v-else @tab-change="onTabChange">
+    <TabView v-else v-model:activeIndex="activeIndex" @tab-change="onTabChange">
 
       <!-- ══════════ MANTENIMIENTO ══════════ -->
       <TabPanel>
@@ -896,12 +896,35 @@
               <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
                 <InfoIcon icon="pi pi-building" color="#06b6d4" label="Proveedor"
                   :value="contratos.internet.prestador_nombre" />
-                <InfoIcon icon="pi pi-dollar" color="#06b6d4" label="Valor facturado"
-                  :value="formatCOP(contratos.internet.tarifa_base)" />
-                <InfoBadge color="#06b6d4" label="Estado del pago"
-                  :estado="contratos.internet.estado_pago" />
+                <InfoIcon icon="pi pi-database" color="#06b6d4" label="Plan de datos"
+                  :value="contratos.internet.plan_datos_gb" />
+                <InfoIcon icon="pi pi-gauge" color="#06b6d4" label="Velocidad"
+                  :value="contratos.internet.velocidad_mbps != null ? `${contratos.internet.velocidad_mbps} Mbps` : null" />
+                <InfoIcon icon="pi pi-wifi" color="#06b6d4" label="Tipo de conexión"
+                  :value="contratos.internet.tipo_conexion" />
+                <InfoIcon icon="pi pi-sitemap" color="#06b6d4" label="Línea de servicio"
+                  :value="contratos.internet.linea_servicio" />
+                <InfoIcon icon="pi pi-desktop" color="#06b6d4" label="ID del router"
+                  :value="contratos.internet.id_router" />
+                <InfoIcon icon="pi pi-box" color="#06b6d4" label="Número de kit"
+                  :value="contratos.internet.numero_kit" />
+                <InfoIcon icon="pi pi-bolt" color="#06b6d4" label="Latencia"
+                  :value="contratos.internet.latencia_ms != null ? `${contratos.internet.latencia_ms} ms` : null" />
+                <InfoIcon icon="pi pi-shield" color="#06b6d4" label="Seguridad del wifi"
+                  :value="contratos.internet.wifi_seguridad" />
+                <InfoSecret color="#06b6d4" label="Contraseña wifi"
+                  :value="contratos.internet.wifi_password" />
                 <InfoLink color="#06b6d4" label="Factura / Contrato en Drive"
                   :href="contratos.internet.enlace_drive" />
+              </div>
+
+              <!-- Ubicación del servicio -->
+              <div v-if="contratos.internet.ubicacion_lat != null && contratos.internet.ubicacion_lng != null"
+                class="mt-5 pt-4 border-t border-gray-100">
+                <p class="text-xs font-medium mb-2" style="color:#9b89b5">
+                  Ubicación: {{ contratos.internet.ubicacion_lat }},{{ contratos.internet.ubicacion_lng }}
+                </p>
+                <div ref="internetMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#e5e3df"></div>
               </div>
             </div>
           </template>
@@ -918,17 +941,6 @@
                 @click="openWizard('internet')" />
             </div>
           </template>
-
-          <PagosTabla
-            tipo="internet"
-            color="#06b6d4"
-            :contrato-id="contratos.internet?.id ?? null"
-            :pagos="pagos.internet"
-            :loading-pagos="loadingPagos.internet"
-            :filtros="filtros.internet"
-            @open-pago="openNuevoPago('internet')"
-            @eliminar="(id) => eliminarPago('internet', id)"
-          />
         </div>
       </TabPanel>
 
@@ -1070,15 +1082,72 @@
               <p class="text-xs text-gray-400">Fecha base para la indexación en Costos.</p>
             </div>
           </template>
-          <div class="flex flex-col gap-1" :class="dialogEdit.tipo === 'internet' ? 'col-span-2 md:col-span-1' : ''">
+          <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-600">
-              {{ dialogEdit.tipo === 'mantenimiento' ? 'Valor O&M Anual BASE (COP)' : dialogEdit.tipo === 'arriendo' ? 'Valor anual BASE (COP)' : 'Valor facturado (COP)' }}
+              {{ dialogEdit.tipo === 'mantenimiento' ? 'Valor O&M Anual BASE (COP)' : 'Valor anual BASE (COP)' }}
             </label>
             <InputNumber v-model="dialogEdit.form.tarifa_base"
               mode="currency" currency="COP" locale="es-CO" :maxFractionDigits="0"
               class="w-full" placeholder="$ 0" />
           </div>
         </div>
+        <template v-if="dialogEdit.tipo === 'internet'">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Plan de datos</label>
+              <InputText v-model="dialogEdit.form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Velocidad contratada</label>
+              <InputNumber v-model="dialogEdit.form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">Tipo de conexión</label>
+            <Select v-model="dialogEdit.form.tipo_conexion"
+              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
+              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Línea de servicio</label>
+              <InputText v-model="dialogEdit.form.linea_servicio" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">ID del router</label>
+              <InputText v-model="dialogEdit.form.id_router" class="w-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Número de kit</label>
+              <InputText v-model="dialogEdit.form.numero_kit" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Latencia</label>
+              <InputNumber v-model="dialogEdit.form.latencia_ms" suffix=" ms" :useGrouping="false" class="w-full" />
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Seguridad del wifi</label>
+              <Select v-model="dialogEdit.form.wifi_seguridad"
+                :options="[{label:'WPA2',value:'WPA2'},{label:'WPA3',value:'WPA3'},{label:'WPA2/WPA3',value:'WPA2/WPA3'},{label:'WPA3-OWE',value:'WPA3-OWE'},{label:'Remoto RADIUS',value:'Remoto RADIUS'},{label:'A bordo RADIUS',value:'A bordo RADIUS'},{label:'Abierta',value:'Abierta'}]"
+                optionLabel="label" optionValue="value" showClear placeholder="Selecciona…" class="w-full" />
+            </div>
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-medium text-gray-600">Contraseña wifi</label>
+              <InputText v-model="dialogEdit.form.wifi_password" class="w-full" />
+            </div>
+          </div>
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-medium text-gray-600">
+              Ubicación del servicio
+              <span class="text-gray-400 font-normal">— haz clic en el mapa para ubicarlo</span>
+            </label>
+            <div ref="dialogEditMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#e5e3df"></div>
+          </div>
+        </template>
         <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Periodicidad de cobro</label>
           <Select v-model="dialogEdit.form.periodicidad_pago" :options="PERIODICIDADES"
@@ -1090,7 +1159,7 @@
           <Select v-model="dialogEdit.form.responsable_iva" :options="[{label:'Sí',value:true},{label:'No',value:false}]"
             optionLabel="label" optionValue="value" class="w-full" />
         </div>
-        <div class="flex flex-col gap-1">
+        <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Estado del pago</label>
           <Select v-model="dialogEdit.form.estado_pago" :options="ESTADO_PAGO_OPCIONES"
             optionLabel="label" optionValue="value" placeholder="Sin definir" showClear class="w-full" />
@@ -1150,7 +1219,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
 import TabView from 'primevue/tabview'
@@ -1226,6 +1295,7 @@ const PERIODICIDADES = [
 ]
 
 const TABS_TIPOS = ['mantenimiento', 'arriendo', 'internet']
+const activeIndex = ref(Math.max(0, TABS_TIPOS.indexOf(route.query.subtab)))
 
 const DIALOG_EDIT_COLOR = { mantenimiento: '#f59e0b', arriendo: '#8b5cf6', internet: '#06b6d4' }
 const DIALOG_EDIT_LABEL = { mantenimiento: 'Mantenimiento', arriendo: 'Arriendo', internet: 'Internet' }
@@ -1276,6 +1346,108 @@ const dialogMant = reactive({
 
 const contratos = reactive({ mantenimiento: null, arriendo: null, internet: null })
 const pagos     = reactive({ mantenimiento: [],   arriendo: [],   internet: [] })
+
+// ── Mapa de ubicación del servicio de Internet (solo lectura) ─────────────────
+const internetMapEl = ref(null)
+let internetMap = null
+let internetMapRO = null
+
+async function initInternetMap(c) {
+  if (!c || c.ubicacion_lat == null || c.ubicacion_lng == null) return
+  await nextTick()
+  if (!internetMapEl.value || internetMap) return
+  const { default: maplibregl } = await import('maplibre-gl')
+  await import('maplibre-gl/dist/maplibre-gl.css')
+  if (!internetMapEl.value || internetMap) return
+
+  internetMap = new maplibregl.Map({
+    container: internetMapEl.value,
+    style: {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        },
+      },
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+    },
+    center: [c.ubicacion_lng, c.ubicacion_lat],
+    zoom: 12,
+    attributionControl: false,
+    interactive: false,
+  })
+  new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([c.ubicacion_lng, c.ubicacion_lat]).addTo(internetMap)
+
+  // El contenedor puede tener tamaño 0 si la pestaña Internet no está visible
+  // todavía al crear el mapa (p.ej. TabView oculto con display:none); sin este
+  // observer el canvas queda en blanco aunque luego se muestre la pestaña.
+  internetMapRO = new ResizeObserver(() => internetMap?.resize())
+  internetMapRO.observe(internetMapEl.value)
+}
+
+// Mapa editable dentro del diálogo "Editar" (clic para mover el marcador)
+const dialogEditMapEl = ref(null)
+let dialogEditMap = null
+let dialogEditMarker = null
+let dialogEditMapRO = null
+
+async function initDialogEditMap() {
+  if (!dialogEditMapEl.value || dialogEditMap) return
+  const { default: maplibregl } = await import('maplibre-gl')
+  await import('maplibre-gl/dist/maplibre-gl.css')
+  if (!dialogEditMapEl.value || dialogEditMap) return
+
+  const centro = (dialogEdit.form.ubicacion_lat != null && dialogEdit.form.ubicacion_lng != null)
+    ? [dialogEdit.form.ubicacion_lng, dialogEdit.form.ubicacion_lat]
+    : [-74.297, 4.571]
+
+  dialogEditMap = new maplibregl.Map({
+    container: dialogEditMapEl.value,
+    style: {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        },
+      },
+      layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
+    },
+    center: centro,
+    zoom: (dialogEdit.form.ubicacion_lat != null) ? 12 : 5,
+    attributionControl: false,
+  })
+
+  dialogEditMarker = null
+  if (dialogEdit.form.ubicacion_lat != null && dialogEdit.form.ubicacion_lng != null) {
+    dialogEditMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat(centro).addTo(dialogEditMap)
+  }
+
+  dialogEditMap.on('click', (e) => {
+    const { lng, lat } = e.lngLat
+    dialogEdit.form.ubicacion_lat = Number(lat.toFixed(6))
+    dialogEdit.form.ubicacion_lng = Number(lng.toFixed(6))
+    if (dialogEditMarker) dialogEditMarker.setLngLat([lng, lat])
+    else dialogEditMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([lng, lat]).addTo(dialogEditMap)
+  })
+
+  dialogEditMapRO = new ResizeObserver(() => dialogEditMap?.resize())
+  dialogEditMapRO.observe(dialogEditMapEl.value)
+}
+
+onBeforeUnmount(() => {
+  internetMapRO?.disconnect()
+  internetMap?.remove()
+  internetMap = null
+  dialogEditMapRO?.disconnect()
+  dialogEditMap?.remove()
+  dialogEditMap = null
+})
 const loadingPagos = reactive({ mantenimiento: false, arriendo: false, internet: false })
 
 const filtros = reactive({
@@ -1290,7 +1462,8 @@ const wizardTipo    = ref('mantenimiento')
 const dialogEdit = reactive({
   visible: false,
   tipo: 'mantenimiento',
-  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false },
+  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false, plan_datos_gb: '', velocidad_mbps: null, tipo_conexion: null,
+    linea_servicio: '', id_router: '', numero_kit: '', latencia_ms: null, wifi_seguridad: null, wifi_password: '', ubicacion_lat: null, ubicacion_lng: null },
 })
 
 const dialogPago = reactive({
@@ -1315,6 +1488,7 @@ onMounted(async () => {
     contratos.mantenimiento = mantRes.status === 'fulfilled' && mantRes.value.data.length ? mantRes.value.data[0] : null
     contratos.arriendo      = arrRes.status  === 'fulfilled' && arrRes.value.data.length  ? arrRes.value.data[0]  : null
     contratos.internet      = netRes.status  === 'fulfilled' && netRes.value.data.length  ? netRes.value.data[0]  : null
+    await initInternetMap(contratos.internet)
 
     await cargarIndexacionOM()
     await cargarArrendadores()
@@ -1343,7 +1517,8 @@ async function loadPagos(tipo) {
 
 function onTabChange(e) {
   const tipo = TABS_TIPOS[e.index]
-  if (tipo) loadPagos(tipo)
+  // Internet no tiene tab de Pagos (PagosTabla no se renderiza para este tipo)
+  if (tipo && tipo !== 'internet') loadPagos(tipo)
 }
 
 function openNuevoPago(tipo) {
@@ -1410,7 +1585,23 @@ function openEditContrato(tipo) {
   dialogEdit.form.periodicidad_pago = c.periodicidad_pago || 'mensual'
   dialogEdit.form.fecha_inicio_om = c.fecha_inicio_om ? new Date(c.fecha_inicio_om) : null
   dialogEdit.form.responsable_iva = c.responsable_iva ?? false
+  dialogEdit.form.plan_datos_gb = c.plan_datos_gb || ''
+  dialogEdit.form.velocidad_mbps = c.velocidad_mbps ?? null
+  dialogEdit.form.tipo_conexion = c.tipo_conexion || null
+  dialogEdit.form.linea_servicio = c.linea_servicio || ''
+  dialogEdit.form.id_router = c.id_router || ''
+  dialogEdit.form.numero_kit = c.numero_kit || ''
+  dialogEdit.form.latencia_ms = c.latencia_ms ?? null
+  dialogEdit.form.wifi_seguridad = c.wifi_seguridad || null
+  dialogEdit.form.wifi_password = c.wifi_password || ''
+  dialogEdit.form.ubicacion_lat = c.ubicacion_lat ?? null
+  dialogEdit.form.ubicacion_lng = c.ubicacion_lng ?? null
   dialogEdit.visible = true
+  if (tipo === 'internet') {
+    dialogEditMapRO?.disconnect(); dialogEditMapRO = null
+    dialogEditMap?.remove(); dialogEditMap = null
+    nextTick().then(initDialogEditMap)
+  }
 }
 
 async function saveContrato() {
@@ -1420,9 +1611,11 @@ async function saveContrato() {
   try {
     const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
     const payload = {
-      tarifa_base: dialogEdit.form.tarifa_base,
       enlace_drive: dialogEdit.form.enlace_drive?.trim() || null,
-      estado_pago: dialogEdit.form.estado_pago || null,
+    }
+    if (tipo !== 'internet') {
+      payload.tarifa_base = dialogEdit.form.tarifa_base
+      payload.estado_pago = dialogEdit.form.estado_pago || null
     }
     if (tipo === 'mantenimiento') {
       payload.fecha_inicio = toISO(dialogEdit.form.fecha_inicio)
@@ -1434,9 +1627,27 @@ async function saveContrato() {
       payload.fecha_inicio_om = toISO(dialogEdit.form.fecha_inicio_om)
       payload.responsable_iva = dialogEdit.form.responsable_iva ?? false
     }
+    if (tipo === 'internet') {
+      payload.plan_datos_gb = dialogEdit.form.plan_datos_gb?.trim() || null
+      payload.velocidad_mbps = dialogEdit.form.velocidad_mbps ?? null
+      payload.tipo_conexion = dialogEdit.form.tipo_conexion || null
+      payload.linea_servicio = dialogEdit.form.linea_servicio?.trim() || null
+      payload.id_router = dialogEdit.form.id_router?.trim() || null
+      payload.numero_kit = dialogEdit.form.numero_kit?.trim() || null
+      payload.latencia_ms = dialogEdit.form.latencia_ms ?? null
+      payload.wifi_seguridad = dialogEdit.form.wifi_seguridad || null
+      payload.wifi_password = dialogEdit.form.wifi_password?.trim() || null
+      payload.ubicacion_lat = dialogEdit.form.ubicacion_lat ?? null
+      payload.ubicacion_lng = dialogEdit.form.ubicacion_lng ?? null
+    }
     const { data } = await api.patch(`/contratos-servicio/${contratos[tipo].id}`, payload)
     contratos[tipo] = { ...contratos[tipo], ...data }
     if (tipo === 'arriendo') await cargarIndexacionArriendo()
+    if (tipo === 'internet') {
+      internetMapRO?.disconnect(); internetMapRO = null
+      internetMap?.remove(); internetMap = null
+      await initInternetMap(contratos.internet)
+    }
     dialogEdit.visible = false
     toast.add({ severity: 'success', summary: 'Contrato actualizado', life: 2500 })
   } catch (e) {
@@ -1462,6 +1673,7 @@ async function onContratoCreado() {
       await cargarArrendadores()
       await cargarIndexacionArriendo()
     }
+    if (tipo === 'internet') await initInternetMap(contratos.internet)
     await loadPagos(tipo)
   } catch { /* ignore */ }
 }
@@ -1806,6 +2018,30 @@ const InfoBadge = {
         <p class="text-xs font-medium leading-none mb-1" style="color:#9b89b5">{{ label }}</p>
         <Tag v-if="estado" :value="ESTADO_PAGO_LABELS_S[estado]" :severity="ESTADO_PAGO_SEVERITY_S[estado]" />
         <span v-else class="text-sm" style="color:#9ca3af">—</span>
+      </div>
+    </div>
+  `,
+}
+
+// Contraseña wifi enmascarada, con botón para revelarla
+const InfoSecret = {
+  props: { color: String, label: String, value: String },
+  data() { return { visible: false } },
+  template: `
+    <div class="flex items-start gap-2.5 min-w-0">
+      <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+        :style="'background:' + color + '18'">
+        <i class="pi pi-lock text-xs" :style="'color:' + color" />
+      </div>
+      <div class="min-w-0">
+        <p class="text-xs font-medium leading-none mb-0.5" style="color:#9b89b5">{{ label }}</p>
+        <p v-if="!value" class="text-sm font-medium" style="color:#2C2039">—</p>
+        <button v-else type="button" class="text-sm font-medium inline-flex items-center gap-1"
+          style="background:none;border:none;cursor:pointer;padding:0;color:#2C2039"
+          @click="visible = !visible">
+          {{ visible ? value : '••••••••' }}
+          <i :class="visible ? 'pi pi-eye-slash' : 'pi pi-eye'" class="text-xs" style="color:#9b89b5" />
+        </button>
       </div>
     </div>
   `,

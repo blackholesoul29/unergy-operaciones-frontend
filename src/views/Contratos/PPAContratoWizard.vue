@@ -59,6 +59,16 @@
               <InputText v-model="form.nombre_interno" placeholder="Ej: Terpel 1" class="w-full" />
             </div>
           </div>
+          <div class="flex flex-col gap-1">
+            <label class="field-label">Responsable</label>
+            <Select v-model="form.responsable_id" :options="responsablesOpts"
+              optionLabel="label" optionValue="value" showClear
+              placeholder="Empresa responsable del PPA" class="w-full" />
+            <span class="text-xs text-gray-400">
+              Empresa que gestiona este PPA. Los responsables marcados como no relevantes
+              no aparecen en la Matriz anual de Cumplimiento.
+            </span>
+          </div>
         </div>
       </template>
 
@@ -339,6 +349,7 @@
             <ResumenFila label="Tipo" :value="form.tipo_contrato === 'compra' ? 'Compra' : 'Venta'" />
             <ResumenFila label="Número" :value="form.numero_codigo_contrato" />
             <ResumenFila label="Nombre interno" :value="form.nombre_interno" />
+            <ResumenFila label="Responsable" :value="responsableLabel" />
             <ResumenFila label="Comprador" :value="form.comprador_nombre" />
             <ResumenFila label="Vendedor" :value="form.vendedor_nombre" />
             <ResumenFila label="Inicio despacho" :value="formatFecha(form.fecha_inicio)" />
@@ -431,6 +442,13 @@ const MESES_ES = {
 const step = ref(0)
 const guardando = ref(false)
 const todosProyectos = ref([])
+const responsables = ref([])
+const responsablesOpts = computed(() => responsables.value.map(r => ({
+  value: r.id,
+  label: r.incluir_en_cumplimiento ? r.nombre : `${r.nombre} (oculto en Matriz anual)`,
+})))
+const responsableLabel = computed(() =>
+  responsables.value.find(r => r.id === form.responsable_id)?.nombre ?? null)
 const proyectosSeleccionados = ref([])
 const errores = reactive({})
 
@@ -495,7 +513,7 @@ const energiaPreview = computed(() => energiaRows.value.slice(0, PREVIEW_ROWS))
 
 const form = reactive({
   tipo_contrato: 'venta',
-  numero_codigo_contrato: null, nombre_interno: null,
+  numero_codigo_contrato: null, nombre_interno: null, responsable_id: null,
   comprador_id: null, comprador_nombre: null, comprador_nit: null,
   vendedor_id: null, vendedor_nombre: null, vendedor_nit: null,
   fecha_inicio: null, fecha_fin: null,
@@ -695,6 +713,12 @@ onMounted(async () => {
     ])
     todosProyectos.value = proy.items
     todosClientes.value = clientes.items
+  } catch { /* silencioso */ }
+  // Aparte: el catálogo de responsables es opcional; si falla, el Select queda
+  // vacío pero el wizard sigue sirviendo (no debe tumbar proyectos/clientes).
+  try {
+    const { data } = await api.get('/ppa/responsables')
+    responsables.value = data
   } catch { /* silencioso */ }
 })
 </script>

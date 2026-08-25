@@ -3,36 +3,48 @@
     <!-- Header -->
     <PageHeader title="Fronteras Comerciales" :subtitle="`${filteredFronteras.length} fronteras registradas`">
       <template #actions>
-        <Button icon="pi pi-chart-scatter" label="Diagrama Fasorial" size="small" severity="secondary" outlined
-                @click="showFasorial = true" />
+        <Button icon="pi pi-file-excel" label="Descargar Excel" size="small" severity="secondary" outlined
+                @click="descargarExcel" />
         <Button icon="pi pi-plus" label="Nueva Frontera" size="small"
                 @click="abrirCrear" />
       </template>
     </PageHeader>
 
     <!-- Filtros -->
-    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
-      <div>
+    <!-- flex-nowrap + overflow-x-auto en vez de flex-wrap: si no caben los 5
+         grupos en el ancho disponible, se desplaza horizontal en vez de
+         partirse en dos líneas o truncar el texto de los dropdowns. -->
+    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-nowrap gap-3 items-end border overflow-x-auto" style="border-color:#ECE7F2">
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Buscar</label>
         <span class="p-input-icon-left">
           <i class="pi pi-search" />
-          <InputText v-model="search" placeholder="Buscar frontera..." class="w-56" />
+          <InputText v-model="search" placeholder="Buscar frontera..." class="w-48" />
         </span>
       </div>
-      <div>
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Estado</label>
         <Dropdown v-model="estadoFilter" :options="estadoOptions" optionLabel="label" optionValue="value"
                   class="w-40" placeholder="Todos" showClear />
       </div>
-      <div>
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Proyecto</label>
         <Dropdown v-model="proyectoFilter" :options="proyectoOptions" optionLabel="label" optionValue="value"
                   class="w-48" placeholder="Todos" showClear filter />
       </div>
-      <div>
+      <div class="flex-shrink-0">
         <label class="block text-xs font-medium text-gray-600 mb-1">Operador</label>
         <Dropdown v-model="operadorFilter" :options="operadorOptions" optionLabel="label" optionValue="value"
                   class="w-40" placeholder="Todos" showClear />
+      </div>
+      <div class="flex-shrink-0">
+        <label class="block text-xs font-medium text-gray-600 mb-1">Registro ASIC</label>
+        <div class="flex gap-2">
+          <Dropdown v-model="mesFilter" :options="mesOptions" optionLabel="label" optionValue="value"
+                    class="w-44" placeholder="Mes" showClear />
+          <Dropdown v-model="anioFilter" :options="anioOptions" optionLabel="label" optionValue="value"
+                    class="w-32" placeholder="Año" showClear />
+        </div>
       </div>
     </div>
 
@@ -45,9 +57,7 @@
              border: stat.clave && soloGenerando ? '1.5px solid #3B82F6' : '1px solid #e8e0f0',
              background: stat.clave && soloGenerando ? 'rgba(59,130,246,0.06)' : '#fff',
            }"
-           v-tooltip.top="stat.clave === 'generando'
-             ? 'Con comercialización ya iniciada (generación real). Clic para filtrar.'
-             : (stat.clave ? 'Clic para filtrar solo estas' : undefined)"
+           v-tooltip.top="stat.clave ? 'Clic para filtrar' : undefined"
            @click="stat.clave === 'generando' && (soloGenerando = !soloGenerando)">
         <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ stat.label }}</p>
         <p class="text-2xl font-bold mt-1" :style="{ color: stat.color }">{{ stat.value }}</p>
@@ -123,7 +133,7 @@
         </Column>
         <Column field="operador_comercial" header="Operador" sortable style="min-width: 120px">
           <template #body="{ data }">
-            {{ data.operador_comercial || data.operador_red || '—' }}
+            {{ data.operador_comercial || '—' }}
           </template>
         </Column>
         <Column field="capacidad_efectiva_mw" header="Cap. MW" sortable style="min-width: 100px">
@@ -143,90 +153,9 @@
       </DataTable>
     </div>
 
-    <!-- Diagrama Fasorial Dialog -->
-    <Dialog v-model:visible="showFasorial" header="Diagrama Fasorial — Sistema Trifásico"
-      modal class="w-full max-w-lg">
-      <div class="space-y-5 pt-2">
-
-        <!-- Selector de proyecto / medidor (Quoia) -->
-        <div>
-          <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Proyecto / Medidor (Quoia)</label>
-          <Dropdown
-            v-model="selectedMeterId"
-            :options="meters"
-            optionLabel="name"
-            optionValue="id"
-            :loading="metersLoading"
-            filter
-            showClear
-            placeholder="Busca y selecciona un proyecto..."
-            class="w-full"
-            @change="onMeterChange" />
-          <p class="text-xs mt-1" style="color: #9b89b5;">
-            Las tensiones y corrientes se obtienen automáticamente de la última lectura del medidor.
-          </p>
-        </div>
-
-        <!-- Título -->
-        <div>
-          <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Título / Identificación</label>
-          <InputText v-model="fasorial.titulo" class="w-full" placeholder="Ej: GD Agustín 2 Principal" />
-        </div>
-
-        <!-- Cargando lectura desde Quoia -->
-        <div v-if="lecturaLoading" class="flex items-center justify-center gap-2 py-6" style="color: #915BD8;">
-          <i class="pi pi-spin pi-spinner text-xl" />
-          <span class="text-sm">Consultando Quoia…</span>
-        </div>
-
-        <!-- Valores obtenidos (solo lectura) -->
-        <template v-else-if="lecturaLoaded">
-          <!-- Tensiones -->
-          <div>
-            <p class="text-xs font-semibold uppercase mb-2" style="color: #6b5a8a;">Tensiones de fase (V)</p>
-            <div class="grid grid-cols-3 gap-3">
-              <div v-for="(fase, i) in ['R', 'S', 'T']" :key="'v'+i">
-                <label class="text-xs block mb-1 font-medium" :style="{ color: fasColors[i] }">Fase {{ fase }}</label>
-                <InputText :modelValue="fmtValor(fasorial['vp'+(i+1)])" readonly class="w-full text-center" />
-              </div>
-            </div>
-          </div>
-
-          <!-- Corrientes -->
-          <div>
-            <p class="text-xs font-semibold uppercase mb-2" style="color: #6b5a8a;">Corrientes de fase (A)</p>
-            <div class="grid grid-cols-3 gap-3">
-              <div v-for="(fase, i) in ['R', 'S', 'T']" :key="'c'+i">
-                <label class="text-xs block mb-1 font-medium" :style="{ color: fasColorsC[i] }">Fase {{ fase }}</label>
-                <InputText :modelValue="fmtValor(fasorial['cp'+(i+1)])" readonly class="w-full text-center" />
-              </div>
-            </div>
-          </div>
-
-          <p v-if="ultimaLectura" class="text-xs" style="color: #9b89b5;">
-            <i class="pi pi-clock text-xs mr-1" />Última lectura: {{ fmtFecha(ultimaLectura) }}
-          </p>
-        </template>
-
-        <!-- Alerta si faltan datos o hay error -->
-        <p v-if="fasorialError" class="text-xs rounded-lg px-3 py-2"
-           style="background: rgba(214,68,85,0.08); color: #D64455; border: 1px solid rgba(214,68,85,0.2);">
-          {{ fasorialError }}
-        </p>
-      </div>
-
-      <template #footer>
-        <Button label="Cancelar" severity="secondary" text @click="showFasorial = false" />
-        <Button icon="pi pi-download" label="Generar y Descargar"
-                :loading="generandoFasorial" :disabled="!fasorialReady"
-                @click="generarFasorial"
-                style="background: #915BD8; border-color: #915BD8;" />
-      </template>
-    </Dialog>
-
     <!-- Edit Dialog -->
     <Dialog v-model:visible="showEdit" :header="editingFrontera ? 'Editar Frontera' : 'Frontera'"
-      modal class="w-full max-w-lg">
+      modal class="w-full max-w-2xl">
       <div v-if="editForm" class="space-y-4 pt-2">
         <div class="grid grid-cols-2 gap-4">
           <div>
@@ -250,6 +179,68 @@
             <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Proyecto</label>
             <Dropdown v-model="editForm.proyecto_id" :options="proyectosAll" optionLabel="nombre_comercial"
               optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
+          </div>
+        </div>
+
+        <!-- Ficha técnica medidor/módem (2026-08-14) -- antes solo vivía la
+             marca a nivel de proyecto (un valor para las 4 combinaciones
+             posibles ppal/resp x generación/consumo), acá sí se distingue
+             cada medidor/módem real de esta frontera. -->
+        <div class="pt-2" style="border-top: 1px solid #e8e0f0;">
+          <p class="text-xs font-semibold uppercase mb-2" style="color: #6b5a8a;">Medidor principal</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Tipo de extracción</label>
+              <InputText v-model="editForm.tipo_extraccion_ppal" class="w-full" placeholder="Ej. DLMS" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Contraseña del medidor</label>
+              <InputText v-model="editForm.password_medidor_ppal" class="w-full" />
+            </div>
+          </div>
+          <p class="text-xs font-semibold uppercase mt-3 mb-2" style="color: #6b5a8a;">Módem asociado</p>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Dirección IP</label>
+              <InputText v-model="editForm.ip_modem_ppal" class="w-full" placeholder="10.10.10.1" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Puerto</label>
+              <InputNumber v-model="editForm.puerto_modem_ppal" class="w-full" :useGrouping="false" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Canal de comunicación</label>
+              <InputText v-model="editForm.canal_comunicacion_ppal" class="w-full" placeholder="Ej. IPsec" />
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-2" style="border-top: 1px solid #e8e0f0;">
+          <p class="text-xs font-semibold uppercase mb-2" style="color: #6b5a8a;">Medidor respaldo</p>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Tipo de extracción</label>
+              <InputText v-model="editForm.tipo_extraccion_resp" class="w-full" placeholder="Ej. DLMS" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Contraseña del medidor</label>
+              <InputText v-model="editForm.password_medidor_resp" class="w-full" />
+            </div>
+          </div>
+          <p class="text-xs font-semibold uppercase mt-3 mb-2" style="color: #6b5a8a;">Módem asociado</p>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Dirección IP</label>
+              <InputText v-model="editForm.ip_modem_resp" class="w-full" placeholder="10.10.10.1" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Puerto</label>
+              <InputNumber v-model="editForm.puerto_modem_resp" class="w-full" :useGrouping="false" />
+            </div>
+            <div>
+              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Canal de comunicación</label>
+              <InputText v-model="editForm.canal_comunicacion_resp" class="w-full" placeholder="Ej. IPsec" />
+            </div>
           </div>
         </div>
       </div>
@@ -354,144 +345,13 @@ import api from '@/api/client'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
 import Dropdown from 'primevue/dropdown'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { formatearNombre } from '@/utils/nombreFormato'
-
-// ── Fasorial ──────────────────────────────────────────────────────────────────
-const fasColors  = ['#E84040', '#2ECC71', '#3B82F6']
-const fasColorsC = ['#FF8C8C', '#7EEFC1', '#93C5FD']
-
-const showFasorial      = ref(false)
-const generandoFasorial = ref(false)
-const fasorialError     = ref('')
-
-// Selector de medidor (Quoia) + lectura automática
-const meters          = ref([])
-const metersLoading   = ref(false)
-const selectedMeterId = ref(null)
-const lecturaLoading  = ref(false)
-const lecturaLoaded   = ref(false)
-const ultimaLectura   = ref(null)
-
-const fasorial = ref({
-  titulo: '',
-  vp1: null, vp2: null, vp3: null,
-  cp1: null, cp2: null, cp3: null,
-})
-
-// Listo para generar: hay lectura cargada, los 6 valores son numéricos y no
-// negativos, y hay al menos una tensión y una corriente > 0 (evita el diagrama
-// degenerado / división por cero en el backend).
-const fasorialReady = computed(() => {
-  if (!lecturaLoaded.value) return false
-  const f = fasorial.value
-  const vp = [f.vp1, f.vp2, f.vp3].map(Number)
-  const cp = [f.cp1, f.cp2, f.cp3].map(Number)
-  const validos = [...vp, ...cp].every(v => Number.isFinite(v) && v >= 0)
-  return validos && Math.max(...vp) > 0 && Math.max(...cp) > 0
-})
-
-function fmtValor(v) {
-  if (v === null || v === undefined || v === '' || isNaN(Number(v))) return '—'
-  return Number(v).toLocaleString('es-CO', { maximumFractionDigits: 3 })
-}
-
-function fmtFecha(iso) {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  return isNaN(d.getTime()) ? iso : d.toLocaleString('es-CO')
-}
-
-function resetLectura() {
-  fasorial.value.vp1 = fasorial.value.vp2 = fasorial.value.vp3 = null
-  fasorial.value.cp1 = fasorial.value.cp2 = fasorial.value.cp3 = null
-  ultimaLectura.value = null
-  lecturaLoaded.value = false
-}
-
-async function loadMeters() {
-  if (meters.value.length || metersLoading.value) return
-  metersLoading.value = true
-  try {
-    // Nodos/medidores desde Gaia (JWT) — el backend ya los ordena por nombre.
-    const { data } = await api.get('/fronteras/fasorial/nodos')
-    meters.value = data.nodos || []
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la lista de medidores de Quoia.', life: 4000 })
-  } finally {
-    metersLoading.value = false
-  }
-}
-
-async function onMeterChange() {
-  fasorialError.value = ''
-  resetLectura()
-  if (!selectedMeterId.value) { fasorial.value.titulo = ''; return }
-  const meter = meters.value.find(m => m.id === selectedMeterId.value)
-  fasorial.value.titulo = meter?.name || ''
-  lecturaLoading.value = true
-  try {
-    const { data } = await api.get(`/fronteras/fasorial/lectura/${selectedMeterId.value}`)
-    fasorial.value.vp1 = data.vp1; fasorial.value.vp2 = data.vp2; fasorial.value.vp3 = data.vp3
-    fasorial.value.cp1 = data.cp1; fasorial.value.cp2 = data.cp2; fasorial.value.cp3 = data.cp3
-    ultimaLectura.value = data.last_time
-    lecturaLoaded.value = true
-    if (!fasorialReady.value) {
-      fasorialError.value = 'El medidor no tiene una lectura válida de tensión/corriente para generar el diagrama.'
-    }
-  } catch (e) {
-    fasorialError.value = e.response?.status === 422
-      ? 'No fue posible obtener la información del medidor.'
-      : 'Error al consultar la información del medidor en Quoia.'
-  } finally {
-    lecturaLoading.value = false
-  }
-}
-
-// Al abrir el diálogo: cargar medidores y limpiar cualquier estado previo
-watch(showFasorial, (open) => {
-  if (!open) return
-  loadMeters()
-  selectedMeterId.value = null
-  fasorial.value.titulo = ''
-  fasorialError.value = ''
-  resetLectura()
-})
-
-async function generarFasorial() {
-  fasorialError.value = ''
-  const f = fasorial.value
-  if (!selectedMeterId.value) { fasorialError.value = 'Selecciona un proyecto / medidor.'; return }
-  if (!f.titulo?.trim()) { fasorialError.value = 'El título es obligatorio.'; return }
-  if (!fasorialReady.value) {
-    fasorialError.value = 'No hay datos válidos del medidor para generar el diagrama.'
-    return
-  }
-  generandoFasorial.value = true
-  try {
-    const response = await api.post('/fronteras/fasorial/generar', {
-      titulo: f.titulo.trim(),
-      vp1: Number(f.vp1), vp2: Number(f.vp2), vp3: Number(f.vp3),
-      cp1: Number(f.cp1), cp2: Number(f.cp2), cp3: Number(f.cp3),
-    }, { responseType: 'blob' })
-    const url = URL.createObjectURL(response.data)
-    const a   = document.createElement('a')
-    a.href    = url
-    a.download = f.titulo.trim().replace(/\s+/g, '_').replace(/\//g, '-') + '_Fasorial.jpg'
-    a.click()
-    URL.revokeObjectURL(url)
-    toast.add({ severity: 'success', summary: 'Diagrama generado', detail: 'El JPG se descargó correctamente.', life: 3000 })
-    showFasorial.value = false
-  } catch (e) {
-    fasorialError.value = 'No se pudo generar el diagrama. Verifica la conexión con el servidor.'
-    toast.add({ severity: 'error', summary: 'Error', detail: fasorialError.value, life: 4000 })
-  } finally {
-    generandoFasorial.value = false
-  }
-}
+import { exportarExcel } from '@/utils/exportarExcel'
 
 const toast = useToast()
 const confirm = useConfirm()
@@ -503,20 +363,24 @@ const fronteras = ref([])
 const loading = ref(true)
 const saving = ref(false)
 
-// Filtros sincronizados con la URL (?q=&estado=&proyecto=&operador=&generando=)
+// Filtros sincronizados con la URL (?q=&estado=&proyecto=&operador=&mes=&anio=&generando=)
 // para que se sostengan al volver con el boton "atras" o al refrescar.
 const search = ref(route.query.q || '')
 const estadoFilter = ref(route.query.estado || null)
 const proyectoFilter = ref(route.query.proyecto ? Number(route.query.proyecto) : null)
 const operadorFilter = ref(route.query.operador || null)
+const mesFilter = ref(route.query.mes ? Number(route.query.mes) : null)
+const anioFilter = ref(route.query.anio ? Number(route.query.anio) : null)
 const soloGenerando = ref(route.query.generando === '1')
 
-watch([search, estadoFilter, proyectoFilter, operadorFilter, soloGenerando], ([q, estado, proyecto, operador, generando]) => {
+watch([search, estadoFilter, proyectoFilter, operadorFilter, mesFilter, anioFilter, soloGenerando], ([q, estado, proyecto, operador, mes, anio, generando]) => {
   const query = {}
   if (q) query.q = q
   if (estado) query.estado = estado
   if (proyecto) query.proyecto = proyecto
   if (operador) query.operador = operador
+  if (mes) query.mes = mes
+  if (anio) query.anio = anio
   if (generando) query.generando = '1'
   router.replace({ query })
 })
@@ -574,17 +438,40 @@ const proyectoOptions = computed(() => {
 const operadorOptions = computed(() => {
   const seen = new Set()
   for (const f of fronteras.value) {
-    const nombre = f.operador_comercial || f.operador_red
+    const nombre = f.operador_comercial
     if (nombre) seen.add(nombre)
   }
   return [...seen].sort().map(v => ({ label: v, value: v }))
+})
+
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const mesOptions = MESES.map((label, i) => ({ label, value: i + 1 }))
+
+const anioOptions = computed(() => {
+  const seen = new Set()
+  for (const f of fronteras.value) {
+    if (!f.fecha_registro_asic) continue
+    const anio = new Date(f.fecha_registro_asic).getFullYear()
+    if (!isNaN(anio)) seen.add(anio)
+  }
+  return [...seen].sort((a, b) => b - a).map(v => ({ label: String(v), value: v }))
 })
 
 const filteredFronteras = computed(() => {
   let list = fronteras.value
   if (estadoFilter.value) list = list.filter(f => f.estado === estadoFilter.value)
   if (proyectoFilter.value) list = list.filter(f => f.proyecto_id === proyectoFilter.value)
-  if (operadorFilter.value) list = list.filter(f => (f.operador_comercial || f.operador_red) === operadorFilter.value)
+  if (operadorFilter.value) list = list.filter(f => f.operador_comercial === operadorFilter.value)
+  if (mesFilter.value || anioFilter.value) {
+    list = list.filter(f => {
+      if (!f.fecha_registro_asic) return false
+      const d = new Date(f.fecha_registro_asic)
+      if (isNaN(d.getTime())) return false
+      if (mesFilter.value && d.getMonth() + 1 !== mesFilter.value) return false
+      if (anioFilter.value && d.getFullYear() !== anioFilter.value) return false
+      return true
+    })
+  }
   if (soloGenerando.value) list = list.filter(generaDeVerdad)
   if (search.value) {
     const s = search.value.toLowerCase()
@@ -592,7 +479,6 @@ const filteredFronteras = computed(() => {
       (f.codigo_frontera || '').toLowerCase().includes(s) ||
       (f.nombre_frontera || '').toLowerCase().includes(s) ||
       (f.proyecto_nombre || '').toLowerCase().includes(s) ||
-      (f.operador_red || '').toLowerCase().includes(s) ||
       (f.operador_comercial || '').toLowerCase().includes(s) ||
       (f.municipio || '').toLowerCase().includes(s)
     )
@@ -601,21 +487,18 @@ const filteredFronteras = computed(() => {
 })
 
 const TIPOS_GENERACION = ['generacion', 'generacion_consumo']
-const HOY_STR = new Date().toISOString().split('T')[0]
 
-// "Genera de verdad" = es una frontera de tipo Generacion Y su proyecto ya
-// tiene fecha_inicio_comercializacion cumplida (el primer dia real con
-// generacion, calculado por el backend contra la API de Unergy -- ver
-// scripts/backfill_fecha_comercializacion.py). Antes esto solo miraba
-// tipo_frontera, lo que marcaba como "generando" a proyectos recien
-// registrados que aun no habian generado nada.
-// Nota: si el proyecto no tiene esa fecha calculada todavia (dato faltante,
-// no necesariamente "no genera"), queda fuera del conteo -- ver memoria
-// pendiente_identificador_monitoreo_unergy.
+// "Genera de verdad" = tipo Generacion Y la corrida mas reciente del
+// pipeline Reporte Energia (reporte_energia_generacion, via
+// f.generando_actual) reporto energia real > 0. Reemplaza el criterio
+// anterior (fecha_inicio_comercializacion contra la API de Unergy): esa
+// fuente dejaba fuera fronteras sin identificador de monitoreo resuelto o
+// sin datos en Unergy (ej. San Pelayo, Chiriguana N1 -- ambas confirmadas
+// generando) aunque el pipeline propio ya las viera generar. f.generando_actual
+// es null si el pipeline todavia no ha corrido para esa frontera (no
+// implica que no genere) -- esas quedan fuera del conteo igual que antes.
 function generaDeVerdad(f) {
-  return TIPOS_GENERACION.includes(f.tipo_frontera) &&
-    !!f.proyecto_fecha_inicio_comercializacion &&
-    f.proyecto_fecha_inicio_comercializacion <= HOY_STR
+  return TIPOS_GENERACION.includes(f.tipo_frontera) && f.generando_actual === true
 }
 
 const stats = computed(() => {
@@ -624,7 +507,7 @@ const stats = computed(() => {
     { label: 'Total', value: all.length, color: '#2C2039' },
     { label: 'Activas', value: all.filter(f => f.estado === 'activa').length, color: '#10B981' },
     { label: 'En registro', value: all.filter(f => f.estado === 'en_registro').length, color: '#F0C040' },
-    { label: 'Que generan', value: all.filter(generaDeVerdad).length, color: '#3B82F6', clave: 'generando' },
+    { label: 'Generando actualmente', value: all.filter(generaDeVerdad).length, color: '#3B82F6', clave: 'generando' },
     { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.capacidad_efectiva_mw) || 0), 0).toFixed(1), color: '#915BD8' },
   ]
 })
@@ -643,6 +526,22 @@ function estadoSeverity(e) {
   return map[e] || 'info'
 }
 
+async function descargarExcel() {
+  await exportarExcel(filteredFronteras.value, [
+    { header: 'Código', value: f => f.codigo_frontera || '' },
+    { header: 'Nombre', value: f => formatearNombre(f.nombre_frontera) },
+    { header: 'Proyecto', value: f => f.proyecto_nombre || '' },
+    { header: 'Tipo', value: f => tipoLabel(f.tipo_frontera) },
+    { header: 'Estado', value: f => f.estado || '' },
+    { header: 'Fecha Registro ASIC', value: f => f.fecha_registro_asic || '' },
+    { header: 'Serial Medidor Principal', value: f => f.nro_serie_med_ppal || '' },
+    { header: 'Serial Medidor Respaldo', value: f => f.nro_serie_med_resp || '' },
+    { header: 'Operador', value: f => f.operador_comercial || '' },
+    { header: 'Cap. MW', value: f => f.capacidad_efectiva_mw ? Number(f.capacidad_efectiva_mw).toFixed(3) : '' },
+    { header: 'Municipio', value: f => f.municipio || '' },
+  ], `fronteras_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Fronteras')
+}
+
 function editFrontera(f) {
   loadProyectosAll()
   editingFrontera.value = f
@@ -652,6 +551,16 @@ function editFrontera(f) {
     estado: f.estado,
     operador_red_id: f.operador_red_id || null,
     proyecto_id: f.proyecto_id || null,
+    tipo_extraccion_ppal: f.tipo_extraccion_ppal || null,
+    password_medidor_ppal: f.password_medidor_ppal || null,
+    ip_modem_ppal: f.ip_modem_ppal || null,
+    puerto_modem_ppal: f.puerto_modem_ppal || null,
+    canal_comunicacion_ppal: f.canal_comunicacion_ppal || null,
+    tipo_extraccion_resp: f.tipo_extraccion_resp || null,
+    password_medidor_resp: f.password_medidor_resp || null,
+    ip_modem_resp: f.ip_modem_resp || null,
+    puerto_modem_resp: f.puerto_modem_resp || null,
+    canal_comunicacion_resp: f.canal_comunicacion_resp || null,
   }
   showEdit.value = true
 }

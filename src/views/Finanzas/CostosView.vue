@@ -328,6 +328,28 @@ async function onExportExcel() {
   if (!exportPeriodo.value) return
   exportando.value = true
   try {
+    let starlinkData = null
+    try {
+      starlinkData = (await api.get(`/starlink/factura/${exportPeriodo.value}`)).data
+    } catch (err) {
+      if (err?.response?.status !== 404) throw err
+      // 404 = sin factura ese mes, estado normal — no bloquea el export
+    }
+    const sinAsignar = (starlinkData?.lineas ?? []).filter(l => l.proyecto_id == null && !l.excluido)
+    if (sinAsignar.length) {
+      const nombres = sinAsignar.map(l => l.descripcion)
+      const detalle = nombres.length > 5
+        ? `${nombres.slice(0, 5).join(', ')} y ${nombres.length - 5} más`
+        : nombres.join(', ')
+      toast.add({
+        severity: 'error',
+        summary: 'Hay sitios de Internet sin asignar',
+        detail: `Asigna primero: ${detalle}`,
+        life: 6000,
+      })
+      return
+    }
+
     const res = await generarExcelCostos(exportPeriodo.value)
     if (!res.filas) {
       toast.add({ severity: 'warn', summary: 'Sin datos para exportar',

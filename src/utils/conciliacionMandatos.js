@@ -27,6 +27,12 @@ export const ACC2CONCEPT = {
   '28151010': 'iva_int',  '28151016': 'iva_int',
   '28150515': 'arr',      '28150517': 'arr',
   '28150516': 'iva_arr',  '28150518': 'iva_arr',
+  // Arrendamiento para terceros con arrendador NO responsable de IVA. Se
+  // mapea a 'arr' genérico como base: SOLO se reclasifica a arr_cc cuando el
+  // mandato realmente separa el arriendo en dos conceptos (ver reconciliar);
+  // si el mandato solo dice "Arriendo" (un único arrendador, sin IVA, caso
+  // normal), debe seguir cayendo en el mismo 'arr' genérico del mandato.
+  '28151025': 'arr',
   // Póliza todo riesgo y lucrocesante (antes sin mapear: el verificador la
   // ignoraba tanto en el asiento como en el mandato).
   '28151004': 'poliza',   '28151007': 'iva_poliza',
@@ -298,6 +304,11 @@ export function extractMandate(text, filename = '') {
     // divide el arriendo en dos facturas (ej. La Reserva), se guardan como
     // conceptos separados y cada una se verifica contra su etiqueta del asiento.
     ['ARRIENDO CUENTA DE COBRO', 'arr_cc'], ['ARRIENDO FACTURA', 'arr_fact'],
+    // Redacción nueva del mandato (desde jul-2026): distingue por responsabilidad
+    // de IVA del arrendador en vez de por tipo de soporte (CC/Factura). Debe ir
+    // ANTES del genérico 'ARRIENDO': si no, el genérico la captura y la cae el
+    // chequeo "contiene IVA" de más abajo, descartando el valor por completo.
+    ['ARRIENDO NO RESPONSABLE DE IVA', 'arr_cc'], ['ARRIENDO RESPONSABLE DE IVA', 'arr_fact'],
     ['ARRIENDO', 'arr'], ['IVA ARRIENDO', 'iva_arr'],
     // 'POLIZA' (sin el resto de la frase) para tolerar variaciones de redacción.
     ['POLIZA', 'poliza'], ['IVA POLIZA', 'iva_poliza'],
@@ -379,7 +390,13 @@ export function reconciliar(mandato, details, tag) {
   // Mandante por PALABRA COMPLETA (fix STRADA/ESTRADA) pero tolerando abreviaturas
   // del PA en el asiento (ver asociadoCoincideMandante).
   const mandTok = [...nameTokenSet(mandato.mandante)]
-  const lines = details.filter((d) => d.proj === tag && asociadoCoincideMandante(mandTok, d.asociado))
+  const tagLines = details.filter((d) => d.proj === tag)
+  const lines = tagLines.filter((d) => asociadoCoincideMandante(mandTok, d.asociado))
+  // Líneas del mismo proyecto que quedaron FUERA de `lines` (cuenta no mapeada al
+  // concepto esperado, o asociado que no calza con el mandante — p. ej. el
+  // mantenimiento pagado directo al contratista vía "Administración de proyectos"
+  // con el contratista como Asociado, en vez de la fiduciaria).
+  const unmatchedLines = tagLines.filter((d) => !lines.includes(d))
 
   // Sumar por concepto el DÉBITO de la cuenta de costo (NUNCA el neto debe − haber).
   // En arriendo el mandante (la fiduciaria) aparece en AMBOS lados del asiento, con el
@@ -390,19 +407,29 @@ export function reconciliar(mandato, details, tag) {
   //  5 contratos × 368.513,81 de débito Bancolombia = 1.842.569 = arriendo del mandato.
   //  Los créditos a los arrendadores —p. ej. personas naturales— quedan fuera porque su
   //  asociado no es el mandante y, además, son crédito, no débito.)
+  // El mandato solo separa arriendo en arr_cc/arr_fact cuando el proyecto tiene
+  // DOS arrendadores (uno responsable de IVA y otro no) y así lo lista. Si el
+  // mandato solo trae el 'arr' genérico (un único arrendador, sea o no
+  // responsable de IVA), NINGUNA cuenta debe reclasificarse: todo cae junto en
+  // 'arr', sin importar si contablemente quedó en 28150517 o en 28151025.
+  const arriendoDividido = 'arr_cc' in (mandato.vals || {}) || 'arr_fact' in (mandato.vals || {})
+
   const sums = {}; const wrongAcc = []
   lines.forEach((d) => {
     let c = ACC2CONCEPT[d.acc]
-    // Si la cuenta es de arriendo genérico, se afina el concepto según la
-    // ETIQUETA del asiento — algunos proyectos (ej. La Reserva) dividen el
-    // arriendo en dos facturas que comparten cuenta contable pero se distinguen
-    // por la etiqueta: "...CC..." (Cuenta de Cobro) o "...FACT..." (Factura). Si
-    // la etiqueta no trae ninguna de las dos, se queda como 'arr' genérico y no
-    // rompe los proyectos que no dividen el arriendo.
-    if (c === 'arr') {
-      const etq = norm(d.etiqueta || '')
-      if (/\bCC\b/.test(etq)) c = 'arr_cc'
-      else if (/\bFACT\b/.test(etq)) c = 'arr_fact'
+    if (c === 'arr' && arriendoDividido) {
+      // La cuenta 28151025 es inequívoca (arrendador no responsable de IVA) →
+      // arr_cc directo. Las demás cuentas de arriendo, cuando el mandato divide,
+      // se afinan por la ETIQUETA del asiento ("...CC..."/"...FACT..."; algunos
+      // proyectos como La Reserva comparten cuenta pero distinguen por etiqueta).
+      // Si la etiqueta no trae ninguna pista, se asume que es la contraparte
+      // responsable de IVA (arr_fact), ya que 28151025 ya cubrió el caso "no
+      // responsable".
+      if (d.acc === '28151025') c = 'arr_cc'
+      else {
+        const etq = norm(d.etiqueta || '')
+        c = /\bCC\b/.test(etq) ? 'arr_cc' : 'arr_fact'
+      }
     }
     if (c) sums[c] = (sums[c] || 0) + d.debe
     else if (NON_COST_ACCOUNTS[d.acc] && (d.debe - d.haber) > 0) wrongAcc.push(d)
@@ -412,8 +439,15 @@ export function reconciliar(mandato, details, tag) {
   Object.keys(mandato.vals || {}).forEach((c) => {
     const mv = mandato.vals[c] || 0
     const av = Math.round((sums[c] || 0) * 100) / 100
-    if (av === 0 && mv > 0)
-      flags.push({ lvl: 'bad', code: 'FALTANTE', txt: `${CONCEPTS[c]}: en el mandato (${fmt(mv)}) pero no aparece en el asiento para este mandante/proyecto.` })
+    if (av === 0 && mv > 0) {
+      const candidatos = unmatchedLines.filter((d) => Math.abs(d.debe - mv) <= TOL)
+      if (candidatos.length) {
+        const best = candidatos.reduce((a, b) => (Math.abs(b.debe - mv) < Math.abs(a.debe - mv) ? b : a))
+        flags.push({ lvl: 'warn', code: 'OTRA_CUENTA', txt: `${CONCEPTS[c]}: en el mandato (${fmt(mv)}) — registrado en el asiento pero en otra cuenta/asociado: cuenta ${best.acc} (${best.accDesc}), asociado "${best.asociado}" (${fmt(best.debe)}).` })
+      } else {
+        flags.push({ lvl: 'bad', code: 'FALTANTE', txt: `${CONCEPTS[c]}: en el mandato (${fmt(mv)}) pero no aparece en el asiento para este mandante/proyecto.` })
+      }
+    }
     else if (Math.abs(mv - av) > TOL)
       flags.push({ lvl: 'bad', code: 'DIFERENCIA', txt: `${CONCEPTS[c]}: mandato ${fmt(mv)} vs. asiento ${fmt(av)} · diferencia ${fmt(Math.abs(mv - av))}.` })
     else

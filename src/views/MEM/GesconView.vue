@@ -6,6 +6,10 @@
           @click="previewBackfill" :loading="backfillLoading"
           v-tooltip.bottom="'Rellena el nombre interno de los registros que lo tengan vacío, tomándolo del contrato PPA'"
           style="color:#6b5a8a; border-color:#d8cfe8;" />
+        <Button label="Completar terminaciones" icon="pi pi-flag" size="small" outlined
+          @click="previewBackfillTerm" :loading="backfillTermLoading"
+          v-tooltip.bottom="'Rellena contrato, nombre interno y demás datos de las terminaciones registradas antes, tomándolos de los registros del mismo código SIC'"
+          style="color:#6b5a8a; border-color:#d8cfe8;" />
         <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" outlined
           @click="descargarGesconExcel" :loading="exportando"
           style="color:#915BD8; border-color:#915BD8;" />
@@ -15,7 +19,10 @@
     </PageHeader>
 
     <!-- Filtros -->
-    <div class="bg-white rounded-xl px-4 py-3 flex flex-wrap gap-3 items-center"
+    <!-- flex-nowrap + overflow-x-auto: si no caben todos los filtros en el
+         ancho disponible, se desplaza horizontal en vez de partirse en dos
+         líneas o truncar el texto de los selects. -->
+    <div class="bg-white rounded-xl px-4 py-3 flex flex-nowrap gap-3 items-center overflow-x-auto"
       style="border: 1px solid #e8e0f0;">
       <IconField class="flex-1 min-w-[200px]">
         <InputIcon class="pi pi-search" />
@@ -23,12 +30,20 @@
       </IconField>
 
       <SelectButton v-model="filtroEstado" :options="opcionesEstado" optionLabel="label" optionValue="value"
-        :pt="{ button: { style: 'font-size:12px; padding:6px 14px;' } }" />
+        class="flex-shrink-0" :pt="{ button: { style: 'font-size:12px; padding:6px 14px;' } }" />
 
       <Select v-model="filtroTipo" :options="opcionesTipo" optionLabel="label" optionValue="value"
-        placeholder="Tipo" showClear class="min-w-[160px]" />
+        placeholder="Tipo" showClear class="flex-shrink-0 min-w-[160px]" />
 
-      <Button v-if="filtroTexto || filtroTipo" label="Limpiar" icon="pi pi-times"
+      <Select v-model="filtroMes" :options="opcionesMes" optionLabel="label" optionValue="value"
+        placeholder="Mes" showClear class="flex-shrink-0 min-w-[150px]"
+        v-tooltip.bottom="'Vigencia en ese mes'" />
+
+      <Select v-model="filtroAnio" :options="opcionesAnio" optionLabel="label" optionValue="value"
+        placeholder="Año" showClear class="flex-shrink-0 min-w-[110px]"
+        v-tooltip.bottom="'Vigencia en ese año'" />
+
+      <Button v-if="filtroTexto || filtroTipo || filtroMes || filtroAnio" label="Limpiar" icon="pi pi-times"
         severity="secondary" size="small" @click="limpiar" />
     </div>
 
@@ -155,11 +170,11 @@
     <ConfirmDialog />
 
     <!-- ── Dialog Registro ─────────────────────────────────────── -->
-    <Dialog v-model:visible="dialogVisible" :header="editandoId ? 'Editar contrato ASIC' : 'Registrar contrato ASIC'" modal
+    <Dialog v-model:visible="dialogVisible" :header="tituloDialogo" modal
       :style="{ width: '700px' }" :breakpoints="{ '768px': '95vw' }">
-      <form @submit.prevent="guardar" class="space-y-5 pt-1">
+      <div class="space-y-5 pt-1">
 
-        <!-- Fila 1: Tipo + Estado -->
+        <!-- Fila 1: Tipo + Estado (comunes a todos los modos) -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
             <label class="text-xs font-medium" style="color:#6b5a8a;">Tipo solicitud *</label>
@@ -176,6 +191,21 @@
             <small v-if="errores.estado_solicitud" class="text-red-500 text-xs">{{ errores.estado_solicitud }}</small>
           </div>
         </div>
+
+        <!-- Modificación: formulario asistido. Solo pide lo que cambia (fecha
+             de fin, planta, % y modalidad) + la fecha en que entra en vigencia;
+             el resto lo hereda el backend de la versión vigente del SIC. -->
+        <GesconModificacionForm v-if="modoModificacionAsistida"
+          :rows="rows" :proyectos="proyectos" :estado="form.estado_solicitud"
+          @cancelar="dialogVisible = false" @guardado="onAsistidoGuardado" />
+
+        <!-- Terminación: misma dinámica. Hereda la identidad del contrato en vez
+             de guardarla vacía, que era lo que pasaba antes. -->
+        <GesconTerminacionForm v-else-if="modoTerminacionAsistida"
+          :rows="rows" :estado="form.estado_solicitud"
+          @cancelar="dialogVisible = false" @guardado="onAsistidoGuardado" />
+
+        <form v-else @submit.prevent="guardar" class="space-y-5">
 
         <!-- ── Terminación: solo los datos que XM exige ─────────────── -->
         <template v-if="esTerminacion">
@@ -386,6 +416,18 @@
           </div>
         </div>
 
+        <!-- Modalidad de pago: marca el par PLG/PLC de una planta repartida -->
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-medium" style="color:#6b5a8a;">Modalidad de pago del contrato</label>
+            <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
+              v-tooltip.top="'Cuando una planta se reparte entre dos contratos, uno PLG y otro PLC, entre los dos cubren su 100%: marcarlos evita que se reporte como duplicada. Déjalo en “No aplica” si el contrato no es de ese par.'" />
+          </div>
+          <SelectButton v-model="modalidadPago" :options="MODALIDADES_PAGO"
+            optionLabel="label" optionValue="value" :allowEmpty="false"
+            :pt="{ button: { style: 'font-size:12px; padding:5px 12px;' } }" />
+        </div>
+
         <!-- Fila 7: Requerimiento + Contacto -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
@@ -419,7 +461,74 @@
             v-tooltip.top="conflictoNoResuelto ? 'Resuelve el solapamiento de fechas antes de guardar' : ''"
             style="background:#915BD8; border-color:#915BD8;" />
         </div>
-      </form>
+        </form>
+      </div>
+    </Dialog>
+
+    <!-- Diálogo: completar la identidad de las terminaciones viejas -->
+    <Dialog v-model:visible="backfillTermDialog" modal header="Completar terminaciones" :style="{ width: '46rem' }">
+      <div v-if="backfillTermReport" class="space-y-3 text-sm">
+        <p style="color:#5a5168;">
+          Las terminaciones registradas antes se guardaban solo con el código SIC y la fecha,
+          sin contrato ni nombre interno. Esto los rellena tomándolos de los registros del
+          <b>mismo código SIC</b>, y de paso estampa la fecha de terminación en los registros
+          que quedaron sin recortar. No se les asigna planta: una terminación se guarda sin
+          planta a propósito.
+        </p>
+        <div class="flex flex-wrap gap-x-6 gap-y-1">
+          <span><b>{{ backfillTermReport.a_actualizar }}</b> con datos por completar</span>
+          <span v-if="backfillTermReport.a_recortar" style="color:#D64455;">
+            <b>{{ backfillTermReport.a_recortar }}</b> registro(s) con fecha por recortar
+          </span>
+          <span style="color:#9a6700;"><b>{{ backfillTermReport.sin_resolver }}</b> sin resolver</span>
+          <span style="color:#7a6e8a;">{{ backfillTermReport.total_terminaciones }} terminaciones en total</span>
+        </div>
+
+        <!-- Registros que una terminación publicada debió cerrar y no cerró -->
+        <div v-if="backfillTermReport.sin_recortar?.length" class="rounded-lg px-3 py-2"
+          style="background:#FEF2F2; border:1px solid #FECACA;">
+          <p class="text-xs" style="color:#991B1B;">
+            Estas terminaciones no alcanzaron a estampar su fecha en los registros de su SIC.
+            El cálculo de Cumplimiento <b>ya sale bien igual</b> —la vigencia efectiva se resuelve
+            sola—, pero la fecha que se ve en la tabla y en el Excel sigue diciendo la vieja.
+          </p>
+          <ul class="mt-1.5 pl-4 list-disc text-xs" style="color:#7a2020;">
+            <li v-for="s in backfillTermReport.sin_recortar" :key="s.id">
+              SIC <b>{{ s.codigo_sic_contrato }}</b>
+              <span v-if="s.requerimiento_asic"> · req. {{ s.requerimiento_asic }}</span>
+              — termina {{ fmt(s.termina) }}:
+              {{ s.registros.map(r => `${r.planta} (${fmt(r.fecha_fin_actual)})`).join(', ') }}
+            </li>
+          </ul>
+        </div>
+        <div v-if="backfillTermReport.resueltos.length" class="max-h-60 overflow-y-auto border rounded-lg" style="border-color:#eee;">
+          <table class="w-full text-xs border-collapse">
+            <thead><tr style="background:#faf8fd;">
+              <th class="text-left p-1.5">SIC</th><th class="text-left p-1.5">Termina</th><th class="text-left p-1.5">Datos a completar</th>
+            </tr></thead>
+            <tbody>
+              <tr v-for="r in backfillTermReport.resueltos" :key="r.id" class="border-t" style="border-color:#f0f0f0;">
+                <td class="p-1.5 font-mono">{{ r.codigo_sic_contrato }}</td>
+                <td class="p-1.5">{{ fmt(r.fecha_fin) }}</td>
+                <td class="p-1.5" style="color:#6b5a8a;">{{ Object.values(r.cambios).join(' · ') }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <details v-if="backfillTermReport.no_resueltos.length" class="text-xs">
+          <summary class="cursor-pointer" style="color:#9a6700;">{{ backfillTermReport.no_resueltos.length }} sin resolver (ver)</summary>
+          <ul class="mt-1 pl-4 list-disc" style="color:#7a6e8a;">
+            <li v-for="r in backfillTermReport.no_resueltos" :key="r.id">SIC {{ r.codigo_sic_contrato }} — {{ r.motivo }}</li>
+          </ul>
+        </details>
+        <p v-if="!backfillTermPendiente" class="text-xs" style="color:#7a6e8a;">No hay nada para completar.</p>
+      </div>
+      <template #footer>
+        <Button label="Cancelar" text @click="backfillTermDialog = false" :disabled="backfillTermExecuting" />
+        <Button label="Aplicar" icon="pi pi-check" :loading="backfillTermExecuting"
+          :disabled="!backfillTermPendiente" @click="applyBackfillTerm"
+          style="background:#915BD8; border-color:#915BD8;" />
+      </template>
     </Dialog>
 
     <!-- Diálogo: completar nombres internos faltantes (backfill) -->
@@ -468,6 +577,8 @@
 import { ref, watch, computed, onMounted } from 'vue'
 import api from '@/api/client.js'
 import { conflictosAtribucion } from '@/utils/validacionContratos.js'
+import GesconModificacionForm from './GesconModificacionForm.vue'
+import GesconTerminacionForm from './GesconTerminacionForm.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
@@ -497,6 +608,8 @@ const total = ref(0)
 const filtroTexto = ref('')
 const filtroEstado = ref('vigentes')
 const filtroTipo = ref(null)
+const filtroMes = ref(null)
+const filtroAnio = ref(null)
 const hoy = new Date().toISOString().slice(0, 10)
 
 const opcionesEstado = [
@@ -509,6 +622,18 @@ const opcionesTipo = [
   { label: 'Terminación', value: 'terminacion' },
   { label: 'Desistimiento', value: 'desistimiento' },
 ]
+
+const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const opcionesMes = MESES.map((label, i) => ({ label, value: i + 1 }))
+
+const opcionesAnio = computed(() => {
+  const seen = new Set()
+  for (const x of rows.value) {
+    if (x.fecha_inicio) seen.add(Number(x.fecha_inicio.slice(0, 4)))
+    if (x.fecha_fin) seen.add(Number(x.fecha_fin.slice(0, 4)))
+  }
+  return [...seen].sort((a, b) => b - a).map(v => ({ label: String(v), value: v }))
+})
 
 // Fin EFECTIVO de la fila: si un relevo/modificación posterior en su SIC la
 // superó, el backend manda fecha_fin_efectiva (< fecha_fin cruda). Una fila
@@ -526,6 +651,22 @@ function filtrar() {
     r = r.filter(x => finEfectivo(x) && finEfectivo(x) >= hoy)
   if (filtroTipo.value)
     r = r.filter(x => x.tipo_solicitud === filtroTipo.value)
+  if (filtroMes.value || filtroAnio.value) {
+    // Vigencia en el mes/año elegido, no fecha_inicio exacta: si solo se
+    // elige año, cubre el año completo; si solo se elige mes, usa el año
+    // actual. Igual criterio de "vigente" que el filtro Estado (requiere
+    // finEfectivo, ver comentario en esa función).
+    const anio = filtroAnio.value || new Date().getFullYear()
+    const mesDesde = filtroMes.value || 1
+    const mesHasta = filtroMes.value || 12
+    const desde = `${anio}-${String(mesDesde).padStart(2, '0')}-01`
+    const ultimoDia = new Date(anio, mesHasta, 0).getDate()
+    const hasta = `${anio}-${String(mesHasta).padStart(2, '0')}-${String(ultimoDia).padStart(2, '0')}`
+    r = r.filter(x => {
+      const fin = finEfectivo(x)
+      return !!fin && x.fecha_inicio <= hasta && fin >= desde
+    })
+  }
   const q = filtroTexto.value.trim().toLowerCase()
   if (q) r = r.filter(x =>
     (x.codigo_sic_contrato || '').toLowerCase().includes(q) ||
@@ -537,7 +678,7 @@ function filtrar() {
   rowsMostrar.value = r
   total.value = r.length
 }
-watch([rows, filtroEstado, filtroTipo, filtroTexto], filtrar)
+watch([rows, filtroEstado, filtroTipo, filtroMes, filtroAnio, filtroTexto], filtrar)
 
 async function cargar() {
   loading.value = true
@@ -548,7 +689,7 @@ async function cargar() {
     loading.value = false
   }
 }
-function limpiar() { filtroTexto.value = ''; filtroTipo.value = null }
+function limpiar() { filtroTexto.value = ''; filtroTipo.value = null; filtroMes.value = null; filtroAnio.value = null }
 
 // ── Exportar a Excel (identidad de marca Unergy) ──────────────────
 const exportando = ref(false)
@@ -771,6 +912,7 @@ const FORM_INICIAL = () => ({
   reemplaza_anterior: true,
   es_duplicado: false,
   uso_del_recurso: false,
+  modalidad_pago: null,
 })
 const form = ref(FORM_INICIAL())
 
@@ -782,6 +924,19 @@ const MODALIDADES_SUMINISTRO = [
   { label: 'Compra en bolsa', value: 'duplicado' },
   { label: 'Uso del recurso', value: 'uso_recurso' },
 ]
+// Modalidad de PAGO del contrato (distinta de la de suministro): marca el par
+// PLG/PLC de una planta repartida entre dos contratos. El SelectButton no
+// maneja null, así que '' hace de "no aplica" y se traduce a null al guardar.
+const MODALIDADES_PAGO = [
+  { label: 'No aplica', value: '' },
+  { label: 'PLG', value: 'plg' },
+  { label: 'PLC', value: 'plc' },
+]
+const modalidadPago = computed({
+  get() { return form.value.modalidad_pago || '' },
+  set(v) { form.value.modalidad_pago = v || null },
+})
+
 const modalidadSuministro = computed({
   get() {
     if (form.value.uso_del_recurso) return 'uso_recurso'
@@ -797,6 +952,39 @@ const modalidadSuministro = computed({
 // Una terminación solo necesita: SIC del contrato a terminar, fecha de terminación,
 // cédulas de los agentes y el link del archivo. El resto de campos se ocultan.
 const esTerminacion = computed(() => form.value.tipo_solicitud === 'terminacion')
+
+// Registrar una modificación NO es capturar un contrato nuevo: es otra versión
+// del mismo SIC, y el formulario asistido solo pide lo que cambia. Editar una
+// fila ya existente (lápiz) sí usa el formulario completo: ahí se corrigen
+// datos de ese registro puntual, no se registra una modificación ante XM.
+const modoModificacionAsistida = computed(() =>
+  form.value.tipo_solicitud === 'modificacion' && !editandoId.value)
+const modoTerminacionAsistida = computed(() =>
+  form.value.tipo_solicitud === 'terminacion' && !editandoId.value)
+const modoAsistido = computed(() => modoModificacionAsistida.value || modoTerminacionAsistida.value)
+
+// Solo las solicitudes publicadas cuentan para la vigencia y para Cumplimiento:
+// una guardada "en proceso" no cambiaría nada y el usuario no tendría cómo
+// notarlo. Se propone Publicado (el selector queda editable).
+watch(modoAsistido, asistido => {
+  if (asistido && form.value.estado_solicitud === 'en_proceso') {
+    form.value.estado_solicitud = 'publicado'
+  }
+})
+
+const tituloDialogo = computed(() => {
+  if (editandoId.value) return 'Editar contrato ASIC'
+  if (modoModificacionAsistida.value) return 'Registrar modificación'
+  if (modoTerminacionAsistida.value) return 'Registrar terminación'
+  return 'Registrar contrato ASIC'
+})
+
+function onAsistidoGuardado() {
+  dialogVisible.value = false
+  // Recarga completa: la solicitud puede haber cerrado filas del mismo SIC y
+  // recalculado la vigencia efectiva de otras.
+  cargar()
+}
 
 // ── Validación de solapamiento (integridad de atribución de generación) ──
 // Contratos ACTIVOS de la MISMA planta cuya ventana de fechas se cruza con la que
@@ -869,6 +1057,7 @@ function abrirEditar(row) {
     reemplaza_anterior: row.reemplaza_anterior ?? true,
     es_duplicado: row.es_duplicado ?? false,
     uso_del_recurso: row.uso_del_recurso ?? false,
+    modalidad_pago: row.modalidad_pago || null,
   }
   errores.value = {}
   dialogVisible.value = true
@@ -920,6 +1109,7 @@ async function guardar() {
       tipo_asignacion: form.value.tipo_asignacion || null,
       link_archivo: form.value.link_archivo || null,
       observaciones: form.value.observaciones || null,
+      modalidad_pago: form.value.modalidad_pago || null,
       fecha_solicitud: toIso(form.value.fecha_solicitud),
       fecha_inicio: toIso(form.value.fecha_inicio),
       fecha_fin: toIso(form.value.fecha_fin),
@@ -928,24 +1118,19 @@ async function guardar() {
         ? Number((form.value.porcentaje_despacho / 100).toFixed(4)) : null,
     }
 
-    // Una terminación solo lleva SIC, fecha de terminación, requerimiento, cédulas y link.
-    // Los demás campos se limpian para no arrastrar datos sin sentido.
+    // Invariantes de una terminación (las mismas que aplica POST /asic/terminacion):
+    // sin planta —con proyecto_id, Cumplimiento borra la planta del mes de la
+    // terminación en vez de prorratearla hasta la fecha— y sin porcentajes, que
+    // no aplican a una fila que no aporta energía.
+    // La identidad del contrato (contrato interno, nombre interno, vendedor,
+    // comprador, prioridad, PPA) SÍ se conserva: antes se borraba aquí y por eso
+    // las terminaciones salían en blanco en la tabla y en el Excel.
     if (esTerminacion.value) {
       Object.assign(payload, {
-        contrato_interno: null,
-        nombre_interno: null,
-        codigo_sic_vendedor: null,
-        codigo_sic_comprador: null,
-        prioridad_limitacion: null,
         proyecto_id: null,
-        fecha_solicitud: null,
         fecha_inicio: null,
-        tipo_mercado: null,
-        tipo_asignacion: null,
         porcentaje_fncer: null,
         porcentaje_despacho: null,
-        nombre_contacto_solicitante: null,
-        observaciones: null,
         reemplaza_anterior: true,
         es_duplicado: false,
         uso_del_recurso: false,
@@ -1037,6 +1222,49 @@ async function applyBackfill() {
       detail: e.response?.data?.detail || e.message, life: 7000 })
   } finally {
     backfillExecuting.value = false
+  }
+}
+
+// ── Backfill de la identidad de las terminaciones viejas ──────────────────
+const backfillTermDialog    = ref(false)
+const backfillTermReport    = ref(null)
+const backfillTermLoading   = ref(false)
+const backfillTermExecuting = ref(false)
+
+// Hay algo que aplicar si faltan datos de identidad O fechas por estampar.
+const backfillTermPendiente = computed(() =>
+  !!backfillTermReport.value
+  && ((backfillTermReport.value.a_actualizar || 0) + (backfillTermReport.value.a_recortar || 0)) > 0)
+
+async function previewBackfillTerm() {
+  backfillTermLoading.value = true
+  try {
+    const { data } = await api.post('/asic/backfill-terminaciones', null, { params: { dry_run: true } })
+    backfillTermReport.value = data
+    backfillTermDialog.value = true
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'No se pudo previsualizar',
+      detail: e.response?.data?.detail || e.message, life: 5000 })
+  } finally {
+    backfillTermLoading.value = false
+  }
+}
+
+async function applyBackfillTerm() {
+  backfillTermExecuting.value = true
+  try {
+    const { data } = await api.post('/asic/backfill-terminaciones', null, { params: { dry_run: false } })
+    toast.add({ severity: 'success', summary: 'Terminaciones completadas',
+      detail: `${data.a_actualizar} terminación(es) con datos completados · `
+            + `${data.a_recortar || 0} registro(s) con la fecha estampada.`, life: 5000 })
+    backfillTermDialog.value = false
+    backfillTermReport.value = null
+    await cargar()
+  } catch (e) {
+    toast.add({ severity: 'error', summary: 'El backfill falló (se revirtió)',
+      detail: e.response?.data?.detail || e.message, life: 7000 })
+  } finally {
+    backfillTermExecuting.value = false
   }
 }
 

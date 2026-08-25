@@ -41,7 +41,7 @@
       <div class="mand-subtabs">
         <button v-for="t in SUBTABS" :key="t.value" class="mand-subtab"
           :class="{ 'mand-subtab--active': subTab === t.value }" @click="subTab = t.value">
-          {{ t.label }}<span v-if="t.value === 'correcciones'" class="mand-subtab-count">{{ resumen.correcciones }}</span>
+          {{ t.label }}<span v-if="t.value === 'correcciones'" class="mand-subtab-count">{{ correccionesTabCount }}</span>
         </button>
       </div>
 
@@ -243,6 +243,8 @@ async function descargarPdf(m) {
 const correcciones = computed(() => mandatos.value.filter(m => m.estado === 'con_correcciones'))
 const hayBanner = computed(() => correcciones.value.length > 0)
 const obsBanner = computed(() => correcciones.value[0]?.observacion || '')
+const correccionesTabCount = computed(() =>
+  mandatos.value.filter(m => m.estado === 'con_correcciones' || m.estado === 'corregido').length)
 
 async function onSubirFirmado(e) {
   const archivo = e.target.files?.[0]

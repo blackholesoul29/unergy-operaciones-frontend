@@ -44,9 +44,9 @@
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#6b5a8a">Disponible neto</p>
         <p class="text-base font-bold" :style="(data.disponibleNeto ?? 0) < 0 ? 'color:#D64455' : 'color:#10B981'">{{ fmtCOP(data.disponibleNeto) }}</p>
       </div>
-      <div class="rounded-xl p-4 shadow-sm text-center" style="border:1px solid #a7e8c4; background:#ECFDF3">
-        <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#047857">Disponible (Aplic. garantía)</p>
-        <p class="text-base font-bold" style="color:#047857">{{ fmtCOP(data.disponibleAplicacion) }}</p>
+      <div class="rounded-xl p-4 shadow-sm text-center" :style="aplicacionStyle.box">
+        <p class="text-xs font-semibold uppercase tracking-wide mb-1" :style="aplicacionStyle.text">{{ aplicacionStyle.label }}</p>
+        <p class="text-base font-bold" :style="aplicacionStyle.text">{{ fmtCOP(aplicacionStyle.monto) }}</p>
       </div>
       <div class="bg-white rounded-xl p-4 shadow-sm text-center" style="border:1px solid #e8e0f0">
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#6b5a8a">Congelado</p>
@@ -73,5 +73,25 @@ const preciosList = computed(() => {
   return Object.entries(p)
     .filter(([, v]) => v != null)
     .map(([key, val]) => ({ key, val }))
+})
+
+// Negativo = lo disponible en custodia no alcanza para la garantía → hay que
+// consignar la diferencia. Positivo/cero = alcanza y sobra ese monto.
+const aplicacionStyle = computed(() => {
+  const v = props.data?.disponibleAplicacion ?? 0
+  if (v < 0) {
+    return {
+      label: '⚠️ Falta consignar',
+      monto: Math.abs(v),
+      box: 'border:1px solid #f3c6cb; background:#FEF2F2',
+      text: 'color:#D64455',
+    }
+  }
+  return {
+    label: '✅ Alcanza (Aplic. garantía)',
+    monto: v,
+    box: 'border:1px solid #a7e8c4; background:#ECFDF3',
+    text: 'color:#047857',
+  }
 })
 </script>

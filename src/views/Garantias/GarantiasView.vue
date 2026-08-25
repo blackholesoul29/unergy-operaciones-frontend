@@ -1,13 +1,12 @@
 <template>
-  <div class="space-y-0">
-    <!-- Sub-nav: Registros | Ajustes XM -->
-    <div class="flex gap-0 border-b mb-5" style="border-color: rgba(44,32,57,0.12);">
+  <div class="space-y-4">
+    <div class="flex gap-0 border-b" style="border-color: rgba(44,32,57,0.10);">
       <button
-        v-for="tab in subNavTabs"
+        v-for="tab in tabs"
         :key="tab.key"
-        @click="activeSection = tab.key"
-        class="px-5 py-2.5 text-sm font-medium transition-colors relative"
-        :style="activeSection === tab.key
+        @click="activeTab = tab.key"
+        class="px-4 py-2 text-sm font-medium transition-colors relative"
+        :style="activeTab === tab.key
           ? 'color:#915BD8; border-bottom:2px solid #915BD8; margin-bottom:-1px'
           : 'color:#6b5a8a'"
       >
@@ -15,20 +14,19 @@
       </button>
     </div>
 
-    <GarantiasRegistrosView v-if="activeSection === 'registros'" />
-    <AjustesXMView v-else-if="activeSection === 'ajustes'" />
+    <AjustesXMView v-if="activeTab === 'ajustes'" />
+    <ProyeccionesView v-else-if="activeTab === 'proyecciones'" />
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
-import GarantiasRegistrosView from './GarantiasRegistrosView.vue'
 import AjustesXMView from './AjustesXM/AjustesXMView.vue'
+import ProyeccionesView from './Proyecciones/ProyeccionesView.vue'
 
-const subNavTabs = [
-  { key: 'registros', label: 'Registros' },
-  { key: 'ajustes',   label: 'Ajustes XM' },
+const tabs = [
+  { key: 'ajustes', label: 'Ajustes XM' },
+  { key: 'proyecciones', label: 'Proyecciones' },
 ]
-
-const activeSection = ref('registros')
+const activeTab = ref('ajustes')
 </script>

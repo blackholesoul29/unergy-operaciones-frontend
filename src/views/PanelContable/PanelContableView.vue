@@ -12,8 +12,19 @@
       <div class="top-actions">
         <div class="fld">
           <label>Ver período</label>
-          <input type="month" v-model="periodo" class="month-in" @change="setTab(tab)" />
+          <div class="pc-period">
+            <button class="pc-period-btn" @click="stepMes(-1)" v-tooltip.bottom="'Mes anterior'">
+              <i class="pi pi-chevron-left" />
+            </button>
+            <span class="pc-period-label">{{ periodoLabel || '—' }}</span>
+            <button class="pc-period-btn" :disabled="esMesActual" @click="stepMes(1)" v-tooltip.bottom="'Mes siguiente'">
+              <i class="pi pi-chevron-right" />
+            </button>
+          </div>
         </div>
+        <button v-if="tab === 'preliquidacion' || tab === 'oficial'" class="btn-o" :disabled="loading || !paneles.length" @click="exportarExcel">
+          <i class="pi pi-file-excel" /> Exportar Excel
+        </button>
         <button v-if="tab !== 'diferencia' && tab !== 'clasificacion'" class="btn-o" :disabled="loading" @click="abrirDialogoPeriodo">
           <i class="pi pi-upload" /> Cargar ER
         </button>
@@ -94,6 +105,7 @@
     <div class="tabs">
       <div class="tab" :class="{ act: tab === 'preliquidacion' }" @click="setTab('preliquidacion')">Preliquidación</div>
       <div class="tab" :class="{ act: tab === 'oficial' }" @click="setTab('oficial')">Oficial</div>
+      <div class="tab" :class="{ act: tab === 'seleccion' }" @click="setTab('seleccion')">Selección</div>
       <div class="tab" :class="{ act: tab === 'diferencia' }" @click="setTab('diferencia')">Diferencia</div>
       <div class="tab" :class="{ act: tab === 'clasificacion' }" @click="setTab('clasificacion')">Clasificación</div>
     </div>
@@ -114,15 +126,67 @@
       </ul>
     </div>
 
-    <!-- ── PRELIQUIDACIÓN / OFICIAL ── -->
-    <template v-if="tab === 'preliquidacion' || tab === 'oficial'">
+    <!-- ── PRELIQUIDACIÓN / OFICIAL / SELECCIÓN ── -->
+    <template v-if="tab === 'preliquidacion' || tab === 'oficial' || tab === 'seleccion'">
       <div v-if="loading" class="empty"><i class="pi pi-spin pi-spinner" /> Cargando…</div>
 
       <template v-else>
-        <!-- Selección + consecutivos -->
-        <div class="card">
+        <!-- Filtros de la lista de proyectos -->
+        <div v-if="paneles.length" class="filtros">
+          <span class="filtro-busca">
+            <i class="pi pi-search" />
+            <input v-model="fProyecto" placeholder="Buscar proyecto…" />
+          </span>
+          <select v-model="fTipo" class="filtro-sel">
+            <option value="">Tipo: todos</option>
+            <option value="normal">Normal</option>
+            <option value="neu">NEU</option>
+            <option value="nitro">NITRO</option>
+          </select>
+          <select v-model="fEstado" class="filtro-sel">
+            <option value="">Estado: todos</option>
+            <option value="liquida">Liquida</option>
+            <option value="no">No liquida</option>
+            <option value="solo_ing">Solo ingresos</option>
+            <option value="solo_cost">Solo costos</option>
+            <option value="genera">Genera mandatos</option>
+          </select>
+          <select v-model="fMarcador" class="filtro-sel">
+            <option value="">Marcador: todos</option>
+            <option value="con_costos">Con costos</option>
+            <option value="sin_costos">Sin costos</option>
+            <option value="bolsa">Con bolsa</option>
+          </select>
+          <select v-model="fInv" class="filtro-sel">
+            <option value="">Inversionista: todos</option>
+            <option v-for="nom in inversionistasLista" :key="nom" :value="nom">{{ nom }}</option>
+          </select>
+          <select v-model="fBloque" class="filtro-sel">
+            <option value="">Documento: todos</option>
+            <option value="mandato">Mandato (ingresos)</option>
+            <option value="costos">Costos</option>
+            <option value="factura">Factura (Repr/CGM/Admin)</option>
+          </select>
+          <span class="filtro-count">{{ panelesFiltrados.length }} / {{ paneles.length }}</span>
+          <button v-if="hayFiltro" class="mini" @click="limpiarFiltros">Limpiar</button>
+        </div>
+
+        <!-- Selección + consecutivos (solo pestaña Selección) -->
+        <div v-if="tab === 'seleccion'" class="card">
           <div class="card-h">
             <h3>Selección de liquidación</h3>
+            <div class="sel-tipo">
+              <span>Tipo:</span>
+              <label class="vt-opt" :class="{ on: selTipo === 'preliquidacion' }">
+                <input type="radio" value="preliquidacion" v-model="selTipo" @change="cargarPaneles" /> Preliquidación
+              </label>
+              <label class="vt-opt" :class="{ on: selTipo === 'oficial' }">
+                <input type="radio" value="oficial" v-model="selTipo" @change="cargarPaneles" /> Oficial
+              </label>
+            </div>
+          </div>
+          <div class="card-h" style="border-top:1px solid var(--line); padding-top:10px;">
+            <span class="hint" style="padding:0">Marca qué liquidar; el detalle contable está en las pestañas Preliquidación / Oficial.</span>
             <div class="pool-actions">
               <button class="mini" @click="selAll('liquidar_ingresos', true)">Liq. ingresos todos</button>
               <button class="mini" @click="selAll('liquidar_costos', true)">Liq. costos todos</button>
@@ -151,7 +215,7 @@
                 <th>Generar mandatos</th>
               </tr></thead>
               <tbody>
-                <tr v-for="p in paneles" :key="p.id">
+                <tr v-for="p in panelesFiltrados" :key="p.id">
                   <td class="l">
                     <span class="pname">{{ p.proyecto }}</span>
                     <span v-if="!p.tiene_costos" class="pill pill-warn">sin costos</span>
@@ -170,7 +234,7 @@
 
           <!-- Consecutivos: SOLO en oficial (la preliquidación no lleva; el mandato
                oficial = la diferencia). Únicos globalmente por cadena. -->
-          <div v-if="tab === 'oficial'" class="cons-pool">
+          <div v-if="tipoDatos === 'oficial'" class="cons-pool">
             <div class="fld">
               <label>Consecutivo Ingresos inicial</label>
               <input type="number" v-model.number="consIngIni" @change="reasignarTodo" />
@@ -201,20 +265,42 @@
           </div>
         </div>
 
-        <!-- Detalle por proyecto -->
-        <div class="sec-title-row">
-          <div class="sec-title">Detalle contable por proyecto</div>
-          <div class="vista-toggle">
-            <span>Ver:</span>
-            <label class="vt-opt" :class="{ on: !vista100 }">
-              <input type="radio" :value="false" v-model="vista100" /> Por inversionista
-            </label>
-            <label class="vt-opt" :class="{ on: vista100 }">
-              <input type="radio" :value="true" v-model="vista100" /> 100% total
-            </label>
+        <!-- Mapeo de celdas del ER: se movió aquí desde el detalle para no estorbar.
+             Solo aplica a Ingresos / Comercialización (lo que aún viene del ER). -->
+        <div v-if="tab === 'seleccion' && paneles.length" class="card" style="margin-top:14px">
+          <div class="card-h">
+            <h3>Mapeo de celdas del ER</h3>
+            <span class="hint" style="padding:0">Corrige a qué celda del ER apunta un concepto de Ingresos / Comercialización.</span>
+          </div>
+          <div v-for="p in panelesFiltrados" :key="'m' + p.id" class="mapeo-proy">
+            <div class="mapeo-h" @click="toggleMapeo(p.id)">
+              <span class="chev" :class="{ op: mapeoOpen[p.id] }">▶</span>
+              <b>{{ p.proyecto }}</b>
+            </div>
+            <div v-show="mapeoOpen[p.id]" class="tbl-wrap" style="padding:0 12px 10px">
+              <table class="dt">
+                <thead><tr><th class="l">Concepto</th><th class="l">Celda (hoja!celda)</th></tr></thead>
+                <tbody>
+                  <tr v-for="ln in lineasMapeables(p)" :key="ln.grupo + '|' + ln.concepto">
+                    <td class="l">{{ ln.concepto }}</td>
+                    <td class="l"><input class="celda-origen" :value="ln.origen" placeholder="hoja!celda"
+                                         @change="cambiarCelda(p, ln, $event.target.value)" /></td>
+                  </tr>
+                  <tr v-if="!lineasMapeables(p).length"><td class="l muted" colspan="2">Sin conceptos mapeables.</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-        <div v-for="p in paneles" :key="'d' + p.id" class="proj" :class="{ off: !esActivo(p), open: open[p.id] }">
+
+        <!-- Detalle por proyecto (solo Preliquidación / Oficial) -->
+        <template v-if="tab === 'preliquidacion' || tab === 'oficial'">
+        <div class="sec-title-row">
+          <div class="sec-title">Detalle contable por proyecto</div>
+          <span class="hint" style="padding:0">Muestra el 100% del proyecto; expande cada uno para el desglose por inversionista.</span>
+        </div>
+        <div v-if="!panelesFiltrados.length" class="empty sm">Ningún proyecto coincide con los filtros.</div>
+        <div v-for="p in panelesFiltrados" :key="'d' + p.id" class="proj" :class="{ off: !esActivo(p), open: open[p.id] }">
           <div class="phead" @click="toggle(p.id)">
             <span class="chev">▶</span>
             <div class="pn">{{ p.proyecto }}</div>
@@ -231,8 +317,59 @@
           </div>
 
           <div class="body" v-show="open[p.id]">
-            <!-- Vista por inversionista (comportamiento por defecto) -->
-            <template v-if="!vista100">
+            <!-- Tabla plana 100% (vista por defecto) -->
+            <div class="tbl-wrap">
+              <table class="dt flat">
+                <thead><tr>
+                  <th class="l">Concepto</th><th class="l">Fuente</th><th>Valor</th>
+                  <th class="l">Comprobante</th><th class="l">Soporte</th>
+                </tr></thead>
+                <tbody>
+                  <template v-for="blk in bloquesMostrados()" :key="blk.key">
+                    <tr class="blk-h"><td colspan="5">{{ blk.label }}</td></tr>
+                    <tr v-for="(ln, i) in lineas100Bloque(p, blk)" :key="blk.key + i" :class="{ derivada: ln.derivada }">
+                      <td class="l">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span></td>
+                      <td class="l">
+                        <span v-if="ln.fuente" class="fuente-tag" :title="fuenteTitle(ln.fuente)">{{ fuenteLabel(ln.fuente) }}</span>
+                        <span v-else-if="!ln.derivada" class="muted" style="font-size:11px">ER</span>
+                      </td>
+                      <td :class="{ neg: ln.valor_cop < 0 }">{{ fmt(ln.valor_cop) }}</td>
+                      <td class="l muted">{{ ln.comprobante_contable || '' }}</td>
+                      <td class="l">
+                        <template v-if="ln.derivada"></template>
+                        <template v-else-if="ln.soporte">
+                          <a class="sop-link" :href="ln.soporte.archivo_url" target="_blank" rel="noopener"
+                             :title="ln.soporte.archivo_nombre || 'Ver soporte'">📎 ver</a>
+                          <button class="sop-x" title="Quitar soporte" @click="eliminarSoporte(p, ln)">✕</button>
+                        </template>
+                        <button v-else class="sop-up" :disabled="subiendoSoporte === sopKey(ln)"
+                                title="Subir soporte" @click="pickSoporte(p, ln)">
+                          {{ subiendoSoporte === sopKey(ln) ? '…' : '📎 subir' }}
+                        </button>
+                      </td>
+                    </tr>
+                    <tr class="blk-tot">
+                      <td class="l" colspan="2">Valor a pagar</td>
+                      <td :class="{ neg: total100Bloque(p, blk) < 0 }">{{ fmt(total100Bloque(p, blk)) }}</td>
+                      <td colspan="2"></td>
+                    </tr>
+                  </template>
+                  <tr class="blk-res">
+                    <td class="l" colspan="2">RESULTADO · Valor a pagar (100%)</td>
+                    <td :class="{ neg: utilidad100(p) < 0 }">{{ fmt(utilidad100(p)) }}</td>
+                    <td colspan="2"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Desglose por inversionista (expandible; aquí se editan valores/comprobante) -->
+            <button class="expand-inv" @click="toggleInv(p.id)">
+              <span class="chev" :class="{ op: invOpen[p.id] }">▶</span>
+              {{ invOpen[p.id] ? 'Ocultar' : 'Ver' }} desglose por inversionista ({{ p.inversionistas.length }})
+            </button>
+
+            <template v-if="invOpen[p.id]">
               <div v-for="inv in p.inversionistas" :key="invKeyOf(inv)" class="inv-block">
                 <div class="inv-head">
                   <div class="inv-name">{{ inv.nombre }} · {{ (inv.porcentaje ?? 0).toFixed(2) }}%</div>
@@ -270,12 +407,11 @@
                                          @change="renombrarFuente(p, ln, $event.target.value)" />
                                   <button class="fuente-x" title="Quitar fuente" @click="quitarFuente(p, ln)">✕</button>
                                 </div>
-                                <div v-else class="cpt">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span></div>
-                                <div v-if="!ln.derivada" class="origen-wrap">
-                                  <button class="origen-link" :title="origenOpen[ln.id] ? 'Ocultar origen' : 'Editar celda de origen'"
-                                          @click="toggleOrigen(ln.id)">⚙ origen: {{ ln.origen || '—' }}</button>
-                                  <input v-if="origenOpen[ln.id]" class="celda-origen" :value="ln.origen" placeholder="hoja!celda"
-                                         @change="cambiarCelda(p, ln, $event.target.value)" />
+                                <div v-else class="cpt">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span><span v-if="ln.fuente" class="fuente-tag" :title="fuenteTitle(ln.fuente)">{{ fuenteLabel(ln.fuente) }}</span></div>
+                                <!-- Valor de módulo (O&M / Arriendos): no viene de una celda del ER, así que
+                                     no se edita la celda de origen; se indica de dónde sale. -->
+                                <div v-if="!ln.derivada && ln.fuente" class="origen-wrap">
+                                  <span class="origen-mod">↳ {{ fuenteOrigen(ln.fuente) }}</span>
                                 </div>
                               </td>
                               <td>
@@ -338,84 +474,6 @@
               </div>
             </template>
 
-            <!-- Vista 100%: total del proyecto (sin dividir), mismas secciones -->
-            <template v-else>
-              <div class="inv-block">
-                <div class="inv-head">
-                  <div class="inv-name">100% — Total proyecto</div>
-                  <div class="inv-cons">
-                    <span>Ing: <b>{{ tab === 'oficial' && p.liquidar_ingresos ? (p.consecutivo_ingresos ?? '—') : '—' }}</b></span>
-                    <span>Cost: <b>{{ tab === 'oficial' && p.liquidar_costos ? (p.consecutivo_costos ?? '—') : '—' }}</b></span>
-                  </div>
-                </div>
-
-                <div class="secs">
-                  <template v-for="sec in secciones" :key="'100' + sec.key">
-                  <div v-show="lineas100Sec(p, sec.key).length"
-                       class="sec-acc" :class="{ open: secOpen[secKey(p.id, '100', sec.key)] }">
-                    <div class="sec-bar" @click="toggleSec(p.id, '100', sec.key)">
-                      <span class="chev">▶</span>
-                      <span class="sec-lbl">{{ sec.label }}</span>
-                      <span class="sec-tot" :class="{ neg: total100Sec(p, sec.key) < 0 }">{{ fmt(total100Sec(p, sec.key)) }}</span>
-                    </div>
-                    <div class="sec-body" v-show="secOpen[secKey(p.id, '100', sec.key)]">
-                      <div class="tbl-wrap">
-                        <table class="dt">
-                          <thead><tr>
-                            <th class="l">Concepto</th>
-                            <th>Valor</th>
-                            <th class="l">Comprobante</th>
-                            <th class="l">Soporte</th>
-                          </tr></thead>
-                          <tbody>
-                            <tr v-for="(ln, i) in lineas100Sec(p, sec.key)" :key="'100' + sec.key + i"
-                                :class="{ derivada: ln.derivada }">
-                              <td class="l">{{ ln.concepto }}<span v-if="ln.derivada" class="imp-tag">impuesto</span></td>
-                              <td :class="{ neg: ln.valor_cop < 0 }">{{ fmt(ln.valor_cop) }}</td>
-                              <td class="l">{{ ln.comprobante_contable || '' }}</td>
-                              <td class="l">
-                                <template v-if="ln.derivada"></template>
-                                <template v-else-if="ln.soporte">
-                                  <a class="sop-link" :href="ln.soporte.archivo_url" target="_blank" rel="noopener"
-                                     :title="ln.soporte.archivo_nombre || 'Ver soporte'">📎 ver</a>
-                                  <button class="sop-x" title="Quitar soporte" @click="eliminarSoporte(p, ln)">✕</button>
-                                </template>
-                                <button v-else class="sop-up" :disabled="subiendoSoporte === sopKey(ln)"
-                                        title="Subir soporte" @click="pickSoporte(p, ln)">
-                                  {{ subiendoSoporte === sopKey(ln) ? '…' : '📎 subir' }}
-                                </button>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Subtotales "Valor a pagar" por bloque contable (Mandato/Costos/Facturas) -->
-                  <div v-if="sec.key === 'comercializacion'" class="sec-subtotal">
-                    <span class="sec-lbl">Valor a pagar (Ingresos − Comercialización)</span>
-                    <span class="sec-tot" :class="{ neg: (total100Sec(p, 'ingresos') + total100Sec(p, 'comercializacion')) < 0 }">{{ fmt(total100Sec(p, 'ingresos') + total100Sec(p, 'comercializacion')) }}</span>
-                  </div>
-                  <div v-else-if="sec.key === 'costos'" class="sec-subtotal">
-                    <span class="sec-lbl">Valor a pagar (Costos Operativos)</span>
-                    <span class="sec-tot" :class="{ neg: total100Sec(p, 'costos') < 0 }">{{ fmt(total100Sec(p, 'costos')) }}</span>
-                  </div>
-                  <div v-else-if="sec.key === 'facturas'" class="sec-subtotal">
-                    <span class="sec-lbl">Valor a pagar (Facturas de Servicio)</span>
-                    <span class="sec-tot" :class="{ neg: total100Sec(p, 'facturas') < 0 }">{{ fmt(total100Sec(p, 'facturas')) }}</span>
-                  </div>
-                  </template>
-
-                  <!-- RESULTADO · valor a pagar: siempre visible -->
-                  <div class="sec-resultado">
-                    <span class="sec-lbl">RESULTADO · Valor a pagar (100%)</span>
-                    <span class="sec-tot" :class="{ neg: utilidad100(p) < 0 }">{{ fmt(utilidad100(p)) }}</span>
-                  </div>
-                </div>
-              </div>
-            </template>
-
             <div class="proj-foot">
               <button class="btn" :disabled="!dirty[p.id]" @click="guardar(p)">
                 <i class="pi pi-save" /> Guardar cambios
@@ -424,6 +482,7 @@
             </div>
           </div>
         </div>
+        </template>
       </template>
     </template>
 
@@ -569,6 +628,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import XLSX from 'xlsx-js-style'
 import api from '@/api/client'
 import { useToast } from 'primevue/usetoast'
 import Dialog from 'primevue/dialog'
@@ -601,8 +661,29 @@ const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto'
 const ANIOS = [2025, 2026]
 
 const tab = ref('preliquidacion')
-// El período nunca se asume: se confirma siempre en el diálogo antes de cargar ER.
-const periodo = ref('')
+// En la pestaña "Selección" se gestionan los flags de un tipo (preliq/oficial) con
+// este switch; en las pestañas de detalle el tipo es la propia pestaña.
+const selTipo = ref('oficial')
+const tipoDatos = computed(() => (tab.value === 'seleccion' ? selTipo.value : tab.value))
+// Período visible en formato "YYYY-MM" (lo que esperan las llamadas del Panel).
+// Arranca en el MES ANTERIOR: el panel es de mes vencido, el mes en curso suele
+// estar vacío. Se navega con las flechas ‹ › (mismo patrón que Facturación).
+function mesPanelISO (delta = 0) {
+  const n = new Date()
+  const d = new Date(n.getFullYear(), n.getMonth() + delta, 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+}
+const periodo = ref(mesPanelISO(-1))
+const esMesActual = computed(() => periodo.value === mesPanelISO(0))
+// Navega un mes; no deja pasar del mes actual. Recarga igual que el antiguo @change.
+function stepMes (delta) {
+  const [y, m] = (periodo.value || mesPanelISO(0)).split('-').map(Number)
+  const d = new Date(y, m - 1 + delta, 1)
+  const next = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+  if (delta > 0 && next > mesPanelISO(0)) return
+  periodo.value = next
+  setTab(tab.value)
+}
 
 // Diálogo de período previo a la carga de ER.
 const showPeriodoDialog = ref(false)
@@ -618,9 +699,25 @@ const diff = ref({})
 const open = reactive({})
 const dirty = reactive({})
 const savedAt = reactive({})
-// Toggle por fila para revelar el input editable de celda de origen (colapsado por defecto).
-const origenOpen = reactive({})
-const toggleOrigen = (id) => { origenOpen[id] = !origenOpen[id] }
+// Mapeo de celdas del ER (pestaña Selección): despliegue por proyecto + qué líneas
+// son mapeables (las que aún vienen del ER: Ingresos / Comercialización).
+const mapeoOpen = reactive({})
+const toggleMapeo = (id) => { mapeoOpen[id] = !mapeoOpen[id] }
+const lineasMapeables = (p) => (p.total_100 || []).filter(
+  l => (l.grupo === 'ingresos' || l.grupo === 'comercializacion') && !l.derivada)
+
+// Valores que vienen de un módulo/tarifa de la app (no del ER). Etiqueta, tooltip y
+// texto de origen que se muestra debajo del concepto.
+const FUENTES = {
+  om:         { label: 'O&M',       title: 'O&M',                     origen: 'del módulo O&M' },
+  arriendos:  { label: 'Arriendos', title: 'Arriendos',               origen: 'del módulo Arriendos' },
+  internet:   { label: 'Internet',  title: 'Internet',                origen: 'tarifa mensual del contrato' },
+  servicios:  { label: 'Tarifa app', title: 'Representación / CGM',   origen: 'tarifa de la app × kWh del ER' },
+  operacion:  { label: 'Operación',  title: 'Administración (operación)', origen: 'tarifa admin × ingreso del ER' },
+}
+const fuenteLabel = (f) => (FUENTES[f]?.label) || f
+const fuenteTitle = (f) => (FUENTES[f]?.title) || f
+const fuenteOrigen = (f) => (FUENTES[f]?.origen) || 'de un módulo'
 const loading = ref(false)
 const cargaError = ref(false)   // distingue "falló la carga" de "no hay paneles"
 const uploading = ref(0)
@@ -664,6 +761,47 @@ const nLiqIng = computed(() => paneles.value.filter(p => p.liquidar_ingresos).le
 const nLiqCost = computed(() => paneles.value.filter(p => p.liquidar_costos).length)
 const nGeneran = computed(() => paneles.value.filter(p => p.generar_mandatos).length)
 const esActivo = (p) => p.liquidar_ingresos || p.liquidar_costos
+
+// ── Filtros de la lista de proyectos ──────────────────────────────────────────
+const fProyecto = ref('')     // texto
+const fTipo = ref('')         // '' | normal | neu | nitro
+const fEstado = ref('')       // '' | liquida | no | solo_ing | solo_cost | genera
+const fMarcador = ref('')     // '' | con_costos | sin_costos | bolsa
+const fInv = ref('')          // nombre de inversionista
+const fBloque = ref('')       // '' | mandato | costos | factura (documento contable)
+const clasMap = reactive({})  // proyecto_id → tipo de liquidación del período
+const hayFiltro = computed(() => !!(fProyecto.value || fTipo.value || fEstado.value || fMarcador.value || fInv.value || fBloque.value))
+function limpiarFiltros () { fProyecto.value = ''; fTipo.value = ''; fEstado.value = ''; fMarcador.value = ''; fInv.value = ''; fBloque.value = '' }
+
+// Lista de inversionistas para el filtro (únicos entre todos los paneles).
+const inversionistasLista = computed(() => {
+  const s = new Set()
+  for (const p of paneles.value) for (const inv of (p.inversionistas || [])) if (inv.nombre) s.add(inv.nombre)
+  return [...s].sort((a, b) => a.localeCompare(b))
+})
+// Bloques a mostrar en la tabla plana según el filtro de documento contable.
+const bloquesMostrados = () => (fBloque.value ? bloquesPlano.filter(b => b.key === fBloque.value) : bloquesPlano)
+
+const panelesFiltrados = computed(() => {
+  const q = fProyecto.value.trim().toLowerCase()
+  return paneles.value.filter(p => {
+    if (q && !(p.proyecto || '').toLowerCase().includes(q)) return false
+    if (fInv.value && !(p.inversionistas || []).some(i => (i.nombre || '') === fInv.value)) return false
+    if (fTipo.value && (clasMap[p.proyecto_id] || 'normal') !== fTipo.value) return false
+    if (fEstado.value) {
+      const liq = p.liquidar_ingresos || p.liquidar_costos
+      if (fEstado.value === 'liquida' && !liq) return false
+      if (fEstado.value === 'no' && liq) return false
+      if (fEstado.value === 'solo_ing' && !(p.liquidar_ingresos && !p.liquidar_costos)) return false
+      if (fEstado.value === 'solo_cost' && !(!p.liquidar_ingresos && p.liquidar_costos)) return false
+      if (fEstado.value === 'genera' && !p.generar_mandatos) return false
+    }
+    if (fMarcador.value === 'con_costos' && !p.tiene_costos) return false
+    if (fMarcador.value === 'sin_costos' && p.tiene_costos) return false
+    if (fMarcador.value === 'bolsa' && !p.tiene_bolsa) return false
+    return true
+  })
+})
 
 const fmt = (n) => {
   const r = Math.round(Number(n) || 0)
@@ -719,6 +857,19 @@ const lineas100 = (p, grupo) => {
 }
 const total100Grupo = (p, grupo) => lineas100(p, grupo).reduce((s, l) => s + (Number(l.valor_cop) || 0), 0)
 const utilidad100 = (p) => (p.total_100 || []).reduce((s, l) => s + (Number(l.valor_cop) || 0), 0)
+
+// ── Tabla plana 100% (vista por defecto del detalle) ──
+// Bloques contables: Mandato (ingresos+comercialización), Costos, Factura (Repr/CGM/Admin).
+const bloquesPlano = [
+  { key: 'mandato', keys: ['ingresos', 'comercializacion'], label: 'MANDATO' },
+  { key: 'costos', keys: ['costos'], label: 'COSTOS' },
+  { key: 'factura', keys: ['facturas'], label: 'FACTURA' },
+]
+const lineas100Bloque = (p, blk) => (p.total_100 || []).filter(l => blk.keys.includes(l.grupo))
+const total100Bloque = (p, blk) => lineas100Bloque(p, blk).reduce((s, l) => s + (Number(l.valor_cop) || 0), 0)
+// Desglose por inversionista, expandible por proyecto (colapsado por defecto).
+const invOpen = reactive({})
+const toggleInv = (id) => { invOpen[id] = !invOpen[id] }
 
 // ── Acordeones del detalle por proyecto (un nivel más de colapso) ──
 // Resolución de claves específica de `secciones` (FACTURAS separado de COSTOS).
@@ -798,12 +949,13 @@ async function cargarPaneles () {
   loading.value = true
   cargaError.value = false
   try {
-    const { data } = await api.get('/panel-contable', { params: { periodo: periodo.value, tipo: tab.value } })
+    const { data } = await api.get('/panel-contable', { params: { periodo: periodo.value, tipo: tipoDatos.value } })
     paneles.value = data.paneles || []
     paneles.value.forEach((p, i) => { if (open[p.id] === undefined) open[p.id] = (i === 0 && esActivo(p)) })
+    cargarClasMap()   // para el filtro por tipo de liquidación (no bloquea el render)
     // Consecutivos SOLO en oficial (la preliquidación no lleva). Al cargar el oficial:
     // traer los usados globalmente (para avisar/sugerir) y numerar solo los faltantes.
-    if (tab.value === 'oficial') {
+    if (tipoDatos.value === 'oficial') {
       await cargarConsInfo()
       if (paneles.value.some(p => p.liquidar_ingresos || p.liquidar_costos)) {
         await reasignar(true)
@@ -816,6 +968,15 @@ async function cargarPaneles () {
   } finally {
     loading.value = false
   }
+}
+
+async function cargarClasMap () {
+  if (!periodo.value) return
+  try {
+    const { data } = await api.get('/panel-contable/clasificacion', { params: { periodo: periodo.value } })
+    for (const k in clasMap) delete clasMap[k]
+    for (const c of (data.proyectos || [])) clasMap[c.proyecto_id] = c.tipo
+  } catch { /* el filtro por tipo queda inactivo si falla */ }
 }
 
 async function cargarDiferencia () {
@@ -992,7 +1153,7 @@ async function reasignar (soloFaltantes = true) {
     // triple round-trip al entrar/cambiar de pestaña).
     const { data } = await api.post('/panel-contable/reasignar-consecutivos', {
       periodo: periodo.value,
-      tipo: tab.value,
+      tipo: tipoDatos.value,
       consecutivo_ingresos_inicial: Number(consIngIni.value) || 0,
       consecutivo_costos_inicial: Number(consCosIni.value) || 0,
       solo_faltantes: soloFaltantes,
@@ -1028,7 +1189,7 @@ async function cambiarCelda (p, ln, texto) {
     const { data } = await api.post('/panel-contable/mapeo-celda', {
       proyecto_id: p.proyecto_id,
       periodo: periodo.value,
-      tipo: tab.value,
+      tipo: tipoDatos.value,
       concepto: ln.concepto,
       hoja: hoja.trim(),
       celda: celda.trim().toUpperCase(),
@@ -1123,6 +1284,87 @@ async function guardar (p) {
   }
 }
 
+// ── Exportar a Excel (tabla plana, formato del Excel maestro "Ajustes") ──────────
+// Una fila por (proyecto, inversionista, documento contable, concepto). Referencia
+// Factura y Contrato van vacías por ahora (no existen en el modelo aún).
+const _DOC_CONTABLE = { ingresos: 'Mandato', comercializacion: 'Mandato', costos: 'Costos', facturas: 'Factura' }
+// Documento contable → grupo (para el filtro fBloque) y color de la celda en el Excel.
+const _DOC_DE_BLOQUE = { mandato: ['ingresos', 'comercializacion'], costos: ['costos'], factura: ['facturas'] }
+const _TINTE_DOC = {
+  Mandato: { fill: 'E6F1FB', text: '0C447C' },
+  Costos:  { fill: 'FAEEDA', text: '854F0B' },
+  Factura: { fill: 'EEEDFE', text: '3C3489' },
+}
+function exportarExcel () {
+  const gruposBloque = fBloque.value ? _DOC_DE_BLOQUE[fBloque.value] : null
+  const rows = []
+  for (const p of panelesFiltrados.value) {
+    for (const inv of (p.inversionistas || [])) {
+      if (fInv.value && inv.nombre !== fInv.value) continue
+      for (const l of (inv.lineas || [])) {
+        if (gruposBloque && !gruposBloque.includes(l.grupo)) continue
+        const esMandato = l.grupo === 'ingresos' || l.grupo === 'comercializacion'
+        rows.push({
+          'Proyecto': p.proyecto,
+          'Inversionista': inv.nombre,
+          'Documento contable': _DOC_CONTABLE[l.grupo] || l.grupo,
+          'Contrato': '',
+          'Concepto': l.concepto,
+          'Total': Math.round(Number(l.valor_cop) || 0),
+          'Referencia Factura': '',
+          'Consecutivo': esMandato ? (p.consecutivo_ingresos ?? '')
+                       : (l.grupo === 'costos' ? (p.consecutivo_costos ?? '') : ''),
+          'Comprobante': l.comprobante_contable || '',
+        })
+      }
+    }
+  }
+  if (!rows.length) {
+    toast.add({ severity: 'warn', summary: 'Nada que exportar', detail: 'No hay filas con los filtros actuales', life: 3000 })
+    return
+  }
+  const headers = ['Proyecto', 'Inversionista', 'Documento contable', 'Contrato', 'Concepto',
+                   'Total', 'Referencia Factura', 'Consecutivo', 'Comprobante']
+  const aoa = [headers, ...rows.map(r => headers.map(h => r[h]))]
+  const ws = XLSX.utils.aoa_to_sheet(aoa)
+
+  const borde = { style: 'thin', color: { rgb: 'E5E2EC' } }
+  const bordes = { top: borde, bottom: borde, left: borde, right: borde }
+  headers.forEach((_, c) => {
+    const ref = XLSX.utils.encode_cell({ r: 0, c })
+    ws[ref].s = {
+      fill: { fgColor: { rgb: '915BD8' } },
+      font: { color: { rgb: 'FFFFFF' }, bold: true },
+      alignment: { horizontal: 'center', vertical: 'center' }, border: bordes,
+    }
+  })
+  rows.forEach((r, i) => {
+    const rr = i + 1
+    for (let c = 0; c < headers.length; c++) {
+      const ref = XLSX.utils.encode_cell({ r: rr, c })
+      if (!ws[ref]) continue
+      ws[ref].s = { border: bordes, alignment: { vertical: 'center' } }
+    }
+    const tinte = _TINTE_DOC[r['Documento contable']]
+    if (tinte) {
+      const ref = XLSX.utils.encode_cell({ r: rr, c: 2 })
+      ws[ref].s = { ...ws[ref].s, fill: { fgColor: { rgb: tinte.fill } }, font: { color: { rgb: tinte.text }, bold: true } }
+    }
+    const tref = XLSX.utils.encode_cell({ r: rr, c: 5 })
+    ws[tref].s = { ...ws[tref].s, alignment: { horizontal: 'right' }, font: { color: { rgb: r.Total < 0 ? 'C0392B' : '2C2039' } } }
+    ws[tref].z = '#,##0'
+  })
+  ws['!cols'] = [{ wch: 26 }, { wch: 26 }, { wch: 18 }, { wch: 12 }, { wch: 24 },
+                 { wch: 16 }, { wch: 16 }, { wch: 12 }, { wch: 22 }]
+  ws['!freeze'] = { xSplit: 0, ySplit: 1 }
+
+  const wb = XLSX.utils.book_new()
+  XLSX.utils.book_append_sheet(wb, ws, 'Panel')
+  const mes = (periodoLabel.value || periodo.value || 'periodo').replace(/\s+/g, '_')
+  XLSX.writeFile(wb, `Panel_${mes}_${tipoDatos.value}.xlsx`)
+  toast.add({ severity: 'success', summary: 'Excel exportado', detail: `${rows.length} filas`, life: 2500 })
+}
+
 onMounted(cargarPaneles)
 </script>
 
@@ -1141,7 +1383,11 @@ onMounted(cargarPaneles)
 .periodo-chip { display:inline-block; background:var(--info); color:var(--p2); font-weight:600; padding:2px 9px; border-radius:7px; }
 .top-actions { display:flex; gap:10px; align-items:flex-end; }
 .req { color:var(--p2); }
-.month-in { font-size:13px; padding:8px 10px; border:1px solid var(--line2); border-radius:9px; color:var(--p1); }
+.pc-period { display:inline-flex; align-items:center; gap:6px; }
+.pc-period-btn { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid #ddd6e8; background:#fff; color:#915BD8; cursor:pointer; transition:background .12s; }
+.pc-period-btn:hover:not(:disabled) { background:#f5f2fa; }
+.pc-period-btn:disabled { opacity:.4; cursor:not-allowed; }
+.pc-period-label { font-size:13px; font-weight:700; color:var(--p1); min-width:104px; text-align:center; }
 /* Colores de marca en hex literal: estos botones también se usan dentro del
    Dialog de PrimeVue, que se teletransporta a <body> fuera de .pc-wrap donde
    las variables --p2/--line2/--sec no existen (por eso salían en blanco). */
@@ -1212,6 +1458,49 @@ onMounted(cargarPaneles)
   border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--txt2); background:#fff; transition:all .12s; }
 .vista-toggle .vt-opt.on { border-color:#915BD8; background:#eee7fb; color:#2C2039; font-weight:600; }
 .vista-toggle .vt-opt input { accent-color:#915BD8; cursor:pointer; }
+
+/* Tabla plana del detalle (vista por defecto) */
+.dt.flat { width:100%; border-collapse:collapse; font-size:13px; }
+.dt.flat th { text-align:right; padding:8px 14px; font-weight:500; color:var(--txt2); border-bottom:0.5px solid var(--line); background:var(--sec); }
+.dt.flat th.l { text-align:left; }
+.dt.flat td { padding:8px 14px; text-align:right; border-bottom:0.5px solid var(--line); font-variant-numeric:tabular-nums; }
+.dt.flat td.l { text-align:left; }
+.dt.flat tr.derivada td { color:var(--txt2); font-size:12px; }
+.dt.flat td.neg, .dt.flat .neg { color:var(--red); }
+.blk-h td { background:var(--info); color:var(--p2); font-weight:600; font-size:11px; letter-spacing:.04em;
+  text-transform:uppercase; padding:6px 14px !important; text-align:left !important; }
+.blk-tot td { background:#fbfaff; font-weight:500; }
+.blk-res td { background:var(--sec); font-weight:600; color:var(--p1); border-top:2px solid var(--p2); }
+.expand-inv { display:inline-flex; align-items:center; gap:7px; margin:12px 0 4px; background:none; border:none;
+  color:var(--p2); font-size:12px; font-weight:500; cursor:pointer; padding:4px 0; }
+.expand-inv .chev { font-size:9px; color:var(--txt3); transition:transform .12s; }
+.expand-inv .chev.op { transform:rotate(90deg); }
+
+/* Barra de filtros de la lista de proyectos */
+.filtros { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.filtro-busca { position:relative; flex:1; min-width:220px; display:inline-flex; align-items:center; }
+.filtro-busca i { position:absolute; left:11px; color:var(--txt3); font-size:13px; }
+.filtro-busca input { width:100%; padding:8px 10px 8px 32px; border:1px solid var(--line2); border-radius:9px;
+  font-size:13px; color:var(--p1); background:#fff; }
+.filtro-sel { padding:8px 10px; border:1px solid var(--line2); border-radius:9px; font-size:13px; color:var(--p1);
+  background:#fff; cursor:pointer; }
+.filtro-busca input:focus, .filtro-sel:focus { outline:none; border-color:#915BD8; }
+.filtro-count { font-size:12px; color:var(--txt3); }
+
+/* Switch preliq/oficial dentro de la pestaña Selección (reusa el look de vt-opt). */
+.sel-tipo { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--txt2); }
+.sel-tipo .vt-opt { display:inline-flex; align-items:center; gap:5px; font-size:12px; padding:5px 12px;
+  border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--txt2); background:#fff; }
+.sel-tipo .vt-opt.on { border-color:#915BD8; background:#eee7fb; color:#2C2039; font-weight:600; }
+.sel-tipo .vt-opt input { accent-color:#915BD8; cursor:pointer; }
+
+/* Mapeo de celdas por proyecto (pestaña Selección) */
+.mapeo-proy { border-top:1px solid var(--line); }
+.mapeo-h { display:flex; align-items:center; gap:8px; padding:10px 18px; cursor:pointer; user-select:none; }
+.mapeo-h:hover { background:var(--sec); }
+.mapeo-h .chev { font-size:9px; color:var(--txt3); transition:transform .12s; }
+.mapeo-h .chev.op { transform:rotate(90deg); }
+
 .origen-wrap { margin-top:3px; }
 .origen-link { display:inline-block; background:none; border:none; padding:0; font-size:10px; color:#9a93a8;
   cursor:pointer; text-align:left; font-variant-numeric:tabular-nums; }
@@ -1283,6 +1572,10 @@ tr.derivada .cpt, tr.derivada td { color:#8a7fa6; font-style:italic; }
 .val-ro.neg { color:#c0392b; }
 .imp-tag { margin-left:6px; font-size:9px; font-style:normal; text-transform:uppercase; letter-spacing:.03em;
   background:#efe7fb; color:#7a5bbf; padding:1px 5px; border-radius:4px; vertical-align:middle; }
+/* Costo que viene de un módulo (O&M / Arriendos), no del ER. */
+.fuente-tag { margin-left:6px; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.03em;
+  background:#e6f6ef; color:#1f7a56; padding:1px 5px; border-radius:4px; vertical-align:middle; }
+.origen-mod { display:inline-block; margin-top:3px; font-size:10px; color:#1f9d6b; }
 .celda-origen { display:block; width:95px; margin-top:3px; font-size:10.5px; color:#9a93a8;
   padding:2px 5px; border:1px solid #ddd6e8; border-radius:5px; text-align:left;
   font-variant-numeric:tabular-nums; background:transparent; }

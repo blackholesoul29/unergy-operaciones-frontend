@@ -137,16 +137,21 @@
           </div>
         </div>
         <div>
-          <label class="field-label">Versión actual</label>
-          <InputText v-model="er.version" class="w-full" placeholder="ej: TXF" />
+          <label class="field-label">Versión</label>
+          <Select v-model="er.version" :options="VERSIONES" class="w-full" />
         </div>
-        <div>
-          <label class="field-label">Proyecto <span class="text-gray-400 font-normal">(opcional)</span></label>
-          <InputText v-model="er.proyecto" class="w-full" placeholder="Dejar vacío para todos" />
-        </div>
+        <p class="text-[11px] text-gray-500">
+          <i class="pi pi-info-circle mr-1" />
+          Genera el archivo para todos los proyectos del período y lo deja en Drive.
+          Puede tardar varios minutos.
+        </p>
+        <p v-if="progresoEr" class="text-[11px] text-gray-500 flex items-center gap-2">
+          <i class="pi pi-spin pi-spinner" /> {{ progresoEr }}
+        </p>
         <div class="flex justify-end gap-2 pt-1">
-          <Button type="button" label="Cancelar" severity="secondary" @click="estadoVisible = false" />
-          <Button type="submit" label="Generar" icon="pi pi-check" />
+          <Button type="button" label="Cancelar" severity="secondary" :disabled="generandoEr"
+                  @click="estadoVisible = false" />
+          <Button type="submit" label="Generar" icon="pi pi-check" :loading="generandoEr" />
         </div>
       </form>
     </Dialog>
@@ -166,11 +171,19 @@
         </div>
         <div>
           <label class="field-label">Versión</label>
-          <InputText v-model="cr.version" class="w-full" placeholder="ej: TXF" />
+          <Select v-model="cr.version" :options="VERSIONES" class="w-full" />
         </div>
+        <p class="text-[11px] text-gray-500">
+          <i class="pi pi-info-circle mr-1" />
+          Verifica que lo repartido cuadre con la factura real de XM. Falla si falta cualquier insumo.
+        </p>
+        <p v-if="progresoCruce" class="text-[11px] text-gray-500 flex items-center gap-2">
+          <i class="pi pi-spin pi-spinner" /> {{ progresoCruce }}
+        </p>
         <div class="flex justify-end gap-2 pt-1">
-          <Button type="button" label="Cancelar" severity="secondary" @click="crudoVisible = false" />
-          <Button type="submit" label="Generar" icon="pi pi-check" />
+          <Button type="button" label="Cancelar" severity="secondary" :disabled="generandoCruce"
+                  @click="crudoVisible = false" />
+          <Button type="submit" label="Generar" icon="pi pi-check" :loading="generandoCruce" />
         </div>
       </form>
     </Dialog>
@@ -188,6 +201,11 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
+import {
+  VERSIONES, VERSION_INICIAL,
+  generarEstadoResultados as generarErApi,
+  generarCruceFacturas as generarCruceApi,
+} from '@/api/liquidacionesApi'
 
 const toast = useToast()
 
@@ -344,38 +362,88 @@ async function descargarZip() {
   }
 }
 
-// ── Generar estado de resultados (mes, año, versión, proyecto opcional) ───────
+// ── Generación de archivos ────────────────────────────────────────────────────
+// Las dos son tareas asíncronas de varios minutos: se sondean y, al terminar, el
+// archivo ya está en Drive, así que se recarga el listado saltando el caché.
+const mesAnterior = new Date(new Date().getFullYear(), new Date().getMonth() - 1, 1)
+
+function periodoPorDefecto() {
+  return { mes: mesAnterior.getMonth() + 1, anio: mesAnterior.getFullYear(), version: VERSION_INICIAL }
+}
+
+function faltanCampos(p) {
+  if (p.mes != null && p.anio != null && p.version) return false
+  toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año y versión.', life: 4000 })
+  return true
+}
+
+/** Corre la tarea, avisa el resultado y refresca la lista de archivos. */
+async function generarArchivo({ fn, periodo, titulo, enCurso, progreso, cerrar }) {
+  if (faltanCampos(periodo)) return
+  enCurso.value = true
+  progreso.value = ''
+  try {
+    const res = await fn(
+      { month: periodo.mes, year: periodo.anio, version: periodo.version },
+      { onEstado: (t) => { progreso.value = t.mensaje } },
+    )
+    toast.add({
+      severity: 'success',
+      summary: titulo,
+      detail: res.file_name ? `Generado: ${res.file_name}` : (res.message || 'Terminó correctamente.'),
+      life: 8000,
+    })
+    cerrar()
+    await cargar(true)
+  } catch (e) {
+    toast.add({
+      severity: 'error',
+      summary: `${titulo} falló`,
+      detail: e.response?.data?.detail || e.message,
+      life: 10000,
+    })
+  } finally {
+    enCurso.value = false
+    progreso.value = ''
+  }
+}
+
+// Estado de resultados
 const estadoVisible = ref(false)
-const er = reactive({ mes: null, anio: null, version: '', proyecto: '' })
+const generandoEr = ref(false)
+const progresoEr = ref('')
+const er = reactive(periodoPorDefecto())
 
 function abrirEstado() {
-  Object.assign(er, { mes: null, anio: null, version: '', proyecto: '' })
+  Object.assign(er, periodoPorDefecto())
+  progresoEr.value = ''
   estadoVisible.value = true
 }
 function generarEstado() {
-  if (er.mes == null || er.anio == null || !er.version) {
-    toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año y versión.', life: 4000 })
-    return
-  }
-  toast.add({ severity: 'info', summary: 'Estado de resultados listo', detail: 'La generación se conectará a la API próximamente.', life: 4500 })
-  estadoVisible.value = false
+  return generarArchivo({
+    fn: generarErApi, periodo: er, titulo: 'Estado de resultados',
+    enCurso: generandoEr, progreso: progresoEr,
+    cerrar: () => { estadoVisible.value = false },
+  })
 }
 
-// ── Generar cruce de facturas (mes, año, versión) ─────────────────────────────
+// Cruce de facturas
 const crudoVisible = ref(false)
-const cr = reactive({ mes: null, anio: null, version: '' })
+const generandoCruce = ref(false)
+const progresoCruce = ref('')
+const cr = reactive(periodoPorDefecto())
 
 function abrirCrudo() {
-  Object.assign(cr, { mes: null, anio: null, version: '' })
+  Object.assign(cr, periodoPorDefecto())
+  progresoCruce.value = ''
   crudoVisible.value = true
 }
 function generarCrudo() {
-  if (cr.mes == null || cr.anio == null || !cr.version) {
-    toast.add({ severity: 'warn', summary: 'Faltan campos', detail: 'Completa mes, año y versión.', life: 4000 })
-    return
-  }
-  toast.add({ severity: 'info', summary: 'Cruce de facturas listo', detail: 'La generación se conectará a la API próximamente.', life: 4500 })
-  crudoVisible.value = false
+  return generarArchivo({
+    fn: generarCruceApi, periodo: cr, titulo: 'Cruce de facturas',
+    enCurso: generandoCruce, progreso: progresoCruce,
+    cerrar: () => { crudoVisible.value = false },
+  })
 }
 </script>
 

@@ -6,6 +6,7 @@
           <InputIcon class="pi pi-search" />
           <InputText v-model="q" placeholder="Buscar razón social o NIT..." class="w-full sm:w-64" />
         </IconField>
+        <Button label="Descargar Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small" @click="descargarExcel" />
         <Button label="Nuevo cliente" icon="pi pi-plus" size="small" @click="openNew" />
       </template>
     </PageHeader>
@@ -99,6 +100,7 @@ import api from '@/api/client'
 import ClienteForm from './ClienteForm.vue'
 import { SEMAFORO, servicioLabel, fmt } from './clientesUi'
 import { formatearNombre } from '@/utils/nombreFormato'
+import { exportarExcel } from '@/utils/exportarExcel'
 
 const router = useRouter()
 const toast = useToast()
@@ -162,6 +164,19 @@ onMounted(load)
 
 function openNew() {
   dialogVisible.value = true
+}
+
+async function descargarExcel() {
+  await exportarExcel(filtrados.value, [
+    { header: 'Razón social', value: c => formatearNombre(c.razon_social_nombre) },
+    { header: 'NIT', value: c => c.nit_cedula || '' },
+    { header: 'Plantas', value: c => c.num_plantas ?? 0 },
+    { header: 'Servicios', value: c => (c.servicios || []).map(servicioLabel).join(', ') },
+    { header: 'Contacto comercial', value: c => c.contacto_comercial_nombre || '' },
+    { header: 'Teléfono contacto', value: c => c.contacto_comercial_telefono || '' },
+    { header: 'Correo comercial', value: c => c.contacto_comercial_correo || '' },
+    { header: 'Estado', value: c => estadoDe(c) },
+  ], `clientes_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Clientes')
 }
 
 async function onSave(payload) {

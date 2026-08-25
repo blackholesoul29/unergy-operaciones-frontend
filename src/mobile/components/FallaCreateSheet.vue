@@ -34,7 +34,7 @@
 
             <!-- RED / EVENTOS: opción única -->
             <template v-if="catActual && catActual.tipo === 'opcion'">
-              <label class="fc-label">{{ catActual.codigo === 'red' ? 'Evento de red' : 'Evento' }} <span class="fc-req">*</span>
+              <label class="fc-label">{{ labelOpciones }} <span class="fc-req">*</span>
                 <select v-model="f.subtipo" class="fc-select" :class="{ 'fc-invalid': err.subtipo }">
                   <option :value="null" disabled>Selecciona…</option>
                   <option v-for="o in catActual.opciones" :key="o.codigo" :value="o.codigo">{{ o.etiqueta }}</option>
@@ -187,6 +187,10 @@ const opcionActual = computed(() => {
   if (!catActual.value || !f.subtipo) return null
   return (catActual.value.opciones ?? []).find(o => o.codigo === f.subtipo) || null
 })
+// La estructura puede nombrar su propio selector (`opciones_label`) cuando las
+// opciones no son "eventos" (p.ej. verificación en sitio).
+const labelOpciones = computed(() =>
+  catActual.value?.opciones_label || (catActual.value?.codigo === 'red' ? 'Evento de red' : 'Evento'))
 
 function chipOn(color) {
   const c = color || '#915BD8'

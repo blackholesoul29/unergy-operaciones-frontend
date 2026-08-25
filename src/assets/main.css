@@ -50,12 +50,23 @@
 .p-select .p-select-label, .p-multiselect .p-multiselect-label { padding: 0.45rem 0.65rem; }
 
 /* Diálogos: header/content más ajustados */
+/* Y un techo de ancho para todos: los diálogos declaran su ancho en rem
+   (el wizard de comercial pide 46rem = 736px), así que entre 640px — donde
+   arranca la regla de 95vw de más abajo — y ese ancho el diálogo se salía de
+   la pantalla. Con max-width no hay banda muerta; en escritorio 95vw queda
+   muy por encima de cualquier ancho declarado, así que no cambia nada. */
+.p-dialog { max-width: 95vw; }
 .p-dialog .p-dialog-header { padding: 0.85rem 1.1rem; }
 .p-dialog .p-dialog-content { padding: 0 1.1rem 1.1rem; }
 
 /* Tooltips (v-tooltip): el texto no debe partirse letra por letra cuando
-   el elemento que lo dispara es angosto (ej. botones de ícono en tablas). */
+   el elemento que lo dispara es angosto (ej. botones de ícono en tablas).
+   El max-width por defecto del tema (12.5rem) es mucho más angosto que
+   varios textos reales de la app -- combinado con nowrap, el texto se
+   salía del recuadro en vez de partirse en líneas. Se amplía para que
+   los tooltips de una sola línea quepan sin desbordarse. */
 .p-tooltip .p-tooltip-text { white-space: nowrap; }
+.p-tooltip { max-width: 22rem !important; }
 
 /* ── Responsive ───────────────────────────────────────────────────────────
    Adaptación a pantallas pequeñas sin tocar la lógica de cada vista.

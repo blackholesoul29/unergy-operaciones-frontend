@@ -77,6 +77,14 @@
           <option value="anual">Anual</option>
         </select>
       </div>
+      <div class="flex flex-col gap-1">
+        <label class="text-xs font-medium text-gray-600">Aplica este mes</label>
+        <select v-model="filtroAplica" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 bg-white w-48">
+          <option value="todos">Todos</option>
+          <option value="aplica">Aplican este mes</option>
+          <option value="no">No aplican este mes</option>
+        </select>
+      </div>
       <div class="ml-auto pb-1.5 text-xs text-gray-400">{{ filasFiltradas.length }} de {{ filas.length }}</div>
     </div>
 
@@ -98,47 +106,57 @@
 
       <div class="section-collapse" :class="{ open: openSections.has(sec.tipo) }">
       <div class="overflow-x-auto">
-        <table class="w-full text-sm border-collapse" style="min-width:980px; table-layout:fixed">
+        <table class="w-full text-sm border-collapse" style="min-width:1080px; table-layout:fixed">
           <thead>
             <tr class="bg-gray-50 border-t border-b border-gray-100">
-              <th class="px-3 py-2.5 text-left" style="width:40px">
+              <th class="px-4 py-2.5 text-left" style="width:40px">
                 <input type="checkbox" :checked="todosMarcadosSeccion(sec.items)"
                   @change="toggleTodosSeccion(sec.items, $event.target.checked)"
                   class="accent-purple-600" />
               </th>
-              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:220px">Proyecto</th>
-              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:120px">Estado contrato</th>
-              <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:130px">Periodo a facturar</th>
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:320px">Proyecto</th>
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:120px">Estado contrato</th>
+              <th class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:130px">Periodo a facturar</th>
               <th v-if="colsVisibles.n_indexaciones"
-                class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:70px">N° IPC</th>
-              <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:130px">Valor Base</th>
+                class="px-4 py-2.5 text-right font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:70px">N° IPC</th>
+              <th class="px-4 py-2.5 text-right font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:130px">Valor Base</th>
               <th v-if="colsVisibles.factor_acumulado"
-                class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:100px">Factor Acum.</th>
+                class="px-4 py-2.5 text-right font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:100px">Factor Acum.</th>
               <th v-if="colsVisibles.valor_anual_indexado"
-                class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500" style="width:150px">Val. Anual Indexado</th>
-              <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 bg-purple-50" style="width:160px">
+                class="px-4 py-2.5 text-right font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:150px">Val. Anual Indexado</th>
+              <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed; width:160px">
                 Canon Arrendamiento
               </th>
-              <th class="px-3 py-2 text-right text-xs font-semibold text-gray-500">IVA</th>
+              <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed">IVA</th>
               <th v-if="colsVisibles.historial"
-                class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500" style="width:240px">Historial IPC</th>
-              <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-500" style="width:100px">Documento</th>
-              <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-500" style="width:90px">Facturado</th>
+                class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:240px">Historial IPC</th>
+              <th class="px-4 py-2.5 text-center font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:100px">Documento</th>
+              <th class="px-4 py-2.5 text-center font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap" style="width:90px">Facturado</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="fila in sec.items" :key="fila.id"
               class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 group">
               <!-- Checkbox — solo facturable (con contrato + aplica este mes) -->
-              <td class="px-3 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td class="px-4 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 <input type="checkbox" :disabled="!esFacturable(fila)"
                   v-model="seleccion[fila.id]" class="accent-purple-600" />
               </td>
               <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
-              <td class="px-3 py-2 font-medium" style="color:#2C2039; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
+              <td class="px-4 py-2 font-medium" style="color:#2C2039; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
                 <div class="flex flex-col gap-0.5 max-w-full">
-                  <span class="inline-flex items-center gap-1.5 max-w-full" style="white-space:nowrap">
-                    <span class="truncate">{{ fila.proyecto }}</span>
+                  <span class="block text-[11px] leading-tight"
+                        :class="fila.codigo ? 'text-gray-400' : 'text-gray-300'">
+                    {{ fila.codigo || '—' }}
+                  </span>
+                  <span class="inline-flex flex-wrap items-center gap-1.5 max-w-full">
+                    <button v-if="fila.proyecto_id" type="button"
+                            class="text-left hover:underline" style="white-space:normal"
+                            @click="irADetalleProyecto(fila)"
+                            v-tooltip.bottom="'Ver detalle del proyecto'">
+                      {{ fila.proyecto }}
+                    </button>
+                    <span v-else style="white-space:normal">{{ fila.proyecto }}</span>
                     <span v-if="!fila.aplica_este_mes && conContrato(fila)"
                       class="inline-flex items-center gap-1 text-[10px] font-normal px-1.5 py-0.5 rounded-full flex-shrink-0"
                       style="background:#e5e7eb; color:#4b5563"
@@ -158,27 +176,27 @@
                 </div>
               </td>
               <!-- Estado contrato -->
-              <td class="px-3 py-2 whitespace-nowrap" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td class="px-4 py-2 whitespace-nowrap" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 <span class="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded-full"
                   :style="{ background: estadoContratoMeta(fila).bg, color: estadoContratoMeta(fila).fg }">
                   {{ estadoContratoMeta(fila).label }}
                 </span>
               </td>
-              <td class="px-3 py-2 text-xs text-gray-600 whitespace-nowrap" :class="!esFacturable(fila) ? 'opacity-40' : ''">{{ periodoLabel }}</td>
-              <td v-if="colsVisibles.n_indexaciones" class="px-3 py-2 text-right text-xs text-gray-500" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td class="px-4 py-2 text-xs text-gray-600 whitespace-nowrap" :class="!esFacturable(fila) ? 'opacity-40' : ''">{{ periodoLabel }}</td>
+              <td v-if="colsVisibles.n_indexaciones" class="px-4 py-2 text-right text-xs text-gray-500" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.n_indexaciones ?? '—' }}
               </td>
-              <td class="px-3 py-2 text-right font-mono text-xs text-gray-600" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td class="px-4 py-2 text-right font-mono text-xs text-gray-600" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.valor_base != null ? formatCOP(fila.valor_base) : '—' }}
               </td>
-              <td v-if="colsVisibles.factor_acumulado" class="px-3 py-2 text-right font-mono text-xs" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td v-if="colsVisibles.factor_acumulado" class="px-4 py-2 text-right font-mono text-xs" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.factor_acumulado != null ? fila.factor_acumulado.toFixed(6) : '—' }}
               </td>
-              <td v-if="colsVisibles.valor_anual_indexado" class="px-3 py-2 text-right font-mono text-xs" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td v-if="colsVisibles.valor_anual_indexado" class="px-4 py-2 text-right font-mono text-xs" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.valor_anual_indexado != null ? formatCOP(fila.valor_anual_indexado) : '—' }}
               </td>
               <!-- Canon calculado -->
-              <td class="px-3 py-2 text-right tabular-nums bg-purple-50/30"
+              <td class="px-4 py-2 text-right tabular-nums bg-purple-50/30"
                 :class="!esFacturable(fila) ? 'opacity-40' : ''"
                 :style="seleccion[fila.id] ? 'color:#7c3aed' : 'color:#9ca3af'">
                 <span class="inline-flex items-center justify-end gap-1">
@@ -194,17 +212,17 @@
                     @mouseleave="ocultarCanon()" />
                 </span>
               </td>
-              <td class="px-3 py-2 text-right font-mono text-xs text-gray-500" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td class="px-4 py-2 text-right font-mono text-xs bg-purple-50/30" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 {{ fila.iva_calculado != null ? formatCOP(fila.iva_calculado) : '—' }}
               </td>
-              <td v-if="colsVisibles.historial" class="px-3 py-2 text-xs text-gray-400"
+              <td v-if="colsVisibles.historial" class="px-4 py-2 text-xs text-gray-400"
                 :class="!esFacturable(fila) ? 'opacity-40' : ''"
                 style="white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis"
                 :title="fila.historial_detalle">
                 {{ fila.historial_texto || '—' }}
               </td>
               <!-- Documento adjunto -->
-              <td class="px-3 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td class="px-4 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 <div class="inline-flex items-center gap-0.5 flex-wrap justify-center">
                   <template v-if="docsPorProyecto[fila.proyecto_id]?.length">
                     <DocumentoIcon
@@ -217,7 +235,7 @@
                   <DocumentoIcon v-else :doc="null" />
                 </div>
               </td>
-              <td class="px-3 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
+              <td class="px-4 py-2 text-center" :class="!esFacturable(fila) ? 'opacity-40' : ''">
                 <button type="button" @click="toggleFacturado(fila.id)">
                   <span v-if="facturadoActual[fila.id]"
                     class="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
@@ -235,14 +253,25 @@
      </div>
 
       <!-- Total general (todas las secciones) -->
-      <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center justify-between"
+      <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center flex-wrap gap-x-8 gap-y-2 justify-between"
         style="border-color:#ECE7F2">
         <span class="text-xs font-semibold text-gray-600">
-          Total ({{ filasSeleccionadas }} proyectos seleccionados)
+          {{ filasSeleccionadas }} proyectos seleccionados
         </span>
-        <span class="text-base font-bold tabular-nums" style="color:#7c3aed">
-          {{ formatCOP(totalSeleccionado) }}
-        </span>
+        <div class="flex items-center gap-6 ml-auto">
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Subtotal Facturado</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalSeleccionado) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">IVA</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalIVASeleccionado) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Total</p>
+            <p class="text-base font-bold tabular-nums" style="color:#7c3aed">{{ formatCOP(totalConIVASeleccionado) }}</p>
+          </div>
+        </div>
       </div>
     </template>
     <div v-else class="bg-white rounded-xl shadow-sm p-10 text-center text-sm text-gray-400 border" style="border-color:#ECE7F2">
@@ -340,6 +369,7 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Button      from 'primevue/button'
 import Tag         from 'primevue/tag'
 import Dialog      from 'primevue/dialog'
@@ -355,6 +385,12 @@ import { docsPorProyecto, loadDocs, downloadDoc } from '@/composables/useArriend
 import DocumentoIcon from '@/components/DocumentoIcon.vue'
 
 const toast = useToast()
+const router = useRouter()
+
+function irADetalleProyecto(fila) {
+  if (!fila.proyecto_id) return
+  router.push(`/proyectos/${fila.proyecto_id}/operacion?subtab=arriendo`)
+}
 
 // ── Tooltip de cálculo del canon (mismo diseño que Mantenimiento) ──────────────
 const canonPopover = ref(null)
@@ -468,12 +504,15 @@ const estadoContratoMeta = (f) => ESTADO_CONTRATO_META[f.estado_contrato] || EST
 const filtroTexto        = ref('')
 const filtroEstado       = ref('todos')   // todos | con_contrato | en_tramite | sin_contrato
 const filtroPeriodicidad = ref('todos')   // todos | mensual | ... | anual
+const filtroAplica       = ref('aplica')  // todos | aplica | no
 const filasFiltradas = computed(() => {
   const q = filtroTexto.value.trim().toLowerCase()
   return filas.value.filter(f => {
     if (q && !(f.proyecto || '').toLowerCase().includes(q)) return false
     if (filtroEstado.value !== 'todos' && (f.estado_contrato || 'con_contrato') !== filtroEstado.value) return false
     if (filtroPeriodicidad.value !== 'todos' && (f.periodicidad || 'mensual') !== filtroPeriodicidad.value) return false
+    if (filtroAplica.value === 'aplica' && !f.aplica_este_mes) return false
+    if (filtroAplica.value === 'no' && f.aplica_este_mes) return false
     return true
   })
 })
@@ -517,6 +556,9 @@ const todosMarcados      = computed(() =>
 const filasSeleccionadas = computed(() => filasHabilitadas.value.filter(f => seleccion[f.id]).length)
 const totalSeleccionado  = computed(() =>
   filas.value.filter(f => esFacturable(f) && seleccion[f.id]).reduce((s, f) => s + (f.canon_a_facturar || 0), 0))
+const totalIVASeleccionado    = computed(() =>
+  filas.value.filter(f => esFacturable(f) && seleccion[f.id]).reduce((s, f) => s + (f.iva_calculado || 0), 0))
+const totalConIVASeleccionado = computed(() => totalSeleccionado.value + totalIVASeleccionado.value)
 
 // IPC faltante no lo expone el backend → notificación deshabilitada
 // Proyectos con indexación incompleta por falta de tasa IPC de algún año.

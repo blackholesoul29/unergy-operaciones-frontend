@@ -48,14 +48,27 @@ app.directive('tooltip', Tooltip)
 app.component('InfoField', InfoField)
 app.component('PageHeader', PageHeader)
 
-router.isReady().then(() => {
-  app.mount('#app')
-  // Si llegamos hasta acá es porque el build actual sí cargó bien -- limpiar
-  // la marca para que un deploy FUTURO (mientras esta pestaña siga abierta)
-  // pueda disparar su propia recarga automática, en vez de quedar bloqueado
-  // por una recarga de un deploy anterior ya resuelta.
-  sessionStorage.removeItem('vite_reload_intentado')
-})
+const montar = () => app.mount('#app')
+
+router.isReady().then(
+  () => {
+    montar()
+    // Si llegamos hasta acá es porque el build actual sí cargó bien -- limpiar
+    // la marca para que un deploy FUTURO (mientras esta pestaña siga abierta)
+    // pueda disparar su propia recarga automática, en vez de quedar bloqueado
+    // por una recarga de un deploy anterior ya resuelta.
+    sessionStorage.removeItem('vite_reload_intentado')
+  },
+  () => {
+    // La navegación inicial falló (caso típico: el chunk de la vista lo borró un
+    // deploy). isReady() RECHAZA en ese escenario, así que sin este segundo
+    // callback la app no se montaba nunca y quedaba la pantalla en blanco --
+    // ni siquiera el fallback de router.onError (/dashboard) tenía dónde
+    // renderizar. Montamos igual. NO limpiamos la marca: si esta carga viene de
+    // una recarga automática, el anti-bucle tiene que seguir puesto.
+    montar()
+  },
+)
 
 // Vite dispara esto cuando falla la carga de un módulo/CSS cargado con import()
 // perezoso (pestaña abierta desde antes de un deploy, pidiendo un archivo que

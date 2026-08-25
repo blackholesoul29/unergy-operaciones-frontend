@@ -82,7 +82,7 @@
             <i class="pi pi-map-marker" /> {{ proyectoSel.municipio }}{{ proyectoSel.departamento ? ', ' + proyectoSel.departamento : '' }}
           </div>
           <div class="fmv-info-row" v-if="proyectoSel.potencia_instalada_kwp">
-            <i class="pi pi-sun" /> {{ Number(proyectoSel.potencia_instalada_kwp).toLocaleString('es-CO') }} kWp
+            <i class="pi pi-sun" /> {{ Number(proyectoSel.potencia_instalada_kwp).toLocaleString('es-CO') }} kW AC
           </div>
           <div class="fmv-info-row" v-if="proyectoSel.operador_red_legal">
             <i class="pi pi-bolt" /> OR: {{ proyectoSel.operador_red_legal }}

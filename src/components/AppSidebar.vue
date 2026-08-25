@@ -261,10 +261,15 @@ const ALL_GROUPS = [
     label: 'General',
     items: [
       { to: '/dashboard',       label: 'Dashboard',        icon: 'pi pi-home' },
-      { to: '/clientes',        label: 'Clientes',         icon: 'pi pi-building' },
-      { to: '/proyectos',       label: 'Proyectos',        icon: 'pi pi-bolt' },
+      // Esta entrada reemplaza a las tres que había antes (Clientes, Proyectos
+      // y Servicios). La base es el portafolio de plantas, y clientes y
+      // contratos son formas de reagrupar ese mismo portafolio. Las rutas
+      // /clientes, /proyectos y /servicios siguen vivas -- solo salieron del
+      // menú, así que nada se rompe y revertir es volver a poner estas líneas.
+      { to: '/servicios-unificado', label: 'Proyectos',          icon: 'pi pi-bolt' },
+      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
-      { to: '/servicios',       label: 'Servicios',        icon: 'pi pi-file-edit' },
+      { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
     ],
   },
   {
@@ -278,10 +283,9 @@ const ALL_GROUPS = [
     items: [
       { to: '/solar-live', label: 'Generación Solar', icon: 'pi pi-sun', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/operaciones/informes-mensuales', label: 'Informes Mensuales', icon: 'pi pi-file-edit', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/operaciones/informes-mensuales/dashboard', label: 'Informes · Dashboard', icon: 'pi pi-chart-bar', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/fallas', label: 'Gestión de Fallas', icon: 'pi pi-wrench', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/alertas/monitoreo', label: 'Alarmas MGS', icon: 'pi pi-bell', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/operaciones/costos-variables', label: 'Costos Variables', icon: 'pi pi-receipt', roles: ['admin', 'operaciones'] },
+      { to: '/operaciones/informe-om', label: 'Informe de Puesta en Marcha', icon: 'pi pi-file-pdf', roles: ['admin', 'operaciones'] },
+      { to: '/operaciones/polizas', label: 'Pólizas', icon: 'pi pi-shield', roles: ['admin', 'operaciones'] },
     ],
   },
   {
@@ -289,7 +293,6 @@ const ALL_GROUPS = [
     items: [
       { to: '/mem/fronteras',         label: 'General',            icon: 'pi pi-globe',      roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/mem/reporte-energia',   label: 'Reporte de Energía', icon: 'pi pi-file-edit',  roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/mem/operadores-red',    label: 'Operadores de Red',  icon: 'pi pi-sitemap',    roles: ['admin', 'operaciones', 'monitoreo'] },
     ],
   },
   {
@@ -316,13 +319,18 @@ const ALL_GROUPS = [
       {
         label: 'Liquidaciones', icon: 'pi pi-dollar', roles: ['admin', 'liquidaciones'],
         children: [
+          // Entrada directa: antes solo se llegaba a la pestaña de Facturación
+          // entrando por Panel Contable → Minigranjas/Autoconsumo.
+          { to: '/liquidaciones?tab=facturacion', label: 'Facturación de energía' },
           { to: '/finanzas/ids-proyectos', label: 'IDs proyectos' },
           { to: '/finanzas/contratos-energia', label: 'Contratos de energía' },
           { to: '/finanzas/despachos-liquidados', label: 'Despachos liquidados' },
+          { to: '/finanzas/consumo', label: 'Consumo' },
           { to: '/finanzas/costos-comercializacion', label: 'Costos comercialización' },
           { to: '/finanzas/facturas-xm', label: 'Facturas de XM' },
           { to: '/finanzas/verificacion-costos', label: 'Verificación de costos' },
           { to: '/finanzas/estados-resultados', label: 'Estados de resultados' },
+          { to: '/finanzas/mandatos', label: 'Mandatos' },
         ],
       },
       {

@@ -99,28 +99,12 @@ const MODULOS = computed(() => [
     count: (ppaAlerts.value.huerfanos?.length || 0) + (ppaAlerts.value.duplicados?.length || 0),
   },
   {
-    to: '/alertas/monitoreo',
-    label: 'Alarmas MGS',
-    desc: 'Alarmas de generación en tiempo real',
-    icon: 'pi pi-exclamation-triangle',
-    color: '#ef4444',
-    count: kpis.value.alarmas_mgs || 0,
-  },
-  {
     to: '/fallas',
     label: 'Fallas Operativas',
     desc: 'Fallas activas por prioridad y estado',
     icon: 'pi pi-wrench',
     color: '#915BD8',
     count: kpis.value.fallas_abiertas || 0,
-  },
-  {
-    to: '/garantias?expiring_days=30',
-    label: 'Garantías por Vencer',
-    desc: 'Garantías que vencen en los próximos 30 días',
-    icon: 'pi pi-wallet',
-    color: '#CA8A04',
-    count: kpis.value.garantias_por_vencer || 0,
   },
 ])
 

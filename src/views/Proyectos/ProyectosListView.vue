@@ -5,12 +5,14 @@
       <template #actions>
         <Button label="Inversores minigranja" icon="pi pi-bolt" size="small" severity="secondary" outlined
                 :loading="invBackfillLoading" @click="previewInversoresBackfill"
-                v-tooltip.bottom="'Crear los 5 inversores típicos (3×300 + 50 + 40 kW) en minigranjas que aún no los tienen'" />
+                v-tooltip.bottom="'Crea los 5 inversores típicos para minigranjas'" />
+        <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" severity="secondary" outlined
+                @click="descargarExcel" />
         <Button label="Nuevo proyecto" icon="pi pi-plus" size="small" @click="openNew" />
       </template>
     </PageHeader>
 
-    <!-- Aviso: proyectos pendientes de Sun Factory / Quoia / Solenium -->
+    <!-- Aviso: proyectos pendientes de Sun Factory / Quoia -->
     <div v-if="pendientes.length" class="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
          style="background: rgba(214,68,85,0.06); border: 1.5px solid rgba(214,68,85,0.25);">
       <span class="text-sm font-medium" style="color: #D64455;">
@@ -43,6 +45,12 @@
         <label class="field-label">Departamento</label>
         <Select v-model="filters.departamento" :options="departamentoOptions" filter
                 class="w-48" placeholder="Todos" showClear />
+      </div>
+      <div>
+        <label class="field-label">PPA</label>
+        <MultiSelect v-model="filters.ppa" :options="ppaOptions" optionLabel="label" optionValue="value"
+                     filter display="chip" class="w-64" placeholder="Todos"
+                     :maxSelectedLabels="1" selectedItemsLabel="{0} PPAs" showClear />
       </div>
     </div>
 
@@ -102,6 +110,13 @@
                               whitespace-nowrap align-bottom">Tipo</th>
                   <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
                               whitespace-nowrap align-bottom">Ubicación</th>
+                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
+                              whitespace-nowrap align-bottom" style="min-width:130px">
+                    <span class="block text-[10px] text-gray-400 font-normal normal-case tracking-normal">
+                      1er día con generación
+                    </span>
+                    <span>Inicio comercialización</span>
+                  </th>
                   <th class="text-right px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
                               whitespace-nowrap align-bottom">
                     <span class="block text-[10px] text-gray-400 font-normal normal-case tracking-normal">kWp</span>
@@ -114,6 +129,8 @@
                   </th>
                   <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
                               whitespace-nowrap align-bottom" style="min-width:140px">Servicios</th>
+                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
+                              whitespace-nowrap align-bottom" style="min-width:150px">PPA</th>
                   <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
                               whitespace-nowrap align-bottom" style="min-width:110px">Inversionistas</th>
                   <th class="px-4 py-2.5 align-bottom" style="width:116px"></th>
@@ -163,6 +180,17 @@
                     <span v-else class="text-gray-300">—</span>
                   </td>
 
+                  <!-- Inicio de comercialización (autoderivada del 1er día con generación) -->
+                  <td class="px-4 py-2 whitespace-nowrap">
+                    <span v-if="row.fecha_inicio_comercializacion"
+                          class="font-mono text-xs text-gray-600">
+                      {{ fmtFecha(row.fecha_inicio_comercializacion) }}
+                      <span v-if="row.fecha_comercializacion_editada_manual"
+                            class="ml-1 text-[10px] text-gray-400 font-sans">manual</span>
+                    </span>
+                    <span v-else class="text-gray-300 text-xs">—</span>
+                  </td>
+
                   <!-- Capacidad instalada (pestaña Técnico) -->
                   <td class="px-4 py-2 text-right font-mono text-xs text-gray-500">
                     {{ row.info_tecnica?.capacidad_instalada_kwp ?? '—' }}
@@ -185,6 +213,20 @@
                         </span>
                       </template>
                     </div>
+                  </td>
+
+                  <!-- PPA asociado (un proyecto puede estar en varios contratos) -->
+                  <td class="px-4 py-2">
+                    <div v-if="row.ppa_contratos?.length" class="flex gap-1 flex-wrap">
+                      <button v-for="c in row.ppa_contratos" :key="c.id"
+                              type="button"
+                              class="ppa-chip"
+                              v-tooltip.bottom="ppaTooltip(c)"
+                              @click="goPPA(row)">
+                        {{ ppaLabel(c) }}
+                      </button>
+                    </div>
+                    <span v-else class="text-gray-300 text-xs">—</span>
                   </td>
 
                   <!-- Inversionistas (avatares) -->
@@ -295,14 +337,14 @@
       </p>
       <div class="flex justify-end gap-2">
         <Button label="Cancelar" severity="secondary" @click="duplicadoVisible = false" />
-        <Button label="Crear de todos modos" :loading="forzando" @click="crearForzado" />
+        <Button label="Crear de todos modos" :loading="forzando" @click="duplicadoConfirmAction()" />
       </div>
     </Dialog>
 
-    <!-- Dialog: Proyectos pendientes (Sun Factory / Quoia / Solenium) -->
+    <!-- Dialog: Proyectos pendientes (Sun Factory / Quoia) -->
     <Dialog v-model:visible="pendientesVisible" header="Proyectos pendientes" modal class="w-full max-w-3xl">
       <p class="text-sm mb-4" style="color: #6b5a8a;">
-        Sun Factory, Quoia y Solenium reportan estos proyectos. Confirma para crearlos o
+        Sun Factory y Quoia reportan estos proyectos. Confirma para crearlos o
         actualizar el registro existente, o ignóralos si no aplican.
       </p>
       <div v-if="loadingPendientes" class="flex items-center justify-center py-8">
@@ -377,12 +419,14 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import ProyectoForm from './ProyectoForm.vue'
 import { formatearNombreProyecto } from './proyectosUi'
+import { exportarExcel } from '@/utils/exportarExcel'
 
 const router = useRouter()
 const route  = useRoute()
@@ -532,10 +576,18 @@ const duplicadoVisible = ref(false)
 const duplicadoInfo = ref(null)   // { mensaje, candidato_id, candidato_nombre }
 const pendingPayload = ref(null)  // payload a reintentar con forzar=true
 const pendingInfoTecnica = ref(null)  // potencia_ac_kw/capacidad_instalada_kwp a reintentar junto con pendingPayload
+// Qué reintentar con forzar=true al confirmar el diálogo -- crearForzado() para
+// el alta manual, o un cierre sobre confirmarPendiente(p, true) para Pendientes.
+const duplicadoConfirmAction = ref(null)
 const forzando = ref(false)
 const openSections = ref(new Set())    // reactive Set via full replacement
 
-// Los filtros se sincronizan con la URL (?q=&estado=&tipo_proyecto=&departamento=)
+// Valor centinela del filtro de PPA: "proyectos sin ningún PPA asociado".
+// Ningún contrato real tiene id negativo, así que puede convivir con los ids
+// reales en la misma lista de opciones.
+const PPA_SIN = -1
+
+// Los filtros se sincronizan con la URL (?q=&estado=&tipo_proyecto=&departamento=&ppa=)
 // para que se sostengan al volver con el boton "atras" o al refrescar --
 // antes vivian solo en memoria local y se perdian en cada montaje del componente.
 const filters = reactive({
@@ -543,7 +595,17 @@ const filters = reactive({
   estado: route.query.estado || null,
   tipo_proyecto: route.query.tipo_proyecto || null,
   departamento: route.query.departamento || null,
+  ppa: parsePpaQuery(route.query.ppa),
 })
+
+// ?ppa=12,45 -> [12, 45] (el centinela "sin PPA" viaja como -1)
+function parsePpaQuery(raw) {
+  if (!raw) return []
+  return String(raw)
+    .split(',')
+    .map(v => Number(v))
+    .filter(v => Number.isInteger(v))
+}
 
 watch(filters, (f) => {
   const query = {}
@@ -551,6 +613,7 @@ watch(filters, (f) => {
   if (f.estado) query.estado = f.estado
   if (f.tipo_proyecto) query.tipo_proyecto = f.tipo_proyecto
   if (f.departamento) query.departamento = f.departamento
+  if (f.ppa?.length) query.ppa = f.ppa.join(',')
   router.replace({ query })
 })
 
@@ -559,6 +622,48 @@ const departamentoOptions = computed(() => {
   const set = new Set(allItems.value.map(p => p.departamento).filter(Boolean))
   return [...set].sort((a, b) => a.localeCompare(b))
 })
+
+// ── PPA ────────────────────────────────────────────────────────────────────────
+// Un proyecto puede estar en varios contratos PPA a la vez (relación N a N), así
+// que el filtro es "tiene al menos uno de los PPA seleccionados".
+
+function ppaLabel(c) {
+  return c?.nombre_interno || c?.numero_codigo_contrato || `PPA ${c?.id}`
+}
+
+function ppaTooltip(c) {
+  const partes = []
+  if (c?.nombre_interno && c?.numero_codigo_contrato) partes.push(c.numero_codigo_contrato)
+  if (c?.comprador_nombre) partes.push(`Comprador: ${c.comprador_nombre}`)
+  const desde = c?.fecha_inicio ? fmtFecha(c.fecha_inicio) : null
+  const hasta = c?.fecha_fin ? fmtFecha(c.fecha_fin) : null
+  if (desde || hasta) partes.push(`${desde || '—'} → ${hasta || '—'}`)
+  return partes.length ? `${ppaLabel(c)} · ${partes.join(' · ')}` : ppaLabel(c)
+}
+
+// Contratos presentes en los proyectos cargados, deduplicados por id
+const ppaOptions = computed(() => {
+  const porId = new Map()
+  let sinPpa = 0
+  for (const p of allItems.value) {
+    if (!p.ppa_contratos?.length) { sinPpa++; continue }
+    for (const c of p.ppa_contratos) {
+      if (!porId.has(c.id)) porId.set(c.id, c)
+    }
+  }
+  const opciones = [...porId.values()]
+    .map(c => ({ value: c.id, label: ppaLabel(c) }))
+    .sort((a, b) => a.label.localeCompare(b.label))
+  if (sinPpa) opciones.unshift({ value: PPA_SIN, label: `Sin PPA (${sinPpa})` })
+  return opciones
+})
+
+function goPPA(row) { router.push(`/proyectos/${row.id}/ppa`) }
+
+// ── Fechas ─────────────────────────────────────────────────────────────────────
+function fmtFecha(v) {
+  return v ? String(v).slice(0, 10) : '—'
+}
 
 // ── Filtrado + agrupación ──────────────────────────────────────────────────────
 const filteredItems = computed(() => {
@@ -570,6 +675,14 @@ const filteredItems = computed(() => {
   if (filters.estado)        list = list.filter(p => p.estado === filters.estado)
   if (filters.tipo_proyecto) list = list.filter(p => p.tipo_proyecto === filters.tipo_proyecto)
   if (filters.departamento)  list = list.filter(p => p.departamento === filters.departamento)
+  if (filters.ppa?.length) {
+    const sel = new Set(filters.ppa)
+    list = list.filter(p => {
+      const suyos = p.ppa_contratos || []
+      if (!suyos.length) return sel.has(PPA_SIN)
+      return suyos.some(c => sel.has(c.id))
+    })
+  }
   return list
 })
 
@@ -620,6 +733,22 @@ function goDetail(row) { router.push(`/proyectos/${row.id}`) }
 function goEdit(row)   { router.push(`/proyectos/${row.id}?edit=true`) }
 function openNew()     { dialogVisible.value = true }
 
+async function descargarExcel() {
+  await exportarExcel(filteredItems.value, [
+    { header: 'Cód. TSF', value: p => p.codigo_tsf || '' },
+    { header: 'Nombre comercial', value: p => formatearNombreProyecto(p.nombre_comercial) },
+    { header: 'Estado', value: p => ESTADO_LABELS[p.estado] || p.estado || '' },
+    { header: 'Tipo', value: p => TIPO_LABELS[p.tipo_proyecto] || p.tipo_proyecto || '' },
+    { header: 'Municipio', value: p => p.municipio || '' },
+    { header: 'Departamento', value: p => p.departamento || '' },
+    { header: 'Inicio comercialización', value: p => p.fecha_inicio_comercializacion ? fmtFecha(p.fecha_inicio_comercializacion) : '' },
+    { header: 'Capacidad instalada (kWp)', value: p => p.info_tecnica?.capacidad_instalada_kwp ?? '' },
+    { header: 'Potencia AC (kW)', value: p => p.info_tecnica?.potencia_ac_kw ?? '' },
+    { header: 'PPA', value: p => (p.ppa_contratos || []).map(ppaLabel).join(', ') },
+    { header: 'Inversionistas', value: p => (p.inversionistas || []).map(i => i.cliente_nombre).join(', ') },
+  ], `proyectos_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Proyectos')
+}
+
 function confirmDelete(row) {
   deleteProyecto.value = row
   deleteVisible.value  = true
@@ -649,6 +778,7 @@ async function onCreate(payload, infoTecnica) {
       duplicadoInfo.value = detail
       pendingPayload.value = payload
       pendingInfoTecnica.value = infoTecnica
+      duplicadoConfirmAction.value = crearForzado
       duplicadoVisible.value = true
       return
     }
@@ -688,7 +818,7 @@ async function doDelete() {
   }
 }
 
-// ── Proyectos pendientes (Sun Factory + Quoia + Solenium) ──────────────────────
+// ── Proyectos pendientes (Sun Factory + Quoia) ──────────────────────────────
 const pendientes = ref([])
 const loadingPendientes = ref(false)
 const pendientesVisible = ref(false)
@@ -703,7 +833,7 @@ async function loadPendientes() {
       _loading: null,
     }))
   } catch {
-    // Sun Factory/Quoia/Solenium sin configurar u otro error -- no bloquea la vista.
+    // Sun Factory/Quoia sin configurar u otro error -- no bloquea la vista.
     pendientes.value = []
   }
 }
@@ -714,19 +844,37 @@ function abrirPendientes() {
   loadPendientes().finally(() => { loadingPendientes.value = false })
 }
 
-async function confirmarPendiente(p) {
+async function confirmarPendiente(p, forzar = false) {
   p._loading = 'confirmar'
   try {
     await api.post(`/proyectos/pendientes/${p.clave}/confirmar`, {
       nombre_comercial: p.tipo_sugerencia === 'crear' ? p._nombre : undefined,
       tipo_proyecto: p.tipo_sugerencia === 'crear' ? p._tipo : undefined,
-    })
+    }, forzar ? { params: { forzar: true } } : undefined)
     pendientes.value = pendientes.value.filter(x => x.clave !== p.clave)
+    duplicadoVisible.value = false
     toast.add({ severity: 'success', summary: p.tipo_sugerencia === 'crear' ? 'Proyecto creado' : 'Proyecto actualizado', life: 3000 })
     load()
   } catch (e) {
+    const detail = e.response?.data?.detail
+    // Mismo aviso de "nombre parecido" que en el alta manual -- evita que dos
+    // candidatos pendientes distintos (p. ej. Sun Factory duplicado) creen el
+    // mismo proyecto dos veces sin ningún aviso.
+    if (e.response?.status === 409 && detail?.duplicado_nombre) {
+      duplicadoInfo.value = detail
+      duplicadoConfirmAction.value = async () => {
+        forzando.value = true
+        try {
+          await confirmarPendiente(p, true)
+        } finally {
+          forzando.value = false
+        }
+      }
+      duplicadoVisible.value = true
+      return
+    }
     toast.add({ severity: 'error', summary: 'No se pudo confirmar',
-      detail: e.response?.data?.detail || e.message, life: 5000 })
+      detail: typeof detail === 'string' ? detail : (detail?.mensaje || e.message), life: 5000 })
   } finally {
     p._loading = null
   }
@@ -855,6 +1003,26 @@ thead .sticky-col {
 /* ── Service badges ──────────────────────────────────────────────────────────── */
 .srv-badge {
   @apply bg-green-100 text-green-800 text-[10px] font-semibold px-1.5 py-0.5 rounded cursor-default;
+}
+
+/* ── PPA chips (abren la pestaña PPA del proyecto) ───────────────────────────── */
+.ppa-chip {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #EEEDFE;
+  color: #3C3489;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.ppa-chip:hover {
+  background: #915BD8;
+  color: #ffffff;
 }
 
 /* ── Avatar stack ────────────────────────────────────────────────────────────── */

@@ -603,6 +603,7 @@ const CAUSA_POR_CATEGORIA = {
   red: 'Ausencia o anomalía en el suministro eléctrico externo (operador de red)',
   frontera: 'Falla en el sistema de medición / comunicación de la frontera comercial',
   inversores: 'Falla o anomalía en inversor(es) del sistema fotovoltaico',
+  generando_sin_datos: 'Ausencia de datos de generación: no hay registro de monitoreo del período',
   eventos_adversos: 'Evento adverso externo, no atribuible a la infraestructura del proyecto',
 }
 function autoCause(f) {
@@ -1062,7 +1063,7 @@ function buildConsolidatedPage(portName, projsData, range, totalPages) {
     return { pd, tot, avg, p90, pct, avail }
   })
 
-  let totalPort = 0, overP90 = 0, totalEv = 0
+  let totalPort = 0, overP90 = 0, totalEv = 0, totalP90 = 0
   let rows = ''
   enriched.forEach((e, idx) => {
     const pc = e.pct === null ? '#A89EC0' : e.pct >= 0 ? '#4ADE80' : '#FF5757'
@@ -1070,6 +1071,7 @@ function buildConsolidatedPage(portName, projsData, range, totalPages) {
     if (e.pct !== null && e.pct >= 0) overP90++
     totalPort += e.tot
     totalEv += e.pd.mf.length
+    if (e.p90 !== null) totalP90 += e.p90
     const pn = e.pd.cfg.nombre_clientes || e.pd.cfg.nombre_display || e.pd.cfg.nombre_comercial
     let rankBadge = ''
     if (idx === 0) rankBadge = '<span style="font-size:10px;margin-left:5px">🥇</span>'
@@ -1086,6 +1088,10 @@ function buildConsolidatedPage(portName, projsData, range, totalPages) {
       `<td style="text-align:center">${e.pd.mf.length}</td>` +
       `<td style="text-align:center;color:${pc}">${esc(e.pct !== null ? (e.pct >= 0 ? '✅ Normal' : '⚠️ Atención') : '—')}</td></tr>`
   })
+
+  const pctPort = totalP90 > 0 ? ((totalPort - totalP90) / totalP90 * 100) : null
+  const pctPortStr = pctPort !== null ? `${pctPort >= 0 ? '+' : ''}${pctPort.toFixed(1)}%` : '—'
+  const pctPortCol = pctPort === null ? '#F6FF72' : pctPort >= 0 ? '#4ADE80' : '#FF5757'
 
   const chart = svgPortfolioChart(enriched.map(e => ({
     name: e.pd.cfg.nombre_clientes || e.pd.cfg.nombre_display || e.pd.cfg.nombre_comercial,
@@ -1104,14 +1110,17 @@ function buildConsolidatedPage(portName, projsData, range, totalPages) {
     `<div class="rpt-section"><div class="rpt-section-title">▌ 1. Resumen Consolidado – ${esc(range.headerPeriod)}</div>` +
     '<div class="rpt-kpi-row">' +
     rkpi('⚡', 'Generación Total Portafolio', `${Math.round(totalPort).toLocaleString('es-CO')} kWh`, null) +
-    rkpi('🏭', 'Proyectos sobre P90', `${overP90} / ${projsData.length}`, overP90 === projsData.length ? '#4ADE80' : '#F6FF72') +
+    rkpi('🎯', 'P90 Total Portafolio', `${Math.round(totalP90).toLocaleString('es-CO')} kWh`, null) +
+    rkpi('🏭', 'Proyectos sobre P90', `${overP90} / ${projsData.length}`, overP90 === projsData.length ? '#4ADE80' : '#F59E0B') +
     rkpi('⚠️', 'Total Eventos del Período', `${totalEv} evento(s)`, totalEv > 0 ? '#F97316' : '#4ADE80') +
     '</div>' +
     '<table class="rpt-table" style="margin-top:12px"><thead><tr>' +
     '<th># PROYECTO</th><th>GENERACIÓN (kWh)</th><th>PROM. DIARIO</th><th>DESV. P90</th><th>DISPONIB.</th><th>EVENTOS</th><th>ESTADO</th>' +
     '</tr></thead><tbody>' + rows + '</tbody>' +
     '<tfoot><tr class="rpt-total-row"><td>TOTAL PORTAFOLIO</td>' +
-    `<td style="text-align:right;font-family:monospace" colspan="6">${Math.round(totalPort).toLocaleString('es-CO')} kWh</td></tr></tfoot>` +
+    `<td style="text-align:right;font-family:monospace">${Math.round(totalPort).toLocaleString('es-CO')} kWh</td>` +
+    `<td colspan="2" style="text-align:right;font-family:monospace">P90: ${Math.round(totalP90).toLocaleString('es-CO')} kWh</td>` +
+    `<td colspan="3" style="text-align:center;font-weight:700;color:${pctPortCol}">${pctPortStr}</td></tr></tfoot>` +
     '</table></div>' +
     '<div class="rpt-section"><div class="rpt-section-title">▌ 2. Generación por Proyecto — Ranking vs P90</div>' +
     `<div class="rpt-chart-card"><div class="rpt-chart-box rpt-chart-box-tall">${chart}</div></div></div>` +
@@ -1132,9 +1141,9 @@ function calcSLA(f) {
   let slaRevision = 2, slaLabel = 'Crítico (≥90%)'
   const cat = f?.clasificacion?.categoria
   if (cat) {
-    // red = desconexión de suministro → crítico; frontera/inversores → grave;
-    // eventos adversos externos → medio.
-    if (cat === 'frontera' || cat === 'inversores') { slaRevision = 3; slaLabel = 'Grave (66-90%)' }
+    // red = desconexión de suministro → crítico; frontera/inversores y falta de
+    // datos de generación → grave; eventos adversos externos → medio.
+    if (cat === 'frontera' || cat === 'inversores' || cat === 'generando_sin_datos') { slaRevision = 3; slaLabel = 'Grave (66-90%)' }
     else if (cat === 'eventos_adversos') { slaRevision = 4; slaLabel = 'Medio (<66%)' }
   } else {
     const pre = String(f.tipo?.codigo || '').charAt(0)

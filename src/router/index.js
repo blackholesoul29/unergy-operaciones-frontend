@@ -28,19 +28,24 @@ const routes = [
   { path: '/proyectos/:id/operacion',       name: 'ProyectoOperacion',       component: () => import('@/views/Servicios/OperacionView.vue') },
   { path: '/proyectos/:id/representacion',  name: 'ProyectoRepresentacion',  component: () => import('@/views/Servicios/RepresentacionView.vue') },
   { path: '/servicios',    name: 'Servicios',    component: () => import('@/views/Contratos/ContratosListView.vue') },
+  { path: '/servicios-unificado', name: 'ServiciosUnificado', component: () => import('@/views/Servicios/ServiciosUnificadoView.vue') },
   { path: '/contratos/:id',name: 'ContratoDetalle', component: () => import('@/views/Contratos/ContratoDetailView.vue') },
   { path: '/general/proximos-energizar', name: 'ProximosEnergizar', component: () => import('@/views/General/ProximosEnergizarView.vue') },
+  { path: '/general/retos',     name: 'Retos',        component: () => import('@/views/Retos/RetosListView.vue') },
+  { path: '/general/retos/:id', name: 'RetoDetalle',  component: () => import('@/views/Retos/RetoDetailView.vue') },
 
   // ── Comercial ────────────────────────────────────────────────────
-  { path: '/comercial', name: 'Comercial', component: () => import('@/views/Comercial/ComercialPipelineView.vue'), meta: { roles: ['admin', 'comercial'] } },
+  // El drawer de una oferta se abre con ?oferta=<id> sobre esta misma ruta, para
+  // que el enlace se pueda compartir y sobreviva un F5.
+  { path: '/comercial', name: 'Comercial', component: () => import('@/views/Comercial/ComercialView.vue'), meta: { roles: ['admin', 'comercial'] } },
   { path: '/comercial/oportunidades/:id', name: 'OportunidadDetalle', component: () => import('@/views/Comercial/OportunidadDetailView.vue'), meta: { roles: ['admin', 'comercial'] } },
 
   // ── Operaciones ──────────────────────────────────────────────────
   { path: '/operaciones/informes-mensuales', name: 'InformesMensuales', component: () => import('@/views/Operaciones/InformesMensualesView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
-  { path: '/operaciones/informes-mensuales/dashboard', name: 'InformesMensualesDashboard', component: () => import('@/views/Operaciones/InformesMensualesDashboard.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/informes/:id', name: 'InformeDetalle', component: () => import('@/views/Operaciones/InformeDetailView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/operaciones/gestion-fallas', name: 'GestionFallas', component: () => import('@/views/Operaciones/GestionFallasView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
-  { path: '/operaciones/costos-variables', name: 'CostosVariables', component: () => import('@/views/Operaciones/CostosVariablesTabsView.vue'), meta: { roles: ['admin', 'operaciones'] } },
+  { path: '/operaciones/informe-om', name: 'InformeOM', component: () => import('@/views/Operaciones/InformeOMView.vue'), meta: { roles: ['admin', 'operaciones'] } },
+  { path: '/operaciones/polizas', name: 'Polizas', component: () => import('@/views/Operaciones/PolizasView.vue'), meta: { roles: ['admin', 'operaciones'] } },
   { path: '/fallas',       name: 'Fallas',       component: () => import('@/views/Fallas/MonitoreoView.vue'),   meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/fallas/lista', redirect: '/fallas' },
   { path: '/fallas/:id',   name: 'FallaDetalle', component: () => import('@/views/Fallas/FallaDetailView.vue'), meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
@@ -49,7 +54,6 @@ const routes = [
   // ── Alertas ──────────────────────────────────────────────────────
   { path: '/alertas',             name: 'Alertas',            component: () => import('@/views/Alertas/AlertasView.vue'),           meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
   { path: '/alertas/contratos-ppa', name: 'AlertasContratosPPA', component: () => import('@/views/Alertas/AlertasContratosPPAView.vue'), meta: { roles: ['admin', 'operaciones'] } },
-  { path: '/alertas/monitoreo',   name: 'AlertasMonitoreo',   component: () => import('@/views/Alertas/AlertasMonitoreoView.vue'),  meta: { roles: ['admin', 'operaciones', 'monitoreo'] } },
 
   // ── Finanzas ─────────────────────────────────────────────────────
   { path: '/liquidaciones',                  name: 'Liquidaciones',                  component: () => import('@/views/Liquidaciones/LiquidacionesView.vue'),                     meta: { roles: ['admin', 'liquidaciones'] } },
@@ -61,10 +65,12 @@ const routes = [
   { path: '/finanzas/ids-proyectos',   name: 'IdsProyectos',   component: () => import('@/views/Finanzas/IdsProyectosView.vue'),      meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/contratos-energia', name: 'ContratosEnergia', component: () => import('@/views/Finanzas/ContratosEnergiaView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/despachos-liquidados', name: 'DespachosLiquidados', component: () => import('@/views/Finanzas/DespachosLiquidadosView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
+  { path: '/finanzas/consumo', name: 'Consumo', component: () => import('@/views/Finanzas/ConsumoView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/costos-comercializacion', name: 'CostosComercializacion', component: () => import('@/views/Finanzas/CostosComercializacionView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/facturas-xm', name: 'FacturasXm', component: () => import('@/views/Finanzas/FacturasXmView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/verificacion-costos', name: 'VerificacionCostos', component: () => import('@/views/Finanzas/VerificacionCostosView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/finanzas/estados-resultados', name: 'EstadosResultados', component: () => import('@/views/Finanzas/EstadosResultadosView.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
+  { path: '/finanzas/mandatos', name: 'MandatosFinanzas', component: () => import('@/views/Finanzas/MandatosFinanzas.vue'), meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/panel-contable',              name: 'PanelContable',              component: () => import('@/views/PanelContable/PanelContableView.vue'),                    meta: { roles: ['admin', 'liquidaciones'] } },
   { path: '/liquidaciones/minigranjas',   redirect: '/liquidaciones' },
   { path: '/liquidaciones/:id',           name: 'LiquidacionDetalle',         component: () => import('@/views/Liquidaciones/LiquidacionDetailView.vue'),           meta: { roles: ['admin', 'liquidaciones'] } },
@@ -108,8 +114,16 @@ const router = createRouter({
 // `vite:preloadError` en main.js recarga para tomar los archivos nuevos; aquí
 // solo evitamos que la ruta quede completamente muerta si esa recarga no llega
 // a dispararse por algún motivo (navegamos al dashboard en vez de no hacer nada).
+// Una sola vez por carga de página: si el propio fallback también falla (su chunk
+// tampoco existe, o beforeEach lo reenvía a otra ruta rota), currentRoute nunca
+// avanza -- la condición de abajo seguiría siendo verdadera y quedaríamos en un
+// bucle de navegaciones fallidas, cada una pidiendo un archivo inexistente. La
+// bandera vive en el módulo, así que una recarga la reinicia.
+let fallbackIntentado = false
 router.onError((_err, to) => {
+  if (fallbackIntentado) return
   if (to.fullPath !== router.currentRoute.value.fullPath) {
+    fallbackIntentado = true
     router.push('/dashboard').catch(() => {})
   }
 })

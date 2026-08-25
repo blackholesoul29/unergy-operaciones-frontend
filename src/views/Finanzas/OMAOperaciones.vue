@@ -150,6 +150,12 @@
               <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed">
                 Valor a Facturar
               </th>
+              <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed">
+                IVA (19%)
+              </th>
+              <th class="px-4 py-2.5 text-right font-semibold text-xs uppercase tracking-wide bg-purple-50 whitespace-nowrap" style="color:#7c3aed">
+                Total
+              </th>
               <th v-if="colsVisibles.historial"
                 class="px-4 py-2.5 text-left font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Historial IPC</th>
               <th class="px-4 py-2.5 text-center font-medium text-gray-500 text-xs uppercase tracking-wide whitespace-nowrap">Facturado</th>
@@ -167,7 +173,18 @@
               </td>
               <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
               <td class="px-4 py-2 font-medium" style="color:#2C2039; white-space:nowrap">
-                {{ fila.nombre_proyecto }}
+                <span class="block text-[11px] leading-tight"
+                      :class="fila.codigo_tsf ? 'text-gray-400' : 'text-gray-300'">
+                  {{ fila.codigo_tsf || '—' }}
+                </span>
+                <button v-if="fila.proyecto_id" type="button"
+                        class="text-left hover:underline"
+                        style="color:#2C2039"
+                        @click="irADetalleProyecto(fila)"
+                        v-tooltip.bottom="'Ver detalle del proyecto'">
+                  {{ fila.nombre_proyecto }}
+                </button>
+                <span v-else>{{ fila.nombre_proyecto }}</span>
                 <span v-if="!fila.habilitado && conContrato(fila)"
                   class="inline-flex items-center gap-1 ml-1.5 text-[10px] font-normal px-1.5 py-0.5 rounded-full align-middle"
                   style="background:#fef3c7; color:#92400e"
@@ -238,6 +255,15 @@
                   </span>
                 </div>
               </td>
+              <td class="px-4 py-2 text-right bg-purple-50/30 font-mono text-xs"
+                :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''">
+                {{ valorEfectivo(fila) != null ? formatCOP(valorEfectivo(fila) * IVA_TASA) : '—' }}
+              </td>
+              <td class="px-4 py-2 text-right bg-purple-50/30 font-semibold tabular-nums"
+                :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''"
+                style="color:#7c3aed">
+                {{ valorEfectivo(fila) != null ? formatCOP(valorEfectivo(fila) * (1 + IVA_TASA)) : '—' }}
+              </td>
               <td v-if="colsVisibles.historial" class="px-4 py-2 text-xs text-gray-400"
                 :class="(!fila.habilitado || !fila.aplica_este_mes || !conContrato(fila)) ? 'opacity-40' : ''"
                 style="white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis"
@@ -270,14 +296,25 @@
      </div>
 
       <!-- Total general (todas las secciones) -->
-      <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center justify-between"
+      <div class="bg-white rounded-xl shadow-sm border px-4 py-3 flex items-center flex-wrap gap-x-8 gap-y-2 justify-between"
         style="border-color:#ECE7F2">
         <span class="text-xs font-semibold text-gray-600">
-          Total ({{ filasSeleccionadas }} proyectos seleccionados)
+          {{ filasSeleccionadas }} proyectos seleccionados
         </span>
-        <span class="text-base font-bold tabular-nums" style="color:#7c3aed">
-          {{ formatCOP(totalSeleccionado) }}
-        </span>
+        <div class="flex items-center gap-6 ml-auto">
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Subtotal Facturado</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalSeleccionado) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">IVA (19%)</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalIVASeleccionado) }}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Total</p>
+            <p class="text-base font-bold tabular-nums" style="color:#7c3aed">{{ formatCOP(totalConIVASeleccionado) }}</p>
+          </div>
+        </div>
       </div>
     </template>
 
@@ -449,6 +486,7 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRouter }  from 'vue-router'
 import Button        from 'primevue/button'
 import Tag           from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
@@ -470,6 +508,13 @@ const toast = useToast()
 
 // Autofocus para el input de edición inline (expuesto como v-focus)
 const vFocus = { mounted: (el) => el.focus() }
+
+const router = useRouter()
+
+function irADetalleProyecto(fila) {
+  if (!fila.proyecto_id) return
+  router.push(`/proyectos/${fila.proyecto_id}/operacion?subtab=mantenimiento`)
+}
 
 const hoy = new Date()
 const periodoOffset = ref(0)
@@ -534,10 +579,13 @@ const totalSeleccionado = computed(() =>
     .filter(f => f.habilitado && conContrato(f) && seleccion[f.contrato_id])
     .reduce((s, f) => s + (valorEfectivo(f) || 0), 0)
 )
+const IVA_TASA = 0.19
+const totalIVASeleccionado    = computed(() => totalSeleccionado.value * IVA_TASA)
+const totalConIVASeleccionado = computed(() => totalSeleccionado.value + totalIVASeleccionado.value)
 
 // ── Filtros de la tabla (Task 7a) ────────────────────────────────────────────
 const filtroTexto  = ref('')
-const filtroAplica = ref('todos')   // 'todos' | 'aplica' | 'no'
+const filtroAplica = ref('aplica')   // 'todos' | 'aplica' | 'no'
 const filtroPeriodicidad = ref('todos')
 const filtroEstadoContrato = ref('todos')   // 'todos' | 'con_contrato' | 'en_tramite' | 'sin_contrato'
 
