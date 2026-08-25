@@ -137,7 +137,7 @@
               <InfoField label="Municipio" :value="frontera.proyecto_municipio" />
               <InfoField label="Departamento" :value="frontera.proyecto_departamento" />
               <InfoField label="Centro poblado" :value="frontera.centro_poblado" />
-              <InfoField label="Dirección" :value="frontera.direccion" />
+              <InfoField label="Dirección" :value="frontera.proyecto_direccion" />
               <InfoField label="Latitud" :value="frontera.latitud" />
               <InfoField label="Longitud" :value="frontera.longitud" />
               <InfoField label="Altitud (msnm)" :value="frontera.altitud_msnm" />
