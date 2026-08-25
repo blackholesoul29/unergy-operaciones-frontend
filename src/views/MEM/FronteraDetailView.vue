@@ -33,44 +33,6 @@
             </div>
           </div>
 
-          <div>
-            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-              Ficha técnica medidor/módem
-            </p>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <InfoField label="Tipo extracción ppal" :value="frontera.tipo_extraccion_ppal" />
-              <InfoField label="IP módem ppal" :value="frontera.ip_modem_ppal" />
-              <InfoField label="Puerto módem ppal" :value="frontera.puerto_modem_ppal" />
-              <InfoField label="Canal comunicación ppal" :value="frontera.canal_comunicacion_ppal" />
-              <div class="flex flex-col gap-0.5">
-                <span class="text-xs font-medium" style="color: #9b89b5;">Contraseña medidor ppal</span>
-                <span class="text-sm font-mono" style="color: #2C2039;">
-                  {{ mostrarPassPpal ? (frontera.password_medidor_ppal || '—') : (frontera.password_medidor_ppal ? '••••••••' : '—') }}
-                  <button v-if="frontera.password_medidor_ppal" type="button" class="ml-1 text-xs underline"
-                          style="color: #915BD8;" @click="mostrarPassPpal = !mostrarPassPpal">
-                    {{ mostrarPassPpal ? 'ocultar' : 'ver' }}
-                  </button>
-                </span>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-              <InfoField label="Tipo extracción resp" :value="frontera.tipo_extraccion_resp" />
-              <InfoField label="IP módem resp" :value="frontera.ip_modem_resp" />
-              <InfoField label="Puerto módem resp" :value="frontera.puerto_modem_resp" />
-              <InfoField label="Canal comunicación resp" :value="frontera.canal_comunicacion_resp" />
-              <div class="flex flex-col gap-0.5">
-                <span class="text-xs font-medium" style="color: #9b89b5;">Contraseña medidor resp</span>
-                <span class="text-sm font-mono" style="color: #2C2039;">
-                  {{ mostrarPassResp ? (frontera.password_medidor_resp || '—') : (frontera.password_medidor_resp ? '••••••••' : '—') }}
-                  <button v-if="frontera.password_medidor_resp" type="button" class="ml-1 text-xs underline"
-                          style="color: #915BD8;" @click="mostrarPassResp = !mostrarPassResp">
-                    {{ mostrarPassResp ? 'ocultar' : 'ver' }}
-                  </button>
-                </span>
-              </div>
-            </div>
-          </div>
-
           <p class="text-xs" style="color: #9b89b5;">
             <i class="pi pi-info-circle mr-1" />
             Para editar estos campos, usa el lápiz en la lista de Fronteras.
@@ -113,11 +75,6 @@
       <!-- ══ INFORMACIÓN REGULATORIA (GESCON) ══ -->
       <div v-if="tab === 'gescon'">
         <div class="p-4 space-y-6 text-sm">
-          <p class="text-xs" style="color: #9b89b5;">
-            <i class="pi pi-info-circle mr-1" />
-            Cargado una única vez desde GESCON.xlsx -- ya no se sincroniza, esto es de solo lectura.
-          </p>
-
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Registro ASIC</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -259,8 +216,6 @@ const frontera = ref(null)
 const loading = ref(true)
 const errorMsg = ref('')
 const activeTab = ref('general')
-const mostrarPassPpal = ref(false)
-const mostrarPassResp = ref(false)
 
 const TABS = [
   { key: 'general', label: 'General',                       icon: 'pi pi-info-circle' },
