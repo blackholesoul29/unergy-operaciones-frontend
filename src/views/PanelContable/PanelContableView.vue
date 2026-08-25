@@ -25,10 +25,75 @@
         <button v-if="tab === 'preliquidacion' || tab === 'oficial'" class="btn-o" :disabled="loading || !paneles.length" @click="exportarExcel">
           <i class="pi pi-file-excel" /> Exportar Excel
         </button>
-        <button v-if="tab !== 'diferencia' && tab !== 'clasificacion'" class="btn-o" :disabled="loading" @click="abrirDialogoPeriodo">
-          <i class="pi pi-upload" /> Cargar ER
+        <button v-if="tab !== 'diferencia' && tab !== 'clasificacion'" class="btn-o"
+                :disabled="loading || contrastando" @click="verContraste"
+                v-tooltip.bottom="'Compara lo que daría la API contra lo que hay hoy. No guarda nada.'">
+          <i :class="contrastando ? 'pi pi-spin pi-spinner' : 'pi pi-search'" /> Contrastar
+        </button>
+        <button v-if="tab !== 'diferencia' && tab !== 'clasificacion'" class="btn"
+                :disabled="loading || armando" @click="armarPeriodo"
+                v-tooltip.bottom="'Arma los paneles del período desde la API. NEU y Nitro siguen con su Excel.'">
+          <i :class="armando ? 'pi pi-spin pi-spinner' : 'pi pi-bolt'" /> Armar desde API
+        </button>
+        <!-- El Excel quedó SOLO para NEU y Nitro: su dato en la API está malo. -->
+        <button v-if="tab !== 'diferencia' && tab !== 'clasificacion'" class="btn-o" :disabled="loading" @click="abrirDialogoPeriodo"
+                v-tooltip.bottom="'Solo para NEU y Nitro. El resto se arma desde la API.'">
+          <i class="pi pi-upload" /> Cargar ER <span class="solo-neu">NEU/Nitro</span>
         </button>
         <input ref="erInput" type="file" accept=".xlsx,.xls" multiple class="hidden" @change="onErSelected" />
+      </div>
+    </div>
+
+    <!-- Resultado de armar el período. Los omitidos se muestran siempre: sin eso
+         parecería que el período quedó completo. -->
+    <div v-if="resultado" class="pc-aviso pc-aviso--ok">
+      <div class="pc-aviso-cab">
+        <i class="pi pi-check-circle" />
+        <b>{{ resultado.armados }}</b> paneles armados desde la API
+        <button class="pc-aviso-x" @click="resultado = null"><i class="pi pi-times" /></button>
+      </div>
+      <div v-if="resultado.omitidos.length" class="pc-aviso-linea">
+        <b>{{ resultado.omitidos.length }} omitidos</b> — siguen cargando su Excel:
+        <span v-for="(o, i) in resultado.omitidos" :key="i" class="pc-tag">
+          {{ o.proyecto }} <em>{{ o.motivo }}</em>
+        </span>
+      </div>
+      <div v-if="resultado.sin_cruce.length" class="pc-aviso-linea">
+        <b>{{ resultado.sin_cruce.length }} sin cruce</b> — están en la API pero no en esta base:
+        <span class="mono">{{ resultado.sin_cruce.join(', ') }}</span>
+      </div>
+      <div v-if="resultado.avisos.length" class="pc-aviso-linea pc-aviso-linea--warn">
+        <b>{{ resultado.avisos.length }} con avisos</b> de la API (cifras incompletas):
+        <div v-for="(a, i) in resultado.avisos" :key="i" class="pc-aviso-detalle">
+          <b>{{ a.proyecto }}</b> — {{ a.avisos[0] }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Contraste: qué se diferencia de lo que hay hoy. No guarda nada. -->
+    <div v-if="contraste" class="pc-aviso">
+      <div class="pc-aviso-cab">
+        <i class="pi pi-search" />
+        Contraste de {{ contraste.periodo }}:
+        <b>{{ contraste.cuadran_exacto }}</b> de {{ contraste.paneles }} cuadran exacto
+        <button class="pc-aviso-x" @click="contraste = null"><i class="pi pi-times" /></button>
+      </div>
+      <div v-for="(p, i) in contraste.proyectos.filter(x => x.diferencias && x.diferencias.length)"
+           :key="i" class="pc-contraste-proy">
+        <div class="pc-contraste-nombre">{{ p.proyecto }}</div>
+        <table class="pc-contraste-tabla">
+          <tr v-for="(d, j) in p.diferencias" :key="j">
+            <td class="mono">{{ d.grupo }}</td>
+            <td>{{ d.concepto }}</td>
+            <td class="num">{{ d.excel === null ? '—' : fmt(d.excel) }}</td>
+            <td class="num">{{ d.api === null ? '—' : fmt(d.api) }}</td>
+            <td class="num" :class="d.diferencia < 0 ? 'neg' : 'pos'">{{ fmt(d.diferencia) }}</td>
+          </tr>
+        </table>
+      </div>
+      <div v-if="!contraste.proyectos.some(x => x.diferencias && x.diferencias.length)"
+           class="pc-aviso-linea">
+        Ninguna diferencia: la API produce lo mismo que hay hoy.
       </div>
     </div>
 
@@ -310,9 +375,21 @@
             <span v-if="p.liquidar_ingresos && !p.liquidar_costos" class="pill pill-bolsa">solo ingresos</span>
             <span v-if="!p.liquidar_ingresos && p.liquidar_costos" class="pill pill-bolsa">solo costos</span>
             <span v-if="!esActivo(p)" class="pill pill-off">no liquida</span>
+            <!-- Con qué se armó el panel. Los ingresos no tienen columna `fuente`,
+                 así que sin esto no habría forma de saberlo. -->
+            <span class="pill" :class="p.origen === 'api' ? 'pill-api' : 'pill-er'"
+                  v-tooltip.top="p.origen === 'api'
+                    ? 'Armado desde la API de Liquidaciones'
+                    : 'Armado desde el Excel del Estado de Resultados'">
+              {{ p.origen === 'api' ? 'API' : 'Excel' }}
+            </span>
             <div class="pcons">
               <span>Ing: <b>{{ tab === 'oficial' ? (p.consecutivo_ingresos ?? '—') : '—' }}</b></span>
               <span>Cost: <b>{{ tab === 'oficial' ? (p.consecutivo_costos ?? '—') : '—' }}</b></span>
+              <button class="btn-er" @click.stop="descargarEr(p)"
+                      v-tooltip.left="'Descargar el Estado de Resultados de este proyecto'">
+                <i class="pi pi-download" /> ER
+              </button>
             </div>
           </div>
 
@@ -719,6 +796,81 @@ const fuenteLabel = (f) => (FUENTES[f]?.label) || f
 const fuenteTitle = (f) => (FUENTES[f]?.title) || f
 const fuenteOrigen = (f) => (FUENTES[f]?.origen) || 'de un módulo'
 const loading = ref(false)
+
+// ── Armar desde la API y contrastar ──────────────────────────────────────────
+// El Panel se arma desde `income_statement_data`; el Excel quedó solo para NEU y
+// Nitro, cuyo dato en esa API está malo.
+const armando = ref(false)
+const contrastando = ref(false)
+const resultado = ref(null)      // lo que devolvió "Armar desde API"
+const contraste = ref(null)      // lo que devolvió "Contrastar"
+
+async function armarPeriodo() {
+  if (!periodo.value) return
+  armando.value = true
+  resultado.value = null
+  try {
+    const { data } = await api.post('/panel-contable/cargar-periodo', {
+      periodo: periodo.value, tipo: tipoDatos.value,
+    })
+    resultado.value = data
+    await cargar()
+    toast.add({
+      severity: 'success', summary: `${data.armados} paneles armados`,
+      detail: data.omitidos.length
+        ? `${data.omitidos.length} omitidos (NEU/Nitro): siguen con su Excel.`
+        : 'Todos los proyectos del período.',
+      life: 7000,
+    })
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo armar el período',
+      detail: e?.response?.data?.detail || e.message, life: 8000,
+    })
+  } finally {
+    armando.value = false
+  }
+}
+
+async function verContraste() {
+  if (!periodo.value) return
+  contrastando.value = true
+  try {
+    const { data } = await api.get('/panel-contable/contraste', {
+      params: { periodo: periodo.value, tipo: tipoDatos.value },
+    })
+    contraste.value = data
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo contrastar',
+      detail: e?.response?.data?.detail || e.message, life: 8000,
+    })
+  } finally {
+    contrastando.value = false
+  }
+}
+
+/** Descarga el ER que generamos nosotros, del proyecto o de un inversionista. */
+async function descargarEr(panel, inversionista = null) {
+  try {
+    const { data } = await api.get(`/panel-contable/${panel.id}/estado-resultados`, {
+      params: inversionista ? { inversionista } : {},
+      responseType: 'blob',
+    })
+    const url = URL.createObjectURL(data)
+    const a = document.createElement('a')
+    a.href = url
+    const sufijo = inversionista ? ` - ${inversionista}` : ''
+    a.download = `Estado resultados ${panel.proyecto_nombre || panel.proyecto || ''} ${periodo.value}${sufijo}.xlsx`
+    a.click()
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo generar el ER',
+      detail: e?.response?.data?.detail || e.message, life: 6000,
+    })
+  }
+}
 const cargaError = ref(false)   // distingue "falló la carga" de "no hay paneles"
 const uploading = ref(0)
 const uploadMsg = ref('')
@@ -1641,4 +1793,36 @@ tr.derivada .cpt, tr.derivada td { color:#8a7fa6; font-style:italic; }
 :deep(.pc-dialog .p-dialog-content) { padding:18px; background:var(--bg); }
 :deep(.pc-dialog .p-dialog-footer) { display:flex; justify-content:flex-end; gap:8px;
   padding:14px 18px; border-top:1px solid var(--line); background:#faf8fd; }
+.pill-api { background: #EAF7EF; color: #1D6F42; }
+.pill-er  { background: #F3F0F8; color: #6B6280; }
+.btn-er { background: none; border: 1px solid #E4DCF2; border-radius: 7px; cursor: pointer;
+  color: #6E3FB8; font-size: 10.5px; font-weight: 700; padding: 2px 8px; margin-left: 8px; }
+.btn-er:hover { background: #F6F1FC; }
+
+/* ── Armar desde API y contrastar ─────────────────────────────────────────── */
+.solo-neu { font-size: 9px; background: #EEE9F6; color: #6E3FB8; padding: 1px 5px;
+  border-radius: 6px; margin-left: 5px; font-weight: 700; letter-spacing: .02em; }
+
+.pc-aviso { border: 1px solid #E4DCF2; background: #FBF9FE; border-radius: 12px;
+  padding: 12px 14px; margin: 0 0 14px; font-size: 12.5px; color: #3B3050; }
+.pc-aviso--ok { border-color: #CDEBD8; background: #F5FCF8; }
+.pc-aviso-cab { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.pc-aviso-x { margin-left: auto; background: none; border: none; cursor: pointer;
+  color: #9B8FB0; padding: 2px 4px; }
+.pc-aviso-x:hover { color: #3B3050; }
+.pc-aviso-linea { margin-top: 8px; line-height: 1.7; }
+.pc-aviso-linea--warn { color: #7A5C00; }
+.pc-aviso-detalle { font-size: 11.5px; margin-left: 10px; opacity: .9; }
+.pc-tag { background: #fff; border: 1px solid #E4DCF2; border-radius: 7px;
+  padding: 1px 7px; margin-right: 5px; white-space: nowrap; }
+.pc-tag em { font-style: normal; color: #6E3FB8; font-weight: 700; text-transform: uppercase;
+  font-size: 10px; margin-left: 3px; }
+
+.pc-contraste-proy { margin-top: 10px; }
+.pc-contraste-nombre { font-weight: 600; margin-bottom: 3px; }
+.pc-contraste-tabla { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.pc-contraste-tabla td { padding: 3px 8px; border-top: 1px solid #EFEAF7; }
+.pc-contraste-tabla .num { text-align: right; font-variant-numeric: tabular-nums; }
+.pc-contraste-tabla .neg { color: #C0392B; }
+.pc-contraste-tabla .pos { color: #1D6F42; }
 </style>
