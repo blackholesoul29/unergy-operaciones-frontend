@@ -118,8 +118,6 @@
               <InfoField label="Representante frontera" :value="frontera.representante_frontera" />
               <InfoField label="Representante anterior" :value="frontera.representante_anterior" />
               <InfoField label="Fecha inicio representación" :value="fmtFecha(frontera.fecha_inicio_representacion)" />
-              <InfoField label="Nombre CGM" :value="frontera.nombre_cgm" />
-              <InfoField label="NIU" :value="frontera.niu" />
             </div>
           </div>
 
@@ -129,8 +127,6 @@
               <InfoField label="Capacidad transporte (MW)" :value="frontera.capacidad_transporte_mw" />
               <InfoField label="Capacidad efectiva (MW)" :value="frontera.capacidad_efectiva_mw" />
               <InfoField label="Factor de pérdidas" :value="frontera.factor_perdidas" />
-              <InfoField label="Punto de conexión" :value="frontera.punto_conexion" />
-              <InfoField label="Subestación" :value="frontera.subestacion" />
               <InfoField label="Clase CT" :value="frontera.clase_ct" />
               <InfoField label="Clase PT" :value="frontera.clase_pt" />
             </div>
