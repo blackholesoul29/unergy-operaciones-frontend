@@ -391,7 +391,7 @@
       <!-- Todo contrato de representación pertenece a una planta. Los que no la
            tienen son un error de datos, no un estado válido: la barra los cuenta
            y deja aislarlos para irlos cerrando hasta llegar a cero. -->
-      <div v-if="esRepresentacion && nHuerfanos" class="barra-huerfanos">
+      <div v-if="nHuerfanos" class="barra-huerfanos">
         <i class="pi pi-exclamation-triangle" />
         <span><strong>{{ nHuerfanos }}</strong> de {{ contratosServicio.length }} contratos sin proyecto asociado</span>
         <Button :label="soloHuerfanos ? 'Ver todos' : 'Ver solo estos'" text size="small"
@@ -433,17 +433,17 @@
             </span>
           </template>
         </Column>
-        <!-- Proyecto: un contrato de representación se firma SOBRE una planta,
-             así que sin esta columna la tabla no dice de qué habla cada fila.
-             Cuando el contrato quedó huérfano (proyecto_id NULL) la celda es el
-             botón para arreglarlo, en vez de un "—" que no lleva a ninguna
-             parte. -->
-        <Column v-if="esRepresentacion" field="proyecto.nombre_comercial" header="Proyecto"
-                sortable style="width:24%">
+        <!-- Proyecto: todo contrato de servicio se firma SOBRE una planta, sea
+             de representación, mantenimiento, arriendo, internet o REC. Sin esta
+             columna la tabla no dice de qué habla cada fila. Cuando el contrato
+             quedó huérfano (proyecto_id NULL) la celda es el botón para
+             arreglarlo, en vez de un "—" que no lleva a ninguna parte. -->
+        <Column field="proyecto.nombre_comercial" header="Proyecto"
+                sortable :style="`width:${anchos.proyecto}`">
           <template #body="{ data }">
             <button v-if="data.proyecto" type="button" class="celda-enlace"
-                    v-tooltip.bottom="'Ver representación de la planta'"
-                    @click.stop="ir(`/proyectos/${data.proyecto.id}/representacion`)">
+                    v-tooltip.bottom="'Ver la ficha de la planta'"
+                    @click.stop="ir(destinoProyecto(data))">
               <span class="celda-txt font-semibold">{{ data.proyecto.nombre_comercial }}</span>
               <span class="mini-chip shrink-0"
                     :class="TIPO_BADGE_CLASS[data.proyecto.tipo_proyecto] || 'badge-otro'">
@@ -460,7 +460,7 @@
         <!-- El inversionista es lo que distingue dos contratos de la misma
              planta: La Reserva tiene dos, Baraya tres. -->
         <Column v-if="esRepresentacion" field="inversionista_nombre" header="Inversionista"
-                sortable style="width:20%">
+                sortable :style="`width:${anchos.inversionista}`">
           <template #body="{ data }">
             <span class="celda-txt">
               {{ data.inversionista_nombre ? formatearNombre(data.inversionista_nombre) : '—' }}
@@ -468,16 +468,18 @@
           </template>
         </Column>
         <Column field="numero_contrato" header="N° contrato" sortable
-                :style="esRepresentacion ? 'width:11%' : 'width:15%'">
+                :style="`width:${anchos.numero}`">
           <template #body="{ data }"><span class="celda-txt mono">{{ data.numero_contrato || '—' }}</span></template>
         </Column>
         <!-- Contratante y prestador salen del cuadro en Representación: el seed
              CGM no los llena y el par real es Unergy ↔ inversionista, que ya
              tiene columna propia. El buscador sí sigue mirándolos. -->
-        <Column v-if="!esRepresentacion" field="contratante_nombre" header="Contratante" sortable style="width:21%">
+        <Column v-if="!esRepresentacion" field="contratante_nombre" header="Contratante"
+                sortable :style="`width:${anchos.parte}`">
           <template #body="{ data }"><span class="celda-txt">{{ data.contratante_nombre || '—' }}</span></template>
         </Column>
-        <Column v-if="!esRepresentacion" field="prestador_nombre" header="Prestador" sortable style="width:21%">
+        <Column v-if="!esRepresentacion" field="prestador_nombre" header="Prestador"
+                sortable :style="`width:${anchos.parte}`">
           <template #body="{ data }"><span class="celda-txt">{{ data.prestador_nombre || '—' }}</span></template>
         </Column>
         <Column field="fecha_inicio" header="Inicio" sortable style="width:8%">
@@ -507,10 +509,10 @@
             </div>
           </template>
         </Column>
-        <Column :style="esRepresentacion ? 'width:8%' : 'width:6%'">
+        <Column :style="`width:${anchos.acciones}`">
           <template #body="{ data }">
             <div class="acciones">
-              <Button v-if="esRepresentacion" icon="pi pi-link" text size="small" severity="secondary"
+              <Button icon="pi pi-link" text size="small" severity="secondary"
                       v-tooltip.bottom="data.proyecto ? 'Cambiar de proyecto' : 'Asociar a un proyecto'"
                       @click.stop="abrirAsociarProyecto(data)" />
               <Button icon="pi pi-pencil" text size="small" severity="secondary"
@@ -538,13 +540,32 @@
     <Dialog v-model:visible="dialogAsociarProyecto" header="Asociar contrato a un proyecto"
             modal class="w-full max-w-lg">
       <div v-if="contratoAAsociar" class="space-y-3">
+        <!-- Las pistas para elegir bien cambian según el servicio: en
+             Representación es el inversionista, en Operación el prestador (que a
+             veces trae el nombre de la planta). Se muestra lo que el contrato
+             tenga y se omite lo vacío, para no llenar el cuadro de guiones. -->
         <div class="rounded-lg p-3 text-xs space-y-0.5" style="background:#F7F5FB; color:#6b5a8a">
-          <p><span class="font-semibold">Inversionista:</span>
-            {{ contratoAAsociar.inversionista_nombre || '—' }}</p>
-          <p><span class="font-semibold">Proyecto según el contrato:</span>
-            {{ contratoAAsociar.nombre_proyecto_ref || '—' }}</p>
-          <p><span class="font-semibold">Código Sun Factory:</span>
-            {{ contratoAAsociar.codigo_sun_factory || '—' }}</p>
+          <p><span class="font-semibold">Tipo:</span>
+            {{ TIPO_CONTRATO_LABELS[contratoAAsociar.servicio_aplica]
+               || contratoAAsociar.servicio_aplica }}</p>
+          <p v-if="contratoAAsociar.numero_contrato">
+            <span class="font-semibold">N° contrato:</span>
+            {{ contratoAAsociar.numero_contrato }}</p>
+          <p v-if="contratoAAsociar.inversionista_nombre">
+            <span class="font-semibold">Inversionista:</span>
+            {{ contratoAAsociar.inversionista_nombre }}</p>
+          <p v-if="contratoAAsociar.prestador_nombre">
+            <span class="font-semibold">Prestador:</span>
+            {{ contratoAAsociar.prestador_nombre }}</p>
+          <p v-if="contratoAAsociar.nombre_proyecto_ref">
+            <span class="font-semibold">Proyecto según el contrato:</span>
+            {{ contratoAAsociar.nombre_proyecto_ref }}</p>
+          <p v-if="contratoAAsociar.codigo_sun_factory">
+            <span class="font-semibold">Código Sun Factory:</span>
+            {{ contratoAAsociar.codigo_sun_factory }}</p>
+          <p v-if="contratoAAsociar.proyecto">
+            <span class="font-semibold">Planta actual:</span>
+            {{ contratoAAsociar.proyecto.nombre_comercial }}</p>
         </div>
         <div>
           <label class="text-xs font-semibold" style="color:#6b5a8a">Planta</label>
@@ -1060,6 +1081,28 @@ const servicioCargado = ref(null)   // el tipo que hay en memoria
 // nombra una vez y la usan el template y los filtros.
 const esRepresentacion = computed(() => servicio.value === 'representacion')
 
+// Los anchos cambian según qué columnas aplican: Representación cambia
+// contratante/prestador por proyecto/inversionista, y Operación lleva además la
+// columna Tipo. Se agrupan acá para que sumen 100% en cada caso, en vez de
+// repartir ternarios por el template.
+const anchos = computed(() => {
+  if (esRepresentacion.value) {
+    return { proyecto: '24%', inversionista: '20%', numero: '11%', parte: '0',
+             acciones: '8%' }
+  }
+  // Operación (con columna Tipo) y REC (sin ella).
+  const conTipo = tiposDelServicio.value.length > 1
+  return { proyecto: conTipo ? '18%' : '22%', inversionista: '0',
+           numero: '9%', parte: conTipo ? '14%' : '16%', acciones: '8%' }
+})
+
+// El enlace de la celda va a la ficha del servicio que se está mirando; para
+// Operación y REC no hay sub-vista propia, así que abre la ficha de la planta.
+function destinoProyecto(fila) {
+  const base = `/proyectos/${fila.proyecto.id}`
+  return esRepresentacion.value ? `${base}/representacion` : base
+}
+
 // Contratos de representación sin planta asociada: son datos por corregir, no
 // una categoría del negocio. `soloHuerfanos` los aísla para poder cerrarlos.
 const soloHuerfanos = ref(false)
@@ -1127,7 +1170,7 @@ const nHuerfanos = computed(() =>
 
 const contratosServicioFiltrados = computed(() => {
   let base = contratosServicio.value
-  if (esRepresentacion.value && soloHuerfanos.value) base = base.filter(c => !c.proyecto_id)
+  if (soloHuerfanos.value) base = base.filter(c => !c.proyecto_id)
   if (esRepresentacion.value && soloDuplicados.value) {
     base = base.filter(c => idsDuplicados.value.has(c.id))
   }
@@ -1205,6 +1248,29 @@ function sugerirProyecto(contrato) {
       return
     }
   }
+  // Los contratos de Operación no traen código Sun Factory ni nombre de
+  // referencia, pero a varios se les capturó el nombre de la PLANTA en el campo
+  // prestador ("Minigranja Solar Uruaco" en vez de una empresa). Se aprovecha
+  // como pista, exigiendo coincidencia exacta del nombre normalizado: buscar por
+  // substring o por palabras es lo que colgaba contratos de plantas ajenas.
+  for (const campo of ['prestador_nombre', 'contratante_nombre']) {
+    const valor = normalizarPlanta(contrato[campo])
+    if (!valor) continue
+    const exacta = proyectos.value.find(p => normalizarPlanta(p.nombre_comercial) === valor)
+    if (exacta) {
+      proyectoElegido.value = exacta.id
+      proyectoSugerido.value = `nombre "${contrato[campo]}" del campo ${
+        campo === 'prestador_nombre' ? 'prestador' : 'contratante'}`
+      return
+    }
+  }
+}
+
+function normalizarPlanta(s) {
+  // NFD separa la tilde de la letra, y el filtro de ASCII alfanumerico se lleva
+  // los acentos junto con espacios y puntuacion: 'Canahuate' y 'Cañahuate'
+  // acaban iguales sin necesidad de un rango de diacriticos en el regex.
+  return (s || '').normalize('NFD').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
 }
 
 async function guardarProyectoContrato() {
@@ -1289,7 +1355,7 @@ const placeholderBusqueda = computed(() => {
   if (vista.value === 'proyectos') return 'Buscar planta, código TSF, ubicación, PPA, inversionista…'
   if (servicio.value === 'ppa')    return 'Buscar contrato, comprador, planta…'
   if (esRepresentacion.value)      return 'Buscar planta, inversionista, número…'
-  return 'Buscar número, contratante, prestador…'
+  return 'Buscar planta, número, contratante, prestador…'
 })
 
 const COLUMNAS_EXCEL = {
