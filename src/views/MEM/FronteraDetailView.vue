@@ -111,7 +111,6 @@
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Registro ASIC</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <InfoField label="Registrada por" :value="frontera.registrada_por" />
-              <InfoField label="Fecha primer registro" :value="fmtFecha(frontera.fecha_primer_registro_asic)" />
               <InfoField label="Nivel de tensión" :value="frontera.nivel_tension" />
               <InfoField label="Nivel de tensión (kV)" :value="frontera.nivel_tension_kv" />
               <InfoField label="Tipo punto de medición" :value="frontera.tipo_punto_medicion" />
