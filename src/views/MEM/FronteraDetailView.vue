@@ -88,12 +88,6 @@
               <InfoField label="Representante anterior" :value="frontera.representante_anterior" />
               <InfoField label="Fecha inicio representación" :value="fmtFecha(frontera.fecha_inicio_representacion)" />
               <InfoField label="Nombre CGM" :value="frontera.nombre_cgm" />
-              <InfoField label="Predio ID" :value="frontera.predio_id" />
-              <InfoField label="Nombre predio" :value="frontera.nombre_predio" />
-              <InfoField label="Representante DDV" :value="frontera.representante_ddv" />
-              <InfoField label="NIT" :value="frontera.nit" />
-              <InfoField label="NIT RF" :value="frontera.nit_rf" />
-              <InfoField label="NIT CGM" :value="frontera.nit_cgm" />
               <InfoField label="NIU" :value="frontera.niu" />
             </div>
           </div>
@@ -102,7 +96,6 @@
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Capacidad y transporte</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <InfoField label="Capacidad transporte (MW)" :value="frontera.capacidad_transporte_mw" />
-              <InfoField label="Capacidad transporte compartida (MW)" :value="frontera.capacidad_transporte_compartida_mw" />
               <InfoField label="Capacidad efectiva (MW)" :value="frontera.capacidad_efectiva_mw" />
               <InfoField label="Factor de pérdidas" :value="frontera.factor_perdidas" />
               <InfoField label="Punto de conexión" :value="frontera.punto_conexion" />
@@ -171,16 +164,11 @@
               <InfoField label="Clasificación industrial general" :value="frontera.clasificacion_industrial_general" />
               <InfoField label="Clasificación industrial específica" :value="frontera.clasificacion_industrial_especifica" />
               <InfoField label="Tipo tecnología" :value="frontera.tipo_tecnologia" />
-              <InfoField label="Código SIC DDV" :value="frontera.codigo_sic_ddv" />
               <InfoField label="SIC submercado exportador" :value="frontera.codigo_sic_submercado_exportador" />
               <InfoField label="SIC submercado consumo" :value="frontera.codigo_sic_submercado_consumo" />
-              <InfoField label="SIC submercado usuario" :value="frontera.codigo_sic_submercado_usuario" />
               <InfoField label="SIC frontera generación" :value="frontera.codigo_sic_frontera_generacion" />
               <InfoField label="SIC frontera usuario" :value="frontera.codigo_sic_frontera_usuario" />
               <InfoField label="Potencia máxima declarada" :value="frontera.potencia_maxima_declarada" />
-              <InfoField label="Consumo promedio mensual (MWh)" :value="frontera.consumo_promedio_mensual_mwh" />
-              <InfoField label="Relación transformación CT" :value="frontera.relacion_transformacion_ct" />
-              <InfoField label="Relación transformación PT" :value="frontera.relacion_transformacion_pt" />
             </div>
           </div>
         </div>
