@@ -4,9 +4,19 @@
                    :titulo="frontera.nombre_frontera"
                    :codigo="frontera.codigo_frontera || ''"
                    :tabs="TABS" v-model="activeTab">
-      <template #chips>
+      <template v-if="isEditMode" #titulo>
+        <InputText v-model="editForm.nombre_frontera" size="small" class="w-64" />
+      </template>
+      <template v-if="!isEditMode" #chips>
         <Tag :value="tipoLabel(frontera.tipo_frontera)" :severity="tipoSeverity(frontera.tipo_frontera)" class="text-[10px]" />
         <Tag :value="frontera.estado" :severity="estadoSeverity(frontera.estado)" class="text-[10px]" />
+      </template>
+      <template #acciones>
+        <template v-if="isEditMode">
+          <Button label="Cancelar" severity="secondary" outlined size="small" @click="cancelEdit" />
+          <Button label="Guardar cambios" icon="pi pi-check" size="small" :loading="guardando" @click="guardarEdit" />
+        </template>
+        <Button v-else label="Editar" icon="pi pi-pencil" outlined size="small" @click="entrarEdicion" />
       </template>
       <template #default="{ tab }">
 
@@ -15,7 +25,8 @@
         <div class="p-4 space-y-6 text-sm">
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Identidad</p>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+
+            <div v-if="!isEditMode" class="grid grid-cols-2 md:grid-cols-3 gap-4">
               <InfoField label="Código frontera" :value="frontera.codigo_frontera" />
               <InfoField label="Código propio" :value="frontera.codigo_propio" />
               <InfoField label="Tipo" :value="tipoLabel(frontera.tipo_frontera)" />
@@ -31,11 +42,42 @@
               <InfoField label="Operador de red" :value="frontera.operador_comercial" />
               <InfoField label="Fecha registro ASIC" :value="fmtFecha(frontera.fecha_registro_asic)" />
             </div>
+
+            <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Código frontera</label>
+                <InputText v-model="editForm.codigo_frontera" class="w-full" />
+              </div>
+              <div>
+                <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Código propio</label>
+                <InputText v-model="editForm.codigo_propio" class="w-full" />
+              </div>
+              <div>
+                <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Tipo</label>
+                <Dropdown v-model="editForm.tipo_frontera" :options="tipoOptions" optionLabel="label"
+                          optionValue="value" class="w-full" />
+              </div>
+              <div>
+                <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Estado</label>
+                <Dropdown v-model="editForm.estado" :options="estadoOptions" optionLabel="label"
+                          optionValue="value" class="w-full" />
+              </div>
+              <div>
+                <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Proyecto</label>
+                <Dropdown v-model="editForm.proyecto_id" :options="proyectosAll" optionLabel="nombre_comercial"
+                          optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
+              </div>
+              <div>
+                <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Operador de red</label>
+                <Dropdown v-model="editForm.operador_red_id" :options="operadoresRedOptions" optionLabel="label"
+                          optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
+              </div>
+            </div>
           </div>
 
-          <p class="text-xs" style="color: #9b89b5;">
+          <p v-if="!isEditMode" class="text-xs" style="color: #9b89b5;">
             <i class="pi pi-info-circle mr-1" />
-            Para editar estos campos, usa el lápiz en la lista de Fronteras.
+            Los campos de identidad se editan con el botón "Editar" arriba.
           </p>
         </div>
       </div>
@@ -176,6 +218,20 @@
 
       </template>
     </DetalleLayout>
+
+    <!-- Dialog: nombre parecido a una frontera existente -->
+    <Dialog v-model:visible="duplicadoVisible" header="Frontera parecida ya existe" modal class="w-full max-w-sm">
+      <p class="text-sm mb-4" style="color: #6b5a8a;">
+        Ya existe una frontera con un nombre muy parecido:
+        <strong>{{ duplicadoInfo?.candidato_nombre }}</strong>
+        (ID {{ duplicadoInfo?.candidato_id }}).
+        Si de verdad es una frontera distinta, puedes guardar igual.
+      </p>
+      <div class="flex justify-end gap-2">
+        <Button label="Cancelar" severity="secondary" text @click="duplicadoVisible = false" />
+        <Button label="Guardar de todos modos" :loading="guardando" @click="guardarEdit(true)" />
+      </div>
+    </Dialog>
   </div>
 
   <div v-else-if="loading" class="flex justify-center py-20">
@@ -190,16 +246,22 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, reactive, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useToast } from 'primevue/usetoast'
 import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
+import InputText from 'primevue/inputtext'
+import Dropdown from 'primevue/dropdown'
+import Dialog from 'primevue/dialog'
 import api from '@/api/client'
 import DetalleLayout from '@/components/DetalleLayout.vue'
 import InfoField from '@/components/InfoField.vue'
 
 const route = useRoute()
+const router = useRouter()
+const toast = useToast()
 const frontera = ref(null)
 const loading = ref(true)
 const errorMsg = ref('')
@@ -210,6 +272,88 @@ const TABS = [
   { key: 'quoia',   label: 'Información Quoia',              icon: 'pi pi-link' },
   { key: 'gescon',  label: 'Información regulatoria (GESCON)', icon: 'pi pi-file' },
 ]
+
+// ── Edición (inline, en el mismo detalle -- reemplaza el diálogo aparte
+// que había en FronterasView.vue) ───────────────────────────────────────
+const isEditMode = computed(() => route.query.edit === 'true')
+const editForm = reactive({
+  codigo_frontera: null, codigo_propio: null, nombre_frontera: null, tipo_frontera: null,
+  estado: null, proyecto_id: null, operador_red_id: null,
+})
+const guardando = ref(false)
+const duplicadoVisible = ref(false)
+const duplicadoInfo = ref(null)
+
+const estadoOptions = [
+  { label: 'Activa', value: 'activa' },
+  { label: 'En registro', value: 'en_registro' },
+  { label: 'En falla', value: 'en_falla' },
+  { label: 'Cancelada', value: 'cancelada' },
+]
+const tipoOptions = [
+  { label: 'Generación', value: 'generacion' },
+  { label: 'Consumo', value: 'consumo' },
+  { label: 'Gen+Consumo', value: 'generacion_consumo' },
+  { label: 'Auxiliar', value: 'consumo_auxiliar' },
+  { label: 'Propio', value: 'consumo_propio' },
+]
+
+const proyectosAll = ref([])
+const operadoresRed = ref([])
+const operadoresRedOptions = computed(() =>
+  operadoresRed.value.map(o => ({ id: o.id, label: o.nombre_comercial || o.nombre_legal }))
+)
+
+async function cargarCatalogos() {
+  try {
+    const [{ data: proyectos }, { data: operadores }] = await Promise.all([
+      api.get('/proyectos', { params: { size: 500 } }),
+      api.get('/operadores-red'),
+    ])
+    proyectosAll.value = proyectos.items ?? []
+    operadoresRed.value = Array.isArray(operadores) ? operadores : (operadores.items ?? [])
+  } catch {
+    // Catálogos opcionales para los selects -- si fallan, quedan vacíos.
+  }
+}
+
+function entrarEdicion() {
+  editForm.codigo_frontera = frontera.value.codigo_frontera
+  editForm.codigo_propio = frontera.value.codigo_propio
+  editForm.nombre_frontera = frontera.value.nombre_frontera
+  editForm.tipo_frontera = frontera.value.tipo_frontera
+  editForm.estado = frontera.value.estado
+  editForm.proyecto_id = frontera.value.proyecto_id
+  editForm.operador_red_id = frontera.value.operador_red_id
+  cargarCatalogos()
+  router.replace({ query: { edit: 'true' } })
+}
+
+function cancelEdit() {
+  duplicadoVisible.value = false
+  router.replace({ query: {} })
+}
+
+async function guardarEdit(forzar = false) {
+  guardando.value = true
+  try {
+    await api.patch(`/fronteras/${frontera.value.id}`, editForm, { params: forzar ? { forzar: true } : {} })
+    toast.add({ severity: 'success', summary: 'Frontera actualizada', life: 2500 })
+    duplicadoVisible.value = false
+    router.replace({ query: {} })
+    await cargar()
+  } catch (e) {
+    const detail = e.response?.data?.detail
+    if (e.response?.status === 409 && detail?.duplicado_nombre) {
+      duplicadoInfo.value = detail
+      duplicadoVisible.value = true
+    } else {
+      toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'No se pudo guardar', life: 4000 })
+    }
+  } finally {
+    guardando.value = false
+  }
+}
 
 function tipoLabel(t) {
   const map = { generacion: 'Generación', consumo: 'Consumo', generacion_consumo: 'Gen+Consumo', consumo_auxiliar: 'Auxiliar', consumo_propio: 'Propio' }

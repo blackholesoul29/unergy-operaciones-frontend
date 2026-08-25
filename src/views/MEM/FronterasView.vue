@@ -146,48 +146,13 @@
         <Column header="" style="width: 90px">
           <template #body="{ data }">
             <Button icon="pi pi-pencil" text rounded size="small" severity="secondary"
-              @click.stop="editFrontera(data)" v-tooltip="'Editar'" />
+              @click.stop="$router.push(`/mem/fronteras/${data.id}?edit=true`)" v-tooltip="'Editar'" />
             <Button icon="pi pi-trash" text rounded size="small" severity="danger"
               @click.stop="deleteFrontera(data)" v-tooltip="'Eliminar'" />
           </template>
         </Column>
       </DataTable>
     </div>
-
-    <!-- Edit Dialog -->
-    <Dialog v-model:visible="showEdit" :header="editingFrontera ? 'Editar Frontera' : 'Frontera'"
-      modal class="w-full max-w-2xl">
-      <div v-if="editForm" class="space-y-4 pt-2">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Código frontera</label>
-            <InputText v-model="editForm.codigo_frontera" class="w-full" />
-          </div>
-          <div>
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Nombre</label>
-            <InputText v-model="editForm.nombre_frontera" class="w-full" />
-          </div>
-          <div>
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Estado</label>
-            <Dropdown v-model="editForm.estado" :options="estadoOptions" optionLabel="label" optionValue="value" class="w-full" />
-          </div>
-          <div>
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Operador red</label>
-            <Dropdown v-model="editForm.operador_red_id" :options="operadoresRedOptions" optionLabel="label"
-              optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
-          </div>
-          <div class="col-span-2">
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Proyecto</label>
-            <Dropdown v-model="editForm.proyecto_id" :options="proyectosAll" optionLabel="nombre_comercial"
-              optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
-          </div>
-        </div>
-      </div>
-      <template #footer>
-        <Button label="Cancelar" severity="secondary" text @click="showEdit = false" />
-        <Button label="Guardar" :loading="saving" @click="saveFrontera" />
-      </template>
-    </Dialog>
 
     <!-- Create Dialog -->
     <Dialog v-model:visible="showCreate" header="Nueva Frontera" modal class="w-full max-w-lg">
@@ -300,7 +265,6 @@ const router = useRouter()
 
 const fronteras = ref([])
 const loading = ref(true)
-const saving = ref(false)
 
 // Filtros sincronizados con la URL (?q=&estado=&proyecto=&operador=&mes=&anio=&generando=)
 // para que se sostengan al volver con el boton "atras" o al refrescar.
@@ -323,9 +287,6 @@ watch([search, estadoFilter, proyectoFilter, operadorFilter, mesFilter, anioFilt
   if (generando) query.generando = '1'
   router.replace({ query })
 })
-const showEdit = ref(false)
-const editingFrontera = ref(null)
-const editForm = ref(null)
 function blankCreateForm() {
   return {
     proyecto_id: null,
@@ -479,34 +440,6 @@ async function descargarExcel() {
     { header: 'Cap. MW', value: f => f.capacidad_efectiva_mw ? Number(f.capacidad_efectiva_mw).toFixed(3) : '' },
     { header: 'Municipio', value: f => f.municipio || '' },
   ], `fronteras_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Fronteras')
-}
-
-function editFrontera(f) {
-  loadProyectosAll()
-  editingFrontera.value = f
-  editForm.value = {
-    codigo_frontera: f.codigo_frontera,
-    nombre_frontera: f.nombre_frontera,
-    estado: f.estado,
-    operador_red_id: f.operador_red_id || null,
-    proyecto_id: f.proyecto_id || null,
-  }
-  showEdit.value = true
-}
-
-async function saveFrontera() {
-  if (!editingFrontera.value || !editForm.value) return
-  saving.value = true
-  try {
-    await api.patch(`/fronteras/${editingFrontera.value.id}`, editForm.value)
-    toast.add({ severity: 'success', summary: 'Frontera actualizada', life: 2000 })
-    showEdit.value = false
-    await loadData()
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'Error al guardar', life: 4000 })
-  } finally {
-    saving.value = false
-  }
 }
 
 function abrirCrear() {
