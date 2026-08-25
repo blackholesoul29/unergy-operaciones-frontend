@@ -110,12 +110,10 @@
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Registro ASIC</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <InfoField label="Registrada por" :value="frontera.registrada_por" />
               <InfoField label="Nivel de tensión" :value="frontera.nivel_tension" />
               <InfoField label="Nivel de tensión (kV)" :value="frontera.nivel_tension_kv" />
               <InfoField label="Tipo punto de medición" :value="frontera.tipo_punto_medicion" />
               <InfoField label="Transferencia máxima (kWh)" :value="frontera.transferencia_maxima_kwh" />
-              <InfoField label="Representante frontera" :value="frontera.representante_frontera" />
               <InfoField label="Representante anterior" :value="frontera.representante_anterior" />
               <InfoField label="Fecha inicio representación" :value="fmtFecha(frontera.fecha_inicio_representacion)" />
             </div>
@@ -136,7 +134,6 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <InfoField label="Municipio" :value="frontera.proyecto_municipio" />
               <InfoField label="Departamento" :value="frontera.proyecto_departamento" />
-              <InfoField label="Centro poblado" :value="frontera.centro_poblado" />
               <InfoField label="Dirección" :value="frontera.proyecto_direccion" />
               <InfoField label="Latitud" :value="frontera.proyecto_latitud" />
               <InfoField label="Longitud" :value="frontera.proyecto_longitud" />
