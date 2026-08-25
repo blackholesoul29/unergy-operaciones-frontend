@@ -22,6 +22,37 @@
                 severity="secondary" outlined size="small"
                 v-tooltip.bottom="compacta ? 'Densidad cómoda' : 'Densidad compacta'"
                 @click="compacta = !compacta" />
+        <!-- El panel se despliega en vez de ocupar una fila fija: la fila de
+             filtros que tuvo esta vista se quitó justamente por robarle alto a
+             la tabla (2026-08-20). -->
+        <Button v-if="filtrosActivos.length"
+                :label="nFiltros ? `Filtros · ${nFiltros}` : 'Filtros'"
+                icon="pi pi-filter" size="small"
+                :severity="nFiltros ? 'primary' : 'secondary'" :outlined="!nFiltros"
+                @click="panelFiltros?.toggle($event)" />
+        <Popover ref="panelFiltros">
+          <div class="filtros-panel">
+            <div v-for="f in filtrosActivos" :key="f.clave" class="flex flex-col gap-1">
+              <label class="text-xs font-semibold" style="color:#6b5a8a">{{ f.label }}</label>
+              <MultiSelect v-model="filtros[f.clave]" :options="opcionesDe(f)"
+                           optionLabel="label" optionValue="value" size="small"
+                           :class="f.ancho" display="chip" :maxSelectedLabels="2"
+                           :filter="opcionesDe(f).length > 8"
+                           filterPlaceholder="Buscar…"
+                           :placeholder="`Todos (${opcionesDe(f).length})`"
+                           :showToggleAll="false">
+                <template #option="{ option }">
+                  <div class="flex items-center justify-between gap-3 w-full">
+                    <span class="truncate">{{ option.label }}</span>
+                    <span class="opcion-n">{{ option.n }}</span>
+                  </div>
+                </template>
+              </MultiSelect>
+            </div>
+            <Button v-if="nFiltros" label="Limpiar filtros" icon="pi pi-times" text size="small"
+                    severity="secondary" @click="limpiarFiltros" />
+          </div>
+        </Popover>
         <Button v-if="vista"
                 label="Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small"
                 :disabled="!filasVisibles.length" @click="descargarExcel" />
@@ -66,6 +97,23 @@
           <span>{{ s.label }}</span>
         </button>
       </template>
+    </div>
+
+    <!-- Filtros aplicados. Van fuera del panel para que uno activo nunca quede
+         escondido: si la tabla muestra 3 de 112 filas, tiene que ser evidente
+         por qué. Solo aparece la fila cuando hay alguno. -->
+    <div v-if="chipsFiltro.length" class="flex flex-wrap items-center gap-1.5">
+      <span class="text-xs font-semibold" style="color:#6b5a8a">Filtrando por</span>
+      <button v-for="ch in chipsFiltro" :key="`${ch.clave}:${ch.valor}`" type="button"
+              class="chip-filtro" v-tooltip.bottom="`Quitar ${ch.label}: ${ch.texto}`"
+              @click="quitarFiltro(ch.clave, ch.valor)">
+        <span class="chip-filtro-lbl">{{ ch.label }}</span>
+        <span class="truncate">{{ ch.texto }}</span>
+        <i class="pi pi-times" />
+      </button>
+      <button type="button" class="chip-filtro chip-filtro--limpiar" @click="limpiarFiltros">
+        Limpiar todo
+      </button>
     </div>
 
     <!-- Agrupar el portafolio: reorganiza las mismas plantas por la dimensión
@@ -620,6 +668,8 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
+import Popover from 'primevue/popover'
 import Menu from 'primevue/menu'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
@@ -736,8 +786,6 @@ const filasPorPagina = computed(() => (compacta.value ? 100 : 50))
 // Ningún ángulo lleva fila de filtros, así que todos disponen del mismo alto.
 const scrollHeight = 'calc(100vh - 250px)'
 
-
-
 // ── Agrupar el portafolio ─────────────────────────────────────────────────────
 // Cliente, PPA y Servicio son multivaluados: una planta puede tener dos
 // inversionistas o estar en dos PPA. En esos casos la planta aparece en cada
@@ -757,14 +805,134 @@ const agruparPor = ref(AGRUPACIONES.some(a => a.value === route.query.grupo) ? r
 
 // Los filtros se sincronizan con la URL para poder compartir la vista tal cual
 // se esta viendo. Tiene que ir despues de `agruparPor`: es una de sus fuentes.
-watch([vista, servicio, q, agruparPor], () => {
+
+// ── Filtros por pestaña ──────────────────────────────────────────────────────
+// La vista tuvo una fila de filtros y se quitó el 2026-08-20 porque le robaba
+// alto a la tabla. Estos viven en un panel que se despliega desde la cabecera,
+// así que no ocupan nada mientras no se usen, y los activos se resumen en chips.
+//
+// Cada filtro declara de dónde sale el valor de una fila (`valor`) y cómo se
+// arman sus opciones. Las opciones se derivan de los datos cargados y no de un
+// catálogo fijo: así la lista nunca ofrece un inversionista que no existe en la
+// tabla, ni se queda corta cuando entra uno nuevo.
+const SIN_ASIGNAR = '__sin__'
+
+const FILTROS = {
+  ppa: [
+    { clave: 'tipo', label: 'Tipo', ancho: 'w-40',
+      valor: c => c.tipo_contrato,
+      etiqueta: v => (v === 'compra' ? 'Compra' : 'Venta') },
+    { clave: 'estado', label: 'Estado', ancho: 'w-44',
+      valor: c => (c._vigencia || estadoVigenciaPPA(c)).clave,
+      etiqueta: (v, c) => (c._vigencia || estadoVigenciaPPA(c)).label },
+  ],
+  representacion: [
+    { clave: 'proyecto', label: 'Proyecto', ancho: 'w-64',
+      valor: c => c.proyecto?.nombre_comercial || SIN_ASIGNAR },
+    { clave: 'portafolio', label: 'Portafolio', ancho: 'w-56',
+      valor: c => c.portafolio || SIN_ASIGNAR },
+    { clave: 'inversionista', label: 'Inversionista', ancho: 'w-64',
+      valor: c => c.inversionista_nombre || SIN_ASIGNAR,
+      etiqueta: v => formatearNombre(v) },
+  ],
+  operacion: [
+    { clave: 'tipo', label: 'Tipo', ancho: 'w-44',
+      valor: c => c.servicio_aplica,
+      etiqueta: v => TIPO_CONTRATO_LABELS[v] || v },
+    { clave: 'proyecto', label: 'Proyecto', ancho: 'w-64',
+      valor: c => c.proyecto?.nombre_comercial || SIN_ASIGNAR },
+  ],
+}
+
+// { tipo: ['compra'], estado: [...] } — vacío o ausente = no filtra.
+const filtros = ref({})
+const panelFiltros = ref(null)
+
+const filtrosActivos = computed(() => FILTROS[servicio.value] || [])
+
+// Filas sobre las que se calculan las opciones: las crudas del servicio, para
+// que quitar un filtro no vacíe las opciones de los demás.
+const filasCrudas = computed(() =>
+  servicio.value === 'ppa'
+    ? ppa.value.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) }))
+    : contratosServicio.value)
+
+function opcionesDe(filtro) {
+  const vistos = new Map()
+  for (const fila of filasCrudas.value) {
+    const v = filtro.valor(fila)
+    if (v == null || v === '') continue
+    if (!vistos.has(v)) {
+      vistos.set(v, {
+        value: v,
+        label: v === SIN_ASIGNAR ? 'Sin asignar'
+             : (filtro.etiqueta ? filtro.etiqueta(v, fila) : String(v)),
+        n: 0,
+      })
+    }
+    vistos.get(v).n++
+  }
+  // "Sin asignar" al final; el resto alfabético. Se muestra el conteo para que
+  // se vea de una si vale la pena filtrar por ese valor.
+  return [...vistos.values()].sort((a, b) =>
+    (a.value === SIN_ASIGNAR) - (b.value === SIN_ASIGNAR) ||
+    a.label.localeCompare(b.label, 'es'))
+}
+
+const nFiltros = computed(() =>
+  filtrosActivos.value.reduce((n, f) => n + (filtros.value[f.clave]?.length || 0), 0))
+
+// Chips de lo que está aplicado, para que un filtro activo nunca quede oculto
+// dentro del panel cerrado.
+const chipsFiltro = computed(() => filtrosActivos.value.flatMap(f =>
+  (filtros.value[f.clave] || []).map(v => ({
+    clave: f.clave, valor: v, label: f.label,
+    texto: opcionesDe(f).find(o => o.value === v)?.label ?? String(v),
+  }))))
+
+function quitarFiltro(clave, valor) {
+  filtros.value[clave] = (filtros.value[clave] || []).filter(v => v !== valor)
+}
+
+function limpiarFiltros() { filtros.value = {} }
+
+// Aplica los filtros de la pestaña activa a una lista de filas.
+function aplicarFiltros(filas) {
+  const activos = filtrosActivos.value
+    .map(f => [f, filtros.value[f.clave]])
+    .filter(([, vals]) => vals && vals.length)
+  if (!activos.length) return filas
+  return filas.filter(fila => activos.every(([f, vals]) => vals.includes(f.valor(fila))))
+}
+
+// Los filtros se sincronizan con la URL igual que la vista y la busqueda, para
+// poder compartir una tabla ya filtrada. Este watch va DESPUES de declarar
+// `filtros`: watch() evalua su arreglo de fuentes en el acto, y nombrar ahi una
+// const de mas abajo rompe la vista entera al montarla.
+watch([vista, servicio, q, agruparPor, filtros], () => {
   const query = {}
   if (vista.value) query.vista = vista.value
   if (vista.value === 'proyectos' && agruparPor.value) query.grupo = agruparPor.value
   if (vista.value === 'servicios') query.srv = servicio.value
   if (q.value) query.q = q.value
+  // Se usa "|" y no "," porque los nombres de planta y de inversionista traen
+  // comas ("Inversiones Estrada Arbelaez y CIA S. en C.").
+  for (const f of filtrosActivos.value) {
+    const vals = filtros.value[f.clave]
+    if (vals && vals.length) query[`f_${f.clave}`] = vals.join('|')
+  }
   router.replace({ query })
-})
+}, { deep: true })
+
+// Filtros que vengan en la URL al abrir la vista.
+function leerFiltrosDeLaUrl() {
+  const leidos = {}
+  for (const f of filtrosActivos.value) {
+    const crudo = route.query[`f_${f.clave}`]
+    if (typeof crudo === 'string' && crudo) leidos[f.clave] = crudo.split('|')
+  }
+  filtros.value = leidos
+}
 
 const SIN_DATO = 'Sin asignar'
 
@@ -1055,7 +1223,8 @@ const ppaFiltrados = computed(() => {
     (c.proyectos || []).some(p => (p.nombre_comercial || '').toLowerCase().includes(t)))
   // `_vigencia` se precalcula acá y no en la celda para que la columna Estado
   // sea ordenable (PrimeVue ordena por campo, no por lo que pinta el template).
-  return base.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) }))
+  // Se calcula antes de filtrar porque el filtro de estado lee de ahí.
+  return aplicarFiltros(base.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) })))
 })
 
 async function cargarPpa() {
@@ -1175,16 +1344,18 @@ const contratosServicioFiltrados = computed(() => {
     base = base.filter(c => idsDuplicados.value.has(c.id))
   }
   const t = q.value.trim().toLowerCase()
-  if (!t) return base
-  return base.filter(c =>
-    (c.numero_contrato || '').toLowerCase().includes(t) ||
-    (c.contratante_nombre || '').toLowerCase().includes(t) ||
-    (c.prestador_nombre || '').toLowerCase().includes(t) ||
-    (c.inversionista_nombre || '').toLowerCase().includes(t) ||
-    (c.proyecto?.nombre_comercial || '').toLowerCase().includes(t) ||
-    // `nombre_proyecto_ref` es el nombre de planta que trae el contrato; buscar
-    // por él es lo que permite encontrar los huérfanos por su planta.
-    (c.nombre_proyecto_ref || '').toLowerCase().includes(t))
+  if (t) {
+    base = base.filter(c =>
+      (c.numero_contrato || '').toLowerCase().includes(t) ||
+      (c.contratante_nombre || '').toLowerCase().includes(t) ||
+      (c.prestador_nombre || '').toLowerCase().includes(t) ||
+      (c.inversionista_nombre || '').toLowerCase().includes(t) ||
+      (c.proyecto?.nombre_comercial || '').toLowerCase().includes(t) ||
+      // `nombre_proyecto_ref` es el nombre de planta que trae el contrato;
+      // buscar por él es lo que permite encontrar los huérfanos por su planta.
+      (c.nombre_proyecto_ref || '').toLowerCase().includes(t))
+  }
+  return aplicarFiltros(base)
 })
 
 async function cargarContratosServicio(servicioKey) {
@@ -1306,19 +1477,28 @@ function asegurarDatos() {
 }
 
 function seleccionarVista(key) {
+  if (key === vista.value) return
   vista.value = key
+  limpiarFiltros()
   asegurarDatos()
 }
 
 function seleccionarServicio(key) {
+  if (key === servicio.value) return
   servicio.value = key
+  // Cada pestaña filtra por dimensiones distintas: arrastrar el filtro de
+  // "portafolio" a Operación dejaría la tabla vacía sin explicación visible.
+  limpiarFiltros()
   asegurarDatos()
 }
 
 // Solo se pide lo de la vista elegida. Entrar sin ?vista= no dispara ninguna
 // peticion: la pagina espera en el selector. Los contadores de cada pestana
 // aparecen a medida que se visitan, no de entrada.
-onMounted(asegurarDatos)
+onMounted(() => {
+  leerFiltrosDeLaUrl()
+  asegurarDatos()
+})
 
 function conteoVista(key) {
   if (key === 'clientes')  return clientesCargados.value  ? clientesFiltrados.value.length  : null
@@ -1757,6 +1937,32 @@ function confirmarBorrarPpa(contrato) {
   background: #FEF3C7; color: #92400E; border: 1px dashed #F59E0B;
 }
 .chip-huerfano:hover { background: #FDE68A; }
+
+.filtros-panel {
+  display: flex; flex-direction: column; gap: 12px; padding: 4px 2px; min-width: 220px;
+}
+.opcion-n {
+  flex: 0 0 auto; font-size: 10px; font-weight: 700; color: #9b8fb0;
+  background: #F3F0F8; border-radius: 999px; padding: 0 6px;
+}
+
+/* Chip de filtro aplicado: se quita con un clic en cualquier parte del chip */
+.chip-filtro {
+  display: inline-flex; align-items: center; gap: 5px; max-width: 320px;
+  font-size: 11px; font-weight: 600; line-height: 1.7;
+  padding: 0 8px; border-radius: 999px; cursor: pointer;
+  background: #F0EBFD; color: #6B4BA8; border: 1px solid #DCD0F5;
+}
+.chip-filtro:hover { background: #E5DBFA; }
+.chip-filtro i { font-size: 9px; opacity: .7; }
+.chip-filtro-lbl {
+  font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .03em; opacity: .65; flex: 0 0 auto;
+}
+.chip-filtro--limpiar {
+  background: transparent; color: #6b5a8a; border-color: #E5E2EC; font-weight: 500;
+}
+.chip-filtro--limpiar:hover { background: #F7F5FB; }
 
 .barra-duplicados {
   display: flex; align-items: center; gap: 7px;
