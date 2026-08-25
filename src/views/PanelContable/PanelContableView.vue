@@ -814,7 +814,7 @@ async function armarPeriodo() {
       periodo: periodo.value, tipo: tipoDatos.value,
     })
     resultado.value = data
-    await cargar()
+    await cargarPaneles()
     toast.add({
       severity: 'success', summary: `${data.armados} paneles armados`,
       detail: data.omitidos.length
