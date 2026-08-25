@@ -135,7 +135,7 @@
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ubicación</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <InfoField label="Municipio" :value="frontera.municipio" />
-              <InfoField label="Departamento" :value="frontera.departamento" />
+              <InfoField label="Departamento" :value="frontera.proyecto_departamento" />
               <InfoField label="Centro poblado" :value="frontera.centro_poblado" />
               <InfoField label="Dirección" :value="frontera.direccion" />
               <InfoField label="Latitud" :value="frontera.latitud" />
@@ -189,7 +189,7 @@
               <InfoField label="Código CIIU" :value="frontera.codigo_ciiu" />
               <InfoField label="Clasificación industrial general" :value="frontera.clasificacion_industrial_general" />
               <InfoField label="Clasificación industrial específica" :value="frontera.clasificacion_industrial_especifica" />
-              <InfoField label="Tipo tecnología" :value="frontera.tipo_tecnologia" />
+              <InfoField label="Tipo tecnología" :value="frontera.proyecto_tipo_tecnologia" />
               <InfoField label="SIC submercado exportador" :value="frontera.codigo_sic_submercado_exportador" />
               <InfoField label="SIC submercado consumo" :value="frontera.codigo_sic_submercado_consumo" />
               <InfoField label="SIC frontera generación" :value="frontera.codigo_sic_frontera_generacion" />
