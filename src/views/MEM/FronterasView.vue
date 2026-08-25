@@ -142,7 +142,7 @@
             {{ data.proyecto_potencia_instalada_mw ? Number(data.proyecto_potencia_instalada_mw).toFixed(3) : '—' }}
           </template>
         </Column>
-        <Column field="municipio" header="Municipio" sortable style="min-width: 130px" />
+        <Column field="proyecto_municipio" header="Municipio" sortable style="min-width: 130px" />
         <Column header="" style="width: 90px">
           <template #body="{ data }">
             <Button icon="pi pi-pencil" text rounded size="small" severity="secondary"
@@ -380,7 +380,7 @@ const filteredFronteras = computed(() => {
       (f.nombre_frontera || '').toLowerCase().includes(s) ||
       (f.proyecto_nombre || '').toLowerCase().includes(s) ||
       (f.operador_comercial || '').toLowerCase().includes(s) ||
-      (f.municipio || '').toLowerCase().includes(s)
+      (f.proyecto_municipio || '').toLowerCase().includes(s)
     )
   }
   return list
@@ -438,7 +438,7 @@ async function descargarExcel() {
     { header: 'Serial Medidor Respaldo', value: f => f.nro_serie_med_resp || '' },
     { header: 'Operador', value: f => f.operador_comercial || '' },
     { header: 'Cap. MW', value: f => f.proyecto_potencia_instalada_mw ? Number(f.proyecto_potencia_instalada_mw).toFixed(3) : '' },
-    { header: 'Municipio', value: f => f.municipio || '' },
+    { header: 'Municipio', value: f => f.proyecto_municipio || '' },
   ], `fronteras_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Fronteras')
 }
 

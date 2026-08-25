@@ -134,7 +134,7 @@
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ubicación</p>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <InfoField label="Municipio" :value="frontera.municipio" />
+              <InfoField label="Municipio" :value="frontera.proyecto_municipio" />
               <InfoField label="Departamento" :value="frontera.proyecto_departamento" />
               <InfoField label="Centro poblado" :value="frontera.centro_poblado" />
               <InfoField label="Dirección" :value="frontera.direccion" />
