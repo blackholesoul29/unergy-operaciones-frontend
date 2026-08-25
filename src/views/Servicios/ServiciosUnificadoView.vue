@@ -184,7 +184,7 @@
             <span class="celda-txt sutil">{{ fmt(data.contacto_comercial_correo) }}</span>
           </template>
         </Column>
-        <Column header="Falta" style="width:9%">
+        <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
@@ -292,7 +292,7 @@
             <span v-else class="vacio">—</span>
           </template>
         </Column>
-        <Column header="Falta" style="width:9%">
+        <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
@@ -519,6 +519,32 @@
                 :style="`width:${anchos.numero}`">
           <template #body="{ data }"><span class="celda-txt mono">{{ data.numero_contrato || '—' }}</span></template>
         </Column>
+        <!-- Tarifas: se muestra la que APLICA HOY, no la del contrato. La de
+             2024 ya no es lo que se cobra, y el valor vigente sale de la
+             indexación por aniversarios. El tooltip da el detalle: de qué año
+             es, cuántos aniversarios hay y cuál era la base. -->
+        <template v-if="esRepresentacion">
+          <Column field="tarifa_admin" header="Admin" sortable
+                  :style="`width:${anchos.admin}`" bodyStyle="text-align:right">
+            <template #body="{ data }">
+              <span class="mono tabular-nums">{{ fmtTarifaAdmin(data.tarifa_admin) }}</span>
+            </template>
+          </Column>
+          <Column v-for="t in TARIFAS_COLUMNA" :key="t.clave" :header="t.header" sortable
+                  :field="t.campoBase" :style="`width:${anchos.tarifa}`"
+                  bodyStyle="text-align:right">
+            <template #body="{ data }">
+              <span class="tarifa-celda" v-tooltip.bottom="tipTarifa(data, t)">
+                <span class="mono tabular-nums font-semibold">
+                  {{ fmtTarifa(vigenteDe(data, t).valor) }}
+                </span>
+                <span v-if="vigenteDe(data, t).anio" class="tarifa-anio">
+                  {{ vigenteDe(data, t).anio }}
+                </span>
+              </span>
+            </template>
+          </Column>
+        </template>
         <!-- Contratante y prestador salen del cuadro en Representación: el seed
              CGM no los llena y el par real es Unergy ↔ inversionista, que ya
              tiene columna propia. El buscador sí sigue mirándolos. -->
@@ -530,20 +556,23 @@
                 sortable :style="`width:${anchos.parte}`">
           <template #body="{ data }"><span class="celda-txt">{{ data.prestador_nombre || '—' }}</span></template>
         </Column>
-        <Column field="fecha_inicio" header="Inicio" sortable style="width:8%">
+        <Column field="fecha_inicio" header="Inicio" sortable
+                :style="esRepresentacion ? 'width:6%' : 'width:8%'">
           <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template>
         </Column>
-        <Column field="fecha_fin" header="Fin" sortable style="width:8%">
+        <Column field="fecha_fin" header="Fin" sortable
+                :style="esRepresentacion ? 'width:6%' : 'width:8%'">
           <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_fin) }}</span></template>
         </Column>
-        <Column field="estado" header="Estado" sortable style="width:12%">
+        <Column field="estado" header="Estado" sortable
+                :style="esRepresentacion ? 'width:9%' : 'width:12%'">
           <template #body="{ data }">
             <span class="mini-chip" :class="ESTADO_CONTRATO_CLASS[data.estado] || 'chip-neutral'">
               {{ ESTADO_CONTRATO_LABELS[data.estado] || data.estado || '—' }}
             </span>
           </template>
         </Column>
-        <Column header="Falta" style="width:9%">
+        <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
@@ -677,6 +706,7 @@ import api from '@/api/client'
 import { formatearNombre } from '@/utils/nombreFormato'
 import { exportarExcel } from '@/utils/exportarExcel'
 import { estadoVigenciaPPA } from '@/utils/ppaVigencia'
+import { tarifaVigente, fmtTarifa, fmtTarifaAdmin } from '@/utils/tarifasCgm'
 import { SEMAFORO, servicioLabel, fmt } from '@/views/Clientes/clientesUi'
 
 // Los formularios y wizards pesan; sólo se descargan cuando alguien crea algo.
@@ -1256,14 +1286,43 @@ const esRepresentacion = computed(() => servicio.value === 'representacion')
 // repartir ternarios por el template.
 const anchos = computed(() => {
   if (esRepresentacion.value) {
-    return { proyecto: '24%', inversionista: '20%', numero: '11%', parte: '0',
-             acciones: '8%' }
+    // Con las tres columnas de tarifa hay que apretar el resto para no forzar
+    // scroll horizontal: proyecto e inversionista siguen siendo las anchas
+    // porque son las que llevan texto largo.
+    return { proyecto: '19%', inversionista: '15%', numero: '9%', parte: '0',
+             admin: '7%', tarifa: '8%', acciones: '8%' }
   }
   // Operación (con columna Tipo) y REC (sin ella).
   const conTipo = tiposDelServicio.value.length > 1
   return { proyecto: conTipo ? '18%' : '22%', inversionista: '0',
-           numero: '9%', parte: conTipo ? '14%' : '16%', acciones: '8%' }
+           numero: '9%', parte: conTipo ? '14%' : '16%',
+           admin: '0', tarifa: '0', acciones: '8%' }
 })
+
+// Las dos tarifas en $/kWh de un contrato de representación. Cada una tiene su
+// serie de indexación y su tarifa base en el contrato.
+const TARIFAS_COLUMNA = [
+  { clave: 'cgm', header: 'CGM', campoBase: 'tarifa_cgm', campoIdx: 'indexacion_cgm' },
+  { clave: 'rep', header: 'Repr.', campoBase: 'tarifa_representacion',
+    campoIdx: 'indexacion_representacion' },
+]
+
+function vigenteDe(fila, t) {
+  return tarifaVigente(fila[t.campoIdx], fila.fecha_firma_contrato, fila[t.campoBase])
+}
+
+function tipTarifa(fila, t) {
+  const v = vigenteDe(fila, t)
+  if (v.valor == null) return `Sin tarifa ${t.header} registrada`
+  const partes = [`${t.header}: ${fmtTarifa(v.valor)} $/kWh`]
+  if (v.desdeBase) partes.push('tarifa del contrato, sin indexación cargada')
+  else if (v.esBase) partes.push(`año base ${v.anio}, sin indexar todavía`)
+  else partes.push(`indexada al aniversario ${v.anio}`)
+  if (v.aniversarios) partes.push(`${v.aniversarios} aniversario(s) registrados`)
+  const base = fila[t.campoBase]
+  if (base != null && Number(base) !== v.valor) partes.push(`base del contrato: ${fmtTarifa(base)}`)
+  return partes.join(' · ')
+}
 
 // El enlace de la celda va a la ficha del servicio que se está mirando; para
 // Operación y REC no hay sub-vista propia, así que abre la ficha de la planta.
@@ -1592,6 +1651,19 @@ const COLUMNAS_EXCEL = {
     { header: 'Inicio', value: c => fmtFecha(c.fecha_inicio) },
     { header: 'Fin', value: c => fmtFecha(c.fecha_fin) },
     { header: 'Estado', value: c => ESTADO_CONTRATO_LABELS[c.estado] || c.estado || '' },
+    // Las tarifas van con la vigente Y la base: en una hoja de cálculo se
+    // trabaja con las dos, y sin la base no se puede rehacer la indexación.
+    { header: 'Tarifa admin (%)', value: c =>
+        c.tarifa_admin != null ? +(Number(c.tarifa_admin) * 100).toFixed(4) : '' },
+    { header: 'CGM vigente ($/kWh)', value: c =>
+        vigenteDe(c, TARIFAS_COLUMNA[0]).valor ?? '' },
+    { header: 'CGM año', value: c => vigenteDe(c, TARIFAS_COLUMNA[0]).anio ?? '' },
+    { header: 'CGM base ($/kWh)', value: c => c.tarifa_cgm ?? '' },
+    { header: 'Repr. vigente ($/kWh)', value: c =>
+        vigenteDe(c, TARIFAS_COLUMNA[1]).valor ?? '' },
+    { header: 'Repr. año', value: c => vigenteDe(c, TARIFAS_COLUMNA[1]).anio ?? '' },
+    { header: 'Repr. base ($/kWh)', value: c => c.tarifa_representacion ?? '' },
+    { header: 'Portafolio', value: c => c.portafolio || '' },
   ],
 }
 
@@ -1937,6 +2009,13 @@ function confirmarBorrarPpa(contrato) {
   background: #FEF3C7; color: #92400E; border: 1px dashed #F59E0B;
 }
 .chip-huerfano:hover { background: #FDE68A; }
+
+.tarifa-celda {
+  display: inline-flex; align-items: baseline; gap: 4px; justify-content: flex-end;
+}
+/* El año del aniversario en pequeño: el número grande es la tarifa que aplica
+   hoy, y el año dice de qué indexación viene. */
+.tarifa-anio { font-size: 9px; font-weight: 700; color: #9b8fb0; }
 
 .filtros-panel {
   display: flex; flex-direction: column; gap: 12px; padding: 4px 2px; min-width: 220px;

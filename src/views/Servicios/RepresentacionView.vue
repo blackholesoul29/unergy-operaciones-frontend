@@ -555,6 +555,10 @@ import Checkbox from 'primevue/checkbox'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '@/api/client'
+import {
+  anioDeFila, ordenarIndexacion, fechaAniversario, indiceVigente,
+  estadoFilaIndexacion, fmtTarifa,
+} from '@/utils/tarifasCgm'
 import InfoField from '@/components/InfoField.vue'
 
 const route = useRoute()
@@ -595,11 +599,8 @@ const hoy = new Date().toISOString().slice(0, 10)
 
 // ── Formato ──────────────────────────────────────────────────────────────────
 function fmtFecha(v) { return v ? String(v).slice(0, 10) : '—' }
-function fmtVal(v) {
-  if (v == null || v === '') return '—'
-  const n = Number(v)
-  return Number.isFinite(n) ? n.toFixed(n % 1 === 0 ? 0 : 4) : '—'
-}
+// Mismo formato que usa la tabla del listado.
+const fmtVal = fmtTarifa
 
 // Dos registros duplicados traen el mismo inversionista, así que la etiqueta a
 // secas los deja indistinguibles. Cuando eso pasa se añade lo que los separa.
@@ -708,44 +709,31 @@ async function fusionar() {
 // El JSONB guarda {año, ipc, valor, esBase}. La fecha exacta del aniversario no
 // se persiste: se deriva de la firma manteniendo mes y día, igual que hace
 // `_anniversary_date` en el backend. Sin firma solo se puede mostrar el año.
-const idxCgm = computed(() => ordenar(c.value?.indexacion_cgm))
-const idxRep = computed(() => ordenar(c.value?.indexacion_representacion))
+// La lógica de indexación vive en utils/tarifasCgm.js porque el listado de
+// Servicios > Representación muestra la misma tarifa vigente: si cada pantalla
+// la calculara por su cuenta, la tabla podría decir 6.63 y la ficha otra cosa.
+const idxCgm = computed(() => ordenarIndexacion(c.value?.indexacion_cgm))
+const idxRep = computed(() => ordenarIndexacion(c.value?.indexacion_representacion))
 
 const TABLAS_IDX = computed(() => [
   { clave: 'cgm', titulo: 'Indexación CGM', filas: idxCgm.value },
   { clave: 'rep', titulo: 'Indexación Representación', filas: idxRep.value },
 ])
 
-function ordenar(filas) {
-  if (!Array.isArray(filas)) return []
-  return [...filas].sort((a, b) => (anio(a) || 0) - (anio(b) || 0))
-}
-function anio(f) { return Number(f?.año ?? f?.anio ?? f?.year) || null }
+const anio = anioDeFila
 
 function etiquetaAnio(f) {
-  const a = anio(f)
-  if (!a) return '—'
-  const firma = c.value?.fecha_firma_contrato
-  return firma && String(firma).length >= 10 ? `${a}-${String(firma).slice(5, 10)}` : String(a)
+  return fechaAniversario(f, c.value?.fecha_firma_contrato) || '—'
 }
-
-// Fila vigente: la del aniversario más reciente que ya pasó.
 function iVigente(filas) {
-  let idx = -1
-  for (let i = 0; i < filas.length; i++) {
-    if (etiquetaAnio(filas[i]) <= hoy || String(anio(filas[i])) <= hoy.slice(0, 4)) idx = i
-  }
-  return idx
+  return indiceVigente(filas, c.value?.fecha_firma_contrato, hoy)
 }
 function valorVigente(filas) {
   const i = iVigente(filas)
   return i >= 0 ? filas[i].valor : null
 }
 function estadoFila(filas, i) {
-  const v = iVigente(filas)
-  if (i < v) return 'pagado'
-  if (i === v) return 'vigente'
-  return 'pendiente'
+  return estadoFilaIndexacion(filas, i, c.value?.fecha_firma_contrato, hoy)
 }
 
 // ── Resumen ──────────────────────────────────────────────────────────────────
