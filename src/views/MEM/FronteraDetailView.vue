@@ -28,7 +28,6 @@
 
             <div v-if="!isEditMode" class="grid grid-cols-2 md:grid-cols-3 gap-4">
               <InfoField label="Código frontera" :value="frontera.codigo_frontera" />
-              <InfoField label="Código propio" :value="frontera.codigo_propio" />
               <InfoField label="Tipo" :value="tipoLabel(frontera.tipo_frontera)" />
               <InfoField label="Estado" :value="frontera.estado" />
               <div class="flex flex-col gap-0.5">
@@ -47,10 +46,6 @@
               <div>
                 <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Código frontera</label>
                 <InputText v-model="editForm.codigo_frontera" class="w-full" />
-              </div>
-              <div>
-                <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Código propio</label>
-                <InputText v-model="editForm.codigo_propio" class="w-full" />
               </div>
               <div>
                 <label class="text-xs font-medium block mb-1" style="color: #9b89b5;">Tipo</label>
@@ -272,7 +267,7 @@ const TABS = [
 // que había en FronterasView.vue) ───────────────────────────────────────
 const isEditMode = computed(() => route.query.edit === 'true')
 const editForm = reactive({
-  codigo_frontera: null, codigo_propio: null, nombre_frontera: null, tipo_frontera: null,
+  codigo_frontera: null, nombre_frontera: null, tipo_frontera: null,
   estado: null, proyecto_id: null, operador_red_id: null,
 })
 const guardando = ref(false)
@@ -314,7 +309,6 @@ async function cargarCatalogos() {
 
 function entrarEdicion() {
   editForm.codigo_frontera = frontera.value.codigo_frontera
-  editForm.codigo_propio = frontera.value.codigo_propio
   editForm.nombre_frontera = frontera.value.nombre_frontera
   editForm.tipo_frontera = frontera.value.tipo_frontera
   editForm.estado = frontera.value.estado
