@@ -129,6 +129,21 @@
               class="w-full"
             />
           </div>
+          <div class="flex flex-col gap-1">
+            <label class="field-label">Fronteras cubiertas <span class="text-gray-400">(opcional)</span></label>
+            <MultiSelect
+              v-model="form.frontera_ids"
+              :options="fronterasDelProyecto"
+              optionLabel="nombre_frontera"
+              optionValue="id"
+              placeholder="Seleccionar fronteras"
+              :disabled="!form.proyecto_id"
+              filter
+              display="chip"
+              class="w-full"
+            />
+            <span v-if="!form.proyecto_id" class="text-xs text-gray-400">Elige un proyecto para poder seleccionar sus fronteras.</span>
+          </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Número de contrato</label>
@@ -483,6 +498,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
 import AutoComplete from 'primevue/autocomplete'
 import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
@@ -501,6 +517,7 @@ const toast = useToast()
 const step = ref(0)
 const guardando = ref(false)
 const todosProyectos = ref([])
+const fronterasDelProyecto = ref([])
 const todosClientes = ref([])
 const contratantesFiltrados = ref([])
 const prestadoresFiltrados = ref([])
@@ -547,6 +564,7 @@ const PERIODICIDADES = [
 
 const form = reactive({
   proyecto_id: null,
+  frontera_ids: [],
   numero_contrato: '',
   estado: 'vigente',
   contratante_id: null,
@@ -668,6 +686,18 @@ watch(step, async (s) => {
   if (s === 0 && props.tipo === 'internet') {
     await nextTick()
     await initUbicacionMap()
+  }
+})
+
+watch(() => form.proyecto_id, async (proyectoId) => {
+  form.frontera_ids = []
+  fronterasDelProyecto.value = []
+  if (!proyectoId) return
+  try {
+    const { data } = await api.get('/fronteras', { params: { proyecto_id: proyectoId } })
+    fronterasDelProyecto.value = data
+  } catch {
+    fronterasDelProyecto.value = []
   }
 })
 
@@ -810,6 +840,7 @@ async function crearContrato() {
   const payload = {
       servicio_aplica: props.tipo,
       proyecto_id: form.proyecto_id ?? null,
+      frontera_ids: form.frontera_ids ?? [],
       numero_contrato: form.numero_contrato?.trim() || null,
       estado: form.estado ?? 'vigente',
       contratante_id: form.contratante_id ?? null,

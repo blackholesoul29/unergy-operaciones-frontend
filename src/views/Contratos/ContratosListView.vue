@@ -195,6 +195,12 @@
             <i v-else class="pi pi-minus text-gray-300" />
           </template>
         </Column>
+        <Column header="Fronteras" style="width:110px">
+          <template #body="{ data }">
+            <Tag v-if="data.fronteras?.length" :value="`${data.fronteras.length} fronteras`" severity="info" />
+            <span v-else class="text-xs text-gray-300">Sin fronteras</span>
+          </template>
+        </Column>
         <Column style="width:50px">
           <template #body="{ data }">
             <Button icon="pi pi-arrow-right" text size="small" severity="secondary"
@@ -248,6 +254,12 @@
         <Column header="Estado" style="width:120px">
           <template #body="{ data }">
             <Tag :value="ESTADO_LABELS[data.estado] || data.estado" :severity="ESTADO_SEVERITY[data.estado]" />
+          </template>
+        </Column>
+        <Column header="Fronteras" style="width:110px">
+          <template #body="{ data }">
+            <Tag v-if="data.fronteras?.length" :value="`${data.fronteras.length} fronteras`" severity="info" />
+            <span v-else class="text-xs text-gray-300">Sin fronteras</span>
           </template>
         </Column>
       </DataTable>

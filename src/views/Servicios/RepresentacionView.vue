@@ -142,7 +142,7 @@
                 <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
                   @click="guardar(['numero_contrato', 'inversionista_nombre', 'portafolio',
                                    'codigo_sun_factory', 'nombre_proyecto_ref',
-                                   'proyecto_id'])" />
+                                   'proyecto_id', 'frontera_ids'])" />
               </template>
             </div>
           </header>
@@ -177,6 +177,8 @@
                   <i class="pi pi-exclamation-triangle" />{{ discrepanciaPlanta }}
                 </span>
               </div>
+              <InfoField label="Fronteras cubiertas"
+                :value="(c.fronteras || []).map(f => f.nombre_frontera).join(', ') || null" />
             </div>
             <div v-else class="cd-grid">
               <div class="flex flex-col gap-1">
@@ -211,6 +213,12 @@
                 <span class="text-[10.5px]" style="color:#9b89b5">
                   Cambiarla mueve el contrato a otra planta.
                 </span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="cd-lbl">Fronteras cubiertas</label>
+                <MultiSelect v-model="form.frontera_ids" :options="fronterasDelProyecto"
+                  optionLabel="nombre_frontera" optionValue="id" placeholder="Seleccionar fronteras"
+                  :disabled="!form.proyecto_id" filter display="chip" size="small" class="w-full" />
               </div>
             </div>
           </div>
@@ -533,7 +541,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
@@ -541,6 +549,7 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Tag from 'primevue/tag'
@@ -576,6 +585,7 @@ const contratos = ref([])
 const idSeleccionado = ref(null)
 const edit = ref(null)          // 'id' | 'partes' | 'vigencia' | 'comercial'
 const proyectos = ref([])       // catálogo para reasignar la planta
+const fronterasDelProyecto = ref([])
 const cargandoProyectos = ref(false)
 const guardando = ref(false)
 
@@ -790,6 +800,7 @@ function abrir(seccion) {
     codigo_sun_factory: x.codigo_sun_factory || '',
     nombre_proyecto_ref: x.nombre_proyecto_ref || '',
     proyecto_id: x.proyecto_id ?? null,
+    frontera_ids: (x.fronteras || []).map(f => f.id),
     contratante_nombre: x.contratante_nombre || '',
     contratante_nit: x.contratante_nit || '',
     prestador_nombre: x.prestador_nombre || '',
@@ -811,7 +822,25 @@ function abrir(seccion) {
   // El catálogo solo hace falta para reasignar la planta, así que se pide la
   // primera vez que se abre esa sección y no al montar la vista.
   if (seccion === 'id' && !proyectos.value.length) cargarProyectos()
+  if (seccion === 'id') cargarFronterasDelProyecto(form.proyecto_id)
 }
+
+async function cargarFronterasDelProyecto(proyectoId) {
+  fronterasDelProyecto.value = []
+  if (!proyectoId) return
+  try {
+    const { data } = await api.get('/fronteras', { params: { proyecto_id: proyectoId } })
+    fronterasDelProyecto.value = data
+  } catch { /* el select de fronteras queda vacio */ }
+}
+
+// Si se reasigna la planta a medio editar, las fronteras seleccionadas de la
+// planta anterior ya no aplican -- se limpian y se recarga el catalogo.
+watch(() => form.proyecto_id, (nuevo, viejo) => {
+  if (edit.value !== 'id' || nuevo === viejo) return
+  form.frontera_ids = []
+  cargarFronterasDelProyecto(nuevo)
+})
 
 async function cargarProyectos() {
   cargandoProyectos.value = true
