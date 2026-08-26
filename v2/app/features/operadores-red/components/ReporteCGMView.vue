@@ -2,10 +2,10 @@
   <div class="space-y-4">
     <div class="flex gap-1 border-b" style="border-color: #e8e0f0;">
       <button type="button" class="text-xs font-bold px-1 pb-2 mr-4"
-        :style="innerTab === 'enviar' ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
+        :style="innerTab === 'enviar' ? 'color:var(--color-unergy-purple-dark); border-bottom: 2.5px solid var(--color-unergy-purple);' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
         @click="innerTab = 'enviar'">Enviar</button>
       <button type="button" class="text-xs font-bold px-1 pb-2"
-        :style="innerTab === 'historial' ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
+        :style="innerTab === 'historial' ? 'color:var(--color-unergy-purple-dark); border-bottom: 2.5px solid var(--color-unergy-purple);' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
         @click="innerTab = 'historial'">Historial</button>
     </div>
 
@@ -31,7 +31,7 @@
           @click="enviarSeleccionados"
           v-tooltip.top="!totalSeleccionados ? 'Selecciona al menos un destinatario' : ''"
           class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors"
-          :style="!totalSeleccionados || enviando ? 'background:#915BD8;color:#fff;opacity:.4;cursor:not-allowed;' : 'background:#915BD8;color:#fff;cursor:pointer;'">
+          :style="!totalSeleccionados || enviando ? 'background:var(--color-unergy-purple);color:#fff;opacity:.4;cursor:not-allowed;' : 'background:var(--color-unergy-purple);color:#fff;cursor:pointer;'">
           <LoaderCircleIcon v-if="enviando" class="text-xs size-[1em] animate-spin" />
           <SendIcon v-else class="text-xs size-[1em]" />
           {{ enviando ? 'Enviando…' : `Enviar a ${totalSeleccionados}` }}
@@ -40,14 +40,14 @@
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
     </div>
 
     <div v-else class="space-y-3">
       <div class="flex items-center gap-2 flex-wrap">
         <button v-for="opt in tipoOpciones" :key="opt.value" type="button" @click="filtroTipo = opt.value"
           class="text-xs font-bold rounded-full transition-colors"
-          :style="`height:34px;padding:0 14px;box-sizing:border-box;border:1.5px solid ${filtroTipo === opt.value ? '#915BD8' : '#e8e0f0'};background:${filtroTipo === opt.value ? '#915BD8' : '#fff'};color:${filtroTipo === opt.value ? '#fff' : '#6b5a8a'};`">
+          :style="`height:34px;padding:0 14px;box-sizing:border-box;border:1.5px solid ${filtroTipo === opt.value ? 'var(--color-unergy-purple)' : '#e8e0f0'};background:${filtroTipo === opt.value ? 'var(--color-unergy-purple)' : '#fff'};color:${filtroTipo === opt.value ? '#fff' : '#6b5a8a'};`">
           {{ opt.label }}
         </button>
         <IconField style="max-width: 240px; flex: 1;">
@@ -74,7 +74,7 @@
               <th class="text-left px-4 py-2.5 font-semibold" style="color: #6b5a8a;">
                 <label class="flex items-center gap-1.5 cursor-pointer select-none">
                   <input type="checkbox" :checked="todosSeleccionados" @change="toggleTodos"
-                    style="accent-color: #915BD8; width: 14px; height: 14px;" />
+                    style="accent-color: var(--color-unergy-purple); width: 14px; height: 14px;" />
                   Enviar
                 </label>
               </th>
@@ -84,20 +84,20 @@
           <template v-for="row in destinatariosFiltrados" :key="row.key">
             <tr class="border-t" style="border-color: #f0ecf6;">
               <td class="px-4 py-2.5">
-                <p v-if="row.nombre" class="font-medium" style="color: #2C2039;">{{ formatearNombre(row.nombre) }}</p>
+                <p v-if="row.nombre" class="font-medium" style="color: var(--color-unergy-deep);">{{ formatearNombre(row.nombre) }}</p>
                 <p v-else class="text-xs italic" style="color: #c4b8d4;">{{ row.sinVinculo }}</p>
               </td>
               <td class="px-4 py-2.5">
                 <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
                   :style="row.tipo === 'Operador de Red'
-                    ? 'background: rgba(145,91,216,0.1); color: #6E3FB8;'
+                    ? 'background: rgba(145,91,216,0.1); color: var(--color-unergy-purple-dark);'
                     : 'background: rgba(16,185,129,0.1); color: #059669;'">
                   {{ row.tipo }}
                 </span>
               </td>
               <td class="px-4 py-2.5">
                 <RouterLink v-if="row.linkCorregir && row.correos.length"
-                  :to="row.linkCorregir" class="font-medium underline" style="color: #6E3FB8;"
+                  :to="row.linkCorregir" class="font-medium underline" style="color: var(--color-unergy-purple-dark);"
                   v-tooltip.top="'Ver y editar correos'">
                   {{ row.correos.length }} correo{{ row.correos.length > 1 ? 's' : '' }}
                 </RouterLink>
@@ -119,7 +119,7 @@
                 <input type="checkbox" :checked="seleccionados.has(row.key)" :disabled="!row.correos.length"
                   @change="toggleSeleccion(row.key)"
                   v-tooltip.left="!row.correos.length ? 'Sin correos, no se puede enviar' : ''"
-                  style="accent-color: #915BD8; width: 14px; height: 14px;"
+                  style="accent-color: var(--color-unergy-purple); width: 14px; height: 14px;"
                   :style="!row.correos.length ? 'opacity:.35;cursor:not-allowed;' : 'cursor:pointer;'" />
               </td>
             </tr>
@@ -127,7 +127,7 @@
               <td colspan="5" class="px-4 py-3">
                 <div v-if="proyectosDeFila(row.key).size" class="flex items-center justify-end gap-3 mb-2">
                   <button type="button" @click="limpiarProyectos(row.key)"
-                    class="text-[11px] font-semibold underline" style="color: #915BD8;">
+                    class="text-[11px] font-semibold underline" style="color: var(--color-unergy-purple);">
                     Quitar selección (volver a todos)
                   </button>
                 </div>
@@ -136,7 +136,7 @@
                     @click="toggleProyecto(row.key, p.id)"
                     class="text-xs px-2.5 py-1 rounded-lg transition-colors"
                     :style="proyectosDeFila(row.key).has(p.id)
-                      ? 'background:#915BD8; border:1px solid #915BD8; color:#fff;'
+                      ? 'background:var(--color-unergy-purple); border:1px solid var(--color-unergy-purple); color:#fff;'
                       : proyectosDeFila(row.key).size
                         ? 'background:#fff; border:1px solid #e8e0f0; color:#c4b8d4;'
                         : 'background:#fff; border:1px solid #e8e0f0; color:#6b5a8a;'">

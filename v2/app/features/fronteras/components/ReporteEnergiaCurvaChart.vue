@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="flex flex-wrap gap-2 mb-3 text-xs">
-      <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
+      <span v-if="!finalVacia" class="chip" style="border-color:var(--color-unergy-purple);color:var(--color-unergy-purple);">● Final reportada</span>
       <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ {{ medidorLabel }}</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
       <span v-if="reconectadorPath" class="chip" style="border-color:#9c8b68;color:#7a6a48;">⬥ Reconectador</span>
@@ -22,14 +22,14 @@
            incluso cuando coinciden casi exacto con el valor final (ej. Caso
            1/2, donde el medidor validado ES la fuente del total). -->
       <template v-if="!finalVacia">
-        <path :d="finalArea" fill="#915BD8" opacity="0.08" />
-        <path :d="finalPath" fill="none" stroke="#915BD8" stroke-width="3" />
+        <path :d="finalArea" fill="var(--color-unergy-purple)" opacity="0.08" />
+        <path :d="finalPath" fill="none" stroke="var(--color-unergy-purple)" stroke-width="3" />
         <template v-for="h in 24" :key="'p' + h">
           <rect v-if="horasRellenadas.has(h - 1)"
                 :x="x(h - 1) - 4" :y="y(val(finalCurve, h - 1)) - 4" width="8" height="8"
                 fill="#F0C040" stroke="white" stroke-width="1.5"
                 :transform="`rotate(45 ${x(h - 1)} ${y(val(finalCurve, h - 1))})`" />
-          <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
+          <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="var(--color-unergy-purple)" stroke="white" stroke-width="1.5" />
         </template>
       </template>
 

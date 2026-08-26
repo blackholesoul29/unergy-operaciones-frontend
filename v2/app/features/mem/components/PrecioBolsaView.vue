@@ -7,7 +7,7 @@
           <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
         </Button>
         <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#915BD822">
-          <ChartLineIcon class="text-sm size-[1em]" style="color:#915BD8" />
+          <ChartLineIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
         </div>
       </template>
     </PageHeader>
@@ -21,7 +21,7 @@
           activeTab === i
             ? 'border-b-2 text-gray-800' : 'text-gray-400 hover:text-gray-600'
         ]"
-        :style="activeTab === i ? 'border-color:#915BD8' : ''">
+        :style="activeTab === i ? 'border-color:var(--color-unergy-purple)' : ''">
         {{ tab }}
       </button>
     </div>
@@ -66,7 +66,7 @@
             <!-- Bars -->
             <rect v-for="(bar, i) in priceBars" :key="i"
               :x="bar.x" :y="bar.y" :width="bar.w" :height="bar.h"
-              :fill="bar.peak ? '#F6FF72' : '#915BD8'" :opacity="hoverBar?.hour === bar.hour ? 1 : 0.85"
+              :fill="bar.peak ? 'var(--color-unergy-yellow)' : 'var(--color-unergy-purple)'" :opacity="hoverBar?.hour === bar.hour ? 1 : 0.85"
               rx="2" />
 
             <!-- Scarcity line -->
@@ -89,7 +89,7 @@
             class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs pointer-events-none"
             :style="{ left: tooltipLeft + 'px', top: tooltipTop + 'px' }">
             <p class="font-semibold text-gray-800">Hora {{ hoverBar.hour }}</p>
-            <p style="color:#915BD8">${{ hoverBar.price.toFixed(2) }} /kWh</p>
+            <p style="color:var(--color-unergy-purple)">${{ hoverBar.price.toFixed(2) }} /kWh</p>
             <p class="text-gray-400">{{ hoverBar.marginal }}</p>
           </div>
         </div>
@@ -121,7 +121,7 @@
             </Column>
             <Column header="Menores" style="min-width:100px">
               <template #body="{ data }">
-                <span class="font-mono text-xs" style="color:#915BD8">{{ data.menor.toLocaleString() }}</span>
+                <span class="font-mono text-xs" style="color:var(--color-unergy-purple)">{{ data.menor.toLocaleString() }}</span>
               </template>
             </Column>
             <Column header="Precio" style="min-width:90px">
@@ -241,7 +241,7 @@
               :fill="band.color" opacity="0.12" />
 
             <!-- Price line -->
-            <polyline :points="histPriceLine" fill="none" stroke="#915BD8" stroke-width="1.5" />
+            <polyline :points="histPriceLine" fill="none" stroke="var(--color-unergy-purple)" stroke-width="1.5" />
 
             <!-- ONI line (secondary axis) -->
             <polyline :points="histOniLine" fill="none" stroke="#3B82F6" stroke-width="1" stroke-dasharray="4,2" />
@@ -257,8 +257,8 @@
             </template>
 
             <!-- Legend -->
-            <line x1="10" x2="30" y1="6" y2="6" stroke="#915BD8" stroke-width="2" />
-            <text x="33" y="9" fill="#915BD8" font-size="8">Precio COP/kWh</text>
+            <line x1="10" x2="30" y1="6" y2="6" stroke="var(--color-unergy-purple)" stroke-width="2" />
+            <text x="33" y="9" fill="var(--color-unergy-purple)" font-size="8">Precio COP/kWh</text>
             <line x1="140" x2="160" y1="6" y2="6" stroke="#3B82F6" stroke-width="1" stroke-dasharray="4,2" />
             <text x="163" y="9" fill="#3B82F6" font-size="8">ONI</text>
             <rect x="230" y="2" width="10" height="8" fill="#ef4444" opacity="0.2" />
@@ -275,7 +275,7 @@
             <div v-for="phase in ensoPhaseStats" :key="phase.label"
               class="rounded-lg p-4 text-center" :style="`background: ${phase.bg}`">
               <p class="text-lg font-bold" :style="`color: ${phase.color}`">{{ phase.label }}</p>
-              <p class="text-2xl font-bold mt-1" style="color: #2C2039;">${{ phase.avgPrice }}</p>
+              <p class="text-2xl font-bold mt-1" style="color: var(--color-unergy-deep);">${{ phase.avgPrice }}</p>
               <p class="text-xs mt-1" style="color: #6b5a8a;">{{ phase.count }} meses · prom. COP/kWh</p>
             </div>
           </div>

@@ -3,7 +3,7 @@
     <!-- Upload area -->
     <div v-if="!resultado" class="space-y-4">
       <div class="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer"
-        :style="dragging ? 'border-color:#915BD8;background:rgba(145,91,216,0.04)' : 'border-color:#c4b8d4;background:#fafafa'"
+        :style="dragging ? 'border-color:var(--color-unergy-purple);background:rgba(145,91,216,0.04)' : 'border-color:#c4b8d4;background:#fafafa'"
         @click="fileInput.click()"
         @dragover.prevent="dragging = true"
         @dragleave.prevent="dragging = false"
@@ -20,7 +20,7 @@
       </div>
 
       <div class="flex justify-end">
-        <Button label="Procesar" :loading="loading" :disabled="!pendingFile" @click="procesar" style="background:#915BD8;border-color:#915BD8">
+        <Button label="Procesar" :loading="loading" :disabled="!pendingFile" @click="procesar" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
           <template #icon><ZapIcon class="size-[1em]" /></template>
         </Button>
       </div>
@@ -29,7 +29,7 @@
     <!-- Results -->
     <div v-else class="space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-sm font-semibold" style="color:#2C2039">
+        <h3 class="text-sm font-semibold" style="color:var(--color-unergy-deep)">
           Ajuste Mensual — {{ resultado.rows.length }} filas (UNGC + UNGG)
         </h3>
         <Button label="Nuevo archivo" text severity="secondary" size="small" @click="reset">
@@ -55,10 +55,10 @@
               :style="esUNGC(row) ? 'background:#faf8fd' : 'background:white'">
               <td v-for="col in resultado.headers" :key="col" class="px-3 py-1.5 tabular-nums">
                 <span v-if="esCodigo(col)" class="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                  :style="esUNGC(row) ? 'background:#f3f0f7;color:#915BD8' : 'background:#dbeafe;color:#1d4ed8'">
+                  :style="esUNGC(row) ? 'background:#f3f0f7;color:var(--color-unergy-purple)' : 'background:#dbeafe;color:#1d4ed8'">
                   {{ row[col] }}
                 </span>
-                <span v-else style="color:#2C2039">{{ fmtCell(row[col]) }}</span>
+                <span v-else style="color:var(--color-unergy-deep)">{{ fmtCell(row[col]) }}</span>
               </td>
             </tr>
           </tbody>
@@ -97,7 +97,7 @@
           <Button label="Copiar" outlined severity="secondary" @click="copiar">
             <template #icon><CopyIcon class="size-[1em]" /></template>
           </Button>
-          <Button label="Confirmar y guardar" @click="guardarRegistro" style="background:#915BD8;border-color:#915BD8">
+          <Button label="Confirmar y guardar" @click="guardarRegistro" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
         </div>

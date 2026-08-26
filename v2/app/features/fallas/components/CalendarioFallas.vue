@@ -28,7 +28,7 @@
           <span class="cal-kpi-lbl">pendientes</span>
         </span>
         <span class="cal-kpi">
-          <span class="cal-kpi-num" style="color:#915BD8">{{ kpiMes.ejecutadas }}</span>
+          <span class="cal-kpi-num" style="color:var(--color-unergy-purple)">{{ kpiMes.ejecutadas }}</span>
           <span class="cal-kpi-lbl">ejecutadas</span>
         </span>
         <span class="cal-kpi">
@@ -45,7 +45,7 @@
         Programada (pendiente)
       </span>
       <span class="cal-ley-item">
-        <span class="cal-ley-dot" style="background:#915BD8" />
+        <span class="cal-ley-dot" style="background:var(--color-unergy-purple)" />
         Ejecutada / Cerrada
       </span>
       <span class="cal-ley-item">
@@ -64,7 +64,7 @@
 
     <!-- ── Loading ─────────────────────────────────────────────────────── -->
     <div v-if="loading" class="cal-loading">
-      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:24px;color:#915BD8" />
+      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:24px;color:var(--color-unergy-purple)" />
       <span>Cargando fallas...</span>
     </div>
 
@@ -95,7 +95,7 @@
               @click="abrirDetalle(ev)"
               :title="`[${ev.estado?.etiqueta}] ${ev.proyecto?.nombre_comercial} — ${ev.descripcion}`"
             >
-              <CircleCheckIcon class="cal-evento-icon size-[1em]" v-if="esFinal(ev)" style="color:#915BD8" />
+              <CircleCheckIcon class="cal-evento-icon size-[1em]" v-if="esFinal(ev)" style="color:var(--color-unergy-purple)" />
               <ClockIcon class="cal-evento-icon size-[1em]" v-else style="color:#9CA3AF" />
               <span class="cal-evento-nombre">{{ ev.proyecto?.nombre_comercial }}</span>
             </div>
@@ -396,10 +396,10 @@ onMounted(cargar)
   transition: all 0.15s;
 }
 .cal-nav-btn:hover { background: #f3f4f6; color: #374151; }
-.cal-mes-label { font-size: 15px; font-weight: 800; color: #2C2039; min-width: 160px; text-align: center; }
+.cal-mes-label { font-size: 15px; font-weight: 800; color: var(--color-unergy-deep); min-width: 160px; text-align: center; }
 .cal-hoy-btn {
-  padding: 4px 12px; border-radius: 6px; border: 1px solid #915BD8;
-  background: #fff; color: #915BD8; font-size: 12px; font-weight: 700;
+  padding: 4px 12px; border-radius: 6px; border: 1px solid var(--color-unergy-purple);
+  background: #fff; color: var(--color-unergy-purple); font-size: 12px; font-weight: 700;
   cursor: pointer; transition: all 0.15s; font-family: inherit;
 }
 .cal-hoy-btn:hover { background: #f5f0ff; }
@@ -415,7 +415,7 @@ onMounted(cargar)
 
 .cal-kpis { display: flex; gap: 16px; margin-left: auto; }
 .cal-kpi { display: flex; flex-direction: column; align-items: center; }
-.cal-kpi-num { font-size: 18px; font-weight: 800; color: #2C2039; line-height: 1.2; }
+.cal-kpi-num { font-size: 18px; font-weight: 800; color: var(--color-unergy-deep); line-height: 1.2; }
 .cal-kpi-lbl { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
 
 /* ── Loading ── */
@@ -449,7 +449,7 @@ onMounted(cargar)
 .cal-cell--fuera .cal-cell-num { color: #d1d5db; }
 .cal-cell--hoy { background: #faf5ff; }
 .cal-cell--hoy .cal-cell-num {
-  background: #915BD8; color: #fff; border-radius: 50%;
+  background: var(--color-unergy-purple); color: #fff; border-radius: 50%;
   width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
   font-weight: 800;
 }
@@ -486,7 +486,7 @@ onMounted(cargar)
 }
 .cal-evento--final .cal-evento-nombre { color: #6b7280; text-decoration: line-through; text-decoration-color: #c4b5e0; }
 .cal-evento-mas {
-  font-size: 10px; font-weight: 700; color: #915BD8;
+  font-size: 10px; font-weight: 700; color: var(--color-unergy-purple);
   cursor: pointer; padding: 1px 4px; border-radius: 3px;
 }
 .cal-evento-mas:hover { background: #f0edf8; }
@@ -513,8 +513,8 @@ onMounted(cargar)
   padding: 20px 24px 16px; border-bottom: 1px solid #f3f1f8;
   position: sticky; top: 0; background: #fff; z-index: 1;
 }
-.cal-modal-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; color: #2C2039; }
-.cal-modal-code { font-size: 13px; font-weight: 800; color: #2C2039; font-family: monospace; }
+.cal-modal-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; color: var(--color-unergy-deep); }
+.cal-modal-code { font-size: 13px; font-weight: 800; color: var(--color-unergy-deep); font-family: monospace; }
 .cal-modal-close { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 14px; padding: 4px; border-radius: 6px; }
 .cal-modal-close:hover { color: #6b7280; }
 
@@ -559,11 +559,11 @@ onMounted(cargar)
   background: #fff; color: #6b7280; font-size: 13px; font-weight: 600;
   cursor: pointer; font-family: inherit; transition: all 0.15s;
 }
-.cal-modal-link:hover { border-color: #915BD8; color: #915BD8; }
+.cal-modal-link:hover { border-color: var(--color-unergy-purple); color: var(--color-unergy-purple); }
 .cal-modal-edit {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 16px; border-radius: 8px; border: none;
-  background: #915BD8; color: #fff; font-size: 13px; font-weight: 700;
+  background: var(--color-unergy-purple); color: #fff; font-size: 13px; font-weight: 700;
   cursor: pointer; font-family: inherit; transition: background 0.15s;
 }
 .cal-modal-edit:hover { background: #7c3aed; }
@@ -577,6 +577,6 @@ onMounted(cargar)
 .cal-dia-row:hover { background: #faf8ff; border-radius: 6px; padding-inline: 6px; }
 .cal-dia-row:last-child { border-bottom: none; }
 .cal-dia-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.cal-dia-code { font-size: 12px; font-weight: 700; color: #2C2039; font-family: monospace; }
+.cal-dia-code { font-size: 12px; font-weight: 700; color: var(--color-unergy-deep); font-family: monospace; }
 .cal-dia-proy { font-size: 11px; color: #6b7280; }
 </style>

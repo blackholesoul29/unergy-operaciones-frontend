@@ -54,7 +54,7 @@
                 {{ h }}
               </th>
               <th class="px-3 py-2.5 text-right font-semibold text-[11px] uppercase whitespace-nowrap"
-                  style="color:#2C2039; border-left:1px solid #EEE;">Total diario</th>
+                  style="color:var(--color-unergy-deep); border-left:1px solid #EEE;">Total diario</th>
             </tr>
           </thead>
           <tbody>
@@ -68,7 +68,7 @@
                 {{ fmtNum(v) }}
               </td>
               <td class="px-3 py-2 text-right font-mono text-xs font-semibold"
-                  style="color:#915BD8; border-left:1px solid #F1F1F1;">
+                  style="color:var(--color-unergy-purple); border-left:1px solid #F1F1F1;">
                 {{ fmtNum(row.total_diario) }}
               </td>
             </tr>

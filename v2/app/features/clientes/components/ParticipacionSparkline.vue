@@ -1,8 +1,8 @@
 <template>
   <svg v-if="coords.length >= 2" :width="W" :height="H" class="shrink-0" aria-hidden="true">
     <polyline :points="coords.map(c => `${c.x},${c.y}`).join(' ')"
-      fill="none" stroke="#915BD8" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
-    <circle :cx="coords[coords.length - 1].x" :cy="coords[coords.length - 1].y" r="2.5" fill="#915BD8" />
+      fill="none" stroke="var(--color-unergy-purple)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
+    <circle :cx="coords[coords.length - 1].x" :cy="coords[coords.length - 1].y" r="2.5" fill="var(--color-unergy-purple)" />
   </svg>
   <span v-else class="text-xs" style="color:#bba8d4;">—</span>
 </template>

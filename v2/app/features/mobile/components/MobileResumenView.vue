@@ -22,7 +22,7 @@
           </div>
         </div>
         <div class="rs-total">
-          <span class="rs-total-dot" style="background:#915BD8" />
+          <span class="rs-total-dot" style="background:var(--color-unergy-purple)" />
           <div class="rs-total-text">
             <span class="rs-total-label">Inversores hoy</span>
             <span class="rs-total-val">{{ fmtKwh(gen.inversor?.total) }}</span>
@@ -35,7 +35,7 @@
         :items="gen.medidor?.top || []" :loading="loadingGen" :max="maxMedidor" />
 
       <!-- Top Inversores -->
-      <TopCard title="Top generación — Inversores" :icon="ZapIcon" accent="#915BD8"
+      <TopCard title="Top generación — Inversores" :icon="ZapIcon" accent="var(--color-unergy-purple)"
         :items="gen.inversor?.top || []" :loading="loadingGen" :max="maxInversor" />
 
       <!-- Fallas de hoy -->
@@ -253,7 +253,7 @@ onMounted(() => {
 .rs-root {
   display: flex; flex-direction: column;
   height: 100vh; height: 100dvh; overflow: hidden;
-  background: #f3f4f6; color: #2C2039;
+  background: #f3f4f6; color: var(--color-unergy-deep);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -261,10 +261,10 @@ onMounted(() => {
 .rs-topbar {
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
   padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
-  background: #2C2039; color: #fff;
+  background: var(--color-unergy-deep); color: #fff;
 }
 .rs-brand { flex: 1; font-size: clamp(15px, 4.2vw, 17px); font-weight: 700; letter-spacing: .2px; }
-.rs-brand svg { color: #F6FF72; margin-right: 6px; }
+.rs-brand svg { color: var(--color-unergy-yellow); margin-right: 6px; }
 .rs-icon-btn {
   width: 36px; height: 36px; border-radius: 10px; border: none;
   background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; flex-shrink: 0;
@@ -284,7 +284,7 @@ onMounted(() => {
 .rs-total-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .rs-total-text { display: flex; flex-direction: column; min-width: 0; }
 .rs-total-label { font-size: clamp(10.5px, 3vw, 12px); color: #6b5a8a; font-weight: 600; }
-.rs-total-val { font-size: clamp(16px, 4.8vw, 21px); font-weight: 800; color: #2C2039; line-height: 1.15; letter-spacing: -0.3px; white-space: nowrap; }
+.rs-total-val { font-size: clamp(16px, 4.8vw, 21px); font-weight: 800; color: var(--color-unergy-deep); line-height: 1.15; letter-spacing: -0.3px; white-space: nowrap; }
 
 /* Tarjeta */
 .rs-card {
@@ -293,10 +293,10 @@ onMounted(() => {
 }
 .rs-card-head { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .rs-card-head svg { font-size: 16px; }
-.rs-card-title { font-size: 14px; font-weight: 800; color: #2C2039; margin: 0; }
+.rs-card-title { font-size: 14px; font-weight: 800; color: var(--color-unergy-deep); margin: 0; }
 
 .rs-loading { display: flex; align-items: center; gap: 8px; color: #6b5a8a; font-size: 13.5px; padding: 14px 4px; }
-.rs-loading svg { color: #915BD8; }
+.rs-loading svg { color: var(--color-unergy-purple); }
 .rs-empty-row { color: #9ca3af; font-size: 13px; padding: 10px 4px; }
 
 /* Lista top */
@@ -309,10 +309,10 @@ onMounted(() => {
   background: #f3edfb; color: #7a6e8a; font-size: 13px; font-weight: 800;
 }
 .rs-top-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
-.rs-top-name { font-size: 13.5px; font-weight: 600; color: #2C2039; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rs-top-name { font-size: 13.5px; font-weight: 600; color: var(--color-unergy-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rs-bar-track { height: 6px; background: #f0eef5; border-radius: 4px; overflow: hidden; }
 .rs-bar-fill { height: 100%; border-radius: 4px; transition: width .4s ease; }
-.rs-top-val { font-size: 13px; font-weight: 800; color: #2C2039; white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.rs-top-val { font-size: 13px; font-weight: 800; color: var(--color-unergy-deep); white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
 
 /* Grupos de fallas */
 .rs-group-label { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: #6b5a8a; text-transform: uppercase; letter-spacing: .4px; margin: 4px 2px 6px; }
@@ -327,7 +327,7 @@ onMounted(() => {
 .rs-falla-estado { font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 7px; flex-shrink: 0; white-space: nowrap; }
 .rs-falla-estado.rs-sm { font-size: 9.5px; padding: 2px 6px; }
 .rs-falla-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-.rs-falla-proj { font-size: 13.5px; font-weight: 700; color: #2C2039; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rs-falla-proj { font-size: 13.5px; font-weight: 700; color: var(--color-unergy-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rs-falla-tipo { font-size: 12px; color: #6b5a8a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .rs-falla-transition { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .rs-trans-arrow { font-size: 10px; color: #c4b8d8; }

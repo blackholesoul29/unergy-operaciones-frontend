@@ -3,7 +3,7 @@
 
     <!-- ══ TAB BAR (fuera del sticky) ═══════════════════════════════════ -->
     <div class="mon-tab-bar">
-      <ZapIcon class="text-sm size-[1em]" style="color:#915BD8" />
+      <ZapIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
       <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Gestión de Fallas</span>
       <div class="mon-tab-group">
         <button v-for="(tab, i) in TABS" :key="i"
@@ -101,7 +101,7 @@
                     <code class="gf-compact-code">{{ f.codigo_interno }}</code>
                     <span v-if="f.estado?.codigo"
                       class="gf-compact-dot"
-                      :style="{ background: f.estado?.color_hex || '#915BD8' }"
+                      :style="{ background: f.estado?.color_hex || 'var(--color-unergy-purple)' }"
                       v-tooltip.right="f.estado?.etiqueta" />
                   </div>
                   <div class="gf-compact-line2">{{ f.tipo?.etiqueta || f.tipo_libre || f.descripcion || 'Sin descripción' }}</div>
@@ -1944,13 +1944,13 @@ watch(bucket, (newBucket) => {
   white-space: nowrap;
 }
 .mon-tab svg { font-size: 12px; }
-.mon-tab:hover:not(.mon-tab--active) { color: #2C2039; background: rgba(145,91,216,.08); }
+.mon-tab:hover:not(.mon-tab--active) { color: var(--color-unergy-deep); background: rgba(145,91,216,.08); }
 .mon-tab--active {
-  background: #915BD8;
-  color: #FDFAF7;
+  background: var(--color-unergy-purple);
+  color: var(--color-unergy-avena);
   box-shadow: 0 1px 4px rgba(145,91,216,.3);
 }
-.mon-tab--active:hover { color: #FDFAF7; }
+.mon-tab--active:hover { color: var(--color-unergy-avena); }
 .mon-tab-group {
   display: inline-flex;
   background: #F4F1FA;
@@ -2053,7 +2053,7 @@ watch(bucket, (newBucket) => {
 .bucket-pill--active {
   background: #f0eaf8;
   border-color: #c4aee8;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   font-weight: 600;
 }
 .bucket-pill--active .bucket-pill-count {
@@ -2217,13 +2217,13 @@ watch(bucket, (newBucket) => {
   gap: 8px;
   margin-bottom: 10px;
 }
-.gf-section-icon { color: #915BD8; font-size: 13px; }
-.gf-section-title { font-size: 14px; font-weight: 700; color: #2C2039; margin: 0; }
+.gf-section-icon { color: var(--color-unergy-purple); font-size: 13px; }
+.gf-section-title { font-size: 14px; font-weight: 700; color: var(--color-unergy-deep); margin: 0; }
 .gf-section-count {
   margin-left: auto;
   font-size: 12px;
   font-weight: 700;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   background: rgba(145, 91, 216, 0.1);
   padding: 1px 8px;
   border-radius: 999px;
@@ -2251,7 +2251,7 @@ watch(bucket, (newBucket) => {
 .gf-body-text {
   font-size: 14px;
   line-height: 1.55;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin: 0;
 }
 
@@ -2268,7 +2268,7 @@ watch(bucket, (newBucket) => {
 .gf-hero-title {
   font-size: 17px;
   font-weight: 800;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   line-height: 1.3;
   margin: 0;
 }
@@ -2282,7 +2282,7 @@ watch(bucket, (newBucket) => {
 }
 
 /* Clasificación / equipo que falló */
-.gf-clasif-sub { font-size: 14px; font-weight: 700; color: #2C2039; }
+.gf-clasif-sub { font-size: 14px; font-weight: 700; color: var(--color-unergy-deep); }
 .gf-flag {
   display: inline-flex; align-items: center; gap: 5px;
   font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 8px;
@@ -2294,11 +2294,11 @@ watch(bucket, (newBucket) => {
 .gf-inv-list { display: flex; flex-direction: column; gap: 8px; }
 .gf-inv { border: 1px solid #eee6fa; border-radius: 9px; padding: 9px 11px; background: #faf9fc; }
 .gf-inv-top { display: flex; align-items: center; gap: 6px; }
-.gf-inv-top svg { color: #915BD8; font-size: 12px; }
-.gf-inv-name { font-size: 13.5px; font-weight: 700; color: #2C2039; }
+.gf-inv-top svg { color: var(--color-unergy-purple); font-size: 12px; }
+.gf-inv-name { font-size: 13.5px; font-weight: 700; color: var(--color-unergy-deep); }
 .gf-inv-pot { font-size: 12.5px; color: #6b5a8a; }
 .gf-inv-tipos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
-.gf-inv-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #915BD81a; color: #6E3FB8; }
+.gf-inv-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #915BD81a; color: var(--color-unergy-purple-dark); }
 .gf-inv-empty { font-size: 12px; color: #9ca3af; margin: 6px 0 0; }
 /* Capa aparte para el tipo de falla del inversor */
 .gf-tipo-layer {
@@ -2308,7 +2308,7 @@ watch(bucket, (newBucket) => {
 .gf-tipo-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
 .gf-tipo-chip {
   font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 8px;
-  background: #915BD814; color: #6E3FB8; border: 1px solid #915BD833;
+  background: #915BD814; color: var(--color-unergy-purple-dark); border: 1px solid #915BD833;
 }
 .gf-legacy-note {
   display: flex; align-items: flex-start; gap: 6px;
@@ -2339,7 +2339,7 @@ watch(bucket, (newBucket) => {
 .gf-fact-label svg { font-size: 11px; }
 .gf-fact-value {
   font-size: 14px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   font-weight: 500;
   margin: 0;
   word-break: break-word;
@@ -2476,7 +2476,7 @@ watch(bucket, (newBucket) => {
 }
 :deep(.gf-table .p-datatable-tbody > tr.gf-row-active) {
   background: #faf5ff !important;
-  box-shadow: inset 3px 0 0 #915BD8;
+  box-shadow: inset 3px 0 0 var(--color-unergy-purple);
 }
 :deep(.gf-table .p-datatable-tbody > tr.gf-row-active > td) {
   border-color: #e9ddff;
@@ -2577,7 +2577,7 @@ watch(bucket, (newBucket) => {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 3px;
-  background: #915BD8;
+  background: var(--color-unergy-purple);
 }
 .gf-compact-stripe { width: 3px; border-radius: 2px; flex-shrink: 0; }
 .gf-compact-content {
@@ -2595,7 +2595,7 @@ watch(bucket, (newBucket) => {
   flex-shrink: 0; margin-left: auto;
 }
 .gf-compact-line2 {
-  font-size: 13px; font-weight: 500; color: #2C2039; line-height: 1.3;
+  font-size: 13px; font-weight: 500; color: var(--color-unergy-deep); line-height: 1.3;
   overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2;
   -webkit-box-orient: vertical; word-break: break-word;
 }
@@ -2605,7 +2605,7 @@ watch(bucket, (newBucket) => {
 .mon-tab-view { padding: 24px 24px 40px; background: #f5f4f8; }
 .mon-tab-calendario { flex: 1; display: flex; flex-direction: column; min-height: 0; background: #f5f4f8; overflow-y: auto; }
 .mon-tab-loading { display:flex; flex-direction:column; align-items:center; gap:14px; padding:80px 20px; color:#a094b8; font-size:13px; }
-.mon-spinner { width:32px; height:32px; border:3px solid #ece8f4; border-top-color:#915BD8; border-radius:50%; animation:spin .75s linear infinite; }
+.mon-spinner { width:32px; height:32px; border:3px solid #ece8f4; border-top-color:var(--color-unergy-purple); border-radius:50%; animation:spin .75s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .mon-tab-empty { text-align:center; padding:80px 20px; }
 .mon-empty-icon { font-size:40px; opacity:.2; margin-bottom:12px; }
@@ -2621,7 +2621,7 @@ watch(bucket, (newBucket) => {
   padding:16px 18px; box-shadow:0 1px 4px rgba(28,18,50,.05);
 }
 .chart-card--wide { grid-column: 1 / -1; }
-.chart-card-title { font-size:12.5px; font-weight:700; color:#2C2039; margin-bottom:14px; }
+.chart-card-title { font-size:12.5px; font-weight:700; color:var(--color-unergy-deep); margin-bottom:14px; }
 .chart-card-sub { font-size:11px; font-weight:500; color:#a094b8; }
 .chart-canvas-wrap { position:relative; }
 
@@ -2638,7 +2638,7 @@ watch(bucket, (newBucket) => {
 }
 .p90-section-title {
   display:flex; align-items:center; gap:8px; flex:1; min-width:0;
-  font-size:13px; font-weight:700; color:#2C2039;
+  font-size:13px; font-weight:700; color:var(--color-unergy-deep);
 }
 .p90-section-sub { font-size:11.5px; font-weight:500; color:#a094b8; }
 .p90-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }
@@ -2710,7 +2710,7 @@ watch(bucket, (newBucket) => {
 }
 .gen-card-title {
   display:flex; align-items:center; gap:8px; flex:1; min-width:0;
-  font-size:13px; font-weight:700; color:#2C2039;
+  font-size:13px; font-weight:700; color:var(--color-unergy-deep);
 }
 .gen-legend {
   display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-left:auto;
@@ -2843,10 +2843,10 @@ watch(bucket, (newBucket) => {
   transition: all 0.15s;
   white-space: nowrap;
 }
-.genproj-quick-btn:hover { border-color: #915BD8; color: #915BD8; }
+.genproj-quick-btn:hover { border-color: var(--color-unergy-purple); color: var(--color-unergy-purple); }
 .genproj-quick-btn--active {
-  background: #915BD8;
-  border-color: #915BD8;
+  background: var(--color-unergy-purple);
+  border-color: var(--color-unergy-purple);
   color: #fff;
 }
 .genproj-gran-toggle {

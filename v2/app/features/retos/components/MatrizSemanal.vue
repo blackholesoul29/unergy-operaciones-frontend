@@ -961,7 +961,7 @@ defineExpose({ enfocarMetrica })
   gap: 8px;
   border-bottom: 1px solid #ECE7F2;
 }
-.rq-tb-title { font-size: 12.5px; font-weight: 700; color: #2C2039; }
+.rq-tb-title { font-size: 12.5px; font-weight: 700; color: var(--color-unergy-deep); }
 .rq-tb-spacer { flex: 1; }
 
 .rq-guardado {
@@ -1066,13 +1066,13 @@ thead .rq-sticky-r-2, thead .rq-sticky-r-3 { z-index: 6; --rq-bg: #faf8fd; }
 /* ── Encabezado de semana ──────────────────────────────────────────────── */
 .rq-th-semana { cursor: pointer; text-align: center; line-height: 1.05; }
 .rq-th-semana:hover, .rq-th-semana.rq-col-hover { --rq-bg: #f0e9fb; }
-.rq-th-semana:focus-visible { outline: 2px solid #915BD8; outline-offset: -2px; }
-.rq-th-num { display: block; font-size: 11px; font-weight: 800; color: #2C2039; }
+.rq-th-semana:focus-visible { outline: 2px solid var(--color-unergy-purple); outline-offset: -2px; }
+.rq-th-num { display: block; font-size: 11px; font-weight: 800; color: var(--color-unergy-deep); }
 .rq-th-rango { display: block; font-size: 9px; font-weight: 400; color: #9b8fb0; white-space: nowrap; }
 .rq-th-semana.rq-col-futura .rq-th-num,
 .rq-th-semana.rq-col-futura .rq-th-rango { color: #c7bdd8; }
-.rq-th-semana.rq-col-actual { border-top: 2px solid #915BD8; }
-.rq-th-semana.rq-col-actual .rq-th-num { color: #2C2039; font-weight: 800; }
+.rq-th-semana.rq-col-actual { border-top: 2px solid var(--color-unergy-purple); }
+.rq-th-semana.rq-col-actual .rq-th-num { color: var(--color-unergy-deep); font-weight: 800; }
 .rq-th-semana.rq-parcial { border-bottom: 1px dashed #c7bdd8; }
 
 /* ── Columna de métrica (sticky izquierda) ─────────────────────────────── */
@@ -1085,7 +1085,7 @@ tr.rq-fila-hover .rq-td-metrica { --rq-bg: #FBF9FD; }
 .rq-metrica-box { display: flex; align-items: center; gap: 4px; }
 .rq-metrica-txt { min-width: 0; flex: 1; display: flex; flex-direction: column; justify-content: center; }
 .rq-metrica-nombre {
-  font-size: 12.5px; font-weight: 600; color: #2C2039; line-height: 15px;
+  font-size: 12.5px; font-weight: 600; color: var(--color-unergy-deep); line-height: 15px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .rq-metrica-meta {
@@ -1117,7 +1117,7 @@ tr.rq-fila-hover { --rq-bg: rgba(44, 32, 57, .025); }
 .rq-cell-hover   { --rq-bg: rgba(145, 91, 216, .06); }
 .rq-cell-guardando { --rq-bg: rgba(145, 91, 216, .05); }
 .rq-cell-foco    { --rq-bg: #fff; }
-.rq-cell-editando { --rq-bg: #fff; box-shadow: inset 0 0 0 2px #915BD8; z-index: 2; }
+.rq-cell-editando { --rq-bg: #fff; box-shadow: inset 0 0 0 2px var(--color-unergy-purple); z-index: 2; }
 .rq-cell-error   { --rq-bg: rgba(214, 68, 85, .07); box-shadow: inset 0 0 0 2px #D64455; }
 
 .rq-cell-inner {
@@ -1125,28 +1125,28 @@ tr.rq-fila-hover { --rq-bg: rgba(44, 32, 57, .025); }
   height: 38px; padding: 0 8px;
   display: flex; align-items: center; justify-content: flex-end; gap: 3px;
   text-align: right; font-size: 12.5px;
-  font-variant-numeric: tabular-nums; color: #2C2039;
+  font-variant-numeric: tabular-nums; color: var(--color-unergy-deep);
   cursor: cell;
 }
 .rq-cell-inner:focus { outline: none; }
-.rq-cell-inner:focus-visible { outline: 2px solid #915BD8; outline-offset: -2px; }
+.rq-cell-inner:focus-visible { outline: 2px solid var(--color-unergy-purple); outline-offset: -2px; }
 .rq-vacio { color: #d9d0e6; font-size: 14px; margin: 0 auto; }
 .rq-num { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .rq-cell-input {
   width: 100%; height: 36px; border: 0; background: #fff;
   text-align: right; font: inherit; outline: none; padding: 0 8px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
 
 .rq-col-futura .rq-num { color: #c7bdd8; opacity: .55; }
-.rq-cell-foco .rq-num { color: #2C2039; opacity: 1; }
+.rq-cell-foco .rq-num { color: var(--color-unergy-deep); opacity: 1; }
 .rq-cell-inusual .rq-num { color: #A16207; }
 .rq-inusual { font-size: 8px; color: #CA8A04; flex: none; }
 
 .rq-progress {
   position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #915BD8 40%, #915BD8 60%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--color-unergy-purple) 40%, var(--color-unergy-purple) 60%, transparent 100%);
   background-size: 220% 100%;
   animation: rq-indeterminate 1s linear infinite;
 }
@@ -1172,7 +1172,7 @@ tr.rq-fila-hover { --rq-bg: rgba(44, 32, 57, .025); }
   position: absolute; top: 0; right: 0;
   width: 0; height: 0; border-style: solid;
   border-width: 0 5px 5px 0;
-  border-color: transparent #915BD8 transparent transparent;
+  border-color: transparent var(--color-unergy-purple) transparent transparent;
   cursor: help;
 }
 
@@ -1183,11 +1183,11 @@ tr.rq-fila-hover { --rq-bg: rgba(44, 32, 57, .025); }
 }
 .rq-consol {
   text-align: right; padding: 0 10px;
-  font-size: 12.5px; font-weight: 700; color: #2C2039;
+  font-size: 12.5px; font-weight: 700; color: var(--color-unergy-deep);
   font-variant-numeric: tabular-nums;
   transition: color .25s ease-out;
 }
-.rq-pulso { color: #915BD8; }
+.rq-pulso { color: var(--color-unergy-purple); }
 .rq-meta {
   text-align: right; padding: 0 10px;
   font-size: 12px; font-weight: 400; color: #6b5a8a;
@@ -1200,7 +1200,7 @@ tr.rq-fila-hover { --rq-bg: rgba(44, 32, 57, .025); }
   border-radius: 2px; background: #F1ECF7; overflow: hidden;
 }
 .rq-micro-fill { position: absolute; left: 0; top: 0; height: 3px; border-radius: 2px; }
-.rq-micro-marca { position: absolute; top: 0; width: 1px; height: 3px; background: #2C2039; opacity: .45; }
+.rq-micro-marca { position: absolute; top: 0; width: 1px; height: 3px; background: var(--color-unergy-deep); opacity: .45; }
 
 /* ── Llenado ───────────────────────────────────────────────────────────── */
 .rq-llenado th, .rq-llenado td {
@@ -1230,7 +1230,7 @@ tr.rq-fila-hover { --rq-bg: rgba(44, 32, 57, .025); }
   background: none; cursor: pointer; text-align: left;
 }
 .rq-angosto-actual { background: rgba(145, 91, 216, .045); }
-.rq-angosto-s { font-size: 11.5px; font-weight: 800; color: #2C2039; width: 34px; }
+.rq-angosto-s { font-size: 11.5px; font-weight: 800; color: var(--color-unergy-deep); width: 34px; }
 .rq-angosto-rango { flex: 1; font-size: 11px; color: #6b5a8a; }
 .rq-angosto-llenado { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .rq-angosto-fila svg { font-size: 10px; color: #c7bdd8; }

@@ -31,8 +31,8 @@
           style="border-color:#e8e0f0">
           <div class="min-w-0">
             <p class="text-[11px] uppercase tracking-wide font-semibold truncate" style="color:#6b5a8a">{{ kpi.label }}</p>
-            <p class="text-xl font-bold mt-1 truncate" style="color:#2C2039">{{ kpi.value }}</p>
-            <p v-if="kpi.sub" class="text-[11px] mt-0.5" :style="{ color: kpi.subColor || '#915BD8' }">{{ kpi.sub }}</p>
+            <p class="text-xl font-bold mt-1 truncate" style="color:var(--color-unergy-deep)">{{ kpi.value }}</p>
+            <p v-if="kpi.sub" class="text-[11px] mt-0.5" :style="{ color: kpi.subColor || 'var(--color-unergy-purple)' }">{{ kpi.sub }}</p>
           </div>
           <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" :style="{ backgroundColor: kpi.bg }">
             <component :is="kpi.icon" class="text-lg size-[1em]" :style="{ color: kpi.color }" />
@@ -43,15 +43,15 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <!-- ── Por tipo de proyecto ───────────────────────────────── -->
         <div class="bg-white rounded-xl shadow-sm p-4 border" style="border-color:#e8e0f0">
-          <h3 class="text-sm font-bold mb-3" style="color:#2C2039">Ingresos por tipo de proyecto</h3>
+          <h3 class="text-sm font-bold mb-3" style="color:var(--color-unergy-deep)">Ingresos por tipo de proyecto</h3>
           <div v-if="porTipo.length" class="space-y-2.5">
             <div v-for="t in porTipo" :key="t.tipo">
-              <div class="flex justify-between text-xs mb-1" style="color:#2C2039">
+              <div class="flex justify-between text-xs mb-1" style="color:var(--color-unergy-deep)">
                 <span class="capitalize font-medium">{{ t.tipo }}</span>
                 <span class="font-mono" style="color:#6b5a8a">{{ fmtCompact(t.ingresos) }} · {{ t.count }} proy.</span>
               </div>
               <div class="h-2.5 rounded-full bg-gray-100 overflow-hidden">
-                <div class="h-full rounded-full" :style="{ width: barPct(t.ingresos) + '%', background:'#915BD8' }" />
+                <div class="h-full rounded-full" :style="{ width: barPct(t.ingresos) + '%', background:'var(--color-unergy-purple)' }" />
               </div>
             </div>
           </div>
@@ -60,7 +60,7 @@
 
         <!-- ── Pipeline (firmado / pendiente) ─────────────────────── -->
         <div class="bg-white rounded-xl shadow-sm p-4 border" style="border-color:#e8e0f0">
-          <h3 class="text-sm font-bold mb-3" style="color:#2C2039">Estado del período</h3>
+          <h3 class="text-sm font-bold mb-3" style="color:var(--color-unergy-deep)">Estado del período</h3>
           <div v-if="totalMes" class="space-y-1.5">
             <div class="flex h-3 rounded-full overflow-hidden bg-gray-100">
               <div v-for="s in pipeline" :key="s.estado" class="h-full"
@@ -70,7 +70,7 @@
             <div class="flex flex-wrap gap-x-4 gap-y-1 pt-2">
               <span v-for="s in pipeline" :key="s.estado" class="flex items-center gap-1.5 text-[11px]">
                 <span class="w-2.5 h-2.5 rounded-full shrink-0" :style="{ background: s.color }" />
-                <span style="color:#2C2039">{{ s.label }}</span>
+                <span style="color:var(--color-unergy-deep)">{{ s.label }}</span>
                 <span class="font-mono font-semibold" style="color:#6b5a8a">{{ s.count }}</span>
               </span>
             </div>
@@ -82,7 +82,7 @@
       <!-- ── Tendencia ───────────────────────────────────────────── -->
       <div class="bg-white rounded-xl shadow-sm p-4 border" style="border-color:#e8e0f0">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-bold" style="color:#2C2039">Tendencia (últimos 12 meses)</h3>
+          <h3 class="text-sm font-bold" style="color:var(--color-unergy-deep)">Tendencia (últimos 12 meses)</h3>
           <span class="text-[11px]" style="color:#9b8fb0">Ingresos · Costos · Valor a pagar</span>
         </div>
         <div style="height: 240px">
@@ -94,9 +94,9 @@
       <!-- ── Proyectos del período (Panel) ───────────────────────────── -->
       <div class="bg-white rounded-xl shadow-sm border overflow-hidden" style="border-color:#e8e0f0">
         <div class="px-4 py-2.5 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
-          <h3 class="text-sm font-bold" style="color:#2C2039">Panel Contable de {{ formatPeriodo(periodo) }}</h3>
+          <h3 class="text-sm font-bold" style="color:var(--color-unergy-deep)">Panel Contable de {{ formatPeriodo(periodo) }}</h3>
           <span class="text-[11px] px-2 py-0.5 rounded-full font-semibold"
-            style="background:#F1EAF9; color:#6E3FB8">{{ proyectos.length }}</span>
+            style="background:#F1EAF9; color:var(--color-unergy-purple-dark)">{{ proyectos.length }}</span>
         </div>
         <DataTable :value="proyectos" v-model:expandedRows="expandedRows" dataKey="panel_id"
           rowHover class="text-sm" :rows="12" paginator :alwaysShowPaginator="false">
@@ -122,7 +122,7 @@
             <template #body="{ data }"><span class="font-mono text-xs text-red-600">{{ fmtCompact(data.costos_cop) }}</span></template>
           </Column>
           <Column header="Valor a pagar" style="width:140px">
-            <template #body="{ data }"><span class="font-mono text-xs font-semibold" style="color:#915BD8">{{ fmtCompact(data.valor_a_pagar_total) }}</span></template>
+            <template #body="{ data }"><span class="font-mono text-xs font-semibold" style="color:var(--color-unergy-purple)">{{ fmtCompact(data.valor_a_pagar_total) }}</span></template>
           </Column>
           <Column header="" style="width:48px">
             <template #body="{ data }">
@@ -145,9 +145,9 @@
                 <tbody>
                   <tr v-for="inv in data.inversionistas" :key="inv.proyecto_inversionista_id || inv.nombre"
                     class="border-t" style="border-color:#f0ebf6">
-                    <td class="py-1.5" style="color:#2C2039">{{ inv.cliente_nombre || inv.nombre || '—' }}</td>
+                    <td class="py-1.5" style="color:var(--color-unergy-deep)">{{ inv.cliente_nombre || inv.nombre || '—' }}</td>
                     <td class="py-1.5 font-mono" style="color:#6b5a8a">{{ inv.porcentaje != null ? inv.porcentaje.toFixed(2) + '%' : '—' }}</td>
-                    <td class="py-1.5 font-mono text-right font-semibold" style="color:#915BD8">{{ fmtCompact(inv.valor_a_pagar) }}</td>
+                    <td class="py-1.5 font-mono text-right font-semibold" style="color:var(--color-unergy-purple)">{{ fmtCompact(inv.valor_a_pagar) }}</td>
                   </tr>
                 </tbody>
               </table>

@@ -55,5 +55,5 @@ function logout() {
   color: #9b8db5; font-size: 11px; font-weight: 600;
 }
 .mtb-item svg { font-size: 20px; }
-.mtb-item--active { color: #915BD8; }
+.mtb-item--active { color: var(--color-unergy-purple); }
 </style>

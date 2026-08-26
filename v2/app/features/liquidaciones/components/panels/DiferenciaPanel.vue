@@ -4,13 +4,13 @@
 
     <template v-else>
       <div class="flex items-center justify-between flex-wrap gap-2">
-        <span class="text-sm font-bold" style="color:#2C2039">Preliquidación vs Oficial · {{ formatPeriodo(periodo) }}</span>
+        <span class="text-sm font-bold" style="color:var(--color-unergy-deep)">Preliquidación vs Oficial · {{ formatPeriodo(periodo) }}</span>
         <span class="text-[11px]" style="color:#9b8fb0">La diferencia (oficial − preliquidación) es lo que se liquida oficialmente</span>
       </div>
 
       <div v-if="!diff.tiene_oficial" class="rounded-lg px-3 py-3 text-xs text-center"
         style="background:#faf7ff; border:1px solid #e3d5f5; color:#6b5a8a">
-        <ClockIcon class="size-[1em]" style="font-size:20px; display:block; margin-bottom:6px; color:#915BD8" />
+        <ClockIcon class="size-[1em]" style="font-size:20px; display:block; margin-bottom:6px; color:var(--color-unergy-purple)" />
         Aún no hay liquidación <b>oficial</b> para comparar en {{ formatPeriodo(periodo) }}.<br />
         Carga el ER oficial en Panel Contable (pestaña Oficial).
       </div>
@@ -31,7 +31,7 @@
             style="border-color:#f0ebf6" @click="toggle(proy.proyecto_id)">
             <ChevronDownIcon v-if="abiertos.has(proy.proyecto_id)" class="text-xs size-[1em]" style="color:#9b8fb0" />
             <ChevronRightIcon v-else class="text-xs size-[1em]" style="color:#9b8fb0" />
-            <h3 class="text-sm font-bold" style="color:#2C2039">{{ proy.proyecto_nombre }}</h3>
+            <h3 class="text-sm font-bold" style="color:var(--color-unergy-deep)">{{ proy.proyecto_nombre }}</h3>
             <span class="ml-auto text-xs font-mono">
               <span style="color:#9b8fb0">Preliq</span> {{ fmtCompact(proy.utilidad_pre) }}
               <span style="color:#9b8fb0" class="ml-2">Oficial</span> {{ proy.tiene_oficial ? fmtCompact(proy.utilidad_oficial) : '—' }}
@@ -192,5 +192,5 @@ onMounted(load)
 <style scoped>
 .dif-toggle { display:inline-flex; background:#F4F1FA; border:1px solid #E5E2EC; border-radius:8px; padding:2px; }
 .dif-toggle-btn { background:transparent; border:none; padding:4px 10px; font-size:11px; font-weight:700; color:#6B5A8A; border-radius:6px; cursor:pointer; }
-.dif-toggle-btn.on { background:#915BD8; color:#FDFAF7; }
+.dif-toggle-btn.on { background:var(--color-unergy-purple); color:var(--color-unergy-avena); }
 </style>

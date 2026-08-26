@@ -12,7 +12,7 @@
               class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed">
               <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
             </button>
-            <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
+            <span class="text-sm font-semibold" style="color:var(--color-unergy-deep); min-width:100px; text-align:center">
               {{ periodoLabel }}
             </span>
             <button type="button" @click="irSiguiente" :disabled="periodoIndex >= periodos.length - 1"
@@ -61,7 +61,7 @@
 
     <!-- ── Spinner de carga ──────────────────────────────────────────────────── -->
     <div v-else-if="cargandoFactura" class="flex justify-center py-10">
-      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.5rem; color:#915BD8" />
+      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.5rem; color:var(--color-unergy-purple)" />
     </div>
 
     <!-- ── Datos del período seleccionado ───────────────────────────────────── -->
@@ -70,7 +70,7 @@
       <!-- Resumen -->
       <div class="flex items-center gap-4 flex-wrap">
         <div class="text-xs text-gray-500">
-          <span class="font-semibold" style="color:#2C2039">{{ facturaActual.items.length }}</span> ítems
+          <span class="font-semibold" style="color:var(--color-unergy-deep)">{{ facturaActual.items.length }}</span> ítems
         </div>
         <div class="text-xs text-gray-500">
           Suma:
@@ -113,7 +113,7 @@
                 <tbody>
                   <tr v-for="(fila, i) in sec.items" :key="i"
                     class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
-                    <td class="px-4 py-2 font-medium" style="color:#2C2039">
+                    <td class="px-4 py-2 font-medium" style="color:var(--color-unergy-deep)">
                       <span v-if="fila.nombre_comercial">
                         <span class="block text-[11px] leading-tight"
                               :class="fila.codigo_tsf ? 'text-gray-400' : 'text-gray-300'">
@@ -151,11 +151,11 @@
           <div class="flex items-center gap-6 ml-auto">
             <div class="text-right">
               <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Subtotal (Sin IVA)</p>
-              <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalSinIVAGeneral) }}</p>
+              <p class="text-sm font-semibold tabular-nums" style="color:var(--color-unergy-deep)">{{ formatCOP(totalSinIVAGeneral) }}</p>
             </div>
             <div class="text-right">
               <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">IVA</p>
-              <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalIVAGeneral) }}</p>
+              <p class="text-sm font-semibold tabular-nums" style="color:var(--color-unergy-deep)">{{ formatCOP(totalIVAGeneral) }}</p>
             </div>
             <div class="text-right">
               <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Total</p>
@@ -217,7 +217,7 @@
         <div class="flex gap-2 justify-end pt-1">
           <Button label="Cancelar" size="small" outlined severity="secondary"
             :disabled="guardando" @click="showGuardarDialog = false" />
-          <Button label="Guardar" size="small" :loading="guardando" :disabled="!periodoParaGuardar" @click="guardarFactura" style="background:#915BD8;border-color:#915BD8">
+          <Button label="Guardar" size="small" :loading="guardando" :disabled="!periodoParaGuardar" @click="guardarFactura" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
         </div>
@@ -229,7 +229,7 @@
       :style="{ width: '420px' }" :closable="!asignando">
       <div class="space-y-4 pt-1">
         <p class="text-xs text-gray-500">
-          Sitio Starlink: <strong style="color:#2C2039">{{ descripcionParaAsignar }}</strong>
+          Sitio Starlink: <strong style="color:var(--color-unergy-deep)">{{ descripcionParaAsignar }}</strong>
         </p>
 
         <div class="flex flex-col gap-2">
@@ -257,7 +257,7 @@
             :disabled="asignando" :loading="excluyendo" @click="confirmarExcluirSitio" />
           <Button label="Cancelar" size="small" outlined severity="secondary"
             :disabled="asignando || excluyendo" @click="showAsignarDialog = false" />
-          <Button label="Asignar" size="small" :loading="asignando" :disabled="!proyectoParaAsignar || excluyendo" @click="confirmarAsignarMinigranja" style="background:#915BD8;border-color:#915BD8">
+          <Button label="Asignar" size="small" :loading="asignando" :disabled="!proyectoParaAsignar || excluyendo" @click="confirmarAsignarMinigranja" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
         </div>
@@ -595,7 +595,7 @@ onMounted(async () => {
   border-radius: 6px;
   border: 1px solid #E5E2EC;
   background: #fff;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   cursor: pointer;
   transition: background .15s;
 }

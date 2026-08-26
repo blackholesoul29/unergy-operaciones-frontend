@@ -87,7 +87,7 @@
       <Column header="Contrato">
         <template #body="{ data }">
           <router-link v-if="data.ppa_contrato_id" :to="`/contratos/${data.ppa_contrato_id}`"
-                       class="text-xs underline" style="color:#915BD8" @click.stop>PPA</router-link>
+                       class="text-xs underline" style="color:var(--color-unergy-purple)" @click.stop>PPA</router-link>
           <span v-else style="color:#c4b8d4">—</span>
         </template>
       </Column>

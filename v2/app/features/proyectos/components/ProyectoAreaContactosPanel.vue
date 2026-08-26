@@ -10,7 +10,7 @@
         <RouterLink v-for="inv in inversionistasConId" :key="inv.cliente_id"
           :to="`/clientes/${inv.cliente_id}?tab=contactos`"
           class="text-xs font-medium px-2.5 py-1 rounded-full no-underline"
-          style="background:#f0eaf9;color:#915BD8;">
+          style="background:#f0eaf9;color:var(--color-unergy-purple);">
           {{ inv.cliente_nombre }}
         </RouterLink>
       </div>
@@ -20,17 +20,17 @@
     </div>
 
     <div v-for="tipo in TIPOS" :key="tipo.value" class="flex items-center gap-2 py-1.5">
-      <span class="w-32 text-sm font-medium" style="color: #2C2039;">{{ tipo.label }}</span>
+      <span class="w-32 text-sm font-medium" style="color: var(--color-unergy-deep);">{{ tipo.label }}</span>
 
       <template v-if="overrides[tipo.value] && editando !== tipo.value">
         <span class="text-sm flex-1" style="color: #6b5a8a;">
-          <ArrowRightLeftIcon class="text-xs mr-1 size-[1em]" style="color:#915BD8;" />
-          <RouterLink :to="`/clientes/${overrides[tipo.value].cliente_id}?tab=contactos`" class="underline" style="color:#915BD8;">
+          <ArrowRightLeftIcon class="text-xs mr-1 size-[1em]" style="color:var(--color-unergy-purple);" />
+          <RouterLink :to="`/clientes/${overrides[tipo.value].cliente_id}?tab=contactos`" class="underline" style="color:var(--color-unergy-purple);">
             {{ overrides[tipo.value].cliente_nombre }}
           </RouterLink>
         </span>
         <button type="button" @click="editando = tipo.value"
-          class="text-xs px-2 py-1 rounded hover:bg-gray-50" style="color:#915BD8;">Cambiar</button>
+          class="text-xs px-2 py-1 rounded hover:bg-gray-50" style="color:var(--color-unergy-purple);">Cambiar</button>
         <button type="button" @click="quitarOverride(tipo.value)"
           class="p-1.5 rounded-lg transition-colors hover:bg-red-50">
           <Trash2Icon class="text-xs size-[1em]" style="color: #ef4444;" />
@@ -52,7 +52,7 @@
       <template v-else>
         <span class="flex-1"></span>
         <button type="button" @click="editando = tipo.value; clienteSeleccionado = null"
-          class="text-xs px-2 py-1 rounded hover:bg-gray-50" style="color:#915BD8;">Usar otro cliente</button>
+          class="text-xs px-2 py-1 rounded hover:bg-gray-50" style="color:var(--color-unergy-purple);">Usar otro cliente</button>
       </template>
     </div>
   </div>

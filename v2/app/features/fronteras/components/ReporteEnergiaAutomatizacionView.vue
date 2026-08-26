@@ -13,7 +13,7 @@
         <Button label="Generar Excel" severity="secondary" outlined :loading="generandoExcel" @click="generarExcel">
           <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
         </Button>
-        <Button label="Enviar reporte" :disabled="!resumen || !resumen.puede_enviar" :loading="enviando" v-tooltip.bottom="!resumen?.puede_enviar ? 'Quedan fronteras con horas sin fuente por revisar' : null" style="background: #915BD8; border-color: #915BD8;" @click="enviarReporte">
+        <Button label="Enviar reporte" :disabled="!resumen || !resumen.puede_enviar" :loading="enviando" v-tooltip.bottom="!resumen?.puede_enviar ? 'Quedan fronteras con horas sin fuente por revisar' : null" style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);" @click="enviarReporte">
           <template #icon><SendIcon class="size-[1em]" /></template>
         </Button>
       </div>
@@ -38,14 +38,14 @@
     <div v-if="estadoQuoia" class="bg-white rounded-xl p-4 shadow-sm" style="border: 1px solid #e8e0f0;">
       <div class="flex items-start justify-between gap-3 mb-3">
         <div>
-          <p class="text-sm font-bold" style="color: #2C2039;">Estado en Quoia</p>
+          <p class="text-sm font-bold" style="color: var(--color-unergy-deep);">Estado en Quoia</p>
           <p class="text-xs mt-0.5" style="color: #9b89b5;">
             {{ estadoQuoia.total }} fronteras enviadas
             <span v-if="estadoQuoiaPolling"> · revisando cada 2 min</span>
           </p>
         </div>
-        <span v-if="estadoQuoiaPolling" class="flex items-center gap-1.5 text-xs font-semibold" style="color: #915BD8;">
-          <span class="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style="background: #915BD8;" />
+        <span v-if="estadoQuoiaPolling" class="flex items-center gap-1.5 text-xs font-semibold" style="color: var(--color-unergy-purple);">
+          <span class="inline-block w-1.5 h-1.5 rounded-full animate-pulse" style="background: var(--color-unergy-purple);" />
           En vivo
         </span>
       </div>
@@ -71,7 +71,7 @@
         <p class="text-xs font-bold mb-2" style="color: #c02626;">⚠ {{ estadoQuoia.fallidas.length }} con error</p>
         <div v-for="f in estadoQuoia.fallidas" :key="f.frontera_id + f.tipo"
              class="rounded-lg px-2.5 py-1.5 mb-1.5 text-xs" style="background: #f7f6fa;">
-          <span class="font-semibold" style="color: #2C2039;">{{ f.nombre_proyecto }} — {{ f.tipo === 'generacion' ? 'Generación' : 'Consumo' }}</span>
+          <span class="font-semibold" style="color: var(--color-unergy-deep);">{{ f.nombre_proyecto }} — {{ f.tipo === 'generacion' ? 'Generación' : 'Consumo' }}</span>
         </div>
       </div>
       <p v-else-if="!estadoQuoiaPolling && estadoQuoia.en_espera === 0" class="text-xs font-semibold mt-3 pt-3" style="color: #4d7c0f; border-top: 1px solid #e8e0f0;">
@@ -82,7 +82,7 @@
     <TabView v-model:activeIndex="activeTab">
       <TabPanel header="Revisión de hoy">
         <div v-if="loadingLista" class="flex items-center justify-center py-12">
-          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
         </div>
         <div v-else-if="!filas.length" class="text-center py-12" style="color: #9b89b5;">
           <p class="mb-3">Todavía no se ha corrido la clasificación para este día.</p>
@@ -118,7 +118,7 @@
           <Button label="Ver" size="small" @click="cargarHistorial" />
         </div>
         <div v-if="loadingHistorial" class="flex items-center justify-center py-12">
-          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
         </div>
         <div v-else-if="filasHistorial.length" class="workspace">
           <ReporteEnergiaLista
@@ -158,13 +158,13 @@
         </div>
 
         <div v-if="loadingResumenHistorico" class="flex items-center justify-center py-12">
-          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+          <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
         </div>
 
         <template v-else-if="resumenHistorico">
           <!-- Fuente usada — Generación -->
           <section class="mb-6">
-            <p class="text-sm font-bold" style="color:#2C2039;">Fuente usada — Generación</p>
+            <p class="text-sm font-bold" style="color:var(--color-unergy-deep);">Fuente usada — Generación</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">
               {{ totalDias(kpiGen) }} días-frontera reportados en el rango · clic en una barra para ver el detalle por frontera
             </p>
@@ -175,7 +175,7 @@
 
             <div v-if="grupoSeleccionadoGen" class="mt-4">
               <div class="flex items-center justify-between mb-2">
-                <p class="text-sm font-bold flex items-center gap-1.5" style="color:#2C2039;">
+                <p class="text-sm font-bold flex items-center gap-1.5" style="color:var(--color-unergy-deep);">
                   <span class="inline-block w-2 h-2 rounded-full" :style="{ background: grupoColor(grupoSeleccionadoGen).texto }" />
                   Detalle — {{ grupoSeleccionadoGen }}
                 </p>
@@ -208,7 +208,7 @@
 
           <!-- Fuente usada — Consumo -->
           <section class="mb-6">
-            <p class="text-sm font-bold" style="color:#2C2039;">Fuente usada — Consumo</p>
+            <p class="text-sm font-bold" style="color:var(--color-unergy-deep);">Fuente usada — Consumo</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">
               {{ totalDias(kpiCon) }} días-frontera reportados en el rango · Consumo no usa inversores · clic en una barra para ver el detalle
             </p>
@@ -219,7 +219,7 @@
 
             <div v-if="grupoSeleccionadoCon" class="mt-4">
               <div class="flex items-center justify-between mb-2">
-                <p class="text-sm font-bold flex items-center gap-1.5" style="color:#2C2039;">
+                <p class="text-sm font-bold flex items-center gap-1.5" style="color:var(--color-unergy-deep);">
                   <span class="inline-block w-2 h-2 rounded-full" :style="{ background: grupoColor(grupoSeleccionadoCon).texto }" />
                   Detalle — {{ grupoSeleccionadoCon }}
                 </p>
@@ -252,11 +252,11 @@
 
           <!-- Datos incompletos -->
           <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
-            <p class="text-sm font-bold mb-1" style="color:#2C2039;">Datos incompletos de medidores e inversores</p>
+            <p class="text-sm font-bold mb-1" style="color:var(--color-unergy-deep);">Datos incompletos de medidores e inversores</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">Solo Generación — cuántas veces cada fuente llegó incompleta en el rango.</p>
             <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
               <template v-for="(c, idx) in resumenHistorico.incompletos_callouts" :key="idx">
-                <span><b class="text-base font-extrabold" style="color:#6E3FB8;">{{ c.valor }}</b>
+                <span><b class="text-base font-extrabold" style="color:var(--color-unergy-purple-dark);">{{ c.valor }}</b>
                   <span class="text-xs ml-1.5" style="color:#6b5a8a;">{{ c.etiqueta }}</span></span>
                 <span v-if="idx < resumenHistorico.incompletos_callouts.length - 1" class="w-px h-4" style="background:#e8e0f0;" />
               </template>
@@ -303,11 +303,11 @@
 
           <!-- Intervención manual -->
           <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
-            <p class="text-sm font-bold mb-1" style="color:#2C2039;">Intervención manual recurrente</p>
+            <p class="text-sm font-bold mb-1" style="color:var(--color-unergy-deep);">Intervención manual recurrente</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">Fronteras que caen en "Revisar manualmente" o requieren edición manual una y otra vez.</p>
             <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
               <template v-for="(c, idx) in resumenHistorico.intervencion_manual_callouts" :key="idx">
-                <span><b class="text-base font-extrabold" style="color:#6E3FB8;">{{ c.valor }}</b>
+                <span><b class="text-base font-extrabold" style="color:var(--color-unergy-purple-dark);">{{ c.valor }}</b>
                   <span class="text-xs ml-1.5" style="color:#6b5a8a;">{{ c.etiqueta }}</span></span>
                 <span v-if="idx < resumenHistorico.intervencion_manual_callouts.length - 1" class="w-px h-4" style="background:#e8e0f0;" />
               </template>
@@ -342,11 +342,11 @@
 
           <!-- Recuperación activa -->
           <div class="bg-white rounded-xl shadow-sm border p-4" style="border-color:#e8e0f0;">
-            <p class="text-sm font-bold mb-1" style="color:#2C2039;">Recuperación activa de medidores</p>
+            <p class="text-sm font-bold mb-1" style="color:var(--color-unergy-deep);">Recuperación activa de medidores</p>
             <p class="text-xs mb-3" style="color:#9b89b5;">Intentos y éxitos al forzar la lectura de un medidor — por frontera y medidor.</p>
             <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
               <template v-for="(c, idx) in resumenHistorico.recuperacion_activa_callouts" :key="idx">
-                <span><b class="text-base font-extrabold" style="color:#6E3FB8;">{{ c.valor }}</b>
+                <span><b class="text-base font-extrabold" style="color:var(--color-unergy-purple-dark);">{{ c.valor }}</b>
                   <span class="text-xs ml-1.5" style="color:#6b5a8a;">{{ c.etiqueta }}</span></span>
                 <span v-if="idx < resumenHistorico.recuperacion_activa_callouts.length - 1" class="w-px h-4" style="background:#e8e0f0;" />
               </template>

@@ -510,7 +510,7 @@
         <!-- Toolbar fija -->
         <div class="em-editor-bar">
           <div class="em-editor-bar-left">
-            <PencilIcon class="size-[1em]" style="color:#915BD8;font-size:13px" />
+            <PencilIcon class="size-[1em]" style="color:var(--color-unergy-purple);font-size:13px" />
             <span class="em-editor-title">{{ editorInf?.proyecto_nombre || editorInf?.sub_project }}</span>
             <span class="em-tipo-tag" v-if="editorInf">{{ tipoLabel(editorInf.tipo) }}</span>
             <span v-if="editorInf" class="em-editor-periodo">
@@ -1202,7 +1202,7 @@ async function ejecutarEnvioBatch() {
   white-space: nowrap; cursor: default;
   flex-shrink: 0;
 }
-.em-header-label svg { color: #915BD8; font-size: 11px; }
+.em-header-label svg { color: var(--color-unergy-purple); font-size: 11px; }
 .em-header-controls {
   display: inline-flex; align-items: center; gap: 6px; margin-left: auto;
   flex-shrink: 0; flex-wrap: wrap;
@@ -1231,7 +1231,7 @@ async function ejecutarEnvioBatch() {
 .em-month-nav:hover:not(:disabled) { background: #E9DEFC; }
 .em-month-nav:disabled { opacity: .35; cursor: not-allowed; }
 .em-month-input {
-  background: transparent; border: none; color: #2C2039;
+  background: transparent; border: none; color: var(--color-unergy-deep);
   font-family: inherit; font-size: 12px; font-weight: 700;
   padding: 3px 4px; outline: none; color-scheme: light;
 }
@@ -1301,7 +1301,7 @@ async function ejecutarEnvioBatch() {
 }
 .em-compact-row--active::before {
   content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-  width: 3px; background: #915BD8;
+  width: 3px; background: var(--color-unergy-purple);
 }
 .em-compact-dot {
   width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
@@ -1326,7 +1326,7 @@ async function ejecutarEnvioBatch() {
   border: 1px solid #ECE7F2; color: #6B5A8A; font-size: 13px;
 }
 .em-state-empty { padding: 60px 24px; }
-.em-state-title { font-size: 14px; font-weight: 800; color: #2C2039; margin: 4px 0 0; }
+.em-state-title { font-size: 14px; font-weight: 800; color: var(--color-unergy-deep); margin: 4px 0 0; }
 .em-state-sub   { font-size: 12px; color: #6B5A8A; max-width: 380px; text-align: center; }
 
 .em-table {
@@ -1355,7 +1355,7 @@ async function ejecutarEnvioBatch() {
 .em-row:last-child { border-bottom: none; }
 .em-row:hover { background: #FAF8FE; }
 .em-row--active { background: #F3E8FF !important; }
-.em-row td { padding: 9px 12px; vertical-align: middle; font-size: 12px; color: #2C2039; }
+.em-row td { padding: 9px 12px; vertical-align: middle; font-size: 12px; color: var(--color-unergy-deep); }
 .em-td-proj   { min-width: 180px; }
 .em-proj-nombre { font-weight: 700; font-size: 13px; }
 .em-proj-sub    { font-size: 10px; color: #9CA3AF; margin-top: 1px; }
@@ -1464,7 +1464,7 @@ async function ejecutarEnvioBatch() {
   display: flex; align-items: center; justify-content: center;
   transition: all .15s;
 }
-.em-close:hover { background: #F4F1FA; color: #2C2039; }
+.em-close:hover { background: #F4F1FA; color: var(--color-unergy-deep); }
 
 .em-drawer-tabs {
   display: flex; gap: 0; border-bottom: 1px solid #ECE7F2;
@@ -1477,8 +1477,8 @@ async function ejecutarEnvioBatch() {
   color: #6B5A8A; cursor: pointer; border-bottom: 2px solid transparent;
   transition: color .15s;
 }
-.em-drawer-tab:hover { color: #2C2039; }
-.em-drawer-tab--on   { color: #6D28D9; border-bottom-color: #915BD8; }
+.em-drawer-tab:hover { color: var(--color-unergy-deep); }
+.em-drawer-tab--on   { color: #6D28D9; border-bottom-color: var(--color-unergy-purple); }
 .em-drawer-tab-badge {
   background: #6D28D9; color: #fff; font-size: 9px; font-weight: 800;
   padding: 1px 6px; border-radius: 8px; margin-left: 2px;
@@ -1532,7 +1532,7 @@ async function ejecutarEnvioBatch() {
 .em-com-fecha        { font-size: 10px; color: #6B5A8A; }
 .em-com-estado-ok    { font-size: 10px; font-weight: 700; color: #166534; }
 .em-com-estado-pend  { font-size: 10px; font-weight: 700; color: #DC2626; }
-.em-com-msg { font-size: 13px; color: #2C2039; line-height: 1.55; margin: 4px 0 6px; white-space: pre-wrap; }
+.em-com-msg { font-size: 13px; color: var(--color-unergy-deep); line-height: 1.55; margin: 4px 0 6px; white-space: pre-wrap; }
 .em-com-respuesta {
   background: rgba(255,255,255,.6); border-left: 3px solid #16A34A;
   border-radius: 0 8px 8px 0; padding: 8px 10px; margin-top: 6px;
@@ -1553,7 +1553,7 @@ async function ejecutarEnvioBatch() {
 .em-btn-borrar { background: #fff; color: #DC2626; border-color: #FECACA; }
 .em-btn-borrar:hover:not(:disabled) { background: #FEF2F2; }
 .em-btn-ghost { background: #fff; color: #6B5A8A; border-color: #E5E2EC; }
-.em-btn-ghost:hover:not(:disabled) { background: #F4F1FA; color: #2C2039; }
+.em-btn-ghost:hover:not(:disabled) { background: #F4F1FA; color: var(--color-unergy-deep); }
 
 .em-resolver-form {
   margin-top: 8px; background: rgba(255,255,255,.7);
@@ -1564,10 +1564,10 @@ async function ejecutarEnvioBatch() {
 
 .em-textarea {
   width: 100%; border: 1.5px solid #E5E2EC; border-radius: 8px;
-  padding: 8px 10px; font-family: inherit; font-size: 12px; color: #2C2039;
+  padding: 8px 10px; font-family: inherit; font-size: 12px; color: var(--color-unergy-deep);
   outline: none; resize: vertical; background: #fff;
 }
-.em-textarea:focus    { border-color: #915BD8; }
+.em-textarea:focus    { border-color: var(--color-unergy-purple); }
 .em-textarea:disabled { background: #F4F1FA; color: #9CA3AF; }
 .em-com-add {
   background: #FAF8FE; border: 1px dashed #DAD3EA; border-radius: 10px; padding: 12px;
@@ -1591,7 +1591,7 @@ async function ejecutarEnvioBatch() {
   background: #FAF8FE; border: 1px solid #ECE7F2; border-radius: 10px;
   padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
 }
-.em-check-row { display: flex; align-items: center; gap: 10px; font-size: 12px; color: #2C2039; }
+.em-check-row { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--color-unergy-deep); }
 .em-check-row--err { color: #991B1B; }
 .em-verify-actions { display: flex; flex-direction: column; gap: 8px; }
 .em-btn-verify-big :deep(.p-button), :deep(.em-btn-verify-big) {
@@ -1630,7 +1630,7 @@ async function ejecutarEnvioBatch() {
 }
 .em-modal-num {
   width: 20px; height: 20px; border-radius: 50%;
-  background: #915BD8; color: #fff;
+  background: var(--color-unergy-purple); color: #fff;
   display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800;
 }
 .em-modal-info { flex: 1; min-width: 0; }
@@ -1674,10 +1674,10 @@ async function ejecutarEnvioBatch() {
 .em-search-icon { position: absolute; left: 8px; color: #9CA3AF; font-size: 12px; pointer-events: none; }
 .em-search-input {
   background: #F4F1FA; border: 1px solid #E5E2EC; border-radius: 7px;
-  padding: 4px 28px 4px 26px; font-family: inherit; font-size: 12px; color: #2C2039;
+  padding: 4px 28px 4px 26px; font-family: inherit; font-size: 12px; color: var(--color-unergy-deep);
   outline: none; width: 180px; transition: border-color .15s, width .2s;
 }
-.em-search-input:focus { border-color: #915BD8; width: 220px; }
+.em-search-input:focus { border-color: var(--color-unergy-purple); width: 220px; }
 .em-search-input::placeholder { color: #A89EC0; }
 .em-search-clear {
   position: absolute; right: 6px;
@@ -1720,7 +1720,7 @@ async function ejecutarEnvioBatch() {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 10px 20px;
   background: #1A1025;
-  color: #FDFAF7;
+  color: var(--color-unergy-avena);
   flex-shrink: 0;
   flex-wrap: wrap;
   box-shadow: 0 2px 8px rgba(0,0,0,.3);
@@ -1731,7 +1731,7 @@ async function ejecutarEnvioBatch() {
 }
 .em-editor-bar-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .em-editor-title {
-  font-size: 14px; font-weight: 800; color: #FDFAF7;
+  font-size: 14px; font-weight: 800; color: var(--color-unergy-avena);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .em-editor-periodo { font-size: 11px; color: rgba(253,250,247,.6); }
@@ -1743,13 +1743,13 @@ async function ejecutarEnvioBatch() {
 }
 .em-editor-hint {
   padding: 5px 16px;
-  background: #2C2039;
+  background: var(--color-unergy-deep);
   color: rgba(253,250,247,.55);
   font-size: 10px;
   display: flex; align-items: center; gap: 6px;
   flex-shrink: 0;
 }
-.em-editor-hint svg { color: #915BD8; }
+.em-editor-hint svg { color: var(--color-unergy-purple); }
 
 /* ── Transiciones ─────────────────────────────────────────────── */
 .slide-right-enter-active, .slide-right-leave-active { transition: all .25s ease; }

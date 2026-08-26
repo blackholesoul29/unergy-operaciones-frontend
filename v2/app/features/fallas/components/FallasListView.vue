@@ -2,8 +2,8 @@
   <div class="space-y-4">
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <h2 class="text-lg font-semibold" style="color: #2C2039;">Gestión de fallas</h2>
-      <Button label="Registrar falla" @click="openNew" style="background: #915BD8; border-color: #915BD8;">
+      <h2 class="text-lg font-semibold" style="color: var(--color-unergy-deep);">Gestión de fallas</h2>
+      <Button label="Registrar falla" @click="openNew" style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);">
         <template #icon><PlusIcon class="size-[1em]" /></template>
       </Button>
     </div>
@@ -46,7 +46,7 @@
 
         <Column header="Proyecto" style="min-width: 160px;">
           <template #body="{ data }">
-            <span class="text-[11px] font-medium" style="color: #2C2039;">{{ data.proyecto?.nombre_comercial }}</span>
+            <span class="text-[11px] font-medium" style="color: var(--color-unergy-deep);">{{ data.proyecto?.nombre_comercial }}</span>
           </template>
         </Column>
 

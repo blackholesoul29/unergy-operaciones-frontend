@@ -97,6 +97,6 @@ const aria = computed(() => {
 
 .bm-marca {
   position: absolute; top: 0; height: 14px; width: 2px; border-radius: 1px;
-  background: #2C2039; opacity: .45; transform: translateX(-1px);
+  background: var(--color-unergy-deep); opacity: .45; transform: translateX(-1px);
 }
 </style>

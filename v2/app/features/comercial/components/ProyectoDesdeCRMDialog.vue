@@ -17,7 +17,7 @@
           @update:visible="$emit('update:visible', $event)">
     <template #header>
       <div>
-        <h2 class="text-base font-semibold" style="color:#2C2039">Crear planta</h2>
+        <h2 class="text-base font-semibold" style="color:var(--color-unergy-deep)">Crear planta</h2>
         <p class="text-xs" style="color:#9b89b5">
           Se crea en <strong>Proyectos</strong>, con todos sus datos.
           <span v-if="oferta"> Queda vinculada a {{ codigoOferta }}.</span>

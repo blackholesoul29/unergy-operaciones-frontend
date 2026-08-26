@@ -40,7 +40,7 @@ defineProps({
   font-size: 18px;
   font-weight: 800;
   line-height: 1.15;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

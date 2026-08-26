@@ -9,7 +9,7 @@
             class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
             <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
           </button>
-          <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
+          <span class="text-sm font-semibold" style="color:var(--color-unergy-deep); min-width:100px; text-align:center">
             {{ periodoLabel }}
           </span>
           <button type="button" @click="cambiarMes(1)"
@@ -36,7 +36,7 @@
             </label>
           </div>
         </div>
-        <Button label="IPC" size="small" outlined @click="showIPCDialog = true" style="border-color:#915BD8;color:#915BD8">
+        <Button label="IPC" size="small" outlined @click="showIPCDialog = true" style="border-color:var(--color-unergy-purple);color:var(--color-unergy-purple)">
           <template #icon><ChartLineIcon class="size-[1em]" /></template>
         </Button>
         <ArriendosZipUpload
@@ -44,7 +44,7 @@
           :periodo="periodoActual"
           :periodo-label="periodoLabel"
           @docs-actualizados="() => loadDocs(periodoActual.value)" />
-        <Button label="Guardar selección" size="small" :loading="guardando" style="background:#915BD8;border-color:#915BD8" @click="guardarSeleccion">
+        <Button label="Guardar selección" size="small" :loading="guardando" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)" @click="guardarSeleccion">
           <template #icon><SaveIcon class="size-[1em]" /></template>
         </Button>
       </div>
@@ -142,7 +142,7 @@
                   v-model="seleccion[fila.id]" class="accent-purple-600" />
               </td>
               <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
-              <td class="px-4 py-2 font-medium" style="color:#2C2039; overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
+              <td class="px-4 py-2 font-medium" style="color:var(--color-unergy-deep); overflow:hidden; text-overflow:ellipsis" :title="fila.proyecto">
                 <div class="flex flex-col gap-0.5 max-w-full">
                   <span class="block text-[11px] leading-tight"
                         :class="fila.codigo ? 'text-gray-400' : 'text-gray-300'">
@@ -203,7 +203,7 @@
                     {{ formatCOP(fila.canon_calculado) }}
                   </span>
                   <span v-else class="text-gray-300">—</span>
-                  <InfoIcon class="flex-shrink-0 cursor-help opacity-0 group-hover:opacity-100 transition-opacity size-[1em]" v-if="fila.canon_calculado != null" style="font-size:11px;color:#915BD8" title="Ver cálculo" @mouseenter="mostrarCanon($event, fila)" @mouseleave="ocultarCanon()" />
+                  <InfoIcon class="flex-shrink-0 cursor-help opacity-0 group-hover:opacity-100 transition-opacity size-[1em]" v-if="fila.canon_calculado != null" style="font-size:11px;color:var(--color-unergy-purple)" title="Ver cálculo" @mouseenter="mostrarCanon($event, fila)" @mouseleave="ocultarCanon()" />
                 </span>
               </td>
               <td class="px-4 py-2 text-right font-mono text-xs bg-purple-50/30" :class="!esFacturable(fila) ? 'opacity-40' : ''">
@@ -255,11 +255,11 @@
         <div class="flex items-center gap-6 ml-auto">
           <div class="text-right">
             <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Subtotal Facturado</p>
-            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalSeleccionado) }}</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:var(--color-unergy-deep)">{{ formatCOP(totalSeleccionado) }}</p>
           </div>
           <div class="text-right">
             <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">IVA</p>
-            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalIVASeleccionado) }}</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:var(--color-unergy-deep)">{{ formatCOP(totalIVASeleccionado) }}</p>
           </div>
           <div class="text-right">
             <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Total</p>
@@ -299,7 +299,7 @@
           @click="showExclusionDialog = false">Cancelar</button>
         <button type="button" :disabled="!exclusionValida"
           class="text-xs font-semibold px-3 py-1.5 rounded-lg"
-          style="background:#915BD8;color:#fff;border:none"
+          style="background:var(--color-unergy-purple);color:#fff;border:none"
           :style="!exclusionValida ? 'opacity:0.4;cursor:not-allowed' : 'cursor:pointer'"
           @click="confirmarExclusiones">Guardar</button>
       </template>
@@ -344,7 +344,7 @@
               <InputText v-model="ipcForm.fuente" class="w-full" placeholder="DANE" />
             </div>
           </div>
-          <Button label="Guardar tasa" size="small" @click="guardarIPC" style="background:#915BD8;border-color:#915BD8">
+          <Button label="Guardar tasa" size="small" @click="guardarIPC" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
         </div>

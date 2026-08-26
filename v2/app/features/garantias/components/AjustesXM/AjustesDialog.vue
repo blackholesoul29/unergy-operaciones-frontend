@@ -45,7 +45,7 @@
 
     <template #footer>
       <Button label="Cancelar" text severity="secondary" @click="$emit('close')" />
-      <Button label="Guardar" @click="guardar" style="background:#915BD8;border-color:#915BD8">
+      <Button label="Guardar" @click="guardar" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
         <template #icon><CheckIcon class="size-[1em]" /></template>
       </Button>
     </template>

@@ -25,7 +25,7 @@
         :class="{ 'p-invalid': errores.codigoSic }">
         <template #option="{ option }">
           <div class="flex flex-col leading-tight py-0.5">
-            <span class="font-medium" style="color:#2C2039;">
+            <span class="font-medium" style="color:var(--color-unergy-deep);">
               <span class="font-mono" style="color:#5b3fa6;">{{ option.sic }}</span>
               · {{ option.contrato_interno || '(sin contrato)' }}
             </span>
@@ -40,7 +40,7 @@
     <div v-if="inscritas.length" class="rounded-lg px-3 py-2.5 space-y-2"
       style="background:#FAF8FD; border:1px solid #ECE4F5;">
       <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs" style="color:#6b5a8a;">
-        <span><b style="color:#2C2039;">{{ baseContrato.contrato_interno || '—' }}</b> · {{ baseContrato.nombre_interno || 'sin nombre interno' }}</span>
+        <span><b style="color:var(--color-unergy-deep);">{{ baseContrato.contrato_interno || '—' }}</b> · {{ baseContrato.nombre_interno || 'sin nombre interno' }}</span>
         <span v-if="baseContrato.codigo_sic_comprador">Comprador {{ baseContrato.codigo_sic_comprador }}</span>
         <span v-if="baseContrato.prioridad_limitacion != null">P.S {{ baseContrato.prioridad_limitacion }}</span>
       </div>
@@ -55,9 +55,9 @@
         </thead>
         <tbody>
           <tr v-for="r in inscritas" :key="r.id" class="border-t" style="border-color:#ECE4F5;">
-            <td class="py-1" :style="{ color: r.id === baseContrato.id ? '#2C2039' : '#9b89b5', fontWeight: r.id === baseContrato.id ? 600 : 400 }">
+            <td class="py-1" :style="{ color: r.id === baseContrato.id ? 'var(--color-unergy-deep)' : '#9b89b5', fontWeight: r.id === baseContrato.id ? 600 : 400 }">
               {{ r.planta_nombre || 'sin planta' }}
-              <span v-if="inscritas.length > 1 && r.id === baseContrato.id" class="text-[10px] font-normal" style="color:#915BD8;">— la que se modifica</span>
+              <span v-if="inscritas.length > 1 && r.id === baseContrato.id" class="text-[10px] font-normal" style="color:var(--color-unergy-purple);">— la que se modifica</span>
             </td>
             <td class="py-1 text-right" style="color:#6b5a8a;">{{ r.porcentaje_despacho != null ? pctTexto(r.porcentaje_despacho) : '—' }}</td>
             <td class="py-1 pl-3" style="color:#6b5a8a;">{{ fmt(r.fecha_fin_efectiva || r.fecha_fin) }}</td>
@@ -140,7 +140,7 @@
 
     <!-- 5 · Lo opcional, plegado -->
     <details class="text-xs">
-      <summary class="cursor-pointer select-none" style="color:#915BD8;">Datos de la radicación (opcional)</summary>
+      <summary class="cursor-pointer select-none" style="color:var(--color-unergy-purple);">Datos de la radicación (opcional)</summary>
       <div class="pt-3 space-y-4">
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
@@ -161,7 +161,7 @@
 
     <div class="flex justify-end gap-2 pt-2">
       <Button label="Cancelar" severity="secondary" type="button" @click="$emit('cancelar')" />
-      <Button label="Registrar modificación" type="submit" :loading="guardando" style="background:#915BD8; border-color:#915BD8;">
+      <Button label="Registrar modificación" type="submit" :loading="guardando" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
         <template #icon><CheckIcon class="size-[1em]" /></template>
       </Button>
     </div>

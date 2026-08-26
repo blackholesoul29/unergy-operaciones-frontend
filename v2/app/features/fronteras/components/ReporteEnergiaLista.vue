@@ -19,7 +19,7 @@
           @click="$emit('seleccionar', f)"
         >
           <div class="flex items-center justify-between gap-2">
-            <span class="font-medium text-sm truncate" style="color: #2C2039;">{{ f.nombre_proyecto }}</span>
+            <span class="font-medium text-sm truncate" style="color: var(--color-unergy-deep);">{{ f.nombre_proyecto }}</span>
             <span class="font-mono text-xs flex-none" style="color: #6b5a8a;">{{ fmtKwh(f.energia_final_kwh) }}</span>
           </div>
           <div class="flex items-center gap-2 mt-1">
@@ -123,7 +123,7 @@ function fmtKwh(v) {
   color: #9b89b5;
   cursor: pointer;
 }
-.filter-pill.on { background: #f5eefc; border-color: #915BD8; color: #6E3FB8; }
+.filter-pill.on { background: #f5eefc; border-color: var(--color-unergy-purple); color: var(--color-unergy-purple-dark); }
 .tipo-tag {
   font-size: 10px;
   font-weight: 700;

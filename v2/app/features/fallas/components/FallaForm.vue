@@ -339,7 +339,7 @@
     <div class="ff-notif-wrap">
       <label class="ff-notif-label">
         <input type="checkbox" v-model="form.notificacion" class="ff-notif-check" />
-        <SendIcon class="size-[1em]" style="color:#915BD8;font-size:13px" />
+        <SendIcon class="size-[1em]" style="color:var(--color-unergy-purple);font-size:13px" />
         <span>Enviar notificación por correo a los contactos operacionales del proyecto</span>
       </label>
       <span v-if="form.notificacion" class="ff-notif-hint">
@@ -842,14 +842,14 @@ onMounted(async () => {
 }
 .ff-syscard svg { font-size: 18px; }
 .ff-syscard:hover { border-color: #c9b6ee; }
-.ff-syscard--on { border-color: #915BD8; background: #f3ecff; box-shadow: 0 0 0 2px #915BD833; }
+.ff-syscard--on { border-color: var(--color-unergy-purple); background: #f3ecff; box-shadow: 0 0 0 2px #915BD833; }
 @media (max-width: 640px) { .ff-sysgrid { grid-template-columns: repeat(2, 1fr); } }
 
 .ff-sub { margin-top: 12px; }
 .ff-subfield { margin-top: 10px; }
 .ff-flags { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .ff-check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a3b6b; cursor: pointer; }
-.ff-check input { accent-color: #915BD8; width: 16px; height: 16px; }
+.ff-check input { accent-color: var(--color-unergy-purple); width: 16px; height: 16px; }
 
 .ff-banner {
   display: flex; align-items: center; gap: 8px; margin-top: 10px;
@@ -857,7 +857,7 @@ onMounted(async () => {
 }
 .ff-banner--warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .ff-banner--info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-.ff-link { background: none; border: none; color: #915BD8; font-weight: 600; font-size: 12px; cursor: pointer; padding: 0; }
+.ff-link { background: none; border: none; color: var(--color-unergy-purple); font-weight: 600; font-size: 12px; cursor: pointer; padding: 0; }
 .ff-link svg { font-size: 11px; margin-right: 3px; }
 .ff-text-danger { color: #dc2626; }
 
@@ -869,7 +869,7 @@ onMounted(async () => {
 .ff-invname { flex: 1; }
 .ff-invkw { width: 120px; }
 .ff-invadd, .ff-invdel { border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; flex-shrink: 0; }
-.ff-invadd { background: #915BD8; color: #fff; }
+.ff-invadd { background: var(--color-unergy-purple); color: #fff; }
 .ff-invdel { background: #fef2f2; color: #dc2626; }
 
 .ff-section-title {
@@ -1006,12 +1006,12 @@ onMounted(async () => {
 }
 .ff-notif-label {
   display: flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 600; color: #2C2039; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--color-unergy-deep); cursor: pointer;
 }
 .ff-notif-check {
-  width: 16px; height: 16px; accent-color: #915BD8; cursor: pointer; flex-shrink: 0;
+  width: 16px; height: 16px; accent-color: var(--color-unergy-purple); cursor: pointer; flex-shrink: 0;
 }
 .ff-notif-hint {
-  font-size: 11px; color: #915BD8; margin-left: 24px; line-height: 1.4;
+  font-size: 11px; color: var(--color-unergy-purple); margin-left: 24px; line-height: 1.4;
 }
 </style>

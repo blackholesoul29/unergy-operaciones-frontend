@@ -105,7 +105,7 @@
         <Column field="razon_social_nombre" header="Razón social" sortable style="width:26%">
           <template #body="{ data }">
             <div class="flex items-center gap-1 min-w-0">
-              <span class="celda-txt font-semibold" style="color:#2C2039">
+              <span class="celda-txt font-semibold" style="color:var(--color-unergy-deep)">
                 {{ formatearNombre(data.razon_social_nombre) }}
               </span>
               <span v-if="data.alerta_contrato && data.alerta_contrato !== 'vigente'"
@@ -121,14 +121,14 @@
         </Column>
         <Column field="num_plantas" header="Plantas" sortable style="width:6%" bodyStyle="text-align:right">
           <template #body="{ data }">
-            <span class="font-semibold tabular-nums" style="color:#2C2039">{{ data.num_plantas }}</span>
+            <span class="font-semibold tabular-nums" style="color:var(--color-unergy-deep)">{{ data.num_plantas }}</span>
           </template>
         </Column>
         <Column header="Servicios" style="width:15%">
           <template #body="{ data }">
             <div class="chips-fila">
               <span v-for="sv in data.servicios" :key="sv" class="mini-chip"
-                    style="background:#f0ebfd;color:#915BD8">{{ servicioLabel(sv) }}</span>
+                    style="background:#f0ebfd;color:var(--color-unergy-purple)">{{ servicioLabel(sv) }}</span>
               <span v-if="!data.servicios?.length" class="vacio">—</span>
             </div>
           </template>
@@ -311,8 +311,8 @@
           <template #body="{ data }">
             <span class="mini-chip"
                   :style="data.tipo_contrato === 'compra'
-                    ? 'background:#915BD8;color:#fff'
-                    : 'background:#F6FF72;color:#2C2039'">
+                    ? 'background:var(--color-unergy-purple);color:#fff'
+                    : 'background:var(--color-unergy-yellow);color:var(--color-unergy-deep)'">
               {{ data.tipo_contrato === 'compra' ? 'Compra' : 'Venta' }}
             </span>
           </template>
@@ -582,7 +582,7 @@
 
     <Dialog v-model:visible="duplicadoVisible" header="Proyecto parecido ya existe" modal class="w-full max-w-sm">
       <p class="text-sm text-gray-600">{{ duplicadoInfo?.mensaje }}</p>
-      <p v-if="duplicadoInfo?.candidato_nombre" class="text-sm mt-2 font-medium" style="color:#2C2039">
+      <p v-if="duplicadoInfo?.candidato_nombre" class="text-sm mt-2 font-medium" style="color:var(--color-unergy-deep)">
         {{ duplicadoInfo.candidato_nombre }}
       </p>
       <template #footer>
@@ -1604,7 +1604,7 @@ function confirmarBorrarPpa(contrato) {
   background: #fff; font-size: 13px; font-weight: 700; color: #6b7280;
   cursor: pointer; transition: border-color .12s, color .12s, background .12s; user-select: none;
 }
-.svc-tab:hover { border-color: #cbb8e8; color: #2C2039; }
+.svc-tab:hover { border-color: #cbb8e8; color: var(--color-unergy-deep); }
 .svc-tab svg { font-size: 13px; color: #9ca3af; }
 .svc-tab--on { box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .svc-tab--sm { padding: 4px 9px; font-size: 12px; font-weight: 600; }
@@ -1676,9 +1676,9 @@ function confirmarBorrarPpa(contrato) {
 .chips-fila { display: flex; gap: 2px; overflow: hidden; min-width: 0; }
 
 /* Subencabezado de grupo (cuando se agrupa el portafolio) */
-.grupo-titulo { font-size: 12px; font-weight: 800; color: #2C2039; }
+.grupo-titulo { font-size: 12px; font-weight: 800; color: var(--color-unergy-deep); }
 .grupo-conteo {
-  margin-left: 7px; background: #f0ebfd; color: #915BD8;
+  margin-left: 7px; background: #f0ebfd; color: var(--color-unergy-purple);
   border-radius: 999px; font-size: 10px; font-weight: 800; padding: 0 6px;
 }
 .tabla :deep(.p-rowgroup-header) { background: #FAF9FC; }
@@ -1704,9 +1704,9 @@ function confirmarBorrarPpa(contrato) {
 .celda-enlace {
   display: flex; align-items: center; gap: 5px; min-width: 0; width: 100%;
   background: none; border: none; padding: 0; text-align: left; cursor: pointer;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
-.celda-enlace:hover .celda-txt { color: #915BD8; text-decoration: underline; }
+.celda-enlace:hover .celda-txt { color: var(--color-unergy-purple); text-decoration: underline; }
 
 /* Contrato sin planta: es un pendiente, así que se pinta como acción por hacer
    y no como un dato más. */
@@ -1758,18 +1758,18 @@ function confirmarBorrarPpa(contrato) {
 
 .nombre-link {
   display: block; max-width: 100%; text-align: left;
-  font-size: 11.5px; font-weight: 600; color: #2C2039;
+  font-size: 11.5px; font-weight: 600; color: var(--color-unergy-deep);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   cursor: pointer; transition: color .12s;
 }
-.nombre-link:hover { color: #915BD8; text-decoration: underline; text-underline-offset: 2px; }
+.nombre-link:hover { color: var(--color-unergy-purple); text-decoration: underline; text-underline-offset: 2px; }
 
 .ppa-chip {
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   background: #EEEDFE; color: #3C3489; font-size: 9.5px; font-weight: 600;
   padding: 0 5px; border-radius: 999px; cursor: pointer; transition: background .12s, color .12s;
 }
-.ppa-chip:hover { background: #915BD8; color: #fff; }
+.ppa-chip:hover { background: var(--color-unergy-purple); color: #fff; }
 
 .pulse-dot {
   display: inline-block; width: 5px; height: 5px; border-radius: 50%;

@@ -15,7 +15,7 @@
           @update:visible="cerrar">
     <template #header>
       <div>
-        <h2 class="text-base font-semibold" style="color:#2C2039">Registrar oferta</h2>
+        <h2 class="text-base font-semibold" style="color:var(--color-unergy-deep)">Registrar oferta</h2>
         <p class="text-xs" style="color:#9b89b5">{{ SUBTITULOS[paso] }}</p>
       </div>
     </template>
@@ -25,11 +25,11 @@
       <li v-for="(t, i) in PASOS" :key="t" class="flex items-center gap-1">
         <button class="flex items-center gap-1.5 rounded px-2 py-1 transition-colors"
                 :class="i === paso ? 'font-semibold' : ''"
-                :style="{ color: i <= paso ? '#915BD8' : '#c4b8d4',
+                :style="{ color: i <= paso ? 'var(--color-unergy-purple)' : '#c4b8d4',
                           background: i === paso ? '#F4EEFB' : 'transparent' }"
                 :disabled="i > paso" @click="paso = i">
           <span class="w-4 h-4 rounded-full text-[10px] flex items-center justify-center text-white"
-                :style="{ background: i <= paso ? '#915BD8' : '#c4b8d4' }">{{ i + 1 }}</span>
+                :style="{ background: i <= paso ? 'var(--color-unergy-purple)' : '#c4b8d4' }">{{ i + 1 }}</span>
           {{ t }}
         </button>
         <ChevronRightIcon class="size-[1em]" v-if="i < PASOS.length - 1" style="color:#c4b8d4;font-size:10px" />
@@ -149,7 +149,7 @@
                          filterPlaceholder="Buscar…" :emptyMessage="cargandoCatalogos ? 'Cargando…' : 'No hay plantas cargadas'">
               <template #option="{ option }">
                 <div class="min-w-0">
-                  <div class="text-sm" style="color:#2C2039">{{ option.nombre_comercial }}</div>
+                  <div class="text-sm" style="color:var(--color-unergy-deep)">{{ option.nombre_comercial }}</div>
                   <div class="text-[11px]" style="color:#9b89b5">
                     {{ [option.municipio, option.departamento].filter(Boolean).join(', ') || 'Sin ubicación' }}
                     <span v-if="option.potencia_instalada_kwp">
@@ -208,7 +208,7 @@
     <div v-else class="flex flex-col gap-3">
       <div class="rounded-lg p-3" style="background:#FAF8FC;border:1px solid #e8e0f0">
         <div class="text-xs font-semibold mb-1" style="color:#7a6e8a">CLIENTE</div>
-        <div class="text-sm font-medium" style="color:#2C2039">{{ resumenCliente }}</div>
+        <div class="text-sm font-medium" style="color:var(--color-unergy-deep)">{{ resumenCliente }}</div>
         <div v-if="modo === 'nuevo'" class="text-xs mt-1" style="color:#9b89b5">
           Se crea nuevo, con {{ contactosValidos.length }} contacto(s).
         </div>
@@ -222,14 +222,14 @@
              class="flex items-center justify-between py-1.5 text-sm"
              :class="i ? 'border-t' : ''" style="border-color:#e8e0f0">
           <div class="min-w-0">
-            <div style="color:#2C2039">{{ o.planta_nombre || 'Sin planta' }}</div>
+            <div style="color:var(--color-unergy-deep)">{{ o.planta_nombre || 'Sin planta' }}</div>
             <div class="text-xs" style="color:#9b89b5">
               {{ labelTipo(o.tipo) }} · {{ labelEtapa(o.estado) }}
               <span v-if="o.proyecto_ids?.length">· {{ o.proyecto_ids.length }} proyecto(s)</span>
             </div>
           </div>
           <span class="text-[10px] rounded px-1.5 py-0.5 flex-shrink-0"
-                style="background:#F4EEFB;color:#6E3FB8">OP.{{ segmentoTipo(o.tipo) }} No.…</span>
+                style="background:#F4EEFB;color:var(--color-unergy-purple-dark)">OP.{{ segmentoTipo(o.tipo) }} No.…</span>
         </div>
         <p class="ayuda">
           El código de seguimiento lo genera el backend con el consecutivo global y el

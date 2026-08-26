@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-4">
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
     </div>
 
     <template v-else>
@@ -27,10 +27,10 @@
       <!-- Sub-pestanas: Por envio / Por destinatario -->
       <div class="flex gap-1 border-b" style="border-color: #e8e0f0;">
         <button type="button" class="text-xs font-bold px-1 pb-2 mr-4"
-          :style="subvista === 'envio' ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
+          :style="subvista === 'envio' ? 'color:var(--color-unergy-purple-dark); border-bottom: 2.5px solid var(--color-unergy-purple);' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
           @click="subvista = 'envio'">Por envío</button>
         <button type="button" class="text-xs font-bold px-1 pb-2"
-          :style="subvista === 'destinatario' ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
+          :style="subvista === 'destinatario' ? 'color:var(--color-unergy-purple-dark); border-bottom: 2.5px solid var(--color-unergy-purple);' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
           @click="subvista = 'destinatario'">Por destinatario</button>
       </div>
 
@@ -57,7 +57,7 @@
           <button type="button" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
             @click="toggleBatch(batch.enviadoEn)">
             <span class="flex flex-col gap-0.5">
-              <span class="text-sm font-bold" style="color: #2C2039;">{{ fmtFechaHora(batch.enviadoEn) }}</span>
+              <span class="text-sm font-bold" style="color: var(--color-unergy-deep);">{{ fmtFechaHora(batch.enviadoEn) }}</span>
               <span class="text-xs" style="color: #9b89b5;">Reporte del {{ batch.periodo }}</span>
             </span>
             <span class="flex items-center gap-3 text-xs">
@@ -71,13 +71,13 @@
             <div v-for="item in batch.items" :key="item.id" class="flex items-start justify-between gap-3 px-4 py-2.5 border-t first:border-t-0"
               style="border-color: #f0ecf6;">
               <div class="min-w-0">
-                <span class="text-sm font-medium block" style="color: #2C2039;">{{ item.nombre }}</span>
+                <span class="text-sm font-medium block" style="color: var(--color-unergy-deep);">{{ item.nombre }}</span>
                 <span v-if="item.proyectosTotal != null && item.proyectos.length && !esParcial(item)" class="text-xs" style="color: #9b89b5;">
                   {{ item.proyectosTotal }} proyecto{{ item.proyectosTotal === 1 ? '' : 's' }}
                 </span>
                 <div v-else-if="esParcial(item)" class="flex flex-wrap items-center gap-1 mt-0.5">
                   <span v-for="p in item.proyectos" :key="p" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                    style="background: rgba(145,91,216,0.08); color: #6E3FB8;">{{ p }}</span>
+                    style="background: rgba(145,91,216,0.08); color: var(--color-unergy-purple-dark);">{{ p }}</span>
                 </div>
               </div>
               <div class="text-right flex-shrink-0">
@@ -112,7 +112,7 @@
             class="flex items-center justify-between gap-3 px-4 py-3 border-t first:border-t-0"
             :style="`border-color: #f0ecf6; ${d.faltoUltimoEnvio ? 'background: rgba(199,119,0,0.06);' : ''}`">
             <div class="min-w-0">
-              <p class="text-sm font-semibold" style="color: #2C2039;">{{ d.nombre }}</p>
+              <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">{{ d.nombre }}</p>
               <p v-if="!d.ultima.exitoso" class="text-xs mt-0.5" style="color: #D64455;">
                 Último intento falló — {{ d.ultima.error }}
               </p>

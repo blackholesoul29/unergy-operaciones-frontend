@@ -1,7 +1,7 @@
 <template>
   <div class="gf-page">
     <div class="mon-tab-bar">
-      <CloudDownloadIcon class="text-sm size-[1em]" style="color:#915BD8" />
+      <CloudDownloadIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
       <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Descarga de XM</span>
     </div>
 
@@ -67,7 +67,7 @@
         </div>
 
         <div class="mt-4">
-          <Button label="Descargar y unificar" :loading="enProceso" :disabled="!formularioValido || enProceso" @click="onDescargar" style="background:#915BD8;border-color:#915BD8">
+          <Button label="Descargar y unificar" :loading="enProceso" :disabled="!formularioValido || enProceso" @click="onDescargar" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
             <template #icon><DownloadIcon class="size-[1em]" /></template>
           </Button>
         </div>
@@ -75,22 +75,22 @@
 
       <div v-if="estado" class="rounded-xl border p-4" style="border-color:#ECE7F2">
         <div v-if="estado.estado === 'descargando'" class="text-sm text-gray-600">
-          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:#915BD8" />
+          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:var(--color-unergy-purple)" />
           Descargando archivos… {{ estado.archivos_procesados }}/{{ estado.archivos_totales }}
         </div>
 
         <div v-else-if="estado.estado === 'unificando'" class="text-sm text-gray-600">
-          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:#915BD8" />
+          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:var(--color-unergy-purple)" />
           Unificando archivos…
         </div>
 
         <div v-else-if="estado.estado === 'exportando'" class="text-sm text-gray-600">
-          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:#915BD8" />
+          <LoaderCircleIcon class="mr-2 size-[1em] animate-spin" style="color:var(--color-unergy-purple)" />
           Generando el archivo final… con rangos grandes puede tardar uno o dos minutos.
         </div>
 
         <div v-else-if="estado.estado === 'listo'" class="space-y-2">
-          <div class="text-sm font-semibold" style="color:#2C2039">Listo</div>
+          <div class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Listo</div>
           <div v-if="estado.archivos_faltantes?.length" class="text-xs text-amber-600">
             {{ estado.archivos_faltantes.length }} archivo(s) no encontrados en el FTP para el rango.
           </div>
@@ -295,7 +295,7 @@ onBeforeUnmount(detenerPolling)
 }
 .xm-input:focus {
   outline: none;
-  border-color: #915bd8;
+  border-color: var(--color-unergy-purple);
   box-shadow: 0 0 0 2px rgba(145, 91, 216, 0.15);
 }
 </style>

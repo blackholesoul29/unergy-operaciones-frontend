@@ -122,7 +122,7 @@ const hayRepetidas = computed(() => metricasOrigen.value.some(m => yaExiste(m.no
 
 .rq-chip-metrica {
   font-size: 10px; font-weight: 600;
-  background: #f0ebfd; color: #915BD8;
+  background: #f0ebfd; color: var(--color-unergy-purple);
   padding: 1px 7px; border-radius: 999px;
 }
 .rq-chip-repetida {

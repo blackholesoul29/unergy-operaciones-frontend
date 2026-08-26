@@ -30,7 +30,7 @@
       <!-- 1. Gráfica de tendencia -->
       <div class="bg-white rounded-xl shadow-sm p-4 space-y-3" style="border:1px solid #e8e0f0">
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <h3 class="text-sm font-semibold" style="color:#2C2039">Tendencia histórica</h3>
+          <h3 class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Tendencia histórica</h3>
           <div class="flex flex-wrap items-center gap-3">
             <div class="flex gap-1">
               <button v-for="r in rangos" :key="r.key"
@@ -38,7 +38,7 @@
                 @click="rangoActivo = r.key"
                 class="px-3 py-1 text-xs rounded-lg font-medium transition-colors"
                 :style="rangoActivo === r.key
-                  ? 'background:#915BD8;color:white'
+                  ? 'background:var(--color-unergy-purple);color:white'
                   : 'color:#6b5a8a;border:1px solid #e8e0f0'">
                 {{ r.label }}
               </button>
@@ -67,12 +67,12 @@
             class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/60 transition-colors"
             @click="toggleMes(grupo.mes)">
             <span class="flex items-center gap-2">
-              <ChevronDownIcon v-if="mesesAbiertos[grupo.mes]" class="text-xs size-[1em]" style="color:#915BD8" />
-              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color:#915BD8" />
-              <span class="text-sm font-semibold capitalize" style="color:#2C2039">{{ grupo.label }}</span>
+              <ChevronDownIcon v-if="mesesAbiertos[grupo.mes]" class="text-xs size-[1em]" style="color:var(--color-unergy-purple)" />
+              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color:var(--color-unergy-purple)" />
+              <span class="text-sm font-semibold capitalize" style="color:var(--color-unergy-deep)">{{ grupo.label }}</span>
             </span>
             <span class="text-[11px] font-medium px-2 py-0.5 rounded-full"
-              style="background:#f3f0f7;color:#915BD8">
+              style="background:#f3f0f7;color:var(--color-unergy-purple)">
               {{ grupo.registros.length }} {{ grupo.registros.length === 1 ? 'reporte' : 'reportes' }}
             </span>
           </button>
@@ -82,16 +82,16 @@
             <div v-for="r in grupo.registros" :key="r.id"
               style="border-bottom:1px solid #f0ebf7">
               <div class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50/50">
-                <span class="text-sm tabular-nums w-24 shrink-0" style="color:#2C2039">{{ r.fecha }}</span>
+                <span class="text-sm tabular-nums w-24 shrink-0" style="color:var(--color-unergy-deep)">{{ r.fecha }}</span>
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0"
                   :style="tipoBadge(r.tipo)">
                   {{ r.tipo }}
                 </span>
-                <span class="flex-1 text-right tabular-nums font-semibold text-sm" style="color:#2C2039">
+                <span class="flex-1 text-right tabular-nums font-semibold text-sm" style="color:var(--color-unergy-deep)">
                   {{ cifraClave(r) }}
                 </span>
                 <div class="flex items-center gap-0.5 shrink-0">
-                  <Button v-if="r.snapshot" text rounded size="small" severity="secondary" v-tooltip.top="'Ver hoja madre'" :style="snapshotAbierto === r.id ? 'color:#915BD8' : ''" @click="toggleSnapshot(r.id)">
+                  <Button v-if="r.snapshot" text rounded size="small" severity="secondary" v-tooltip.top="'Ver hoja madre'" :style="snapshotAbierto === r.id ? 'color:var(--color-unergy-purple)' : ''" @click="toggleSnapshot(r.id)">
                     <template #icon><EyeIcon class="size-[1em]" /></template>
                   </Button>
                   <Button v-else text rounded size="small" severity="secondary" disabled v-tooltip.top="'Sin detalle guardado'">

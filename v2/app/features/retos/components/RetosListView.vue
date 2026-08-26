@@ -150,7 +150,7 @@ onMounted(cargar)
   display: grid;
   place-items: center;
   background: rgba(145, 91, 216, 0.12);
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   font-size: 17px;
 }
 
@@ -171,7 +171,7 @@ onMounted(cargar)
   height: 100%;
   width: 38%;
   border-radius: 999px;
-  background: #915BD8;
+  background: var(--color-unergy-purple);
   animation: rq-indeterminada 1.1s ease-in-out infinite;
 }
 @keyframes rq-indeterminada {

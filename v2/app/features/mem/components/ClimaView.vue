@@ -6,7 +6,7 @@
     <!-- No data banner -->
     <div v-if="!oniData.length && !priceData.length" class="rounded-xl p-4 flex items-center gap-3"
          style="background: rgba(145,91,216,0.06); border: 1px solid rgba(145,91,216,0.15);">
-      <InfoIcon class="size-[1em]" style="color: #915BD8;" />
+      <InfoIcon class="size-[1em]" style="color: var(--color-unergy-purple);" />
       <p class="text-sm" style="color: #6b5a8a;">Datos climáticos no disponibles — EVO API no configurada. Se mostrarán cuando el servicio esté activo.</p>
     </div>
 
@@ -16,7 +16,7 @@
            class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
         <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ kpi.label }}</p>
         <p class="text-2xl font-bold mt-1" :style="{ color: kpi.color }">{{ kpi.value }}</p>
-        <p v-if="kpi.sub" class="text-xs mt-0.5" style="color: #915BD8;">{{ kpi.sub }}</p>
+        <p v-if="kpi.sub" class="text-xs mt-0.5" style="color: var(--color-unergy-purple);">{{ kpi.sub }}</p>
       </div>
     </div>
 
@@ -25,7 +25,7 @@
       <button v-for="(tab, i) in TABS" :key="tab" @click="activeTab = i"
               class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
               :style="activeTab === i
-                ? { backgroundColor: '#915BD8', color: 'white' }
+                ? { backgroundColor: 'var(--color-unergy-purple)', color: 'white' }
                 : { color: '#6b5a8a' }">
         {{ tab }}
       </button>
@@ -33,7 +33,7 @@
 
     <!-- Tab 0: ONI Timeline -->
     <div v-if="activeTab === 0" class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
-      <h3 class="text-sm font-semibold mb-4" style="color: #2C2039;">Índice ONI (Oceanic Niño Index)</h3>
+      <h3 class="text-sm font-semibold mb-4" style="color: var(--color-unergy-deep);">Índice ONI (Oceanic Niño Index)</h3>
       <div class="overflow-x-auto">
         <svg viewBox="0 0 900 250" class="w-full" style="min-width: 600px;">
           <!-- Background bands -->
@@ -47,7 +47,7 @@
           <line x1="40" :y1="oniToY(-0.5)" x2="880" :y2="oniToY(-0.5)" stroke="#3B82F6" stroke-width="0.5" stroke-dasharray="2" />
 
           <!-- ONI line -->
-          <polyline v-if="oniPoints.length" :points="oniPointsStr" fill="none" stroke="#915BD8" stroke-width="1.5" />
+          <polyline v-if="oniPoints.length" :points="oniPointsStr" fill="none" stroke="var(--color-unergy-purple)" stroke-width="1.5" />
 
           <!-- Y axis labels -->
           <text x="35" :y="oniToY(2) + 4" fill="#D64455" font-size="9" text-anchor="end">2.0</text>
@@ -73,7 +73,7 @@
     <!-- Tab 1: Price vs ENSO -->
     <div v-if="activeTab === 1" class="space-y-4">
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
-        <h3 class="text-sm font-semibold mb-4" style="color: #2C2039;">Precio Energía vs Fase ENSO (26 años)</h3>
+        <h3 class="text-sm font-semibold mb-4" style="color: var(--color-unergy-deep);">Precio Energía vs Fase ENSO (26 años)</h3>
         <div class="overflow-x-auto">
           <svg viewBox="0 0 900 280" class="w-full" style="min-width: 600px;">
             <!-- ENSO phase backgrounds -->
@@ -83,7 +83,7 @@
             </template>
 
             <!-- Price line -->
-            <polyline v-if="pricePoints.length" :points="pricePointsStr" fill="none" stroke="#915BD8" stroke-width="1.5" />
+            <polyline v-if="pricePoints.length" :points="pricePointsStr" fill="none" stroke="var(--color-unergy-purple)" stroke-width="1.5" />
 
             <!-- Y axis -->
             <template v-for="tick in priceTicks" :key="tick">
@@ -105,9 +105,9 @@
              class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
           <div class="flex items-center gap-2 mb-2">
             <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: phase.color }" />
-            <h4 class="text-sm font-semibold" style="color: #2C2039;">{{ phase.name }}</h4>
+            <h4 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">{{ phase.name }}</h4>
           </div>
-          <p class="text-3xl font-bold" style="color: #2C2039;">${{ phase.avgPrice }}</p>
+          <p class="text-3xl font-bold" style="color: var(--color-unergy-deep);">${{ phase.avgPrice }}</p>
           <p class="text-xs" style="color: #6b5a8a;">COP/kWh promedio · {{ phase.count }} meses</p>
         </div>
       </div>
@@ -116,7 +116,7 @@
     <!-- Tab 2: Precipitation -->
     <div v-if="activeTab === 2" class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-sm font-semibold" style="color: #2C2039;">Precipitación Región Andina</h3>
+        <h3 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Precipitación Región Andina</h3>
         <select v-model="precipRegion" @change="loadPrecip"
                 class="text-sm px-3 py-1.5 rounded-lg border" style="border-color: #e8e0f0;">
           <option v-for="r in REGIONS" :key="r" :value="r">{{ r }}</option>
@@ -146,18 +146,18 @@
       <div class="grid grid-cols-3 gap-4 mt-4">
         <div class="p-3 rounded-lg" style="background: #f8f6fb;">
           <p class="text-xs" style="color: #6b5a8a;">Último mes</p>
-          <p class="text-lg font-bold" style="color: #2C2039;">{{ precipStats.lastMonth }} mm</p>
+          <p class="text-lg font-bold" style="color: var(--color-unergy-deep);">{{ precipStats.lastMonth }} mm</p>
           <p class="text-xs" :style="{ color: precipStats.lastAnomaly > 0 ? '#3B82F6' : '#F0C040' }">
             {{ precipStats.lastAnomaly > 0 ? '+' : '' }}{{ precipStats.lastAnomaly }}%
           </p>
         </div>
         <div class="p-3 rounded-lg" style="background: #f8f6fb;">
           <p class="text-xs" style="color: #6b5a8a;">Promedio 12m</p>
-          <p class="text-lg font-bold" style="color: #2C2039;">{{ precipStats.avg12m }} mm</p>
+          <p class="text-lg font-bold" style="color: var(--color-unergy-deep);">{{ precipStats.avg12m }} mm</p>
         </div>
         <div class="p-3 rounded-lg" style="background: #f8f6fb;">
           <p class="text-xs" style="color: #6b5a8a;">Climatología</p>
-          <p class="text-lg font-bold" style="color: #2C2039;">{{ precipStats.climatology }} mm</p>
+          <p class="text-lg font-bold" style="color: var(--color-unergy-deep);">{{ precipStats.climatology }} mm</p>
         </div>
       </div>
     </div>

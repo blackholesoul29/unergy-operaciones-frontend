@@ -9,7 +9,7 @@
             class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
             <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
           </button>
-          <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
+          <span class="text-sm font-semibold" style="color:var(--color-unergy-deep); min-width:100px; text-align:center">
             {{ periodoLabel }}
           </span>
           <button type="button" @click="cambiarMes(1)"
@@ -36,10 +36,10 @@
             </label>
           </div>
         </div>
-        <Button label="IPC" size="small" outlined @click="showIPCDialog = true" style="border-color:#915BD8;color:#915BD8">
+        <Button label="IPC" size="small" outlined @click="showIPCDialog = true" style="border-color:var(--color-unergy-purple);color:var(--color-unergy-purple)">
           <template #icon><ChartLineIcon class="size-[1em]" /></template>
         </Button>
-        <Button label="Guardar selección" size="small" :loading="guardando" style="background:#915BD8;border-color:#915BD8" @click="guardarSeleccion">
+        <Button label="Guardar selección" size="small" :loading="guardando" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)" @click="guardarSeleccion">
           <template #icon><SaveIcon class="size-[1em]" /></template>
         </Button>
       </div>
@@ -171,14 +171,14 @@
                   class="accent-purple-600" />
               </td>
               <!-- Proyecto: se mantiene a opacidad completa aunque no sea facturable, para que el nombre siga siendo legible -->
-              <td class="px-4 py-2 font-medium" style="color:#2C2039; white-space:nowrap">
+              <td class="px-4 py-2 font-medium" style="color:var(--color-unergy-deep); white-space:nowrap">
                 <span class="block text-[11px] leading-tight"
                       :class="fila.codigo_tsf ? 'text-gray-400' : 'text-gray-300'">
                   {{ fila.codigo_tsf || '—' }}
                 </span>
                 <button v-if="fila.proyecto_id" type="button"
                         class="text-left hover:underline"
-                        style="color:#2C2039"
+                        style="color:var(--color-unergy-deep)"
                         @click="irADetalleProyecto(fila)"
                         v-tooltip.bottom="'Ver detalle del proyecto'">
                   {{ fila.nombre_proyecto }}
@@ -234,7 +234,7 @@
                 <!-- Valor a facturar: SOLO LECTURA (se edita en Proyecto>Detalle>Servicios) -->
                 <div class="flex items-center justify-end gap-1.5">
                   <span class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                    <InfoIcon class="text-[11px] cursor-pointer size-[1em]" v-if="fila.habilitado" style="color:#915BD8" title="Ver cálculo" @click="mostrarInfo($event, fila)" />
+                    <InfoIcon class="text-[11px] cursor-pointer size-[1em]" v-if="fila.habilitado" style="color:var(--color-unergy-purple)" title="Ver cálculo" @click="mostrarInfo($event, fila)" />
                   </span>
                   <!-- Indicador de modificación manual (histórico) -->
                   <span v-if="esManual(fila)" title="Valor modificado manualmente"
@@ -298,11 +298,11 @@
         <div class="flex items-center gap-6 ml-auto">
           <div class="text-right">
             <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Subtotal Facturado</p>
-            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalSeleccionado) }}</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:var(--color-unergy-deep)">{{ formatCOP(totalSeleccionado) }}</p>
           </div>
           <div class="text-right">
             <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">IVA (19%)</p>
-            <p class="text-sm font-semibold tabular-nums" style="color:#2C2039">{{ formatCOP(totalIVASeleccionado) }}</p>
+            <p class="text-sm font-semibold tabular-nums" style="color:var(--color-unergy-deep)">{{ formatCOP(totalIVASeleccionado) }}</p>
           </div>
           <div class="text-right">
             <p class="text-[10px] font-medium text-gray-400 uppercase tracking-wide">Total</p>
@@ -339,7 +339,7 @@
       <a v-else-if="facturaProveedor.enlace_pdf"
         :href="facturaProveedor.enlace_pdf" target="_blank" rel="noopener"
         class="flex items-center gap-1 text-xs font-medium hover:underline flex-shrink-0"
-        style="color:#915BD8">
+        style="color:var(--color-unergy-purple)">
         <ExternalLinkIcon class="text-xs size-[1em]" />Ver
       </a>
     </div>
@@ -359,13 +359,13 @@
       <template #footer>
         <Button label="Cancelar" text @click="showExclusionDialog = false" />
         <Button label="Guardar" :disabled="!exclusionValida" @click="confirmarExclusiones"
-          style="background:#915BD8;border-color:#915BD8" />
+          style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)" />
       </template>
     </Dialog>
 
     <!-- ── Popover: desglose del cálculo ──────────────────────────────── -->
     <Popover ref="infoPopover">
-      <div v-if="filaInfo" class="text-xs" style="min-width:280px; color:#2C2039">
+      <div v-if="filaInfo" class="text-xs" style="min-width:280px; color:var(--color-unergy-deep)">
         <p class="font-semibold mb-2 flex items-center gap-1.5" style="color:#7c3aed">
           <ChartColumnIcon class="text-[11px] size-[1em]" /> Cálculo del Valor a Facturar
         </p>
@@ -418,7 +418,7 @@
             <p v-if="filaInfo.valor_manual_desactualizado" class="mt-0.5" style="color:#b91c1c">
               El valor manual ya no coincide con el recalculado — revísalo.
             </p>
-            <button type="button" class="mt-1 underline" style="color:#915BD8"
+            <button type="button" class="mt-1 underline" style="color:var(--color-unergy-purple)"
               @click="revertirCalculado(filaInfo)">
               Revertir a calculado
             </button>
@@ -467,7 +467,7 @@
               <InputText v-model="ipcForm.fuente" class="w-full" placeholder="DANE" />
             </div>
           </div>
-          <Button label="Guardar tasa" size="small" :loading="guardandoIPC" @click="guardarIPC" style="background:#915BD8;border-color:#915BD8">
+          <Button label="Guardar tasa" size="small" :loading="guardandoIPC" @click="guardarIPC" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
         </div>

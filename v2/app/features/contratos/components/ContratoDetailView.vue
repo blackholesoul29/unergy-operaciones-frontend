@@ -8,8 +8,8 @@
         <Tag value="PPA" severity="warn" class="text-[10px]" />
         <Tag :value="(contrato.tipo_contrato === 'compra') ? 'Compra' : 'Venta'"
           :style="(contrato.tipo_contrato === 'compra')
-            ? 'background:#915BD8;color:#fff'
-            : 'background:#F6FF72;color:#2C2039'" class="text-[10px]" />
+            ? 'background:var(--color-unergy-purple);color:#fff'
+            : 'background:var(--color-unergy-yellow);color:var(--color-unergy-deep)'" class="text-[10px]" />
       </template>
       <template #acciones>
         <!-- Atajo al contrato: el enlace se guarda en la pestaña Datos -->
@@ -64,7 +64,7 @@
         <!-- ── Identificación ────────────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#915BD818"><IdCardIcon class="size-[1em]" style="color:#915BD8" /></span>
+            <span class="cd-ico" style="background:#915BD818"><IdCardIcon class="size-[1em]" style="color:var(--color-unergy-purple)" /></span>
             <h3 class="cd-sec-title">Identificación</h3>
             <div class="cd-sec-act">
               <Button v-if="!editandoId" label="Editar" size="small" text severity="secondary" @click="iniciarEdicionId">
@@ -89,7 +89,7 @@
                 <span class="cd-campo-lbl">Comunidad energética</span>
                 <div>
                   <Tag v-if="contrato.es_comunidad_energetica" severity="success" value="🏘 Sí" class="text-[10px]" />
-                  <span v-else class="text-sm" style="color:#2C2039">{{ contrato.es_comunidad_energetica === false ? 'No' : '—' }}</span>
+                  <span v-else class="text-sm" style="color:var(--color-unergy-deep)">{{ contrato.es_comunidad_energetica === false ? 'No' : '—' }}</span>
                 </div>
               </div>
             </div>
@@ -184,7 +184,7 @@
                   <Tag v-if="contrato.renovacion_automatica != null"
                     :severity="contrato.renovacion_automatica ? 'success' : 'secondary'"
                     :value="contrato.renovacion_automatica ? 'Sí' : 'No'" class="text-[10px]" />
-                  <span v-else class="text-sm" style="color:#2C2039">—</span>
+                  <span v-else class="text-sm" style="color:var(--color-unergy-deep)">—</span>
                 </div>
               </div>
             </div>
@@ -210,7 +210,7 @@
                 :value="contrato.tiempo_pago != null ? String(contrato.tiempo_pago) : null" />
               <div v-if="contrato.condiciones_pago" class="cd-ancho flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Condiciones de pago</span>
-                <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.condiciones_pago }}</span>
+                <span class="text-sm whitespace-pre-line" style="color:var(--color-unergy-deep)">{{ contrato.condiciones_pago }}</span>
               </div>
             </div>
           </div>
@@ -334,19 +334,19 @@
           <div class="cd-sec-body space-y-3">
             <div v-if="contrato.service_scope" class="flex flex-col gap-0.5">
               <span class="cd-campo-lbl">Alcance del servicio</span>
-              <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.service_scope }}</span>
+              <span class="text-sm whitespace-pre-line" style="color:var(--color-unergy-deep)">{{ contrato.service_scope }}</span>
             </div>
             <div v-if="contrato.specific_service_terms" class="flex flex-col gap-0.5">
               <span class="cd-campo-lbl">Términos específicos del servicio</span>
-              <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.specific_service_terms }}</span>
+              <span class="text-sm whitespace-pre-line" style="color:var(--color-unergy-deep)">{{ contrato.specific_service_terms }}</span>
             </div>
             <div v-if="contrato.slas" class="flex flex-col gap-0.5">
               <span class="cd-campo-lbl">SLAs (Acuerdos de nivel de servicio)</span>
-              <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.slas }}</span>
+              <span class="text-sm whitespace-pre-line" style="color:var(--color-unergy-deep)">{{ contrato.slas }}</span>
             </div>
             <div v-if="contrato.responsibilities" class="flex flex-col gap-0.5">
               <span class="cd-campo-lbl">Responsabilidades</span>
-              <span class="text-sm whitespace-pre-line" style="color:#2C2039">{{ contrato.responsibilities }}</span>
+              <span class="text-sm whitespace-pre-line" style="color:var(--color-unergy-deep)">{{ contrato.responsibilities }}</span>
             </div>
           </div>
         </section>
@@ -798,7 +798,7 @@
 
         <div v-if="contrato.proyectos?.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <router-link v-for="p in proyectosOrdenados" :key="p.id" :to="`/proyectos/${p.id}`" class="cd-proy">
-            <span class="cd-ico" style="background:#915BD818"><ZapIcon class="size-[1em]" style="color:#915BD8" /></span>
+            <span class="cd-ico" style="background:#915BD818"><ZapIcon class="size-[1em]" style="color:var(--color-unergy-purple)" /></span>
             <div class="min-w-0 flex-1">
               <p class="cd-proy-nom">{{ p.nombre_comercial }}</p>
               <p class="cd-proy-id">ID {{ p.id }}</p>
@@ -1501,7 +1501,7 @@ onMounted(cargar)
 <style scoped>
 /*
   Paleta y formas heredadas de las otras vistas de detalle (Cliente / Proyecto)
-  y de Operación: tarjeta blanca con borde lila, cabecera #faf8fd, texto #2C2039,
+  y de Operación: tarjeta blanca con borde lila, cabecera #faf8fd, texto var(--color-unergy-deep),
   etiquetas #9b89b5 y un chip de ícono de color por sección. Antes esta pestaña
   era una lista plana de campos separados por <Divider> con títulos ámbar, que
   no se parecía a ninguna otra pantalla de la plataforma.
@@ -1518,7 +1518,7 @@ onMounted(cargar)
   color: #9b89b5; margin-bottom: 3px;
 }
 .cd-stat-val {
-  font-size: 15px; font-weight: 700; color: #2C2039; line-height: 1.25;
+  font-size: 15px; font-weight: 700; color: var(--color-unergy-deep); line-height: 1.25;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 /* Los valores llegan en minúscula de la BD ("mensual"). `capitalize` a secas
@@ -1540,7 +1540,7 @@ onMounted(cargar)
 }
 .cd-sec-title {
   font-size: 12px; font-weight: 700; letter-spacing: .03em;
-  text-transform: uppercase; color: #2C2039;
+  text-transform: uppercase; color: var(--color-unergy-deep);
 }
 .cd-sec-act { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 .cd-sec-body { padding: 14px; }
@@ -1575,7 +1575,7 @@ onMounted(cargar)
   font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
   color: #9b89b5; margin-bottom: 3px;
 }
-.cd-parte-nom { font-size: 13px; font-weight: 600; color: #2C2039; }
+.cd-parte-nom { font-size: 13px; font-weight: 600; color: var(--color-unergy-deep); }
 .cd-parte-nit {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px; color: #9b8fb0; margin-top: 1px;
@@ -1613,9 +1613,9 @@ onMounted(cargar)
 .cd-toolbar-titulo {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 700; letter-spacing: .03em;
-  text-transform: uppercase; color: #2C2039;
+  text-transform: uppercase; color: var(--color-unergy-deep);
 }
-.cd-toolbar-titulo svg { font-size: 11px; color: #915BD8; }
+.cd-toolbar-titulo svg { font-size: 11px; color: var(--color-unergy-purple); }
 .cd-toolbar-act { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .cd-toolbar-nota { font-size: 11px; color: #9b89b5; }
 
@@ -1625,10 +1625,10 @@ onMounted(cargar)
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-variant-numeric: tabular-nums;
 }
-.cd-fuerte { font-weight: 600; color: #2C2039; }
+.cd-fuerte { font-weight: 600; color: var(--color-unergy-deep); }
 .cd-tarifa { font-weight: 600; color: #b45309; }
 .cd-nulo { color: #c5b9db; }
-.cd-enlace { font-weight: 500; color: #915BD8; }
+.cd-enlace { font-weight: 500; color: var(--color-unergy-purple); }
 .cd-enlace:hover { text-decoration: underline; text-underline-offset: 2px; }
 
 /* PrimeVue renderiza la tabla fuera del alcance de :scoped: hace falta :deep */
@@ -1638,7 +1638,7 @@ onMounted(cargar)
   border-bottom: 1px solid #ECE7F2; padding: 8px 12px;
 }
 .cd-tabla :deep(.p-datatable-tbody > tr > td) {
-  padding: 8px 12px; border-bottom: 1px solid #f6f2fb; color: #2C2039;
+  padding: 8px 12px; border-bottom: 1px solid #f6f2fb; color: var(--color-unergy-deep);
 }
 .cd-tabla :deep(.p-datatable-tbody > tr:last-child > td) { border-bottom: none; }
 .cd-tabla :deep(.p-datatable-tbody > tr.p-row-odd) { background: #fdfcfe; }
@@ -1680,7 +1680,7 @@ onMounted(cargar)
   font-size: 10px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
   padding: 7px 12px; border-bottom: 1px solid #ECE7F2;
 }
-.cd-preview td { padding: 6px 12px; border-bottom: 1px solid #f6f2fb; color: #2C2039; }
+.cd-preview td { padding: 6px 12px; border-bottom: 1px solid #f6f2fb; color: var(--color-unergy-deep); }
 .cd-preview tr:last-child td { border-bottom: none; }
 .cd-preview .cd-der { text-align: right; }
 .cd-preview-mas { color: #c5b9db; font-style: italic; }
@@ -1708,7 +1708,7 @@ onMounted(cargar)
 }
 .cd-proy:hover { border-color: #d9c9f5; background: #fdfcfe; }
 .cd-proy-nom {
-  font-size: 13px; font-weight: 600; color: #2C2039;
+  font-size: 13px; font-weight: 600; color: var(--color-unergy-deep);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .cd-proy-id {
@@ -1716,5 +1716,5 @@ onMounted(cargar)
   font-size: 11px; color: #9b8fb0;
 }
 .cd-proy-chev { font-size: 10px; color: #c5b9db; flex-shrink: 0; }
-.cd-proy:hover .cd-proy-chev { color: #915BD8; }
+.cd-proy:hover .cd-proy-chev { color: var(--color-unergy-purple); }
 </style>

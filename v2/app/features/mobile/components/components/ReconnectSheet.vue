@@ -138,7 +138,7 @@ async function submit() {
 .rs-badge { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 7px; letter-spacing: .5px; }
 .rs-badge--on  { background: #dcfce7; color: #15803d; }
 .rs-badge--off { background: #fee2e2; color: #b91c1c; }
-.rs-title { flex: 1; font-size: 15px; font-weight: 700; color: #2C2039; }
+.rs-title { flex: 1; font-size: 15px; font-weight: 700; color: var(--color-unergy-deep); }
 .rs-close { background: none; border: none; color: #9ca3af; font-size: 16px; padding: 4px; }
 
 .rs-action-sel { display: flex; gap: 10px; margin-bottom: 14px; }
@@ -154,9 +154,9 @@ async function submit() {
 .rs-label { display: block; font-size: 12px; font-weight: 600; color: #6b5a8a; margin-bottom: 12px; }
 .rs-input {
   width: 100%; margin-top: 6px; padding: 13px 14px; font-size: 16px;
-  border: 1.5px solid #e8e0f0; border-radius: 12px; color: #2C2039; background: #fff;
+  border: 1.5px solid #e8e0f0; border-radius: 12px; color: var(--color-unergy-deep); background: #fff;
 }
-.rs-input:focus { outline: none; border-color: #915BD8; }
+.rs-input:focus { outline: none; border-color: var(--color-unergy-purple); }
 
 .rs-error {
   display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b91c1c;

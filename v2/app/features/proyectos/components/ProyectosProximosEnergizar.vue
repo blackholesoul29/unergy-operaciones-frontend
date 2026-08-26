@@ -75,7 +75,7 @@
         <template #empty>
           <div class="text-center py-8 text-sm" style="color: rgba(44,32,57,0.45);">
             <template v-if="loading">
-              <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.2rem; color:#915BD8;" />
+              <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.2rem; color:var(--color-unergy-purple);" />
               <p class="mt-2">Cargando proyectos del pipeline…</p>
             </template>
             <template v-else-if="warning">
@@ -125,7 +125,7 @@
         <!-- Construction progress (Sun Factory, read-only) -->
         <Column header="% Obra" style="min-width: 90px;">
           <template #body="{ data }">
-            <span v-if="data.avancePct != null" class="text-sm font-mono tabular-nums" style="color: #2C2039;">
+            <span v-if="data.avancePct != null" class="text-sm font-mono tabular-nums" style="color: var(--color-unergy-deep);">
               {{ Number(data.avancePct).toFixed(1) }}%
             </span>
             <span v-else class="text-sm" style="color: rgba(44,32,57,0.3);">—</span>
@@ -446,7 +446,7 @@ function isProrated(project, year, month) {
   border-color: rgba(22,163,74,0.4);
 }
 .stat-pill.clickable svg { color: #15803d; }
-.stat-num { font-size: 15px; font-weight: 800; color: #2C2039; font-variant-numeric: tabular-nums; }
+.stat-num { font-size: 15px; font-weight: 800; color: var(--color-unergy-deep); font-variant-numeric: tabular-nums; }
 .stat-label { color: #7a6e8a; white-space: nowrap; }
 
 /* Nombres largos: no cortar sin avisar -- el tooltip muestra el valor entero. */
@@ -471,7 +471,7 @@ function isProrated(project, year, month) {
 :deep(.energ-table .p-datatable-tbody td) {
   padding: 6px 10px;
   font-size: 13px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   vertical-align: middle;
 }
 
@@ -511,7 +511,7 @@ function isProrated(project, year, month) {
   text-align: center;
 }
 .month-chip .m { font-size: 9.5px; text-transform: uppercase; color: #9b89b5; letter-spacing: 0.04em; }
-.month-chip .v { font-size: 13px; font-weight: 700; margin-top: 2px; color: #2C2039; font-variant-numeric: tabular-nums; }
+.month-chip .v { font-size: 13px; font-weight: 700; margin-top: 2px; color: var(--color-unergy-deep); font-variant-numeric: tabular-nums; }
 .month-chip.zero .v { color: rgba(44,32,57,0.3); font-weight: 500; }
 .month-chip.partial { background: rgba(240,192,64,0.15); border-color: rgba(240,192,64,0.4); }
 .month-chip.partial .v { color: #9a6700; }

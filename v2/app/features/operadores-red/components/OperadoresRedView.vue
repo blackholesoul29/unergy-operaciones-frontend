@@ -9,14 +9,14 @@
     </PageHeader>
 
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
     </div>
 
     <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
       <DataTable :value="operadores" rowHover class="text-sm">
         <Column field="nombre_comercial" header="Nombre comercial" sortable>
           <template #body="{ data }">
-            <span style="color: #2C2039; font-weight: 600;">{{ data.nombre_comercial || '—' }}</span>
+            <span style="color: var(--color-unergy-deep); font-weight: 600;">{{ data.nombre_comercial || '—' }}</span>
           </template>
         </Column>
         <Column field="nombre_legal" header="Nombre legal" sortable>
@@ -35,7 +35,7 @@
         <Column header="Fronteras vinculadas">
           <template #body="{ data }">
             <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
-              style="background: rgba(145,91,216,0.1); color: #6E3FB8;">
+              style="background: rgba(145,91,216,0.1); color: var(--color-unergy-purple-dark);">
               {{ data.fronteras_vinculadas }}
             </span>
           </template>

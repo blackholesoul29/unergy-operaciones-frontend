@@ -297,7 +297,7 @@
                   <td class="l"><span class="tag">{{ f.comprador || '—' }}</span></td>
                   <td>{{ f.minimo_mwh != null ? fmtNum(f.minimo_mwh) : '—' }}</td>
                   <td class="fw">{{ fmtNum(f.despachado_mwh) }}</td>
-                  <td :style="{ color: f.estado === 'bajo_minimo' ? '#c0392b' : '#2C2039', fontWeight: 600 }">
+                  <td :style="{ color: f.estado === 'bajo_minimo' ? '#c0392b' : 'var(--color-unergy-deep)', fontWeight: 600 }">
                     {{ f.pct != null ? f.pct + '%' : '—' }}
                   </td>
                   <td :style="{ color: f.faltante_kwh > 0 ? '#c0392b' : '#9b8fb0', fontWeight: f.faltante_kwh > 0 ? 600 : 400 }">
@@ -386,7 +386,7 @@
       <!-- ═══ 4. IPP ═══ -->
       <template v-else-if="sub === 'ipp'">
         <div class="fac-card p-4">
-          <p class="text-sm font-bold mb-1" style="color:#2C2039">IPP del mes — {{ formatPeriodo(periodo) }}</p>
+          <p class="text-sm font-bold mb-1" style="color:var(--color-unergy-deep)">IPP del mes — {{ formatPeriodo(periodo) }}</p>
           <p class="text-[11px] mb-3" style="color:#9b8fb0">Índice de Precios al Productor (DANE). Numerador de la indexación de las tarifas de energía.</p>
           <div class="flex items-end gap-2">
             <div>
@@ -403,7 +403,7 @@
 
         <!-- Precio de bolsa: valoriza la energía sin PPA (UNGC) -->
         <div class="fac-card p-4">
-          <p class="text-sm font-bold mb-1" style="color:#2C2039">Precio de bolsa — {{ formatPeriodo(periodo) }}</p>
+          <p class="text-sm font-bold mb-1" style="color:var(--color-unergy-deep)">Precio de bolsa — {{ formatPeriodo(periodo) }}</p>
           <p class="text-[11px] mb-3" style="color:#9b8fb0">
             Valoriza la energía de los contratos <b>sin PPA (UNGC / bolsa)</b>. <b>Lo calculas tú</b>
             (promedio horario→diario del mes) y lo cargas cada mes; la plataforma no lo calcula.
@@ -1000,8 +1000,8 @@ onMounted(load)
 .fac-subtabs { display:inline-flex; background:#F4F1FA; border:1px solid #E5E2EC; border-radius:10px; padding:3px; gap:2px; }
 .fac-subtab { display:inline-flex; align-items:center; gap:6px; background:transparent; border:none; padding:6px 12px;
   font-size:12px; font-weight:700; color:#6B5A8A; border-radius:7px; cursor:pointer; white-space:nowrap; }
-.fac-subtab.on { background:#915BD8; color:#FDFAF7; }
-.fac-subtab:focus-visible { outline:2px solid #915BD8; outline-offset:2px; }
+.fac-subtab.on { background:var(--color-unergy-purple); color:var(--color-unergy-avena); }
+.fac-subtab:focus-visible { outline:2px solid var(--color-unergy-purple); outline-offset:2px; }
 
 
 .fac-card { background:#fff; border:1px solid #e8e0f0; border-radius:14px; overflow:hidden; }
@@ -1009,9 +1009,9 @@ onMounted(load)
 .fac-kpi { background:#fff; border:1px solid #e8e0f0; border-radius:12px; padding:12px 14px; }
 .fac-kpi.hero { background:#f3ecfb; border-color:transparent; }
 .fac-kpi .k { font-size:10.5px; text-transform:uppercase; letter-spacing:.04em; color:#6b5a8a; font-weight:600; }
-.fac-kpi.hero .k { color:#6E3FB8; }
-.fac-kpi .v { font-size:18px; font-weight:800; color:#2C2039; margin-top:4px; font-variant-numeric:tabular-nums; }
-.fac-kpi.hero .v { color:#6E3FB8; }
+.fac-kpi.hero .k { color:var(--color-unergy-purple-dark); }
+.fac-kpi .v { font-size:18px; font-weight:800; color:var(--color-unergy-deep); margin-top:4px; font-variant-numeric:tabular-nums; }
+.fac-kpi.hero .v { color:var(--color-unergy-purple-dark); }
 .fac-kpi .sub2 { font-size:10.5px; color:#9b8fb0; margin-top:2px; }
 .fac-note { font-size:11.5px; color:#6b5a8a; padding:10px 12px 2px; display:flex; align-items:center; gap:6px; }
 .tblwrap { overflow-x:auto; }
@@ -1023,26 +1023,26 @@ onMounted(load)
 .dt td.l { text-align:left; white-space:normal; }
 .dt tbody tr:hover { background:#faf7ff; }
 .dt tbody tr.cur { background:#f3ecfb; }
-.dt tfoot td { padding:9px 12px; border-top:2px solid #915BD8; background:rgba(145,91,216,.06);
-  font-weight:800; color:#2C2039; text-align:right; font-variant-numeric:tabular-nums; }
+.dt tfoot td { padding:9px 12px; border-top:2px solid var(--color-unergy-purple); background:rgba(145,91,216,.06);
+  font-weight:800; color:var(--color-unergy-deep); text-align:right; font-variant-numeric:tabular-nums; }
 .dt tfoot td.l { text-align:left; }
-.proj { font-weight:600; color:#2C2039; }
+.proj { font-weight:600; color:var(--color-unergy-deep); }
 .sub2 { display:block; font-size:10.5px; color:#9b8fb0; }
 .muted { color:#9b8fb0; }
-.fw { font-weight:700; color:#2C2039; }
-.tag { display:inline-block; font-size:11px; padding:1px 7px; border-radius:6px; background:#f3ecfb; color:#6E3FB8; font-weight:600; }
+.fw { font-weight:700; color:var(--color-unergy-deep); }
+.tag { display:inline-block; font-size:11px; padding:1px 7px; border-radius:6px; background:#f3ecfb; color:var(--color-unergy-purple-dark); font-weight:600; }
 .tag.warn { background:#fbe9e7; color:#c0392b; }
 
-.fac-upload, .fac-btn { display:inline-flex; align-items:center; gap:6px; background:#915BD8; color:#fff; border:none;
+.fac-upload, .fac-btn { display:inline-flex; align-items:center; gap:6px; background:var(--color-unergy-purple); color:#fff; border:none;
   padding:7px 14px; border-radius:9px; font-size:12px; font-weight:700; cursor:pointer; }
 .fac-upload:disabled, .fac-btn:disabled { opacity:.6; cursor:default; }
 .fac-lbl { display:block; font-size:11px; color:#6b5a8a; font-weight:600; margin-bottom:3px; }
 .fac-in { width:140px; padding:6px 10px; border:1px solid #ddd6e8; border-radius:8px; font-size:13px;
   font-variant-numeric:tabular-nums; }
-.fac-link { background:none; border:none; color:#915BD8; font-weight:700; font-size:11px; cursor:pointer; text-decoration:underline; }
+.fac-link { background:none; border:none; color:var(--color-unergy-purple); font-weight:700; font-size:11px; cursor:pointer; text-decoration:underline; }
 .fac-fac-head { display:flex; align-items:center; gap:8px; padding:10px 14px; cursor:pointer; user-select:none; }
 .fac-fac-head:hover { background:#faf7ff; }
-.fac-fac-nums { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:#2C2039; font-variant-numeric:tabular-nums; }
+.fac-fac-nums { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--color-unergy-deep); font-variant-numeric:tabular-nums; }
 .fac-fac-body { border-top:1px solid #f0ebf6; padding:4px 0 0; }
 .fac-div-row { display:flex; align-items:center; gap:8px; padding:10px 14px; border-top:1px solid #f7f3fc; background:#faf7ff; flex-wrap:wrap; }
 
@@ -1050,17 +1050,17 @@ onMounted(load)
 .fac-ord { display:inline-flex; align-items:center; gap:2px; }
 .fac-ord-arrows { display:inline-flex; flex-direction:column; gap:1px; }
 .fac-grip { display:flex; align-items:center; color:#c9bede; cursor:grab; padding:2px 1px; border-radius:3px; }
-.fac-grip:hover { color:#915BD8; background:#f1eaf9; }
+.fac-grip:hover { color:var(--color-unergy-purple); background:#f1eaf9; }
 .fac-grip:active { cursor:grabbing; }
 .fac-grip svg { font-size:11px; }
 .fac-ord-b { display:flex; align-items:center; justify-content:center; width:16px; height:11px;
   padding:0; border:none; background:none; color:#b9abcf; cursor:pointer; border-radius:3px; }
 .fac-ord-b svg { font-size:9px; }
-.fac-ord-b:hover:not(:disabled) { color:#915BD8; background:#f1eaf9; }
+.fac-ord-b:hover:not(:disabled) { color:var(--color-unergy-purple); background:#f1eaf9; }
 .fac-ord-b:disabled { opacity:.3; cursor:default; }
 
 .fac-msg { display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px;
-  border:1px solid #e5e2ec; background:#fff; color:#6E3FB8; font-size:11px; font-weight:700; cursor:pointer; }
+  border:1px solid #e5e2ec; background:#fff; color:var(--color-unergy-purple-dark); font-size:11px; font-weight:700; cursor:pointer; }
 .fac-msg:hover { background:#f4f1fa; }
 
 /* Buscador de facturas */
@@ -1074,7 +1074,7 @@ onMounted(load)
 /* Acciones compactas (mensaje / imagen) como iconos, para descongestionar el header */
 .fac-acts { display:inline-flex; align-items:center; gap:2px; }
 .fac-icobtn { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px;
-  border-radius:7px; border:1px solid #e5e2ec; background:#fff; color:#6E3FB8; cursor:pointer; }
+  border-radius:7px; border:1px solid #e5e2ec; background:#fff; color:var(--color-unergy-purple-dark); cursor:pointer; }
 .fac-icobtn:hover { background:#f4f1fa; }
 .fac-icobtn svg { font-size:12px; }
 
@@ -1086,13 +1086,13 @@ onMounted(load)
 .fac-dias-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:6px; padding:8px 2px; }
 .fac-dia { display:flex; flex-direction:column; background:#fff; border:1px solid #ece5f5; border-radius:7px; padding:5px 8px; }
 .fac-dia-f { font-size:10px; color:#9b8fb0; font-weight:600; }
-.fac-dia-k { font-size:12px; color:#2C2039; font-weight:600; font-variant-numeric:tabular-nums; }
+.fac-dia-k { font-size:12px; color:var(--color-unergy-deep); font-weight:600; font-variant-numeric:tabular-nums; }
 
 /* Arrastre: la tarjeta que se mueve se atenúa y la de destino marca el borde por
    donde va a entrar, para no soltar a ciegas. */
 .fac-drag { opacity:.45; }
-.fac-drop-antes { box-shadow:inset 0 3px 0 0 #915BD8; }
-.fac-drop-despues { box-shadow:inset 0 -3px 0 0 #915BD8; }
+.fac-drop-antes { box-shadow:inset 0 3px 0 0 var(--color-unergy-purple); }
+.fac-drop-despues { box-shadow:inset 0 -3px 0 0 var(--color-unergy-purple); }
 
 /* Facturada: se atenúa sin ocultarla, y una barra lateral la hace evidente al barrer la lista. */
 .fac-emitida { border-left:3px solid #1f9d6b; }

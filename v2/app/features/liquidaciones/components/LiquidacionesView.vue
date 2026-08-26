@@ -4,7 +4,7 @@
     <!-- ══ Topbar compacto con tabs (patrón TSF) ═══════════════════ -->
     <div class="liq-topbar">
       <div class="liq-topbar-title">
-        <DollarSignIcon class="text-sm size-[1em]" style="color:#915BD8" />
+        <DollarSignIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
         <h2 class="text-base font-bold text-gray-800 whitespace-nowrap">Liquidaciones</h2>
         <span class="hidden xl:inline text-xs text-gray-500">· Estado financiero por proyecto y período</span>
       </div>
@@ -194,7 +194,7 @@ async function exportarExcel() {
 <style scoped>
 .liq-page {
   min-height: 100%;
-  background: #FDFAF7;
+  background: var(--color-unergy-avena);
 }
 .liq-topbar {
   display: flex;
@@ -236,8 +236,8 @@ async function exportarExcel() {
   white-space: nowrap;
 }
 .liq-tab svg { font-size: 12px; }
-.liq-tab:hover:not(.liq-tab--on) { color: #2C2039; background: rgba(145,91,216,.08); }
-.liq-tab--on { background: #915BD8; color: #FDFAF7; box-shadow: 0 1px 4px rgba(145,91,216,.3); }
+.liq-tab:hover:not(.liq-tab--on) { color: var(--color-unergy-deep); background: rgba(145,91,216,.08); }
+.liq-tab--on { background: var(--color-unergy-purple); color: var(--color-unergy-avena); box-shadow: 0 1px 4px rgba(145,91,216,.3); }
 
 .liq-tipo-toggle {
   display: inline-flex;
@@ -251,8 +251,8 @@ async function exportarExcel() {
   padding: 4px 10px; font-size: 11px; font-weight: 700;
   color: #6B5A8A; border-radius: 6px; cursor: pointer; transition: all .15s;
 }
-.liq-tipo-btn:hover:not(.liq-tipo-btn--on) { color: #2C2039; background: rgba(145,91,216,.08); }
-.liq-tipo-btn--on { background: #915BD8; color: #FDFAF7; box-shadow: 0 1px 4px rgba(145,91,216,.3); }
+.liq-tipo-btn:hover:not(.liq-tipo-btn--on) { color: var(--color-unergy-deep); background: rgba(145,91,216,.08); }
+.liq-tipo-btn--on { background: var(--color-unergy-purple); color: var(--color-unergy-avena); box-shadow: 0 1px 4px rgba(145,91,216,.3); }
 
 .liq-export {
   display: inline-flex; align-items: center; gap: 5px;
@@ -267,10 +267,10 @@ async function exportarExcel() {
 .liq-period-btn {
   display: inline-flex; align-items: center; justify-content: center;
   width: 26px; height: 26px; border-radius: 6px;
-  border: 1px solid #E5E2EC; background: #fff; color: #6E3FB8; cursor: pointer;
+  border: 1px solid #E5E2EC; background: #fff; color: var(--color-unergy-purple-dark); cursor: pointer;
   transition: all .15s;
 }
 .liq-period-btn:hover:not(:disabled) { background: #F4F1FA; }
 .liq-period-btn:disabled { opacity: .4; cursor: not-allowed; }
-.liq-period-label { font-size: 13px; font-weight: 700; color: #2C2039; min-width: 78px; text-align: center; }
+.liq-period-label { font-size: 13px; font-weight: 700; color: var(--color-unergy-deep); min-width: 78px; text-align: center; }
 </style>

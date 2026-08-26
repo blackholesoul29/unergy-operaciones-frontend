@@ -239,7 +239,7 @@ onMounted(() => { cargar(); fetchUnread() })
 <style scoped>
 .cf-root {
   display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden;
-  background: #f3f4f6; color: #2C2039; font-family: system-ui, -apple-system, sans-serif;
+  background: #f3f4f6; color: var(--color-unergy-deep); font-family: system-ui, -apple-system, sans-serif;
 }
 
 /* Top bar */
@@ -271,7 +271,7 @@ onMounted(() => { cargar(); fetchUnread() })
 .cf-filters { flex-shrink: 0; background: #fff; padding: 12px 14px; border-bottom: 1px solid #eceaf2; }
 .cf-search { display: flex; align-items: center; gap: 9px; background: #f1f5f9; border-radius: 12px; padding: 11px 14px; }
 .cf-search svg { color: #9ca3af; font-size: 15px; }
-.cf-search input { flex: 1; border: none; background: none; outline: none; font-size: 16px; color: #2C2039; }
+.cf-search input { flex: 1; border: none; background: none; outline: none; font-size: 16px; color: var(--color-unergy-deep); }
 .cf-clear { color: #9ca3af; }
 .cf-chips { display: flex; gap: 8px; margin-top: 11px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
 .cf-fchip {
@@ -312,7 +312,7 @@ onMounted(() => { cargar(); fetchUnread() })
 .cf-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
 .cf-card-code { font-family: ui-monospace, monospace; font-size: 12px; color: #1e40af; background: #eff6ff; padding: 1px 7px; border-radius: 6px; }
 .cf-card-estado { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 7px; }
-.cf-card-tipo { font-size: 14px; font-weight: 700; color: #2C2039; line-height: 1.25; }
+.cf-card-tipo { font-size: 14px; font-weight: 700; color: var(--color-unergy-deep); line-height: 1.25; }
 .cf-card-proj { font-size: 12.5px; color: #6b5a8a; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
 .cf-card-proj svg { font-size: 11px; color: #2563eb; }
 .cf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; }

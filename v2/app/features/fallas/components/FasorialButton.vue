@@ -331,7 +331,7 @@ function disparaDescarga(href, filename, revoke) {
   height: 52px;
   border-radius: 50%;
   border: none;
-  background: #915BD8;
+  background: var(--color-unergy-purple);
   color: #fff;
   display: flex;
   align-items: center;

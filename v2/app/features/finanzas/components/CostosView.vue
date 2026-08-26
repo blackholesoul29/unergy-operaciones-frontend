@@ -3,7 +3,7 @@
 
     <!-- ══ TAB BAR ══════════════════════════════════════════════════════════ -->
     <div class="mon-tab-bar">
-      <CreditCardIcon class="text-sm size-[1em]" style="color:#915BD8" />
+      <CreditCardIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
       <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Costos</span>
       <div class="mon-tab-group">
         <button
@@ -22,7 +22,7 @@
       <div class="flex items-center gap-2 ml-auto">
         <input type="month" v-model="exportPeriodo"
           class="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-200" />
-        <Button label="Descargar Excel" size="small" :loading="exportando" @click="onExportExcel" style="background:#915BD8;border-color:#915BD8">
+        <Button label="Descargar Excel" size="small" :loading="exportando" @click="onExportExcel" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
           <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
         </Button>
       </div>
@@ -36,8 +36,8 @@
         <!-- Header del panel — NO sticky, no hereda mon-tab-bar -->
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <CalculatorIcon class="text-sm size-[1em]" style="color:#915BD8" />
-            <span class="text-sm font-semibold" style="color:#2C2039">Panel O&amp;M Mensual</span>
+            <CalculatorIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
+            <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Panel O&amp;M Mensual</span>
           </div>
           <div class="mon-tab-group">
             <button
@@ -72,8 +72,8 @@
 
       <!-- ── 3. Selector de proyecto ────────────────────────────────────── -->
       <div class="costos-selector-bar">
-        <ZapIcon class="text-sm flex-shrink-0 size-[1em]" style="color:#915BD8" />
-        <span class="text-sm font-semibold whitespace-nowrap" style="color:#2C2039">Proyecto</span>
+        <ZapIcon class="text-sm flex-shrink-0 size-[1em]" style="color:var(--color-unergy-purple)" />
+        <span class="text-sm font-semibold whitespace-nowrap" style="color:var(--color-unergy-deep)">Proyecto</span>
         <Select
           v-model="proyectoSeleccionado"
           :options="proyectos"
@@ -95,7 +95,7 @@
 
       <!-- ── 4. Contenido del proyecto ─────────────────────────────────── -->
       <div v-if="loadingContrato" class="flex justify-center py-10">
-        <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.5rem; color:#915BD8;" />
+        <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:1.5rem; color:var(--color-unergy-purple);" />
       </div>
 
       <div v-else-if="proyectoSeleccionado" class="space-y-4 mt-3">
@@ -110,8 +110,8 @@
         <div class="rounded-xl border bg-white overflow-hidden" style="border-color:#ECE7F2">
           <div class="flex items-center justify-between px-4 py-2.5 border-b" style="border-color:#F3F0FA">
             <div class="flex items-center gap-2">
-              <UploadIcon class="text-xs size-[1em]" style="color:#915BD8" />
-              <span class="text-sm font-semibold" style="color:#2C2039">Cargar factura</span>
+              <UploadIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple)" />
+              <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Cargar factura</span>
             </div>
             <button type="button"
               class="text-xs flex items-center gap-1 text-gray-400 hover:text-purple-600 transition-colors"
@@ -212,7 +212,7 @@
               <button type="button"
                 :disabled="!puedeGuardarFactura || guardandoFactura"
                 class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all disabled:opacity-40"
-                style="background:#915BD8;color:#fff;border:none;cursor:pointer"
+                style="background:var(--color-unergy-purple);color:#fff;border:none;cursor:pointer"
                 :style="!puedeGuardarFactura || guardandoFactura ? 'cursor:not-allowed' : 'cursor:pointer'"
                 @click="guardarFactura">
                 <LoaderCircleIcon v-if="guardandoFactura" class="text-xs size-[1em] animate-spin" />
@@ -235,8 +235,8 @@
       <div class="om-panel-card">
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <BuildingIcon class="text-sm size-[1em]" style="color:#915BD8" />
-            <span class="text-sm font-semibold" style="color:#2C2039">Panel Arriendos Mensual</span>
+            <BuildingIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
+            <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Panel Arriendos Mensual</span>
           </div>
           <div class="mon-tab-group">
             <button
@@ -263,8 +263,8 @@
       <div class="om-panel-card">
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <WifiIcon class="text-sm size-[1em]" style="color:#915BD8" />
-            <span class="text-sm font-semibold" style="color:#2C2039">Starlink — Procesador de facturas PDF</span>
+            <WifiIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
+            <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Starlink — Procesador de facturas PDF</span>
           </div>
         </div>
         <div class="om-panel-body">
@@ -544,13 +544,13 @@ async function onProyectoChange() {
   white-space: nowrap;
 }
 .mon-tab svg { font-size: 12px; }
-.mon-tab:hover:not(.mon-tab--active) { color: #2C2039; background: rgba(145,91,216,.08); }
+.mon-tab:hover:not(.mon-tab--active) { color: var(--color-unergy-deep); background: rgba(145,91,216,.08); }
 .mon-tab--active {
-  background: #915BD8;
-  color: #FDFAF7;
+  background: var(--color-unergy-purple);
+  color: var(--color-unergy-avena);
   box-shadow: 0 1px 4px rgba(145,91,216,.3);
 }
-.mon-tab--active:hover { color: #FDFAF7; }
+.mon-tab--active:hover { color: var(--color-unergy-avena); }
 
 /* ── Selector de proyecto ── */
 .costos-selector-bar {

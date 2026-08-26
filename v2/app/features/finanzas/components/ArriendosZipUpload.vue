@@ -2,7 +2,7 @@
   <!-- Botón trigger -->
   <div class="inline-block">
     <input ref="zipInputRef" type="file" accept=".zip" class="hidden" @change="onZipSelected" />
-    <Button label="Cargar ZIP" size="small" outlined :loading="procesando" @click="zipInputRef.click()" style="border-color:#915BD8;color:#915BD8">
+    <Button label="Cargar ZIP" size="small" outlined :loading="procesando" @click="zipInputRef.click()" style="border-color:var(--color-unergy-purple);color:var(--color-unergy-purple)">
       <template #icon><UploadIcon class="size-[1em]" /></template>
     </Button>
   </div>
@@ -97,7 +97,7 @@
                     <RefreshCwIcon class="text-[9px] ml-1 size-[1em]" v-if="predio.yaExiste" style="color:#d97706" title="Ya existe — se reemplazará" />
                   </td>
                   <td class="px-3 py-2">
-                    <div v-if="predio.proyectoId" class="text-xs font-medium" style="color:#2C2039">
+                    <div v-if="predio.proyectoId" class="text-xs font-medium" style="color:var(--color-unergy-deep)">
                       {{ predio.proyectoNombre }}
                     </div>
                     <select v-else
@@ -155,7 +155,7 @@
         <div class="flex gap-2">
           <Button label="Cancelar" size="small" outlined severity="secondary"
             :disabled="guardando" @click="showDialog = false" />
-          <Button :label="hayDuplicados ? 'Reemplazar y guardar' : 'Confirmar y guardar'" size="small" :loading="guardando" :disabled="totalPredios === 0" @click="confirmar" style="background:#915BD8;border-color:#915BD8">
+          <Button :label="hayDuplicados ? 'Reemplazar y guardar' : 'Confirmar y guardar'" size="small" :loading="guardando" :disabled="totalPredios === 0" @click="confirmar" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
         </div>

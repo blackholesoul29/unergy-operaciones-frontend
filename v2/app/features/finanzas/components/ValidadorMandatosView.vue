@@ -2,7 +2,7 @@
   <div class="gf-page">
     <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
     <div class="mon-tab-bar">
-      <FileCheckIcon class="text-sm size-[1em]" style="color:#915BD8" />
+      <FileCheckIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
       <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Validador de Mandatos</span>
       <span class="vm-version">v8.0</span>
     </div>
@@ -962,9 +962,9 @@ onBeforeUnmount(() => {
   font-family: 'IBM Plex Mono', monospace;
 }
 
-/* ── Variables del validador: --accent adaptado a la marca (#915BD8) ──── */
+/* ── Variables del validador: --accent adaptado a la marca (var(--color-unergy-purple)) ──── */
 .vm-root {
-  --bg: #f8fafc; --accent: #915BD8; --text: #1e293b;
+  --bg: #f8fafc; --accent: var(--color-unergy-purple); --text: #1e293b;
   --err: #e11d48; --ok: #10b981; --warn: #f59e0b; --radius: 12px;
   font-family: 'IBM Plex Sans', 'Sora', system-ui, sans-serif;
   color: var(--text);
@@ -1035,5 +1035,5 @@ onBeforeUnmount(() => {
 
 .vm-root :deep(h2),
 .vm-root :deep(h3),
-.vm-root :deep(h4) { color: #2C2039; }
+.vm-root :deep(h4) { color: var(--color-unergy-deep); }
 </style>

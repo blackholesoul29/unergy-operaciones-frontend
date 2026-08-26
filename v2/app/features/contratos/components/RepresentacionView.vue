@@ -26,9 +26,9 @@
             @click="$router.push(`/proyectos/${route.params.id}`)">{{ proyectoNombre || '…' }}</span>
           <span class="mx-1.5">›</span><span>Servicios</span>
           <span class="mx-1.5">›</span>
-          <span class="font-medium" style="color:#2C2039">Representación</span>
+          <span class="font-medium" style="color:var(--color-unergy-deep)">Representación</span>
         </p>
-        <h2 class="text-lg font-bold" style="color:#2C2039">Representación CGM</h2>
+        <h2 class="text-lg font-bold" style="color:var(--color-unergy-deep)">Representación CGM</h2>
       </div>
       <div class="ml-auto flex items-center gap-2">
         <Button v-if="c" label="Eliminar" size="small" outlined severity="danger" @click="confirmarEliminar">
@@ -140,7 +140,7 @@
         <!-- ── Identificación ───────────────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#915BD818"><IdCardIcon class="size-[1em]" style="color:#915BD8" /></span>
+            <span class="cd-ico" style="background:#915BD818"><IdCardIcon class="size-[1em]" style="color:var(--color-unergy-purple)" /></span>
             <h3 class="cd-sec-title">Identificación</h3>
             <div class="cd-sec-act">
               <Button v-if="edit !== 'id'" label="Editar" size="small" text severity="secondary" @click="abrir('id')">
@@ -164,7 +164,7 @@
               <InfoField label="Proyecto según el contrato" :value="c.nombre_proyecto_ref" />
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Planta asociada</span>
-                <span v-if="c.proyecto" class="text-sm" style="color:#2C2039">
+                <span v-if="c.proyecto" class="text-sm" style="color:var(--color-unergy-deep)">
                   {{ c.proyecto.nombre_comercial }}
                 </span>
                 <span v-else class="text-sm font-semibold" style="color:#92400E">Sin proyecto</span>
@@ -293,7 +293,7 @@
                   <Tag v-if="c.renovacion_automatica != null"
                     :severity="c.renovacion_automatica ? 'success' : 'secondary'"
                     :value="c.renovacion_automatica ? 'Sí' : 'No'" class="text-[10px]" />
-                  <span v-else class="text-sm" style="color:#2C2039">—</span>
+                  <span v-else class="text-sm" style="color:var(--color-unergy-deep)">—</span>
                 </div>
               </div>
             </div>
@@ -367,7 +367,7 @@
                   class="text-sm inline-flex items-center gap-1 hover:underline" style="color:#3b82f6">
                   <ExternalLinkIcon class="text-[10px] size-[1em]" />Ver contrato
                 </a>
-                <span v-else class="text-sm" style="color:#2C2039">—</span>
+                <span v-else class="text-sm" style="color:var(--color-unergy-deep)">—</span>
               </div>
             </div>
             <div v-else class="cd-grid">
@@ -484,7 +484,7 @@
                   <td class="px-4 py-2.5">
                     <div class="flex items-center gap-1.5">
                       <span class="font-mono font-semibold"
-                        :style="iVigente(t.filas) === i ? 'color:#d97706' : 'color:#2C2039'">
+                        :style="iVigente(t.filas) === i ? 'color:#d97706' : 'color:var(--color-unergy-deep)'">
                         {{ etiquetaAnio(f) }}
                       </span>
                       <span v-if="f.esBase" class="text-[10px] px-1.5 py-0.5 rounded font-bold"
@@ -503,7 +503,7 @@
                     <span v-else class="font-mono tabular-nums" style="color:#374151">{{ f.ipc }}%</span>
                   </td>
                   <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                    :style="iVigente(t.filas) === i ? 'color:#d97706' : 'color:#2C2039'">
+                    :style="iVigente(t.filas) === i ? 'color:#d97706' : 'color:var(--color-unergy-deep)'">
                     {{ fmtVal(f.valor) }}
                   </td>
                   <td class="px-4 py-2.5 text-center">
@@ -928,7 +928,7 @@ onMounted(async () => {
   color: #9b89b5; margin-bottom: 3px;
 }
 .cd-stat-val {
-  font-size: 15px; font-weight: 700; color: #2C2039; line-height: 1.25;
+  font-size: 15px; font-weight: 700; color: var(--color-unergy-deep); line-height: 1.25;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .cd-stat-val::first-letter { text-transform: uppercase; }
@@ -944,7 +944,7 @@ onMounted(async () => {
 }
 .cd-sec-title {
   font-size: 12px; font-weight: 700; letter-spacing: .03em;
-  text-transform: uppercase; color: #2C2039;
+  text-transform: uppercase; color: var(--color-unergy-deep);
 }
 .cd-sec-act { margin-left: auto; display: flex; align-items: center; gap: 4px; }
 .cd-sec-body { padding: 14px; }
@@ -975,7 +975,7 @@ onMounted(async () => {
   font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
   color: #9b89b5; margin-bottom: 3px;
 }
-.cd-parte-nom { font-size: 13px; font-weight: 600; color: #2C2039; }
+.cd-parte-nom { font-size: 13px; font-weight: 600; color: var(--color-unergy-deep); }
 .cd-parte-nit {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px; color: #9b8fb0; margin-top: 1px;

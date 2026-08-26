@@ -95,7 +95,7 @@
       <Column header="Contrato">
         <template #body="{ data }">
           <router-link v-if="data.ppa_contrato_id" :to="`/contratos/${data.ppa_contrato_id}`"
-                       class="text-xs underline" style="color:#915BD8">PPA</router-link>
+                       class="text-xs underline" style="color:var(--color-unergy-purple)">PPA</router-link>
           <span v-else style="color:#c4b8d4">—</span>
         </template>
       </Column>
@@ -107,7 +107,7 @@
             </Button>
             <a v-if="data.documento_url" :href="data.documento_url" target="_blank" rel="noopener"
                class="p-2" v-tooltip.left="'Documento de la oferta'">
-              <FileTextIcon class="size-[1em]" style="color:#915BD8" />
+              <FileTextIcon class="size-[1em]" style="color:var(--color-unergy-purple)" />
             </a>
           </div>
         </template>

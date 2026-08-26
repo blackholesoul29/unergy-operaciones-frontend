@@ -29,7 +29,7 @@
 
     <div v-else class="space-y-1">
       <CircleCheckIcon class="text-2xl block size-[1em]" style="color:#10B981" />
-      <p class="text-sm font-medium truncate max-w-xs mx-auto" style="color:#2C2039">{{ file.name }}</p>
+      <p class="text-sm font-medium truncate max-w-xs mx-auto" style="color:var(--color-unergy-deep)">{{ file.name }}</p>
       <p class="text-xs" style="color:#10B981">Archivo cargado</p>
     </div>
   </div>

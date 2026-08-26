@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white rounded-xl shadow-sm overflow-hidden mt-4" style="border:1px solid #e8e0f0">
     <div class="px-4 py-2 flex items-center justify-between" style="background:#f3f0f7">
-      <span class="text-xs font-bold tracking-widest uppercase" style="color:#915BD8">Descuento de facturas</span>
+      <span class="text-xs font-bold tracking-widest uppercase" style="color:var(--color-unergy-purple)">Descuento de facturas</span>
       <span class="text-xs" style="color:#6b5a8a">{{ filas.length }} documento(s)</span>
     </div>
 
@@ -34,7 +34,7 @@
             <td class="px-3 py-1.5 text-center">
               <Checkbox v-model="f.marcado" :binary="true" />
             </td>
-            <td class="px-3 py-1.5 truncate" style="color:#2C2039" :title="f.numero ?? ''">{{ f.numero ?? '—' }}</td>
+            <td class="px-3 py-1.5 truncate" style="color:var(--color-unergy-deep)" :title="f.numero ?? ''">{{ f.numero ?? '—' }}</td>
             <td class="px-3 py-1.5 truncate">
               <span class="px-2 py-0.5 rounded-full text-[10px] font-bold"
                 :style="f.descuenta ? 'background:#fde8ea;color:#D64455' : 'background:#dbeafe;color:#1d4ed8'">
@@ -69,7 +69,7 @@
     <div class="px-4 py-3 grid grid-cols-3 gap-3 border-t" style="background:#f9f7fd">
       <div class="text-center">
         <p class="text-[10px] font-semibold uppercase tracking-wide" style="color:#6b5a8a">Disponible original</p>
-        <p class="text-sm font-bold" style="color:#2C2039">{{ fmtCOP(disponible) }}</p>
+        <p class="text-sm font-bold" style="color:var(--color-unergy-deep)">{{ fmtCOP(disponible) }}</p>
       </div>
       <div class="text-center">
         <p class="text-[10px] font-semibold uppercase tracking-wide" style="color:#6b5a8a">Total a descontar (neto)</p>

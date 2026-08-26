@@ -15,7 +15,7 @@
           </div>
           <div>
             <p class="text-xs text-gray-400 leading-none mb-0.5">Proveedor O&amp;M</p>
-            <span class="text-sm font-semibold" style="color:#2C2039">Facturas Solenium</span>
+            <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Facturas Solenium</span>
           </div>
           <span class="inline-flex items-center justify-center rounded-full text-xs font-semibold px-2 py-0.5 leading-none ml-1"
             style="background:#fef3c7; color:#d97706">
@@ -101,7 +101,7 @@
                   class="border-b border-gray-50 transition-colors duration-100"
                   :class="isPending(fac) ? 'fila-pendiente' : 'hover:bg-amber-50/30'">
                   <td class="px-4 py-2.5">
-                    <span class="font-mono text-[13px]" style="color:#2C2039">{{ fac.fecha }}</span>
+                    <span class="font-mono text-[13px]" style="color:var(--color-unergy-deep)">{{ fac.fecha }}</span>
                   </td>
                   <td class="px-4 py-2.5">
                     <div class="flex items-center gap-2">
@@ -114,7 +114,7 @@
                     </div>
                   </td>
                   <td class="px-4 py-2.5 text-right">
-                    <span class="font-semibold tabular-nums text-sm" style="color:#2C2039">
+                    <span class="font-semibold tabular-nums text-sm" style="color:var(--color-unergy-deep)">
                       {{ formatCOP(fac.monto) }}
                     </span>
                   </td>
@@ -175,7 +175,7 @@
           </div>
           <div>
             <p class="text-xs text-gray-400 leading-none mb-0.5">Cobros a clientes</p>
-            <span class="text-sm font-semibold" style="color:#2C2039">Facturas Inversionistas</span>
+            <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Facturas Inversionistas</span>
           </div>
           <span class="inline-flex items-center justify-center rounded-full text-xs font-semibold px-2 py-0.5 leading-none ml-1"
             style="background:#dbeafe; color:#3b82f6">
@@ -262,7 +262,7 @@
                   class="border-b border-gray-50 transition-colors duration-100"
                   :class="isPending(fac) ? 'fila-pendiente' : 'hover:bg-blue-50/30'">
                   <td class="px-4 py-2.5">
-                    <span class="font-mono text-[13px]" style="color:#2C2039">{{ fac.fecha }}</span>
+                    <span class="font-mono text-[13px]" style="color:var(--color-unergy-deep)">{{ fac.fecha }}</span>
                   </td>
                   <td class="px-4 py-2.5">
                     <span class="text-sm" style="color:#374151">{{ fac.inversionista || '—' }}</span>
@@ -278,7 +278,7 @@
                     </div>
                   </td>
                   <td class="px-4 py-2.5 text-right">
-                    <span class="font-semibold tabular-nums text-sm" style="color:#2C2039">
+                    <span class="font-semibold tabular-nums text-sm" style="color:var(--color-unergy-deep)">
                       {{ formatCOP(fac.monto) }}
                     </span>
                   </td>
@@ -334,7 +334,7 @@
             :style="modal.tipo === 'solenium' ? 'background:#fef3c7' : 'background:#dbeafe'">
             <ReceiptIcon class="text-xs size-[1em]" :style="modal.tipo === 'solenium' ? 'color:#f59e0b' : 'color:#3b82f6'" />
           </div>
-          <span class="font-semibold text-sm" style="color:#2C2039">
+          <span class="font-semibold text-sm" style="color:var(--color-unergy-deep)">
             Agregar factura — {{ modal.tipo === 'solenium' ? 'Solenium' : 'Inversionistas' }}
           </span>
         </div>

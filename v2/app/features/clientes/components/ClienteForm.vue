@@ -43,7 +43,7 @@
       <!-- Información bancaria -->
       <div class="col-span-2">
         <div class="border-t pt-4 mt-1">
-          <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: #915BD8;">Información bancaria</p>
+          <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: var(--color-unergy-purple);">Información bancaria</p>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="field-label">Banco</label>
@@ -86,10 +86,10 @@
       <div v-if="esNuevo" class="col-span-2">
         <div class="border-t pt-4 mt-1">
           <div class="flex items-center justify-between mb-3">
-            <p class="text-xs font-semibold uppercase tracking-wide" style="color: #915BD8;">Contactos</p>
+            <p class="text-xs font-semibold uppercase tracking-wide" style="color: var(--color-unergy-purple);">Contactos</p>
             <button type="button" @click="agregarContacto"
               class="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-              style="background:#915BD8;color:#fff;">
+              style="background:var(--color-unergy-purple);color:#fff;">
               <PlusIcon class="text-xs size-[1em]" /> Agregar
             </button>
           </div>
@@ -114,7 +114,7 @@
 
       <div v-if="esNuevo" class="col-span-2">
         <div class="border-t pt-4 mt-1">
-          <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: #915BD8;">Servicios</p>
+          <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: var(--color-unergy-purple);">Servicios</p>
           <MultiSelect v-model="serviciosSeleccionados" :options="TIPOS_SERVICIO" optionLabel="label" optionValue="value"
             class="w-full" placeholder="Seleccionar servicios (opcional)" display="chip" />
         </div>

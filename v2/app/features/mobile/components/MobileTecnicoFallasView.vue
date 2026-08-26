@@ -190,7 +190,7 @@ onMounted(() => { cargar(); fetchUnread() })
 <style scoped>
 .tf-root {
   display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden;
-  background: #f3f4f6; color: #2C2039; font-family: system-ui, -apple-system, sans-serif;
+  background: #f3f4f6; color: var(--color-unergy-deep); font-family: system-ui, -apple-system, sans-serif;
 }
 
 .tf-topbar {
@@ -247,7 +247,7 @@ onMounted(() => { cargar(); fetchUnread() })
 .tf-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
 .tf-card-code { font-family: ui-monospace, monospace; font-size: 12px; color: #065f46; background: #ecfdf5; padding: 1px 7px; border-radius: 6px; }
 .tf-card-estado { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 7px; }
-.tf-card-tipo { font-size: 14px; font-weight: 700; color: #2C2039; line-height: 1.25; }
+.tf-card-tipo { font-size: 14px; font-weight: 700; color: var(--color-unergy-deep); line-height: 1.25; }
 .tf-card-proj { font-size: 12.5px; color: #6b5a8a; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
 .tf-card-proj svg { font-size: 11px; color: #059669; }
 .tf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; }

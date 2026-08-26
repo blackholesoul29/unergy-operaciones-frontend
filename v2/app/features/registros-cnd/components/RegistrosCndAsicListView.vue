@@ -24,7 +24,7 @@
 
         <Column field="nombre_comercial" header="Proyecto" sortable>
           <template #body="{ data }">
-            <div class="font-medium" style="color:#2C2039;">{{ data.nombre_comercial }}</div>
+            <div class="font-medium" style="color:var(--color-unergy-deep);">{{ data.nombre_comercial }}</div>
             <div class="text-xs" style="color:#9b89b5;">
               {{ [data.codigo_cnd, data.clasificacion_regulatoria, data.tecnologia, data.operador_red].filter(Boolean).join(' · ') || '—' }}
             </div>
@@ -35,9 +35,9 @@
           <template #body="{ data }">
             <div class="flex items-center gap-2">
               <div class="flex-1 rounded-full overflow-hidden" style="height:8px;background:#ECE7F2;">
-                <div :style="`height:100%;width:${Math.min(100, data.avance_pct)}%;background:#915BD8;`"></div>
+                <div :style="`height:100%;width:${Math.min(100, data.avance_pct)}%;background:var(--color-unergy-purple);`"></div>
               </div>
-              <span class="text-xs font-semibold" style="color:#6E3FB8;width:38px;text-align:right;">{{ data.avance_pct }}%</span>
+              <span class="text-xs font-semibold" style="color:var(--color-unergy-purple-dark);width:38px;text-align:right;">{{ data.avance_pct }}%</span>
             </div>
           </template>
         </Column>
@@ -45,8 +45,8 @@
         <Column header="Siguiente paso">
           <template #body="{ data }">
             <span v-if="data.avance_pct >= 100" class="text-xs"><Tag value="Completo" severity="success" class="text-xs" /></span>
-            <span v-else-if="data.siguiente_paso" class="text-xs" style="color:#2C2039;">
-              <span class="font-mono font-semibold" style="color:#915BD8;">{{ data.siguiente_paso.codigo }}</span>
+            <span v-else-if="data.siguiente_paso" class="text-xs" style="color:var(--color-unergy-deep);">
+              <span class="font-mono font-semibold" style="color:var(--color-unergy-purple);">{{ data.siguiente_paso.codigo }}</span>
               — {{ data.siguiente_paso.descripcion }}
             </span>
           </template>

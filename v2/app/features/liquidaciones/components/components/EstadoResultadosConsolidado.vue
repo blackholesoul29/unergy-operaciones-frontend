@@ -1,8 +1,8 @@
 <template>
   <div v-if="columnas.length && grupos.length" class="bg-white rounded-xl shadow-sm border overflow-hidden" style="border-color:#e8e0f0">
     <div class="px-3 py-2 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
-      <UsersIcon class="text-sm size-[1em]" style="color:#915BD8" />
-      <h3 class="text-sm font-bold" style="color:#2C2039">Estado de Resultados por inversionista</h3>
+      <UsersIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
+      <h3 class="text-sm font-bold" style="color:var(--color-unergy-deep)">Estado de Resultados por inversionista</h3>
       <span class="ml-auto text-[10px] uppercase tracking-wide font-semibold" style="color:#bba8d4">
         Espejo del Panel Contable
       </span>
@@ -13,12 +13,12 @@
         <thead>
           <tr style="background:#faf7ff">
             <th class="text-left font-bold uppercase tracking-wide text-[10px] px-3 py-1.5 sticky left-0 z-10"
-              style="color:#6E3FB8; background:#faf7ff; min-width:160px">Concepto</th>
+              style="color:var(--color-unergy-purple-dark); background:#faf7ff; min-width:160px">Concepto</th>
             <th v-for="c in columnas" :key="c.id"
               class="text-right px-3 py-1.5 align-bottom whitespace-nowrap"
               :style="{ minWidth: '108px', background: c.es_total ? 'rgba(145,91,216,0.06)' : '#faf7ff' }">
               <div class="flex flex-col items-end gap-0.5">
-                <span class="font-bold truncate max-w-[160px]" :style="{ color: c.es_total ? '#6E3FB8' : '#2C2039' }" :title="c.nombre">
+                <span class="font-bold truncate max-w-[160px]" :style="{ color: c.es_total ? 'var(--color-unergy-purple-dark)' : 'var(--color-unergy-deep)' }" :title="c.nombre">
                   {{ c.nombre }}
                 </span>
                 <span class="text-[10px] font-mono tabular-nums" style="color:#bba8d4">{{ c.pct }}</span>
@@ -31,10 +31,10 @@
           <template v-for="g in grupos" :key="g.key">
             <tr style="background:#fcfaff">
               <td class="px-3 py-1 font-bold uppercase tracking-wide text-[11px] sticky left-0 z-10"
-                style="color:#6E3FB8; background:#fcfaff">{{ g.label }}</td>
+                style="color:var(--color-unergy-purple-dark); background:#fcfaff">{{ g.label }}</td>
               <td v-for="c in columnas" :key="c.id"
                 class="px-3 py-1 text-right font-bold font-mono tabular-nums whitespace-nowrap"
-                :style="{ color: g.sub[c.id] == null ? '#d8cce8' : (g.sub[c.id] < 0 ? '#D64455' : '#2C2039'),
+                :style="{ color: g.sub[c.id] == null ? '#d8cce8' : (g.sub[c.id] < 0 ? '#D64455' : 'var(--color-unergy-deep)'),
                           background: c.es_total ? 'rgba(145,91,216,0.06)' : 'transparent' }">
                 <template v-if="g.sub[c.id] != null">{{ fmtCOP(g.sub[c.id]) }}</template>
                 <template v-else>—</template>
@@ -45,7 +45,7 @@
                 <span class="pl-3 flex items-center gap-1.5 flex-wrap" style="color:#5b5470">
                   {{ l.concepto }}
                   <span v-if="l.origen" class="text-[9px] font-mono px-1 py-0.5 rounded"
-                    style="background:#F1EAF9; color:#6E3FB8" :title="'Celda de origen en el ER'">{{ l.origen }}</span>
+                    style="background:#F1EAF9; color:var(--color-unergy-purple-dark)" :title="'Celda de origen en el ER'">{{ l.origen }}</span>
                   <span v-if="l.comprobante" class="text-[9px] px-1 py-0.5 rounded"
                     style="background:#EAF4FF; color:#2563EB" :title="'Comprobante contable'">{{ l.comprobante }}</span>
                 </span>
@@ -60,12 +60,12 @@
         </tbody>
 
         <tfoot>
-          <tr class="border-t-2" style="border-color:#915BD8; background:rgba(145,91,216,0.07)">
+          <tr class="border-t-2" style="border-color:var(--color-unergy-purple); background:rgba(145,91,216,0.07)">
             <td class="px-3 py-2 font-extrabold sticky left-0 z-10"
-              style="color:#2C2039; background:#f4eefb">Valor a pagar</td>
+              style="color:var(--color-unergy-deep); background:#f4eefb">Valor a pagar</td>
             <td v-for="c in columnas" :key="c.id"
               class="px-3 py-2 text-right font-extrabold font-mono tabular-nums whitespace-nowrap"
-              style="color:#915BD8; background:rgba(145,91,216,0.07)">
+              style="color:var(--color-unergy-purple); background:rgba(145,91,216,0.07)">
               {{ fmtCOP(c.valor_a_pagar) }}
             </td>
           </tr>

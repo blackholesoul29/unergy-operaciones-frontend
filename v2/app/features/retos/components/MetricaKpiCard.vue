@@ -147,7 +147,7 @@ const pie2 = computed(() => {
 .rq-kpi-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .rq-kpi-nombre {
   flex: 1; min-width: 0;
-  font-size: 12.5px; font-weight: 700; color: #2C2039;
+  font-size: 12.5px; font-weight: 700; color: var(--color-unergy-deep);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
@@ -181,7 +181,7 @@ const pie2 = computed(() => {
 /* 3. Cifras */
 .rq-kpi-cifras { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 .rq-kpi-consolidado {
-  font-size: 20px; font-weight: 800; color: #2C2039;
+  font-size: 20px; font-weight: 800; color: var(--color-unergy-deep);
   font-variant-numeric: tabular-nums; line-height: 1.1;
 }
 .rq-kpi-nulo { color: #c7bdd8; }
@@ -194,7 +194,7 @@ const pie2 = computed(() => {
 /* 5 y 6. Pie */
 .rq-kpi-pie1 {
   display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
-  font-size: 11px; font-weight: 600; color: #2C2039;
+  font-size: 11px; font-weight: 600; color: var(--color-unergy-deep);
 }
 .rq-kpi-punto { color: #c7bdd8; }
 .rq-kpi-sin-meta { color: #9b8fb0; font-weight: 600; }

@@ -78,7 +78,7 @@
 
     <!-- ══ LOADING inicial ══ -->
     <div v-if="loading && !proyectos.length" class="sl-loading">
-      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:28px;color:#915BD8" />
+      <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:28px;color:var(--color-unergy-purple)" />
       <span>Cargando proyectos...</span>
     </div>
 
@@ -137,7 +137,7 @@
               <div class="sl-chart-card">
                 <div class="sl-chart-header">
                   <div class="sl-chart-title">
-                    <span class="sl-dot" style="background:#915BD8" />
+                    <span class="sl-dot" style="background:var(--color-unergy-purple)" />
                     Inversores
                   </div>
                   <span v-if="getInversorAcum(proy.proyecto_id) !== null" class="sl-acum inv">
@@ -637,8 +637,8 @@ onUnmounted(() => {
   font-family: inherit; transition: color 0.15s; border-bottom: 2px solid transparent;
   margin-bottom: -1px;
 }
-.sl-tab:hover { color: #2C2039; }
-.sl-tab--active { color: #915BD8; border-bottom-color: #915BD8; }
+.sl-tab:hover { color: var(--color-unergy-deep); }
+.sl-tab--active { color: var(--color-unergy-purple); border-bottom-color: var(--color-unergy-purple); }
 .sl-tab svg { font-size: 12px; }
 
 /* ── Live tab content ── */
@@ -656,7 +656,7 @@ onUnmounted(() => {
 /* ── Header ── */
 .sl-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .sl-header-right { display: flex; align-items: center; gap: 10px; }
-.sl-title { font-size: 20px; font-weight: 800; color: #2C2039; margin: 0; }
+.sl-title { font-size: 20px; font-weight: 800; color: var(--color-unergy-deep); margin: 0; }
 .sl-subtitle { font-size: 12px; color: #6b5a8a; margin: 3px 0 0; }
 .sl-ts { color: #9ca3af; }
 
@@ -665,18 +665,18 @@ onUnmounted(() => {
 .sl-filter-icon { position: absolute; left: 11px; font-size: 12px; color: #9ca3af; pointer-events: none; }
 .sl-filter-input {
   width: 260px; padding: 7px 28px 7px 30px; border-radius: 8px; border: 1px solid #e5e7eb;
-  background: #fff; font-size: 13px; font-family: inherit; color: #2C2039; outline: none;
+  background: #fff; font-size: 13px; font-family: inherit; color: var(--color-unergy-deep); outline: none;
   transition: border-color 0.15s;
 }
-.sl-filter-input:focus { border-color: #915BD8; }
+.sl-filter-input:focus { border-color: var(--color-unergy-purple); }
 .sl-filter-input::placeholder { color: #9ca3af; }
 /* AutoComplete del filtro: mismo aspecto que el input anterior */
 .sl-filter-ac :deep(input) {
   width: 260px; padding: 7px 28px 7px 30px; border-radius: 8px; border: 1px solid #e5e7eb;
-  background: #fff; font-size: 13px; font-family: inherit; color: #2C2039; outline: none;
+  background: #fff; font-size: 13px; font-family: inherit; color: var(--color-unergy-deep); outline: none;
   transition: border-color 0.15s;
 }
-.sl-filter-ac :deep(input:focus) { border-color: #915BD8; }
+.sl-filter-ac :deep(input:focus) { border-color: var(--color-unergy-purple); }
 .sl-filter-ac :deep(input::placeholder) { color: #9ca3af; }
 .sl-filter-clear { position: absolute; right: 10px; font-size: 11px; color: #9ca3af; cursor: pointer; }
 .sl-filter-clear:hover { color: #6b5a8a; }
@@ -685,22 +685,22 @@ onUnmounted(() => {
 .sl-cols-toggle { display: flex; gap: 4px; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 3px; }
 .sl-col-btn { display: flex; align-items: center; justify-content: center; width: 30px; height: 26px; border-radius: 6px; border: none; background: transparent; cursor: pointer; transition: background 0.15s; }
 .sl-col-btn:hover { background: rgba(145,91,216,0.12); }
-.sl-col-btn--active { background: #915BD8; }
+.sl-col-btn--active { background: var(--color-unergy-purple); }
 .sl-col-icon { display: flex; gap: 2px; align-items: center; }
 .sl-col-bar { display: block; width: 4px; height: 14px; border-radius: 2px; background: #9ca3af; }
 .sl-col-btn--active .sl-col-bar { background: #fff; }
 
 /* ── Refresh ── */
 .sl-refresh-wrap { display: flex; align-items: center; gap: 6px; }
-.sl-refresh-btn { display: flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 8px; background: #915BD8; color: #fff; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.2s; }
+.sl-refresh-btn { display: flex; align-items: center; gap: 6px; padding: 7px 16px; border-radius: 8px; background: var(--color-unergy-purple); color: #fff; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: background 0.2s; }
 .sl-refresh-btn:hover:not(:disabled) { background: #7a3fc0; }
 .sl-refresh-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Auto-refresh dropdown ── */
 .sl-auto-wrap { position: relative; }
 .sl-auto-btn { display: flex; align-items: center; gap: 5px; padding: 7px 10px; border-radius: 8px; background: #fff; color: #6b5a8a; border: 1px solid #e5e7eb; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.2s; white-space: nowrap; }
-.sl-auto-btn:hover { background: #f3f1f8; color: #2C2039; }
-.sl-auto-btn--on { background: rgba(145,91,216,0.1); color: #7c3aed; border-color: #915BD8; }
+.sl-auto-btn:hover { background: #f3f1f8; color: var(--color-unergy-deep); }
+.sl-auto-btn--on { background: rgba(145,91,216,0.1); color: #7c3aed; border-color: var(--color-unergy-purple); }
 .sl-auto-label { font-size: 11px; }
 .sl-auto-caret { font-size: 10px; }
 .sl-auto-menu { position: absolute; right: 0; top: calc(100% + 6px); background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; min-width: 140px; overflow: hidden; z-index: 50; box-shadow: 0 8px 24px rgba(28,18,50,0.12); }
@@ -719,12 +719,12 @@ onUnmounted(() => {
 
 /* ── Drag handle ── */
 .sl-drag-handle { font-size: 13px; color: #cbd5e1; cursor: grab; flex-shrink: 0; transition: color 0.15s; }
-.sl-drag-handle:hover { color: #915BD8; }
+.sl-drag-handle:hover { color: var(--color-unergy-purple); }
 .sl-drag-handle:active { cursor: grabbing; }
 
-.sl-project-name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #2C2039; }
+.sl-project-name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: var(--color-unergy-deep); }
 .sl-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.sl-power-badge { margin-left: auto; font-size: 12px; font-weight: 700; color: #915BD8; background: rgba(145,91,216,0.12); padding: 2px 10px; border-radius: 999px; }
+.sl-power-badge { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--color-unergy-purple); background: rgba(145,91,216,0.12); padding: 2px 10px; border-radius: 999px; }
 
 /* ── Loading detalle ── */
 .sl-detail-loading { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #9ca3af; padding: 8px 0; }
@@ -758,7 +758,7 @@ onUnmounted(() => {
 /* ── Generación de hoy ── */
 .sl-genhoy { display: flex; flex-direction: column; gap: 6px; padding-top: 4px; border-top: 1px solid #ece8f4; }
 .sl-genhoy-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.sl-genhoy-title { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #915BD8; }
+.sl-genhoy-title { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--color-unergy-purple); }
 .sl-genhoy-vals { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .sl-genhoy-pct { font-size: 11px; font-weight: 700; }
 .sl-genhoy-badge { font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: rgba(145,91,216,0.12); color: #7c3aed; letter-spacing: 0.3px; }

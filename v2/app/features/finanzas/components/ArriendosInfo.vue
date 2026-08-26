@@ -4,7 +4,7 @@
     <!-- ── Barra superior ────────────────────────────────────────────────── -->
     <div class="bg-white rounded-xl shadow-sm p-3 flex items-center justify-between flex-wrap gap-2 border" style="border-color:#ECE7F2">
       <div class="flex items-center gap-3">
-        <span class="text-sm font-semibold" style="color:#2C2039">{{ periodoLabel }}</span>
+        <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">{{ periodoLabel }}</span>
         <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
       </div>
       <p class="text-xs text-gray-400">
@@ -76,7 +76,7 @@
               <tbody>
                 <tr v-for="fila in sec.items" :key="fila.id"
                   class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
-                  <td class="px-3 py-2.5 font-medium" style="color:#2C2039">
+                  <td class="px-3 py-2.5 font-medium" style="color:var(--color-unergy-deep)">
                     <div class="flex flex-col gap-0.5 max-w-full">
                       <span style="white-space:normal">{{ fila.proyecto }}</span>
                       <span v-if="mostrarArrendador(fila)" class="text-[11px] text-gray-400">

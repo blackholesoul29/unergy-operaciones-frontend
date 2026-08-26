@@ -500,7 +500,7 @@ watch(
 <style scoped>
 .rq-dw-head { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; }
 .rq-dw-head-centro { flex: 1; min-width: 0; }
-.rq-dw-titulo { font-size: 16px; font-weight: 800; color: #2C2039; line-height: 1.2; }
+.rq-dw-titulo { font-size: 16px; font-weight: 800; color: var(--color-unergy-deep); line-height: 1.2; }
 .rq-dw-sub {
   display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
   font-size: 12px; font-weight: 400; color: #9b8fb0; margin-top: 1px;
@@ -518,7 +518,7 @@ watch(
 .rq-dw-progreso-txt { font-size: 11px; font-weight: 600; color: #6b5a8a; margin-bottom: 5px; }
 .rq-dw-barra { height: 5px; border-radius: 3px; background: #F1ECF7; overflow: hidden; }
 .rq-dw-barra-fill {
-  height: 100%; border-radius: 3px; background: #915BD8;
+  height: 100%; border-radius: 3px; background: var(--color-unergy-purple);
   transition: width .18s ease, background-color .18s ease;
 }
 .rq-dw-barra-ok { background: #10B981; }
@@ -531,11 +531,11 @@ watch(
 .rq-dw-etiqueta { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .rq-dw-nombre {
   flex: 1; min-width: 0;
-  font-size: 12.5px; font-weight: 700; color: #2C2039;
+  font-size: 12.5px; font-weight: 700; color: var(--color-unergy-deep);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .rq-dw-responsable { flex: none; font-size: 10px; font-weight: 600; color: #9b8fb0; }
-.rq-dw-punto { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #915BD8; }
+.rq-dw-punto { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--color-unergy-purple); }
 
 .rq-dw-input-fila { display: flex; align-items: center; gap: 10px; margin-top: 6px; min-width: 0; }
 .rq-dw-input { flex: none; width: 190px; }
@@ -553,7 +553,7 @@ watch(
 /* Nota */
 .rq-dw-nota-link {
   display: inline-flex; align-items: center; gap: 4px; height: 24px; margin-top: 4px;
-  font-size: 11px; font-weight: 600; color: #915BD8; background: none; border: 0; padding: 0;
+  font-size: 11px; font-weight: 600; color: var(--color-unergy-purple); background: none; border: 0; padding: 0;
   cursor: pointer;
 }
 .rq-dw-nota-link svg { font-size: 9px; }

@@ -23,7 +23,7 @@
     <text
       x="26" y="26" text-anchor="middle" dominant-baseline="central"
       :font-size="pctSeguro === null ? 13 : 13" font-weight="800"
-      :fill="pctSeguro === null ? '#9b8fb0' : '#2C2039'"
+      :fill="pctSeguro === null ? '#9b8fb0' : 'var(--color-unergy-deep)'"
       style="font-variant-numeric: tabular-nums"
     >{{ etiquetaCentro }}</text>
   </svg>

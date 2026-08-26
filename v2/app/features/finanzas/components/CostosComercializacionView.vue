@@ -18,7 +18,7 @@
     <Dialog v-model:visible="excelVisible" header="Subir Excel de costos" modal class="w-full max-w-lg">
       <div class="space-y-4 pt-1">
         <button type="button" class="dropzone" :disabled="subiendoExcel" @click="seleccionarExcel">
-          <FileSpreadsheetIcon class="text-3xl size-[1em]" style="color:#915BD8" />
+          <FileSpreadsheetIcon class="text-3xl size-[1em]" style="color:var(--color-unergy-purple)" />
           <p class="text-sm font-semibold text-gray-700 mt-2">Seleccionar Excel</p>
           <p class="text-xs text-gray-400">.xlsx o .xls · un archivo por carga</p>
         </button>
@@ -31,7 +31,7 @@
 
         <div v-if="subiendoExcel" class="h-1.5 rounded-full overflow-hidden" style="background:#F1EAF9">
           <div class="h-full rounded-full transition-all duration-200"
-               :style="{ width: progresoExcel + '%', background:'#915BD8' }" />
+               :style="{ width: progresoExcel + '%', background:'var(--color-unergy-purple)' }" />
         </div>
 
         <p class="text-[11px] text-gray-400">
@@ -544,6 +544,6 @@ onMounted(() => { cargar(); cargarOpciones() })
   cursor: pointer;
   transition: border-color .15s, background .15s;
 }
-.dropzone:hover { border-color: #915BD8; background: #F4ECFC; }
+.dropzone:hover { border-color: var(--color-unergy-purple); background: #F4ECFC; }
 .dropzone:disabled { opacity: .6; cursor: default; }
 </style>

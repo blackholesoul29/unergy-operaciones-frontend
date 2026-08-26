@@ -36,7 +36,7 @@
               <span class="w-1.5 h-1.5 rounded-full flex-shrink-0"
                     :style="{ background: colorEtapa(col.estados[0]) }" />
               <span class="text-[11px] font-semibold uppercase tracking-wide truncate"
-                    style="color:#2C2039">{{ col.label }}</span>
+                    style="color:var(--color-unergy-deep)">{{ col.label }}</span>
               <span class="text-[11px]" style="color:#9b89b5">{{ resumen(col).n }}</span>
             </div>
             <div class="text-[11px] mt-0.5 flex items-center gap-2" style="color:#9b89b5">
@@ -66,7 +66,7 @@
                    v-tooltip.left="`${of.dias_sin_respuesta} días sin movimiento en esta etapa`" />
             </div>
 
-            <h3 class="font-medium text-sm mt-1 leading-snug" style="color:#2C2039">
+            <h3 class="font-medium text-sm mt-1 leading-snug" style="color:var(--color-unergy-deep)">
               {{ of.planta_nombre || of.ficha?.proyecto_nombre || 'Sin planta' }}
             </h3>
             <p class="text-xs truncate" style="color:#7a6e8a">{{ of.cliente_razon_social }}</p>
@@ -77,7 +77,7 @@
                 {{ segmentoTipo(of.tipo) }}
               </span>
               <span v-if="mwhMes(of)" class="text-[10px] rounded px-1.5 py-0.5"
-                    style="background:#F4EEFB;color:#6E3FB8">{{ fmtMwh(mwhMes(of)) }}</span>
+                    style="background:#F4EEFB;color:var(--color-unergy-purple-dark)">{{ fmtMwh(mwhMes(of)) }}</span>
               <span v-if="of.ppa_contrato_id" class="text-[10px] rounded px-1.5 py-0.5"
                     style="background:#E6F7F5;color:#0F766E" v-tooltip.top="'Tiene contrato PPA'">PPA</span>
               <span v-if="of.plantas?.length > 1" class="text-[10px] rounded px-1.5 py-0.5"

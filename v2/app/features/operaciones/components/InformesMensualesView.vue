@@ -4,7 +4,7 @@
     <!-- ══ Topbar compacto ═══════════════════════════════════════ -->
     <div class="imv-topbar">
       <div class="imv-topbar-title">
-        <FilePenIcon class="text-sm size-[1em]" style="color:#915BD8" />
+        <FilePenIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
         <h2 class="text-base font-bold text-gray-800 whitespace-nowrap">Informes Mensuales</h2>
         <span class="hidden lg:inline text-xs text-gray-500">· Generación, revisión y envío al cliente</span>
       </div>
@@ -147,13 +147,13 @@ onMounted(cargarBadge)
   white-space: nowrap;
 }
 .imv-tab svg { font-size: 12px; }
-.imv-tab:hover:not(.imv-tab--on) { color: #2C2039; background: rgba(145,91,216,.08); }
+.imv-tab:hover:not(.imv-tab--on) { color: var(--color-unergy-deep); background: rgba(145,91,216,.08); }
 .imv-tab--on {
-  background: #915BD8;
-  color: #FDFAF7;
+  background: var(--color-unergy-purple);
+  color: var(--color-unergy-avena);
   box-shadow: 0 1px 4px rgba(145,91,216,.3);
 }
-.imv-tab--on:hover { color: #FDFAF7; }
+.imv-tab--on:hover { color: var(--color-unergy-avena); }
 .imv-tab-badge {
   background: #DC2626;
   color: #fff;

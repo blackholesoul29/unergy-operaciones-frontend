@@ -20,7 +20,7 @@
             <component :is="alert.icon" class="text-sm size-[1em]" :style="{ color: alert.iconColor }" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-sm font-semibold" style="color: #2C2039;">{{ alert.title }}</p>
+            <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">{{ alert.title }}</p>
             <p class="text-xs" style="color: #6b5a8a;">{{ alert.detail }}</p>
           </div>
           <ChevronRightIcon class="text-sm size-[1em]" style="color: #D64455;" />
@@ -35,8 +35,8 @@
            style="border: 1px solid #e8e0f0;">
         <div>
           <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ kpi.label }}</p>
-          <p class="text-2xl font-bold mt-1" style="color: #2C2039;">{{ kpi.value ?? '—' }}</p>
-          <p v-if="kpi.sub" class="text-xs mt-0.5" :style="{ color: kpi.subColor || '#915BD8' }">{{ kpi.sub }}</p>
+          <p class="text-2xl font-bold mt-1" style="color: var(--color-unergy-deep);">{{ kpi.value ?? '—' }}</p>
+          <p v-if="kpi.sub" class="text-xs mt-0.5" :style="{ color: kpi.subColor || 'var(--color-unergy-purple)' }">{{ kpi.sub }}</p>
         </div>
         <div class="w-12 h-12 rounded-xl flex items-center justify-center" :style="{ backgroundColor: kpi.bg }">
           <component :is="kpi.icon" class="text-xl size-[1em]" :style="{ color: kpi.color }" />
@@ -48,8 +48,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Generación Flota</h3>
-          <RouterLink to="/generacion-solar" class="text-xs font-medium" style="color: #915BD8;">Ver detalle →</RouterLink>
+          <h3 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Generación Flota</h3>
+          <RouterLink to="/generacion-solar" class="text-xs font-medium" style="color: var(--color-unergy-purple);">Ver detalle →</RouterLink>
         </div>
         <div v-if="data.fleet_power_kw != null" class="flex items-baseline gap-2">
           <span class="text-3xl font-bold" :style="{ color: data.fleet_power_kw > 0 ? '#10B981' : '#6b5a8a' }">
@@ -70,11 +70,11 @@
 
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Precio de Bolsa</h3>
-          <RouterLink to="/mem/precio-bolsa" class="text-xs font-medium" style="color: #915BD8;">Ver detalle →</RouterLink>
+          <h3 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Precio de Bolsa</h3>
+          <RouterLink to="/mem/precio-bolsa" class="text-xs font-medium" style="color: var(--color-unergy-purple);">Ver detalle →</RouterLink>
         </div>
         <div v-if="data.precio_bolsa_cop_kwh != null" class="flex items-baseline gap-2">
-          <span class="text-3xl font-bold" style="color: #2C2039;">${{ data.precio_bolsa_cop_kwh }}</span>
+          <span class="text-3xl font-bold" style="color: var(--color-unergy-deep);">${{ data.precio_bolsa_cop_kwh }}</span>
           <span class="text-sm" style="color: #6b5a8a;">COP/kWh</span>
         </div>
         <p v-else class="text-sm" style="color: #6b5a8a;">Sin datos de precio disponibles</p>
@@ -82,7 +82,7 @@
 
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Alarmas MGS</h3>
+          <h3 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Alarmas MGS</h3>
         </div>
         <div class="flex items-baseline gap-2">
           <span class="text-3xl font-bold" :style="{ color: data.alarmas_mgs > 0 ? '#D64455' : '#10B981' }">
@@ -102,8 +102,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Fallas por Prioridad</h3>
-          <RouterLink to="/fallas" class="text-xs font-medium" style="color: #915BD8;">Ver fallas →</RouterLink>
+          <h3 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Fallas por Prioridad</h3>
+          <RouterLink to="/fallas" class="text-xs font-medium" style="color: var(--color-unergy-purple);">Ver fallas →</RouterLink>
         </div>
         <div v-if="data.fallas_abiertas > 0" class="space-y-2.5">
           <div v-for="bar in fallasBreakdown" :key="bar.code" class="flex items-center gap-3">
@@ -112,7 +112,7 @@
               <div class="h-full rounded-full transition-all duration-500"
                    :style="{ width: bar.pct + '%', backgroundColor: bar.color, minWidth: bar.count > 0 ? '1.5rem' : '0' }" />
             </div>
-            <span class="text-sm font-bold w-8" style="color: #2C2039;">{{ bar.count }}</span>
+            <span class="text-sm font-bold w-8" style="color: var(--color-unergy-deep);">{{ bar.count }}</span>
           </div>
         </div>
         <p v-else class="text-sm" style="color: #10B981;">Sin fallas activas</p>
@@ -120,8 +120,8 @@
 
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Cumplimiento PPA</h3>
-          <RouterLink to="/mem/cumplimiento" class="text-xs font-medium" style="color: #915BD8;">Ver detalle →</RouterLink>
+          <h3 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Cumplimiento PPA</h3>
+          <RouterLink to="/mem/cumplimiento" class="text-xs font-medium" style="color: var(--color-unergy-purple);">Ver detalle →</RouterLink>
         </div>
         <div v-if="cumplimiento" class="space-y-3">
           <div class="flex items-baseline gap-2">
@@ -131,11 +131,11 @@
           </div>
           <div v-if="cumplimiento.totales?.gen_total_mwh != null" class="grid grid-cols-2 gap-3 text-center">
             <div class="rounded-lg p-2.5" style="background: #f3f0f7;">
-              <p class="text-lg font-bold" style="color: #2C2039;">{{ cumplimiento.totales.gen_proyectada_mwh?.toFixed(1) || cumplimiento.totales.gen_total_mwh?.toFixed(1) }}</p>
+              <p class="text-lg font-bold" style="color: var(--color-unergy-deep);">{{ cumplimiento.totales.gen_proyectada_mwh?.toFixed(1) || cumplimiento.totales.gen_total_mwh?.toFixed(1) }}</p>
               <p class="text-[10px] uppercase font-semibold" style="color: #6b5a8a;">MWh Generados</p>
             </div>
             <div class="rounded-lg p-2.5" style="background: #f3f0f7;">
-              <p class="text-lg font-bold" style="color: #2C2039;">{{ cumplimiento.totales.energia_minima_mwh?.toFixed(1) || '—' }}</p>
+              <p class="text-lg font-bold" style="color: var(--color-unergy-deep);">{{ cumplimiento.totales.energia_minima_mwh?.toFixed(1) || '—' }}</p>
               <p class="text-[10px] uppercase font-semibold" style="color: #6b5a8a;">MWh Comprometidos</p>
             </div>
           </div>
@@ -145,13 +145,13 @@
           <div v-if="cumplimientoDeficits.length > 0" class="space-y-1">
             <p class="text-[10px] uppercase font-bold" style="color: #D64455;">Contratos en déficit:</p>
             <p v-for="d in cumplimientoDeficits" :key="d.id" class="text-xs" style="color: #6b5a8a;">
-              <span class="font-semibold" style="color: #2C2039;">{{ d.nombre_interno || d.comprador_nombre }}</span>
+              <span class="font-semibold" style="color: var(--color-unergy-deep);">{{ d.nombre_interno || d.comprador_nombre }}</span>
               — {{ d.compras_bolsa_mwh?.toFixed(1) }} MWh faltantes
             </p>
           </div>
         </div>
         <div v-else-if="cumplimientoLoading" class="flex items-center gap-2">
-          <LoaderCircleIcon class="text-sm size-[1em] animate-spin" style="color: #915BD8;" />
+          <LoaderCircleIcon class="text-sm size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
           <span class="text-sm" style="color: #6b5a8a;">Consultando generación...</span>
         </div>
         <div v-else>
@@ -168,7 +168,7 @@
         <div class="w-10 h-10 rounded-lg flex items-center justify-center" :style="{ backgroundColor: link.bg }">
           <component :is="link.icon" class="text-base size-[1em]" :style="{ color: link.color }" />
         </div>
-        <span class="text-sm font-medium" style="color: #2C2039;">{{ link.label }}</span>
+        <span class="text-sm font-medium" style="color: var(--color-unergy-deep);">{{ link.label }}</span>
       </RouterLink>
     </div>
   </div>

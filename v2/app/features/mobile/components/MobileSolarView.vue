@@ -59,7 +59,7 @@
           <!-- Chips "ahora" -->
           <div class="ms-now">
             <div class="ms-now-chip">
-              <span class="ms-now-dot" style="background:#915BD8" />
+              <span class="ms-now-dot" style="background:var(--color-unergy-purple)" />
               <div class="ms-now-text">
                 <span class="ms-now-label">Inversores</span>
                 <span class="ms-now-val">{{ fmtKw(nowMap[p.proyecto_id]?.inv ?? null) }}</span>
@@ -91,7 +91,7 @@
             <button v-for="f in (fallasMap[p.proyecto_id] || []).slice(0, 2)" :key="f.id"
               class="ms-falla" @click="openFalla(f)">
               <span class="ms-falla-stripe" :style="{ background: f.prioridad?.color_hex || '#9ca3af' }" />
-              <span class="ms-falla-estado" :style="{ background: (f.estado?.color_hex || '#915BD8') + '22', color: f.estado?.color_hex || '#915BD8' }">{{ f.estado?.etiqueta }}</span>
+              <span class="ms-falla-estado" :style="{ background: (f.estado?.color_hex || 'var(--color-unergy-purple)') + '22', color: f.estado?.color_hex || 'var(--color-unergy-purple)' }">{{ f.estado?.etiqueta }}</span>
               <span class="ms-falla-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</span>
               <ChevronRightIcon class="ms-falla-arrow size-[1em]" />
             </button>
@@ -397,7 +397,7 @@ onUnmounted(() => {
 .ms-root {
   display: flex; flex-direction: column;
   height: 100vh; height: 100dvh; overflow: hidden;
-  background: #f3f4f6; color: #2C2039;
+  background: #f3f4f6; color: var(--color-unergy-deep);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -405,10 +405,10 @@ onUnmounted(() => {
 .ms-topbar {
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
   padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
-  background: #2C2039; color: #fff; position: relative;
+  background: var(--color-unergy-deep); color: #fff; position: relative;
 }
 .ms-brand { flex: 1; text-align: center; font-size: clamp(14px, 3.9vw, 16px); font-weight: 700; letter-spacing: .2px; }
-.ms-brand svg { color: #F6FF72; margin-right: 5px; }
+.ms-brand svg { color: var(--color-unergy-yellow); margin-right: 5px; }
 .ms-icon-btn {
   width: 36px; height: 36px; border-radius: 10px; border: none;
   background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; flex-shrink: 0;
@@ -419,7 +419,7 @@ onUnmounted(() => {
   position: absolute; top: 1px; right: 1px; min-width: 17px; height: 17px; padding: 0 4px;
   display: flex; align-items: center; justify-content: center;
   background: #dc2626; color: #fff; font-size: 10px; font-weight: 800;
-  border-radius: 9px; border: 2px solid #2C2039;
+  border-radius: 9px; border: 2px solid var(--color-unergy-deep);
 }
 
 .ms-menu { position: fixed; inset: 0; z-index: 60; background: rgba(0,0,0,0.2); }
@@ -429,8 +429,8 @@ onUnmounted(() => {
   box-shadow: 0 12px 30px rgba(0,0,0,0.25);
 }
 .ms-menu-user { display: flex; align-items: center; gap: 10px; padding: 10px 10px 12px; border-bottom: 1px solid #f0ebf7; }
-.ms-menu-user svg { font-size: 22px; color: #915BD8; }
-.ms-menu-name { font-size: 15px; font-weight: 700; color: #2C2039; }
+.ms-menu-user svg { font-size: 22px; color: var(--color-unergy-purple); }
+.ms-menu-name { font-size: 15px; font-weight: 700; color: var(--color-unergy-deep); }
 .ms-menu-email { font-size: 12.5px; color: #9ca3af; }
 .ms-menu-item {
   display: flex; align-items: center; gap: 9px; width: 100%; margin-top: 6px;
@@ -454,7 +454,7 @@ onUnmounted(() => {
 .ms-count { font-size: 12px; color: #9ca3af; font-weight: 700; flex-shrink: 0; white-space: nowrap; }
 .ms-add-falla {
   width: 38px; height: 38px; flex-shrink: 0; border: none; border-radius: 11px;
-  background: #F6FF72; color: #2C2039; font-size: 17px; font-weight: 800;
+  background: var(--color-unergy-yellow); color: var(--color-unergy-deep); font-size: 17px; font-weight: 800;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 3px 10px rgba(246,255,114,0.5);
 }
@@ -469,7 +469,7 @@ onUnmounted(() => {
 .ms-picker-item {
   display: flex; align-items: center; gap: 11px; width: 100%;
   padding: 14px 12px; border: none; background: none; border-radius: 10px;
-  font-size: 15.5px; color: #2C2039; text-align: left;
+  font-size: 15.5px; color: var(--color-unergy-deep); text-align: left;
 }
 .ms-picker-item--active { background: #f3edfb; font-weight: 700; }
 .ms-picker-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -488,8 +488,8 @@ onUnmounted(() => {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 12px; color: #6b5a8a; font-size: 15px;
 }
-.ms-state svg { font-size: 26px; color: #915BD8; }
-.ms-retry { margin-top: 4px; padding: 10px 20px; border: none; border-radius: 11px; background: #915BD8; color: #fff; font-weight: 600; font-size: 15px; }
+.ms-state svg { font-size: 26px; color: var(--color-unergy-purple); }
+.ms-retry { margin-top: 4px; padding: 10px 20px; border: none; border-radius: 11px; background: var(--color-unergy-purple); color: #fff; font-weight: 600; font-size: 15px; }
 
 /* Chips "ahora" */
 .ms-now { display: flex; gap: 8px; margin-bottom: 8px; flex-shrink: 0; }
@@ -500,7 +500,7 @@ onUnmounted(() => {
 .ms-now-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .ms-now-text { display: flex; flex-direction: column; min-width: 0; }
 .ms-now-label { font-size: clamp(9.5px, 2.6vw, 10.5px); color: #787774; font-weight: 500; }
-.ms-now-val { font-size: clamp(13px, 3.8vw, 16px); font-weight: 700; color: #2C2039; line-height: 1.15; letter-spacing: -0.2px; white-space: nowrap; }
+.ms-now-val { font-size: clamp(13px, 3.8vw, 16px); font-weight: 700; color: var(--color-unergy-deep); line-height: 1.15; letter-spacing: -0.2px; white-space: nowrap; }
 
 .ms-chart {
   flex: 1; min-height: 0; position: relative;
@@ -518,14 +518,14 @@ onUnmounted(() => {
 }
 .ms-falla-stripe { display: none; }
 .ms-falla-estado { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; flex-shrink: 0; }
-.ms-falla-tipo { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: #2C2039; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ms-falla-tipo { flex: 1; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--color-unergy-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ms-falla-arrow { font-size: 11px; color: #c4b8d8; flex-shrink: 0; }
 .ms-falla-more { font-size: 11px; color: #9ca3af; text-align: center; }
 .ms-chart-expand {
   position: absolute; top: 9px; right: 10px;
   display: flex; align-items: center; gap: 4px;
   padding: 3px 8px; border-radius: 8px;
-  background: #f6f2fc; color: #915BD8;
+  background: #f6f2fc; color: var(--color-unergy-purple);
   font-size: 10px; font-weight: 700; letter-spacing: .2px;
   pointer-events: none;   /* el toque lo recibe la gráfica */
 }
@@ -535,14 +535,14 @@ onUnmounted(() => {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   gap: 10px; color: #6b5a8a; font-size: 14px;
 }
-.ms-chart-loading svg { font-size: 22px; color: #915BD8; }
+.ms-chart-loading svg { font-size: 22px; color: var(--color-unergy-purple); }
 
 .ms-footer { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-shrink: 0; }
 .ms-updated { font-size: 12px; color: #9ca3af; display: flex; align-items: center; gap: 6px; }
 .ms-reconnect {
   margin-left: auto; display: flex; align-items: center; gap: 8px;
   padding: 11px 16px; border: none; border-radius: 12px;
-  background: #915BD8; color: #fff; font-size: clamp(13px, 3.6vw, 14.5px); font-weight: 700;
+  background: var(--color-unergy-purple); color: #fff; font-size: clamp(13px, 3.6vw, 14.5px); font-weight: 700;
   box-shadow: 0 5px 14px rgba(145,91,216,0.32);
 }
 .ms-relay-badge { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; }

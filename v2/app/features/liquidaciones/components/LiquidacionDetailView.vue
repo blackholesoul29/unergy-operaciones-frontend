@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-3 p-3" style="background:#FDFAF7; min-height:100vh">
+  <div class="space-y-3 p-3" style="background:var(--color-unergy-avena); min-height:100vh">
 
     <!-- Header -->
     <div class="flex items-center gap-2 flex-wrap">
@@ -7,7 +7,7 @@
         <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
       </Button>
       <div class="flex items-center gap-2 flex-wrap">
-        <h2 class="text-base font-semibold" style="color:#2C2039">
+        <h2 class="text-base font-semibold" style="color:var(--color-unergy-deep)">
           {{ liq?.proyecto_nombre }} — {{ formatPeriodo(liq?.periodo) }}
         </h2>
         <Tag v-if="liq" :value="liq.estado" :severity="estadoSeverity(liq.estado)" class="text-xs" />
@@ -15,10 +15,10 @@
       <div class="ml-auto flex gap-2 flex-wrap items-center">
         <a v-if="liq?.estado_resultados_url" :href="liq.estado_resultados_url" target="_blank"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold hover:opacity-80 transition-opacity"
-          style="background:#F6FF72; color:#2C2039">
+          style="background:var(--color-unergy-yellow); color:var(--color-unergy-deep)">
           <ChartLineIcon class="text-xs size-[1em]" />Estado de Resultados
         </a>
-        <Button label="Descargar PDF" size="small" style="background:#915BD8; border-color:#915BD8" @click="router.push(`/liquidaciones/${route.params.id}/pdf`)">
+        <Button label="Descargar PDF" size="small" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple)" @click="router.push(`/liquidaciones/${route.params.id}/pdf`)">
           <template #icon><FileTextIcon class="size-[1em]" /></template>
         </Button>
       </div>
@@ -32,14 +32,14 @@
       <div v-if="invFiltroId && invFiltrado"
         class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs flex-wrap"
         style="background:rgba(145,91,216,0.08); border:1px solid rgba(145,91,216,0.2)">
-        <UserIcon class="shrink-0 size-[1em]" style="color:#915BD8" />
-        <span style="color:#2C2039">
+        <UserIcon class="shrink-0 size-[1em]" style="color:var(--color-unergy-purple)" />
+        <span style="color:var(--color-unergy-deep)">
           Mostrando datos de:
           <strong>{{ invFiltrado.cliente_nombre }}</strong>
           ({{ pct(invFiltrado.porcentaje_participacion) }})
         </span>
         <button class="ml-auto flex items-center gap-1.5 text-xs font-semibold hover:opacity-70 shrink-0"
-          style="color:#915BD8"
+          style="color:var(--color-unergy-purple)"
           @click="router.push(`/liquidaciones/${route.params.id}`)">
           <CircleXIcon class="text-xs size-[1em]" />
           Ver proyecto completo
@@ -56,7 +56,7 @@
       <EstadoResultadosConsolidado :panel="panelER" :filtro-pi-id="invFiltroId" />
 
       <!-- Datos adicionales: comprobante, consecutivos -->
-      <div class="bg-white rounded-lg shadow-sm border px-3 py-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px]" style="color:#2C2039;border-color:#e8e0f0">
+      <div class="bg-white rounded-lg shadow-sm border px-3 py-2 flex flex-wrap gap-x-4 gap-y-1 text-[11px]" style="color:var(--color-unergy-deep);border-color:#e8e0f0">
         <span><span class="text-gray-400">Comprobante:</span>
           <strong class="ml-1">{{ liq.comprobante_contable_ref || '—' }}</strong></span>
         <span><span class="text-gray-400">Consec. Ingresos:</span>

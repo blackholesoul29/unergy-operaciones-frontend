@@ -2,7 +2,7 @@
   <div class="bg-white rounded-xl shadow-sm border overflow-hidden flex flex-col h-full" style="border-color:#e8e0f0">
     <div class="px-3 py-2 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
       <SunIcon class="text-sm size-[1em]" style="color:#F0C040" />
-      <h3 class="text-sm font-bold" style="color:#2C2039">Generación del mes</h3>
+      <h3 class="text-sm font-bold" style="color:var(--color-unergy-deep)">Generación del mes</h3>
       <span class="text-[10px]" style="color:#9b8fb0">kWh por día · datos en vivo</span>
     </div>
 
@@ -29,16 +29,16 @@
       </p>
       <div class="grid grid-cols-3 gap-2">
         <div class="rounded-lg px-2 py-1.5 text-center" style="background:#F4F1FA">
-          <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:#6E3FB8">Representación ($/kWh)</p>
-          <p class="text-sm font-bold tabular-nums" style="color:#2C2039">{{ fmtTarifa(tarifas.representacion) }}</p>
+          <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:var(--color-unergy-purple-dark)">Representación ($/kWh)</p>
+          <p class="text-sm font-bold tabular-nums" style="color:var(--color-unergy-deep)">{{ fmtTarifa(tarifas.representacion) }}</p>
         </div>
         <div class="rounded-lg px-2 py-1.5 text-center" style="background:#F4F1FA">
-          <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:#6E3FB8">CGM ($/kWh)</p>
-          <p class="text-sm font-bold tabular-nums" style="color:#2C2039">{{ fmtTarifa(tarifas.cgm) }}</p>
+          <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:var(--color-unergy-purple-dark)">CGM ($/kWh)</p>
+          <p class="text-sm font-bold tabular-nums" style="color:var(--color-unergy-deep)">{{ fmtTarifa(tarifas.cgm) }}</p>
         </div>
         <div class="rounded-lg px-2 py-1.5 text-center" style="background:#F4F1FA">
-          <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:#6E3FB8">Administración (%)</p>
-          <p class="text-sm font-bold tabular-nums" style="color:#2C2039">{{ fmtAdminPct(tarifas.admin) }}</p>
+          <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:var(--color-unergy-purple-dark)">Administración (%)</p>
+          <p class="text-sm font-bold tabular-nums" style="color:var(--color-unergy-deep)">{{ fmtAdminPct(tarifas.admin) }}</p>
         </div>
       </div>
     </div>

@@ -87,7 +87,7 @@ onMounted(() => { register() })
   width: 100%; max-width: 100%; overflow-x: hidden;
   display: flex; align-items: center; justify-content: center;
   padding: 16px; box-sizing: border-box;
-  background: linear-gradient(160deg, #2C2039 0%, #4C1D95 60%, #915BD8 130%);
+  background: linear-gradient(160deg, var(--color-unergy-deep) 0%, #4C1D95 60%, var(--color-unergy-purple) 130%);
 }
 .ml-card {
   width: 100%; max-width: 360px; box-sizing: border-box;
@@ -109,7 +109,7 @@ onMounted(() => { register() })
   background: rgba(255,255,255,0.08); color: #fff;
 }
 .ml-input::placeholder { color: rgba(255,255,255,0.4); }
-.ml-input:focus { outline: none; border-color: #F6FF72; background: rgba(255,255,255,0.12); }
+.ml-input:focus { outline: none; border-color: var(--color-unergy-yellow); background: rgba(255,255,255,0.12); }
 
 .ml-error {
   display: flex; align-items: center; gap: 8px; font-size: 13px; color: #fecaca;
@@ -118,7 +118,7 @@ onMounted(() => { register() })
 .ml-submit {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px;
   padding: 15px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700;
-  color: #2C2039; background: #F6FF72; margin-top: 4px;
+  color: var(--color-unergy-deep); background: var(--color-unergy-yellow); margin-top: 4px;
 }
 .ml-submit:disabled { opacity: .5; }
 .ml-hint { font-size: 11px; color: rgba(255,255,255,0.45); margin: 18px 0 0; }

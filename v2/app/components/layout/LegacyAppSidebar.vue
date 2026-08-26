@@ -104,9 +104,9 @@
             class="absolute bottom-full mb-2 right-0 w-80 bg-white rounded-xl shadow-xl z-50 overflow-hidden"
             style="border: 1px solid #e8e0f0;">
             <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: #e8e0f0;">
-              <span class="text-sm font-semibold" style="color: #2C2039;">Notificaciones</span>
+              <span class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Notificaciones</span>
               <button v-if="unreadCount > 0" @click="markAllRead"
-                class="text-xs font-medium hover:underline" style="color: #915BD8;">
+                class="text-xs font-medium hover:underline" style="color: var(--color-unergy-purple);">
                 Marcar todas leídas
               </button>
             </div>
@@ -124,16 +124,16 @@
                   <component :is="severityIcon(n.severidad)" class="text-xs size-[1em]" />
                 </div>
                 <div class="min-w-0 flex-1">
-                  <p class="text-sm leading-snug" :style="{ color: '#2C2039', fontWeight: n.leida ? '400' : '600' }">{{ n.titulo || n.mensaje }}</p>
+                  <p class="text-sm leading-snug" :style="{ color: 'var(--color-unergy-deep)', fontWeight: n.leida ? '400' : '600' }">{{ n.titulo || n.mensaje }}</p>
                   <p v-if="n.titulo && n.mensaje" class="text-xs mt-0.5" style="color: #6b5a8a;">{{ n.mensaje }}</p>
                   <p class="text-[10px] mt-1" style="color: #9b89b5;">{{ formatTimeAgo(n.created_at) }}</p>
                 </div>
-                <div v-if="!n.leida" class="w-2 h-2 rounded-full shrink-0 mt-2" style="background-color: #915BD8;" />
+                <div v-if="!n.leida" class="w-2 h-2 rounded-full shrink-0 mt-2" style="background-color: var(--color-unergy-purple);" />
               </div>
             </div>
             <RouterLink to="/alertas"
               class="block text-center py-2.5 text-xs font-medium border-t hover:bg-gray-50"
-              style="color: #915BD8; border-color: #e8e0f0;"
+              style="color: var(--color-unergy-purple); border-color: #e8e0f0;"
               @click="showNotifications = false">
               Ver todas las alertas
             </RouterLink>
@@ -334,10 +334,10 @@ const navGroups = computed(() => {
   border-radius: 9px; font-size: 13.5px; font-weight: 600; color: #5b5470;
   transition: background .12s, color .12s; cursor: pointer;
 }
-.sb-item:hover { background: #F5F2FB; color: #2C2039; }
+.sb-item:hover { background: #F5F2FB; color: var(--color-unergy-deep); }
 .sb-item-ico { font-size: 15px; width: 18px; text-align: center; color: #9990ad; flex-shrink: 0; transition: color .12s; }
 .sb-item:hover .sb-item-ico { color: #6D28D9; }
-.sb-item--active { background: #F1EAF9 !important; color: #2C2039 !important; font-weight: 700; }
+.sb-item--active { background: #F1EAF9 !important; color: var(--color-unergy-deep) !important; font-weight: 700; }
 .sb-item--active .sb-item-ico { color: #6D28D9; }
 
 /* Item padre con submenú */
@@ -357,10 +357,10 @@ const navGroups = computed(() => {
 .sb-user { display: flex; align-items: center; gap: 9px; }
 .sb-avatar {
   width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #915BD8, #6D28D9); color: #fff;
+  background: linear-gradient(135deg, var(--color-unergy-purple), #6D28D9); color: #fff;
   font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center;
 }
-.sb-user-name { font-size: 12.5px; font-weight: 700; color: #2C2039; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-user-name { font-size: 12.5px; font-weight: 700; color: var(--color-unergy-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sb-user-mail { font-size: 10.5px; color: #9b8fb0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sb-icon-btn {
   width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;

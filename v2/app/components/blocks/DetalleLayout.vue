@@ -143,13 +143,13 @@ watch(() => props.modelValue, (v) => {
 }
 .dl-volver {
   display: inline-flex; align-items: center; gap: 5px;
-  font-size: 13px; font-weight: 600; color: #915BD8; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--color-unergy-purple); cursor: pointer;
 }
 .dl-volver:hover { text-decoration: underline; text-underline-offset: 2px; }
 .dl-volver svg { font-size: 10px; }
 .dl-sep { color: #c5b9db; }
 .dl-titulo {
-  font-size: 14px; font-weight: 700; color: #2C2039;
+  font-size: 14px; font-weight: 700; color: var(--color-unergy-deep);
   max-width: 46ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .dl-codigo {
@@ -181,15 +181,15 @@ watch(() => props.modelValue, (v) => {
   border-bottom: 2px solid transparent; cursor: pointer;
   transition: color .12s, border-color .12s, background .12s;
 }
-.dl-tab:hover { color: #2C2039; background: #FAF9FC; }
+.dl-tab:hover { color: var(--color-unergy-deep); background: #FAF9FC; }
 .dl-tab svg { font-size: 11px; }
-.dl-tab--on { color: #915BD8; border-bottom-color: #915BD8; }
-.dl-tab--on svg { color: #915BD8; }
+.dl-tab--on { color: var(--color-unergy-purple); border-bottom-color: var(--color-unergy-purple); }
+.dl-tab--on svg { color: var(--color-unergy-purple); }
 .dl-badge {
   background: #EEF0F2; color: #6b7280; border-radius: 999px;
   font-size: 10px; font-weight: 800; padding: 0 6px; min-width: 18px; text-align: center;
 }
-.dl-tab--on .dl-badge { background: #f0ebfd; color: #915BD8; }
+.dl-tab--on .dl-badge { background: #f0ebfd; color: var(--color-unergy-purple); }
 
 .dl-cuerpo { padding: 18px; }
 @media (max-width: 640px) {

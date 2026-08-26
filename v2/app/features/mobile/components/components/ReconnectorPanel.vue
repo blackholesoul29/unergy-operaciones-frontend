@@ -118,7 +118,7 @@ const tiempo = computed(() => {
   padding: 2px 0 7px; border: none; background: none; text-align: left;
 }
 .rp-ico { color: #EAB308; font-size: 13px; }
-.rp-title { flex: 1; font-size: 12.5px; font-weight: 700; color: #2C2039; }
+.rp-title { flex: 1; font-size: 12.5px; font-weight: 700; color: var(--color-unergy-deep); }
 .rp-badge { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 6px; }
 .rp-badge--on  { background: #dcfce7; color: #15803d; }
 .rp-badge--off { background: #fee2e2; color: #b91c1c; }
@@ -133,7 +133,7 @@ const tiempo = computed(() => {
 }
 .rp-kpi-lbl { font-size: clamp(8.5px, 2.4vw, 9.5px); color: #787774; font-weight: 500; letter-spacing: .2px; }
 .rp-kpi-val {
-  font-size: clamp(11px, 3.4vw, 14px); font-weight: 700; color: #2C2039;
+  font-size: clamp(11px, 3.4vw, 14px); font-weight: 700; color: var(--color-unergy-deep);
   line-height: 1.2; white-space: nowrap; letter-spacing: -0.2px;
 }
 .rp-kpi-val svg { font-style: normal; font-size: 0.72em; font-weight: 600; color: #6b5a8a; }
@@ -151,7 +151,7 @@ const tiempo = computed(() => {
 .rp-table tbody th span { font-weight: 500; color: #b3a8c6; }
 .rp-th-first { width: 21%; }
 .rp-table tbody td {
-  font-size: clamp(11px, 3.1vw, 12.5px); font-weight: 600; color: #2C2039;
+  font-size: clamp(11px, 3.1vw, 12.5px); font-weight: 600; color: var(--color-unergy-deep);
   text-align: right; padding: 2.5px 0;
   font-variant-numeric: tabular-nums;
 }
@@ -162,7 +162,7 @@ const tiempo = computed(() => {
   border-top: 1px solid #f8f6fc; padding-top: 6px;
 }
 .rp-urst span { font-size: clamp(9.5px, 2.6vw, 10.5px); color: #9ca3af; font-weight: 600; letter-spacing: .2px; }
-.rp-urst b { color: #2C2039; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rp-urst b { color: var(--color-unergy-deep); font-weight: 700; font-variant-numeric: tabular-nums; }
 
 .rp-time {
   display: flex; align-items: center; gap: 5px; margin-top: 6px;

@@ -6,19 +6,19 @@
         <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
       </Button>
       <div class="flex-1">
-        <h1 class="text-lg font-bold" style="color:#2C2039;">{{ reg.nombre_comercial }}</h1>
+        <h1 class="text-lg font-bold" style="color:var(--color-unergy-deep);">{{ reg.nombre_comercial }}</h1>
         <p class="text-xs mt-0.5" style="color:#9b89b5;">
           {{ [reg.codigo_cnd, reg.clasificacion_regulatoria, reg.tecnologia, reg.operador_red].filter(Boolean).join(' · ') || '—' }}
         </p>
       </div>
       <div class="text-right">
-        <div class="text-2xl font-bold" style="color:#6E3FB8;">{{ reg.avance_pct }}%</div>
+        <div class="text-2xl font-bold" style="color:var(--color-unergy-purple-dark);">{{ reg.avance_pct }}%</div>
         <div class="text-xs" style="color:#9b89b5;">avance</div>
       </div>
     </div>
 
     <div class="rounded-full overflow-hidden" style="height:10px;background:#ECE7F2;">
-      <div :style="`height:100%;width:${Math.min(100, reg.avance_pct)}%;background:linear-gradient(90deg,#915BD8,#6E3FB8);transition:width .5s;`"></div>
+      <div :style="`height:100%;width:${Math.min(100, reg.avance_pct)}%;background:linear-gradient(90deg,var(--color-unergy-purple),var(--color-unergy-purple-dark));transition:width .5s;`"></div>
     </div>
 
     <!-- ============ MAPA DEL PROCESO (estilo mundos de plataformas) ============ -->
@@ -26,7 +26,7 @@
       <div class="mapa-header">
         <span class="mapa-titulo">Mapa del proceso de conexión</span>
         <div class="mapa-leyenda">
-          <span><i class="dot" style="background:#915BD8"></i>Completada</span>
+          <span><i class="dot" style="background:var(--color-unergy-purple)"></i>Completada</span>
           <span><i class="dot ring" ></i>En progreso</span>
           <span><i class="dot" style="background:#f3eefb;border:2px solid #d9c9f0"></i>Pendiente</span>
           <span><i class="dot" style="background:#fde8e8;border:2px solid #e05252"></i>Bloqueada</span>
@@ -59,9 +59,9 @@
           <!-- nodos de etapa -->
           <g v-for="n in mapaNodos" :key="n.etapa" class="nodo" @click="seleccionar(n.etapa)">
             <!-- anillo de seleccion -->
-            <circle v-if="n.etapa === seleccionada" :cx="n.x" :cy="n.y" r="34" fill="none" stroke="#F6FF72" stroke-width="4" />
+            <circle v-if="n.etapa === seleccionada" :cx="n.x" :cy="n.y" r="34" fill="none" stroke="var(--color-unergy-yellow)" stroke-width="4" />
             <!-- anillo pulsante si es la etapa actual -->
-            <circle v-if="n.etapa === etapaActual" :cx="n.x" :cy="n.y" r="33" fill="none" stroke="#915BD8" stroke-width="3" class="anillo-actual" />
+            <circle v-if="n.etapa === etapaActual" :cx="n.x" :cy="n.y" r="33" fill="none" stroke="var(--color-unergy-purple)" stroke-width="3" class="anillo-actual" />
             <circle :cx="n.x" :cy="n.y" r="26" :fill="fillNodo(n.status)" :stroke="strokeNodo(n.status)" stroke-width="3" />
             <text :x="n.x" :y="n.y + 6" text-anchor="middle" class="nodo-num" :fill="textNodo(n.status)">{{ n.num }}</text>
             <!-- badge completada -->
@@ -77,9 +77,9 @@
 
           <!-- meta: energizacion -->
           <g>
-            <circle :cx="GOAL.x" :cy="GOAL.y" r="24" fill="#2C2039" />
+            <circle :cx="GOAL.x" :cy="GOAL.y" r="24" fill="var(--color-unergy-deep)" />
             <text :x="GOAL.x" :y="GOAL.y + 7" text-anchor="middle" style="font-size:22px">🏁</text>
-            <text :x="GOAL.x" :y="GOAL.y + 46" text-anchor="middle" class="nodo-label" style="fill:#2C2039;font-weight:700">Energización</text>
+            <text :x="GOAL.x" :y="GOAL.y + 46" text-anchor="middle" class="nodo-label" style="fill:var(--color-unergy-deep);font-weight:700">Energización</text>
           </g>
         </svg>
       </div>
@@ -88,9 +88,9 @@
       <div v-if="etapaSel" class="etapa-panel">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <div class="text-sm font-bold" style="color:#2C2039;">{{ etapaSel.etiqueta }}</div>
+            <div class="text-sm font-bold" style="color:var(--color-unergy-deep);">{{ etapaSel.etiqueta }}</div>
             <div class="text-xs" style="color:#9b89b5;">
-              Estado: <span class="font-semibold" style="color:#6E3FB8;">{{ estadoLabel(etapaSel.estado_actual) }}</span>
+              Estado: <span class="font-semibold" style="color:var(--color-unergy-purple-dark);">{{ estadoLabel(etapaSel.estado_actual) }}</span>
               <span v-if="etapaSel.responsable_actual"> · resp: {{ etapaSel.responsable_actual }}</span>
               · {{ etapaSel.ganado_pct }}/{{ etapaSel.total_pct }}%
             </div>
@@ -115,11 +115,11 @@
         </div>
 
         <div class="mt-3">
-          <div class="text-xs font-semibold mb-1" style="color:#2C2039;">Hitos de esta etapa</div>
+          <div class="text-xs font-semibold mb-1" style="color:var(--color-unergy-deep);">Hitos de esta etapa</div>
           <div v-for="h in hitosDeEtapa(seleccionada)" :key="h.hito" class="hito-linea">
             <span class="font-mono font-semibold" :style="`color:${h.completado ? '#3fb984' : '#9b89b5'}`">{{ h.completado ? '✓' : '○' }} {{ h.codigo }}</span>
-            <span class="flex-1" style="color:#2C2039;">{{ h.descripcion }}</span>
-            <span style="color:#6E3FB8;font-weight:600">{{ h.peso_pct }}%</span>
+            <span class="flex-1" style="color:var(--color-unergy-deep);">{{ h.descripcion }}</span>
+            <span style="color:var(--color-unergy-purple-dark);font-weight:600">{{ h.peso_pct }}%</span>
           </div>
           <div v-if="!hitosDeEtapa(seleccionada).length" class="text-xs" style="color:#9b89b5;">Sin hitos ponderados en esta etapa.</div>
         </div>
@@ -127,7 +127,7 @@
 
       <div v-if="reg.bloqueos?.length" class="bloqueos">
         <span class="font-semibold" style="color:#b91c1c;">⛔ Bloqueos:</span>
-        <span v-for="b in reg.bloqueos" :key="b.etapa" style="color:#2C2039;"> {{ b.etiqueta }} ({{ b.motivo }});</span>
+        <span v-for="b in reg.bloqueos" :key="b.etapa" style="color:var(--color-unergy-deep);"> {{ b.etiqueta }} ({{ b.motivo }});</span>
       </div>
     </div>
 
@@ -137,32 +137,32 @@
         <!-- 0. GENERAL -->
         <TabPanel header="General">
           <div class="grid md:grid-cols-3 gap-3 p-1">
-            <label class="text-xs" style="color:#2C2039;">N° expediente
+            <label class="text-xs" style="color:var(--color-unergy-deep);">N° expediente
               <InputText v-model="general.numero_expediente" class="w-full" /></label>
-            <label class="text-xs" style="color:#2C2039;">ID requerimiento OR
+            <label class="text-xs" style="color:var(--color-unergy-deep);">ID requerimiento OR
               <InputText v-model="general.id_requerimiento_or" class="w-full" /></label>
-            <label class="text-xs" style="color:#2C2039;">N° solicitud appweb
+            <label class="text-xs" style="color:var(--color-unergy-deep);">N° solicitud appweb
               <InputText v-model="general.numero_solicitud_appweb" class="w-full" /></label>
-            <label class="text-xs" style="color:#2C2039;">Fecha conexión estimada
+            <label class="text-xs" style="color:var(--color-unergy-deep);">Fecha conexión estimada
               <input type="date" v-model="general.fecha_conexion_estimada" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
-            <label class="text-xs" style="color:#2C2039;">Vigencia CREG 174 / ámbito
+            <label class="text-xs" style="color:var(--color-unergy-deep);">Vigencia CREG 174 / ámbito
               <input type="date" v-model="general.vigencia_aprobacion_conexion" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
-            <label class="text-xs" style="color:#2C2039;">Fecha visita protecciones
+            <label class="text-xs" style="color:var(--color-unergy-deep);">Fecha visita protecciones
               <input type="date" v-model="general.fecha_visita_protecciones" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
-            <label class="text-xs" style="color:#2C2039;">Tipo visita protecciones
+            <label class="text-xs" style="color:var(--color-unergy-deep);">Tipo visita protecciones
               <Select v-model="general.tipo_visita_protecciones" :options="cat.tipos_visita" showClear placeholder="—" class="w-full" /></label>
-            <label class="text-xs col-span-2" style="color:#2C2039;">Punto de conexión (texto)
+            <label class="text-xs col-span-2" style="color:var(--color-unergy-deep);">Punto de conexión (texto)
               <InputText v-model="general.punto_conexion_texto" class="w-full" /></label>
-            <label class="text-xs col-span-3" style="color:#2C2039;">Notas
+            <label class="text-xs col-span-3" style="color:var(--color-unergy-deep);">Notas
               <Textarea v-model="general.notas" rows="2" class="w-full" /></label>
             <div class="flex gap-4 col-span-3">
-              <label class="flex items-center gap-2 text-sm" style="color:#2C2039;">
+              <label class="flex items-center gap-2 text-sm" style="color:var(--color-unergy-deep);">
                 <Checkbox v-model="general.exporta" :binary="true" /> Exporta energía</label>
-              <label class="flex items-center gap-2 text-sm" style="color:#2C2039;">
+              <label class="flex items-center gap-2 text-sm" style="color:var(--color-unergy-deep);">
                 <Checkbox v-model="general.comercializador_es_or" :binary="true" /> Comercializador es el OR</label>
             </div>
           </div>
-          <Button label="Guardar datos generales" size="small" class="mt-2" :loading="guardandoGeneral" @click="guardarGeneral" style="background:#915BD8; border-color:#915BD8;">
+          <Button label="Guardar datos generales" size="small" class="mt-2" :loading="guardandoGeneral" @click="guardarGeneral" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
             <template #icon><SaveIcon class="size-[1em]" /></template>
           </Button>
         </TabPanel>
@@ -191,26 +191,26 @@
         <TabPanel header="Parámetros 9.3">
           <div class="grid md:grid-cols-2 gap-4 p-1">
             <div>
-              <div class="text-sm font-semibold mb-2" style="color:#2C2039;">Parámetros técnicos</div>
+              <div class="text-sm font-semibold mb-2" style="color:var(--color-unergy-deep);">Parámetros técnicos</div>
               <div class="grid grid-cols-2 gap-2">
-                <label v-for="f in campos93" :key="f.k" class="text-xs" style="color:#2C2039;">
+                <label v-for="f in campos93" :key="f.k" class="text-xs" style="color:var(--color-unergy-deep);">
                   {{ f.label }}
                   <input type="number" step="any" v-model.number="params[f.k]" class="w-full border rounded px-2 py-1 mt-0.5" style="border-color:#e8e0f0;" />
                 </label>
               </div>
-              <Button label="Guardar parámetros" size="small" class="mt-3" :loading="guardandoParams" @click="guardarParams" style="background:#915BD8; border-color:#915BD8;">
+              <Button label="Guardar parámetros" size="small" class="mt-3" :loading="guardandoParams" @click="guardarParams" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
                 <template #icon><SaveIcon class="size-[1em]" /></template>
               </Button>
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <div class="text-sm font-semibold" style="color:#2C2039;">Validación</div>
+                <div class="text-sm font-semibold" style="color:var(--color-unergy-deep);">Validación</div>
                 <Tag v-if="validacion" :value="validacion.sin_parametros ? 'sin datos' : (validacion.valido ? 'sin errores' : 'con errores')"
                   :severity="validacion.sin_parametros ? 'secondary' : (validacion.valido ? 'success' : 'danger')" class="text-xs" />
               </div>
               <div v-if="validacion && validacion.resultados.length" class="space-y-1">
                 <div v-for="(r, i) in validacion.resultados" :key="i" class="flex items-center justify-between text-xs rounded px-2 py-1" style="background:#faf8fd;">
-                  <span style="color:#2C2039;">{{ r.regla }}</span>
+                  <span style="color:var(--color-unergy-deep);">{{ r.regla }}</span>
                   <Tag :value="r.severidad" :severity="sevColor(r.severidad)" class="text-xs" :title="r.mensaje" />
                 </div>
               </div>
@@ -224,7 +224,7 @@
           <div class="space-y-5 p-1">
             <div>
               <div class="flex items-center justify-between mb-2">
-                <div class="text-sm font-semibold" style="color:#2C2039;">Equipos de frontera</div>
+                <div class="text-sm font-semibold" style="color:var(--color-unergy-deep);">Equipos de frontera</div>
                 <Button label="Agregar equipo" size="small" text @click="abrirEquipo">
                   <template #icon><PlusIcon class="size-[1em]" /></template>
                 </Button>
@@ -247,7 +247,7 @@
             </div>
             <div>
               <div class="flex items-center justify-between mb-2">
-                <div class="text-sm font-semibold" style="color:#2C2039;">Documentos</div>
+                <div class="text-sm font-semibold" style="color:var(--color-unergy-deep);">Documentos</div>
                 <Button label="Agregar documento" size="small" text @click="abrirDoc">
                   <template #icon><PlusIcon class="size-[1em]" /></template>
                 </Button>
@@ -260,7 +260,7 @@
                 <Column field="firmado_por" header="Firmado por" />
                 <Column header="" style="width:90px">
                   <template #body="{ data }">
-                    <a v-if="data.url_drive" :href="data.url_drive" target="_blank" class="mr-1"><ExternalLinkIcon class="size-[1em]" style="color:#915BD8;" /></a>
+                    <a v-if="data.url_drive" :href="data.url_drive" target="_blank" class="mr-1"><ExternalLinkIcon class="size-[1em]" style="color:var(--color-unergy-purple);" /></a>
                     <Button text rounded size="small" severity="danger" @click="borrarDoc(data)">
                       <template #icon><Trash2Icon class="size-[1em]" /></template>
                     </Button>
@@ -275,7 +275,7 @@
         <TabPanel header="Alertas">
           <div class="p-1">
             <div class="flex items-center justify-between mb-2">
-              <div class="text-sm font-semibold" style="color:#2C2039;">Alertas</div>
+              <div class="text-sm font-semibold" style="color:var(--color-unergy-deep);">Alertas</div>
               <Button label="Recomputar" size="small" :loading="recomputando" @click="recomputar">
                 <template #icon><RefreshCwIcon class="size-[1em]" /></template>
               </Button>
@@ -283,7 +283,7 @@
             <div v-if="alertas.length" class="space-y-2">
               <div v-for="(a, i) in alertas" :key="i" class="rounded-lg p-2 text-sm" style="border-left:3px solid #f6b73c;background:#fffbf0;">
                 <div class="text-xs font-semibold" style="color:#b45309;">{{ a.tipo }}</div>
-                <div style="color:#2C2039;">{{ a.mensaje }}</div>
+                <div style="color:var(--color-unergy-deep);">{{ a.mensaje }}</div>
               </div>
             </div>
             <p v-else class="text-xs" style="color:#9b89b5;">Sin alertas. Usa «Recomputar» para recalcular con las fechas actuales.</p>
@@ -293,7 +293,7 @@
         <!-- 5. CORREOS -->
         <TabPanel header="Correos">
           <div class="p-1 space-y-2">
-            <div class="text-sm" style="color:#2C2039;">Genera un borrador de correo tipo (se rellena con los datos del proyecto):</div>
+            <div class="text-sm" style="color:var(--color-unergy-deep);">Genera un borrador de correo tipo (se rellena con los datos del proyecto):</div>
             <div class="flex gap-2 flex-wrap">
               <Button label="Firmas al OR (9.1/9.7)" size="small" outlined @click="generarCorreo('SOLICITUD_FIRMAS_OR')" />
               <Button label="Creación en MDC (XM)" size="small" outlined @click="generarCorreo('CREACION_MDC_XM')" />
@@ -307,37 +307,37 @@
     <!-- Dialogo equipo -->
     <Dialog v-model:visible="equipoDialog" modal header="Nuevo equipo de frontera" :style="{ width: '30rem' }">
       <div class="grid grid-cols-2 gap-3">
-        <label class="text-xs col-span-2" style="color:#2C2039;">Tipo *
+        <label class="text-xs col-span-2" style="color:var(--color-unergy-deep);">Tipo *
           <Select v-model="equipoForm.tipo" :options="cat.tipos_equipo" placeholder="Tipo…" class="w-full" />
         </label>
-        <label class="text-xs" style="color:#2C2039;">Marca<InputText v-model="equipoForm.marca" class="w-full" /></label>
-        <label class="text-xs" style="color:#2C2039;">Modelo<InputText v-model="equipoForm.modelo" class="w-full" /></label>
-        <label class="text-xs" style="color:#2C2039;">Serial<InputText v-model="equipoForm.serial" class="w-full" /></label>
-        <label class="text-xs" style="color:#2C2039;">Venc. calibración<input type="date" v-model="equipoForm.fecha_vencimiento_calibracion" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
-        <label class="text-xs" style="color:#2C2039;">Solicitud Solenium<input type="date" v-model="equipoForm.fecha_solicitud_solenium" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
-        <label class="text-xs" style="color:#2C2039;">Envío al OR<input type="date" v-model="equipoForm.fecha_envio_or" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Marca<InputText v-model="equipoForm.marca" class="w-full" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Modelo<InputText v-model="equipoForm.modelo" class="w-full" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Serial<InputText v-model="equipoForm.serial" class="w-full" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Venc. calibración<input type="date" v-model="equipoForm.fecha_vencimiento_calibracion" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Solicitud Solenium<input type="date" v-model="equipoForm.fecha_solicitud_solenium" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Envío al OR<input type="date" v-model="equipoForm.fecha_envio_or" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
       </div>
       <template #footer>
         <Button label="Cancelar" text @click="equipoDialog = false" />
-        <Button label="Agregar" :disabled="!equipoForm.tipo" @click="crearEquipo" style="background:#915BD8; border-color:#915BD8;" />
+        <Button label="Agregar" :disabled="!equipoForm.tipo" @click="crearEquipo" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);" />
       </template>
     </Dialog>
 
     <!-- Dialogo documento -->
     <Dialog v-model:visible="docDialog" modal header="Nuevo documento" :style="{ width: '30rem' }">
       <div class="grid grid-cols-2 gap-3">
-        <label class="text-xs col-span-2" style="color:#2C2039;">Tipo *
+        <label class="text-xs col-span-2" style="color:var(--color-unergy-deep);">Tipo *
           <Select v-model="docForm.tipo" :options="cat.tipos_documento" filter placeholder="Tipo…" class="w-full" />
         </label>
-        <label class="text-xs" style="color:#2C2039;">Radicado<InputText v-model="docForm.radicado" class="w-full" /></label>
-        <label class="text-xs" style="color:#2C2039;">Firmado por<InputText v-model="docForm.firmado_por" class="w-full" /></label>
-        <label class="text-xs" style="color:#2C2039;">Emisión<input type="date" v-model="docForm.fecha_emision" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
-        <label class="text-xs" style="color:#2C2039;">Vencimiento<input type="date" v-model="docForm.fecha_vencimiento" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
-        <label class="text-xs col-span-2" style="color:#2C2039;">Enlace Drive<InputText v-model="docForm.url_drive" class="w-full" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Radicado<InputText v-model="docForm.radicado" class="w-full" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Firmado por<InputText v-model="docForm.firmado_por" class="w-full" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Emisión<input type="date" v-model="docForm.fecha_emision" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
+        <label class="text-xs" style="color:var(--color-unergy-deep);">Vencimiento<input type="date" v-model="docForm.fecha_vencimiento" class="w-full border rounded px-2 py-1" style="border-color:#e8e0f0;" /></label>
+        <label class="text-xs col-span-2" style="color:var(--color-unergy-deep);">Enlace Drive<InputText v-model="docForm.url_drive" class="w-full" /></label>
       </div>
       <template #footer>
         <Button label="Cancelar" text @click="docDialog = false" />
-        <Button label="Agregar" :disabled="!docForm.tipo" @click="crearDoc" style="background:#915BD8; border-color:#915BD8;" />
+        <Button label="Agregar" :disabled="!docForm.tipo" @click="crearDoc" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);" />
       </template>
     </Dialog>
 
@@ -354,13 +354,13 @@
         <Button label="Copiar cuerpo" text @click="copiarCorreo">
           <template #icon><CopyIcon class="size-[1em]" /></template>
         </Button>
-        <Button label="Cerrar" @click="correoDialog = false" style="background:#915BD8; border-color:#915BD8;" />
+        <Button label="Cerrar" @click="correoDialog = false" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);" />
       </template>
     </Dialog>
   </div>
 
   <div v-else class="flex items-center justify-center py-20">
-    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color:#915BD8;" />
+    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color:var(--color-unergy-purple);" />
   </div>
 </template>
 
@@ -648,18 +648,18 @@ onMounted(async () => {
 
 <style scoped>
 .mapa-card {
-  background: radial-gradient(1200px 200px at 20% -40%, #efe7fb 0%, #fdfaf7 60%);
+  background: radial-gradient(1200px 200px at 20% -40%, #efe7fb 0%, var(--color-unergy-avena) 60%);
   border: 1px solid #e8e0f0;
   border-radius: 16px;
   padding: 14px 16px 18px;
   box-shadow: 0 1px 3px rgba(44,32,57,.06);
 }
 .mapa-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
-.mapa-titulo { font-weight: 700; color: #2C2039; font-size: .95rem; }
+.mapa-titulo { font-weight: 700; color: var(--color-unergy-deep); font-size: .95rem; }
 .mapa-leyenda { display: flex; gap: 12px; flex-wrap: wrap; font-size: .68rem; color: #6b5a8a; }
 .mapa-leyenda span { display: inline-flex; align-items: center; gap: 4px; }
 .mapa-leyenda .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-.mapa-leyenda .dot.ring { background: #fff; border: 2px solid #915BD8; }
+.mapa-leyenda .dot.ring { background: #fff; border: 2px solid var(--color-unergy-purple); }
 .mapa-wrap { overflow-x: auto; }
 .mapa-svg { width: 100%; min-width: 880px; height: auto; display: block; }
 .lane-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; fill: #b9a9d6; }
@@ -676,9 +676,9 @@ onMounted(async () => {
 .etapa-panel { margin-top: 14px; background: #fff; border: 1px solid #ECE7F2; border-radius: 12px; padding: 12px 14px; }
 .pill {
   padding: 5px 12px; border-radius: 999px; font-size: .75rem; border: 1px solid #d9c9f0;
-  background: #fff; color: #6E3FB8; transition: all .15s; font-weight: 600;
+  background: #fff; color: var(--color-unergy-purple-dark); transition: all .15s; font-weight: 600;
 }
-.pill:hover:not(:disabled) { background: #915BD8; color: #fff; border-color: #915BD8; }
+.pill:hover:not(:disabled) { background: var(--color-unergy-purple); color: #fff; border-color: var(--color-unergy-purple); }
 .pill:disabled { opacity: .5; cursor: default; }
 .hito-linea { display: flex; align-items: center; gap: 8px; font-size: .78rem; padding: 2px 0; }
 .bloqueos { margin-top: 12px; font-size: .78rem; background: #fff5f5; border: 1px solid #f0c0c0; border-radius: 10px; padding: 8px 12px; }

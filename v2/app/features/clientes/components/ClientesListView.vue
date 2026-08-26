@@ -31,7 +31,7 @@
         <Column field="razon_social_nombre" header="Razón social" sortable>
           <template #body="{ data }">
             <div class="flex items-center gap-2">
-              <span class="font-medium" style="color:#2C2039">{{ formatearNombre(data.razon_social_nombre) }}</span>
+              <span class="font-medium" style="color:var(--color-unergy-deep)">{{ formatearNombre(data.razon_social_nombre) }}</span>
               <span v-if="data.alerta_contrato" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                 :style="{ color: SEMAFORO[data.alerta_contrato].color, background: SEMAFORO[data.alerta_contrato].bg }">
                 {{ SEMAFORO[data.alerta_contrato].label }}
@@ -44,7 +44,7 @@
         </Column>
         <Column field="num_plantas" header="Plantas" sortable style="width:90px">
           <template #body="{ data }">
-            <span class="font-semibold tabular-nums" style="color:#2C2039">{{ data.num_plantas }}</span>
+            <span class="font-semibold tabular-nums" style="color:var(--color-unergy-deep)">{{ data.num_plantas }}</span>
           </template>
         </Column>
         <Column header="Servicios">
@@ -52,7 +52,7 @@
             <div class="flex flex-wrap gap-1">
               <span v-for="s in data.servicios" :key="s"
                 class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                style="background:#f0ebfd;color:#915BD8">{{ servicioLabel(s) }}</span>
+                style="background:#f0ebfd;color:var(--color-unergy-purple)">{{ servicioLabel(s) }}</span>
               <span v-if="!data.servicios.length" class="text-xs" style="color:#bba8d4">—</span>
             </div>
           </template>
@@ -60,7 +60,7 @@
         <Column header="Contacto comercial">
           <template #body="{ data }">
             <div class="leading-tight">
-              <p class="text-sm" style="color:#2C2039">
+              <p class="text-sm" style="color:var(--color-unergy-deep)">
                 {{ fmt(data.contacto_comercial_nombre) }}
                 <span v-if="data.contactos_comerciales_extra" class="text-[10px]" style="color:#9b89b5">
                   +{{ data.contactos_comerciales_extra }}

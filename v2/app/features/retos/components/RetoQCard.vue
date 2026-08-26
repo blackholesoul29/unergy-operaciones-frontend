@@ -195,28 +195,28 @@ const pieTxt = computed(() => {
   transition: all .14s ease;
 }
 .rq-card-q:hover {
-  border-color: #B08AE2;
+  border-color: var(--color-unergy-purple-light);
   box-shadow: 0 6px 18px rgba(44, 32, 57, .09);
   transform: translateY(-1px);
 }
 .rq-card-q:focus-visible {
-  outline: 2px solid #915BD8;
+  outline: 2px solid var(--color-unergy-purple);
   outline-offset: 2px;
 }
 /* Trimestre en curso: se mantiene también en hover */
 .rq-q-actual {
-  border: 1.5px solid #915BD8;
+  border: 1.5px solid var(--color-unergy-purple);
   box-shadow: 0 0 0 3px rgba(145, 91, 216, .10);
 }
 .rq-q-actual:hover {
-  border-color: #915BD8;
+  border-color: var(--color-unergy-purple);
   box-shadow: 0 0 0 3px rgba(145, 91, 216, .10), 0 6px 18px rgba(44, 32, 57, .09);
 }
 
 /* ── a) Eyebrow ────────────────────────────────────────────────────────── */
 .rq-q-eyebrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .rq-q-eyebrow-l { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
-.rq-q-num { font-size: 11px; font-weight: 800; color: #915BD8; }
+.rq-q-num { font-size: 11px; font-weight: 800; color: var(--color-unergy-purple); }
 .rq-q-punto-sep { font-size: 11px; color: #9b8fb0; }
 .rq-q-meses { font-size: 11px; font-weight: 600; color: #9b8fb0; }
 
@@ -234,7 +234,7 @@ const pieTxt = computed(() => {
   width: 5px;
   height: 5px;
   border-radius: 999px;
-  background: #915BD8;
+  background: var(--color-unergy-purple);
   animation: rq-pulse 2s ease-in-out infinite;
 }
 @keyframes rq-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -243,7 +243,7 @@ const pieTxt = computed(() => {
 .rq-q-identidad { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
 .rq-q-ident-txt { min-width: 0; }
 .rq-q-nombre {
-  font-size: 15px; font-weight: 800; color: #2C2039; line-height: 1.2;
+  font-size: 15px; font-weight: 800; color: var(--color-unergy-deep); line-height: 1.2;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .rq-q-rango { font-size: 11px; color: #6b5a8a; margin-top: 2px; }
@@ -260,19 +260,19 @@ const pieTxt = computed(() => {
 /* ── e) Lista de métricas ──────────────────────────────────────────────── */
 .rq-q-metricas { display: flex; flex-direction: column; gap: 6px; }
 .rq-q-m-nombre {
-  font-size: 11px; font-weight: 600; color: #2C2039;
+  font-size: 11px; font-weight: 600; color: var(--color-unergy-deep);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .rq-q-m-linea { display: flex; align-items: center; gap: 8px; }
 .rq-q-m-spacer { flex: 1; }
 .rq-q-m-valor {
-  font-size: 12px; font-weight: 700; color: #2C2039;
+  font-size: 12px; font-weight: 700; color: var(--color-unergy-deep);
   font-variant-numeric: tabular-nums;
 }
 .rq-q-m-unidad { font-size: 10px; font-weight: 600; color: #9b8fb0; margin-left: 3px; }
 .rq-q-m-unidad-pegada { margin-left: 0; }
 .rq-q-m-vacio { font-size: 12px; font-weight: 700; color: #c7bdd8; }
-.rq-q-mas { font-size: 10px; font-weight: 600; color: #915BD8; }
+.rq-q-mas { font-size: 10px; font-weight: 600; color: var(--color-unergy-purple); }
 
 /* ── f) Pie ────────────────────────────────────────────────────────────── */
 .rq-q-pie { font-size: 10px; font-weight: 600; color: #6b5a8a; }
@@ -285,7 +285,7 @@ const pieTxt = computed(() => {
   text-align: center;
 }
 .rq-q-vacio-titulo { font-size: 11px; font-weight: 600; color: #9b8fb0; }
-.rq-q-vacio-cta { font-size: 11px; font-weight: 700; color: #915BD8; margin-top: 3px; }
+.rq-q-vacio-cta { font-size: 11px; font-weight: 700; color: var(--color-unergy-purple); margin-top: 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   .rq-card-q { transition: none; }

@@ -290,7 +290,7 @@ onMounted(cargar)
 
 /* ── Hero ───────────────────────────────────────────────────────── */
 .inf-hero {
-  background: linear-gradient(135deg, #2C2039 0%, #3d2b52 60%, #4a2d6e 100%);
+  background: linear-gradient(135deg, var(--color-unergy-deep) 0%, #3d2b52 60%, #4a2d6e 100%);
   padding: 28px 32px 24px;
   display: flex;
   align-items: center;
@@ -302,7 +302,7 @@ onMounted(cargar)
 .inf-hero-title {
   font-size: 24px;
   font-weight: 900;
-  color: #FDFAF7;
+  color: var(--color-unergy-avena);
   margin: 0 0 4px;
   letter-spacing: -0.3px;
 }
@@ -349,7 +349,7 @@ onMounted(cargar)
 .kpi-card.kpi-active::after { opacity: 1; }
 .kpi-card.kpi-active { background: #f9f7ff; }
 
-.kpi-total::after    { background: #915BD8; }
+.kpi-total::after    { background: var(--color-unergy-purple); }
 .kpi-borrador::after { background: #d4a017; }
 .kpi-revisado::after { background: #2563EB; }
 .kpi-aprobado::after { background: #16a34a; }
@@ -401,7 +401,7 @@ onMounted(cargar)
   border: 1.5px solid #e5e2ec;
   border-radius: 8px;
   padding: 7px 12px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   font-size: 13px;
   font-family: inherit;
   outline: none;
@@ -409,7 +409,7 @@ onMounted(cargar)
   min-width: 130px;
   transition: border-color .15s;
 }
-.inf-select:focus { border-color: #915BD8; }
+.inf-select:focus { border-color: var(--color-unergy-purple); }
 
 .inf-clear-btn {
   background: transparent;
@@ -424,7 +424,7 @@ onMounted(cargar)
   transition: all .15s;
   align-self: flex-end;
 }
-.inf-clear-btn:hover { border-color: #915BD8; color: #6d28d9; }
+.inf-clear-btn:hover { border-color: var(--color-unergy-purple); color: #6d28d9; }
 
 .inf-count-label {
   margin-left: auto;
@@ -443,7 +443,7 @@ onMounted(cargar)
   border: 1px solid rgba(255,255,255,.25);
   border-radius: 8px;
   padding: 8px 16px;
-  color: #FDFAF7;
+  color: var(--color-unergy-avena);
   font-size: 13px;
   font-weight: 700;
   font-family: inherit;
@@ -466,7 +466,7 @@ onMounted(cargar)
 .spin-ring {
   width: 32px; height: 32px;
   border: 3px solid #e5e2ec;
-  border-top-color: #915BD8;
+  border-top-color: var(--color-unergy-purple);
   border-radius: 50%;
   animation: spin .8s linear infinite;
 }

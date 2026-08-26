@@ -15,9 +15,9 @@
           <span class="mx-1.5">›</span>
           <span>Servicios</span>
           <span class="mx-1.5">›</span>
-          <span class="font-medium" style="color:#2C2039">Operación</span>
+          <span class="font-medium" style="color:var(--color-unergy-deep)">Operación</span>
         </p>
-        <h2 class="text-lg font-bold" style="color:#2C2039">Operación</h2>
+        <h2 class="text-lg font-bold" style="color:var(--color-unergy-deep)">Operación</h2>
       </div>
     </div>
 
@@ -50,7 +50,7 @@
                   </div>
                   <div>
                     <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Mantenimiento O&amp;M</p>
-                    <span class="text-sm font-semibold" style="color:#2C2039">{{ proyectoNombre }}</span>
+                    <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">{{ proyectoNombre }}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -177,7 +177,7 @@
                           <td class="px-4 py-2.5">
                             <div class="flex items-center gap-1.5">
                               <span class="font-mono font-semibold"
-                                :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'">
+                                :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:var(--color-unergy-deep)'">
                                 {{ fila.anio }}
                               </span>
                               <span v-if="fila.anio === ANIO_ACTUAL"
@@ -191,7 +191,7 @@
                             <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
                           </td>
                           <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                            :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'">
+                            :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:var(--color-unergy-deep)'">
                             {{ formatCOP(fila.valor) }}
                           </td>
                           <td class="px-4 py-2.5 text-center">
@@ -253,7 +253,7 @@
                           <td class="px-4 py-2.5">
                             <div class="flex items-center gap-1.5">
                               <span class="font-mono font-semibold"
-                                :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'">
+                                :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:var(--color-unergy-deep)'">
                                 {{ fila.anio }}
                               </span>
                               <span v-if="fila.anio === ANIO_ACTUAL"
@@ -267,7 +267,7 @@
                             <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
                           </td>
                           <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                            :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'">
+                            :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:var(--color-unergy-deep)'">
                             {{ formatCOP(fila.valor) }}
                           </td>
                           <td class="px-4 py-2.5 text-center">
@@ -359,7 +359,7 @@
                   </div>
                   <div>
                     <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Arriendo</p>
-                    <span class="text-sm font-semibold" style="color:#2C2039">{{ proyectoNombre }}</span>
+                    <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">{{ proyectoNombre }}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -498,7 +498,7 @@
                           <td class="px-4 py-2.5">
                             <div class="flex items-center gap-1.5">
                               <span class="font-mono font-semibold"
-                                :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'">
+                                :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:var(--color-unergy-deep)'">
                                 {{ fila.anio }}
                               </span>
                               <span v-if="fila.anio === ANIO_ACTUAL"
@@ -512,7 +512,7 @@
                             <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
                           </td>
                           <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                            :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'">
+                            :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:var(--color-unergy-deep)'">
                             {{ formatCOP(fila.valor) }}
                           </td>
                           <td class="px-4 py-2.5 text-center">
@@ -575,7 +575,7 @@
                           <td class="px-4 py-2.5">
                             <div class="flex items-center gap-1.5">
                               <span class="font-mono font-semibold"
-                                :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'">
+                                :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:var(--color-unergy-deep)'">
                                 {{ fila.anio }}
                               </span>
                               <span v-if="fila.anio === ANIO_ACTUAL"
@@ -589,7 +589,7 @@
                             <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
                           </td>
                           <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                            :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'">
+                            :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:var(--color-unergy-deep)'">
                             {{ formatCOP(fila.valor) }}
                           </td>
                           <td class="px-4 py-2.5 text-center">
@@ -679,7 +679,7 @@
                     </div>
                     <div>
                       <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Arriendo</p>
-                      <span class="text-sm font-semibold" style="color:#2C2039">{{ proyectoNombre }}</span>
+                      <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">{{ proyectoNombre }}</span>
                     </div>
                   </div>
                   <div class="flex items-center gap-2 flex-shrink-0">
@@ -795,7 +795,7 @@
                             <td class="px-4 py-2.5">
                               <div class="flex items-center gap-1.5">
                                 <span class="font-mono font-semibold"
-                                  :style="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1 ? 'color:#7c3aed' : 'color:#2C2039'">
+                                  :style="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1 ? 'color:#7c3aed' : 'color:var(--color-unergy-deep)'">
                                   {{ fila.anio }}
                                 </span>
                                 <span v-if="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1"
@@ -809,7 +809,7 @@
                               <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
                             </td>
                             <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                              :style="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1 ? 'color:#7c3aed' : 'color:#2C2039'">
+                              :style="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1 ? 'color:#7c3aed' : 'color:var(--color-unergy-deep)'">
                               {{ formatCOP(fila.valor) }}
                             </td>
                             <td class="px-4 py-2.5 text-center">
@@ -886,7 +886,7 @@
                   <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#ecfeff">
                     <WifiIcon class="text-sm size-[1em]" style="color:#06b6d4" />
                   </div>
-                  <span class="text-sm font-semibold" style="color:#2C2039">Servicio de Internet</span>
+                  <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Servicio de Internet</span>
                   <Tag :value="CONTRATO_LABELS[contratos.internet.estado]"
                        :severity="CONTRATO_SEVERITY[contratos.internet.estado]" class="text-xs" />
                 </div>
@@ -956,7 +956,7 @@
       <template #header>
         <div class="flex items-center gap-2">
           <WrenchIcon class="text-sm size-[1em]" style="color:#f59e0b" />
-          <span class="font-semibold text-sm" style="color:#2C2039">
+          <span class="font-semibold text-sm" style="color:var(--color-unergy-deep)">
             {{ dialogMant.modo === 'crear' ? 'Crear contrato de mantenimiento' : 'Editar contrato de mantenimiento' }}
           </span>
         </div>
@@ -1059,7 +1059,7 @@
       <template #header>
         <div class="flex items-center gap-2">
           <PencilIcon class="text-sm size-[1em]" :style="`color:${DIALOG_EDIT_COLOR[dialogEdit.tipo]}`" />
-          <span class="font-semibold text-sm" style="color:#2C2039">
+          <span class="font-semibold text-sm" style="color:var(--color-unergy-deep)">
             Editar — {{ DIALOG_EDIT_LABEL[dialogEdit.tipo] }}
           </span>
         </div>

@@ -35,6 +35,6 @@ const tab = ref('automatizacion')
   border-bottom: 2.5px solid transparent; margin-bottom: -1px;
 }
 .ret-tab svg { font-size: 14px; }
-.ret-tab--on { color: #6E3FB8; border-bottom-color: #915BD8; }
+.ret-tab--on { color: var(--color-unergy-purple-dark); border-bottom-color: var(--color-unergy-purple); }
 .ret-body { padding-top: 4px; }
 </style>

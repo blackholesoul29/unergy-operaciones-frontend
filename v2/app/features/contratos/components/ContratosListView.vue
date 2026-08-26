@@ -58,8 +58,8 @@
           <template #body="{ data }">
             <Tag :value="(data.tipo_contrato === 'compra') ? 'Compra' : 'Venta'"
               :style="(data.tipo_contrato === 'compra')
-                ? 'background:#915BD8;color:#fff'
-                : 'background:#F6FF72;color:#2C2039'" class="text-xs" />
+                ? 'background:var(--color-unergy-purple);color:#fff'
+                : 'background:var(--color-unergy-yellow);color:var(--color-unergy-deep)'" class="text-xs" />
           </template>
         </Column>
         <Column field="numero_codigo_contrato" header="N° contrato" sortable style="width:160px">
@@ -524,7 +524,7 @@ onMounted(cargar)
   background: #fff; font-size: 13px; font-weight: 700; color: #6b7280;
   cursor: pointer; transition: border-color .12s, color .12s, background .12s; user-select: none;
 }
-.svc-tab:hover { border-color: #cbb8e8; color: #2C2039; }
+.svc-tab:hover { border-color: #cbb8e8; color: var(--color-unergy-deep); }
 .svc-tab svg { font-size: 14px; color: #9ca3af; }
 .svc-tab--on { box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .svc-tab-count {

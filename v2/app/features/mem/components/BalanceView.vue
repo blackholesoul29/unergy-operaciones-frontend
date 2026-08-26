@@ -8,7 +8,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
     </div>
 
     <template v-else-if="!history.length && !loading">
@@ -32,7 +32,7 @@
       <!-- Price history table -->
       <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
         <div class="px-5 py-3 border-b" style="border-color: #e8e0f0;">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Historial Precios de Bolsa</h3>
+          <h3 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Historial Precios de Bolsa</h3>
         </div>
         <DataTable :value="history" :paginator="history.length > 15" :rows="15"
                    responsiveLayout="scroll" stripedRows class="p-datatable-sm">
@@ -79,13 +79,13 @@
       <!-- Clima ONI context -->
       <div v-if="climaHistory.length" class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
         <div class="px-5 py-3 border-b" style="border-color: #e8e0f0;">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Contexto Climático (ONI reciente)</h3>
+          <h3 class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Contexto Climático (ONI reciente)</h3>
         </div>
         <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div v-for="f in climaHistory.slice(0, 3)" :key="f.id"
                class="p-3 rounded-lg" style="background: #f8f5fd;">
             <p class="text-xs font-semibold" style="color: #6b5a8a;">{{ f.forecast_date }}</p>
-            <p class="text-sm mt-1" style="color: #2C2039;">{{ f.model_version }}</p>
+            <p class="text-sm mt-1" style="color: var(--color-unergy-deep);">{{ f.model_version }}</p>
           </div>
         </div>
       </div>

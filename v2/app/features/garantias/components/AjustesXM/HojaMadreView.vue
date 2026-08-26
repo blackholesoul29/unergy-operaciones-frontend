@@ -13,7 +13,7 @@
     <!-- Chips de precios -->
     <div v-if="preciosList.length" class="flex flex-wrap gap-2">
       <span v-for="p in preciosList" :key="p.key"
-        class="px-3 py-1 rounded-full text-xs font-semibold" style="background:#f3f0f7; color:#915BD8">
+        class="px-3 py-1 rounded-full text-xs font-semibold" style="background:#f3f0f7; color:var(--color-unergy-purple)">
         {{ p.key.toUpperCase() }}: {{ p.key === 'trm' ? fmtCOP(p.val) : Number(p.val).toFixed(2) }}
       </span>
     </div>
@@ -34,7 +34,7 @@
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       <div class="bg-white rounded-xl p-4 shadow-sm text-center" style="border:1px solid #e8e0f0">
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#6b5a8a">Disponible (crudo)</p>
-        <p class="text-base font-bold" style="color:#2C2039">{{ fmtCOP(data.disponibleCrudo) }}</p>
+        <p class="text-base font-bold" style="color:var(--color-unergy-deep)">{{ fmtCOP(data.disponibleCrudo) }}</p>
       </div>
       <div class="bg-white rounded-xl p-4 shadow-sm text-center" style="border:1px solid #e8e0f0">
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#6b5a8a">(−) Facturas descontadas</p>
@@ -50,11 +50,11 @@
       </div>
       <div class="bg-white rounded-xl p-4 shadow-sm text-center" style="border:1px solid #e8e0f0">
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#6b5a8a">Congelado</p>
-        <p class="text-base font-bold" style="color:#2C2039">{{ fmtCOP(data.congelado) }}</p>
+        <p class="text-base font-bold" style="color:var(--color-unergy-deep)">{{ fmtCOP(data.congelado) }}</p>
       </div>
       <div class="bg-white rounded-xl p-4 shadow-sm text-center" style="border:1px solid #e8e0f0">
         <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:#6b5a8a">Saldo</p>
-        <p class="text-base font-bold" style="color:#915BD8">{{ fmtCOP(data.saldo) }}</p>
+        <p class="text-base font-bold" style="color:var(--color-unergy-purple)">{{ fmtCOP(data.saldo) }}</p>
       </div>
     </div>
   </div>

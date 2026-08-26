@@ -67,7 +67,7 @@
     <!-- ── Modo edición ──────────────────────────────────────────────── -->
     <div v-if="editMode" class="bg-white rounded-xl shadow-sm p-5">
       <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-        <PencilIcon class="text-sm size-[1em]" style="color:#915BD8" />
+        <PencilIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
         <h3 class="font-semibold text-sm text-gray-700">Editar falla completa</h3>
       </div>
       <FallaForm :initial="falla" :catalogos="catalogos" @save="onUpdate" @cancel="editMode = false" />
@@ -121,14 +121,14 @@
             <div v-for="(inv, idx) in clasif.inversores" :key="idx"
               class="rounded-lg border border-gray-100 bg-gray-50 p-3">
               <div class="flex items-center gap-2 mb-1.5">
-                <ServerIcon class="text-xs size-[1em]" style="color:#915BD8" />
+                <ServerIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple)" />
                 <span class="text-sm font-semibold text-gray-800">{{ inv.nombre }}</span>
                 <span v-if="inv.potenciaKw != null" class="text-xs text-gray-500">· {{ inv.potenciaKw }} kW</span>
               </div>
               <div v-if="inv.tipos.length" class="flex flex-wrap gap-1.5">
                 <span v-for="(t, ti) in inv.tipos" :key="ti"
                   class="text-[11px] font-semibold px-2 py-0.5 rounded"
-                  style="background:#915BD81a;color:#6E3FB8">{{ t }}</span>
+                  style="background:#915BD81a;color:var(--color-unergy-purple-dark)">{{ t }}</span>
               </div>
               <p v-else class="text-xs text-gray-400">Sin tipo de falla especificado</p>
             </div>
@@ -138,7 +138,7 @@
         <!-- Información general -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <InfoIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <InfoIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm text-gray-700">Información general</h3>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -163,7 +163,7 @@
         <!-- SLA -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <ClockIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <ClockIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm text-gray-700">SLA</h3>
             <Tag :value="slaTexto" :severity="slaSeverity" class="ml-auto" />
           </div>
@@ -184,7 +184,7 @@
         <!-- Análisis -->
         <div v-if="falla.causa_raiz || falla.acciones_correctivas" class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <SearchIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <SearchIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm text-gray-700">Análisis</h3>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -202,7 +202,7 @@
         <!-- Adjuntos -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <PaperclipIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <PaperclipIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm text-gray-700">Adjuntos ({{ adjuntos.length }})</h3>
             <label class="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold cursor-pointer px-3 py-1.5 rounded-md border transition-colors"
               :class="uploadingFoto ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-wait'
@@ -244,7 +244,7 @@
         <!-- Seguimientos -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <MessagesSquareIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <MessagesSquareIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm text-gray-700">Historial de seguimiento ({{ falla.seguimientos?.length || 0 }})</h3>
           </div>
 
@@ -295,7 +295,7 @@
         <div v-if="falla.tipo?.accion_sugerida" class="rounded-xl p-5 shadow-sm"
           style="background: linear-gradient(135deg, #faf7ff 0%, #f3edff 100%); border: 1px solid #e5d9ff;">
           <div class="flex items-center gap-2 mb-3">
-            <LightbulbIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <LightbulbIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm" style="color:#4a3b6b">Acción sugerida</h3>
           </div>
           <p class="text-sm text-gray-700 leading-relaxed">{{ falla.tipo.accion_sugerida }}</p>
@@ -304,7 +304,7 @@
         <!-- Actualización rápida -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <ZapIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <ZapIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm text-gray-700">Actualización rápida</h3>
           </div>
           <div class="space-y-3">
@@ -342,7 +342,7 @@
         <!-- Detalles técnicos -->
         <div class="bg-white rounded-xl shadow-sm p-5">
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <SettingsIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <SettingsIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm text-gray-700">Detalles técnicos</h3>
           </div>
           <div class="space-y-2 text-xs">

@@ -15,21 +15,21 @@
       <div class="grid grid-cols-2 gap-3">
         <div>
           <p class="field-label">Proyecto</p>
-          <p class="text-sm font-semibold" style="color:#2C2039;">{{ proyectoNombre }}</p>
+          <p class="text-sm font-semibold" style="color:var(--color-unergy-deep);">{{ proyectoNombre }}</p>
         </div>
         <div>
           <p class="field-label">Tipo de falla</p>
-          <p class="text-sm font-semibold" style="color:#2C2039;">
+          <p class="text-sm font-semibold" style="color:var(--color-unergy-deep);">
             {{ falla.tipo_falla?.codigo }} · {{ falla.tipo_falla?.etiqueta || '—' }}
           </p>
         </div>
         <div>
           <p class="field-label">Fecha identificación</p>
-          <p class="text-sm" style="color:#2C2039;">{{ fmtDate(falla.fecha_identificacion) }}</p>
+          <p class="text-sm" style="color:var(--color-unergy-deep);">{{ fmtDate(falla.fecha_identificacion) }}</p>
         </div>
         <div>
           <p class="field-label">Hora</p>
-          <p class="text-sm" style="color:#2C2039;">{{ fmtTime(falla.hora_identificacion) }}</p>
+          <p class="text-sm" style="color:var(--color-unergy-deep);">{{ fmtTime(falla.hora_identificacion) }}</p>
         </div>
         <div v-if="falla.fecha_resolucion" class="col-span-2">
           <p class="field-label">Fecha resolución</p>
@@ -39,17 +39,17 @@
 
       <div v-if="falla.descripcion">
         <p class="field-label">Descripción</p>
-        <p class="text-sm leading-relaxed" style="color:#2C2039;">{{ falla.descripcion }}</p>
+        <p class="text-sm leading-relaxed" style="color:var(--color-unergy-deep);">{{ falla.descripcion }}</p>
       </div>
 
       <div v-if="falla.tipo_resolucion">
         <p class="field-label">Tipo de resolución</p>
-        <p class="text-sm" style="color:#2C2039;">{{ falla.tipo_resolucion?.etiqueta }}</p>
+        <p class="text-sm" style="color:var(--color-unergy-deep);">{{ falla.tipo_resolucion?.etiqueta }}</p>
       </div>
 
       <div v-if="falla.causa_raiz">
         <p class="field-label">Causa raíz</p>
-        <p class="text-sm" style="color:#2C2039;">{{ falla.causa_raiz }}</p>
+        <p class="text-sm" style="color:var(--color-unergy-deep);">{{ falla.causa_raiz }}</p>
       </div>
 
       <div v-if="falla.energia_perdida_kwh != null">
@@ -63,8 +63,8 @@
     <!-- Acción sugerida del catálogo -->
     <div v-if="falla.tipo_falla?.accion_sugerida"
          class="rounded-xl border-l-4 px-4 py-3 text-sm"
-         style="border-color:#915BD8;background:#f9f6fe;color:#4b3b72;">
-      <p class="text-[10px] font-bold uppercase tracking-wide mb-1" style="color:#915BD8;">
+         style="border-color:var(--color-unergy-purple);background:#f9f6fe;color:#4b3b72;">
+      <p class="text-[10px] font-bold uppercase tracking-wide mb-1" style="color:var(--color-unergy-purple);">
         Acción sugerida
       </p>
       {{ falla.tipo_falla.accion_sugerida }}
@@ -83,7 +83,7 @@
 
     <!-- Edición rápida de estado -->
     <div class="rounded-xl border p-4 space-y-3" style="border-color:#e8e0f0;">
-      <p class="text-xs font-bold uppercase tracking-wide" style="color:#915BD8;">Actualizar estado</p>
+      <p class="text-xs font-bold uppercase tracking-wide" style="color:var(--color-unergy-purple);">Actualizar estado</p>
       <div class="grid grid-cols-2 gap-2">
         <div>
           <label class="field-label">Estado</label>
@@ -121,11 +121,11 @@
     <!-- Fotos -->
     <div class="rounded-xl border p-4 space-y-3" style="border-color:#e8e0f0;">
       <div class="flex items-center justify-between">
-        <p class="text-xs font-bold uppercase tracking-wide" style="color:#915BD8;">
+        <p class="text-xs font-bold uppercase tracking-wide" style="color:var(--color-unergy-purple);">
           Fotos ({{ falla.fotos?.length || 0 }})
         </p>
         <label class="cursor-pointer text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-               style="background:#f0eaf8;color:#915BD8;">
+               style="background:#f0eaf8;color:var(--color-unergy-purple);">
           <UploadIcon class="mr-1 size-[1em]" /> Subir
           <input type="file" class="hidden" accept="image/*,.pdf"
                  multiple @change="uploadFotos" />
@@ -140,7 +140,7 @@
                class="w-full h-full object-cover" />
           <div v-else class="w-full h-full flex flex-col items-center justify-center"
                style="background:#f5f0fb;">
-            <FileTextIcon class="text-2xl size-[1em]" style="color:#915BD8;" />
+            <FileTextIcon class="text-2xl size-[1em]" style="color:var(--color-unergy-purple);" />
             <span class="text-[9px] mt-1 text-center px-1 truncate w-full text-center"
                   style="color:#9b89b5;">{{ foto.nombre_archivo }}</span>
           </div>
@@ -148,7 +148,7 @@
           <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100
                       transition-opacity flex items-center justify-center gap-2">
             <a :href="foto.url" target="_blank"
-               class="p-1.5 rounded-lg bg-white text-xs" style="color:#2C2039;"
+               class="p-1.5 rounded-lg bg-white text-xs" style="color:var(--color-unergy-deep);"
                title="Ver">
               <EyeIcon class="size-[1em]" />
             </a>
@@ -159,7 +159,7 @@
           </div>
           <span v-if="foto.etapa"
                 class="absolute top-1 left-1 text-[9px] font-bold px-1.5 py-0.5 rounded"
-                style="background:#2C2039;color:#fff;opacity:.85;">
+                style="background:var(--color-unergy-deep);color:#fff;opacity:.85;">
             {{ foto.etapa }}
           </span>
         </div>
@@ -171,7 +171,7 @@
 
     <!-- Seguimientos -->
     <div class="rounded-xl border p-4 space-y-3" style="border-color:#e8e0f0;">
-      <p class="text-xs font-bold uppercase tracking-wide" style="color:#915BD8;">
+      <p class="text-xs font-bold uppercase tracking-wide" style="color:var(--color-unergy-purple);">
         Seguimiento ({{ falla.seguimientos?.length || 0 }})
       </p>
 
@@ -179,7 +179,7 @@
         <div v-for="seg in [...(falla.seguimientos || [])].reverse()" :key="seg.id"
              class="border-l-2 pl-3 py-1" style="border-color:#e0d4f5;">
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-bold" style="color:#915BD8;">
+            <span class="text-[10px] font-bold" style="color:var(--color-unergy-purple);">
               {{ seg.usuario_nombre || 'Sistema' }}
             </span>
             <span class="text-[10px]" style="color:#9b89b5;">
@@ -188,7 +188,7 @@
             <Tag v-if="seg.estado_nuevo" :value="seg.estado_nuevo"
                  class="text-[9px] ml-auto" style="font-size:9px;" />
           </div>
-          <p class="text-xs leading-relaxed" style="color:#2C2039;">{{ seg.nota }}</p>
+          <p class="text-xs leading-relaxed" style="color:var(--color-unergy-deep);">{{ seg.nota }}</p>
         </div>
         <p v-if="!falla.seguimientos?.length"
            class="text-xs text-center py-2" style="color:#9b89b5;">

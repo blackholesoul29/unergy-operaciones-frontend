@@ -141,7 +141,7 @@
     </div>
 
     <div v-else-if="!htmlContent" class="im-empty im-no-print">
-      <FilePenIcon class="text-4xl size-[1em]" style="color:#915BD8" />
+      <FilePenIcon class="text-4xl size-[1em]" style="color:var(--color-unergy-purple)" />
       <p class="im-empty-title">Listo para generar</p>
       <p class="im-empty-sub">Selecciona el tipo de informe, proyecto/portafolio y período, luego presiona <b>Generar informe</b>.</p>
     </div>
@@ -1687,9 +1687,9 @@ watch(tipo, (t) => {
   cursor: pointer; transition: all .15s; font-family: inherit;
   display: inline-flex; align-items: center; gap: 5px;
 }
-.im-seg-btn:hover { color: #2C2039; }
+.im-seg-btn:hover { color: var(--color-unergy-deep); }
 .im-seg-btn--active {
-  background: #915BD8; color: #FDFAF7;
+  background: var(--color-unergy-purple); color: var(--color-unergy-avena);
   box-shadow: 0 2px 6px rgba(145,91,216,.25);
 }
 .im-seg-btn--active:hover { color: #fff; }
@@ -1698,7 +1698,7 @@ watch(tipo, (t) => {
   font-size: 11px; color: #6B5A8A;
   display: inline-flex; align-items: center; gap: 5px;
 }
-.im-tip svg { color: #915BD8; font-size: 11px; }
+.im-tip svg { color: var(--color-unergy-purple); font-size: 11px; }
 
 .im-field { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 200px; }
 .im-field-narrow { flex: 0 0 auto; min-width: 120px; }
@@ -1711,15 +1711,15 @@ watch(tipo, (t) => {
 .im-select :deep(.p-select-label) { padding: 5px 10px; font-size: 12px; }
 .im-input {
   border: 1.5px solid #E5E2EC; border-radius: 6px; padding: 5px 10px;
-  font-size: 12px; color: #2C2039; outline: none; font-family: inherit;
+  font-size: 12px; color: var(--color-unergy-deep); outline: none; font-family: inherit;
   background: #fff;
   transition: border-color .15s;
   color-scheme: light;
   height: 30px;
 }
-.im-input:focus { border-color: #915BD8; }
+.im-input:focus { border-color: var(--color-unergy-purple); }
 :deep(.im-btn-primary) {
-  background: #915BD8 !important; border-color: #915BD8 !important; color: #FDFAF7 !important;
+  background: var(--color-unergy-purple) !important; border-color: var(--color-unergy-purple) !important; color: var(--color-unergy-avena) !important;
 }
 :deep(.im-btn-primary:hover) {
   background: #7C3AED !important; border-color: #7C3AED !important;
@@ -1753,7 +1753,7 @@ watch(tipo, (t) => {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
 }
 .im-error { flex-direction: row; text-align: left; padding: 14px 18px; align-items: center; }
-.im-empty-title { font-size: 14px; font-weight: 800; color: #2C2039; }
+.im-empty-title { font-size: 14px; font-weight: 800; color: var(--color-unergy-deep); }
 .im-empty-sub { font-size: 12px; color: #6B5A8A; max-width: 460px; }
 
 /* Result bar (sticky-friendly y compacto) */
@@ -1799,16 +1799,16 @@ watch(tipo, (t) => {
   border-radius: 8px;
   box-shadow: 0 2px 14px rgba(0,0,0,.08);
   margin-bottom: 24px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
 .im-report :deep(.rpt-page-sep) {
   height: 22px;
 }
 .im-report :deep(.rpt-header) {
-  background: linear-gradient(135deg, #2C2039 0%, #3d2b52 70%, #4a2d6e 100%);
+  background: linear-gradient(135deg, var(--color-unergy-deep) 0%, #3d2b52 70%, #4a2d6e 100%);
   border-radius: 8px;
   padding: 18px 22px 16px;
-  color: #FDFAF7;
+  color: var(--color-unergy-avena);
   margin: -30px -36px 22px;
 }
 .im-report :deep(.rpt-meta-grid) {
@@ -1824,7 +1824,7 @@ watch(tipo, (t) => {
   letter-spacing: .6px; text-transform: uppercase; margin-bottom: 2px;
 }
 .im-report :deep(.rpt-meta-val) {
-  font-size: 12px; color: #FDFAF7; font-weight: 700;
+  font-size: 12px; color: var(--color-unergy-avena); font-weight: 700;
 }
 .im-report :deep(.rpt-section) {
   margin-bottom: 26px;
@@ -1863,7 +1863,7 @@ watch(tipo, (t) => {
   border-bottom: 1px solid #E5E2EC;
 }
 .im-report :deep(.rpt-table tbody td) {
-  padding: 7px 9px; border-bottom: 1px solid #F3F0F9; color: #2C2039;
+  padding: 7px 9px; border-bottom: 1px solid #F3F0F9; color: var(--color-unergy-deep);
 }
 .im-report :deep(.rpt-total-row) {
   background: #FAF8FE; font-weight: 800; border-top: 2px solid #6B35C0;
@@ -1888,7 +1888,7 @@ watch(tipo, (t) => {
   text-transform: uppercase; margin-bottom: 6px;
 }
 .im-report :deep(.rpt-edit-hint) {
-  font-size: 9px; color: #915BD8; font-weight: 700; letter-spacing: 0;
+  font-size: 9px; color: var(--color-unergy-purple); font-weight: 700; letter-spacing: 0;
   text-transform: none; margin-left: 6px; cursor: pointer;
 }
 .im-report :deep(.rpt-obs-text), .im-report :deep(.rpt-obs-editable) {

@@ -12,10 +12,10 @@
           :style="row.label === 'TIE' ? 'background:#f3f0f7' : 'background:white'"
         >
           <td class="px-4 py-1.5 text-xs" style="color:#6b5a8a; width:60%">
-            <span v-if="row.label === 'TIE'" class="font-semibold" style="color:#915BD8">TIE</span>
+            <span v-if="row.label === 'TIE'" class="font-semibold" style="color:var(--color-unergy-purple)">TIE</span>
             <span v-else>{{ row.label }}</span>
           </td>
-          <td class="px-4 py-1.5 text-right tabular-nums text-xs font-medium" style="color:#2C2039">
+          <td class="px-4 py-1.5 text-right tabular-nums text-xs font-medium" style="color:var(--color-unergy-deep)">
             {{ fmtCOP(row.valor) }}
           </td>
         </tr>
@@ -23,7 +23,7 @@
     </table>
     <div v-if="total != null" class="px-4 py-2 flex justify-between items-center border-t" style="background:#f9f7fd">
       <span class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">Total</span>
-      <span class="text-sm font-bold" style="color:#915BD8">{{ fmtCOP(total) }}</span>
+      <span class="text-sm font-bold" style="color:var(--color-unergy-purple)">{{ fmtCOP(total) }}</span>
     </div>
   </div>
 </template>

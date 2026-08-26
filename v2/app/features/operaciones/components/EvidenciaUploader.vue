@@ -80,18 +80,18 @@ async function eliminar(archivoId) {
 .ev-chip {
   display: flex; align-items: center; gap: 6px;
   background: #f5f3fa; border: 1px solid #e8e0f0; border-radius: 8px;
-  padding: 5px 6px 5px 10px; font-size: 12.5px; color: #2C2039; max-width: 220px;
+  padding: 5px 6px 5px 10px; font-size: 12.5px; color: var(--color-unergy-deep); max-width: 220px;
 }
-.ev-chip svg { color: #915BD8; font-size: 12px; flex-shrink: 0; }
-.ev-chip-name { color: #2C2039; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ev-chip-name:hover { text-decoration: underline; color: #6E3FB8; }
+.ev-chip svg { color: var(--color-unergy-purple); font-size: 12px; flex-shrink: 0; }
+.ev-chip-name { color: var(--color-unergy-deep); text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ev-chip-name:hover { text-decoration: underline; color: var(--color-unergy-purple-dark); }
 .ev-chip-del { border: none; background: none; color: #9ca3af; width: 20px; height: 20px; border-radius: 5px; cursor: pointer; flex-shrink: 0; }
 .ev-chip-del:hover { background: #fee2e2; color: #b91c1c; }
 .ev-chip-del:disabled { opacity: .6; cursor: default; }
 
 .ev-upload {
   display: inline-flex; align-items: center; gap: 7px; width: fit-content;
-  border: 1.5px dashed #cbb8e8; background: #faf8fd; color: #6E3FB8;
+  border: 1.5px dashed #cbb8e8; background: #faf8fd; color: var(--color-unergy-purple-dark);
   font-size: 12.5px; font-weight: 700; padding: 7px 12px; border-radius: 9px; cursor: pointer;
 }
 .ev-upload:hover { background: #f3edfb; }

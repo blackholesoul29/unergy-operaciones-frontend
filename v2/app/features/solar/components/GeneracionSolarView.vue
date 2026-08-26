@@ -79,10 +79,10 @@
       <!-- Potencia total -->
       <div class="gs-kpi">
         <div class="gs-kpi-icon">
-          <ZapIcon class="size-[1em]" style="color:#915BD8;font-size:14px;" />
+          <ZapIcon class="size-[1em]" style="color:var(--color-unergy-purple);font-size:14px;" />
         </div>
         <div class="gs-kpi-body">
-          <span class="gs-kpi-value" style="color:#915BD8">{{ formatPower(monitoringData.fleet.total_power_kw) }}</span>
+          <span class="gs-kpi-value" style="color:var(--color-unergy-purple)">{{ formatPower(monitoringData.fleet.total_power_kw) }}</span>
           <span class="gs-kpi-label">Potencia total</span>
         </div>
       </div>
@@ -90,11 +90,11 @@
       <!-- Utilización -->
       <div class="gs-kpi">
         <div class="gs-kpi-icon">
-          <ChartColumnIcon class="size-[1em]" style="color:#2C2039;font-size:14px;" />
+          <ChartColumnIcon class="size-[1em]" style="color:var(--color-unergy-deep);font-size:14px;" />
         </div>
         <div class="gs-kpi-body">
           <div class="gs-kpi-util-row">
-            <span class="gs-kpi-value" style="color:#2C2039">{{ monitoringData.fleet.utilization_pct }}%</span>
+            <span class="gs-kpi-value" style="color:var(--color-unergy-deep)">{{ monitoringData.fleet.utilization_pct }}%</span>
             <span class="gs-kpi-label">Utilización</span>
           </div>
           <div class="gs-util-bar">
@@ -148,7 +148,7 @@
 
           <!-- Loading inicial -->
           <div v-if="!detailData && loadingDetail" class="gs-overlay-loading">
-            <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:32px;color:#915BD8" />
+            <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:32px;color:var(--color-unergy-purple)" />
             <span style="color:#6b5a8a;font-size:14px">Cargando datos del proyecto...</span>
           </div>
 
@@ -177,7 +177,7 @@
             <!-- Body scrollable -->
             <div class="gs-overlay-body">
               <div v-if="loadingDetail" class="gs-detail-loading">
-                <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:22px;color:#915BD8" />
+                <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:22px;color:var(--color-unergy-purple)" />
                 <span style="color:#6b5a8a">Actualizando...</span>
               </div>
 
@@ -286,7 +286,7 @@
                       <div class="gs-chart-card" style="margin-top:12px">
                         <h4 class="gs-section-title">Potencia del inversor — {{ invRangeLabel }}</h4>
                         <div v-if="invPowerLoading" class="gs-chart-empty">
-                          <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:22px;color:#915BD8" />
+                          <LoaderCircleIcon class="size-[1em] animate-spin" style="font-size:22px;color:var(--color-unergy-purple)" />
                         </div>
                         <div v-else-if="invIndividualData.labels.length" class="gs-chart-container">
                           <Line :data="invIndividualData" :options="invPowerOptions" />
@@ -328,7 +328,7 @@
                 <div class="gs-charts-row">
                   <div class="gs-chart-card gs-chart-card--dark">
                     <h3 class="gs-section-title gs-section-title--light">
-                      <span class="gs-chart-legend-dot" style="background:#915BD8" />
+                      <span class="gs-chart-legend-dot" style="background:var(--color-unergy-purple)" />
                       Inversores — Potencia hoy (W)
                     </h3>
                     <div v-if="inversorPowerChartData.labels.length" class="gs-chart-container">
@@ -340,7 +340,7 @@
                   </div>
                   <div class="gs-chart-card gs-chart-card--dark">
                     <h3 class="gs-section-title gs-section-title--light">
-                      <span class="gs-chart-legend-dot" style="background:#F6FF72" />
+                      <span class="gs-chart-legend-dot" style="background:var(--color-unergy-yellow)" />
                       Medidores — Potencia hoy (W)
                     </h3>
                     <div v-if="medidorPowerChartData.labels.length" class="gs-chart-container">
@@ -640,7 +640,7 @@
       </div>
 
       <div v-if="genHoyLoading" class="gs-genhoy-state">
-        <LoaderCircleIcon class="size-[1em] animate-spin" style="color:#915BD8;font-size:22px" />
+        <LoaderCircleIcon class="size-[1em] animate-spin" style="color:var(--color-unergy-purple);font-size:22px" />
       </div>
       <div v-else-if="!genHoyRows.length" class="gs-genhoy-state">
         <SunIcon class="size-[1em]" style="color:#f59e0b;font-size:24px" />
@@ -1723,7 +1723,7 @@ onUnmounted(() => {
 .gs-title {
   font-size: 20px;
   font-weight: 800;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin: 0;
 }
 
@@ -1770,7 +1770,7 @@ onUnmounted(() => {
   gap: 6px;
   padding: 7px 16px;
   border-radius: 8px;
-  background: #915BD8;
+  background: var(--color-unergy-purple);
   color: white;
   border: none;
   cursor: pointer;
@@ -1839,7 +1839,7 @@ onUnmounted(() => {
   font-size: 22px;
   font-weight: 800;
   line-height: 1.1;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
 
 .gs-kpi-label {
@@ -1912,8 +1912,8 @@ onUnmounted(() => {
 }
 
 .gs-pill:hover {
-  border-color: #915BD8;
-  color: #915BD8;
+  border-color: var(--color-unergy-purple);
+  color: var(--color-unergy-purple);
 }
 
 .gs-pill--active {
@@ -1943,7 +1943,7 @@ onUnmounted(() => {
   border: 1px solid #e8e0f0;
   border-radius: 8px;
   font-size: 13px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   background: white;
   outline: none;
   transition: border-color 0.15s;
@@ -1951,7 +1951,7 @@ onUnmounted(() => {
 }
 
 .gs-search-input:focus {
-  border-color: #915BD8;
+  border-color: var(--color-unergy-purple);
 }
 
 .gs-search-input::placeholder {
@@ -1970,7 +1970,7 @@ onUnmounted(() => {
   border: 1px solid #e8e0f0;
   border-radius: 8px;
   font-size: 13px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   background: white;
   outline: none;
   transition: border-color 0.15s;
@@ -1978,7 +1978,7 @@ onUnmounted(() => {
 }
 
 .gs-search-ac :deep(input:focus) {
-  border-color: #915BD8;
+  border-color: var(--color-unergy-purple);
 }
 
 .gs-search-ac :deep(input::placeholder) {
@@ -2029,7 +2029,7 @@ onUnmounted(() => {
 }
 
 .gs-card--selected {
-  outline: 2px solid #915BD8;
+  outline: 2px solid var(--color-unergy-purple);
   outline-offset: 1px;
 }
 
@@ -2057,7 +2057,7 @@ onUnmounted(() => {
 .gs-card-name {
   font-size: 13px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   padding-right: 80px;
   line-height: 1.3;
 }
@@ -2071,7 +2071,7 @@ onUnmounted(() => {
 .gs-card-power-val {
   font-size: 26px;
   font-weight: 800;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   line-height: 1;
 }
 
@@ -2119,7 +2119,7 @@ onUnmounted(() => {
 .gs-card-stat-val {
   font-size: 13px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
 
 .gs-card-falla-btn {
@@ -2131,7 +2131,7 @@ onUnmounted(() => {
   border-radius: 6px;
   border: 1px solid #e8e0f0;
   background: white;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -2141,7 +2141,7 @@ onUnmounted(() => {
 
 .gs-card-falla-btn:hover {
   background: rgba(145,91,216,0.08);
-  border-color: #915BD8;
+  border-color: var(--color-unergy-purple);
 }
 
 .gs-card-falla-btn--lg {
@@ -2199,7 +2199,7 @@ onUnmounted(() => {
 .gs-detail-title {
   font-size: 18px;
   font-weight: 800;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin: 0;
 }
 
@@ -2212,7 +2212,7 @@ onUnmounted(() => {
 
 .gs-sol-badge {
   background: rgba(145,91,216,0.1);
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
@@ -2248,8 +2248,8 @@ onUnmounted(() => {
 
 .gs-close-btn:hover {
   background: #f9f7fc;
-  border-color: #915BD8;
-  color: #915BD8;
+  border-color: var(--color-unergy-purple);
+  color: var(--color-unergy-purple);
 }
 
 .gs-section-title {
@@ -2294,7 +2294,7 @@ onUnmounted(() => {
 .gs-inv-name {
   font-size: 11px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2365,8 +2365,8 @@ onUnmounted(() => {
 }
 
 .gs-chart-card--dark {
-  background: #2C2039;
-  border-color: #3d2f52;
+  background: var(--color-unergy-deep);
+  border-color: var(--color-unergy-deep-light);
 }
 
 .gs-section-title--light {
@@ -2428,8 +2428,8 @@ onUnmounted(() => {
 }
 
 .gs-toggle-pill.active {
-  background: #915BD8;
-  border-color: #915BD8;
+  background: var(--color-unergy-purple);
+  border-color: var(--color-unergy-purple);
   color: white;
 }
 
@@ -2502,7 +2502,7 @@ onUnmounted(() => {
 .gs-metrics-table td.gs-mt-inv {
   text-align: left;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   padding-left: 12px;
 }
 
@@ -2683,7 +2683,7 @@ onUnmounted(() => {
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
 .gs-genhoy-sub { font-size: 11px; font-weight: 400; color: #9ca3af; }
 .gs-genhoy-legend {
@@ -2838,7 +2838,7 @@ onUnmounted(() => {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
 .gs-inv-expanded-state {
   font-size: 11px;
@@ -2869,7 +2869,7 @@ onUnmounted(() => {
   padding: 4px 6px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
 .gs-date-sep {
   color: #9ca3af;

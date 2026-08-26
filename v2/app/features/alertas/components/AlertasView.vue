@@ -35,7 +35,7 @@
           </span>
         </div>
         <div>
-          <p class="font-semibold" style="color: #2C2039;">{{ mod.label }}</p>
+          <p class="font-semibold" style="color: var(--color-unergy-deep);">{{ mod.label }}</p>
           <p class="text-xs mt-1" style="color: #6b5a8a;">{{ mod.desc }}</p>
         </div>
       </RouterLink>

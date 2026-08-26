@@ -14,7 +14,7 @@
           @update:visible="cerrar">
     <template #header>
       <div v-if="oferta">
-        <h2 class="text-base font-semibold" style="color:#2C2039">Firmar → crear contrato PPA</h2>
+        <h2 class="text-base font-semibold" style="color:var(--color-unergy-deep)">Firmar → crear contrato PPA</h2>
         <p class="text-xs" style="color:#9b89b5">
           {{ oferta.planta_nombre || 'Sin planta' }} · {{ oferta.cliente_razon_social }}
         </p>
@@ -33,10 +33,10 @@
         </div>
       </Message>
       <div v-else class="rounded-md px-3 py-2" style="background:#F4EEFB;border:1px solid #e0d3f5">
-        <div class="text-[11px] font-semibold mb-0.5" style="color:#6E3FB8">
+        <div class="text-[11px] font-semibold mb-0.5" style="color:var(--color-unergy-purple-dark)">
           {{ plantas.length }} PLANTA(S) AL CONTRATO
         </div>
-        <div class="text-xs" style="color:#6E3FB8">
+        <div class="text-xs" style="color:var(--color-unergy-purple-dark)">
           {{ plantas.map((p) => p.nombre_comercial).join(' · ') }}
         </div>
       </div>

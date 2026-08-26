@@ -8,7 +8,7 @@
             class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
             :style="stepCircleStyle(idx)"
           >{{ idx + 1 }}</div>
-          <span class="text-sm font-medium" :style="activeStep >= idx ? 'color:#915BD8' : 'color:#9ca3af'">
+          <span class="text-sm font-medium" :style="activeStep >= idx ? 'color:var(--color-unergy-purple)' : 'color:#9ca3af'">
             {{ step.label }}
           </span>
         </div>
@@ -61,7 +61,7 @@
       </div>
 
       <div class="flex justify-end">
-        <Button label="Procesar" :loading="loading" :disabled="!allFilesLoaded" @click="procesar" style="background:#915BD8;border-color:#915BD8">
+        <Button label="Procesar" :loading="loading" :disabled="!allFilesLoaded" @click="procesar" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
           <template #icon><ZapIcon class="size-[1em]" /></template>
         </Button>
       </div>
@@ -94,10 +94,10 @@
             <Button label="Exportar Excel" outlined severity="secondary" size="small" @click="exportar">
               <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
             </Button>
-            <Button label="Guardar en histórico" outlined size="small" :loading="guardando" @click="guardarRegistro" style="color:#915BD8;border-color:#915BD8">
+            <Button label="Guardar en histórico" outlined size="small" :loading="guardando" @click="guardarRegistro" style="color:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
               <template #icon><SaveIcon class="size-[1em]" /></template>
             </Button>
-            <Button label="Generar mensaje" icon-pos="right" @click="generarYAvanzar" style="background:#915BD8;border-color:#915BD8">
+            <Button label="Generar mensaje" icon-pos="right" @click="generarYAvanzar" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
               <template #icon><ArrowRightIcon class="size-[1em]" /></template>
             </Button>
           </div>
@@ -156,7 +156,7 @@
           <Button label="Copiar" outlined severity="secondary" @click="copiar">
             <template #icon><CopyIcon class="size-[1em]" /></template>
           </Button>
-          <Button label="Confirmar y guardar" :loading="guardando" @click="guardarRegistro" style="background:#915BD8;border-color:#915BD8">
+          <Button label="Confirmar y guardar" :loading="guardando" @click="guardarRegistro" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple)">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
         </div>

@@ -354,7 +354,7 @@
         actualizar el registro existente, o ignóralos si no aplican.
       </p>
       <div v-if="loadingPendientes" class="flex items-center justify-center py-8">
-        <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: #915BD8;" />
+        <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
       </div>
       <div v-else-if="!pendientes.length" class="text-center py-8 text-sm" style="color: #9b89b5;">
         No hay proyectos pendientes por revisar.
@@ -369,7 +369,7 @@
                 </span>
                 <span class="text-xs" style="color:#9b89b5;">{{ p.fuentes.join(' + ') }}</span>
               </div>
-              <p class="text-sm font-semibold truncate" style="color:#2C2039;">
+              <p class="text-sm font-semibold truncate" style="color:var(--color-unergy-deep);">
                 {{ p.proyecto_nombre_actual || p.nombre_sugerido }}
               </p>
               <p v-if="p.tipo_sugerencia === 'actualizar' && p.proyecto_nombre_actual" class="text-xs" style="color:#9b89b5;">
@@ -404,12 +404,12 @@
               <label class="field-label">Tipo</label>
               <Select v-model="p._tipo" :options="TIPOS_PROYECTO" class="w-40" placeholder="Tipo" />
             </div>
-            <Button label="Crear" size="small" :loading="p._loading === 'confirmar'" :disabled="!p._nombre" style="background:#915BD8; border-color:#915BD8;" @click="confirmarPendiente(p)">
+            <Button label="Crear" size="small" :loading="p._loading === 'confirmar'" :disabled="!p._nombre" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);" @click="confirmarPendiente(p)">
               <template #icon><CheckIcon class="size-[1em]" /></template>
             </Button>
           </div>
           <div v-else class="flex justify-end">
-            <Button label="Actualizar" size="small" :loading="p._loading === 'confirmar'" style="background:#915BD8; border-color:#915BD8;" @click="confirmarPendiente(p)">
+            <Button label="Actualizar" size="small" :loading="p._loading === 'confirmar'" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);" @click="confirmarPendiente(p)">
               <template #icon><CheckIcon class="size-[1em]" /></template>
             </Button>
           </div>
@@ -933,7 +933,7 @@ function ignorarPendiente(p) {
   transition: color 0.12s;
 }
 .proyecto-nombre-link:hover {
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -1050,7 +1050,7 @@ thead .sticky-col {
   transition: background 0.12s, color 0.12s;
 }
 .ppa-chip:hover {
-  background: #915BD8;
+  background: var(--color-unergy-purple);
   color: #ffffff;
 }
 

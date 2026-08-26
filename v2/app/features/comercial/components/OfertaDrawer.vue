@@ -21,11 +21,11 @@
           </span>
           <Tag v-if="oferta.alerta" severity="danger" :value="`⚠ ${oferta.dias_sin_respuesta}d`" class="scale-90" />
         </div>
-        <h2 class="text-base font-semibold truncate" style="color:#2C2039">
+        <h2 class="text-base font-semibold truncate" style="color:var(--color-unergy-deep)">
           {{ oferta.planta_nombre || oferta.ficha?.proyecto_nombre || 'Sin planta' }}
         </h2>
         <router-link :to="`/comercial/oportunidades/${oferta.oportunidad_id}`"
-                     class="text-xs underline" style="color:#915BD8">
+                     class="text-xs underline" style="color:var(--color-unergy-purple)">
           {{ oferta.cliente_razon_social }}
         </router-link>
       </div>
@@ -67,7 +67,7 @@
         <div class="flex items-center justify-between gap-2 mt-3 rounded-md px-3 py-2"
              style="background:#FAF8FC;border:1px solid #e8e0f0">
           <div class="min-w-0">
-            <div class="text-xs font-medium" style="color:#2C2039">
+            <div class="text-xs font-medium" style="color:var(--color-unergy-deep)">
               {{ oferta.seguimientos || 0 }} toque(s) enviados
             </div>
             <div v-if="sinRespuesta(oferta)" class="text-[11px]" style="color:#D64455">
@@ -148,7 +148,7 @@
                        @update:modelValue="cambiarPlantas">
             <template #option="{ option }">
               <div class="min-w-0">
-                <div class="text-sm" style="color:#2C2039">{{ option.nombre_comercial }}</div>
+                <div class="text-sm" style="color:var(--color-unergy-deep)">{{ option.nombre_comercial }}</div>
                 <div class="text-[11px]" style="color:#9b89b5">
                   {{ [option.municipio, option.departamento].filter(Boolean).join(', ') || 'Sin ubicación' }}
                   <span v-if="option.potencia_instalada_kwp">
@@ -186,7 +186,7 @@
                       placeholder="Del catálogo…" @update:modelValue="autosave" />
               <InputNumber v-else-if="c.editor === 'numero'" v-model="f[c.campo]" class="w-full"
                            :maxFractionDigits="0" @update:modelValue="autosave" />
-              <div v-else class="text-sm" style="color:#2C2039">{{ c.valor ?? '—' }}</div>
+              <div v-else class="text-sm" style="color:var(--color-unergy-deep)">{{ c.valor ?? '—' }}</div>
             </div>
             <span v-if="fuente(c.campo)" class="text-[10px] rounded px-1.5 py-0.5 flex-shrink-0 mt-4"
                   :class="fuente(c.campo).clase">{{ fuente(c.campo).label }}</span>
@@ -218,7 +218,7 @@
         </div>
         <p v-else-if="oferta.tipo === 'servicios_operacionales'" class="ayuda">
           Las ofertas de servicios derivan en un contrato de representación, que se
-          crea en <router-link to="/servicios" class="underline" style="color:#915BD8">Servicios</router-link>.
+          crea en <router-link to="/servicios" class="underline" style="color:var(--color-unergy-purple)">Servicios</router-link>.
         </p>
       </section>
 

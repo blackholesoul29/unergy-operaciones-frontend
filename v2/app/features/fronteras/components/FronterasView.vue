@@ -78,7 +78,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
     </div>
 
     <!-- Table -->
@@ -88,7 +88,7 @@
                  stripedRows class="p-datatable-sm">
         <Column field="codigo_frontera" header="Código" sortable style="min-width: 140px">
           <template #body="{ data }">
-            <span class="font-mono text-sm font-semibold" style="color: #915BD8;">{{ data.codigo_frontera || '—' }}</span>
+            <span class="font-mono text-sm font-semibold" style="color: var(--color-unergy-purple);">{{ data.codigo_frontera || '—' }}</span>
           </template>
         </Column>
         <Column field="nombre_frontera" header="Nombre" sortable style="min-width: 200px">
@@ -99,7 +99,7 @@
         <Column field="proyecto_nombre" header="Proyecto" sortable style="min-width: 180px">
           <template #body="{ data }">
             <RouterLink v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`"
-                        class="text-sm underline" style="color: #915BD8;">
+                        class="text-sm underline" style="color: var(--color-unergy-purple);">
               {{ data.proyecto_nombre || `#${data.proyecto_id}` }}
             </RouterLink>
             <span v-else class="text-sm" style="color: #999;">—</span>
@@ -315,7 +315,7 @@
         o ignóralas si no aplican.
       </p>
       <div v-if="loadingPendientes" class="flex items-center justify-center py-8">
-        <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: #915BD8;" />
+        <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
       </div>
       <div v-else-if="!pendientesQuoia.length" class="text-center py-8 text-sm" style="color: #9b89b5;">
         No hay fronteras pendientes por revisar.
@@ -324,12 +324,12 @@
         <div v-for="p in pendientesQuoia" :key="p.frt_code"
           class="rounded-xl p-3 flex items-center gap-3" style="border: 1.5px solid #e8e0f0;">
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold truncate" style="color: #2C2039;">{{ p.nombre_quoia }}</p>
+            <p class="text-sm font-semibold truncate" style="color: var(--color-unergy-deep);">{{ p.nombre_quoia }}</p>
             <p class="text-xs font-mono" style="color: #9b89b5;">{{ p.frt_code }} · {{ p.categoria }}</p>
           </div>
           <Dropdown v-model="p._proyectoId" :options="proyectosAll" optionLabel="nombre_comercial" optionValue="id"
             placeholder="Proyecto..." filter showClear class="w-64" />
-          <Button label="Agregar" size="small" :loading="p._loading === 'confirmar'" :disabled="!p._proyectoId" @click="confirmarPendiente(p)" style="background: #915BD8; border-color: #915BD8;">
+          <Button label="Agregar" size="small" :loading="p._loading === 'confirmar'" :disabled="!p._proyectoId" @click="confirmarPendiente(p)" style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
           <Button text severity="secondary" size="small" :loading="p._loading === 'ignorar'" @click="ignorarPendiente(p)" v-tooltip="'Ignorar'">

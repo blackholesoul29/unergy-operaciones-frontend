@@ -32,7 +32,7 @@
         </div>
         <div class="min-w-0">
           <p class="text-xs text-gray-500">AC Power generador</p>
-          <p class="text-xl font-bold" style="color:#2C2039">
+          <p class="text-xl font-bold" style="color:var(--color-unergy-deep)">
             {{ fmtNum(generador.acPower) }}
             <span class="text-xs font-normal text-gray-400">kW</span>
           </p>
@@ -48,11 +48,11 @@
       <div class="bg-white rounded-xl shadow-sm border p-4 flex items-center gap-3" style="border-color:#ECE7F2">
         <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
              style="background:#915BD818">
-          <BriefcaseIcon class="text-lg size-[1em]" style="color:#915BD8" />
+          <BriefcaseIcon class="text-lg size-[1em]" style="color:var(--color-unergy-purple)" />
         </div>
         <div class="min-w-0">
           <p class="text-xs text-gray-500">AC Power comercializador</p>
-          <p class="text-xl font-bold" style="color:#2C2039">
+          <p class="text-xl font-bold" style="color:var(--color-unergy-deep)">
             {{ fmtNum(comercializador.acPower) }}
             <span class="text-xs font-normal text-gray-400">kW</span>
           </p>

@@ -23,7 +23,7 @@
         <button :class="['mf-fchip', filtro === null && 'mf-fchip--on']" @click="filtro = null">Todas</button>
         <button v-for="e in catalogos.estados" :key="e.id"
           :class="['mf-fchip', filtro === e.id && 'mf-fchip--on']"
-          :style="filtro === e.id ? { background: e.color_hex || '#915BD8', borderColor: e.color_hex || '#915BD8', color: '#fff' } : {}"
+          :style="filtro === e.id ? { background: e.color_hex || 'var(--color-unergy-purple)', borderColor: e.color_hex || 'var(--color-unergy-purple)', color: '#fff' } : {}"
           @click="filtro = e.id">{{ e.etiqueta }}</button>
       </div>
     </div>
@@ -42,7 +42,7 @@
           <div class="mf-card-main">
             <div class="mf-card-top">
               <code class="mf-card-code">{{ f.codigo_interno }}</code>
-              <span class="mf-card-estado" :style="{ background: (f.estado?.color_hex || '#915BD8') + '22', color: f.estado?.color_hex || '#915BD8' }">{{ f.estado?.etiqueta }}</span>
+              <span class="mf-card-estado" :style="{ background: (f.estado?.color_hex || 'var(--color-unergy-purple)') + '22', color: f.estado?.color_hex || 'var(--color-unergy-purple)' }">{{ f.estado?.etiqueta }}</span>
             </div>
             <div class="mf-card-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</div>
             <div class="mf-card-proj"><ZapIcon class="size-[1em]" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
@@ -186,40 +186,40 @@ onMounted(() => { cargar(); fetchUnread() })
 <style scoped>
 .mf-root {
   display: flex; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden;
-  background: #f3f4f6; color: #2C2039; font-family: system-ui, -apple-system, sans-serif;
+  background: #f3f4f6; color: var(--color-unergy-deep); font-family: system-ui, -apple-system, sans-serif;
 }
 
 /* Top bar */
 .mf-topbar {
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
   padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
-  background: #2C2039; color: #fff;
+  background: var(--color-unergy-deep); color: #fff;
 }
 .mf-brand { flex: 1; font-size: clamp(15px, 4vw, 17px); font-weight: 700; }
-.mf-brand svg { color: #F6FF72; margin-right: 6px; }
+.mf-brand svg { color: var(--color-unergy-yellow); margin-right: 6px; }
 .mf-icon-btn { width: 36px; height: 36px; border-radius: 10px; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 15px; position: relative; }
-.mf-add { background: #915BD8; }
+.mf-add { background: var(--color-unergy-purple); }
 .mf-bell-badge {
   position: absolute; top: 1px; right: 1px; min-width: 17px; height: 17px; padding: 0 4px;
   display: flex; align-items: center; justify-content: center;
-  background: #dc2626; color: #fff; font-size: 10px; font-weight: 800; border-radius: 9px; border: 2px solid #2C2039;
+  background: #dc2626; color: #fff; font-size: 10px; font-weight: 800; border-radius: 9px; border: 2px solid var(--color-unergy-deep);
 }
 
 /* Filtros */
 .mf-filters { flex-shrink: 0; background: #fff; padding: 12px 14px; border-bottom: 1px solid #eceaf2; }
 .mf-search { display: flex; align-items: center; gap: 9px; background: #f5f3fa; border-radius: 12px; padding: 11px 14px; }
 .mf-search svg { color: #9ca3af; font-size: 15px; }
-.mf-search input { flex: 1; border: none; background: none; outline: none; font-size: 16px; color: #2C2039; }
+.mf-search input { flex: 1; border: none; background: none; outline: none; font-size: 16px; color: var(--color-unergy-deep); }
 .mf-clear { color: #9ca3af; }
 .mf-chips { display: flex; gap: 8px; margin-top: 11px; overflow-x: auto; padding-bottom: 2px; -webkit-overflow-scrolling: touch; }
 .mf-fchip { white-space: nowrap; padding: 7px 14px; border-radius: 20px; border: 1.5px solid #e5e7eb; background: #fff; font-size: 13.5px; font-weight: 600; color: #6b5a8a; flex-shrink: 0; }
-.mf-fchip--on { background: #2C2039; border-color: #2C2039; color: #fff; }
+.mf-fchip--on { background: var(--color-unergy-deep); border-color: var(--color-unergy-deep); color: #fff; }
 
 /* Lista */
 .mf-list { flex: 1; overflow-y: auto; padding: 12px 14px; -webkit-overflow-scrolling: touch; }
 .mf-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; color: #6b5a8a; font-size: 15px; text-align: center; }
-.mf-state svg { font-size: 26px; color: #915BD8; }
-.mf-empty-add { margin-top: 6px; display: flex; align-items: center; gap: 8px; padding: 11px 20px; border: none; border-radius: 12px; background: #915BD8; color: #fff; font-weight: 700; font-size: 15px; }
+.mf-state svg { font-size: 26px; color: var(--color-unergy-purple); }
+.mf-empty-add { margin-top: 6px; display: flex; align-items: center; gap: 8px; padding: 11px 20px; border: none; border-radius: 12px; background: var(--color-unergy-purple); color: #fff; font-weight: 700; font-size: 15px; }
 
 .mf-card {
   width: 100%; display: flex; gap: 0; text-align: left; margin-bottom: 11px;
@@ -228,13 +228,13 @@ onMounted(() => { cargar(); fetchUnread() })
 .mf-stripe { width: 5px; flex-shrink: 0; }
 .mf-card-main { flex: 1; min-width: 0; padding: 13px 15px; }
 .mf-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px; }
-.mf-card-code { font-family: ui-monospace, monospace; font-size: 12px; color: #6E3FB8; background: #f3edfb; padding: 1px 7px; border-radius: 6px; }
+.mf-card-code { font-family: ui-monospace, monospace; font-size: 12px; color: var(--color-unergy-purple-dark); background: #f3edfb; padding: 1px 7px; border-radius: 6px; }
 .mf-card-estado { font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 7px; }
-.mf-card-tipo { font-size: 14px; font-weight: 700; color: #2C2039; line-height: 1.25; }
+.mf-card-tipo { font-size: 14px; font-weight: 700; color: var(--color-unergy-deep); line-height: 1.25; }
 .mf-card-proj { font-size: 12.5px; color: #6b5a8a; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
-.mf-card-proj svg { font-size: 11px; color: #915BD8; }
+.mf-card-proj svg { font-size: 11px; color: var(--color-unergy-purple); }
 .mf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
 .mf-prio { font-size: 12.5px; font-weight: 700; }
 .mf-time { font-size: 12px; color: #9ca3af; }
-.mf-assignee { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; background: #915BD8; color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.mf-assignee { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; background: var(--color-unergy-purple); color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 </style>

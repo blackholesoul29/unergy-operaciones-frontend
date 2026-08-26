@@ -7,15 +7,15 @@
 
     <div v-for="tipo in TIPOS" :key="tipo.value" class="rounded-xl p-4 space-y-2" style="background:#f9f7ff;border:1.5px solid #e8e0f0;">
       <div class="flex items-center justify-between">
-        <p class="text-xs font-bold uppercase tracking-wide flex items-center gap-2" style="color:#915BD8;">
+        <p class="text-xs font-bold uppercase tracking-wide flex items-center gap-2" style="color:var(--color-unergy-purple);">
           <component :is="tipo.icon" class="text-xs size-[1em]" />{{ tipo.label }}
-          <span v-if="porTipo[tipo.value].length" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:#f0ebfd;color:#915BD8;">
+          <span v-if="porTipo[tipo.value].length" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:#f0ebfd;color:var(--color-unergy-purple);">
             {{ porTipo[tipo.value].length }}
           </span>
         </p>
         <button v-if="nuevoTipo !== tipo.value" type="button" @click="nuevoTipo = tipo.value; nuevo = { email: '', nombre: '', telefono: '' }"
           class="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-          style="background:#915BD8;color:#fff;">
+          style="background:var(--color-unergy-purple);color:#fff;">
           <PlusIcon class="text-xs size-[1em]" /> Agregar
         </button>
       </div>
@@ -46,7 +46,7 @@
         <button type="button" @click="enviarPrueba(c.email)" :disabled="!emailValido(c.email)"
           title="Enviar correo de prueba"
           class="p-1.5 rounded-lg transition-colors hover:bg-gray-50 disabled:opacity-40">
-          <SendIcon class="text-xs size-[1em]" style="color: #915BD8;" />
+          <SendIcon class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
         </button>
         <button type="button" @click="eliminarContacto(c)"
           class="p-1.5 rounded-lg transition-colors hover:bg-red-50">

@@ -688,7 +688,7 @@ async function exportarExcel() {
   padding: 4px 2px;
   font-size: 11px;
   font-weight: 700;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   margin-bottom: 4px;
 }
 .rq-miga:hover { text-decoration: underline; }
@@ -698,7 +698,7 @@ async function exportarExcel() {
   width: 40px; height: 40px; flex: none;
   border-radius: 12px;
   background: rgba(145, 91, 216, 0.12);
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   font-size: 14px; font-weight: 800;
   display: grid; place-items: center;
 }
@@ -710,13 +710,13 @@ async function exportarExcel() {
   display: inline-flex; align-items: center; gap: 6px;
   height: 32px; padding: 0 14px;
   border: 0; border-radius: 9px;
-  background: #F6FF72; color: #2C2039;
+  background: var(--color-unergy-yellow); color: var(--color-unergy-deep);
   font-size: 12.5px; font-weight: 800; cursor: pointer;
   box-shadow: 0 1px 0 rgba(44, 32, 57, .05);
   transition: filter .12s, box-shadow .12s;
 }
 .rq-cta:hover { filter: brightness(.97); box-shadow: 0 3px 12px rgba(246, 255, 114, .55); }
-.rq-cta:focus-visible { outline: 2px solid #2C2039; outline-offset: 2px; }
+.rq-cta:focus-visible { outline: 2px solid var(--color-unergy-deep); outline-offset: 2px; }
 .rq-cta svg { font-size: 12px; }
 
 @media (max-width: 640px) {
@@ -737,9 +737,9 @@ async function exportarExcel() {
   display: grid; place-items: center;
   margin: 0 auto 16px;
 }
-.rq-vacio-tile svg { font-size: 24px; color: #915BD8; }
+.rq-vacio-tile svg { font-size: 24px; color: var(--color-unergy-purple); }
 
-.rq-vacio-titulo { font-size: 15px; font-weight: 800; color: #2C2039; }
+.rq-vacio-titulo { font-size: 15px; font-weight: 800; color: var(--color-unergy-deep); }
 
 .rq-vacio-parrafo {
   font-size: 12.5px; font-weight: 400; color: #6b5a8a;
@@ -764,7 +764,7 @@ async function exportarExcel() {
 .rq-barra-indeterminada {
   position: absolute; top: 0; left: 0; right: 0; height: 2px;
   z-index: 5; border-radius: 2px; overflow: hidden;
-  background: linear-gradient(90deg, transparent 0%, #915BD8 45%, #915BD8 55%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, var(--color-unergy-purple) 45%, var(--color-unergy-purple) 55%, transparent 100%);
   background-size: 40% 100%;
   background-repeat: no-repeat;
   animation: rq-indeterminate 1s linear infinite;

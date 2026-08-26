@@ -8,10 +8,10 @@
         <Button label="Completar terminaciones" size="small" outlined @click="previewBackfillTerm" :loading="backfillTermLoading" v-tooltip.bottom="'Rellena contrato, nombre interno y demás datos de las terminaciones registradas antes, tomándolos de los registros del mismo código SIC'" style="color:#6b5a8a; border-color:#d8cfe8;">
           <template #icon><FlagIcon class="size-[1em]" /></template>
         </Button>
-        <Button label="Descargar Excel" size="small" outlined @click="descargarGesconExcel" :loading="exportando" style="color:#915BD8; border-color:#915BD8;">
+        <Button label="Descargar Excel" size="small" outlined @click="descargarGesconExcel" :loading="exportando" style="color:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
           <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
         </Button>
-        <Button label="Registrar" @click="abrirNuevo" style="background:#915BD8; border-color:#915BD8;" size="small">
+        <Button label="Registrar" @click="abrirNuevo" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);" size="small">
           <template #icon><PlusIcon class="size-[1em]" /></template>
         </Button>
       </template>
@@ -65,7 +65,7 @@
 
         <Column field="contrato_interno" header="Contrato" sortable style="min-width:160px;">
           <template #body="{ data }">
-            <span class="font-medium text-xs" style="color:#2C2039;">{{ data.contrato_interno || '—' }}</span>
+            <span class="font-medium text-xs" style="color:var(--color-unergy-deep);">{{ data.contrato_interno || '—' }}</span>
           </template>
         </Column>
 
@@ -77,7 +77,7 @@
 
         <Column header="Planta" style="min-width:160px;">
           <template #body="{ data }">
-            <span class="text-xs font-medium" style="color:#2C2039;">{{ data.planta_nombre || '—' }}</span>
+            <span class="text-xs font-medium" style="color:var(--color-unergy-deep);">{{ data.planta_nombre || '—' }}</span>
           </template>
         </Column>
 
@@ -149,7 +149,7 @@
           <template #body="{ data }">
             <div class="flex items-center gap-1">
               <button @click="abrirEditar(data)" class="p-1 rounded hover:bg-purple-50 transition-colors"
-                title="Editar" style="color: #915BD8;">
+                title="Editar" style="color: var(--color-unergy-purple);">
                 <PencilIcon class="text-xs size-[1em]" />
               </button>
               <a v-if="data.link_archivo" :href="data.link_archivo" target="_blank"
@@ -266,7 +266,7 @@
             @change="onSelectContrato">
             <template #option="{ option }">
               <div class="flex flex-col leading-tight py-0.5">
-                <span class="font-medium" style="color:#2C2039;">{{ option.numero_codigo_contrato || '(sin código)' }}</span>
+                <span class="font-medium" style="color:var(--color-unergy-deep);">{{ option.numero_codigo_contrato || '(sin código)' }}</span>
                 <span class="text-xs" style="color:#6b5a8a;">{{ option.nombre_interno || '(sin nombre interno)' }}</span>
               </div>
             </template>
@@ -451,7 +451,7 @@
 
         <div class="flex justify-end gap-2 pt-2">
           <Button label="Cancelar" severity="secondary" @click="dialogVisible = false" type="button" />
-          <Button :label="editandoId ? 'Actualizar' : 'Guardar'" type="submit" :loading="guardando" :disabled="conflictoNoResuelto" v-tooltip.top="conflictoNoResuelto ? 'Resuelve el solapamiento de fechas antes de guardar' : ''" style="background:#915BD8; border-color:#915BD8;">
+          <Button :label="editandoId ? 'Actualizar' : 'Guardar'" type="submit" :loading="guardando" :disabled="conflictoNoResuelto" v-tooltip.top="conflictoNoResuelto ? 'Resuelve el solapamiento de fechas antes de guardar' : ''" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
             <template #icon><CheckIcon class="size-[1em]" /></template>
           </Button>
         </div>
@@ -519,7 +519,7 @@
       </div>
       <template #footer>
         <Button label="Cancelar" text @click="backfillTermDialog = false" :disabled="backfillTermExecuting" />
-        <Button label="Aplicar" :loading="backfillTermExecuting" :disabled="!backfillTermPendiente" @click="applyBackfillTerm" style="background:#915BD8; border-color:#915BD8;">
+        <Button label="Aplicar" :loading="backfillTermExecuting" :disabled="!backfillTermPendiente" @click="applyBackfillTerm" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
           <template #icon><CheckIcon class="size-[1em]" /></template>
         </Button>
       </template>
@@ -559,7 +559,7 @@
       </div>
       <template #footer>
         <Button label="Cancelar" text @click="backfillDialog = false" :disabled="backfillExecuting" />
-        <Button label="Aplicar" :loading="backfillExecuting" :disabled="!backfillReport || !backfillReport.a_actualizar" @click="applyBackfill" style="background:#915BD8; border-color:#915BD8;">
+        <Button label="Aplicar" :loading="backfillExecuting" :disabled="!backfillReport || !backfillReport.a_actualizar" @click="applyBackfill" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
           <template #icon><CheckIcon class="size-[1em]" /></template>
         </Button>
       </template>

@@ -76,7 +76,7 @@
                 <div v-else class="fc-chips">
                   <button v-for="inv in inversores" :key="inv.id" type="button"
                     :class="['fc-chip', f.inversores_ids.includes(inv.id) && 'fc-chip--on']"
-                    :style="f.inversores_ids.includes(inv.id) ? chipOn('#915BD8') : {}"
+                    :style="f.inversores_ids.includes(inv.id) ? chipOn('var(--color-unergy-purple)') : {}"
                     @click="toggleInv(inv.id)">{{ inv.nombre || 'Inversor' }} · {{ inv.potencia_nominal_kw || '?' }}kW</button>
                 </div>
                 <small v-if="err.inversores" class="fc-fielderr">Selecciona al menos un inversor</small>
@@ -93,7 +93,7 @@
                 <div class="fc-chips">
                   <button v-for="t in catActual.tipos_falla" :key="t.codigo" type="button"
                     :class="['fc-chip', f.inversores_tipos.includes(t.codigo) && 'fc-chip--on']"
-                    :style="f.inversores_tipos.includes(t.codigo) ? chipOn('#915BD8') : {}"
+                    :style="f.inversores_tipos.includes(t.codigo) ? chipOn('var(--color-unergy-purple)') : {}"
                     @click="toggleTipo(t.codigo)">{{ t.etiqueta }}</button>
                 </div>
                 <small v-if="err.invtipos" class="fc-fielderr">Selecciona al menos un tipo</small>
@@ -343,8 +343,8 @@ async function submit() {
 }
 .fc-grab { width: 40px; height: 4px; border-radius: 2px; background: #e5e7eb; margin: 4px auto 12px; }
 .fc-header { display: flex; align-items: center; margin-bottom: 12px; }
-.fc-title { flex: 1; font-size: 16px; font-weight: 700; color: #2C2039; }
-.fc-title svg { color: #915BD8; margin-right: 6px; }
+.fc-title { flex: 1; font-size: 16px; font-weight: 700; color: var(--color-unergy-deep); }
+.fc-title svg { color: var(--color-unergy-purple); margin-right: 6px; }
 .fc-close { background: none; border: none; color: #9ca3af; font-size: 16px; padding: 4px; }
 
 .fc-body { overflow-y: auto; flex: 1; }
@@ -355,12 +355,12 @@ async function submit() {
 .fc-hint { font-size: 12px; color: #9ca3af; margin: 6px 0; }
 .fc-select, .fc-input, .fc-textarea {
   width: 100%; margin-top: 6px; padding: 13px 14px; font-size: 16px;
-  border: 1.5px solid #e8e0f0; border-radius: 12px; color: #2C2039; background: #fff;
+  border: 1.5px solid #e8e0f0; border-radius: 12px; color: var(--color-unergy-deep); background: #fff;
   font-family: inherit;
 }
 .fc-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L2 4h8z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
 .fc-textarea { resize: none; }
-.fc-input:focus, .fc-select:focus, .fc-textarea:focus { outline: none; border-color: #915BD8; }
+.fc-input:focus, .fc-select:focus, .fc-textarea:focus { outline: none; border-color: var(--color-unergy-purple); }
 .fc-invalid { border-color: #dc2626 !important; }
 .fc-fielderr { display: block; color: #dc2626; font-size: 11.5px; margin-top: 4px; }
 
@@ -372,23 +372,23 @@ async function submit() {
 .fc-chip svg { font-size: 12px; margin-right: 4px; }
 
 .fc-check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #4a3b6b; margin: 10px 0 0; }
-.fc-check input { accent-color: #915BD8; width: 18px; height: 18px; }
+.fc-check input { accent-color: var(--color-unergy-purple); width: 18px; height: 18px; }
 
 .fc-banner { font-size: 12.5px; border-radius: 8px; padding: 8px 10px; margin-top: 10px; }
 .fc-banner--warn { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .fc-banner--info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
-.fc-linkb { background: none; border: none; color: #915BD8; font-weight: 700; font-size: 12.5px; padding: 0; margin-left: 4px; }
+.fc-linkb { background: none; border: none; color: var(--color-unergy-purple); font-weight: 700; font-size: 12.5px; padding: 0; margin-left: 4px; }
 
 .fc-invadd { display: flex; gap: 8px; margin-top: 8px; }
 .fc-invname { flex: 1; margin-top: 0; }
 .fc-invkw { width: 90px; margin-top: 0; }
-.fc-invaddbtn { background: #915BD8; color: #fff; border: none; border-radius: 12px; width: 46px; flex-shrink: 0; }
+.fc-invaddbtn { background: var(--color-unergy-purple); color: #fff; border: none; border-radius: 12px; width: 46px; flex-shrink: 0; }
 
 .fc-error { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b91c1c; background: #fef2f2; border-radius: 10px; padding: 10px 12px; margin: 4px 0; }
 .fc-submit {
   width: 100%; display: flex; align-items: center; justify-content: center; gap: 9px;
   padding: 15px; border: none; border-radius: 14px; font-size: 16px; font-weight: 700;
-  color: #fff; background: #915BD8; margin-top: 10px; flex-shrink: 0;
+  color: #fff; background: var(--color-unergy-purple); margin-top: 10px; flex-shrink: 0;
 }
 .fc-submit:disabled { opacity: .5; }
 

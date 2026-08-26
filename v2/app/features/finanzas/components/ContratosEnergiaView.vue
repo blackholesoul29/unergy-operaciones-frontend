@@ -167,15 +167,15 @@
 
         <div class="rounded-lg px-3 py-2.5 space-y-1" style="background:#FBF7FF; border:1px solid #ECE0FB;">
           <p class="text-xs text-gray-600">
-            <InfoIcon class="mr-1 size-[1em]" style="color:#915BD8;" />
+            <InfoIcon class="mr-1 size-[1em]" style="color:var(--color-unergy-purple);" />
             <b>Sin contrato</b> obliga a tipo de tarifa <b>Bolsa</b>.
           </p>
           <p class="text-xs text-gray-600">
-            <InfoIcon class="mr-1 size-[1em]" style="color:#915BD8;" />
+            <InfoIcon class="mr-1 size-[1em]" style="color:var(--color-unergy-purple);" />
             <b>PPA</b> exige precio de energía; <b>Bolsa</b> no lo admite.
           </p>
           <p v-if="esPlc" class="text-xs text-gray-600">
-            <InfoIcon class="mr-1 size-[1em]" style="color:#915BD8;" />
+            <InfoIcon class="mr-1 size-[1em]" style="color:var(--color-unergy-purple);" />
             Cada proyecto de un contrato <b>PLC</b> necesita piso <b>y</b> techo: 24 valores en kWh, de la hora 1 a la 24.
           </p>
         </div>

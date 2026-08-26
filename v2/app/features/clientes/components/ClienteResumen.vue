@@ -1,6 +1,6 @@
 <template>
   <div v-if="loading" class="flex items-center justify-center py-16">
-    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color:#915BD8;" />
+    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color:var(--color-unergy-purple);" />
   </div>
 
   <div v-else-if="panel" class="space-y-5">
@@ -27,7 +27,7 @@
     <!-- Plantas contratadas -->
     <section class="seccion">
       <header class="seccion-head">
-        <SunIcon class="text-xs size-[1em]" style="color:#915BD8;" />
+        <SunIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple);" />
         <span>Plantas contratadas</span>
         <span class="badge">{{ panel.plantas.length }}</span>
       </header>
@@ -40,7 +40,7 @@
             class="rounded-lg px-3 py-2.5 flex flex-wrap items-center justify-between gap-2"
             :style="{ border: '1px solid #ece7f2', background: p.semaforo && p.semaforo !== 'vigente' ? SEMAFORO[p.semaforo].bg : 'white' }">
             <div class="min-w-0">
-              <p class="text-sm font-semibold truncate" style="color:#2C2039;">{{ p.nombre }}</p>
+              <p class="text-sm font-semibold truncate" style="color:var(--color-unergy-deep);">{{ p.nombre }}</p>
               <p class="text-xs" style="color:#6b5a8a;">
                 {{ p.potencia_kwp !== null ? p.potencia_kwp + ' kWp' : '—' }} ·
                 fin contrato: {{ fmtFecha(p.fecha_fin_contrato) }}
@@ -62,7 +62,7 @@
     <!-- Condiciones económicas + histórico participación -->
     <section class="seccion">
       <header class="seccion-head">
-        <DollarSignIcon class="text-xs size-[1em]" style="color:#915BD8;" />
+        <DollarSignIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple);" />
         <span>Condiciones económicas</span>
         <span class="badge">{{ panel.condiciones.length }}</span>
       </header>
@@ -84,7 +84,7 @@
             </thead>
             <tbody>
               <tr v-for="c in panel.condiciones" :key="c.contrato_id" class="border-t" style="border-color:#f3eefa;">
-                <td class="py-2 pr-3 font-medium" style="color:#2C2039;">{{ fmt(c.proyecto_nombre) }}</td>
+                <td class="py-2 pr-3 font-medium" style="color:var(--color-unergy-deep);">{{ fmt(c.proyecto_nombre) }}</td>
                 <td class="py-2 pr-3">{{ servicioLabel(c.servicio) }}</td>
                 <td class="py-2 pr-3 text-right tabular-nums">{{ fmt(c.tarifa_representacion) }}</td>
                 <td class="py-2 pr-3 text-right tabular-nums">{{ fmt(c.tarifa_cgm) }}</td>
@@ -100,10 +100,10 @@
           <details v-for="g in historicoPorProyecto" :key="g.proyecto_id"
             class="rounded-lg px-3 py-2" style="border:1px solid #ece7f2;">
             <summary class="flex items-center justify-between cursor-pointer list-none">
-              <span class="text-sm font-medium" style="color:#2C2039;">{{ fmt(g.nombre) }}</span>
+              <span class="text-sm font-medium" style="color:var(--color-unergy-deep);">{{ fmt(g.nombre) }}</span>
               <span class="flex items-center gap-3">
                 <ParticipacionSparkline :puntos="g.filas.map(f => ({ fecha: f.fecha_inicio, porcentaje: f.porcentaje }))" />
-                <span class="text-sm font-bold tabular-nums" style="color:#915BD8;">{{ fmt(g.actual) }}<template v-if="g.actual !== '—'">%</template></span>
+                <span class="text-sm font-bold tabular-nums" style="color:var(--color-unergy-purple);">{{ fmt(g.actual) }}<template v-if="g.actual !== '—'">%</template></span>
               </span>
             </summary>
             <table class="w-full text-xs mt-2">
@@ -122,7 +122,7 @@
     <!-- Contratos y documentos -->
     <section class="seccion">
       <header class="seccion-head">
-        <FileIcon class="text-xs size-[1em]" style="color:#915BD8;" />
+        <FileIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple);" />
         <span>Contratos y documentos</span>
         <span class="badge">{{ panel.contratos.length }}</span>
       </header>
@@ -137,10 +137,10 @@
             <div class="min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full uppercase"
-                  :style="c.fuente === 'ppa' ? 'background:#e0f2fe;color:#0369a1' : 'background:#f0ebfd;color:#915BD8'">
+                  :style="c.fuente === 'ppa' ? 'background:#e0f2fe;color:#0369a1' : 'background:#f0ebfd;color:var(--color-unergy-purple)'">
                   {{ c.fuente === 'ppa' ? 'PPA' : servicioLabel(c.tipo) }}
                 </span>
-                <span class="text-sm font-semibold truncate" style="color:#2C2039;">{{ fmt(c.numero) }}</span>
+                <span class="text-sm font-semibold truncate" style="color:var(--color-unergy-deep);">{{ fmt(c.numero) }}</span>
                 <span v-if="c.semaforo" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                   :style="{ color: SEMAFORO[c.semaforo].color, background: SEMAFORO[c.semaforo].bg }">
                   {{ SEMAFORO[c.semaforo].label }}
@@ -153,7 +153,7 @@
               </p>
             </div>
             <a v-if="c.link" :href="c.link" target="_blank" rel="noopener"
-              class="text-xs font-semibold flex items-center gap-1 hover:underline shrink-0" style="color:#915BD8;">
+              class="text-xs font-semibold flex items-center gap-1 hover:underline shrink-0" style="color:var(--color-unergy-purple);">
               <ExternalLinkIcon class="text-xs size-[1em]" /> Abrir contrato
             </a>
             <span v-else class="text-xs italic shrink-0" style="color:#bba8d4;">Sin link</span>
@@ -215,11 +215,11 @@ defineExpose({ recargar: cargar })
 
 <style scoped>
 .kpi-card { border: 1.5px solid #e8e0f0; border-radius: 0.75rem; padding: 0.7rem 0.9rem; }
-.kpi-valor { font-size: 1.5rem; font-weight: 800; color: #2C2039; line-height: 1.15; }
+.kpi-valor { font-size: 1.5rem; font-weight: 800; color: var(--color-unergy-deep); line-height: 1.15; }
 .kpi-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: #9b89b5; margin-top: 0.15rem; }
 .seccion { border: 1.5px solid #e8e0f0; border-radius: 0.75rem; overflow: hidden; }
-.seccion-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; background: #faf8fd; font-size: 0.875rem; font-weight: 700; color: #2C2039; }
-.badge { font-size: 0.625rem; font-weight: 700; padding: 0.05rem 0.4rem; border-radius: 9999px; background: #f0ebfd; color: #915BD8; }
-.chip { font-size: 0.625rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 9999px; background: #f0ebfd; color: #915BD8; }
+.seccion-head { display: flex; align-items: center; gap: 0.5rem; padding: 0.7rem 1rem; background: #faf8fd; font-size: 0.875rem; font-weight: 700; color: var(--color-unergy-deep); }
+.badge { font-size: 0.625rem; font-weight: 700; padding: 0.05rem 0.4rem; border-radius: 9999px; background: #f0ebfd; color: var(--color-unergy-purple); }
+.chip { font-size: 0.625rem; font-weight: 600; padding: 0.1rem 0.4rem; border-radius: 9999px; background: #f0ebfd; color: var(--color-unergy-purple); }
 .dato-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #9b89b5; }
 </style>

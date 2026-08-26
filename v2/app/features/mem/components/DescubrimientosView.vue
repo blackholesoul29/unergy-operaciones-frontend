@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5 space-y-5 min-h-screen" style="background: #FDFAF7; color: #2C2039;">
+  <div class="p-5 space-y-5 min-h-screen" style="background: var(--color-unergy-avena); color: var(--color-unergy-deep);">
 
     <!-- Header -->
     <PageHeader title="Descubrimientos en Bolsa" subtitle="Exposición financiera por compras y excedentes de energía valorados a precio de bolsa" />
@@ -7,15 +7,15 @@
     <!-- Selectors -->
     <div class="flex flex-wrap gap-3 items-end">
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+        <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Año</label>
         <Select v-model="selectedYear" :options="years" class="w-24" @change="loadData" />
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Desde</label>
+        <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Desde</label>
         <Select v-model="monthFrom" :options="MESES_OPTIONS" optionLabel="label" optionValue="value" class="w-36" @change="loadData" />
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Hasta</label>
+        <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Hasta</label>
         <Select v-model="monthTo" :options="MESES_OPTIONS" optionLabel="label" optionValue="value" class="w-36" @change="loadData" />
       </div>
     </div>
@@ -45,7 +45,7 @@
           <div class="text-xs mt-1" style="color: #7a6e8a;">{{ fmtMwh(data.totales.excedentes_bolsa_mwh) }} MWh</div>
         </div>
         <div class="rounded-xl border p-4" style="background: white; border-color: rgba(44,32,57,0.12);">
-          <div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #915BD8;">Exposición Neta</div>
+          <div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--color-unergy-purple);">Exposición Neta</div>
           <div class="font-mono text-xl font-bold" :style="{ color: data.totales.exposicion_neta_cop > 0 ? '#D64455' : '#2e7d32' }">
             {{ fmtCop(data.totales.exposicion_neta_cop) }}
           </div>
@@ -55,14 +55,14 @@
         </div>
         <div class="rounded-xl border p-4" style="background: white; border-color: rgba(44,32,57,0.12);">
           <div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #7a6e8a;">Meses con Datos</div>
-          <div class="font-mono text-xl font-bold" style="color: #2C2039;">{{ mesesConDatos }}<span class="text-sm font-normal" style="color: #7a6e8a;"> / {{ data.meses.length }}</span></div>
+          <div class="font-mono text-xl font-bold" style="color: var(--color-unergy-deep);">{{ mesesConDatos }}<span class="text-sm font-normal" style="color: #7a6e8a;"> / {{ data.meses.length }}</span></div>
           <div class="text-xs mt-1" style="color: #7a6e8a;">{{ selectedYear }}</div>
         </div>
       </div>
 
       <!-- SVG Chart — monthly exposure bars -->
       <div class="rounded-xl border p-4" style="background: white; border-color: rgba(44,32,57,0.12);">
-        <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color: #915BD8;">Exposición mensual</p>
+        <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color: var(--color-unergy-purple);">Exposición mensual</p>
         <div ref="chartBox" class="relative select-none" style="width: 100%; height: 320px;">
           <svg
             :viewBox="`0 0 ${SVG_W} ${SVG_H}`"
@@ -122,7 +122,7 @@
           <div
             v-if="hovered !== null && chartMeses[hovered]"
             class="absolute pointer-events-none z-10 rounded-xl shadow-lg text-sm"
-            style="background: #2C2039; color: #FDFAF7; padding: 10px 14px; min-width: 220px;"
+            style="background: var(--color-unergy-deep); color: var(--color-unergy-avena); padding: 10px 14px; min-width: 220px;"
             :style="{ left: tooltipX + 'px', top: tooltipY + 'px', transform: 'translateY(-100%)' }"
           >
             <div class="font-bold mb-2" style="color: #F0C040;">
@@ -161,7 +161,7 @@
 
       <!-- Monthly summary table -->
       <div>
-        <h2 class="text-base font-semibold mb-3" style="color: #2C2039;">Resumen mensual — {{ selectedYear }}</h2>
+        <h2 class="text-base font-semibold mb-3" style="color: var(--color-unergy-deep);">Resumen mensual — {{ selectedYear }}</h2>
         <DataTable
           :value="data.meses"
           size="small"
@@ -173,7 +173,7 @@
         >
           <Column header="Mes" style="min-width: 100px;">
             <template #body="{ data: row }">
-              <span class="font-semibold text-sm" style="color: #2C2039;">{{ MESES[row.month - 1] }}</span>
+              <span class="font-semibold text-sm" style="color: var(--color-unergy-deep);">{{ MESES[row.month - 1] }}</span>
             </template>
           </Column>
           <Column header="Precio Bolsa" style="width: 130px; text-align: right;">
@@ -184,7 +184,7 @@
           </Column>
           <Column header="Días" style="width: 70px; text-align: center;">
             <template #body="{ data: row }">
-              <span class="font-mono text-sm" :style="{ color: row.dias_con_precios > 0 ? '#2C2039' : '#b0a0c0' }">{{ row.dias_con_precios }}</span>
+              <span class="font-mono text-sm" :style="{ color: row.dias_con_precios > 0 ? 'var(--color-unergy-deep)' : '#b0a0c0' }">{{ row.dias_con_precios }}</span>
             </template>
           </Column>
           <Column header="Compras MWh" style="width: 130px; text-align: right;">
@@ -213,8 +213,8 @@
           </Column>
           <Column style="width: 44px; text-align: center;">
             <template #body="{ data: row }">
-              <ChevronDownIcon v-if="expandedMonth === row.month" class="text-xs size-[1em]" style="color: #915BD8;" />
-              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color: #915BD8;" />
+              <ChevronDownIcon v-if="expandedMonth === row.month" class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
+              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
             </template>
           </Column>
         </DataTable>
@@ -225,7 +225,7 @@
         <div class="rounded-xl border overflow-hidden" style="background: white; border-color: rgba(145,91,216,0.25);">
           <div class="px-5 py-3 flex items-center justify-between" style="background: rgba(145,91,216,0.06); border-bottom: 1px solid rgba(145,91,216,0.12);">
             <div>
-              <span class="font-bold text-base" style="color: #2C2039;">{{ MESES[expandedMonth - 1] }} {{ selectedYear }}</span>
+              <span class="font-bold text-base" style="color: var(--color-unergy-deep);">{{ MESES[expandedMonth - 1] }} {{ selectedYear }}</span>
               <span class="ml-2 text-xs" style="color: #7a6e8a;">{{ expandedContratos.length }} contratos con descubrimientos</span>
             </div>
             <button class="rounded-lg p-1.5" style="color: #7a6e8a;" @click="expandedMonth = null">
@@ -248,12 +248,12 @@
               <tbody>
                 <tr v-for="c in expandedContratos" :key="c.contrato_id" style="border-top: 1px solid rgba(44,32,57,0.06);">
                   <td class="py-2 pr-2">
-                    <div class="font-medium" style="color: #2C2039;">{{ c.nombre }}</div>
+                    <div class="font-medium" style="color: var(--color-unergy-deep);">{{ c.nombre }}</div>
                     <div class="text-xs" style="color: #7a6e8a;">{{ c.comprador }}</div>
                   </td>
                   <td class="py-2 px-2 text-right font-mono" style="color: #7a6e8a;">{{ fmtMwh(c.min_mwh) }}</td>
                   <td class="py-2 px-2 text-right font-mono" style="color: #7a6e8a;">{{ fmtMwh(c.max_mwh) }}</td>
-                  <td class="py-2 px-2 text-right font-mono" style="color: #915BD8;">{{ fmtMwh(c.gen_asignada_mwh) }}</td>
+                  <td class="py-2 px-2 text-right font-mono" style="color: var(--color-unergy-purple);">{{ fmtMwh(c.gen_asignada_mwh) }}</td>
                   <td class="py-2 px-2 text-right">
                     <div v-if="c.compras_cop > 0">
                       <span class="font-mono font-semibold" style="color: #D64455;">{{ fmtCop(c.compras_cop) }}</span>
@@ -291,7 +291,7 @@
 
     <!-- Empty state -->
     <div v-else-if="!loading && !error" class="text-center py-16 rounded-xl border" style="color: #7a6e8a; border-color: rgba(44,32,57,0.10);">
-      <ZapIcon class="text-4xl mb-3 block size-[1em]" style="color: #915BD8;" />
+      <ZapIcon class="text-4xl mb-3 block size-[1em]" style="color: var(--color-unergy-purple);" />
       <p>Selecciona un rango de meses para ver los descubrimientos.</p>
     </div>
 

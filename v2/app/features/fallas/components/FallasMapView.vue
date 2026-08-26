@@ -4,7 +4,7 @@
     <!-- ── Header ─────────────────────────────────────────── -->
     <div class="fmv-header">
       <div class="fmv-header-left">
-        <MapIcon class="size-[1em]" style="color:#915BD8;font-size:14px" />
+        <MapIcon class="size-[1em]" style="color:var(--color-unergy-purple);font-size:14px" />
         <span class="font-bold text-sm text-gray-800">Mapa de fallas</span>
         <span class="text-xs text-gray-400 hidden sm:inline">· Proyectos con fallas activas</span>
       </div>
@@ -54,7 +54,7 @@
 
     <!-- ── Loading inicial ─────────────────────────────────── -->
     <div v-else-if="loading && !mapListo" class="fmv-empty">
-      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color:#915BD8" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color:var(--color-unergy-purple)" />
       <p class="text-sm text-gray-500 mt-3">Cargando mapa…</p>
     </div>
 
@@ -507,7 +507,7 @@ onBeforeUnmount(() => {
 }
 .fmv-retry {
   margin-top: 12px; padding: 6px 16px;
-  background: #915BD8; color: #fff; border: none;
+  background: var(--color-unergy-purple); color: #fff; border: none;
   border-radius: 8px; font-size: 12px; cursor: pointer;
 }
 

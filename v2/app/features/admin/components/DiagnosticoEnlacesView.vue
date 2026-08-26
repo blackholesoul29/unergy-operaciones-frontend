@@ -3,7 +3,7 @@
     <PageHeader title="Diagnóstico de Enlaces" subtitle="Mapeo Contrato → GESCON → Planta → sub_project (API Unergy)">
       <template #lead>
         <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style="background: rgba(145,91,216,0.12);">
-          <LinkIcon class="text-lg size-[1em]" style="color: #915BD8;" />
+          <LinkIcon class="text-lg size-[1em]" style="color: var(--color-unergy-purple);" />
         </div>
       </template>
       <template #actions>
@@ -18,7 +18,7 @@
 
     <!-- Fix results -->
     <div v-if="fixResult" class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
-      <h2 class="text-sm font-bold mb-3" style="color: #2C2039;">Resultado del Fix</h2>
+      <h2 class="text-sm font-bold mb-3" style="color: var(--color-unergy-deep);">Resultado del Fix</h2>
       <div v-for="(a, i) in fixResult.actions" :key="i" class="text-xs py-1 border-b" style="border-color: #f0e8f8;">
         <Tag :value="a.action" :severity="actionSev(a.action)" class="text-xs mr-2" />
         <b>{{ a.contrato }}</b>
@@ -30,13 +30,13 @@
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-20">
-      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+      <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
     </div>
 
     <template v-if="data && !loading">
       <!-- Projects with sub_project -->
       <div class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
-        <h2 class="text-sm font-bold mb-3" style="color: #2C2039;">
+        <h2 class="text-sm font-bold mb-3" style="color: var(--color-unergy-deep);">
           Proyectos con sub_project ({{ data.proyectos_con_sub_project?.length || 0 }})
         </h2>
         <div class="flex flex-wrap gap-2">
@@ -57,8 +57,8 @@
 
         <div class="px-4 py-3 flex items-center gap-3 flex-wrap"
              :style="'border-bottom: 1px solid #e8e0f0; background: ' + (c.n_plantas_activas === 0 ? '#fef2f2' : '#f8f5fc')">
-          <span class="font-bold text-sm" style="color: #2C2039;">{{ c.nombre_interno || '(sin nombre)' }}</span>
-          <span class="text-xs font-mono px-2 py-0.5 rounded" style="background: rgba(145,91,216,0.1); color: #915BD8;">
+          <span class="font-bold text-sm" style="color: var(--color-unergy-deep);">{{ c.nombre_interno || '(sin nombre)' }}</span>
+          <span class="text-xs font-mono px-2 py-0.5 rounded" style="background: rgba(145,91,216,0.1); color: var(--color-unergy-purple);">
             {{ c.numero_codigo_contrato || '(sin código)' }}
           </span>
           <span class="text-xs" style="color: #6b5a8a;">{{ c.comprador }}</span>
@@ -100,7 +100,7 @@
                   </td>
                   <td class="px-2 py-1" style="border: 1px solid #e8e0f0;">{{ r.estado }}</td>
                   <td class="px-2 py-1 font-mono" style="border: 1px solid #e8e0f0;">{{ r.codigo_sic }}</td>
-                  <td class="px-2 py-1 font-semibold" style="border: 1px solid #e8e0f0; color: #2C2039;">{{ r.planta || '—' }}</td>
+                  <td class="px-2 py-1 font-semibold" style="border: 1px solid #e8e0f0; color: var(--color-unergy-deep);">{{ r.planta || '—' }}</td>
                   <td class="px-2 py-1 font-mono" style="border: 1px solid #e8e0f0;"
                       :style="r.sub_project ? 'color: #059669;' : 'color: #dc2626; font-weight: bold;'">
                     {{ r.sub_project || 'NULL' }}

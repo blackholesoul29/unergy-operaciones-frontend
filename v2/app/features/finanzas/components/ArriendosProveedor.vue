@@ -6,7 +6,7 @@
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
         <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
       </button>
-      <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
+      <span class="text-sm font-semibold" style="color:var(--color-unergy-deep); min-width:100px; text-align:center">
         {{ periodoLabel }}
       </span>
       <button type="button" @click="cambiarMes(1)"
@@ -37,7 +37,7 @@
           <tbody>
             <tr v-for="fila in filas" :key="fila.id"
               class="border-b border-gray-50 hover:bg-gray-50/50">
-              <td class="px-4 py-2.5 font-medium" style="color:#2C2039">{{ fila.proyecto }}</td>
+              <td class="px-4 py-2.5 font-medium" style="color:var(--color-unergy-deep)">{{ fila.proyecto }}</td>
               <td class="px-4 py-2.5 text-xs text-gray-500">{{ periodoLabel }}</td>
               <td class="px-4 py-2.5 text-right font-semibold tabular-nums" style="color:#7c3aed">
                 {{ formatCOP(fila.canon_a_facturar) }}
@@ -72,8 +72,8 @@
       <div class="flex items-center justify-between px-4 py-2.5 border-b"
         style="border-color:#F3F0FA;background:#FDFCFF">
         <div class="flex items-center gap-2">
-          <FileTextIcon class="text-xs size-[1em]" style="color:#915BD8" />
-          <span class="text-sm font-semibold" style="color:#2C2039">Soporte del período</span>
+          <FileTextIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple)" />
+          <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Soporte del período</span>
           <Tag :value="periodoLabel" severity="secondary" class="text-xs font-mono" />
         </div>
         <span v-if="soporte.enlace"
@@ -104,7 +104,7 @@
           <button type="button"
             :disabled="!nuevoEnlace.startsWith('http')"
             class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-            style="background:#915BD8;color:#fff;border:none"
+            style="background:var(--color-unergy-purple);color:#fff;border:none"
             :style="!nuevoEnlace.startsWith('http') ? 'opacity:0.4;cursor:not-allowed' : 'cursor:pointer'"
             @click="guardarSoporte">
             <SaveIcon class="text-xs size-[1em]" />Guardar

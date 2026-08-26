@@ -1405,8 +1405,8 @@ onMounted(cargarPaneles)
 
 <style scoped>
 .pc-wrap {
-  --p1:#2C2039; --p2:#915BD8; --yl:#F6FF72; --bg:#FDFAF7;
-  --txt:#2C2039; --txt2:#6b6478; --txt3:#9a93a8; --line:#ece7f2; --line2:#ddd6e8;
+  --p1:var(--color-unergy-deep); --p2:var(--color-unergy-purple); --yl:var(--color-unergy-yellow); --bg:var(--color-unergy-avena);
+  --txt:var(--color-unergy-deep); --txt2:#6b6478; --txt3:#9a93a8; --line:#ece7f2; --line2:#ddd6e8;
   --red:#c0392b; --green:#1e8449; --sec:#f5f2fa; --info:#eee7fb;
   background: var(--bg); color: var(--txt); padding: 24px; font-size: 13px; line-height: 1.4;
   min-height: 100%;
@@ -1419,19 +1419,19 @@ onMounted(cargarPaneles)
 .top-actions { display:flex; gap:10px; align-items:flex-end; }
 .req { color:var(--p2); }
 .pc-period { display:inline-flex; align-items:center; gap:6px; }
-.pc-period-btn { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid #ddd6e8; background:#fff; color:#915BD8; cursor:pointer; transition:background .12s; }
+.pc-period-btn { display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; border:1px solid #ddd6e8; background:#fff; color:var(--color-unergy-purple); cursor:pointer; transition:background .12s; }
 .pc-period-btn:hover:not(:disabled) { background:#f5f2fa; }
 .pc-period-btn:disabled { opacity:.4; cursor:not-allowed; }
 .pc-period-label { font-size:13px; font-weight:700; color:var(--p1); min-width:104px; text-align:center; }
 /* Colores de marca en hex literal: estos botones también se usan dentro del
    Dialog de PrimeVue, que se teletransporta a <body> fuera de .pc-wrap donde
    las variables --p2/--line2/--sec no existen (por eso salían en blanco). */
-.btn { background:#915BD8; color:#fff; border:none; padding:9px 16px; border-radius:9px; font-size:13px; cursor:pointer; font-weight:500; }
+.btn { background:var(--color-unergy-purple); color:#fff; border:none; padding:9px 16px; border-radius:9px; font-size:13px; cursor:pointer; font-weight:500; }
 .btn:hover:not(:disabled) { filter:brightness(1.07); }
-.btn:disabled { opacity:.5; cursor:default; background:#915BD8; color:#fff; }
-.btn-o { background:#fff; color:#915BD8; border:1px solid #ddd6e8; padding:9px 16px; border-radius:9px; font-size:13px; cursor:pointer; font-weight:500; }
+.btn:disabled { opacity:.5; cursor:default; background:var(--color-unergy-purple); color:#fff; }
+.btn-o { background:#fff; color:var(--color-unergy-purple); border:1px solid #ddd6e8; padding:9px 16px; border-radius:9px; font-size:13px; cursor:pointer; font-weight:500; }
 .btn-o:hover:not(:disabled) { background:#f5f2fa; }
-.btn-o:disabled { opacity:.5; cursor:default; background:#fff; color:#915BD8; }
+.btn-o:disabled { opacity:.5; cursor:default; background:#fff; color:var(--color-unergy-purple); }
 
 .tabs { display:flex; gap:4px; margin-bottom:18px; border-bottom:1px solid var(--line2); }
 .tab { padding:9px 18px; font-size:13px; cursor:pointer; color:var(--txt2); border-bottom:2px solid transparent; margin-bottom:-1px; }
@@ -1491,8 +1491,8 @@ onMounted(cargarPaneles)
 .vista-toggle > span { font-weight:500; }
 .vista-toggle .vt-opt { display:inline-flex; align-items:center; gap:5px; font-size:12px; padding:5px 12px;
   border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--txt2); background:#fff; transition:all .12s; }
-.vista-toggle .vt-opt.on { border-color:#915BD8; background:#eee7fb; color:#2C2039; font-weight:600; }
-.vista-toggle .vt-opt input { accent-color:#915BD8; cursor:pointer; }
+.vista-toggle .vt-opt.on { border-color:var(--color-unergy-purple); background:#eee7fb; color:var(--color-unergy-deep); font-weight:600; }
+.vista-toggle .vt-opt input { accent-color:var(--color-unergy-purple); cursor:pointer; }
 
 /* Tabla plana del detalle (vista por defecto) */
 .dt.flat { width:100%; border-collapse:collapse; font-size:13px; }
@@ -1519,15 +1519,15 @@ onMounted(cargarPaneles)
   font-size:13px; color:var(--p1); background:#fff; }
 .filtro-sel { padding:8px 10px; border:1px solid var(--line2); border-radius:9px; font-size:13px; color:var(--p1);
   background:#fff; cursor:pointer; }
-.filtro-busca input:focus, .filtro-sel:focus { outline:none; border-color:#915BD8; }
+.filtro-busca input:focus, .filtro-sel:focus { outline:none; border-color:var(--color-unergy-purple); }
 .filtro-count { font-size:12px; color:var(--txt3); }
 
 /* Switch preliq/oficial dentro de la pestaña Selección (reusa el look de vt-opt). */
 .sel-tipo { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--txt2); }
 .sel-tipo .vt-opt { display:inline-flex; align-items:center; gap:5px; font-size:12px; padding:5px 12px;
   border:1px solid var(--line2); border-radius:8px; cursor:pointer; color:var(--txt2); background:#fff; }
-.sel-tipo .vt-opt.on { border-color:#915BD8; background:#eee7fb; color:#2C2039; font-weight:600; }
-.sel-tipo .vt-opt input { accent-color:#915BD8; cursor:pointer; }
+.sel-tipo .vt-opt.on { border-color:var(--color-unergy-purple); background:#eee7fb; color:var(--color-unergy-deep); font-weight:600; }
+.sel-tipo .vt-opt input { accent-color:var(--color-unergy-purple); cursor:pointer; }
 
 /* Mapeo de celdas por proyecto (pestaña Selección) */
 .mapeo-proy { border-top:1px solid var(--line); }
@@ -1539,7 +1539,7 @@ onMounted(cargarPaneles)
 .origen-wrap { margin-top:3px; }
 .origen-link { display:inline-block; background:none; border:none; padding:0; font-size:10px; color:#9a93a8;
   cursor:pointer; text-align:left; font-variant-numeric:tabular-nums; }
-.origen-link:hover { color:#915BD8; }
+.origen-link:hover { color:var(--color-unergy-purple); }
 .proj { background:#fff; border:1px solid var(--line); border-radius:12px; margin-bottom:10px; overflow:hidden; transition:opacity .2s; }
 .proj.off { opacity:.45; }
 .phead { display:flex; align-items:center; gap:12px; padding:12px 16px; cursor:pointer; flex-wrap:wrap; }
@@ -1593,7 +1593,7 @@ tr.tot td { background:var(--sec); font-weight:600; }
 .val-in:hover { border-color:var(--line2); }
 .val-in:focus { outline:none; background:var(--info); border-color:var(--p2); }
 .comp-in { width:100px; font-size:11px; padding:3px 6px; border:1px solid var(--line2); border-radius:5px; text-align:left; }
-.sop-up { background:transparent; border:1px dashed #ddd6e8; color:#915BD8; font-size:11px;
+.sop-up { background:transparent; border:1px dashed #ddd6e8; color:var(--color-unergy-purple); font-size:11px;
   padding:3px 8px; border-radius:6px; cursor:pointer; white-space:nowrap; }
 .sop-up:hover { background:#f5f2fa; }
 .sop-up:disabled { opacity:.5; cursor:default; }
@@ -1615,18 +1615,18 @@ tr.derivada .cpt, tr.derivada td { color:#8a7fa6; font-style:italic; }
   padding:2px 5px; border:1px solid #ddd6e8; border-radius:5px; text-align:left;
   font-variant-numeric:tabular-nums; background:transparent; }
 .celda-origen::placeholder { color:#bcb5c9; }
-.celda-origen:focus { outline:none; border-color:#915BD8; color:#2C2039; }
+.celda-origen:focus { outline:none; border-color:var(--color-unergy-purple); color:var(--color-unergy-deep); }
 
 /* Fase 2: edición de fuentes de ingreso */
 .fuente-row { display:flex; align-items:center; gap:2px; }
-.fuente-et { font-size:12.5px; color:#2C2039; width:200px; max-width:100%;
+.fuente-et { font-size:12.5px; color:var(--color-unergy-deep); width:200px; max-width:100%;
   padding:2px 5px; border:1px solid transparent; border-radius:5px; background:transparent; }
 .fuente-et:hover { border-color:#ddd6e8; }
-.fuente-et:focus { outline:none; border-color:#915BD8; background:#fff; }
+.fuente-et:focus { outline:none; border-color:var(--color-unergy-purple); background:#fff; }
 .fuente-x { background:none; border:none; color:#9a93a8; font-size:11px; cursor:pointer;
   margin-left:6px; padding:0 4px; line-height:1; }
 .fuente-x:hover { color:#c0392b; }
-.fuente-add { background:transparent; border:1px dashed #ddd6e8; color:#915BD8; font-size:12px;
+.fuente-add { background:transparent; border:1px dashed #ddd6e8; color:var(--color-unergy-purple); font-size:12px;
   padding:4px 10px; border-radius:6px; cursor:pointer; }
 .fuente-add:hover { background:#f5f2fa; }
 .proj-foot { display:flex; align-items:center; gap:12px; padding:12px 16px; }
@@ -1655,8 +1655,8 @@ tr.derivada .cpt, tr.derivada td { color:#8a7fa6; font-style:italic; }
 .dlg-aviso { font-size:11.5px; color:var(--txt2); margin-top:10px; line-height:1.4;
   background:#faf8fd; border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
 .dlg-aviso b { color:var(--p2); }
-.search-in { font-size:13px; padding:7px 11px; border:1px solid #ddd6e8; border-radius:8px; color:#2C2039; min-width:200px; }
-.search-in:focus { outline:none; border-color:#915BD8; }
+.search-in { font-size:13px; padding:7px 11px; border:1px solid #ddd6e8; border-radius:8px; color:var(--color-unergy-deep); min-width:200px; }
+.search-in:focus { outline:none; border-color:var(--color-unergy-purple); }
 /* Selector segmentado de tipo de liquidación */
 .seg { display:inline-flex; border:1px solid var(--line2); border-radius:8px; overflow:hidden; }
 .seg label { display:flex; align-items:center; gap:5px; font-size:12px; padding:5px 12px; cursor:pointer;
@@ -1666,10 +1666,10 @@ tr.derivada .cpt, tr.derivada td { color:#8a7fa6; font-style:italic; }
 .seg label input { display:none; }
 .tipo-opt { display:flex; align-items:center; gap:8px; padding:9px 11px; border:1px solid #ddd6e8;
   border-radius:8px; background:#fff; cursor:pointer; transition:all .15s; }
-.tipo-opt.on { border-color:#915BD8; background:#eee7fb; }
-.tipo-opt input { accent-color:#915BD8; cursor:pointer; }
+.tipo-opt.on { border-color:var(--color-unergy-purple); background:#eee7fb; }
+.tipo-opt input { accent-color:var(--color-unergy-purple); cursor:pointer; }
 .tipo-opt span { display:flex; flex-direction:column; line-height:1.2; }
-.tipo-opt b { font-size:12.5px; color:#2C2039; font-weight:600; }
+.tipo-opt b { font-size:12.5px; color:var(--color-unergy-deep); font-weight:600; }
 .tipo-opt small { font-size:10.5px; color:#6b6478; }
 :deep(.pc-dialog) { border:1px solid var(--line); border-radius:14px; overflow:hidden; }
 :deep(.pc-dialog .p-dialog-header) { background:#faf8fd; border-bottom:1px solid var(--line); padding:14px 18px; }

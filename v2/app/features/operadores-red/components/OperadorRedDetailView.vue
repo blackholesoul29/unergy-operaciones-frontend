@@ -3,15 +3,15 @@
     <!-- Header -->
     <div class="flex items-center gap-3">
       <button @click="$router.push('/mem/operadores-red')"
-        class="text-sm flex items-center gap-1 hover:underline" style="color: #915BD8;">
+        class="text-sm flex items-center gap-1 hover:underline" style="color: var(--color-unergy-purple);">
         <ArrowLeftIcon class="text-xs size-[1em]" /> Operadores de Red
       </button>
       <span style="color: #c5b9db;">/</span>
-      <span class="text-sm font-semibold" style="color: #2C2039;">{{ operador.nombre_comercial || operador.nombre_legal }}</span>
+      <span class="text-sm font-semibold" style="color: var(--color-unergy-deep);">{{ operador.nombre_comercial || operador.nombre_legal }}</span>
     </div>
 
     <div>
-      <h1 class="text-lg font-bold" style="color: #2C2039;">{{ operador.nombre_comercial || operador.nombre_legal }}</h1>
+      <h1 class="text-lg font-bold" style="color: var(--color-unergy-deep);">{{ operador.nombre_comercial || operador.nombre_legal }}</h1>
       <p class="text-xs mt-0.5" style="color: #9b89b5;">
         {{ operador.nombre_legal }} · {{ operador.fronteras_vinculadas }} frontera{{ operador.fronteras_vinculadas === 1 ? '' : 's' }} vinculada{{ operador.fronteras_vinculadas === 1 ? '' : 's' }}
       </p>
@@ -24,7 +24,7 @@
           @click="activeTab = tab.key"
           class="px-5 py-3 text-sm font-medium transition-colors border-b-2 -mb-px"
           :style="activeTab === tab.key
-            ? 'border-color: #915BD8; color: #915BD8;'
+            ? 'border-color: var(--color-unergy-purple); color: var(--color-unergy-purple);'
             : 'border-color: transparent; color: #6b5a8a;'">
           <component :is="tab.icon" class="mr-1.5 text-xs size-[1em]" />{{ tab.label }}
         </button>
@@ -37,7 +37,7 @@
             <p class="text-sm" style="color: #6b5a8a;">Correos que reciben el reporte CGM de las fronteras de este operador.</p>
             <button v-if="!nuevo" type="button" @click="nuevo = { email: '', nombre: '' }"
               class="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-              style="background:#915BD8;color:#fff;">
+              style="background:var(--color-unergy-purple);color:#fff;">
               <PlusIcon class="text-xs size-[1em]" /> Agregar contacto
             </button>
           </div>
@@ -86,7 +86,7 @@
   </div>
 
   <div v-else class="flex items-center justify-center py-20">
-    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: #915BD8;" />
+    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
   </div>
 </template>
 

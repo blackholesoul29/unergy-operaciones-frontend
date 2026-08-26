@@ -6,7 +6,7 @@
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
         <ChevronLeftIcon class="text-xs text-gray-500 size-[1em]" />
       </button>
-      <span class="text-sm font-semibold" style="color:#2C2039; min-width:100px; text-align:center">
+      <span class="text-sm font-semibold" style="color:var(--color-unergy-deep); min-width:100px; text-align:center">
         {{ periodoLabel }}
       </span>
       <button type="button" @click="cambiarMes(1)"
@@ -40,7 +40,7 @@
           <tbody>
             <tr v-for="fila in filas" :key="fila.contrato_id"
               class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
-              <td class="px-4 py-2.5 font-medium" style="color:#2C2039">{{ fila.nombre_proyecto }}</td>
+              <td class="px-4 py-2.5 font-medium" style="color:var(--color-unergy-deep)">{{ fila.nombre_proyecto }}</td>
               <td class="px-4 py-2.5 text-xs text-gray-500">{{ fila.mes_año }}</td>
               <td class="px-4 py-2.5 text-right font-semibold tabular-nums" style="color:#7c3aed">
                 {{ formatCOP(fila.valor_a_facturar) }}
@@ -75,8 +75,8 @@
     <div class="rounded-xl border bg-white shadow-sm overflow-hidden" style="border-color:#ECE7F2">
       <div class="flex items-center justify-between px-4 py-2.5 border-b" style="border-color:#F3F0FA;background:#FDFCFF">
         <div class="flex items-center gap-2">
-          <FileTextIcon class="text-xs size-[1em]" style="color:#915BD8" />
-          <span class="text-sm font-semibold" style="color:#2C2039">Factura consolidada del mes</span>
+          <FileTextIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple)" />
+          <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Factura consolidada del mes</span>
           <Tag :value="periodoLabel" severity="secondary" class="text-xs font-mono" />
         </div>
         <!-- indicador de estado -->
@@ -110,7 +110,7 @@
           <a v-else-if="factura.enlace_pdf"
             :href="factura.enlace_pdf" target="_blank" rel="noopener"
             class="flex items-center gap-1 text-xs font-medium hover:underline flex-shrink-0"
-            style="color:#915BD8">
+            style="color:var(--color-unergy-purple)">
             <ExternalLinkIcon class="text-xs size-[1em]" />Ver
           </a>
         </div>
@@ -124,7 +124,7 @@
           <!-- Opción A: subir archivo -->
           <label class="flex items-center gap-2 text-xs border border-dashed rounded-lg px-3 py-2 cursor-pointer hover:border-purple-400 transition-colors"
             :class="archivoSeleccionado ? 'border-purple-400 bg-purple-50' : 'border-gray-300'">
-            <PaperclipIcon class="text-xs size-[1em]" :style="archivoSeleccionado ? 'color:#915BD8' : 'color:#9ca3af'" />
+            <PaperclipIcon class="text-xs size-[1em]" :style="archivoSeleccionado ? 'color:var(--color-unergy-purple)' : 'color:#9ca3af'" />
             <span :style="archivoSeleccionado ? 'color:#7c3aed' : 'color:#9ca3af'" class="truncate">
               {{ archivoSeleccionado ? archivoSeleccionado.name : 'Seleccionar PDF…' }}
             </span>
@@ -144,7 +144,7 @@
           <button type="button"
             :disabled="!puedeSubir || subiendoFactura"
             class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-            style="background:#915BD8;color:#fff;border:none"
+            style="background:var(--color-unergy-purple);color:#fff;border:none"
             :style="!puedeSubir || subiendoFactura ? 'opacity:0.4;cursor:not-allowed' : 'cursor:pointer'"
             @click="subirFactura">
             <LoaderCircleIcon v-if="subiendoFactura" class="text-xs size-[1em] animate-spin" />
@@ -223,7 +223,7 @@
             <button type="button"
               :disabled="!asignacionSeleccionada[item.id] || asignando[item.id]"
               class="text-[11px] font-semibold px-2 py-1 rounded"
-              style="background:#915BD8;color:#fff;border:none"
+              style="background:var(--color-unergy-purple);color:#fff;border:none"
               :style="!asignacionSeleccionada[item.id] || asignando[item.id] ? 'opacity:0.4' : 'cursor:pointer'"
               @click="asignarSinMatch(item)">
               {{ asignando[item.id] ? 'Asignando…' : 'Asignar' }}

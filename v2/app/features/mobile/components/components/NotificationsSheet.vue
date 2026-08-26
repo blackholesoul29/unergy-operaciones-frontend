@@ -104,14 +104,14 @@ function timeAgo(s) {
 }
 .ns-grab { width: 40px; height: 4px; border-radius: 2px; background: #e5e7eb; margin: 4px auto 12px; }
 .ns-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.ns-title { flex: 1; font-size: 16px; font-weight: 700; color: #2C2039; }
-.ns-title svg { color: #915BD8; margin-right: 6px; }
-.ns-readall { background: none; border: none; color: #915BD8; font-size: 13px; font-weight: 600; }
+.ns-title { flex: 1; font-size: 16px; font-weight: 700; color: var(--color-unergy-deep); }
+.ns-title svg { color: var(--color-unergy-purple); margin-right: 6px; }
+.ns-readall { background: none; border: none; color: var(--color-unergy-purple); font-size: 13px; font-weight: 600; }
 .ns-close { background: none; border: none; color: #9ca3af; font-size: 16px; padding: 4px; }
 
 .ns-body { overflow-y: auto; flex: 1; }
 .ns-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 40px 0; color: #6b5a8a; font-size: 14px; }
-.ns-state svg { font-size: 22px; color: #915BD8; }
+.ns-state svg { font-size: 22px; color: var(--color-unergy-purple); }
 
 .ns-item {
   display: flex; align-items: flex-start; gap: 12px; width: 100%; text-align: left;
@@ -120,10 +120,10 @@ function timeAgo(s) {
 .ns-item--unread { background: rgba(145,91,216,0.05); }
 .ns-item > svg { font-size: 18px; margin-top: 2px; flex-shrink: 0; }
 .ns-item-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
-.ns-item-title { font-size: 14.5px; font-weight: 700; color: #2C2039; }
+.ns-item-title { font-size: 14.5px; font-weight: 700; color: var(--color-unergy-deep); }
 .ns-item-msg { font-size: 13px; color: #4b5563; line-height: 1.35; }
 .ns-item-time { font-size: 11px; color: #9ca3af; margin-top: 2px; }
-.ns-dot { width: 9px; height: 9px; border-radius: 50%; background: #915BD8; flex-shrink: 0; margin-top: 5px; }
+.ns-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--color-unergy-purple); flex-shrink: 0; margin-top: 5px; }
 
 .nsheet-enter-active, .nsheet-leave-active { transition: opacity .2s ease; }
 .nsheet-enter-active .ns-sheet, .nsheet-leave-active .ns-sheet { transition: transform .25s ease; }

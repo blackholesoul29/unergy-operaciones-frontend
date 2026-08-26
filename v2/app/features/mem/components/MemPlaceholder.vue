@@ -5,7 +5,7 @@
       <p class="text-xs text-gray-400 mt-0.5">Módulo MEM</p>
     </div>
     <div class="flex flex-col items-center py-24 gap-3 text-gray-300">
-      <component :is="icon" class="text-5xl size-[1em]" style="color: #915BD8; opacity: 0.4;" />
+      <component :is="icon" class="text-5xl size-[1em]" style="color: var(--color-unergy-purple); opacity: 0.4;" />
       <p class="text-sm font-medium text-gray-500">{{ title }}</p>
       <p class="text-xs text-gray-400">Módulo en desarrollo</p>
     </div>

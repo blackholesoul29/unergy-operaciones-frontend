@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5 space-y-5 min-h-screen" style="background: #FDFAF7; color: #2C2039;">
+  <div class="p-5 space-y-5 min-h-screen" style="background: var(--color-unergy-avena); color: var(--color-unergy-deep);">
 
     <!-- Header -->
     <PageHeader title="Cumplimiento PPA" subtitle="Generación vs. compromisos contractuales de energía">
@@ -9,7 +9,7 @@
       <template #actions>
         <button @click="abrirResponsables"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-          style="border: 1px solid rgba(145,91,216,0.3); color: #915BD8; background: rgba(145,91,216,0.05);"
+          style="border: 1px solid rgba(145,91,216,0.3); color: var(--color-unergy-purple); background: rgba(145,91,216,0.05);"
           v-tooltip.bottom="'Empresa responsable de cada PPA. Los contratos de un responsable no relevante se ocultan en toda esta página.'">
           <BuildingIcon class="text-xs size-[1em]" />
           Responsables
@@ -22,7 +22,7 @@
           <Checkbox v-model="verOcultos" :binary="true" />
           Ver ocultos
         </label>
-        <span v-if="cacheSize" class="text-xs font-mono px-2 py-1 rounded" style="background: rgba(145,91,216,0.08); color: #915BD8;">
+        <span v-if="cacheSize" class="text-xs font-mono px-2 py-1 rounded" style="background: rgba(145,91,216,0.08); color: var(--color-unergy-purple);">
           caché: {{ cacheSize }}
         </span>
         <button @click="clearCacheAndReload"
@@ -52,11 +52,11 @@
       <!-- Selectors -->
       <div class="flex flex-wrap gap-3 items-end">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Año</label>
           <Select v-model="selectedYear" :options="years" class="w-24" @change="onYearChange" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Contrato</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Contrato</label>
           <Select
             v-model="selectedContratoId"
             :options="contratos"
@@ -68,10 +68,10 @@
           />
         </div>
         <div class="flex gap-2 ml-auto">
-          <Button label="Exportar (Excel)" size="small" outlined :disabled="!anualData || chartLoading || exportingExcel || exportingPdf" :loading="exportingExcel" @click="exportarAnualExcel" v-tooltip.bottom="selectedContratoId === CONSOLIDADO_ID ? 'Una hoja por contrato + resumen consolidado, con plantas participantes' : 'Detalle mensual del contrato con plantas participantes'" style="color:#915BD8; border-color:#915BD8;">
+          <Button label="Exportar (Excel)" size="small" outlined :disabled="!anualData || chartLoading || exportingExcel || exportingPdf" :loading="exportingExcel" @click="exportarAnualExcel" v-tooltip.bottom="selectedContratoId === CONSOLIDADO_ID ? 'Una hoja por contrato + resumen consolidado, con plantas participantes' : 'Detalle mensual del contrato con plantas participantes'" style="color:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
             <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
           </Button>
-          <Button label="Descargar PDF" size="small" outlined :disabled="!anualData || chartLoading || exportingExcel || exportingPdf" :loading="exportingPdf" @click="exportarAnualPdf" v-tooltip.bottom="'PDF presentable para compartir con el inversionista'" style="color:#2C2039; border-color:#2C2039;">
+          <Button label="Descargar PDF" size="small" outlined :disabled="!anualData || chartLoading || exportingExcel || exportingPdf" :loading="exportingPdf" @click="exportarAnualPdf" v-tooltip.bottom="'PDF presentable para compartir con el inversionista'" style="color:var(--color-unergy-deep); border-color:var(--color-unergy-deep);">
             <template #icon><FileTextIcon class="size-[1em]" /></template>
           </Button>
         </div>
@@ -89,14 +89,14 @@
       <!-- Chart -->
       <template v-else-if="anualData">
         <div class="flex items-center gap-2 text-sm flex-wrap" style="color: #7a6e8a;">
-          <span class="font-semibold text-base" style="color: #2C2039;">
+          <span class="font-semibold text-base" style="color: var(--color-unergy-deep);">
             {{ anualData.contrato.nombre_interno || anualData.contrato.numero_codigo_contrato }}
           </span>
           <span>·</span>
           <span>{{ anualData.contrato.comprador_nombre }}</span>
           <span>·</span>
           <span>{{ anualData.year }}</span>
-          <span v-if="selectedContratoId === CONSOLIDADO_ID" class="text-xs px-2 py-0.5 rounded-full font-medium" style="background: rgba(145,91,216,0.12); color: #915BD8;">
+          <span v-if="selectedContratoId === CONSOLIDADO_ID" class="text-xs px-2 py-0.5 rounded-full font-medium" style="background: rgba(145,91,216,0.12); color: var(--color-unergy-purple);">
             Suma de todos los contratos
           </span>
         </div>
@@ -128,7 +128,7 @@
                   <!-- Left bar: actual generation (solid) -->
                   <rect v-if="mes.gen_mwh > 0"
                     :x="dualBarLeftX(i)" :y="toY(mes.gen_mwh)" :width="dualBarW" :height="toY(0) - toY(mes.gen_mwh)"
-                    fill="#915BD8" rx="1" />
+                    fill="var(--color-unergy-purple)" rx="1" />
                   <!-- Right bar: projected close (lighter + pattern) -->
                   <rect v-if="cierreVal(mes) > 0"
                     :x="dualBarRightX(i)" :y="toY(cierreVal(mes))" :width="dualBarW" :height="toY(0) - toY(cierreVal(mes))"
@@ -148,7 +148,7 @@
                 <!-- PAST / FUTURE months: single bar -->
                 <template v-else>
                   <rect v-if="genVal(mes) > 0" :x="barX(i)" :y="toY(genVal(mes))" :width="barW" :height="toY(0) - toY(genVal(mes))"
-                    :fill="mes.tipo_datos === 'proyeccion_historica' ? 'rgba(59,186,220,0.55)' : '#915BD8'" />
+                    :fill="mes.tipo_datos === 'proyeccion_historica' ? 'rgba(59,186,220,0.55)' : 'var(--color-unergy-purple)'" />
                   <rect v-if="genVal(mes) > 0 && mes.tipo_datos === 'proyeccion_historica'" :x="barX(i)" :y="toY(genVal(mes))" :width="barW" :height="toY(0) - toY(genVal(mes))"
                     fill="none" stroke="rgba(59,186,220,0.9)" stroke-width="1" stroke-dasharray="3,2" />
                   <rect v-if="mes.estado === 'deficit' && mes.min_mwh !== null && genVal(mes) > 0 && genVal(mes) < mes.min_mwh"
@@ -167,7 +167,7 @@
                 <!-- Month label -->
                 <circle v-if="selectedMonthIdx === i" :cx="slotX(i) + slotW / 2" :cy="SVG_H - PAD_B + 30" r="3" fill="#F0C040" />
                 <text :x="slotX(i) + slotW / 2" :y="SVG_H - PAD_B + 17" text-anchor="middle" font-size="11"
-                  :fill="selectedMonthIdx === i ? '#F0C040' : isCurrentMonth(mes) ? '#2C2039' : '#7a6e8a'"
+                  :fill="selectedMonthIdx === i ? '#F0C040' : isCurrentMonth(mes) ? 'var(--color-unergy-deep)' : '#7a6e8a'"
                   :font-weight="selectedMonthIdx === i || isCurrentMonth(mes) ? '700' : '400'"
                 >{{ MESES_CORTOS[i] }}</text>
                 <!-- Clickable area -->
@@ -182,7 +182,7 @@
             <div
               v-if="hovered !== null && anualData.meses[hovered]"
               class="absolute pointer-events-none z-10 rounded-xl shadow-lg text-sm"
-              style="background: #2C2039; color: #FDFAF7; padding: 10px 14px; min-width: 200px;"
+              style="background: var(--color-unergy-deep); color: var(--color-unergy-avena); padding: 10px 14px; min-width: 200px;"
               :style="{ left: tooltipX + 'px', top: tooltipY + 'px', transform: 'translateY(-100%)' }"
             >
               <div class="font-bold mb-2" style="color: #F0C040;">
@@ -236,7 +236,7 @@
           <!-- Legend -->
           <div class="flex flex-wrap gap-5 mt-3 pl-1">
             <div class="flex items-center gap-2 text-xs" style="color: #7a6e8a;"><div class="w-4 h-4 rounded-sm" style="background: rgba(46,125,50,0.18); border: 1px solid rgba(46,125,50,0.45);"></div>Zona de cumplimiento</div>
-            <div class="flex items-center gap-2 text-xs" style="color: #7a6e8a;"><div class="w-4 h-4 rounded-sm" style="background: #915BD8;"></div>Generación real</div>
+            <div class="flex items-center gap-2 text-xs" style="color: #7a6e8a;"><div class="w-4 h-4 rounded-sm" style="background: var(--color-unergy-purple);"></div>Generación real</div>
             <div class="flex items-center gap-2 text-xs" style="color: #7a6e8a;"><div class="w-4 h-4 rounded-sm" style="background: rgba(59,186,220,0.65); border: 1px dashed rgba(59,186,220,0.9);"></div>Proyección cierre (prom. 30d)</div>
             <div class="flex items-center gap-2 text-xs" style="color: #7a6e8a;"><div class="w-4 h-4 rounded-sm" style="background: rgba(214,68,85,0.38);"></div>Brecha de déficit</div>
             <div class="flex items-center gap-2 text-xs" style="color: #7a6e8a;"><div class="w-4 h-4 rounded-sm" style="background: rgba(20,184,166,0.6);"></div>Excedente contractual</div>
@@ -246,14 +246,14 @@
 
       <!-- Empty chart state -->
       <div v-else-if="!chartLoading && !chartError" class="text-center py-16 cv-panel" style="color: #7a6e8a;">
-        <ChartColumnIcon class="text-4xl mb-3 block size-[1em]" style="color: #915BD8;" />
+        <ChartColumnIcon class="text-4xl mb-3 block size-[1em]" style="color: var(--color-unergy-purple);" />
         <p>Selecciona un año y un contrato para ver el cumplimiento anual.</p>
       </div>
 
       <!-- Summary table -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h2 class="text-base font-semibold" style="color: #2C2039;">Resumen anual por contrato — {{ selectedYear }}</h2>
+          <h2 class="text-base font-semibold" style="color: var(--color-unergy-deep);">Resumen anual por contrato — {{ selectedYear }}</h2>
           <span v-if="tableLoading" class="text-xs" style="color: #7a6e8a;">Cargando…</span>
         </div>
         <DataTable
@@ -266,7 +266,7 @@
         >
           <Column header="Contrato" style="min-width: 200px;">
             <template #body="{ data: row }">
-              <div class="font-semibold text-sm" style="color: #2C2039;">{{ row.nombre_interno || row.numero_codigo_contrato }}</div>
+              <div class="font-semibold text-sm" style="color: var(--color-unergy-deep);">{{ row.nombre_interno || row.numero_codigo_contrato }}</div>
               <div class="text-xs mt-0.5" style="color: #7a6e8a;">{{ row.comprador_nombre }}<span v-if="esOculto(row)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded ml-1.5" style="background: rgba(214,68,85,0.12); color: #b03446;" v-tooltip.top="'Responsable: ' + row.responsable + ' — normalmente oculto en Cumplimiento'">{{ row.responsable }}</span></div>
             </template>
           </Column>
@@ -294,8 +294,8 @@
           </Column>
           <Column style="width: 44px; text-align: center;">
             <template #body="{ data: row }">
-              <ChartColumnIcon v-if="row.id === selectedContratoId" class="text-xs size-[1em]" style="color: #915BD8;" />
-              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color: #915BD8;" />
+              <ChartColumnIcon v-if="row.id === selectedContratoId" class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
+              <ChevronRightIcon v-else class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
             </template>
           </Column>
         </DataTable>
@@ -309,15 +309,15 @@
       <!-- Controls -->
       <div class="flex flex-wrap items-end gap-3">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Año</label>
           <Select v-model="simYear" :options="years" class="w-24" @change="loadSimulator" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Mes</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Mes</label>
           <Select v-model="simMonth" :options="MESES_OPTIONS" optionLabel="label" optionValue="value" class="w-36" @change="loadSimulator" />
         </div>
         <button @click="resetSim" class="cv-btn">
-          <RefreshCwIcon class="text-xs size-[1em]" style="color: #915BD8;" />Resetear
+          <RefreshCwIcon class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />Resetear
         </button>
         <button v-if="hiddenContratos.size > 0" @click="showAllContratos" class="cv-btn">
           <EyeIcon class="text-xs size-[1em]" style="color: #2e7d32;" />Mostrar ocultos ({{ hiddenContratos.size }})
@@ -327,8 +327,8 @@
           class="cv-btn"
           v-tooltip="sortDesc ? 'Mayor cumplimiento primero' : 'Menor cumplimiento primero'"
         >
-          <ArrowDownWideNarrowIcon v-if="sortDesc" class="text-xs size-[1em]" style="color: #915BD8;" />
-          <ArrowUpNarrowWideIcon v-else class="text-xs size-[1em]" style="color: #915BD8;" />
+          <ArrowDownWideNarrowIcon v-if="sortDesc" class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
+          <ArrowUpNarrowWideIcon v-else class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
           {{ sortDesc ? '↓ Mayor %' : '↑ Menor %' }}
         </button>
 
@@ -337,7 +337,7 @@
           <button
             @click="estadoFiltro = null"
             class="cv-btn"
-            :style="estadoFiltro === null ? 'border-color:#915BD8; background:rgba(145,91,216,0.10); color:#915BD8; font-weight:700;' : ''"
+            :style="estadoFiltro === null ? 'border-color:var(--color-unergy-purple); background:rgba(145,91,216,0.10); color:var(--color-unergy-purple); font-weight:700;' : ''"
           >Todos</button>
           <button
             v-for="f in ESTADO_FILTROS"
@@ -370,7 +370,7 @@
       <div v-if="showNuevoForm" class="rounded-xl border p-5" style="background: white; border-color: rgba(240,192,64,0.4);">
         <div class="flex items-center gap-2 mb-4">
           <ZapIcon class="size-[1em]" style="color: #F0C040;" />
-          <span class="font-bold text-sm" style="color: #2C2039;">Nuevo PPA nuevo</span>
+          <span class="font-bold text-sm" style="color: var(--color-unergy-deep);">Nuevo PPA nuevo</span>
         </div>
         <div class="flex flex-wrap items-end gap-4">
           <div class="flex flex-col gap-1">
@@ -392,7 +392,7 @@
               class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition"
               :style="!ficticioNombre || ficticioMax <= 0
                 ? 'background: rgba(44,32,57,0.08); color: rgba(44,32,57,0.3); cursor: not-allowed;'
-                : 'background: #915BD8; color: white; cursor: pointer;'"
+                : 'background: var(--color-unergy-purple); color: white; cursor: pointer;'"
             >
               <CheckIcon class="text-xs size-[1em]" />Crear
             </button>
@@ -414,7 +414,7 @@
         <Message severity="error" :closable="false">{{ simError }}</Message>
         <button @click="loadSimulator()"
           class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-          style="background: #915BD8; color: white;">
+          style="background: var(--color-unergy-purple); color: white;">
           <RefreshCwIcon class="mr-1 size-[1em]" /> Reintentar
         </button>
       </div>
@@ -438,11 +438,11 @@
                 @click="toggleExpand(c.id)"
               >
                 <div class="flex items-center gap-2 min-w-0">
-                  <ChevronDownIcon v-if="expandedContratos.includes(c.id)" class="text-xs transition-transform flex-shrink-0 size-[1em]" style="color: #915BD8;" />
-                  <ChevronRightIcon v-else class="text-xs transition-transform flex-shrink-0 size-[1em]" style="color: #915BD8;" />
+                  <ChevronDownIcon v-if="expandedContratos.includes(c.id)" class="text-xs transition-transform flex-shrink-0 size-[1em]" style="color: var(--color-unergy-purple);" />
+                  <ChevronRightIcon v-else class="text-xs transition-transform flex-shrink-0 size-[1em]" style="color: var(--color-unergy-purple);" />
                   <div class="min-w-0">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="font-bold text-sm break-words" style="color: #2C2039;">{{ c.nombre }}</span>
+                      <span class="font-bold text-sm break-words" style="color: var(--color-unergy-deep);">{{ c.nombre }}</span>
                       <span v-if="c._ficticio" class="text-xs px-1.5 py-0.5 rounded font-medium flex-shrink-0" style="background: rgba(240,192,64,0.18); color: #9a6700;">Nuevo</span>
                       <span v-if="simResults[c.id]?.plantasEsp != null"
                         class="text-xs font-semibold px-1.5 py-0.5 rounded flex-shrink-0"
@@ -462,7 +462,7 @@
                   <button
                     @click.stop="abrirDetalleCapa(c)"
                     class="rounded-md p-1 transition-colors hover:bg-purple-50"
-                    style="color: #915BD8;"
+                    style="color: var(--color-unergy-purple);"
                     v-tooltip="'Ver detalle de la capa'"
                   >
                     <MaximizeIcon class="text-xs size-[1em]" />
@@ -494,7 +494,7 @@
                   <div>
                     <div class="text-[10px] font-semibold uppercase tracking-wide leading-tight" style="color: #7a6e8a;">Energía entregada</div>
                     <div class="flex items-baseline gap-1 mt-1 flex-wrap">
-                      <span class="font-mono text-xs font-bold" style="color: #2C2039;">{{ fmtMwh(simResults[c.id].gen) }}</span>
+                      <span class="font-mono text-xs font-bold" style="color: var(--color-unergy-deep);">{{ fmtMwh(simResults[c.id].gen) }}</span>
                       <span v-if="simResults[c.id].genDup > 0"
                         class="inline-flex items-center gap-1 font-mono text-[10px] font-semibold px-1.5 py-0.5 rounded"
                         style="background: rgba(240,192,64,0.22); color: #9a6700;"
@@ -504,11 +504,11 @@
                   </div>
                   <div>
                     <div class="text-[10px] font-semibold uppercase tracking-wide leading-tight" style="color: #7a6e8a;">Energía mínima</div>
-                    <div class="font-mono text-xs font-bold mt-1" style="color: #2C2039;">{{ simResults[c.id].min !== null ? fmtMwh(simResults[c.id].min) : '—' }}</div>
+                    <div class="font-mono text-xs font-bold mt-1" style="color: var(--color-unergy-deep);">{{ simResults[c.id].min !== null ? fmtMwh(simResults[c.id].min) : '—' }}</div>
                   </div>
                   <div>
                     <div class="text-[10px] font-semibold uppercase tracking-wide leading-tight" style="color: #7a6e8a;">Energía proyectada</div>
-                    <div class="font-mono text-xs font-bold mt-1" style="color: #2C2039;">{{ simResults[c.id].genProy != null && simResults[c.id].genProy > 0 ? fmtMwh(simResults[c.id].genProy) : '—' }}</div>
+                    <div class="font-mono text-xs font-bold mt-1" style="color: var(--color-unergy-deep);">{{ simResults[c.id].genProy != null && simResults[c.id].genProy > 0 ? fmtMwh(simResults[c.id].genProy) : '—' }}</div>
                   </div>
                 </div>
 
@@ -536,14 +536,14 @@
                       v-tooltip="'Compra en bolsa (origen del suministro)'" />
                     <!-- Marcas mín / máx -->
                     <div v-if="simResults[c.id].bullet.hasMin" class="absolute rounded"
-                      style="top: -1px; bottom: -1px; width: 2px; background: #2C2039; opacity: 0.45;"
+                      style="top: -1px; bottom: -1px; width: 2px; background: var(--color-unergy-deep); opacity: 0.45;"
                       :style="{ left: simResults[c.id].bullet.minPct + '%' }" v-tooltip="'Mínimo: ' + fmtMwh(simResults[c.id].min)" />
                     <div v-if="simResults[c.id].bullet.hasMax" class="absolute rounded"
-                      style="top: -1px; bottom: -1px; width: 2px; background: #2C2039; opacity: 0.45;"
+                      style="top: -1px; bottom: -1px; width: 2px; background: var(--color-unergy-deep); opacity: 0.45;"
                       :style="{ left: simResults[c.id].bullet.maxPct + '%' }" v-tooltip="'Máximo: ' + fmtMwh(simResults[c.id].max)" />
                     <!-- Proyección de cierre (diamante) -->
                     <div v-if="simResults[c.id].bullet.proyPct != null" class="absolute"
-                      style="top: 50%; width: 11px; height: 11px; transform: translate(-50%,-50%) rotate(45deg); background: #fff; border: 2px solid #2C2039; border-radius: 2px;"
+                      style="top: 50%; width: 11px; height: 11px; transform: translate(-50%,-50%) rotate(45deg); background: #fff; border: 2px solid var(--color-unergy-deep); border-radius: 2px;"
                       :style="{ left: simResults[c.id].bullet.proyPct + '%' }"
                       v-tooltip="'Proyección de cierre: ' + fmtMwh(simResults[c.id].genProy)" />
                   </div>
@@ -579,7 +579,7 @@
                   ]"
                 >
                   <div class="min-w-0">
-                    <span class="font-medium truncate block" style="color: #2C2039; max-width: 128px;">{{ p.nombre }}</span>
+                    <span class="font-medium truncate block" style="color: var(--color-unergy-deep); max-width: 128px;">{{ p.nombre }}</span>
                     <span v-if="p.es_duplicado && !p.comprado_por_unergy" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5"
                       style="background: rgba(240,192,64,0.22); color: #9a6700;"
                       v-tooltip="'Compra en bolsa — cuenta para el contrato, origen bolsa'"
@@ -590,7 +590,7 @@
                     >Compra Unergy</span>
                   </div>
                   <div class="text-right flex-shrink-0">
-                    <div class="font-mono font-semibold" :style="p.es_duplicado ? 'color: #9a6700;' : p.comprado_por_unergy ? 'color: #9a6700;' : 'color: #915BD8;'">
+                    <div class="font-mono font-semibold" :style="p.es_duplicado ? 'color: #9a6700;' : p.comprado_por_unergy ? 'color: #9a6700;' : 'color: var(--color-unergy-purple);'">
                       {{ p.month_mwh != null ? fmtMwh(p.month_mwh * p.pct_despacho) : '—' }}
                     </div>
                     <div style="color: #7a6e8a;">{{ (p.pct_despacho * 100).toFixed(0) }}%</div>
@@ -599,7 +599,7 @@
                 <div
                   v-if="dragOver === c.id"
                   class="flex items-center justify-center py-3 rounded-lg text-xs border border-dashed"
-                  style="color: #915BD8; border-color: rgba(145,91,216,0.4); background: rgba(145,91,216,0.04);"
+                  style="color: var(--color-unergy-purple); border-color: rgba(145,91,216,0.4); background: rgba(145,91,216,0.04);"
                 >
                   Soltar aquí
                 </div>
@@ -618,7 +618,7 @@
         <div
           class="rounded-xl border p-4 transition-shadow"
           style="border-color: rgba(44,32,57,0.12); background: white;"
-          :style="dragOver === 'none' ? 'border-color: #915BD8; box-shadow: 0 0 0 2px rgba(145,91,216,0.18);' : ''"
+          :style="dragOver === 'none' ? 'border-color: var(--color-unergy-purple); box-shadow: 0 0 0 2px rgba(145,91,216,0.18);' : ''"
           @dragover.prevent="dragOver = 'none'"
           @drop.prevent="onDrop(null)"
         >
@@ -641,7 +641,7 @@
                 dragPlanta && dragPlanta.id === p.id ? 'opacity: 0.35;' : '',
               ]"
             >
-              <span class="font-medium" style="color: #2C2039;">{{ p.nombre }}</span>
+              <span class="font-medium" style="color: var(--color-unergy-deep);">{{ p.nombre }}</span>
               <span v-if="p.es_duplicado && !p.comprado_por_unergy" class="font-semibold px-1.5 py-0.5 rounded"
                 style="background: rgba(240,192,64,0.22); color: #9a6700;"
                 v-tooltip="'Compra en bolsa'"
@@ -657,7 +657,7 @@
             <div
               v-if="dragOver === 'none'"
               class="flex items-center justify-center px-4 py-1.5 rounded-lg text-xs border border-dashed"
-              style="color: #915BD8; border-color: rgba(145,91,216,0.4); background: rgba(145,91,216,0.04);"
+              style="color: var(--color-unergy-purple); border-color: rgba(145,91,216,0.4); background: rgba(145,91,216,0.04);"
             >
               Soltar aquí
             </div>
@@ -677,11 +677,11 @@
       <!-- Month selector + mode switch -->
       <div class="flex flex-wrap items-end gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Año</label>
           <Select v-model="pcYear" :options="years" class="w-24" @change="loadPlantasContratos" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Mes</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Mes</label>
           <Select v-model="pcMonth" :options="MESES_OPTIONS" optionLabel="label" optionValue="value" class="w-40" @change="loadPlantasContratos" />
         </div>
         <!-- Estados estandarizados a-f (catálogo GET /clasificacion-energia/categorias) -->
@@ -715,7 +715,7 @@
             <span style="color: #D64455; font-weight: 600;">rojo</span> lo que terminó durante el mes.
           </span>
         </span>
-        <Button label="Exportar resumen (Excel)" size="small" outlined class="ml-auto" :disabled="!pcData || pcLoading" @click="exportarResumenPlantasContratos" v-tooltip.bottom="'Descarga TODAS las categorías del mes, incl. plantas externas (todos los contratos y plantas), sin importar el filtro activo'" style="color:#915BD8; border-color:#915BD8;">
+        <Button label="Exportar resumen (Excel)" size="small" outlined class="ml-auto" :disabled="!pcData || pcLoading" @click="exportarResumenPlantasContratos" v-tooltip.bottom="'Descarga TODAS las categorías del mes, incl. plantas externas (todos los contratos y plantas), sin importar el filtro activo'" style="color:var(--color-unergy-purple); border-color:var(--color-unergy-purple);">
           <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
         </Button>
       </div>
@@ -735,7 +735,7 @@
           <div class="flex items-center gap-1.5 flex-wrap">
             <span class="text-[10px] font-semibold uppercase tracking-wider mr-1" style="color: #9b89b5;">Modalidad</span>
             <button @click="pcModalidad = null" class="cv-btn"
-              :style="pcModalidad === null ? 'border-color:#915BD8; background:rgba(145,91,216,0.10); color:#915BD8; font-weight:700;' : ''"
+              :style="pcModalidad === null ? 'border-color:var(--color-unergy-purple); background:rgba(145,91,216,0.10); color:var(--color-unergy-purple); font-weight:700;' : ''"
               v-tooltip.bottom="'Todas las plantas del contrato de venta'">
               Todas <b class="ml-0.5">{{ pcVentaDupInfo.total }}</b>
             </button>
@@ -750,7 +750,7 @@
 
           <!-- Resumen de modalidades: duplicados (compra en bolsa) y uso del recurso -->
           <div v-if="pcVentaDupInfo.dup || pcVentaDupInfo.ur" class="flex flex-col gap-1 px-4 py-2.5 rounded-lg text-xs"
-            style="background: rgba(44,32,57,0.03); border: 1px solid rgba(44,32,57,0.12); color: #2C2039;">
+            style="background: rgba(44,32,57,0.03); border: 1px solid rgba(44,32,57,0.12); color: var(--color-unergy-deep);">
             <div class="flex items-center flex-wrap gap-x-3 gap-y-1">
               <span><b>{{ pcVentaDupInfo.total }}</b> plantas en total.</span>
               <span v-if="pcVentaDupInfo.dup" class="inline-flex items-center gap-1" style="color: #9a6700;">
@@ -775,13 +775,13 @@
               @click="abrirDetalleContrato(c, 'ppa_venta_ungg')"
               v-tooltip.right="'Ver detalle del contrato (PPA + GESCON)'">
               <div>
-                <span class="font-bold text-sm" style="color: #2C2039;">{{ c.nombre }}</span>
+                <span class="font-bold text-sm" style="color: var(--color-unergy-deep);">{{ c.nombre }}</span>
                 <span class="ml-2 text-xs" style="color: #7a6e8a;">{{ c.comprador_nombre }}</span><span v-if="esOculto(c)" class="text-[10px] font-semibold px-1.5 py-0.5 rounded ml-1.5" style="background: rgba(214,68,85,0.12); color: #b03446;" v-tooltip.top="'Responsable: ' + c.responsable + ' — normalmente oculto en Cumplimiento'">{{ c.responsable }}</span>
                 <InfoIcon class="ml-1.5 size-[1em]" style="font-size: 11px; color: #9b89b5;" />
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
                 <span class="text-xs font-mono px-2 py-0.5 rounded"
-                  style="background: rgba(145,91,216,0.10); color: #915BD8;">
+                  style="background: rgba(145,91,216,0.10); color: var(--color-unergy-purple);">
                   {{ c.plantas.length }} plantas
                 </span>
                 <span v-if="c.plantas.filter(p => p.es_duplicado && !p.uso_del_recurso).length"
@@ -799,7 +799,7 @@
                 <button
                   @click.stop="copiarImagenVenta(c)"
                   class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors"
-                  :style="copiadoVentaId === c.id ? 'background: rgba(46,125,50,0.12); color: #2e7d32;' : 'background: #915BD8; color: white;'"
+                  :style="copiadoVentaId === c.id ? 'background: rgba(46,125,50,0.12); color: #2e7d32;' : 'background: var(--color-unergy-purple); color: white;'"
                   v-tooltip.left="'Copia la imagen al portapapeles (o la descarga si el navegador no lo permite)'"
                 >
                   <CheckIcon v-if="copiadoVentaId === c.id" class="text-xs size-[1em]" />
@@ -825,7 +825,7 @@
                     style="background: rgba(240,192,64,0.22); color: #9a6700;"
                     v-tooltip="'Duplicado: suministra a este contrato con origen bolsa — también listado en c. Compra en Bolsa (UNGG). Genera garantías.'"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Duplicado</span>
                   <span v-if="p.codigo_sic" class="text-xs font-mono px-1.5 py-0.5 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;">{{ p.codigo_sic }}</span>
-                  <span v-if="p.pct_despacho != null" class="text-xs font-mono" style="color: #915BD8;">{{ (p.pct_despacho * 100).toFixed(0) }}%</span>
+                  <span v-if="p.pct_despacho != null" class="text-xs font-mono" style="color: var(--color-unergy-purple);">{{ (p.pct_despacho * 100).toFixed(0) }}%</span>
                 </div>
                 <div class="text-xs font-mono text-right" :style="filaColorFecha(p) || 'color: #7a6e8a;'">
                   {{ ventanaFila(p) }}
@@ -896,7 +896,7 @@
               <div>
                 <span class="font-bold text-sm" style="color: #9a6700;">{{ c.nombre }}</span>
                 <span class="ml-2 text-xs" style="color: #7a6e8a;">
-                  Le compramos a: <span class="font-semibold" style="color: #2C2039;">{{ c.vendedor_nombre || '—' }}</span>
+                  Le compramos a: <span class="font-semibold" style="color: var(--color-unergy-deep);">{{ c.vendedor_nombre || '—' }}</span>
                   <span v-if="c.vendedor_nit"> · NIT {{ c.vendedor_nit }}</span>
                 </span>
                 <InfoIcon class="ml-1.5 size-[1em]" style="font-size: 11px; color: #9b89b5;" />
@@ -941,7 +941,7 @@
             </div>
           </div>
           <div v-if="pcPools.bolsa_compra_ungg.length" class="flex flex-col gap-1.5 px-4 py-2.5 rounded-lg text-xs"
-            style="background: rgba(44,32,57,0.03); border: 1px solid rgba(44,32,57,0.12); color: #2C2039;">
+            style="background: rgba(44,32,57,0.03); border: 1px solid rgba(44,32,57,0.12); color: var(--color-unergy-deep);">
             <span>
               La misma planta también suministra a un contrato de venta (aparece en «Venta · UNGG»);
               aquí se agrupa por el contrato al que aporta. Hay <b>dos modalidades</b>:
@@ -998,7 +998,7 @@
           <div class="cv-card">
             <div class="px-4 py-10 text-center space-y-2">
               <CompassIcon class="size-[1em]" style="font-size: 22px; color: #9b89b5;" />
-              <p class="text-sm font-semibold" style="color: #2C2039;">Compra en Bolsa (UNGC) — reglas por definir</p>
+              <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Compra en Bolsa (UNGC) — reglas por definir</p>
               <p class="text-xs max-w-lg mx-auto" style="color: #7a6e8a;">
                 Ocurre cuando UNGC debe comprar en bolsa, pero todavía no hay reglas de negocio
                 definidas para clasificarlo. La categoría queda reservada en el estándar
@@ -1012,7 +1012,7 @@
         <template v-if="pcMode === 'bolsa_venta_ungg'">
           <div v-if="pcPools.bolsa_venta_ungg.length" class="cv-card">
             <div class="px-4 py-3" style="background: rgba(44,32,57,0.04); border-bottom: 1px solid rgba(44,32,57,0.07);">
-              <span class="font-bold text-sm" style="color: #2C2039;">Venta en Bolsa (UNGG)</span>
+              <span class="font-bold text-sm" style="color: var(--color-unergy-deep);">Venta en Bolsa (UNGG)</span>
               <span class="ml-2 text-xs" style="color: #7a6e8a;">Días de {{ MESES[pcMonth - 1] }} {{ pcYear }} sin contrato en GESCON — venden en bolsa como generador</span>
               <span class="ml-2 text-xs font-mono px-2 py-0.5 rounded" style="background: rgba(44,32,57,0.08); color: #7a6e8a;">
                 {{ pcPools.bolsa_venta_ungg.length }}
@@ -1045,7 +1045,7 @@
         <template v-if="pcMode === 'bolsa_venta_ungc'">
           <div v-if="pcPools.bolsa_venta_ungc.length" class="cv-card">
             <div class="px-4 py-3" style="background: rgba(44,32,57,0.04); border-bottom: 1px solid rgba(44,32,57,0.07);">
-              <span class="font-bold text-sm" style="color: #2C2039;">Venta en Bolsa (UNGC)</span>
+              <span class="font-bold text-sm" style="color: var(--color-unergy-deep);">Venta en Bolsa (UNGC)</span>
               <span class="ml-2 text-xs" style="color: #7a6e8a;">UNGC compra la energía a UNGG (usualmente a precio de bolsa) para venderla en bolsa — SIC vigente con comprador UNGC</span>
               <span class="ml-2 text-xs font-mono px-2 py-0.5 rounded" style="background: rgba(44,32,57,0.08); color: #7a6e8a;">
                 {{ pcPools.bolsa_venta_ungc.length }}
@@ -1085,14 +1085,14 @@
       <!-- Selectors -->
       <div class="flex flex-wrap items-end gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Año</label>
           <Select v-model="etYear" :options="etYearOptions" class="w-24" @change="onEtPeriodChange" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Mes</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Mes</label>
           <Select v-model="etMonth" :options="etMonthOptions" optionLabel="label" optionValue="value" class="w-40" @change="onEtPeriodChange" />
         </div>
-        <span v-if="etData" class="text-xs px-2 py-1 rounded" style="background: rgba(145,91,216,0.08); color: #915BD8;">
+        <span v-if="etData" class="text-xs px-2 py-1 rounded" style="background: rgba(145,91,216,0.08); color: var(--color-unergy-purple);">
           {{ etPeriodoLabel }}
         </span>
         <span v-if="etFromCache" class="text-xs px-2 py-1 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;" title="Datos del histórico guardado en este navegador">
@@ -1115,17 +1115,17 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="cv-card px-4 py-3">
             <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #7a6e8a;">Total transada</p>
-            <p class="text-2xl font-bold font-mono" style="color: #2C2039;">{{ fmtMwh(etData.totales.gen_mwh) }} <span class="text-sm font-normal">MWh</span></p>
+            <p class="text-2xl font-bold font-mono" style="color: var(--color-unergy-deep);">{{ fmtMwh(etData.totales.gen_mwh) }} <span class="text-sm font-normal">MWh</span></p>
             <p class="text-xs mt-0.5" style="color: #7a6e8a;">{{ etData.totales.n_plantas }} proyectos con datos</p>
           </div>
           <div class="cv-card px-4 py-3">
-            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #915BD8;">Vía PPA</p>
-            <p class="text-2xl font-bold font-mono" style="color: #915BD8;">{{ fmtMwh(etData.totales.ppa_mwh) }} <span class="text-sm font-normal">MWh</span></p>
+            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--color-unergy-purple);">Vía PPA</p>
+            <p class="text-2xl font-bold font-mono" style="color: var(--color-unergy-purple);">{{ fmtMwh(etData.totales.ppa_mwh) }} <span class="text-sm font-normal">MWh</span></p>
             <p class="text-xs mt-0.5" style="color: #7a6e8a;">{{ etPct(etData.totales.ppa_mwh) }}% del total</p>
           </div>
           <div class="cv-card px-4 py-3">
-            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: #2C2039;">En bolsa</p>
-            <p class="text-2xl font-bold font-mono" style="color: #2C2039;">{{ fmtMwh(etData.totales.bolsa_mwh) }} <span class="text-sm font-normal">MWh</span></p>
+            <p class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--color-unergy-deep);">En bolsa</p>
+            <p class="text-2xl font-bold font-mono" style="color: var(--color-unergy-deep);">{{ fmtMwh(etData.totales.bolsa_mwh) }} <span class="text-sm font-normal">MWh</span></p>
             <p class="text-xs mt-0.5" style="color: #7a6e8a;">{{ etPct(etData.totales.bolsa_mwh) }}% del total</p>
           </div>
         </div>
@@ -1144,7 +1144,7 @@
             </thead>
             <tbody>
               <tr v-for="p in etData.plantas" :key="p.id" style="border-top: 1px solid rgba(44,32,57,0.06);">
-                <td class="px-4 py-2.5 font-medium" style="color: #2C2039;">
+                <td class="px-4 py-2.5 font-medium" style="color: var(--color-unergy-deep);">
                   {{ p.nombre }}
                   <span v-if="p.modo === 'sin_datos'" class="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(214,68,85,0.12); color: #D64455;">sin datos</span>
                 </td>
@@ -1152,28 +1152,28 @@
                   <div class="flex flex-wrap gap-1">
                     <span v-for="c in p.contratos.filter(c => !c.es_duplicado)" :key="c.id"
                       class="text-xs px-1.5 py-0.5 rounded font-medium"
-                      style="background: rgba(145,91,216,0.10); color: #915BD8;"
+                      style="background: rgba(145,91,216,0.10); color: var(--color-unergy-purple);"
                       :title="`${c.dias_activos} días activos`">
                       {{ c.nombre }} · {{ (c.pct * 100).toFixed(0) }}%
                     </span>
                     <span v-if="p.modo === 'bolsa' || p.modo === 'mixto'"
                       class="text-xs px-1.5 py-0.5 rounded font-medium"
-                      style="background: rgba(44,32,57,0.08); color: #2C2039;">Bolsa</span>
+                      style="background: rgba(44,32,57,0.08); color: var(--color-unergy-deep);">Bolsa</span>
                     <span v-if="p.modo === 'sin_datos'" class="text-xs" style="color: #7a6e8a;">—</span>
                   </div>
                 </td>
-                <td class="px-2 py-2.5 text-right font-mono" style="color: #915BD8;">{{ p.ppa_mwh !== null ? fmtMwh(p.ppa_mwh) : '—' }}</td>
-                <td class="px-2 py-2.5 text-right font-mono" style="color: #2C2039;">{{ p.bolsa_mwh !== null ? fmtMwh(p.bolsa_mwh) : '—' }}</td>
-                <td class="px-4 py-2.5 text-right font-mono font-semibold" style="color: #2C2039;">{{ p.gen_mwh !== null ? fmtMwh(p.gen_mwh) : '—' }}</td>
+                <td class="px-2 py-2.5 text-right font-mono" style="color: var(--color-unergy-purple);">{{ p.ppa_mwh !== null ? fmtMwh(p.ppa_mwh) : '—' }}</td>
+                <td class="px-2 py-2.5 text-right font-mono" style="color: var(--color-unergy-deep);">{{ p.bolsa_mwh !== null ? fmtMwh(p.bolsa_mwh) : '—' }}</td>
+                <td class="px-4 py-2.5 text-right font-mono font-semibold" style="color: var(--color-unergy-deep);">{{ p.gen_mwh !== null ? fmtMwh(p.gen_mwh) : '—' }}</td>
               </tr>
             </tbody>
             <tfoot>
               <tr style="border-top: 2px solid rgba(44,32,57,0.12); background: rgba(145,91,216,0.04);">
-                <td class="px-4 py-3 font-bold" style="color: #2C2039;">TOTAL ENERGÍA TRANSADA</td>
+                <td class="px-4 py-3 font-bold" style="color: var(--color-unergy-deep);">TOTAL ENERGÍA TRANSADA</td>
                 <td></td>
-                <td class="px-2 py-3 text-right font-mono font-bold" style="color: #915BD8;">{{ fmtMwh(etData.totales.ppa_mwh) }}</td>
-                <td class="px-2 py-3 text-right font-mono font-bold" style="color: #2C2039;">{{ fmtMwh(etData.totales.bolsa_mwh) }}</td>
-                <td class="px-4 py-3 text-right font-mono font-bold text-base" style="color: #2C2039;">{{ fmtMwh(etData.totales.gen_mwh) }}</td>
+                <td class="px-2 py-3 text-right font-mono font-bold" style="color: var(--color-unergy-purple);">{{ fmtMwh(etData.totales.ppa_mwh) }}</td>
+                <td class="px-2 py-3 text-right font-mono font-bold" style="color: var(--color-unergy-deep);">{{ fmtMwh(etData.totales.bolsa_mwh) }}</td>
+                <td class="px-4 py-3 text-right font-mono font-bold text-base" style="color: var(--color-unergy-deep);">{{ fmtMwh(etData.totales.gen_mwh) }}</td>
               </tr>
             </tfoot>
           </table>
@@ -1244,7 +1244,7 @@
                           : `Responsable: ${c.responsable}`">
                     {{ c.responsable }}
                   </span>
-                  <LoaderCircleIcon class="text-xs ml-1 size-[1em] animate-spin" v-if="c._loading" style="color:#915BD8;" />
+                  <LoaderCircleIcon class="text-xs ml-1 size-[1em] animate-spin" v-if="c._loading" style="color:var(--color-unergy-purple);" />
                 </td>
                 <td v-for="i in 12" :key="i" class="px-2 py-1.5 text-right font-mono"
                     :style="{ color: c.meses[i-1] ? estadoColor(c.meses[i-1].estado) : '#c9c0d8' }"
@@ -1304,19 +1304,19 @@
       <!-- Selectors -->
       <div class="flex flex-wrap items-end gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Año</label>
           <Select v-model="beYear" :options="years" class="w-24" @change="loadBalance" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Mes</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Mes</label>
           <Select v-model="beMonth" :options="MESES_OPTIONS" optionLabel="label" optionValue="value" class="w-40" @change="loadBalance" />
         </div>
-        <span v-if="beData" class="text-xs px-2 py-1 rounded" style="background: rgba(145,91,216,0.08); color: #915BD8;">
+        <span v-if="beData" class="text-xs px-2 py-1 rounded" style="background: rgba(145,91,216,0.08); color: var(--color-unergy-purple);">
           {{ bePeriodoLabel }}
         </span>
         <label v-if="beData && beData.advertencias.compra_externa_en_bolsa.length"
           class="flex items-center gap-2 text-xs cursor-pointer px-2 py-1.5 rounded"
-          style="background: rgba(214,68,85,0.06); color: #2C2039;">
+          style="background: rgba(214,68,85,0.06); color: var(--color-unergy-deep);">
           <Checkbox v-model="beExcluirExterna" binary @change="loadBalance" />
           Excluir plantas de compra externa
         </label>
@@ -1345,7 +1345,7 @@
             <!-- UNGG -->
             <div class="cv-card px-5 py-4">
               <div class="flex items-baseline justify-between mb-1">
-                <h3 class="text-sm font-bold uppercase tracking-wider" style="color: #2C2039;">UNGG · generador</h3>
+                <h3 class="text-sm font-bold uppercase tracking-wider" style="color: var(--color-unergy-deep);">UNGG · generador</h3>
                 <span class="text-[11px]" style="color: #7a6e8a;">MWh</span>
               </div>
               <p class="text-xs mb-3" style="color: #7a6e8a;">
@@ -1364,12 +1364,12 @@
                 <tbody>
                   <tr class="be-linea" :class="{ activa: beFiltro === 'e' }" @click="beAbrirCapa('e')" :title="beTitulo('e')">
                     <td class="py-2">
-                      <span class="font-medium" style="color: #2C2039;">Venta en bolsa</span>
+                      <span class="font-medium" style="color: var(--color-unergy-deep);">Venta en bolsa</span>
                       <span class="be-chip be-chip-alerta"><TriangleAlertIcon class="size-[1em]" /> cargos regulatorios</span>
                     </td>
-                    <td class="text-right font-mono" style="color: #2C2039;">{{ fmtNum1(beB.ungg.venta_bolsa.real) }}</td>
+                    <td class="text-right font-mono" style="color: var(--color-unergy-deep);">{{ fmtNum1(beB.ungg.venta_bolsa.real) }}</td>
                     <td class="text-right font-mono" style="color: #7a6e8a;">{{ fmtNum1(beB.ungg.venta_bolsa.proyectado) }}</td>
-                    <td class="text-right font-mono font-semibold" style="color: #2C2039;">{{ fmtNum1(beB.ungg.venta_bolsa.total) }}</td>
+                    <td class="text-right font-mono font-semibold" style="color: var(--color-unergy-deep);">{{ fmtNum1(beB.ungg.venta_bolsa.total) }}</td>
                   </tr>
 
                   <tr>
@@ -1377,21 +1377,21 @@
                   </tr>
                   <tr class="be-linea" :class="{ activa: beFiltro === 'c' }" @click="beAbrirCapa('c')" :title="beTitulo('c')">
                     <td class="py-2 pl-3">
-                      <span style="color: #2C2039;">· Directas — duplicados</span>
+                      <span style="color: var(--color-unergy-deep);">· Directas — duplicados</span>
                       <span class="be-chip be-chip-alerta"><ShieldIcon class="size-[1em]" /> garantías</span>
                     </td>
-                    <td class="text-right font-mono" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.real) }}</td>
+                    <td class="text-right font-mono" style="color: var(--color-unergy-deep);">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.real) }}</td>
                     <td class="text-right font-mono" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.proyectado) }}</td>
-                    <td class="text-right font-mono font-semibold" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.total) }}</td>
+                    <td class="text-right font-mono font-semibold" style="color: var(--color-unergy-deep);">−{{ fmtNum1(beB.ungg.compra_bolsa_directa.total) }}</td>
                   </tr>
                   <tr class="be-linea" :class="{ activa: beFiltro === 'uso' }" @click="beAbrirCapa('uso')" :title="beTitulo('uso')">
                     <td class="py-2 pl-3">
-                      <span style="color: #2C2039;">· No directas — uso del recurso</span>
+                      <span style="color: var(--color-unergy-deep);">· No directas — uso del recurso</span>
                       <span class="be-chip be-chip-neutro">sin garantía</span>
                     </td>
-                    <td class="text-right font-mono" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_no_directa.real) }}</td>
+                    <td class="text-right font-mono" style="color: var(--color-unergy-deep);">−{{ fmtNum1(beB.ungg.compra_bolsa_no_directa.real) }}</td>
                     <td class="text-right font-mono" style="color: #7a6e8a;">−{{ fmtNum1(beB.ungg.compra_bolsa_no_directa.proyectado) }}</td>
-                    <td class="text-right font-mono font-semibold" style="color: #2C2039;">−{{ fmtNum1(beB.ungg.compra_bolsa_no_directa.total) }}</td>
+                    <td class="text-right font-mono font-semibold" style="color: var(--color-unergy-deep);">−{{ fmtNum1(beB.ungg.compra_bolsa_no_directa.total) }}</td>
                   </tr>
                   <tr style="border-top: 1px solid rgba(44,32,57,0.08);">
                     <td class="py-2 pl-3 text-xs font-semibold" style="color: #7a6e8a;">Total compras en bolsa</td>
@@ -1402,11 +1402,11 @@
                 </tbody>
                 <tfoot>
                   <tr style="border-top: 2px solid rgba(44,32,57,0.12);">
-                    <td class="pt-3 font-bold" style="color: #2C2039;" :title="BE_AYUDA.neto">
+                    <td class="pt-3 font-bold" style="color: var(--color-unergy-deep);" :title="BE_AYUDA.neto">
                       NETO UNGG
                       <span class="be-chip" :style="beNetoEstilo">{{ beNetoEtiqueta }}</span>
                     </td>
-                    <td class="pt-3 text-right font-mono font-bold" style="color: #2C2039;">{{ fmtSigno(beB.ungg.neto.real) }}</td>
+                    <td class="pt-3 text-right font-mono font-bold" style="color: var(--color-unergy-deep);">{{ fmtSigno(beB.ungg.neto.real) }}</td>
                     <td class="pt-3 text-right font-mono font-bold" style="color: #7a6e8a;">{{ fmtSigno(beB.ungg.neto.proyectado) }}</td>
                     <td class="pt-3 text-right font-mono font-bold text-base" :style="`color: ${beNetoColor};`">{{ fmtSigno(beB.ungg.neto.total) }}</td>
                   </tr>
@@ -1417,7 +1417,7 @@
             <!-- UNGC -->
             <div class="cv-card px-5 py-4">
               <div class="flex items-baseline justify-between mb-1">
-                <h3 class="text-sm font-bold uppercase tracking-wider" style="color: #2C2039;">UNGC · comercializador</h3>
+                <h3 class="text-sm font-bold uppercase tracking-wider" style="color: var(--color-unergy-deep);">UNGC · comercializador</h3>
                 <span class="text-[11px]" style="color: #7a6e8a;">MWh</span>
               </div>
               <p class="text-xs mb-3" style="color: #7a6e8a;">
@@ -1436,12 +1436,12 @@
                 <tbody>
                   <tr class="be-linea" :class="{ activa: beFiltro === 'f' }" @click="beAbrirCapa('f')" :title="beTitulo('f')">
                     <td class="py-2">
-                      <span class="font-medium" style="color: #2C2039;">Venta en bolsa</span>
+                      <span class="font-medium" style="color: var(--color-unergy-deep);">Venta en bolsa</span>
                       <span class="be-chip be-chip-ok">solo cartera</span>
                     </td>
-                    <td class="text-right font-mono" style="color: #2C2039;">{{ fmtNum1(beB.ungc.venta_bolsa.real) }}</td>
+                    <td class="text-right font-mono" style="color: var(--color-unergy-deep);">{{ fmtNum1(beB.ungc.venta_bolsa.real) }}</td>
                     <td class="text-right font-mono" style="color: #7a6e8a;">{{ fmtNum1(beB.ungc.venta_bolsa.proyectado) }}</td>
-                    <td class="text-right font-mono font-semibold" style="color: #2C2039;">{{ fmtNum1(beB.ungc.venta_bolsa.total) }}</td>
+                    <td class="text-right font-mono font-semibold" style="color: var(--color-unergy-deep);">{{ fmtNum1(beB.ungc.venta_bolsa.total) }}</td>
                   </tr>
                   <tr>
                     <td colspan="4" class="pt-3 text-xs" style="color: #7a6e8a;">
@@ -1453,11 +1453,11 @@
 
               <div class="mt-4 pt-3 text-xs" style="border-top: 1px solid rgba(44,32,57,0.08); color: #7a6e8a;">
                 <p class="mb-1">
-                  <strong style="color: #2C2039;">{{ beB.ungg.venta_bolsa.n_plantas }}</strong> plantas venden en bolsa por UNGG ·
-                  <strong style="color: #2C2039;">{{ beB.ungc.venta_bolsa.n_plantas }}</strong> por UNGC
+                  <strong style="color: var(--color-unergy-deep);">{{ beB.ungg.venta_bolsa.n_plantas }}</strong> plantas venden en bolsa por UNGG ·
+                  <strong style="color: var(--color-unergy-deep);">{{ beB.ungc.venta_bolsa.n_plantas }}</strong> por UNGC
                 </p>
                 <p>
-                  Balance de <strong style="color: #2C2039;">{{ MESES[beMonth - 1] }} {{ beYear }}</strong>
+                  Balance de <strong style="color: var(--color-unergy-deep);">{{ MESES[beMonth - 1] }} {{ beYear }}</strong>
                   <template v-if="beData.periodo.es_mes_actual">
                     · real del 1 al {{ beData.periodo.dia_corte }}, proyectado del
                     {{ beData.periodo.dia_corte + 1 }} al {{ beData.periodo.dias_mes }}
@@ -1509,11 +1509,11 @@
           <!-- ── Inventario ──────────────────────────────────────────────── -->
           <div class="flex flex-wrap items-end justify-between gap-3">
             <div class="flex flex-wrap items-center gap-2">
-              <h3 class="text-sm font-bold" style="color: #2C2039;">
+              <h3 class="text-sm font-bold" style="color: var(--color-unergy-deep);">
                 Inventario · {{ beFilas.length }} de {{ beData.inventario.length }} filas
               </h3>
               <span v-if="beFiltro" class="text-xs px-2 py-1 rounded cursor-pointer"
-                style="background: rgba(145,91,216,0.12); color: #915BD8;" @click="beFiltro = null">
+                style="background: rgba(145,91,216,0.12); color: var(--color-unergy-purple);" @click="beFiltro = null">
                 {{ BE_CATEGORIAS[beFiltro].label }} <XIcon class="text-[10px] ml-1 size-[1em]" />
               </span>
             </div>
@@ -1521,7 +1521,7 @@
               <InputText v-model="beBusqueda" placeholder="Buscar frontera o contrato…" class="w-64" />
               <button @click="exportarBalanceExcel"
                 class="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold"
-                style="background: #915BD8; color: #fff;">
+                style="background: var(--color-unergy-purple); color: #fff;">
                 <DownloadIcon class="text-xs size-[1em]" /> Exportar
               </button>
             </div>
@@ -1545,11 +1545,11 @@
               <tbody>
                 <tr v-for="(f, i) in beFilas" :key="`${f.proyecto_id}-${f.desde}-${f.categoria}-${i}`"
                   style="border-top: 1px solid rgba(44,32,57,0.06);">
-                  <td class="px-4 py-2.5 font-medium" style="color: #2C2039;">
+                  <td class="px-4 py-2.5 font-medium" style="color: var(--color-unergy-deep);">
                     {{ f.frontera }}
                     <span v-if="f.frontera !== f.planta" class="block text-[11px]" style="color: #7a6e8a;">{{ f.planta }}</span>
                   </td>
-                  <td class="px-2 py-2.5" style="color: #2C2039;">{{ f.estado }}</td>
+                  <td class="px-2 py-2.5" style="color: var(--color-unergy-deep);">{{ f.estado }}</td>
                   <td class="px-2 py-2.5">
                     <span class="text-xs px-1.5 py-0.5 rounded font-medium" :style="BE_CATEGORIAS[f.categoria].badge">
                       {{ f.metodo }}
@@ -1560,9 +1560,9 @@
                   </td>
                   <td class="px-2 py-2.5 font-mono text-xs" style="color: #7a6e8a;">{{ f.desde || '—' }}</td>
                   <td class="px-2 py-2.5 font-mono text-xs" style="color: #7a6e8a;">{{ f.hasta || '—' }}</td>
-                  <td class="px-2 py-2.5 text-right font-mono" style="color: #2C2039;">{{ f.mwh_real !== null ? fmtNum1(f.mwh_real) : '—' }}</td>
+                  <td class="px-2 py-2.5 text-right font-mono" style="color: var(--color-unergy-deep);">{{ f.mwh_real !== null ? fmtNum1(f.mwh_real) : '—' }}</td>
                   <td class="px-2 py-2.5 text-right font-mono" style="color: #7a6e8a;">{{ f.mwh_proyectado !== null ? fmtNum1(f.mwh_proyectado) : '—' }}</td>
-                  <td class="px-4 py-2.5 text-right font-mono font-semibold" style="color: #2C2039;">{{ f.mwh_total !== null ? fmtNum1(f.mwh_total) : '—' }}</td>
+                  <td class="px-4 py-2.5 text-right font-mono font-semibold" style="color: var(--color-unergy-deep);">{{ f.mwh_total !== null ? fmtNum1(f.mwh_total) : '—' }}</td>
                 </tr>
               </tbody>
             </table>
@@ -1584,16 +1584,16 @@
 
       <div class="flex flex-wrap items-end gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Año</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Año</label>
           <Select v-model="revYear" :options="years" class="w-24" @change="loadRevision" />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Mes</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Mes</label>
           <Select v-model="revMonth" :options="MESES_OPTIONS" optionLabel="label" optionValue="value"
                   class="w-40" @change="loadRevision" />
         </div>
         <div class="flex flex-col gap-1 flex-1" style="min-width: 200px;">
-          <label class="text-xs font-semibold uppercase tracking-wider" style="color: #915BD8;">Buscar</label>
+          <label class="text-xs font-semibold uppercase tracking-wider" style="color: var(--color-unergy-purple);">Buscar</label>
           <InputText v-model="revBusqueda" placeholder="Planta, contrato o SIC…" class="text-sm w-full" />
         </div>
       </div>
@@ -1608,7 +1608,7 @@
           <div v-for="s in revResumen" :key="s.key"
                class="rounded-xl px-4 py-3 border" :style="`border-color: ${s.borde}; background: ${s.fondo};`">
             <div class="text-3xl font-bold leading-none" :style="`color: ${s.color};`">{{ s.n }}</div>
-            <div class="text-xs font-semibold mt-1.5" style="color: #2C2039;">{{ s.titulo }}</div>
+            <div class="text-xs font-semibold mt-1.5" style="color: var(--color-unergy-deep);">{{ s.titulo }}</div>
             <div class="text-[11px] mt-0.5" style="color: #7a6e8a;">{{ s.detalle }}</div>
           </div>
         </div>
@@ -1627,7 +1627,7 @@
         <!-- 1 · Plantas duplicadas -->
         <div class="rounded-xl border overflow-hidden" style="border-color: rgba(44,32,57,0.08);">
           <div class="px-4 py-2.5" style="background: rgba(240,192,64,0.14);">
-            <span class="font-semibold text-sm" style="color: #2C2039;">Plantas duplicadas en el mes</span>
+            <span class="font-semibold text-sm" style="color: var(--color-unergy-deep);">Plantas duplicadas en el mes</span>
             <span class="text-xs ml-2" style="color: #7a6e8a;">
               Duplicada es la que compromete <b>más del 100% a la vez</b>: ese excedente se cubre
               comprando en bolsa. Estar en varios contratos no basta —repartir 50% y 50% sigue
@@ -1646,14 +1646,14 @@
             </thead>
             <tbody>
               <tr v-for="p in revDuplicadas" :key="p.id" class="border-t" style="border-color: rgba(44,32,57,0.06);">
-                <td class="px-4 py-2 font-medium" style="color: #2C2039;">{{ p.nombre }}</td>
+                <td class="px-4 py-2 font-medium" style="color: var(--color-unergy-deep);">{{ p.nombre }}</td>
                 <td class="px-4 py-2 text-right font-mono font-semibold"
                     :style="revPct(p.maxPct) > 100 ? 'color:#9a6700;' : 'color:#7a6e8a;'">
                   {{ p.escalaRota || p.sinPct ? '—' : revPct(p.maxPct) + '%' }}
                 </td>
                 <td class="px-4 py-2">
                   <div v-for="(a, i) in p.apariciones" :key="i" class="flex flex-wrap items-center gap-1.5 py-0.5">
-                    <span :style="a.estado === 'terminado' ? `color:${ROJO_FIN};` : 'color:#2C2039;'">{{ a.contrato }}</span>
+                    <span :style="a.estado === 'terminado' ? `color:${ROJO_FIN};` : 'color:var(--color-unergy-deep);'">{{ a.contrato }}</span>
                     <span v-if="a.codigo_sic" class="font-mono text-[11px] px-1 rounded"
                           style="background: rgba(44,32,57,0.06); color: #5b3fa6;">{{ a.codigo_sic }}</span>
                     <span v-if="a.pct" class="text-[11px] font-semibold" style="color: #7a6e8a;">{{ revPct(a.pct) }}%</span>
@@ -1680,12 +1680,12 @@
             <table class="w-full mt-2">
               <tbody>
                 <tr v-for="p in revRepartidas" :key="p.id" class="border-t" style="border-color: rgba(44,32,57,0.06);">
-                  <td class="py-1.5 pr-4 font-medium" style="color: #2C2039; width: 220px;">{{ p.nombre }}</td>
+                  <td class="py-1.5 pr-4 font-medium" style="color: var(--color-unergy-deep); width: 220px;">{{ p.nombre }}</td>
                   <td class="py-1.5 pr-4 font-mono text-right" style="color: #2e7d32; width: 70px;">{{ revPct(p.maxPct) }}%</td>
                   <td class="py-1.5" style="color: #7a6e8a;">
                     <span v-for="(a, i) in p.apariciones" :key="i">
                       <span v-if="i"> + </span>{{ revPct(a.pct) }}%
-                      <span v-if="a.modalidad_pago" class="font-semibold uppercase" style="color: #915BD8;">{{ a.modalidad_pago }}</span>
+                      <span v-if="a.modalidad_pago" class="font-semibold uppercase" style="color: var(--color-unergy-purple);">{{ a.modalidad_pago }}</span>
                       {{ a.contrato }}
                       <span v-if="a.repartido" style="color: #b0a0c0;">(registrado {{ revPct(a.pctOriginal) }}%)</span>
                     </span>
@@ -1704,7 +1704,7 @@
         <!-- 2 · Plantas sin contrato -->
         <div class="rounded-xl border overflow-hidden" style="border-color: rgba(44,32,57,0.08);">
           <div class="px-4 py-2.5" style="background: rgba(44,32,57,0.06);">
-            <span class="font-semibold text-sm" style="color: #2C2039;">Libres en bolsa — sin contrato</span>
+            <span class="font-semibold text-sm" style="color: var(--color-unergy-deep);">Libres en bolsa — sin contrato</span>
             <span class="text-xs ml-2" style="color: #7a6e8a;">
               Sin PPA <b>y sin registro GESCON vigente</b> sobre el tramo: venden en bolsa desde UNGG.
             </span>
@@ -1744,7 +1744,7 @@
         <!-- 2b · Tienen SIC vigente pero el mes no las cuenta en ningún contrato -->
         <div v-if="revSicSinPpa.length" class="rounded-xl border overflow-hidden" style="border-color: rgba(214,68,85,0.28);">
           <div class="px-4 py-2.5" style="background: rgba(214,68,85,0.07);">
-            <span class="font-semibold text-sm" style="color: #2C2039;">Con contrato GESCON, pero fuera del cálculo del mes</span>
+            <span class="font-semibold text-sm" style="color: var(--color-unergy-deep);">Con contrato GESCON, pero fuera del cálculo del mes</span>
             <span class="text-xs ml-2" style="color: #7a6e8a;">
               Tienen un registro con código SIC vigente en el tramo, pero Cumplimiento no las asignó
               a ningún contrato y las contó como bolsa. Suele ser que el registro no cruza con un PPA
@@ -1764,7 +1764,7 @@
             </thead>
             <tbody>
               <tr v-for="p in revSicSinPpa" :key="filaKey(p)" class="border-t" style="border-color: rgba(44,32,57,0.06);">
-                <td class="px-4 py-2 font-medium" style="color: #2C2039;">{{ p.nombre }}</td>
+                <td class="px-4 py-2 font-medium" style="color: var(--color-unergy-deep);">{{ p.nombre }}</td>
                 <td class="px-4 py-2 font-mono text-xs" style="color: #5b3fa6;">{{ p._sic.codigo_sic_contrato || '—' }}</td>
                 <td class="px-4 py-2 text-xs" style="color: #7a6e8a;">
                   {{ p._sic.contrato_interno || p._sic.nombre_interno || 'sin contrato interno' }}
@@ -1783,7 +1783,7 @@
         <!-- 3 · Uso del recurso -->
         <div class="rounded-xl border overflow-hidden" style="border-color: rgba(2,132,199,0.28);">
           <div class="px-4 py-2.5" style="background: rgba(2,132,199,0.10);">
-            <span class="font-semibold text-sm" style="color: #2C2039;">Uso del recurso</span>
+            <span class="font-semibold text-sm" style="color: var(--color-unergy-deep);">Uso del recurso</span>
             <span class="text-xs ml-2" style="color: #7a6e8a;">
               El cliente está en bolsa y su planta entra al contrato pagándole la generación a
               precio de bolsa. <b>No genera garantías y no es una duplicación</b>: es una figura
@@ -1802,8 +1802,8 @@
             </thead>
             <tbody>
               <tr v-for="a in revUsoRecurso" :key="a._key" class="border-t" style="border-color: rgba(44,32,57,0.06);">
-                <td class="px-4 py-2 font-medium" style="color: #2C2039;">{{ a.planta }}</td>
-                <td class="px-4 py-2 text-xs" :style="a.estado === 'terminado' ? `color:${ROJO_FIN};` : 'color:#2C2039;'">{{ a.contrato }}</td>
+                <td class="px-4 py-2 font-medium" style="color: var(--color-unergy-deep);">{{ a.planta }}</td>
+                <td class="px-4 py-2 text-xs" :style="a.estado === 'terminado' ? `color:${ROJO_FIN};` : 'color:var(--color-unergy-deep);'">{{ a.contrato }}</td>
                 <td class="px-4 py-2 font-mono text-xs" style="color: #5b3fa6;">{{ a.codigo_sic || '—' }}</td>
                 <td class="px-4 py-2 text-right font-mono text-xs" style="color: #7a6e8a;">
                   {{ a.pct ? revPct(a.pct) + '%' : '—' }}
@@ -1822,7 +1822,7 @@
         <!-- 4 · Plantas con UNGC -->
         <div class="rounded-xl border overflow-hidden" style="border-color: rgba(44,32,57,0.08);">
           <div class="px-4 py-2.5" style="background: rgba(145,91,216,0.10);">
-            <span class="font-semibold text-sm" style="color: #2C2039;">Plantas en contratos con UNGC</span>
+            <span class="font-semibold text-sm" style="color: var(--color-unergy-deep);">Plantas en contratos con UNGC</span>
             <span class="text-xs ml-2" style="color: #7a6e8a;">
               Contratos GESCON donde UNGC compra (piscina b) y plantas sin PPA cuyo SIC vigente
               tiene a UNGC de comprador (piscina f).
@@ -1841,7 +1841,7 @@
               <tr v-for="p in revUngc" :key="p._key" class="border-t" style="border-color: rgba(44,32,57,0.06);">
                 <td class="px-4 py-2 font-medium" :style="filaColorNombre(p)">{{ p.nombre }}</td>
                 <td class="px-4 py-2 text-xs">
-                  <span v-if="p.contrato" style="color: #2C2039;">{{ p.contrato }}</span>
+                  <span v-if="p.contrato" style="color: var(--color-unergy-deep);">{{ p.contrato }}</span>
                   <span v-else class="text-[10px] font-semibold px-1.5 py-0.5 rounded"
                         style="background: rgba(44,32,57,0.08); color: #7a6e8a;">Sin PPA · bolsa UNGC</span>
                 </td>
@@ -1869,21 +1869,21 @@
           style="z-index: 61; background: #ffffff; width: 1020px; max-width: 96vw; max-height: 90vh; overflow-y: auto; border-radius: 16px; border: 1px solid rgba(44,32,57,0.12); top: 50%; left: 50%; transform: translate(-50%, -50%);"
           @click.stop
         >
-          <div style="height: 6px; background: #915BD8; border-radius: 16px 16px 0 0;" />
+          <div style="height: 6px; background: var(--color-unergy-purple); border-radius: 16px 16px 0 0;" />
 
           <div class="px-6 pt-4 pb-3" style="border-bottom: 1px solid rgba(44,32,57,0.08);">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <div class="font-bold text-lg" style="color: #2C2039;">{{ BE_CATEGORIAS[beCapa].label }}</div>
+                <div class="font-bold text-lg" style="color: var(--color-unergy-deep);">{{ BE_CATEGORIAS[beCapa].label }}</div>
                 <div class="text-sm mt-1" style="color: #7a6e8a;">{{ BE_AYUDA[beCapa] }}</div>
-                <span class="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(145,91,216,0.10); color: #915BD8;">
+                <span class="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(145,91,216,0.10); color: var(--color-unergy-purple);">
                   <CalendarIcon class="text-[10px] size-[1em]" /> {{ MESES[beMonth - 1] }} {{ beYear }} · {{ bePeriodoLabel }}
                 </span>
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
                 <button @click="beVerEnTabla"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
-                  style="background: rgba(145,91,216,0.10); color: #915BD8;">
+                  style="background: rgba(145,91,216,0.10); color: var(--color-unergy-purple);">
                   <FilterIcon class="text-xs size-[1em]" /> Ver en la tabla
                 </button>
                 <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="beCerrarCapa"><XIcon class="text-sm size-[1em]" /></button>
@@ -1893,7 +1893,7 @@
 
           <!-- Cómo se calcula -->
           <div class="px-6 py-3 text-xs" style="background: rgba(145,91,216,0.04); color: #7a6e8a;">
-            <span class="font-semibold" style="color: #2C2039;">Cómo sale cada fila:</span>
+            <span class="font-semibold" style="color: var(--color-unergy-deep);">Cómo sale cada fila:</span>
             generación del tramo × porcentaje = aporte.
             La generación del tramo es la producción real de la planta en esos días exactos (suma de lecturas,
             no una regla de tres sobre el mes).
@@ -1922,9 +1922,9 @@
                 <tr v-for="(f, i) in beCapaFilas" :key="`${f.proyecto_id}-${f.desde}-${i}`"
                   style="border-top: 1px solid rgba(44,32,57,0.06);">
                   <td class="py-2 pr-2">
-                    <span class="font-medium" style="color: #2C2039;">{{ f.frontera }}</span>
+                    <span class="font-medium" style="color: var(--color-unergy-deep);">{{ f.frontera }}</span>
                     <span v-if="f.frontera !== f.planta" class="block text-[11px]" style="color: #7a6e8a;">{{ f.planta }}</span>
-                    <span v-if="f.contrato" class="block text-[11px]" style="color: #915BD8;">{{ f.contrato }}</span>
+                    <span v-if="f.contrato" class="block text-[11px]" style="color: var(--color-unergy-purple);">{{ f.contrato }}</span>
                   </td>
                   <td class="py-2 pr-2 font-mono text-xs" style="color: #7a6e8a;">
                     {{ f.desde }} → {{ f.hasta }}
@@ -1937,23 +1937,23 @@
                   <td class="py-2 text-right font-mono text-xs" style="color: #7a6e8a;">
                     {{ f.pct !== null && f.pct !== undefined ? (f.pct * 100).toFixed(0) + '%' : '—' }}
                   </td>
-                  <td class="py-2 text-right font-mono" style="color: #2C2039;">{{ f.mwh_real !== null ? fmtNum1(f.mwh_real) : '—' }}</td>
+                  <td class="py-2 text-right font-mono" style="color: var(--color-unergy-deep);">{{ f.mwh_real !== null ? fmtNum1(f.mwh_real) : '—' }}</td>
                   <td class="py-2 text-right font-mono" style="color: #7a6e8a;">{{ f.mwh_proyectado !== null ? fmtNum1(f.mwh_proyectado) : '—' }}</td>
-                  <td class="py-2 text-right font-mono font-semibold" style="color: #2C2039;">{{ f.mwh_total !== null ? fmtNum1(f.mwh_total) : '—' }}</td>
+                  <td class="py-2 text-right font-mono font-semibold" style="color: var(--color-unergy-deep);">{{ f.mwh_total !== null ? fmtNum1(f.mwh_total) : '—' }}</td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr style="border-top: 2px solid rgba(44,32,57,0.12);">
-                  <td class="pt-3 font-bold" style="color: #2C2039;">
+                  <td class="pt-3 font-bold" style="color: var(--color-unergy-deep);">
                     TOTAL · {{ beCapaPlantas }} {{ beCapaPlantas === 1 ? 'planta' : 'plantas' }}
                     <span v-if="beCapaFilas.length !== beCapaPlantas" class="text-xs font-normal" style="color: #7a6e8a;">
                       ({{ beCapaFilas.length }} tramos)
                     </span>
                   </td>
                   <td colspan="4"></td>
-                  <td class="pt-3 text-right font-mono font-bold" style="color: #2C2039;">{{ fmtNum1(beCapaTotales.real) }}</td>
+                  <td class="pt-3 text-right font-mono font-bold" style="color: var(--color-unergy-deep);">{{ fmtNum1(beCapaTotales.real) }}</td>
                   <td class="pt-3 text-right font-mono font-bold" style="color: #7a6e8a;">{{ fmtNum1(beCapaTotales.proyectado) }}</td>
-                  <td class="pt-3 text-right font-mono font-bold text-base" style="color: #2C2039;">{{ fmtNum1(beCapaTotales.total) }}</td>
+                  <td class="pt-3 text-right font-mono font-bold text-base" style="color: var(--color-unergy-deep);">{{ fmtNum1(beCapaTotales.total) }}</td>
                 </tr>
               </tfoot>
             </table>
@@ -1965,7 +1965,7 @@
             <!-- Lo que NO entró -->
             <div v-if="beData?.advertencias?.sin_datos?.length"
               class="mt-4 pt-3 text-xs" style="border-top: 1px solid rgba(44,32,57,0.08); color: #7a6e8a;">
-              <span class="font-semibold" style="color: #2C2039;">Fuera del cálculo:</span>
+              <span class="font-semibold" style="color: var(--color-unergy-deep);">Fuera del cálculo:</span>
               {{ beData.advertencias.sin_datos.length }} plantas sin generación en el mes —
               {{ beData.advertencias.sin_datos.map(a => `${a.planta} (${a.motivo})`).join(' · ') }}
             </div>
@@ -1983,14 +1983,14 @@
           style="z-index: 61; background: #ffffff; width: 700px; max-width: 94vw; max-height: 88vh; overflow-y: auto; border-radius: 16px; border: 1px solid rgba(44,32,57,0.12); top: 50%; left: 50%; transform: translate(-50%, -50%);"
           @click.stop
         >
-          <div style="height: 6px; background: #915BD8; border-radius: 16px 16px 0 0;" />
+          <div style="height: 6px; background: var(--color-unergy-purple); border-radius: 16px 16px 0 0;" />
           <!-- Header -->
           <div class="px-6 pt-4 pb-3" style="border-bottom: 1px solid rgba(44,32,57,0.08);">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
-                <div class="font-bold text-lg truncate" style="color: #2C2039;">{{ detalleCapa.c.nombre }}</div>
+                <div class="font-bold text-lg truncate" style="color: var(--color-unergy-deep);">{{ detalleCapa.c.nombre }}</div>
                 <div class="text-sm truncate" style="color: #7a6e8a;">{{ detalleCapa.c.comprador_nombre }}</div>
-                <span class="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(145,91,216,0.10); color: #915BD8;">
+                <span class="mt-1.5 inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-0.5 rounded-full" style="background: rgba(145,91,216,0.10); color: var(--color-unergy-purple);">
                   <CalendarIcon class="text-[10px] size-[1em]" /> Período de consulta: {{ periodoSimLabel }}
                 </span>
               </div>
@@ -2000,7 +2000,7 @@
                 <button
                   @click="copiarImagenCapa(detalleCapa.c)"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                  :style="copiadoCapaId === detalleCapa.c.id ? 'background: rgba(46,125,50,0.12); color: #2e7d32;' : 'background: #915BD8; color: white;'"
+                  :style="copiadoCapaId === detalleCapa.c.id ? 'background: rgba(46,125,50,0.12); color: #2e7d32;' : 'background: var(--color-unergy-purple); color: white;'"
                   v-tooltip="'Copia la imagen al portapapeles (o la descarga si el navegador no lo permite)'"
                 >
                   <CheckIcon v-if="copiadoCapaId === detalleCapa.c.id" class="text-xs size-[1em]" />
@@ -2014,15 +2014,15 @@
             <div class="grid gap-3 mt-3" :class="detalleCapa.res.genDup > 0 ? 'grid-cols-4' : 'grid-cols-3'">
               <div>
                 <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #7a6e8a;">Energía entregada</div>
-                <div class="font-mono text-sm font-bold mt-0.5" style="color: #2C2039;">{{ fmtMwh(detalleCapa.res.gen) }}</div>
+                <div class="font-mono text-sm font-bold mt-0.5" style="color: var(--color-unergy-deep);">{{ fmtMwh(detalleCapa.res.gen) }}</div>
               </div>
               <div>
                 <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #7a6e8a;">Energía mínima</div>
-                <div class="font-mono text-sm font-bold mt-0.5" style="color: #2C2039;">{{ detalleCapa.res.min != null ? fmtMwh(detalleCapa.res.min) : '—' }}</div>
+                <div class="font-mono text-sm font-bold mt-0.5" style="color: var(--color-unergy-deep);">{{ detalleCapa.res.min != null ? fmtMwh(detalleCapa.res.min) : '—' }}</div>
               </div>
               <div>
                 <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #7a6e8a;">Energía proyectada</div>
-                <div class="font-mono text-sm font-bold mt-0.5" style="color: #2C2039;">{{ detalleCapa.res.genProy != null && detalleCapa.res.genProy > 0 ? fmtMwh(detalleCapa.res.genProy) : '—' }}</div>
+                <div class="font-mono text-sm font-bold mt-0.5" style="color: var(--color-unergy-deep);">{{ detalleCapa.res.genProy != null && detalleCapa.res.genProy > 0 ? fmtMwh(detalleCapa.res.genProy) : '—' }}</div>
               </div>
               <div v-if="detalleCapa.res.genDup > 0" v-tooltip.bottom="'De la energía entregada, esta parte se suministra con compra en bolsa (cuenta para el contrato, origen bolsa)'">
                 <div class="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide" style="color: #9a6700;"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra en bolsa</div>
@@ -2032,7 +2032,7 @@
           </div>
           <!-- Tabla -->
           <div class="px-6 py-4">
-            <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #915BD8;">{{ detalleCapa.plantas.length }} proyecto{{ detalleCapa.plantas.length === 1 ? '' : 's' }} en el contrato</p>
+            <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: var(--color-unergy-purple);">{{ detalleCapa.plantas.length }} proyecto{{ detalleCapa.plantas.length === 1 ? '' : 's' }} en el contrato</p>
             <table class="w-full text-sm">
               <thead>
                 <tr style="color: #7a6e8a; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;">
@@ -2044,14 +2044,14 @@
               </thead>
               <tbody>
                 <tr v-for="p in detalleCapa.plantas" :key="p.id" style="border-top: 1px solid rgba(44,32,57,0.06);">
-                  <td class="py-2 pr-2 font-medium" :style="p.es_duplicado ? 'color:#9a6700' : p.comprado_por_unergy ? 'color:#9a6700' : 'color:#2C2039'">
+                  <td class="py-2 pr-2 font-medium" :style="p.es_duplicado ? 'color:#9a6700' : p.comprado_por_unergy ? 'color:#9a6700' : 'color:var(--color-unergy-deep)'">
                     {{ p.nombre }}
                     <span v-if="p.es_duplicado && !p.comprado_por_unergy" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;" v-tooltip="'Compra en bolsa'"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra bolsa</span>
                     <span v-else-if="p.comprado_por_unergy" class="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.25); color: #9a6700;">Compra</span>
                   </td>
                   <td class="py-2 px-2 text-right font-mono text-xs" style="color: #7a6e8a;">{{ (p.pct_despacho * 100).toFixed(0) }}%</td>
-                  <td class="py-2 px-2 text-right font-mono font-semibold" :style="p.es_duplicado ? 'color:#9a6700' : 'color:#2C2039'">{{ p.month_mwh != null ? fmtMwh(p.month_mwh * p.pct_despacho) : '—' }}</td>
-                  <td class="py-2 pl-2 text-right font-mono font-semibold" style="color: #915BD8;">
+                  <td class="py-2 px-2 text-right font-mono font-semibold" :style="p.es_duplicado ? 'color:#9a6700' : 'color:var(--color-unergy-deep)'">{{ p.month_mwh != null ? fmtMwh(p.month_mwh * p.pct_despacho) : '—' }}</td>
+                  <td class="py-2 pl-2 text-right font-mono font-semibold" style="color: var(--color-unergy-purple);">
                     <template v-if="plantaProyMwh(p) != null">◆ {{ fmtMwh(plantaProyMwh(p)) }}</template>
                     <span v-else style="color: rgba(44,32,57,0.3);">—</span>
                   </td>
@@ -2062,10 +2062,10 @@
               </tbody>
               <tfoot>
                 <tr style="border-top: 2px solid rgba(44,32,57,0.12);">
-                  <td class="pt-3 text-sm font-bold" style="color: #2C2039;">Total · {{ detalleCapa.plantas.length }} proyecto{{ detalleCapa.plantas.length === 1 ? '' : 's' }}</td>
+                  <td class="pt-3 text-sm font-bold" style="color: var(--color-unergy-deep);">Total · {{ detalleCapa.plantas.length }} proyecto{{ detalleCapa.plantas.length === 1 ? '' : 's' }}</td>
                   <td></td>
-                  <td class="pt-3 text-right font-mono font-bold text-base" style="color: #915BD8;">{{ fmtMwh(detalleCapa.res.gen) }}</td>
-                  <td class="pt-3 text-right font-mono font-bold text-base" style="color: #915BD8;">{{ detalleCapa.res.genProy != null && detalleCapa.res.genProy > 0 ? fmtMwh(detalleCapa.res.genProy) : '—' }}</td>
+                  <td class="pt-3 text-right font-mono font-bold text-base" style="color: var(--color-unergy-purple);">{{ fmtMwh(detalleCapa.res.gen) }}</td>
+                  <td class="pt-3 text-right font-mono font-bold text-base" style="color: var(--color-unergy-purple);">{{ detalleCapa.res.genProy != null && detalleCapa.res.genProy > 0 ? fmtMwh(detalleCapa.res.genProy) : '—' }}</td>
                 </tr>
                 <tr v-if="detalleCapa.res.genDup > 0">
                   <td colspan="2"></td>
@@ -2094,20 +2094,20 @@
         <div class="fixed inset-0" style="z-index: 40; background: rgba(44,32,57,0.25);" @click="selectedMonthIdx = null" />
         <div
           class="fixed rounded-2xl shadow-2xl"
-          style="z-index: 50; background: #FDFAF7; width: 600px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(44,32,57,0.12); top: 50%; left: 50%; transform: translate(-50%, -50%);"
+          style="z-index: 50; background: var(--color-unergy-avena); width: 600px; max-height: 80vh; overflow-y: auto; border: 1px solid rgba(44,32,57,0.12); top: 50%; left: 50%; transform: translate(-50%, -50%);"
           @click.stop
         >
           <div class="flex items-center justify-between px-5 py-4" style="border-bottom: 1px solid rgba(44,32,57,0.10);">
             <div>
-              <span class="font-bold text-base" style="color: #2C2039;">{{ MESES[selectedMonthIdx] }} {{ selectedYear }}</span>
-              <span v-if="anualData.meses[selectedMonthIdx].tipo_datos !== 'real'" class="ml-2 text-xs px-2 py-0.5 rounded-full font-medium" style="background: rgba(145,91,216,0.12); color: #915BD8;">proyección</span>
+              <span class="font-bold text-base" style="color: var(--color-unergy-deep);">{{ MESES[selectedMonthIdx] }} {{ selectedYear }}</span>
+              <span v-if="anualData.meses[selectedMonthIdx].tipo_datos !== 'real'" class="ml-2 text-xs px-2 py-0.5 rounded-full font-medium" style="background: rgba(145,91,216,0.12); color: var(--color-unergy-purple);">proyección</span>
             </div>
             <button class="rounded-lg p-1.5" style="color: #7a6e8a;" @click="selectedMonthIdx = null">
               <XIcon class="text-sm size-[1em]" />
             </button>
           </div>
           <div class="px-5 py-4">
-            <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color: #915BD8;">Desglose por planta</p>
+            <p class="text-xs font-semibold uppercase tracking-widest mb-3" style="color: var(--color-unergy-purple);">Desglose por planta</p>
             <table class="w-full text-sm">
               <thead>
                 <tr style="color: #7a6e8a; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
@@ -2122,21 +2122,21 @@
                   style="border-top: 1px solid rgba(44,32,57,0.06);"
                   :style="p.es_duplicado ? 'background: rgba(240,192,64,0.08);' : ''"
                 >
-                  <td class="py-2 pr-2 font-medium" style="color: #2C2039;">
+                  <td class="py-2 pr-2 font-medium" style="color: var(--color-unergy-deep);">
                     {{ p.nombre }}
                     <span v-if="p.es_duplicado" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;" v-tooltip="'Compra en bolsa'"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra bolsa</span>
-                    <span v-if="p.contrato" class="ml-1 text-xs font-normal px-1.5 py-0.5 rounded" style="color: #915BD8; background: rgba(145,91,216,0.08);">{{ p.contrato }}</span>
+                    <span v-if="p.contrato" class="ml-1 text-xs font-normal px-1.5 py-0.5 rounded" style="color: var(--color-unergy-purple); background: rgba(145,91,216,0.08);">{{ p.contrato }}</span>
                     <span v-if="p.dias_en_contrato && p.dias_mes && p.dias_en_contrato < p.dias_mes" class="ml-1 text-xs font-normal" style="color: #7a6e8a;">{{ p.dias_en_contrato }}/{{ p.dias_mes }} días</span>
                   </td>
                   <td class="py-2 px-2 text-right font-mono text-xs" style="color: #7a6e8a;">{{ (p.pct_despacho * 100).toFixed(0) }}%</td>
-                  <td class="py-2 px-2 text-right font-mono" style="color: #2C2039;">{{ p.gen_planta_mwh !== null ? fmtMwh(p.gen_planta_mwh) : '—' }}</td>
-                  <td class="py-2 pl-2 text-right font-mono font-semibold" :style="p.es_duplicado ? 'color: #9a6700;' : 'color: #915BD8;'">{{ p.gen_contrato_mwh !== null ? fmtMwh(p.gen_contrato_mwh) : '—' }}</td>
+                  <td class="py-2 px-2 text-right font-mono" style="color: var(--color-unergy-deep);">{{ p.gen_planta_mwh !== null ? fmtMwh(p.gen_planta_mwh) : '—' }}</td>
+                  <td class="py-2 pl-2 text-right font-mono font-semibold" :style="p.es_duplicado ? 'color: #9a6700;' : 'color: var(--color-unergy-purple);'">{{ p.gen_contrato_mwh !== null ? fmtMwh(p.gen_contrato_mwh) : '—' }}</td>
                 </tr>
               </tbody>
               <tfoot>
                 <tr style="border-top: 2px solid rgba(44,32,57,0.12);">
-                  <td colspan="3" class="pt-3 text-sm font-semibold" style="color: #2C2039;">Total al contrato</td>
-                  <td class="pt-3 text-right font-mono font-bold" style="color: #2C2039;">{{ fmtMwh(genVal(anualData.meses[selectedMonthIdx])) }}</td>
+                  <td colspan="3" class="pt-3 text-sm font-semibold" style="color: var(--color-unergy-deep);">Total al contrato</td>
+                  <td class="pt-3 text-right font-mono font-bold" style="color: var(--color-unergy-deep);">{{ fmtMwh(genVal(anualData.meses[selectedMonthIdx])) }}</td>
                 </tr>
                 <tr v-if="anualData.meses[selectedMonthIdx].exposicion_bolsa_duplicados_mwh">
                   <td colspan="3" class="pt-1 text-sm font-semibold" style="color: #9a6700;">de ello, compra en bolsa</td>
@@ -2158,13 +2158,13 @@
           style="z-index: 61; background: #ffffff; width: 860px; max-width: 96vw; max-height: 90vh; overflow-y: auto; border-radius: 16px; border: 1px solid rgba(44,32,57,0.12); top: 50%; left: 50%; transform: translate(-50%, -50%);"
           @click.stop
         >
-          <div style="height: 6px; background: #915BD8; border-radius: 16px 16px 0 0;" />
+          <div style="height: 6px; background: var(--color-unergy-purple); border-radius: 16px 16px 0 0;" />
           <!-- Header -->
           <div class="px-6 pt-4 pb-3" style="border-bottom: 1px solid rgba(44,32,57,0.08);">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="font-bold text-lg" style="color: #2C2039;">{{ detalleContrato.c.nombre }}</span>
+                  <span class="font-bold text-lg" style="color: var(--color-unergy-deep);">{{ detalleContrato.c.nombre }}</span>
                   <span class="text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0" :style="`background: ${dcTipo.bg}; color: ${dcTipo.color};`">{{ dcTipo.label }}</span>
                 </div>
                 <div v-if="dcContraparte" class="text-sm mt-0.5" style="color: #7a6e8a;">{{ dcContraparte }}</div>
@@ -2172,7 +2172,7 @@
               <div class="flex items-center gap-2 flex-shrink-0">
                 <a v-if="dcPpa?.carpeta_link" :href="dcPpa.carpeta_link" target="_blank" rel="noopener"
                   class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
-                  style="background: rgba(145,91,216,0.10); color: #915BD8;"
+                  style="background: rgba(145,91,216,0.10); color: var(--color-unergy-purple);"
                   v-tooltip.left="'Abrir la carpeta del contrato'"><FolderOpenIcon class="text-xs size-[1em]" />Carpeta</a>
                 <button class="rounded-lg p-1.5 transition-colors hover:bg-gray-100" style="color: #7a6e8a;" @click="cerrarDetalleContrato"><XIcon class="text-sm size-[1em]" /></button>
               </div>
@@ -2189,21 +2189,21 @@
 
             <!-- 1. Contrato formal (módulo PPA) -->
             <div>
-              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #915BD8;">Contrato formal (PPA)</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: var(--color-unergy-purple);">Contrato formal (PPA)</p>
               <Message v-if="!dcPpa && !dcError" severity="info" :closable="false">
                 Este contrato no está registrado en el módulo PPA — solo existe como registro GESCON (abajo).
               </Message>
               <div v-else-if="dcPpa" class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3">
                 <div v-for="f in dcCamposFormales" :key="f.label">
                   <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #7a6e8a;">{{ f.label }}</div>
-                  <div class="text-sm mt-0.5 break-words" style="color: #2C2039;" :class="f.mono ? 'font-mono' : ''">{{ f.value }}</div>
+                  <div class="text-sm mt-0.5 break-words" style="color: var(--color-unergy-deep);" :class="f.mono ? 'font-mono' : ''">{{ f.value }}</div>
                 </div>
               </div>
             </div>
 
             <!-- 2. Cantidades comprometidas por mes -->
             <div v-if="dcCompromisos.length">
-              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #915BD8;">Cantidades comprometidas por mes</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: var(--color-unergy-purple);">Cantidades comprometidas por mes</p>
               <div class="overflow-auto rounded-lg border" style="max-height: 230px; border-color: rgba(44,32,57,0.10);">
                 <table class="w-full text-sm">
                   <thead class="sticky top-0" style="background: rgba(145,91,216,0.06);">
@@ -2217,9 +2217,9 @@
                   <tbody>
                     <tr v-for="r in dcCompromisos" :key="r.id" style="border-top: 1px solid rgba(44,32,57,0.05);"
                       :style="r['año'] === pcYear && r.mes === pcMonth ? 'background: rgba(145,91,216,0.08);' : ''">
-                      <td class="px-3 py-1.5 font-mono text-xs" style="color: #2C2039;">{{ MESES[r.mes - 1] }} {{ r['año'] }}</td>
-                      <td class="px-3 py-1.5 text-right font-mono" style="color: #2C2039;">{{ fmtQ(r.energia_minima) }}</td>
-                      <td class="px-3 py-1.5 text-right font-mono" style="color: #2C2039;">{{ fmtQ(r.energia_maxima) }}</td>
+                      <td class="px-3 py-1.5 font-mono text-xs" style="color: var(--color-unergy-deep);">{{ MESES[r.mes - 1] }} {{ r['año'] }}</td>
+                      <td class="px-3 py-1.5 text-right font-mono" style="color: var(--color-unergy-deep);">{{ fmtQ(r.energia_minima) }}</td>
+                      <td class="px-3 py-1.5 text-right font-mono" style="color: var(--color-unergy-deep);">{{ fmtQ(r.energia_maxima) }}</td>
                       <td class="px-3 py-1.5 text-right font-mono" style="color: #7a6e8a;">{{ r.cantidad_proyectos ?? '—' }}</td>
                     </tr>
                   </tbody>
@@ -2229,7 +2229,7 @@
 
             <!-- 3. Tarifas por mes -->
             <div v-if="dcTarifas.length">
-              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #915BD8;">Tarifas por mes ($/kWh)</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: var(--color-unergy-purple);">Tarifas por mes ($/kWh)</p>
               <div class="overflow-auto rounded-lg border" style="max-height: 200px; border-color: rgba(44,32,57,0.10);">
                 <table class="w-full text-sm">
                   <thead class="sticky top-0" style="background: rgba(145,91,216,0.06);">
@@ -2241,8 +2241,8 @@
                   <tbody>
                     <tr v-for="r in dcTarifas" :key="r.id" style="border-top: 1px solid rgba(44,32,57,0.05);"
                       :style="r['año'] === pcYear && r.mes === pcMonth ? 'background: rgba(145,91,216,0.08);' : ''">
-                      <td class="px-3 py-1.5 font-mono text-xs" style="color: #2C2039;">{{ MESES[r.mes - 1] }} {{ r['año'] }}</td>
-                      <td class="px-3 py-1.5 text-right font-mono" style="color: #2C2039;">{{ fmtQ(r.tarifa) }}</td>
+                      <td class="px-3 py-1.5 font-mono text-xs" style="color: var(--color-unergy-deep);">{{ MESES[r.mes - 1] }} {{ r['año'] }}</td>
+                      <td class="px-3 py-1.5 text-right font-mono" style="color: var(--color-unergy-deep);">{{ fmtQ(r.tarifa) }}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -2251,11 +2251,11 @@
 
             <!-- 4. GESCON -->
             <div>
-              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #915BD8;">GESCON — registros ante el ASIC</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: var(--color-unergy-purple);">GESCON — registros ante el ASIC</p>
               <div v-if="dcGesconResumen.length" class="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3 mb-3 px-3 py-2.5 rounded-lg" style="background: rgba(240,192,64,0.08);">
                 <div v-for="f in dcGesconResumen" :key="f.label">
                   <div class="text-[10px] font-semibold uppercase tracking-wide" style="color: #9a6700;">{{ f.label }}</div>
-                  <div class="text-sm mt-0.5" style="color: #2C2039;" :class="f.mono ? 'font-mono' : ''">{{ f.value }}</div>
+                  <div class="text-sm mt-0.5" style="color: var(--color-unergy-deep);" :class="f.mono ? 'font-mono' : ''">{{ f.value }}</div>
                 </div>
               </div>
               <div v-if="dcGescon.length" class="overflow-auto rounded-lg border" style="max-height: 280px; border-color: rgba(44,32,57,0.10);">
@@ -2274,14 +2274,14 @@
                   <tbody>
                     <tr v-for="r in dcGescon" :key="r.id" style="border-top: 1px solid rgba(44,32,57,0.05);"
                       :style="!r.es_version_vigente ? 'opacity: 0.55;' : ''">
-                      <td class="px-3 py-1.5 font-medium" style="color: #2C2039;">
+                      <td class="px-3 py-1.5 font-medium" style="color: var(--color-unergy-deep);">
                         {{ r.planta_nombre || (r.proyecto_id ? `Proyecto ${r.proyecto_id}` : '—') }}
                         <span v-if="r.es_duplicado" class="ml-1 inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Duplicado</span>
                         <span v-if="r.uso_del_recurso" class="ml-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(20,184,166,0.14); color: #0f766e;">Uso del recurso</span>
                       </td>
                       <td class="px-2 py-1.5 font-mono text-xs" style="color: #7a6e8a;">{{ r.codigo_sic_contrato || '—' }}</td>
                       <td class="px-2 py-1.5 text-xs" style="color: #7a6e8a;">{{ r.tipo_solicitud }}</td>
-                      <td class="px-2 py-1.5 text-right font-mono text-xs" style="color: #915BD8;">{{ r.porcentaje_despacho != null ? (r.porcentaje_despacho * 100).toFixed(0) + '%' : '—' }}</td>
+                      <td class="px-2 py-1.5 text-right font-mono text-xs" style="color: var(--color-unergy-purple);">{{ r.porcentaje_despacho != null ? (r.porcentaje_despacho * 100).toFixed(0) + '%' : '—' }}</td>
                       <td class="px-2 py-1.5 font-mono text-xs" style="color: #7a6e8a;">{{ r.fecha_inicio || '—' }}</td>
                       <td class="px-2 py-1.5 font-mono text-xs" style="color: #7a6e8a;">{{ r.fecha_fin_efectiva || r.fecha_fin || 'abierta' }}</td>
                       <td class="px-3 py-1.5">
@@ -2300,15 +2300,15 @@
 
             <!-- 5. Plantas del mes consultado (lo que ve la piscina) -->
             <div v-if="detalleContrato.c.plantas?.length">
-              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #915BD8;">
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: var(--color-unergy-purple);">
                 {{ detalleContrato.c._proyecto_id ? 'Planta consultada' : 'Plantas en el contrato' }} · {{ MESES[pcMonth - 1] }} {{ pcYear }} ({{ detalleContrato.c.plantas.length }})
               </p>
               <div class="rounded-lg border divide-y" style="border-color: rgba(44,32,57,0.10);">
                 <div v-for="p in detalleContrato.c.plantas" :key="p.id" class="px-3 py-2 flex items-center justify-between text-sm">
                   <div class="flex items-center gap-2">
-                    <span class="font-medium" style="color: #2C2039;">{{ p.nombre }}</span>
+                    <span class="font-medium" style="color: var(--color-unergy-deep);">{{ p.nombre }}</span>
                     <span v-if="p.codigo_sic" class="text-xs font-mono px-1.5 py-0.5 rounded" style="background: rgba(44,32,57,0.06); color: #7a6e8a;">{{ p.codigo_sic }}</span>
-                    <span v-if="p.pct_despacho != null" class="text-xs font-mono" style="color: #915BD8;">{{ (p.pct_despacho * 100).toFixed(0) }}%</span>
+                    <span v-if="p.pct_despacho != null" class="text-xs font-mono" style="color: var(--color-unergy-purple);">{{ (p.pct_despacho * 100).toFixed(0) }}%</span>
                     <span v-if="p.es_duplicado" class="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded" style="background: rgba(240,192,64,0.22); color: #9a6700;"><ShoppingCartIcon class="size-[1em]" style="font-size: 9px;" />Compra bolsa</span>
                   </div>
                   <div class="text-xs font-mono" style="color: #7a6e8a;">
@@ -2333,10 +2333,10 @@
           style="z-index: 61; background: #ffffff; width: 760px; max-width: 94vw; max-height: 88vh; overflow-y: auto; border-radius: 16px; border: 1px solid rgba(44,32,57,0.12); top: 50%; left: 50%; transform: translate(-50%, -50%);"
           @click.stop
         >
-          <div style="height: 6px; background: #915BD8; border-radius: 16px 16px 0 0;" />
+          <div style="height: 6px; background: var(--color-unergy-purple); border-radius: 16px 16px 0 0;" />
           <div class="px-6 pt-4 pb-3 flex items-start justify-between gap-3" style="border-bottom: 1px solid rgba(44,32,57,0.08);">
             <div>
-              <div class="font-bold text-lg" style="color: #2C2039;">Empresas responsables de PPA</div>
+              <div class="font-bold text-lg" style="color: var(--color-unergy-deep);">Empresas responsables de PPA</div>
               <div class="text-xs mt-0.5" style="color: #7a6e8a;">
                 Los contratos de un responsable marcado como <b>no relevante</b> no aparecen en la Matriz anual.
                 Un contrato sin responsable siempre aparece.
@@ -2350,7 +2350,7 @@
 
             <!-- Catálogo -->
             <div>
-              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: #915BD8;">Catálogo</p>
+              <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color: var(--color-unergy-purple);">Catálogo</p>
               <div class="rounded-lg border divide-y" style="border-color: rgba(44,32,57,0.10);">
                 <div v-for="r in responsables" :key="r.id" class="px-3 py-2 flex items-center gap-3">
                   <InputText v-model="r.nombre" class="text-sm flex-1" @change="guardarResponsable(r)" />
@@ -2379,7 +2379,7 @@
             <!-- Asignación -->
             <div>
               <div class="flex items-center justify-between gap-2 mb-2">
-                <p class="text-xs font-bold uppercase tracking-widest" style="color: #915BD8;">
+                <p class="text-xs font-bold uppercase tracking-widest" style="color: var(--color-unergy-purple);">
                   Asignar contratos ({{ respContratos.length }})
                 </p>
                 <div class="flex items-center gap-2">
@@ -2394,7 +2394,7 @@
                 <label v-for="c in respContratosFiltrados" :key="c.id"
                        class="px-3 py-1.5 flex items-center gap-2.5 text-sm cursor-pointer hover:bg-[#faf8fd]">
                   <Checkbox v-model="respSel" :value="c.id" />
-                  <span class="flex-1 truncate" style="color:#2C2039;">
+                  <span class="flex-1 truncate" style="color:var(--color-unergy-deep);">
                     {{ c.nombre_interno || c.numero_codigo_contrato }}
                     <span class="text-xs ml-1" style="color:#7a6e8a;">{{ c.comprador_nombre }}</span>
                   </span>
@@ -5300,7 +5300,7 @@ onMounted(async () => {
 <style scoped>
 /* ── Matriz anual ── */
 .cv-matriz { width: 100%; border-collapse: separate; border-spacing: 0; }
-.cv-matriz thead th { position: sticky; top: 0; background: #faf8fd; z-index: 2; font-weight: 600; color: #2C2039; border-bottom: 1px solid rgba(44,32,57,0.1); }
+.cv-matriz thead th { position: sticky; top: 0; background: #faf8fd; z-index: 2; font-weight: 600; color: var(--color-unergy-deep); border-bottom: 1px solid rgba(44,32,57,0.1); }
 .cv-matriz .sticky-col { position: sticky; left: 0; background: #fff; z-index: 1; min-width: 240px; }
 .cv-matriz thead .sticky-col { z-index: 3; background: #faf8fd; }
 .cv-matriz-contrato:hover { background: #f6f2fb; }
@@ -5314,7 +5314,7 @@ onMounted(async () => {
 .cv-icon-tile {
   width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
   display: grid; place-items: center;
-  background: rgba(145,91,216,0.12); color: #915BD8; font-size: 17px;
+  background: rgba(145,91,216,0.12); color: var(--color-unergy-purple); font-size: 17px;
 }
 .cv-tab {
   font-size: 13.5px; font-weight: 700; color: #9b8fb0;
@@ -5322,8 +5322,8 @@ onMounted(async () => {
   border-radius: 8px 8px 0 0; border-bottom: 2px solid transparent;
   margin-bottom: -1px; transition: background .12s, color .12s;
 }
-.cv-tab:hover { background: rgba(44,32,57,0.04); color: #2C2039; }
-.cv-tab.active { color: #2C2039; border-bottom-color: #915BD8; }
+.cv-tab:hover { background: rgba(44,32,57,0.04); color: var(--color-unergy-deep); }
+.cv-tab.active { color: var(--color-unergy-deep); border-bottom-color: var(--color-unergy-purple); }
 
 /* ── Balance de energía ─────────────────────────────────────────────────────
    Cada línea del libro mayor es clicable (filtra el inventario) y explica en
@@ -5332,7 +5332,7 @@ onMounted(async () => {
 .be-linea:hover { background: rgba(145,91,216,0.06); }
 .be-linea.activa { background: rgba(145,91,216,0.10); }
 .be-linea td:first-child { border-left: 2px solid transparent; padding-left: 6px; }
-.be-linea.activa td:first-child { border-left-color: #915BD8; }
+.be-linea.activa td:first-child { border-left-color: var(--color-unergy-purple); }
 
 /* El riesgo nunca se comunica solo con color: el chip lleva su etiqueta. */
 .be-chip {
@@ -5347,14 +5347,14 @@ onMounted(async () => {
 .cv-btn {
   display: inline-flex; align-items: center; gap: 6px; height: 34px;
   padding: 0 12px; border-radius: 9px; border: 1px solid rgba(44,32,57,0.12);
-  background: #fff; color: #2C2039; font-size: 13px; cursor: pointer;
+  background: #fff; color: var(--color-unergy-deep); font-size: 13px; cursor: pointer;
   transition: background .12s, border-color .12s;
 }
 .cv-btn:hover { background: rgba(44,32,57,0.04); border-color: rgba(145,91,216,0.40); }
 .cv-btn-cta {
   display: inline-flex; align-items: center; gap: 6px; height: 34px;
   padding: 0 14px; border-radius: 9px; border: 0;
-  background: #F6FF72; color: #2C2039; font-size: 13px; font-weight: 700; cursor: pointer;
+  background: var(--color-unergy-yellow); color: var(--color-unergy-deep); font-size: 13px; font-weight: 700; cursor: pointer;
   box-shadow: 0 1px 0 rgba(44,32,57,0.04); transition: filter .12s, box-shadow .12s;
 }
 .cv-btn-cta:hover { filter: brightness(0.97); box-shadow: 0 3px 12px rgba(246,255,114,0.55); }
@@ -5370,7 +5370,7 @@ onMounted(async () => {
   box-shadow: 0 10px 28px rgba(44,32,57,0.11);
   transform: translateY(-2px);
 }
-.cv-card-dragover { border-color: #915BD8 !important; box-shadow: 0 0 0 2px rgba(145,91,216,0.18) !important; }
+.cv-card-dragover { border-color: var(--color-unergy-purple) !important; box-shadow: 0 0 0 2px rgba(145,91,216,0.18) !important; }
 /* Fila/encabezado que abre el detalle (ventana emergente) al hacer click */
 .cv-row-click { cursor: pointer; transition: background .12s; }
 .cv-row-click:hover { background: rgba(145,91,216,0.06); }
@@ -5398,7 +5398,7 @@ onMounted(async () => {
 :deep(.p-datatable .p-datatable-tbody td) {
   padding: 8px 12px;
   font-size: 13px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
 }
 :deep(.p-datatable .p-datatable-tbody tr:hover td) {
   background: rgba(145,91,216,0.05) !important;

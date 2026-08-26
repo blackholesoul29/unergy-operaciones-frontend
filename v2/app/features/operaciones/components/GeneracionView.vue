@@ -8,7 +8,7 @@
       <div class="gen-titlebar">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(145,91,216,0.12)">
-            <ChartLineIcon class="text-sm size-[1em]" style="color:#915BD8" />
+            <ChartLineIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
           </div>
           <h2 class="text-base font-bold text-gray-800">Generación</h2>
           <span class="text-xs text-gray-500 hidden sm:inline">· Compara la energía generada por proyecto</span>
@@ -120,7 +120,7 @@
 
     <!-- ══ EMPTY STATE / GUIDE ════════════════════════════════════════ -->
     <div v-if="!proyectosSel.length" class="gen-empty">
-      <InfoIcon class="text-3xl mb-3 size-[1em]" style="color:#915BD8" />
+      <InfoIcon class="text-3xl mb-3 size-[1em]" style="color:var(--color-unergy-purple)" />
       <p class="text-base font-semibold text-gray-700">Selecciona uno o más proyectos para comenzar</p>
       <p class="text-sm text-gray-500 mt-1">Elige proyectos y un rango, luego presiona <strong>Consultar</strong>.</p>
     </div>
@@ -145,7 +145,7 @@
 
     <!-- ══ READY TO QUERY (proyectos elegidos, aún sin consultar) ═════ -->
     <div v-else-if="!hasQueried" class="gen-empty">
-      <SearchIcon class="text-3xl mb-3 size-[1em]" style="color:#915BD8" />
+      <SearchIcon class="text-3xl mb-3 size-[1em]" style="color:var(--color-unergy-purple)" />
       <p class="text-base font-semibold text-gray-700">Listo para consultar</p>
       <p class="text-sm text-gray-500 mt-1">Ajusta el rango y la granularidad, luego presiona Consultar.</p>
       <Button label="Consultar" size="small" class="mt-3" :disabled="!!rangoError" :loading="loading" @click="cargar">
@@ -176,7 +176,7 @@
           </div>
         </div>
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(145,91,216,0.12); color:#915BD8"><ChartColumnIcon class="size-[1em]" /></div>
+          <div class="gen-kpi-icon" style="background:rgba(145,91,216,0.12); color:var(--color-unergy-purple)"><ChartColumnIcon class="size-[1em]" /></div>
           <div>
             <div class="gen-kpi-val">{{ fmtNum(totalKwh / Math.max(1, datasets.length) / Math.max(1, periodos.length), 1) }}</div>
             <div class="gen-kpi-lbl">Promedio kWh / {{ unidadPeriodo }}</div>
@@ -201,7 +201,7 @@
       <!-- Chart card -->
       <section class="gen-card">
         <header class="gen-card-head">
-          <ChartLineIcon class="text-sm size-[1em]" style="color:#915BD8" />
+          <ChartLineIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
           <h3 class="gen-card-title">{{ tituloGrafico }}</h3>
           <div class="flex items-center gap-2 ml-auto">
             <button v-for="t in ['line', 'bar']" :key="t"
@@ -1173,10 +1173,10 @@ watch(chartWrapRef, (el) => {
   transition: all 0.12s;
   font-family: inherit;
 }
-.gen-seg-btn:hover:not(:disabled) { color: #2C2039; }
+.gen-seg-btn:hover:not(:disabled) { color: var(--color-unergy-deep); }
 .gen-seg-btn--active {
   background: #fff;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   box-shadow: 0 1px 3px rgba(28, 18, 50, 0.1);
 }
 .gen-seg-btn--disabled { opacity: 0.5; cursor: not-allowed; }
@@ -1199,7 +1199,7 @@ watch(chartWrapRef, (el) => {
   padding: 3px 10px;
   white-space: nowrap;
 }
-.gen-range-label svg { font-size: 11px; color: #915BD8; }
+.gen-range-label svg { font-size: 11px; color: var(--color-unergy-purple); }
 
 /* Aviso no bloqueante */
 .gen-aviso {
@@ -1306,7 +1306,7 @@ watch(chartWrapRef, (el) => {
   font-size: 15px;
   flex-shrink: 0;
 }
-.gen-kpi-val { font-size: 20px; font-weight: 800; line-height: 1.1; color: #2C2039; }
+.gen-kpi-val { font-size: 20px; font-weight: 800; line-height: 1.1; color: var(--color-unergy-deep); }
 .gen-kpi-lbl { font-size: 11.5px; font-weight: 600; color: #6b5a8a; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
 
 /* Card */
@@ -1328,7 +1328,7 @@ watch(chartWrapRef, (el) => {
 .gen-card-title {
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin: 0;
 }
 
@@ -1344,7 +1344,7 @@ watch(chartWrapRef, (el) => {
   align-items: center;
   justify-content: center;
 }
-.gen-toggle-btn--active { background: #915BD8; color: #fff; border-color: #915BD8; }
+.gen-toggle-btn--active { background: var(--color-unergy-purple); color: #fff; border-color: var(--color-unergy-purple); }
 .gen-toggle-btn svg { font-size: 12px; }
 
 /* Legend */
@@ -1371,7 +1371,7 @@ watch(chartWrapRef, (el) => {
 .gen-legend-item:hover { background: #f3f1f8; }
 .gen-legend-item--off { opacity: 0.4; }
 .gen-legend-dot { width: 9px; height: 9px; border-radius: 50%; }
-.gen-legend-name { font-weight: 600; color: #2C2039; }
+.gen-legend-name { font-weight: 600; color: var(--color-unergy-deep); }
 .gen-legend-total { color: #6b5a8a; font-weight: 500; }
 
 /* Chart SVG */
@@ -1388,7 +1388,7 @@ watch(chartWrapRef, (el) => {
 
 /* Hover: línea guía + tooltip de valores X/Y */
 .gen-hover-line {
-  stroke: #915BD8;
+  stroke: var(--color-unergy-purple);
   stroke-width: 1;
   stroke-dasharray: 4 3;
   opacity: 0.75;
@@ -1410,7 +1410,7 @@ watch(chartWrapRef, (el) => {
 .gen-tooltip--flip { transform: translate(calc(-100% - 12px), -50%); }
 .gen-tooltip-x {
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin-bottom: 5px;
   white-space: nowrap;
 }
@@ -1428,7 +1428,7 @@ watch(chartWrapRef, (el) => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.gen-tooltip-val { font-weight: 700; color: #2C2039; font-variant-numeric: tabular-nums; }
+.gen-tooltip-val { font-weight: 700; color: var(--color-unergy-deep); font-variant-numeric: tabular-nums; }
 .gen-tooltip-total { border-top: 1px solid #f0ebf7; margin-top: 4px; padding-top: 4px; }
 .gen-tooltip-fault {
   border-top: 1px solid #fde2e2;

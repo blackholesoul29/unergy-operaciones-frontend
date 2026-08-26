@@ -223,7 +223,7 @@ function close() { emit('close') }
 .is-root {
   position: fixed; inset: 0; z-index: 110;
   display: flex; flex-direction: column;
-  background: #f3f4f6; color: #2C2039;
+  background: #f3f4f6; color: var(--color-unergy-deep);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -231,7 +231,7 @@ function close() { emit('close') }
 .is-head {
   display: flex; align-items: center; gap: 10px; flex-shrink: 0;
   padding: calc(9px + env(safe-area-inset-top)) 12px 9px;
-  background: #2C2039; color: #fff;
+  background: var(--color-unergy-deep); color: #fff;
 }
 .is-back, .is-icon-btn {
   width: 36px; height: 36px; flex-shrink: 0; border: none; border-radius: 10px;
@@ -253,14 +253,14 @@ function close() { emit('close') }
 .is-chip {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 9px; border: 1.5px solid #e8e0f0; border-radius: 10px;
-  background: #fff; font-size: 11.5px; font-weight: 600; color: #2C2039;
+  background: #fff; font-size: 11.5px; font-weight: 600; color: var(--color-unergy-deep);
 }
 .is-chip--off { color: #9ca3af; background: #f9fafb; border-color: #eceaf2; }
 .is-chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .is-chip-name { max-width: 42vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .is-chip-peak { font-size: 10.5px; color: #787774; font-weight: 700; font-variant-numeric: tabular-nums; }
 .is-chip--off .is-chip-peak { color: #b6bec9; }
-.is-chip--all { color: #915BD8; border-color: #e2d5f5; background: #faf8fd; }
+.is-chip--all { color: var(--color-unergy-purple); border-color: #e2d5f5; background: #faf8fd; }
 
 /* Gráfica */
 .is-chart { flex: 1; min-height: 0; position: relative; padding: 12px 10px 6px; background: #fff; }
@@ -269,10 +269,10 @@ function close() { emit('close') }
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 11px; padding: 0 24px; text-align: center; color: #6b5a8a; font-size: 14px;
 }
-.is-state svg { font-size: 24px; color: #915BD8; }
+.is-state svg { font-size: 24px; color: var(--color-unergy-purple); }
 .is-retry {
   margin-top: 2px; padding: 10px 20px; border: none; border-radius: 11px;
-  background: #915BD8; color: #fff; font-weight: 600; font-size: 14px;
+  background: var(--color-unergy-purple); color: #fff; font-weight: 600; font-size: 14px;
 }
 
 /* Pie */

@@ -9,7 +9,7 @@
 <template>
   <div class="flex flex-col gap-6">
     <div>
-      <h3 class="text-sm font-semibold mb-2" style="color:#2C2039">Registrar gestión</h3>
+      <h3 class="text-sm font-semibold mb-2" style="color:var(--color-unergy-deep)">Registrar gestión</h3>
       <div class="flex flex-col gap-2 mb-4">
         <div class="flex flex-wrap gap-2">
           <Select v-model="nueva.tipo" :options="TIPOS_GESTION" optionLabel="label" optionValue="value"
@@ -31,7 +31,7 @@
         </div>
       </div>
 
-      <h3 class="text-sm font-semibold mb-2" style="color:#2C2039">Gestiones</h3>
+      <h3 class="text-sm font-semibold mb-2" style="color:var(--color-unergy-deep)">Gestiones</h3>
       <p v-if="!gestiones.length" class="text-sm" style="color:#9b89b5">Sin gestiones registradas.</p>
       <ul class="flex flex-col gap-2">
         <li v-for="g in gestiones" :key="g.id" class="rounded-md p-2 text-sm"
@@ -40,7 +40,7 @@
             <Tag :value="labelGestion(g.tipo)" severity="info" class="scale-90" />
             <span>{{ fmtFechaHora(g.fecha) }}</span>
             <span v-if="g.oferta_id" class="rounded px-1.5 py-0.5 text-[10px]"
-                  style="background:#F4EEFB;color:#6E3FB8">{{ nombreOferta(g.oferta_id) }}</span>
+                  style="background:#F4EEFB;color:var(--color-unergy-purple-dark)">{{ nombreOferta(g.oferta_id) }}</span>
             <span v-else class="rounded px-1.5 py-0.5 text-[10px]"
                   style="background:#F3F4F6;color:#4B5563">todo el cliente</span>
           </div>
@@ -50,7 +50,7 @@
     </div>
 
     <div>
-      <h3 class="text-sm font-semibold mb-2" style="color:#2C2039">Historial de etapas</h3>
+      <h3 class="text-sm font-semibold mb-2" style="color:var(--color-unergy-deep)">Historial de etapas</h3>
       <p v-if="!historial.length" class="text-sm" style="color:#9b89b5">Sin movimientos.</p>
       <ul class="flex flex-col gap-1.5 text-sm">
         <li v-for="h in historial" :key="h.id" class="flex items-center gap-2 flex-wrap">

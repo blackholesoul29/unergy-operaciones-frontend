@@ -7,7 +7,7 @@
     <!-- ══ TITLE + BUCKETS + ACTIONS (una sola fila compacta) ═══════════ -->
     <div class="gf-topbar">
       <div class="gf-topbar-title">
-        <ZapIcon class="text-sm size-[1em]" style="color:#915BD8" />
+        <ZapIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
         <h2 class="text-base font-bold text-gray-800 whitespace-nowrap">Gestión de Fallas</h2>
       </div>
 
@@ -90,7 +90,7 @@
               <code class="gf-compact-code">{{ f.codigo_interno }}</code>
               <span v-if="f.estado?.codigo"
                 class="gf-compact-dot"
-                :style="{ background: f.estado?.color_hex || '#915BD8' }"
+                :style="{ background: f.estado?.color_hex || 'var(--color-unergy-purple)' }"
                 v-tooltip.right="f.estado?.etiqueta" />
             </div>
             <div class="gf-compact-line2">{{ tituloFalla(f) }}</div>
@@ -1571,20 +1571,20 @@ watch(bucket, (newBucket) => {
   margin-bottom: 10px;
 }
 .gf-section-icon {
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   font-size: 13px;
 }
 .gf-section-title {
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin: 0;
 }
 .gf-section-count {
   margin-left: auto;
   font-size: 12px;
   font-weight: 700;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   background: rgba(145, 91, 216, 0.1);
   padding: 1px 8px;
   border-radius: 999px;
@@ -1612,7 +1612,7 @@ watch(bucket, (newBucket) => {
 .gf-body-text {
   font-size: 14px;
   line-height: 1.55;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin: 0;
 }
 
@@ -1659,7 +1659,7 @@ watch(bucket, (newBucket) => {
 .gf-fact-label svg { font-size: 11px; }
 .gf-fact-value {
   font-size: 14px;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   font-weight: 500;
   margin: 0;
   word-break: break-word;
@@ -1816,7 +1816,7 @@ watch(bucket, (newBucket) => {
 }
 :deep(.gf-table .p-datatable-tbody > tr.gf-row-active) {
   background: #faf5ff !important;
-  box-shadow: inset 3px 0 0 #915BD8;
+  box-shadow: inset 3px 0 0 var(--color-unergy-purple);
 }
 :deep(.gf-table .p-datatable-tbody > tr.gf-row-active > td) {
   border-color: #e9ddff;
@@ -1906,7 +1906,7 @@ watch(bucket, (newBucket) => {
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 3px;
-  background: #915BD8;
+  background: var(--color-unergy-purple);
 }
 .gf-compact-stripe {
   width: 3px;
@@ -1945,7 +1945,7 @@ watch(bucket, (newBucket) => {
 .gf-compact-line2 {
   font-size: 13px;
   font-weight: 500;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   line-height: 1.3;
   overflow: hidden;
   display: -webkit-box;

@@ -35,12 +35,12 @@
       <div v-for="v in data.ventanas" :key="v.clave"
         class="rounded-xl border p-5" style="border-color:rgba(44,32,57,0.10)">
         <div class="flex items-center justify-between mb-3">
-          <span class="text-sm font-semibold" style="color:#2C2039">{{ tituloVentana(v) }}</span>
+          <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">{{ tituloVentana(v) }}</span>
           <span v-if="v.regulatorio_periodo && v.regulatorio_periodo.fallback"
             class="text-[10px] px-2 py-0.5 rounded-full" style="background:#FEF3C7;color:#92400E"
             title="No había Cruce de facturas del mes; se usó el último disponible">regulatorio: fallback</span>
         </div>
-        <div class="text-2xl font-bold mb-4" style="color:#915BD8">{{ fmtCOP(v.garantia_total) }}</div>
+        <div class="text-2xl font-bold mb-4" style="color:var(--color-unergy-purple)">{{ fmtCOP(v.garantia_total) }}</div>
         <dl class="text-xs space-y-1.5" style="color:#4b3f61">
           <div class="flex justify-between"><dt>Neto (ventas − compras)</dt><dd>{{ fmtMWh(v.neto_mwh) }}</dd></div>
           <div class="flex justify-between"><dt>Valor energía</dt><dd>{{ fmtCOP(v.valor_energia) }}</dd></div>
@@ -69,7 +69,7 @@
     <!-- Histórico -->
     <div class="mt-6">
       <div class="flex items-center justify-between mb-2">
-        <span class="text-sm font-semibold" style="color:#2C2039">Histórico de snapshots</span>
+        <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Histórico de snapshots</span>
         <Button label="Refrescar" text size="small" @click="cargarHistorial">
           <template #icon><HistoryIcon class="size-[1em]" /></template>
         </Button>

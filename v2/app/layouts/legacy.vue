@@ -32,7 +32,7 @@ const isSolar = computed(() => route.path === '/solar-live')
       <button
         v-if="!mobileOpen"
         class="fixed top-3 left-3 z-30 flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-md lg:hidden"
-        style="color: #2c2039"
+        style="color: var(--color-unergy-deep)"
         title="Menú"
         @click="toggle"
       >
@@ -73,7 +73,7 @@ const isSolar = computed(() => route.path === '/solar-live')
   padding-left: 2px;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #915bd8, #4c1d95);
+  background: linear-gradient(135deg, var(--color-unergy-purple), #4c1d95);
   color: #fff;
   border: none;
   cursor: pointer;

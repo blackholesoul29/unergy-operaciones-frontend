@@ -10,7 +10,7 @@
 
     <!-- Barra: filtro por tipo (vía ?tipo=), búsqueda, aviso de espejo, acción -->
     <div class="flex items-center gap-3 flex-wrap">
-      <span v-if="tipoLabel" class="text-sm font-semibold" style="color:#915BD8;">{{ tipoLabel }}</span>
+      <span v-if="tipoLabel" class="text-sm font-semibold" style="color:var(--color-unergy-purple);">{{ tipoLabel }}</span>
       <RouterLink v-if="tipoLabel" to="/liquidaciones?tab=proyectos"
         class="text-xs hover:underline" style="color:#9b8fb0;">Ver todos</RouterLink>
       <IconField>
@@ -31,9 +31,9 @@
 
     <div v-else class="bg-white rounded-xl shadow-sm border overflow-hidden" style="border-color:#e8e0f0">
       <div class="px-4 py-2.5 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
-        <h3 class="text-sm font-bold" style="color:#2C2039">Proyectos · {{ formatPeriodo(periodo) }}</h3>
+        <h3 class="text-sm font-bold" style="color:var(--color-unergy-deep)">Proyectos · {{ formatPeriodo(periodo) }}</h3>
         <span class="text-[11px] px-2 py-0.5 rounded-full font-semibold"
-          style="background:#F1EAF9; color:#6E3FB8">{{ proyectosFiltrados.length }}</span>
+          style="background:#F1EAF9; color:var(--color-unergy-purple-dark)">{{ proyectosFiltrados.length }}</span>
       </div>
       <DataTable :value="proyectosFiltrados" v-model:expandedRows="expandedRows" dataKey="panel_id"
         rowHover class="text-sm" :rows="25" paginator :alwaysShowPaginator="false">
@@ -62,7 +62,7 @@
           <template #body="{ data }"><span class="font-mono text-xs text-red-600">{{ fmtCompact(data.costos_cop) }}</span></template>
         </Column>
         <Column header="Valor a pagar" style="width:130px">
-          <template #body="{ data }"><span class="font-mono text-xs font-semibold" style="color:#915BD8">{{ fmtCompact(data.valor_a_pagar_total) }}</span></template>
+          <template #body="{ data }"><span class="font-mono text-xs font-semibold" style="color:var(--color-unergy-purple)">{{ fmtCompact(data.valor_a_pagar_total) }}</span></template>
         </Column>
         <Column header="" style="width:56px">
           <template #body="{ data }">
@@ -88,9 +88,9 @@
               <tbody>
                 <tr v-for="inv in data.inversionistas" :key="inv.proyecto_inversionista_id || inv.nombre"
                   class="border-t" style="border-color:#f0ebf6">
-                  <td class="py-1.5" style="color:#2C2039">{{ inv.cliente_nombre || inv.nombre || '—' }}</td>
+                  <td class="py-1.5" style="color:var(--color-unergy-deep)">{{ inv.cliente_nombre || inv.nombre || '—' }}</td>
                   <td class="py-1.5 font-mono" style="color:#6b5a8a">{{ inv.porcentaje != null ? inv.porcentaje.toFixed(2) + '%' : '—' }}</td>
-                  <td class="py-1.5 font-mono text-right font-semibold" style="color:#915BD8">{{ fmtCompact(inv.valor_a_pagar) }}</td>
+                  <td class="py-1.5 font-mono text-right font-semibold" style="color:var(--color-unergy-purple)">{{ fmtCompact(inv.valor_a_pagar) }}</td>
                 </tr>
               </tbody>
             </table>

@@ -12,7 +12,7 @@
           <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
         </Button>
         <div>
-          <div class="text-sm font-bold" style="color:#2C2039">Informe PDF — Estado de Resultados</div>
+          <div class="text-sm font-bold" style="color:var(--color-unergy-deep)">Informe PDF — Estado de Resultados</div>
           <div class="text-[11px]" style="color:#9b8fb0">
             {{ liq?.proyecto_nombre }} · {{ periodoLabel }}
             <span v-if="actualizadoEn"> · guardado {{ actualizadoEn }}</span>
@@ -23,19 +23,19 @@
         <Select v-model="selInv" :options="opcionesInv" optionLabel="label" optionValue="value"
           size="small" class="liqpdf-sel" :disabled="editMode" @change="onSelChange"
           title="Inversionista que aparecerá en el informe" />
-        <Button v-if="!editMode" label="Editar" outlined size="small" style="border-color:#915BD8; color:#915BD8" @click="enterEdit">
+        <Button v-if="!editMode" label="Editar" outlined size="small" style="border-color:var(--color-unergy-purple); color:var(--color-unergy-purple)" @click="enterEdit">
           <template #icon><PencilIcon class="size-[1em]" /></template>
         </Button>
         <Button v-if="editMode" label="Descartar" outlined size="small" severity="secondary" @click="discardEdit">
           <template #icon><UndoIcon class="size-[1em]" /></template>
         </Button>
-        <Button v-if="editMode" label="Guardar" size="small" style="background:#915BD8; border-color:#915BD8" :loading="saving" @click="guardar">
+        <Button v-if="editMode" label="Guardar" size="small" style="background:var(--color-unergy-purple); border-color:var(--color-unergy-purple)" :loading="saving" @click="guardar">
           <template #icon><SaveIcon class="size-[1em]" /></template>
         </Button>
         <Button label="Regenerar" outlined size="small" severity="secondary" @click="regenerar" :disabled="editMode" title="Reconstruir el informe desde los datos actuales">
           <template #icon><RefreshCwIcon class="size-[1em]" /></template>
         </Button>
-        <Button label="Descargar PDF" size="small" style="background:#F6FF72; border-color:#F6FF72; color:#2C2039" @click="descargar">
+        <Button label="Descargar PDF" size="small" style="background:var(--color-unergy-yellow); border-color:var(--color-unergy-yellow); color:var(--color-unergy-deep)" @click="descargar">
           <template #icon><FileTextIcon class="size-[1em]" /></template>
         </Button>
         <Button label="Descargar Excel" size="small" style="background:#1D6F42; border-color:#1D6F42" @click="descargarExcel">
@@ -769,7 +769,7 @@ onBeforeUnmount(() => { if (_styleEl) _styleEl.remove() })
 </script>
 
 <style scoped>
-.liqpdf-wrapper{ padding:14px; background:#FDFAF7; min-height:100vh; }
+.liqpdf-wrapper{ padding:14px; background:var(--color-unergy-avena); min-height:100vh; }
 .liqpdf-toolbar{
   position:sticky; top:0; z-index:20; background:#fff;
   border:1px solid #e8e0f0; border-radius:12px; padding:10px 14px;

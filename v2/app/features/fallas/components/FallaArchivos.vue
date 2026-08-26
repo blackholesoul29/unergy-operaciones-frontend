@@ -252,14 +252,14 @@ watch(() => props.fallaId, (nuevo) => {
 }
 
 .fa-section-icon {
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   font-size: 13px;
 }
 
 .fa-section-title {
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin: 0;
 }
 
@@ -267,7 +267,7 @@ watch(() => props.fallaId, (nuevo) => {
   margin-left: auto;
   font-size: 12px;
   font-weight: 700;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   background: #f0eaf8;
   border-radius: 999px;
   padding: 1px 8px;
@@ -308,7 +308,7 @@ watch(() => props.fallaId, (nuevo) => {
 
 .fa-dropzone:hover,
 .fa-dropzone--over {
-  border-color: #915BD8;
+  border-color: var(--color-unergy-purple);
   background: rgba(145, 91, 216, 0.05);
 }
 
@@ -319,7 +319,7 @@ watch(() => props.fallaId, (nuevo) => {
 }
 
 .fa-dropzone--over .fa-dropzone-icon {
-  color: #915BD8;
+  color: var(--color-unergy-purple);
 }
 
 .fa-dropzone-text {
@@ -329,7 +329,7 @@ watch(() => props.fallaId, (nuevo) => {
 }
 
 .fa-dropzone-link {
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   font-weight: 600;
 }
 
@@ -354,7 +354,7 @@ watch(() => props.fallaId, (nuevo) => {
 
 .fa-progress-bar {
   height: 100%;
-  background: #915BD8;
+  background: var(--color-unergy-purple);
   border-radius: 999px;
   transition: width 0.2s ease;
 }
@@ -412,7 +412,7 @@ watch(() => props.fallaId, (nuevo) => {
 
 .fa-thumb-icon {
   font-size: 18px;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
 }
 
 /* Info de fila */
@@ -424,7 +424,7 @@ watch(() => props.fallaId, (nuevo) => {
 .fa-row-name {
   font-size: 13px;
   font-weight: 600;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -468,7 +468,7 @@ watch(() => props.fallaId, (nuevo) => {
 
 .fa-action-btn--download {
   background: #f0eaf8;
-  color: #915BD8;
+  color: var(--color-unergy-purple);
 }
 
 .fa-action-btn--download:hover {

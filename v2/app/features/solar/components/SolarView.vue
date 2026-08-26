@@ -6,7 +6,7 @@
     ════════════════════════════════════════════════════════════════ -->
     <aside class="filter-panel">
       <div class="filter-header">
-        <SlidersHorizontalIcon class="size-[1em]" style="color:#915BD8" />
+        <SlidersHorizontalIcon class="size-[1em]" style="color:var(--color-unergy-purple)" />
         <span>Filtros</span>
       </div>
 
@@ -54,7 +54,7 @@
             class="flex items-center gap-2 cursor-pointer"
           >
             <Checkbox v-model="filters.estados" :value="est" />
-            <span class="text-xs" style="color:#2C2039">{{ est }}</span>
+            <span class="text-xs" style="color:var(--color-unergy-deep)">{{ est }}</span>
           </label>
           <span v-if="!filtros.estados.length" class="text-xs text-gray-400">
             Sin estados disponibles
@@ -87,7 +87,7 @@
           <Button label="Recargar datos" size="small" severity="secondary" outlined :loading="reloading" @click="reloadCache">
             <template #icon><RefreshCwIcon class="size-[1em]" /></template>
           </Button>
-          <Button label="Exportar CSV" size="small" @click="exportCSV" style="background:#915BD8;border-color:#915BD8;">
+          <Button label="Exportar CSV" size="small" @click="exportCSV" style="background:var(--color-unergy-purple);border-color:var(--color-unergy-purple);">
             <template #icon><DownloadIcon class="size-[1em]" /></template>
           </Button>
         </div>
@@ -95,7 +95,7 @@
 
       <!-- Sin datos ──────────────────────────────────────────────── -->
       <div v-if="!loading && !genData.length && initialLoaded" class="empty-state">
-        <SunIcon class="text-5xl mb-4 size-[1em]" style="color:#915BD8;opacity:0.25" />
+        <SunIcon class="text-5xl mb-4 size-[1em]" style="color:var(--color-unergy-purple);opacity:0.25" />
         <h3 class="text-base font-semibold text-gray-600 mb-2">Sin datos disponibles</h3>
         <p class="text-sm text-gray-400 text-center max-w-xs leading-relaxed">
           Los archivos Excel no se encontraron en
@@ -109,7 +109,7 @@
 
       <!-- Loader ─────────────────────────────────────────────────── -->
       <div v-else-if="loading && !initialLoaded" class="empty-state">
-        <SunIcon class="text-4xl mb-3 size-[1em] animate-spin" style="color:#915BD8" />
+        <SunIcon class="text-4xl mb-3 size-[1em] animate-spin" style="color:var(--color-unergy-purple)" />
         <p class="text-sm text-gray-500">Cargando datos solares…</p>
       </div>
 
@@ -120,7 +120,7 @@
         <div class="kpi-grid">
           <div class="kpi-card">
             <div class="kpi-icon" style="background:rgba(145,91,216,0.1)">
-              <LayoutGridIcon class="size-[1em]" style="color:#915BD8" />
+              <LayoutGridIcon class="size-[1em]" style="color:var(--color-unergy-purple)" />
             </div>
             <div>
               <p class="kpi-val">{{ kpis.proyectos }}</p>
@@ -138,7 +138,7 @@
           </div>
           <div class="kpi-card">
             <div class="kpi-icon" style="background:rgba(145,91,216,0.1)">
-              <ChartLineIcon class="size-[1em]" style="color:#915BD8" />
+              <ChartLineIcon class="size-[1em]" style="color:var(--color-unergy-purple)" />
             </div>
             <div>
               <p class="kpi-val">{{ fmtK(kpis.promDiario) }}</p>
@@ -247,7 +247,7 @@
                 <div class="bar-track">
                   <div
                     class="bar-fill"
-                    :style="`width:${item.pct}%;background:#915BD8`"
+                    :style="`width:${item.pct}%;background:var(--color-unergy-purple)`"
                   />
                 </div>
                 <div class="bar-val">{{ fmtShort(item.val) }}</div>
@@ -264,7 +264,7 @@
                 <div class="bar-track">
                   <div
                     class="bar-fill"
-                    :style="`width:${item.pct}%;background:linear-gradient(90deg,#915BD8 0%,#C89FF0 100%)`"
+                    :style="`width:${item.pct}%;background:linear-gradient(90deg,var(--color-unergy-purple) 0%,#C89FF0 100%)`"
                   />
                 </div>
                 <div class="bar-val">{{ fmtShort(item.val) }} · {{ item.proyectos }} proy.</div>
@@ -284,7 +284,7 @@
                 <div class="bar-track">
                   <div
                     class="bar-fill transition-all duration-500"
-                    :style="`width:${item.pct}%;background:${i < 3 ? '#F6FF72' : '#915BD8'}`"
+                    :style="`width:${item.pct}%;background:${i < 3 ? 'var(--color-unergy-yellow)' : 'var(--color-unergy-purple)'}`"
                   />
                 </div>
                 <div class="bar-val">{{ fmtShort(item.kwh_total) }}</div>
@@ -297,7 +297,7 @@
         <!-- Comparación Nacional XM vs. Interno BD ─────────────────── -->
         <div class="card mb-6">
           <h3 class="section-title">
-            <ChartColumnIcon class="mr-2 size-[1em]" style="color:#915BD8" />
+            <ChartColumnIcon class="mr-2 size-[1em]" style="color:var(--color-unergy-purple)" />
             Comparación: XM Nacional vs. Proyectos Internos
           </h3>
           <p class="text-xs text-gray-400 mb-4">
@@ -390,7 +390,7 @@
           <!-- Mapa Colombia -->
           <div class="card lg:col-span-2">
             <h3 class="section-title mb-3">
-              <MapPinIcon class="mr-2 size-[1em]" style="color:#915BD8" />
+              <MapPinIcon class="mr-2 size-[1em]" style="color:var(--color-unergy-purple)" />
               Mapa de Generación
             </h3>
             <svg viewBox="0 0 420 520" class="w-full max-h-80">
@@ -417,9 +417,9 @@
               <!-- Gradiente leyenda -->
               <defs>
                 <linearGradient id="mapGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%"   stop-color="#2C2039" />
-                  <stop offset="45%"  stop-color="#915BD8" />
-                  <stop offset="100%" stop-color="#F6FF72" />
+                  <stop offset="0%"   stop-color="var(--color-unergy-deep)" />
+                  <stop offset="45%"  stop-color="var(--color-unergy-purple)" />
+                  <stop offset="100%" stop-color="var(--color-unergy-yellow)" />
                 </linearGradient>
               </defs>
               <rect x="20" y="498" width="130" height="8" rx="4" fill="url(#mapGrad)" />
@@ -431,7 +431,7 @@
           <!-- Tabla resumen por depto -->
           <div class="card lg:col-span-3 overflow-auto">
             <h3 class="section-title mb-3">
-              <ChartColumnIcon class="mr-2 size-[1em]" style="color:#915BD8" />
+              <ChartColumnIcon class="mr-2 size-[1em]" style="color:var(--color-unergy-purple)" />
               Resumen por Departamento
             </h3>
             <table class="sum-table">
@@ -462,7 +462,7 @@
         <div class="card">
           <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
             <h3 class="section-title">
-              <ListIcon class="mr-2 size-[1em]" style="color:#915BD8" />
+              <ListIcon class="mr-2 size-[1em]" style="color:var(--color-unergy-purple)" />
               Detalle por Proyecto
               <span class="ml-2 text-xs font-normal text-gray-400">({{ tableRows.length }} proyectos)</span>
             </h3>
@@ -1055,10 +1055,10 @@ function estadoSev(e) {
   gap: 8px;
   font-size: 13px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   margin-bottom: 16px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #F6FF72;
+  border-bottom: 2px solid var(--color-unergy-yellow);
 }
 
 .filter-group {
@@ -1086,7 +1086,7 @@ function estadoSev(e) {
   outline: none;
   transition: border-color 0.15s;
 }
-.finput:focus { border-color: #915BD8; background: #fff; }
+.finput:focus { border-color: var(--color-unergy-purple); background: #fff; }
 
 :deep(.filter-ms .p-multiselect) { font-size: 12px; }
 
@@ -1108,7 +1108,7 @@ function estadoSev(e) {
 .page-title {
   font-size: 22px;
   font-weight: 800;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   line-height: 1.2;
 }
 .page-sub {
@@ -1161,7 +1161,7 @@ function estadoSev(e) {
 .kpi-val {
   font-size: 22px;
   font-weight: 800;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   line-height: 1;
 }
 .kpi-lbl {
@@ -1183,7 +1183,7 @@ function estadoSev(e) {
 .section-title {
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   display: flex;
   align-items: center;
 }
@@ -1208,10 +1208,10 @@ function estadoSev(e) {
   cursor: pointer;
   transition: all 0.15s;
 }
-.ctab:hover { background: rgba(145,91,216,0.07); color: #915BD8; }
+.ctab:hover { background: rgba(145,91,216,0.07); color: var(--color-unergy-purple); }
 .ctab-active {
   background: rgba(145,91,216,0.12) !important;
-  color: #915BD8 !important;
+  color: var(--color-unergy-purple) !important;
   font-weight: 700;
 }
 
@@ -1233,7 +1233,7 @@ function estadoSev(e) {
   width: 18px; height: 18px;
   border-radius: 50%;
   background: rgba(145,91,216,0.12);
-  color: #915BD8;
+  color: var(--color-unergy-purple);
   font-size: 10px;
   font-weight: 700;
   display: inline-flex;

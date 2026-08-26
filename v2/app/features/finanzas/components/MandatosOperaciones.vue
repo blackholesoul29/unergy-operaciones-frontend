@@ -392,7 +392,7 @@ defineExpose({ cargar })
   display: inline-flex; align-items: center; justify-content: center;
 }
 .mand-nav-btn:hover { background: rgba(109,74,232,.1); color: #6D4AE8; }
-.mand-periodo-label { font-size: 14px; font-weight: 700; color: #2C2039; min-width: 130px; text-align: center; }
+.mand-periodo-label { font-size: 14px; font-weight: 700; color: var(--color-unergy-deep); min-width: 130px; text-align: center; }
 .mand-periodo-code { font-size: 12px; color: #8B7BA8; font-weight: 600; }
 .mand-badge-mes { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 999px; }
 .mand-badge-mes--correcciones { background: #FAEEDA; color: #854F0B; }
@@ -401,7 +401,7 @@ defineExpose({ cargar })
 .mand-tabla-wrap { background: #fff; border: 1px solid #ECE7F2; border-radius: 12px; }
 .mand-metricas { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; }
 .mand-metrica { background: #fff; border: 1px solid #ECE7F2; border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
-.mand-metrica-num { font-size: 22px; font-weight: 800; color: #2C2039; }
+.mand-metrica-num { font-size: 22px; font-weight: 800; color: var(--color-unergy-deep); }
 .mand-metrica-lbl { font-size: 11px; color: #8B7BA8; font-weight: 600; }
 .mand-metrica--amb .mand-metrica-num { color: #854F0B; }
 .mand-metrica--ver .mand-metrica-num { color: #3B6D11; }
@@ -421,8 +421,8 @@ defineExpose({ cargar })
 .mand-tabla thead th { text-align: left; font-size: 11px; font-weight: 700; color: #8B7BA8; padding: 10px 12px; border-bottom: 1px solid #ECE7F2; white-space: nowrap; }
 .mand-tabla tbody td { padding: 10px 12px; border-bottom: 0.5px solid #F1EEF7; vertical-align: top; }
 .mand-fila-resalt { background: #FFFBF4; }
-.mand-cmu { font-weight: 700; color: #2C2039; }
-.mand-tercero { font-weight: 600; color: #2C2039; }
+.mand-cmu { font-weight: 700; color: var(--color-unergy-deep); }
+.mand-tercero { font-weight: 600; color: var(--color-unergy-deep); }
 .mand-proyecto { font-size: 11px; color: #8B7BA8; }
 .mand-obs { max-width: 220px; color: #5A5468; }
 .mand-guion { color: #C9C2D6; }
@@ -454,17 +454,17 @@ defineExpose({ cargar })
 .mand-clip-btn { background: none; border: none; cursor: pointer; padding: 0; }
 .mand-modal-overlay { position: fixed; inset: 0; background: rgba(28,18,50,.35); display: flex; align-items: center; justify-content: center; z-index: 50; }
 .mand-modal { background: #fff; border-radius: 12px; padding: 20px; width: 380px; max-width: 92vw; box-shadow: 0 8px 30px rgba(28,18,50,.2); }
-.mand-modal-titulo { font-size: 15px; font-weight: 700; color: #2C2039; margin: 0 0 4px; }
+.mand-modal-titulo { font-size: 15px; font-weight: 700; color: var(--color-unergy-deep); margin: 0 0 4px; }
 .mand-modal-sub { font-size: 12px; color: #8B7BA8; margin: 0 0 12px; word-break: break-all; }
 .mand-modal-month { width: 100%; font-size: 14px; border: 1px solid #E5E2EC; border-radius: 8px; padding: 8px 10px; margin-bottom: 14px; }
 .mand-modal-acciones { display: flex; justify-content: flex-end; gap: 8px; }
 .mand-resumen { background: #fff; border: 1px solid #ECE7F2; border-radius: 12px; padding: 12px 14px; margin-top: 14px; }
-.mand-resumen-head { display: flex; align-items: center; gap: 14px; font-size: 13px; color: #2C2039; flex-wrap: wrap; }
+.mand-resumen-head { display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--color-unergy-deep); flex-wrap: wrap; }
 .mand-resumen-x { margin-left: auto; background: none; border: none; cursor: pointer; color: #B0A8C0; }
 .mand-sugerencias { margin-top: 10px; border-top: 1px solid #F1EEF7; padding-top: 10px; }
 .mand-sug-titulo { font-size: 12px; font-weight: 700; color: #854F0B; margin: 0 0 6px; }
 .mand-sug-fila { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 12px; flex-wrap: wrap; }
-.mand-sug-cmu { font-weight: 700; color: #2C2039; }
+.mand-sug-cmu { font-weight: 700; color: var(--color-unergy-deep); }
 .mand-sug-txt { color: #5A5468; flex: 1; }
 .mand-sug-btn { padding: 3px 10px; }
 .mand-noparse { font-size: 12px; color: #8B7BA8; margin: 8px 0 0; }

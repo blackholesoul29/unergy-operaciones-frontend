@@ -16,7 +16,7 @@
     <Dialog v-model:visible="subidaVisible" header="Subir facturas de XM" modal class="w-full max-w-lg">
       <div class="space-y-4 pt-1">
         <button type="button" class="dropzone" :disabled="subiendo" @click="seleccionarArchivos">
-          <CloudUploadIcon class="text-3xl size-[1em]" style="color:#915BD8" />
+          <CloudUploadIcon class="text-3xl size-[1em]" style="color:var(--color-unergy-purple)" />
           <p class="text-sm font-semibold text-gray-700 mt-2">Seleccionar facturas</p>
           <p class="text-xs text-gray-400">
             Solo PDF · máximo {{ MAX_FACTURAS_POR_LOTE }} por lote, {{ MAX_MB_POR_FACTURA }} MB cada una
@@ -44,7 +44,7 @@
         <div v-if="subiendo || progresoTarea" class="space-y-1">
           <div class="h-1.5 rounded-full overflow-hidden" style="background:#F1EAF9">
             <div class="h-full rounded-full transition-all duration-200"
-                 :style="{ width: (progresoTarea ? 100 : progresoSubida) + '%', background:'#915BD8' }" />
+                 :style="{ width: (progresoTarea ? 100 : progresoSubida) + '%', background:'var(--color-unergy-purple)' }" />
           </div>
           <p class="text-[11px] text-gray-500">
             {{ progresoTarea || `Subiendo… ${progresoSubida}%` }}
@@ -401,6 +401,6 @@ onMounted(cargar)
   cursor: pointer;
   transition: border-color .15s, background .15s;
 }
-.dropzone:hover { border-color: #915BD8; background: #F4ECFC; }
+.dropzone:hover { border-color: var(--color-unergy-purple); background: #F4ECFC; }
 .dropzone:disabled { opacity: .6; cursor: default; }
 </style>

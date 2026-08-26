@@ -29,7 +29,7 @@
       {{ clientes.length ? 'Sin inversionistas para la búsqueda.' : 'Sin paneles para este período/tipo. Cárgalos en Panel Contable.' }}
     </div>
 
-    <div v-else class="rounded-xl overflow-hidden shadow-sm" style="background:#FDFAF7">
+    <div v-else class="rounded-xl overflow-hidden shadow-sm" style="background:var(--color-unergy-avena)">
       <div v-for="cli in clientesMostrados" :key="cli.key">
 
         <!-- Nivel 1: Inversionista -->
@@ -43,7 +43,7 @@
           <span class="text-[11px] px-2 py-0.5 rounded-full font-semibold" style="background:#E5E7EB; color:#6B7280">
             {{ cli.proyectos.length }} proyectos
           </span>
-          <span class="text-[11px] font-mono font-bold ml-2" style="color:#915BD8">
+          <span class="text-[11px] font-mono font-bold ml-2" style="color:var(--color-unergy-purple)">
             {{ fmtCompact(cli.kpis.ingresoNeto) }}
           </span>
         </div>

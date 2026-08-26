@@ -1,11 +1,11 @@
 <template>
   <div v-if="loading" class="flex items-center justify-center py-12">
-    <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: #915BD8;" />
+    <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
   </div>
   <div v-else-if="detalle" class="space-y-5">
     <div class="flex items-center justify-between flex-wrap gap-2">
       <div>
-        <p class="text-sm font-bold" style="color: #2C2039;">{{ detalle.nombre_proyecto }}</p>
+        <p class="text-sm font-bold" style="color: var(--color-unergy-deep);">{{ detalle.nombre_proyecto }}</p>
         <div class="text-xs font-mono" style="color: #9b89b5;">
           {{ detalle.fecha }}
           <span v-if="detalle.estado_reporte && detalle.estado_reporte !== 'WARNING'"> · Estado reporte {{ detalle.estado_reporte }}</span>
@@ -22,7 +22,7 @@
          style="border: 1px solid #e8e0f0; background: #f9f7ff;">
       <div class="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <p class="text-sm font-semibold" style="color: #2C2039;">
+          <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">
             <CircleCheckIcon v-if="detalle.medidor_usado === 'excel_terceros'" class="text-xs mr-1.5 size-[1em]" :style="detalle.medidor_usado === 'excel_terceros' ? 'color: #059669;' : ''" />
             <FileSpreadsheetIcon v-else class="text-xs mr-1.5 size-[1em]" :style="detalle.medidor_usado === 'excel_terceros' ? 'color: #059669;' : ''" />
             {{ detalle.medidor_usado === 'excel_terceros' ? 'Cargado desde Excel de terceros' : 'Esperando Excel de terceros' }}
@@ -58,7 +58,7 @@
           {{ detalle.caso }}
         </div>
         <div class="min-w-0">
-          <p class="text-sm font-bold" style="color: #2C2039;">{{ casoInfo.nombre }}</p>
+          <p class="text-sm font-bold" style="color: var(--color-unergy-deep);">{{ casoInfo.nombre }}</p>
           <p class="text-xs" style="color: #6b5a8a;">{{ casoInfo.descripcion }}</p>
         </div>
       </div>
@@ -101,7 +101,7 @@
       <div class="flex items-center justify-between mb-3">
         <p class="text-xs font-semibold uppercase" style="color: #6b5a8a;">Fallas activas del proyecto</p>
         <RouterLink v-if="fallasActivas.length" :to="`/operaciones/gestion-fallas?proyecto=${detalle.proyecto_id}`"
-          class="text-xs underline" style="color: #915BD8;">Ver todas</RouterLink>
+          class="text-xs underline" style="color: var(--color-unergy-purple);">Ver todas</RouterLink>
       </div>
       <p v-if="!fallasActivas.length" class="text-xs" style="color: #9b89b5;">
         <CircleCheckIcon class="text-xs mr-1 size-[1em]" style="color: #10B981;" />Sin fallas activas registradas.
@@ -119,7 +119,7 @@
                 {{ f.estado?.etiqueta }}
               </span>
             </div>
-            <p class="text-sm truncate" style="color: #2C2039;">{{ f.tipo?.etiqueta || f.tipo_libre || f.descripcion }}</p>
+            <p class="text-sm truncate" style="color: var(--color-unergy-deep);">{{ f.tipo?.etiqueta || f.tipo_libre || f.descripcion }}</p>
           </div>
           <span v-if="f.dias_abierta != null" class="text-xs font-mono flex-none" style="color: #9b89b5;">
             {{ f.dias_abierta }}d
@@ -160,8 +160,8 @@
               style="background: #257CD6; margin-top: 1px;">i</span>
         <p class="text-xs" style="color: #1B5DA3; line-height: 1.5;">
           {{ aviso.etiqueta }} muestra un valor distinto en Quoia
-          (<strong style="color: #2C2039;">{{ fmtKwh(aviso.actual) }}</strong> ahora
-          vs. <strong style="color: #2C2039;">{{ fmtKwh(aviso.clasificacion) }}</strong> al momento de clasificar).
+          (<strong style="color: var(--color-unergy-deep);">{{ fmtKwh(aviso.actual) }}</strong> ahora
+          vs. <strong style="color: var(--color-unergy-deep);">{{ fmtKwh(aviso.clasificacion) }}</strong> al momento de clasificar).
         </p>
       </div>
       <div class="space-y-0">
@@ -171,12 +171,12 @@
                :style="fuenteIconStyle(f.estado)">
             {{ f.estado === 'ok' ? '✓' : (f.estado === 'na' ? '–' : (f.estado === 'error' ? '!' : '✕')) }}
           </div>
-          <span class="text-sm font-semibold flex-none" style="color: #2C2039; width: 160px;">{{ f.nombre }}</span>
+          <span class="text-sm font-semibold flex-none" style="color: var(--color-unergy-deep); width: 160px;">{{ f.nombre }}</span>
           <span class="text-xs flex-1 min-w-0" style="color: #6b5a8a;">{{ f.detalle }}</span>
-          <span class="text-xs font-mono flex-none text-right" style="color: #2C2039; min-width: 90px;">
+          <span class="text-xs font-mono flex-none text-right" style="color: var(--color-unergy-deep); min-width: 90px;">
             {{ f.valor != null ? fmtKwh(f.valor) : (f.estado === 'na' ? 'n/a' : '—') }}
           </span>
-          <span v-if="f.usado" class="text-[10px] font-bold text-white rounded-full px-2 py-0.5 flex-none" style="background: #915BD8;">USADO</span>
+          <span v-if="f.usado" class="text-[10px] font-bold text-white rounded-full px-2 py-0.5 flex-none" style="background: var(--color-unergy-purple);">USADO</span>
         </div>
       </div>
       <p v-if="detalle.recuperacion_datos" class="text-[11px] mt-3" style="color: #9b89b5;">
@@ -258,10 +258,10 @@
                    style="border-bottom: 1px solid #e8e0f0;"
                    @click="!op.disabled && elegirFuenteReportar(op)">
                 <div class="min-w-0">
-                  <div class="text-xs font-semibold" style="color: #2C2039;">{{ op.nombre }}</div>
+                  <div class="text-xs font-semibold" style="color: var(--color-unergy-deep);">{{ op.nombre }}</div>
                   <div v-if="op.nota" class="text-[10.5px]" style="color: #9b89b5;">{{ op.nota }}</div>
                 </div>
-                <div class="text-xs font-mono flex-none" style="color: #2C2039;">
+                <div class="text-xs font-mono flex-none" style="color: var(--color-unergy-deep);">
                   {{ op.valor != null ? fmtKwh(op.valor) : 'Sin dato' }}
                 </div>
               </div>
@@ -291,7 +291,7 @@
               Registrada por {{ exclusionActiva.creado_por || 'desconocido' }} el {{ fmtFechaHora(exclusionActiva.created_at) }}
             </p>
           </div>
-          <button type="button" class="text-xs font-semibold flex-none" style="color: #6E3FB8;" @click="iniciarEdicionExclusion">
+          <button type="button" class="text-xs font-semibold flex-none" style="color: var(--color-unergy-purple-dark);" @click="iniciarEdicionExclusion">
             <PencilIcon class="text-[10px] mr-1 size-[1em]" />Editar
           </button>
         </div>
@@ -299,7 +299,7 @@
           :loading="resolviendoExclusion" @click="resolverExclusionActual" />
       </template>
       <template v-else-if="exclusionActiva && editandoExclusion">
-        <p class="text-sm font-semibold mb-2" style="color: #2C2039;">Editar exclusión</p>
+        <p class="text-sm font-semibold mb-2" style="color: var(--color-unergy-deep);">Editar exclusión</p>
         <div class="flex flex-col gap-2 max-w-lg">
           <div class="flex gap-2 items-start">
             <Textarea v-model="nuevaExclusionMotivo" rows="1" placeholder="Motivo" class="text-xs flex-1" />
@@ -312,7 +312,7 @@
         </div>
       </template>
       <template v-else>
-        <p class="text-sm font-semibold" style="color: #2C2039;">Excluir temporalmente</p>
+        <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Excluir temporalmente</p>
         <p class="text-xs mb-3" style="color: #9b89b5;">
           No reporta ningún número automático mientras se resuelve el inconveniente/falla.
         </p>
@@ -333,7 +333,7 @@
          dos formas de guardar lo mismo. -->
     <div class="rounded-xl p-4 flex items-center justify-between gap-3" style="border: 1px solid #e8e0f0;">
       <div>
-        <p class="text-sm font-semibold" style="color: #2C2039;">Confirmar revisión</p>
+        <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Confirmar revisión</p>
         <p class="text-xs" style="color: #9b89b5;">
           Marca este día como revisado y listo para reportar.
         </p>
@@ -1257,7 +1257,7 @@ function fmtKwh(v) {
   font-family: ui-monospace, 'SF Mono', Consolas, monospace;
   font-size: 12px;
   font-weight: 700;
-  color: #2C2039;
+  color: var(--color-unergy-deep);
   padding: 0 10px;
   white-space: nowrap;
   background: #f9f7ff;
@@ -1270,7 +1270,7 @@ function fmtKwh(v) {
   background: transparent !important;
 }
 :deep(.celda-input:focus) {
-  outline: 2px solid #915BD8;
+  outline: 2px solid var(--color-unergy-purple);
   outline-offset: -2px;
 }
 </style>

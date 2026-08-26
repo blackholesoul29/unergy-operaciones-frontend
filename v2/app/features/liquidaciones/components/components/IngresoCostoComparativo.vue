@@ -1,8 +1,8 @@
 <template>
   <div class="bg-white rounded-xl shadow-sm border overflow-hidden" style="border-color:#e8e0f0">
     <div class="px-3 py-2 flex items-center gap-2 border-b" style="border-color:#f0ebf6">
-      <ChartColumnIcon class="text-sm size-[1em]" style="color:#915BD8" />
-      <h3 class="text-sm font-bold" style="color:#2C2039">Este mes vs promedio del proyecto</h3>
+      <ChartColumnIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
+      <h3 class="text-sm font-bold" style="color:var(--color-unergy-deep)">Este mes vs promedio del proyecto</h3>
       <span v-if="mesesHist" class="ml-auto text-[10px]" style="color:#9b8fb0">promedio de {{ mesesHist }} mes(es) anteriores</span>
     </div>
 

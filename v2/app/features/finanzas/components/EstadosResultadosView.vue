@@ -100,7 +100,7 @@
                 <FileSpreadsheetIcon class="mr-2 text-xs size-[1em]" style="color:#1D6F42" />
                 <span :title="a.nombre">{{ a.descripcion || 'Cruce de facturas' }}</span>
                 <span v-if="a.es_copia" class="ml-2 text-[10px] px-1.5 py-0.5 rounded"
-                      style="background:#F1EAF9; color:#6E3FB8" title="Duplicado creado en Drive">copia</span>
+                      style="background:#F1EAF9; color:var(--color-unergy-purple-dark)" title="Duplicado creado en Drive">copia</span>
               </td>
               <td class="px-4 py-2 text-xs text-gray-500">{{ fmtPeriodo(a.mes, a.anio) }}</td>
               <td v-if="tipo === 'cruce_facturas'" class="px-4 py-2 text-xs font-mono uppercase">{{ a.version || '—' }}</td>
@@ -471,6 +471,6 @@ function generarCrudo() {
   color: #6B5A8A; border-radius: 6px; cursor: pointer; transition: all .15s;
   white-space: nowrap;
 }
-.er-toggle-btn:hover:not(.er-toggle-btn--on) { color: #2C2039; background: rgba(145, 91, 216, .08); }
-.er-toggle-btn--on { background: #915BD8; color: #FDFAF7; box-shadow: 0 1px 4px rgba(145, 91, 216, .3); }
+.er-toggle-btn:hover:not(.er-toggle-btn--on) { color: var(--color-unergy-deep); background: rgba(145, 91, 216, .08); }
+.er-toggle-btn--on { background: var(--color-unergy-purple); color: var(--color-unergy-avena); box-shadow: 0 1px 4px rgba(145, 91, 216, .3); }
 </style>

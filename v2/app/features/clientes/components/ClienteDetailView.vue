@@ -47,7 +47,7 @@
               Servicios contratados
             </h3>
             <div v-if="loadingServiciosContratos" class="flex justify-center py-6">
-              <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: #915BD8;" />
+              <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
             </div>
             <div v-else-if="serviciosContratos.length === 0"
               class="text-sm text-center py-4 rounded-xl" style="color:#bba8d4; border: 1.5px dashed #e8e0f0;">
@@ -57,8 +57,8 @@
               <div v-for="g in serviciosContratos" :key="g.servicio"
                 class="rounded-xl overflow-hidden" style="border: 1.5px solid #e8e0f0;">
                 <div class="flex items-center gap-2 px-4 py-2.5" style="background: #faf8fd;">
-                  <span class="text-sm font-bold" style="color: #2C2039;">{{ servicioAplicaLabel(g.servicio) }}</span>
-                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:#f0ebfd;color:#915BD8;">
+                  <span class="text-sm font-bold" style="color: var(--color-unergy-deep);">{{ servicioAplicaLabel(g.servicio) }}</span>
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-full" style="background:#f0ebfd;color:var(--color-unergy-purple);">
                     {{ g.num_plantas }} {{ g.num_plantas === 1 ? 'planta' : 'plantas' }}
                   </span>
                   <span v-if="g.semaforo && g.semaforo !== 'vigente'"
@@ -71,7 +71,7 @@
                   <div v-for="c in g.contratos" :key="c.contrato_id"
                     class="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5">
                     <div class="min-w-0">
-                      <p class="text-sm font-semibold truncate" style="color: #2C2039;">
+                      <p class="text-sm font-semibold truncate" style="color: var(--color-unergy-deep);">
                         {{ c.proyecto_nombre || 'Sin planta' }}
                       </p>
                       <p class="text-xs" style="color: #6b5a8a;">
@@ -85,7 +85,7 @@
                         {{ SEMAFORO[c.semaforo].label }}
                       </span>
                       <a v-if="c.enlace_drive" :href="c.enlace_drive" target="_blank" rel="noopener"
-                        class="text-xs font-semibold flex items-center gap-1 hover:underline" style="color: #915BD8;">
+                        class="text-xs font-semibold flex items-center gap-1 hover:underline" style="color: var(--color-unergy-purple);">
                         <ExternalLinkIcon class="text-xs size-[1em]" /> Abrir contrato
                       </a>
                       <span v-else class="text-xs italic" style="color:#bba8d4;">Sin link</span>
@@ -101,7 +101,7 @@
             <p class="text-sm" style="color: #6b5a8a;">Servicios registrados manualmente.</p>
             <button @click="abrirDialogoServicio"
               class="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5"
-              style="background: #915BD8;">
+              style="background: var(--color-unergy-purple);">
               <PlusIcon class="text-xs size-[1em]" /> Agregar servicio
             </button>
           </div>
@@ -121,7 +121,7 @@
                     {{ s.tipo[0].toUpperCase() }}
                   </div>
                   <div>
-                    <p class="text-sm font-semibold capitalize" style="color: #2C2039;">{{ servicioLabel(s.tipo) }}</p>
+                    <p class="text-sm font-semibold capitalize" style="color: var(--color-unergy-deep);">{{ servicioLabel(s.tipo) }}</p>
                     <p v-if="s.fecha_inicio" class="text-xs" style="color: #9b89b5;">
                       Desde {{ formatDate(s.fecha_inicio) }}
                     </p>
@@ -139,10 +139,10 @@
                     style="background: #f8f5fd;">
                     <div class="flex items-center gap-2">
                       <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                        :style="tipo === 'oferta' ? 'background:#f0ebfd;color:#915BD8' : 'background:#e8f5e9;color:#2e7d32'">
+                        :style="tipo === 'oferta' ? 'background:#f0ebfd;color:var(--color-unergy-purple)' : 'background:#e8f5e9;color:#2e7d32'">
                         {{ tipo === 'oferta' ? 'Oferta' : 'Contrato' }}
                       </span>
-                      <span v-if="docDeServicio(s.id, tipo)" class="text-xs truncate max-w-32" style="color:#2C2039;">
+                      <span v-if="docDeServicio(s.id, tipo)" class="text-xs truncate max-w-32" style="color:var(--color-unergy-deep);">
                         {{ docDeServicio(s.id, tipo).archivo_nombre || docDeServicio(s.id, tipo).nombre }}
                       </span>
                       <span v-else class="text-xs italic" style="color:#bba8d4;">Sin archivo</span>
@@ -150,7 +150,7 @@
                     <div class="flex items-center gap-1">
                       <a v-if="docDeServicio(s.id, tipo)?.archivo_url"
                         :href="docDeServicio(s.id, tipo).archivo_url" target="_blank"
-                        class="text-xs hover:underline flex items-center gap-0.5" style="color: #915BD8;">
+                        class="text-xs hover:underline flex items-center gap-0.5" style="color: var(--color-unergy-purple);">
                         <ExternalLinkIcon class="text-xs size-[1em]" />
                       </a>
                       <button v-if="docDeServicio(s.id, tipo)"
@@ -159,7 +159,7 @@
                         <PencilIcon class="size-[1em]" />
                       </button>
                       <button v-else @click="abrirDialogoDocumento(null, tipo, s.id)"
-                        class="text-xs font-medium" style="color:#915BD8;">
+                        class="text-xs font-medium" style="color:var(--color-unergy-purple);">
                         + Subir
                       </button>
                     </div>
@@ -176,7 +176,7 @@
             <p class="text-sm" style="color: #6b5a8a;">Documentos del cliente: identificación y comerciales.</p>
             <button @click="abrirDialogoDocumento(null)"
               class="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5"
-              style="background: #915BD8;">
+              style="background: var(--color-unergy-purple);">
               <PlusIcon class="text-xs size-[1em]" /> Agregar documento
             </button>
           </div>
@@ -200,7 +200,7 @@
                     {{ tipoLabel(doc.tipo) }}
                   </span>
                   <div>
-                    <p class="text-sm font-medium" style="color: #2C2039;">
+                    <p class="text-sm font-medium" style="color: var(--color-unergy-deep);">
                       {{ doc.archivo_nombre || doc.nombre }}
                     </p>
                     <p v-if="doc.notas" class="text-xs" style="color: #9b89b5;">{{ doc.notas }}</p>
@@ -208,7 +208,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <a v-if="doc.archivo_url" :href="doc.archivo_url" target="_blank"
-                    class="text-xs hover:underline flex items-center gap-1" style="color: #915BD8;">
+                    class="text-xs hover:underline flex items-center gap-1" style="color: var(--color-unergy-purple);">
                     <ExternalLinkIcon class="text-xs size-[1em]" /> Ver
                   </a>
                   <button @click="abrirDialogoDocumento(doc)" style="color: #6b5a8a;" class="hover:text-purple-700">
@@ -237,7 +237,7 @@
                     {{ tipoLabel(doc.tipo) }}
                   </span>
                   <div>
-                    <p class="text-sm font-medium" style="color: #2C2039;">{{ doc.nombre }}</p>
+                    <p class="text-sm font-medium" style="color: var(--color-unergy-deep);">{{ doc.nombre }}</p>
                     <p class="text-xs" style="color: #9b89b5;">
                       {{ doc.numero ? `N° ${doc.numero} · ` : '' }}{{ estadoLabel(doc.estado) }}{{ doc.fecha ? ' · ' + formatDate(doc.fecha) : '' }}
                     </p>
@@ -245,7 +245,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <a v-if="doc.archivo_url" :href="doc.archivo_url" target="_blank"
-                    class="text-xs hover:underline flex items-center gap-1" style="color: #915BD8;">
+                    class="text-xs hover:underline flex items-center gap-1" style="color: var(--color-unergy-purple);">
                     <ExternalLinkIcon class="text-xs size-[1em]" /> Ver
                   </a>
                   <button @click="abrirDialogoDocumento(doc)" style="color: #6b5a8a;" class="hover:text-purple-700">
@@ -265,7 +265,7 @@
         <div v-if="activeTab === 'proyectos'" class="space-y-4">
           <p class="text-sm" style="color: #6b5a8a;">Proyectos asociados a este cliente.</p>
           <div v-if="loadingRelated" class="flex justify-center py-8">
-            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: #915BD8;" />
+            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
           </div>
           <div v-else-if="clienteProyectos.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
             No hay proyectos vinculados a este cliente.
@@ -276,10 +276,10 @@
               style="border: 1.5px solid #e8e0f0;">
               <div class="flex items-center gap-3">
                 <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: rgba(145,91,216,0.1);">
-                  <ZapIcon class="text-sm size-[1em]" style="color: #915BD8;" />
+                  <ZapIcon class="text-sm size-[1em]" style="color: var(--color-unergy-purple);" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold" style="color: #2C2039;">{{ p.nombre_comercial }}</p>
+                  <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">{{ p.nombre_comercial }}</p>
                   <p class="text-xs" style="color: #6b5a8a;">
                     {{ [p.municipio, p.departamento].filter(Boolean).join(', ') || '—' }}
                     <span v-if="p.potencia_instalada_kwp" class="ml-2">{{ p.potencia_instalada_kwp }} kW AC</span>
@@ -291,7 +291,7 @@
                   :style="p.estado === 'en_operacion' ? 'background:rgba(16,185,129,0.1);color:#10B981' : 'background:rgba(240,192,64,0.1);color:#CA8A04'">
                   {{ p.estado === 'en_operacion' ? 'En operación' : p.estado }}
                 </span>
-                <ChevronRightIcon class="text-xs size-[1em]" style="color: #915BD8;" />
+                <ChevronRightIcon class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
               </div>
             </RouterLink>
           </div>
@@ -301,7 +301,7 @@
         <div v-if="activeTab === 'fronteras'" class="space-y-4">
           <p class="text-sm" style="color: #6b5a8a;">Fronteras comerciales del cliente.</p>
           <div v-if="loadingRelated" class="flex justify-center py-8">
-            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: #915BD8;" />
+            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
           </div>
           <div v-else-if="clienteFronteras.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
             No hay fronteras registradas para este cliente.
@@ -315,7 +315,7 @@
                   <GlobeIcon class="text-sm size-[1em]" style="color: #3B82F6;" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold font-mono" style="color: #2C2039;">{{ f.codigo_frontera }}</p>
+                  <p class="text-sm font-semibold font-mono" style="color: var(--color-unergy-deep);">{{ f.codigo_frontera }}</p>
                   <p class="text-xs" style="color: #6b5a8a;">{{ f.nombre_frontera || '—' }}</p>
                 </div>
               </div>
@@ -331,7 +331,7 @@
         <div v-if="activeTab === 'ppa'" class="space-y-4">
           <p class="text-sm" style="color: #6b5a8a;">Contratos PPA vinculados al cliente.</p>
           <div v-if="loadingRelated" class="flex justify-center py-8">
-            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: #915BD8;" />
+            <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
           </div>
           <div v-else-if="clientePPA.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
             No hay contratos PPA para este cliente.
@@ -345,14 +345,14 @@
                   <FilePenIcon class="text-sm size-[1em]" style="color: #F59E0B;" />
                 </div>
                 <div>
-                  <p class="text-sm font-semibold" style="color: #2C2039;">{{ c.nombre_interno || c.numero_codigo_contrato || 'Sin nombre' }}</p>
+                  <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">{{ c.nombre_interno || c.numero_codigo_contrato || 'Sin nombre' }}</p>
                   <p class="text-xs" style="color: #6b5a8a;">
                     {{ c.comprador_nombre || '—' }} → {{ c.vendedor_nombre || '—' }}
                     <span v-if="c.fecha_inicio"> · {{ c.fecha_inicio }} a {{ c.fecha_fin || '—' }}</span>
                   </p>
                 </div>
               </div>
-              <ChevronRightIcon class="text-xs size-[1em]" style="color: #915BD8;" />
+              <ChevronRightIcon class="text-xs size-[1em]" style="color: var(--color-unergy-purple);" />
             </RouterLink>
           </div>
         </div>
@@ -363,40 +363,40 @@
 
   <!-- Loading -->
   <div v-else class="flex items-center justify-center py-20">
-    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: #915BD8;" />
+    <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
   </div>
 
   <!-- ── Dialog: Agregar servicio ── -->
   <Dialog v-model:visible="dialogServicio" modal header="Agregar servicio" class="w-full max-w-sm">
     <div class="space-y-4 pt-2">
       <div>
-        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
+        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">
           Tipo de servicio *
         </label>
         <Select v-model="nuevoServicio.tipo" :options="serviciosDisponibles"
           optionLabel="label" optionValue="value" class="w-full" placeholder="Seleccionar" />
       </div>
       <div>
-        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
+        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">
           Fecha de inicio
         </label>
         <DatePicker v-model="nuevoServicio.fecha_inicio" class="w-full" dateFormat="dd/mm/yy" showButtonBar />
       </div>
       <div>
-        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Notas</label>
+        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Notas</label>
         <Textarea v-model="nuevoServicio.notas" class="w-full" rows="2" />
       </div>
     </div>
     <template #footer>
       <Button label="Cancelar" severity="secondary" @click="dialogServicio = false" />
       <Button label="Confirmar y agregar" :disabled="!nuevoServicio.tipo" @click="confirmarServicio"
-        style="background: #915BD8; border-color: #915BD8;" />
+        style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);" />
     </template>
   </Dialog>
 
   <!-- ── Dialog: Confirmar agregar servicio ── -->
   <Dialog v-model:visible="dialogConfirmServicio" modal header="¿Está seguro?" class="w-full max-w-sm">
-    <div class="py-2 text-sm" style="color: #2C2039;">
+    <div class="py-2 text-sm" style="color: var(--color-unergy-deep);">
       ¿Confirma agregar el servicio
       <strong>{{ servicioLabel(nuevoServicio.tipo) }}</strong>
       al cliente <strong>{{ formatearNombre(cliente?.razon_social_nombre) }}</strong>?
@@ -404,7 +404,7 @@
     <template #footer>
       <Button label="Cancelar" severity="secondary" @click="dialogConfirmServicio = false" />
       <Button label="Sí, agregar" @click="guardarServicio"
-        style="background: #915BD8; border-color: #915BD8;" />
+        style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);" />
     </template>
   </Dialog>
 
@@ -417,14 +417,14 @@
 
         <!-- Tipo -->
         <div class="col-span-2">
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Tipo *</label>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Tipo *</label>
           <Select v-model="formDoc.tipo" :options="TIPOS_DOC" optionLabel="label" optionValue="value"
             class="w-full" placeholder="Seleccionar tipo" @change="onTipoChange" />
         </div>
 
         <!-- Servicio (solo para oferta/contrato) -->
         <div v-if="formDoc.tipo === 'oferta' || formDoc.tipo === 'contrato'" class="col-span-2">
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">
             Servicio relacionado
           </label>
           <Select v-model="formDoc.servicio_id" :options="opcionesServicio" optionLabel="label" optionValue="value"
@@ -433,22 +433,22 @@
 
         <!-- Nombre -->
         <div class="col-span-2">
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Nombre *</label>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Nombre *</label>
           <InputText v-model="formDoc.nombre" class="w-full" placeholder="Ej: RUT Empresa XYZ" />
         </div>
 
         <!-- Estado (solo oferta/contrato) -->
         <template v-if="formDoc.tipo === 'oferta' || formDoc.tipo === 'contrato'">
           <div>
-            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Estado</label>
+            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Estado</label>
             <Select v-model="formDoc.estado" :options="ESTADOS_DOC" optionLabel="label" optionValue="value" class="w-full" />
           </div>
           <div>
-            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Número</label>
+            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Número</label>
             <InputText v-model="formDoc.numero" class="w-full" placeholder="Ej: OFR-001" />
           </div>
           <div>
-            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Fecha</label>
+            <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Fecha</label>
             <DatePicker v-model="formDoc.fecha" class="w-full" dateFormat="dd/mm/yy" showButtonBar />
           </div>
           <div />
@@ -456,7 +456,7 @@
 
         <!-- Archivo -->
         <div class="col-span-2">
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">
             Archivo (PDF, JPG, PNG — máx. 20 MB)
           </label>
           <div class="flex items-center gap-3">
@@ -466,7 +466,7 @@
               {{ archivoSeleccionado ? 'Cambiar' : 'Seleccionar archivo' }}
               <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" class="hidden" @change="onArchivoChange" />
             </label>
-            <span v-if="archivoSeleccionado" class="text-sm truncate max-w-48" style="color: #2C2039;">
+            <span v-if="archivoSeleccionado" class="text-sm truncate max-w-48" style="color: var(--color-unergy-deep);">
               {{ archivoSeleccionado.name }}
             </span>
             <span v-else-if="formDoc.archivo_nombre" class="text-sm truncate max-w-48" style="color: #9b89b5;">
@@ -477,7 +477,7 @@
 
         <!-- URL alternativa -->
         <div class="col-span-2">
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">
             O pega un enlace (Google Drive, OneDrive)
           </label>
           <InputText v-model="formDoc.archivo_url" class="w-full" placeholder="https://drive.google.com/..."
@@ -486,7 +486,7 @@
 
         <!-- Notas -->
         <div class="col-span-2">
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: #2C2039;">Notas</label>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Notas</label>
           <Textarea v-model="formDoc.notas" class="w-full" rows="2" />
         </div>
 
@@ -496,7 +496,7 @@
       <Button label="Cancelar" severity="secondary" @click="dialogDocumento = false" />
       <Button label="Guardar" :disabled="!formDoc.tipo || !formDoc.nombre || guardando"
         :loading="guardando" @click="guardarDocumento"
-        style="background: #915BD8; border-color: #915BD8;" />
+        style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);" />
     </template>
   </Dialog>
 </template>

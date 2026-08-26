@@ -21,9 +21,9 @@
           <template #icon><ArrowLeftIcon class="size-[1em]" /></template>
         </Button>
         <div>
-          <h1 class="text-xl font-semibold" style="color:#2C2039">{{ op.nombre }}</h1>
+          <h1 class="text-xl font-semibold" style="color:var(--color-unergy-deep)">{{ op.nombre }}</h1>
           <div class="flex items-center gap-2 text-sm">
-            <router-link :to="`/clientes/${op.cliente_id}`" class="underline" style="color:#915BD8">
+            <router-link :to="`/clientes/${op.cliente_id}`" class="underline" style="color:var(--color-unergy-purple)">
               {{ op.cliente_razon_social }}
             </router-link>
             <span v-if="op.cliente_nit" style="color:#9b89b5">NIT {{ op.cliente_nit }}</span>
@@ -95,7 +95,7 @@
 
       <TabPanel header="Proyectos y contratos">
         <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-semibold" style="color:#2C2039">
+          <h3 class="text-sm font-semibold" style="color:var(--color-unergy-deep)">
             {{ op.proyectos.length }} proyecto(s) vinculados
           </h3>
           <Button label="Agregar proyecto" size="small" @click="showAgregarProyecto = true">
@@ -120,7 +120,7 @@
           <template #empty><span style="color:#9b89b5">Sin proyectos vinculados.</span></template>
         </DataTable>
 
-        <h3 class="text-sm font-semibold mb-1" style="color:#2C2039">Contratos PPA del cliente</h3>
+        <h3 class="text-sm font-semibold mb-1" style="color:var(--color-unergy-deep)">Contratos PPA del cliente</h3>
         <p class="text-xs mb-2" style="color:#9b89b5">
           Los que salen de una oferta se crean con <strong>Firmar → crear PPA</strong> desde el
           tablero, para que queden enlazados a ella.
@@ -135,7 +135,7 @@
         </DataTable>
 
         <div class="flex items-center justify-between mb-1">
-          <h3 class="text-sm font-semibold" style="color:#2C2039">Contratos de representación</h3>
+          <h3 class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Contratos de representación</h3>
           <Button label="Nuevo contrato de representación" size="small" severity="secondary" outlined @click="showRepWizard = true">
             <template #icon><PlusIcon class="size-[1em]" /></template>
           </Button>
@@ -160,7 +160,7 @@
       <TabPanel header="Documentos y bitácora">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <h3 class="text-sm font-semibold mb-1" style="color:#2C2039">Documentos comerciales</h3>
+            <h3 class="text-sm font-semibold mb-1" style="color:var(--color-unergy-deep)">Documentos comerciales</h3>
             <p class="text-xs mb-3" style="color:#9b89b5">
               Se guardan como documentos del cliente, vinculados a este negocio. La subida
               del archivo y el cambio de estado se hacen en la ficha del cliente.
@@ -177,7 +177,7 @@
                         Nº {{ docPorTipo(t.value).numero }}
                       </span>
                       <a v-if="docPorTipo(t.value).archivo_url" :href="docPorTipo(t.value).archivo_url"
-                         target="_blank" rel="noopener" class="text-xs underline" style="color:#915BD8">
+                         target="_blank" rel="noopener" class="text-xs underline" style="color:var(--color-unergy-purple)">
                         {{ docPorTipo(t.value).archivo_nombre || 'archivo' }}
                       </a>
                     </template>

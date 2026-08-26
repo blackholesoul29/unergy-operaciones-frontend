@@ -47,9 +47,9 @@
                 <th rowspan="2" class="sticky-col text-left px-4 py-2.5 font-medium text-gray-500 text-xs
                                         uppercase tracking-wide align-bottom" style="min-width:240px">Proyecto</th>
                 <th colspan="2" class="text-center px-3 py-2 font-semibold text-[11px] uppercase tracking-wide"
-                    style="color:#2C2039; border-left:1px solid #EEE;">ID liquidaciones</th>
+                    style="color:var(--color-unergy-deep); border-left:1px solid #EEE;">ID liquidaciones</th>
                 <th colspan="3" class="text-center px-3 py-2 font-semibold text-[11px] uppercase tracking-wide"
-                    style="color:#915BD8; border-left:1px solid #EEE;">ID Quoia</th>
+                    style="color:var(--color-unergy-purple); border-left:1px solid #EEE;">ID Quoia</th>
                 <th rowspan="2" class="px-3 py-2.5" style="width:56px"></th>
               </tr>
               <tr class="bg-gray-50 border-b border-gray-100">
