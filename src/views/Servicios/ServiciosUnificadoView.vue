@@ -1343,9 +1343,24 @@ function tipTarifa(fila, t) {
 
 // El enlace de la celda va a la ficha del servicio que se está mirando; para
 // Operación y REC no hay sub-vista propia, así que abre la ficha de la planta.
+// Sub-vista de la planta que corresponde al servicio abierto. REC no tiene ficha
+// propia (no hay ruta /proyectos/:id/rec), así que cae a la ficha general.
+const SUBVISTA_POR_SERVICIO = {
+  representacion: 'representacion',
+  operacion: 'operacion',
+}
+
+// Un solo lugar decide a dónde se va, y lo usan tanto el enlace del nombre de la
+// planta como el botón de editar. Estaban separados y divergieron: el botón
+// mandaba siempre a /operacion, así que desde Representación abría la pestaña
+// equivocada.
+function fichaDelServicio(proyectoId) {
+  const sub = SUBVISTA_POR_SERVICIO[servicio.value]
+  return sub ? `/proyectos/${proyectoId}/${sub}` : `/proyectos/${proyectoId}`
+}
+
 function destinoProyecto(fila) {
-  const base = `/proyectos/${fila.proyecto.id}`
-  return esRepresentacion.value ? `${base}/representacion` : base
+  return fichaDelServicio(fila.proyecto.id)
 }
 
 // Contratos de representación sin planta asociada: son datos por corregir, no
@@ -1736,11 +1751,14 @@ function confirmarBorrarCliente(row) {
 // desde la pestaña Operación de su planta, que es donde viven tarifas y pagos.
 function irAEditarContratoServicio(row) {
   if (!row.proyecto_id) {
+    // Sin planta no hay ficha donde abrirlo, pero sí se puede asociar: se
+    // ofrece eso en vez de dejar el aviso en un callejón sin salida.
     toast.add({ severity: 'warn', summary: 'Sin planta asociada',
-      detail: 'Este contrato no tiene proyecto_id, así que no hay página donde editarlo.', life: 5000 })
+      detail: 'Asócialo a un proyecto (botón 🔗) y podrás editarlo en su ficha.',
+      life: 5000 })
     return
   }
-  ir(`/proyectos/${row.proyecto_id}/operacion`)
+  ir(fichaDelServicio(row.proyecto_id))
 }
 
 function confirmarBorrarContratoServicio(row) {
