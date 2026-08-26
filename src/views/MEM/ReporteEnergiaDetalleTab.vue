@@ -132,6 +132,8 @@
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Curva reportada (24 h)</p>
       <CurvaChart
         :final="detalle.curva_final"
+        :respaldo="detalle.curva_respaldo_reportada"
+        :respaldoOrigen="detalle.respaldo_reportado_origen"
         :medidor="detalle.curva_medidor_principal || detalle.curva_medidor_respaldo"
         :medidorLabel="medidorGraficadoLabel"
         :solenium="detalle.curva_solenium"

@@ -1,7 +1,10 @@
 <template>
   <div>
     <div class="flex flex-wrap gap-2 mb-3 text-xs">
-      <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Final reportada</span>
+      <span v-if="!finalVacia" class="chip" style="border-color:#915BD8;color:#915BD8;">● Principal reportada</span>
+      <span v-if="respaldoPath" class="chip" style="border-color:#DB2777;color:#DB2777;">
+        ✚ Respaldo reportado{{ respaldoOrigen === 'estimado' ? ' (estimado ±1%)' : ' (real)' }}
+      </span>
       <span v-if="medidorPath" class="chip" style="border-color:#3B82F6;color:#3B82F6;">■ {{ medidorLabel }}</span>
       <span v-if="soleniumPath" class="chip" style="border-color:#0D9488;color:#0D9488;">▲ Solenium</span>
       <span v-if="reconectadorPath" class="chip" style="border-color:#9c8b68;color:#7a6a48;">⬥ Reconectador</span>
@@ -31,6 +34,17 @@
                 :transform="`rotate(45 ${x(h - 1)} ${y(val(finalCurve, h - 1))})`" />
           <circle v-else :cx="x(h - 1)" :cy="y(val(finalCurve, h - 1))" r="3.2" fill="#915BD8" stroke="white" stroke-width="1.5" />
         </template>
+      </template>
+
+      <!-- Respaldo reportado -- lo que /enviar realmente manda como "Backup"
+           a Quoia, real o estimado (ver respaldoOrigen). Se dibuja antes de
+           Medidor/Solenium para que sus marcadores no queden tapados. -->
+      <path v-if="respaldoPath" :d="respaldoPath" fill="none" stroke="#DB2777" stroke-width="2"
+            :stroke-dasharray="respaldoOrigen === 'estimado' ? '5 3' : null" />
+      <template v-if="respaldoPath">
+        <path v-for="h in 24" :key="'rp' + h"
+              :d="crucePoints(x(h - 1), y(val(respaldo, h - 1)))"
+              stroke="#DB2777" stroke-width="1.5" />
       </template>
 
       <path v-if="medidorPath" :d="medidorPath" fill="none" stroke="#3B82F6" stroke-width="2" />
@@ -76,6 +90,11 @@ import { computed } from 'vue'
 
 const props = defineProps({
   final: { type: Array, default: () => Array(24).fill(null) },
+  // Lo que /enviar realmente manda como "Backup" a Quoia -- real (dato del
+  // medidor de respaldo, dentro de tolerancia) o estimado (fórmula ±1%).
+  // Ver respaldoOrigen para distinguir cuál es.
+  respaldo: { type: Array, default: null },
+  respaldoOrigen: { type: String, default: null }, // 'terceros' | 'medidor' | 'estimado'
   medidor: { type: Array, default: null },
   // Cuál medidor viene en la prop `medidor` -- el padre resuelve principal
   // con fallback a respaldo, así que la etiqueta no puede ser fija (pedido
@@ -133,12 +152,18 @@ function trianguloPoints(cx, cy) {
   const r = 4
   return `${cx},${cy - r} ${cx - r},${cy + r} ${cx + r},${cy + r}`
 }
+// Cruz ('+') centrada en (cx, cy) -- marcador propio de Respaldo reportado,
+// distinto de los demás (círculo/cuadrado/triángulo/rombo).
+function crucePoints(cx, cy) {
+  const r = 4
+  return `M${cx - r},${cy} L${cx + r},${cy} M${cx},${cy - r} L${cx},${cy + r}`
+}
 
 const capacidadKwh = computed(() => (props.capacidadMw != null ? props.capacidadMw * 1000 : null))
 const capacidadMwFmt = computed(() => (props.capacidadMw != null ? props.capacidadMw.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : ''))
 
 const maxV = computed(() => {
-  const all = [...finalCurve.value, ...(props.medidor || []), ...(props.solenium || []), ...(props.reconectador || [])]
+  const all = [...finalCurve.value, ...(props.respaldo || []), ...(props.medidor || []), ...(props.solenium || []), ...(props.reconectador || [])]
     .filter((v) => v !== null && v !== undefined)
     .map(Number)
   // La linea de capacidad tambien entra en el calculo del eje -- si la
@@ -180,6 +205,7 @@ const finalArea = computed(() => {
   if (!base) return ''
   return base + ` L${x(23).toFixed(1)},${(padT + plotH).toFixed(1)} L${x(0).toFixed(1)},${(padT + plotH).toFixed(1)} Z`
 })
+const respaldoPath = computed(() => pathDe(conCeros(props.respaldo)))
 const medidorPath = computed(() => pathDe(conCeros(props.medidor)))
 const soleniumPath = computed(() => pathDe(conCeros(props.solenium)))
 const reconectadorPath = computed(() => pathDe(conCeros(props.reconectador)))
