@@ -8,7 +8,6 @@
         <p class="text-sm font-bold" style="color: #2C2039;">{{ detalle.nombre_proyecto }}</p>
         <div class="text-xs font-mono" style="color: #9b89b5;">
           {{ detalle.fecha }}
-          <span v-if="categoriaEstadoReporte(detalle.estado_reporte) === 'error'"> · Estado reporte {{ detalle.estado_reporte }}</span>
         </div>
       </div>
       <Tag v-if="detalle.revisar_manualmente" value="Revisar manualmente" severity="danger" />
