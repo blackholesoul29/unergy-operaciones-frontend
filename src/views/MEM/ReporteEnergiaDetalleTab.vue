@@ -185,7 +185,7 @@
     <!-- Edición manual -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Corrección manual (kWh)</p>
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-nowrap gap-4 overflow-x-auto">
         <table class="tabla-horas">
           <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
           <tbody>
