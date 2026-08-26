@@ -353,11 +353,16 @@ async function enviarSeleccionados() {
     }, { timeout: 300000 }) // "Operaciones Unergy" (todas las fronteras) puede tardar >150s el ultimo dia del mes (se adjunta ademas el resumen mensual) -- medido en produccion 2026-08-12
     const ok = data.resultados.filter(r => r.ok)
     const conError = data.resultados.filter(r => !r.ok)
+    const conWarning = data.resultados.filter(r => r.ok && r.warning)
+    const detalles = [
+      ...conError.map(r => `${r.nombre}: ${r.error}`),
+      ...conWarning.map(r => `${r.nombre}: ${r.warning}`),
+    ]
     toast.add({
-      severity: conError.length ? 'warn' : 'success',
-      summary: `${ok.length} enviado${ok.length === 1 ? '' : 's'}${conError.length ? `, ${conError.length} con error` : ''}`,
-      detail: conError.length ? conError.map(r => `${r.nombre}: ${r.error}`).join(' · ') : undefined,
-      life: 6000,
+      severity: conError.length ? 'warn' : (conWarning.length ? 'warn' : 'success'),
+      summary: `${ok.length} enviado${ok.length === 1 ? '' : 's'}${conError.length ? `, ${conError.length} con error` : ''}${conWarning.length ? `, ${conWarning.length} con advertencia` : ''}`,
+      detail: detalles.length ? detalles.join(' · ') : undefined,
+      life: 8000,
     })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al enviar', detail: e.response?.data?.detail || e.message, life: 5000 })
