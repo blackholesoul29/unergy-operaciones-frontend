@@ -132,12 +132,10 @@
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Curva reportada (24 h)</p>
       <CurvaChart
         :final="detalle.curva_final"
-        :respaldo="detalle.curva_respaldo_reportada"
-        :respaldoOrigen="detalle.respaldo_reportado_origen"
-        :medidor="detalle.curva_medidor_principal || detalle.curva_medidor_respaldo"
-        :medidorLabel="medidorGraficadoLabel"
-        :solenium="detalle.curva_solenium"
-        :reconectador="detalle.curva_reconectador"
+        :medidorPrincipal="esCasoConfiado ? null : detalle.curva_medidor_principal"
+        :medidorRespaldo="esCasoConfiado ? null : detalle.curva_medidor_respaldo"
+        :solenium="esCasoConfiado ? null : detalle.curva_solenium"
+        :reconectador="esCasoConfiado ? null : detalle.curva_reconectador"
         :horasReconectador="detalle.horas_rellenadas_reconectador"
         :horasSolenium="detalle.horas_rellenadas_solenium"
         :horasHistorico="detalle.horas_rellenadas_historico"
@@ -1095,16 +1093,6 @@ function sumaCurva(arr) {
 // ya haber sido corregido a mano con el valor en vivo (ver 'Reportar con
 // otra fuente' -> 'Medidor X (actualizado)'); si no, la comparación se
 // vuelve redundante contra sí misma justo después de aplicar esa corrección.
-// La gráfica grafica curva_medidor_principal, con fallback a respaldo si el
-// principal no existe (ver :medidor más arriba) -- la etiqueta "Medidor" a
-// secas era ambigua, no dejaba claro cuál de los dos es (pedido 2026-08-20).
-const medidorGraficadoLabel = computed(() => {
-  const d = detalle.value
-  if (!d) return 'Medidor'
-  if (d.curva_medidor_principal) return 'Medidor principal'
-  if (d.curva_medidor_respaldo) return 'Medidor respaldo'
-  return 'Medidor'
-})
 
 const avisosMedidor = computed(() => {
   const d = detalle.value
