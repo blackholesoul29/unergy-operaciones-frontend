@@ -106,6 +106,10 @@ Query: `agente` (`UNGG`|`UNGC`), `esquema` (`semanal`|`mensual`), `cuantil` (flo
 }
 ```
 
+**Nota de contrato para el plan 3:** el frontend envía `horizonte` en todas las
+llamadas, también cuando `esquema=mensual`, donde no aplica. El backend debe
+**ignorarlo** en ese caso en vez de fallar o de dejarlo influir en cachés o logs.
+
 ### `GET /garantias/modelo/detalle/{id}`
 
 ```json
@@ -900,6 +904,10 @@ git commit -m "feat(garantias): tarjeta mensual con las cuatro fechas y la venta
 ---
 
 ## Task 9: Vista contenedor y registro de la tab
+
+> **Ejecutar la Task 10 ANTES que esta.** `ModeloPredictivoView.vue` importa
+> `DetalleDialog.vue`, que crea la Task 10. En el orden numérico, el `npm run build` de
+> esta tarea falla por el import faltante. Corregido al ejecutar: 10 primero, luego 9.
 
 **Files:**
 - Create: `src/views/Garantias/ModeloPredictivo/ModeloPredictivoView.vue`
