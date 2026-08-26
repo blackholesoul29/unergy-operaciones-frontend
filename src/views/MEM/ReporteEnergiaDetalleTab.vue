@@ -187,7 +187,7 @@
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Corrección manual (kWh)</p>
       <div class="flex flex-wrap gap-4">
         <table class="tabla-horas">
-          <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
           <tbody>
             <tr v-for="h in 12" :key="h - 1" :class="esHoraRellenada(h - 1) ? 'fila-rellenada' : ''">
               <td>{{ h - 1 }}h</td>
@@ -200,13 +200,14 @@
                 <InputText v-model="curvaRespaldoEditable[h - 1]" inputmode="decimal"
                            :placeholder="respaldoPlaceholder(h - 1)"
                            class="w-full text-xs text-right celda-input"
+                           :class="{ 'celda-respaldo-real': respaldoEsDatoReal }"
                            @paste="onPasteHoraRespaldo($event, h - 1)" />
               </td>
             </tr>
           </tbody>
         </table>
         <table class="tabla-horas">
-          <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
           <tbody>
             <tr v-for="h in 12" :key="h + 11" :class="esHoraRellenada(h + 11) ? 'fila-rellenada' : ''">
               <td>{{ h + 11 }}h</td>
@@ -219,15 +220,13 @@
                 <InputText v-model="curvaRespaldoEditable[h + 11]" inputmode="decimal"
                            :placeholder="respaldoPlaceholder(h + 11)"
                            class="w-full text-xs text-right celda-input"
+                           :class="{ 'celda-respaldo-real': respaldoEsDatoReal }"
                            @paste="onPasteHoraRespaldo($event, h + 11)" />
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p v-if="detalle.tipo === 'generacion'" class="text-xs mt-1" style="color: #9b89b5;">
-        Respaldo vacío = se calcula solo -- el número en gris de cada celda es lo que ya se está reportando ({{ etiquetaOrigenRespaldo }}). Si lo llenas a mano, se reporta tal cual.
-      </p>
       <div class="flex items-center gap-1.5 text-xs mt-2" style="color: #9b89b5;">
         <span class="inline-block rounded-sm" style="width: 12px; height: 12px; background: rgba(240, 192, 64, 0.35); border: 1px solid #F0C040;"></span>
         Hora rellenada
@@ -660,13 +659,27 @@ function limpiarCurva() {
 // (vacío = "no la toqué, calcúlala sola", ver guardarCurva) -- sin esto no
 // había forma de ver en la tabla lo que ya se está reportando, solo en el
 // gráfico (confuso: parecía que Respaldo no tenía dato, ver 2026-08-25).
+// Solo dos opciones en el encabezado -- "Medidor" agrupa cualquier dato real
+// (terceros, el medidor de respaldo detectado solo, o confirmado a mano: si
+// alguien lo escribió a mano ya lo está viendo tal cual en la celda, no hace
+// falta una tercera etiqueta para eso, la propia acción de escribir y
+// guardar YA es la confirmación). "Estimado ±1%" es la única otra opción.
 const etiquetaOrigenRespaldo = computed(() => {
   const origen = detalle.value?.respaldo_reportado_origen
-  if (origen === 'terceros') return 'dato real, Excel de terceros'
-  if (origen === 'medidor') return 'dato real del medidor de respaldo'
-  if (origen === 'manual') return 'confirmado a mano'
-  if (origen === 'estimado') return 'estimado ±1%'
+  if (origen === 'terceros' || origen === 'medidor' || origen === 'manual') return 'Medidor'
+  if (origen === 'estimado') return 'Estimado ±1%'
   return 'sin calcular aún'
+})
+
+// Estimado (o sin calcular) es un número provisional, inventado por la
+// fórmula -- ahí sí tiene sentido que se vea como placeholder (tenue, "esto
+// es solo una pista"). Los otros tres orígenes son dato real y definitivo
+// que YA se está reportando -- mostrarlo desvanecido como si fuera una
+// sugerencia era engañoso (2026-08-25), así que se ve como texto sólido
+// aunque la celda siga técnicamente vacía (nadie escribió nada ahí).
+const respaldoEsDatoReal = computed(() => {
+  const origen = detalle.value?.respaldo_reportado_origen
+  return origen === 'terceros' || origen === 'medidor' || origen === 'manual'
 })
 
 function respaldoPlaceholder(h) {
@@ -862,15 +875,16 @@ const opcionesReportarCon = computed(() => {
 function elegirFuenteReportar(op) {
   mostrarMenuReportar.value = false
   curvaEditable.value = [...op.curva]
-  // Solo 'Medidor principal' precarga la columna de Respaldo -- ahí sí hay
-  // un dato real de OTRO medidor para comparar/confirmar. Para las demás
-  // opciones (Medidor respaldo mismo, Inversores × FP, Histórico, Matriz de
-  // ceros) se deja vacía -- vuelve a calcularse sola (real si el medidor de
-  // respaldo coincide con lo nuevo, si no ±1%).
-  const d = detalle.value
-  curvaRespaldoEditable.value = (op.key === 'principal' && d?.curva_medidor_respaldo)
-    ? [...d.curva_medidor_respaldo]
-    : Array(24).fill(null)
+  // Respaldo siempre queda vacío acá, sin importar la opción elegida -- NO
+  // se precarga con curva_medidor_respaldo aunque se elija 'Medidor
+  // principal', porque eso mandaría el dato del medidor de respaldo como
+  // confirmación manual SIN el chequeo de coherencia (1.5 kWh vs el nuevo
+  // Principal) que sí aplica actualizar_respaldo_final() en el backend al
+  // guardar -- adoptar 'Medidor principal' no implica que el de respaldo
+  // sea confiable ese día (bug real 2026-08-25: se estaba precargando a
+  // ciegas). Dejarlo vacío deja que el backend decida solo con el mismo
+  // criterio de siempre.
+  curvaRespaldoEditable.value = Array(24).fill(null)
   fuenteManualElegida.value = op.key === 'tipica' ? 'historico' : op.key
   toast.add({
     severity: 'info', summary: `${op.nombre} aplicado`,
@@ -1339,5 +1353,14 @@ function fmtKwh(v) {
 :deep(.celda-input:focus) {
   outline: 2px solid #915BD8;
   outline-offset: -2px;
+}
+/* Respaldo con dato real (Medidor) -- el placeholder se ve como texto
+   normal, no como la pista tenue de siempre, porque no es una sugerencia:
+   es el valor real que ya se está reportando (ver respaldoEsDatoReal). El
+   caso 'Estimado ±1%' se queda con el gris tenue por defecto del navegador,
+   ahí sí es un número provisional. */
+:deep(.celda-respaldo-real::placeholder) {
+  color: #2C2039;
+  opacity: 1;
 }
 </style>
