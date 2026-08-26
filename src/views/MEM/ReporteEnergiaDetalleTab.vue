@@ -200,6 +200,7 @@
               </td>
               <td v-if="detalle.tipo === 'generacion'">
                 <InputText v-model="curvaRespaldoEditable[h - 1]" inputmode="decimal"
+                           :placeholder="respaldoPlaceholder(h - 1)"
                            class="w-full text-xs text-right celda-input"
                            @paste="onPasteHoraRespaldo($event, h - 1)" />
               </td>
@@ -218,6 +219,7 @@
               </td>
               <td v-if="detalle.tipo === 'generacion'">
                 <InputText v-model="curvaRespaldoEditable[h + 11]" inputmode="decimal"
+                           :placeholder="respaldoPlaceholder(h + 11)"
                            class="w-full text-xs text-right celda-input"
                            @paste="onPasteHoraRespaldo($event, h + 11)" />
               </td>
@@ -226,7 +228,7 @@
         </table>
       </div>
       <p v-if="detalle.tipo === 'generacion'" class="text-xs mt-1" style="color: #9b89b5;">
-        Respaldo vacío = se calcula solo (dato real del medidor si coincide con Principal, si no ±1% estimado). Si lo llenas a mano, se reporta tal cual.
+        Respaldo vacío = se calcula solo -- el número en gris de cada celda es lo que ya se está reportando ({{ etiquetaOrigenRespaldo }}). Si lo llenas a mano, se reporta tal cual.
       </p>
       <div class="flex items-center gap-1.5 text-xs mt-2" style="color: #9b89b5;">
         <span class="inline-block rounded-sm" style="width: 12px; height: 12px; background: rgba(240, 192, 64, 0.35); border: 1px solid #F0C040;"></span>
@@ -654,6 +656,26 @@ function onPasteHoraRespaldo(event, indiceInicio) {
 function limpiarCurva() {
   curvaEditable.value = Array(24).fill(null)
   curvaRespaldoEditable.value = Array(24).fill(null)
+}
+
+// Placeholder de la columna Respaldo: la celda queda VACÍA a propósito
+// (vacío = "no la toqué, calcúlala sola", ver guardarCurva) -- sin esto no
+// había forma de ver en la tabla lo que ya se está reportando, solo en el
+// gráfico (confuso: parecía que Respaldo no tenía dato, ver 2026-08-25).
+const etiquetaOrigenRespaldo = computed(() => {
+  const origen = detalle.value?.respaldo_reportado_origen
+  if (origen === 'terceros') return 'dato real, Excel de terceros'
+  if (origen === 'medidor') return 'dato real del medidor de respaldo'
+  if (origen === 'manual') return 'confirmado a mano'
+  if (origen === 'estimado') return 'estimado ±1%'
+  return 'sin calcular aún'
+})
+
+function respaldoPlaceholder(h) {
+  const v = detalle.value?.curva_respaldo_reportada?.[h]
+  // Sin sufijo 'kWh' -- la celda es angosta (110px) y la columna Principal
+  // de al lado tampoco lo lleva, mismo estilo de número plano.
+  return v === null || v === undefined ? '' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 2 })
 }
 
 function esHoraRellenada(h) {
