@@ -814,7 +814,6 @@ async function armarPeriodo() {
       periodo: periodo.value, tipo: tipoDatos.value,
     })
     resultado.value = data
-    await cargarPaneles()
     toast.add({
       severity: 'success', summary: `${data.armados} paneles armados`,
       detail: data.omitidos.length
@@ -822,6 +821,17 @@ async function armarPeriodo() {
         : 'Todos los proyectos del período.',
       life: 7000,
     })
+    // Refrescar DESPUÉS de avisar y en su propio try: si falla el refresco, los
+    // paneles ya quedaron escritos. Reportarlo como "no se pudo armar" haría
+    // creer que no pasó nada y llevaría a ejecutarlo de nuevo.
+    try {
+      await cargarPaneles()
+    } catch {
+      toast.add({
+        severity: 'warn', summary: 'Paneles armados, vista sin refrescar',
+        detail: 'Recarga la página para verlos.', life: 6000,
+      })
+    }
   } catch (e) {
     toast.add({
       severity: 'error', summary: 'No se pudo armar el período',
