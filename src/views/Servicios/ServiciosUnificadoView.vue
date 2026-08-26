@@ -471,21 +471,11 @@
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
                  sortField="fecha_inicio" :sortOrder="1" rowHover
                  :emptyMessage="`No hay contratos de ${servicioInfo?.label} registrados.`">
-        <Column v-if="tiposDelServicio.length > 1" field="servicio_aplica" header="Tipo"
-                sortable style="width:11%">
-          <template #body="{ data }">
-            <span class="mini-chip" :style="{
-              color: TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280',
-              background: (TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280') + '1f' }">
-              {{ TIPO_CONTRATO_LABELS[data.servicio_aplica] || data.servicio_aplica || '—' }}
-            </span>
-          </template>
-        </Column>
-        <!-- Proyecto: todo contrato de servicio se firma SOBRE una planta, sea
-             de representación, mantenimiento, arriendo, internet o REC. Sin esta
-             columna la tabla no dice de qué habla cada fila. Cuando el contrato
-             quedó huérfano (proyecto_id NULL) la celda es el botón para
-             arreglarlo, en vez de un "—" que no lleva a ninguna parte. -->
+        <!-- Proyecto va PRIMERO: es de qué habla la fila. Todo contrato de
+             servicio se firma sobre una planta, sea de representación,
+             mantenimiento, arriendo, internet o REC. Cuando el contrato quedó
+             huérfano (proyecto_id NULL) la celda es el botón para arreglarlo,
+             en vez de un "—" que no lleva a ninguna parte. -->
         <Column field="proyecto.nombre_comercial" header="Proyecto"
                 sortable :style="`width:${anchos.proyecto}`">
           <template #body="{ data }">
@@ -493,16 +483,38 @@
                     v-tooltip.bottom="'Ver la ficha de la planta'"
                     @click.stop="ir(destinoProyecto(data))">
               <span class="celda-txt font-semibold">{{ data.proyecto.nombre_comercial }}</span>
-              <span class="mini-chip shrink-0"
-                    :class="TIPO_BADGE_CLASS[data.proyecto.tipo_proyecto] || 'badge-otro'">
-                {{ TIPO_LABELS[data.proyecto.tipo_proyecto] || data.proyecto.tipo_proyecto || 'Sin tipo' }}
-              </span>
             </button>
             <button v-else type="button" class="chip-huerfano"
                     v-tooltip.bottom="'Este contrato no está asociado a ninguna planta. Click para asociarlo.'"
                     @click.stop="abrirAsociarProyecto(data)">
               <i class="pi pi-link" />Sin proyecto
             </button>
+          </template>
+        </Column>
+        <!-- Clase de planta (minigranja / autoconsumo / GD) en su propia
+             columna: dentro de la celda de Proyecto competía con el nombre y no
+             se podía ordenar ni filtrar por ella. Se llama "Tipo" igual que en
+             la tabla de Proyectos, así que la del tipo de CONTRATO pasa a
+             llamarse "Servicio" -- dos columnas "Tipo" en la misma tabla no
+             dicen nada. -->
+        <Column field="proyecto.tipo_proyecto" header="Tipo" sortable
+                :style="`width:${anchos.tipoPlanta}`">
+          <template #body="{ data }">
+            <span v-if="data.proyecto" class="mini-chip"
+                  :class="TIPO_BADGE_CLASS[data.proyecto.tipo_proyecto] || 'badge-otro'">
+              {{ TIPO_LABELS[data.proyecto.tipo_proyecto] || data.proyecto.tipo_proyecto || 'Sin tipo' }}
+            </span>
+            <span v-else class="vacio">—</span>
+          </template>
+        </Column>
+        <Column v-if="tiposDelServicio.length > 1" field="servicio_aplica" header="Servicio"
+                sortable :style="`width:${anchos.servicio}`">
+          <template #body="{ data }">
+            <span class="mini-chip" :style="{
+              color: TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280',
+              background: (TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280') + '1f' }">
+              {{ TIPO_CONTRATO_LABELS[data.servicio_aplica] || data.servicio_aplica || '—' }}
+            </span>
           </template>
         </Column>
         <!-- El inversionista es lo que distingue dos contratos de la misma
@@ -866,7 +878,9 @@ const FILTROS = {
       etiqueta: v => formatearNombre(v) },
   ],
   operacion: [
-    { clave: 'tipo', label: 'Tipo', ancho: 'w-44',
+    // Se llama "Servicio" igual que su columna: en esta tabla "Tipo" es la
+    // clase de planta (minigranja / autoconsumo / GD).
+    { clave: 'tipo', label: 'Servicio', ancho: 'w-44',
       valor: c => c.servicio_aplica,
       etiqueta: v => TIPO_CONTRATO_LABELS[v] || v },
     { clave: 'proyecto', label: 'Proyecto', ancho: 'w-64',
@@ -1289,14 +1303,17 @@ const anchos = computed(() => {
     // Con las tres columnas de tarifa hay que apretar el resto para no forzar
     // scroll horizontal: proyecto e inversionista siguen siendo las anchas
     // porque son las que llevan texto largo.
-    return { proyecto: '19%', inversionista: '15%', numero: '9%', parte: '0',
-             admin: '7%', tarifa: '8%', acciones: '8%' }
+    return { proyecto: '17%', tipoPlanta: '8%', servicio: '0',
+             inversionista: '14%', numero: '8%', parte: '0',
+             admin: '7%', tarifa: '8%', acciones: '7%' }
   }
-  // Operación (con columna Tipo) y REC (sin ella).
-  const conTipo = tiposDelServicio.value.length > 1
-  return { proyecto: conTipo ? '18%' : '22%', inversionista: '0',
-           numero: '9%', parte: conTipo ? '14%' : '16%',
-           admin: '0', tarifa: '0', acciones: '8%' }
+  // Operación lleva además la columna Servicio (mantenimiento / arriendo /
+  // internet); REC no, porque agrupa un solo tipo.
+  const conServicio = tiposDelServicio.value.length > 1
+  return { proyecto: conServicio ? '19%' : '23%', tipoPlanta: '8%',
+           servicio: conServicio ? '10%' : '0', inversionista: '0',
+           numero: '9%', parte: conServicio ? '13%' : '15%',
+           admin: '0', tarifa: '0', acciones: '7%' }
 })
 
 // Las dos tarifas en $/kWh de un contrato de representación. Cada una tiene su
