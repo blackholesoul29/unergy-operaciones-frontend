@@ -789,8 +789,10 @@ const FUENTES = {
   om:         { label: 'O&M',       title: 'O&M',                     origen: 'del módulo O&M' },
   arriendos:  { label: 'Arriendos', title: 'Arriendos',               origen: 'del módulo Arriendos' },
   internet:   { label: 'Internet',  title: 'Internet',                origen: 'tarifa mensual del contrato' },
-  servicios:  { label: 'Tarifa app', title: 'Representación / CGM',   origen: 'tarifa de la app × kWh del ER' },
-  operacion:  { label: 'Operación',  title: 'Administración (operación)', origen: 'tarifa admin × ingreso del ER' },
+  servicios:  { label: 'Tarifa app', title: 'Representación / CGM',   origen: 'tarifa de la app × kWh' },
+  operacion:  { label: 'Operación',  title: 'Administración (operación)', origen: 'tarifa admin × ingresos' },
+  starlink:   { label: 'Starlink',   title: 'Internet (Starlink)',     origen: 'de la factura de Starlink' },
+  api:        { label: 'API',        title: 'API de Liquidaciones',    origen: 'de la API de Liquidaciones' },
 }
 const fuenteLabel = (f) => (FUENTES[f]?.label) || f
 const fuenteTitle = (f) => (FUENTES[f]?.title) || f
