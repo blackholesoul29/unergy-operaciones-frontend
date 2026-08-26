@@ -21,7 +21,11 @@ function onConfirm() {
   <AlertDialog v-model:open="open">
     <AlertDialogContent v-if="state.options">
       <AlertDialogHeader>
-        <AlertDialogMedia :class="state.options.variant === 'destructive' ? 'bg-destructive/10 text-destructive' : ''">
+        <AlertDialogMedia
+          :class="
+            state.options.variant === 'destructive' ? 'bg-destructive/10 text-destructive' : ''
+          "
+        >
           <TriangleAlertIcon />
         </AlertDialogMedia>
         <AlertDialogTitle>{{ state.options.title }}</AlertDialogTitle>

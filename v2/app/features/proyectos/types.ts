@@ -4,10 +4,11 @@
  * Verificados contra `ProximosEnergizarView.vue` y el composable que los
  * consume: son los campos que el código lee de verdad.
  */
+import type { Id } from '~/types/api'
 
 /** Un proyecto del pipeline, ya rehidratado (fechas como `Date`). */
 export interface ProyectoProximoEnergizar {
-  id: number
+  id: Id
   commercialName: string
   /** `null` mientras no haya fecha estimada. */
   energizationDate: Date | null

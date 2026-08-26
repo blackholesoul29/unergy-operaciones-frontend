@@ -5,6 +5,7 @@
  * campos que la vista lee de verdad. El backend puede devolver más; lo que se
  * afirma aquí es lo que se usa.
  */
+import type { Id } from '~/types/api'
 
 /** Una ventana mensual de la proyección de garantías. */
 export interface VentanaProyeccion {
@@ -32,7 +33,7 @@ export interface Proyecciones {
 
 /** Una foto guardada de la proyección, para comparar contra lo que pasó. */
 export interface SnapshotGarantias {
-  id: number
+  id: Id
   clave: string
   anio: number
   mes: number
