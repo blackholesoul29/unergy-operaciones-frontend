@@ -24,7 +24,7 @@
         </div>
         <div class="flex items-center gap-1.5">
           <label class="text-xs font-medium" style="color: #6b5a8a;">Hasta</label>
-          <DatePicker v-model="fechaHasta" dateFormat="dd/mm/yy" :minDate="fechaDesde" :maxDate="ayer"
+          <DatePicker v-model="fechaHasta" dateFormat="dd/mm/yy" :minDate="fechaDesde" :maxDate="maxHasta"
             showIcon iconDisplay="input" style="width: 150px;" />
         </div>
         <button type="button" :disabled="!totalSeleccionados || enviando"
@@ -180,6 +180,15 @@ const busqueda = ref('')
 const ayer = new Date(Date.now() - 86400000)
 const fechaDesde = ref(new Date(ayer))
 const fechaHasta = ref(new Date(ayer))
+
+// Mismo tope que el backend (RANGO_MAXIMO_DIAS en reporte_cgm.py schema) --
+// evita elegir un rango que el servidor va a rechazar de todas formas.
+const RANGO_MAXIMO_DIAS = 92
+const maxHasta = computed(() => {
+  const limite = new Date(fechaDesde.value)
+  limite.setDate(limite.getDate() + RANGO_MAXIMO_DIAS - 1)
+  return limite < ayer ? limite : ayer
+})
 
 function formatFecha(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
