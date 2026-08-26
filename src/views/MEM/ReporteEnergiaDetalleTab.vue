@@ -154,11 +154,13 @@
            style="background: rgba(37,124,214,0.08); border: 1px solid #257CD6;">
         <span class="flex-none rounded-full w-[18px] h-[18px] flex items-center justify-center text-[11px] font-bold text-white"
               style="background: #257CD6; margin-top: 1px;">i</span>
-        <p class="text-xs" style="color: #1B5DA3; line-height: 1.5;">
+        <p class="text-xs flex-1" style="color: #1B5DA3; line-height: 1.5;">
           {{ aviso.etiqueta }} muestra un valor distinto en Quoia
           (<strong style="color: #2C2039;">{{ fmtKwh(aviso.actual) }}</strong> ahora
           vs. <strong style="color: #2C2039;">{{ fmtKwh(aviso.clasificacion) }}</strong> al momento de clasificar).
         </p>
+        <Button v-if="aviso.tipo === 'respaldo'" label="Usar" size="small" text
+          :loading="usandoRespaldoEnVivo" @click="usarRespaldoEnVivo" class="flex-none" />
       </div>
       <div class="space-y-0">
         <div v-for="f in fuentes" :key="f.clave"
@@ -814,6 +816,39 @@ async function recuperarMedidor() {
   }
 }
 
+// Botón "Usar" del banner de respaldo -- acción liviana (sin la
+// interrogación activa de 90s de "Recuperar medidor", sin tocar
+// Principal) para cuando el valor en vivo ya está disponible pasivamente
+// en el propio banner (ver MGS Agustín 1 2026-08-26). Adopta el snapshot
+// SOLO si pasa la tolerancia de coherencia -- si no, el backend lo deja
+// igual y el aviso sigue apareciendo.
+const usandoRespaldoEnVivo = ref(false)
+async function usarRespaldoEnVivo() {
+  usandoRespaldoEnVivo.value = true
+  try {
+    const { data } = await api.post(
+      `/reporte-energia/fronteras/${props.fronteraId}/revisar-respaldo`, null,
+      { params: { fecha: props.fecha } },
+    )
+    detalle.value = data
+    if (data.respaldo_reportado_origen === 'medidor') {
+      toast.add({ severity: 'success', summary: 'Respaldo actualizado', detail: 'Se adoptó el valor real del medidor.', life: 4000 })
+    } else {
+      toast.add({
+        severity: 'warn', summary: 'Sigue en estimado',
+        detail: 'El valor en vivo no quedó dentro de la tolerancia -- no se adoptó.', life: 5000,
+      })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo revisar',
+      detail: e?.response?.data?.detail || 'Falló la consulta del medidor de respaldo.', life: 4000,
+    })
+  } finally {
+    usandoRespaldoEnVivo.value = false
+  }
+}
+
 // Mismo criterio que separa 'confiado' de 'corregido_automatico' en el
 // resumen del día (ver reporte_energia.py) -- Caso 1 (Generación) / 'CGM'
 // (Consumo) sin Revisar Manualmente es la única combinación 100% automática
@@ -1111,10 +1146,10 @@ const avisosMedidor = computed(() => {
   if (!d) return []
   const avisos = []
   if (d.principal_actualizado_en_quoia) {
-    avisos.push({ etiqueta: 'Medidor principal', actual: d.principal_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_principal) })
+    avisos.push({ tipo: 'principal', etiqueta: 'Medidor principal', actual: d.principal_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_principal) })
   }
   if (d.respaldo_actualizado_en_quoia) {
-    avisos.push({ etiqueta: 'Medidor respaldo', actual: d.respaldo_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_respaldo) })
+    avisos.push({ tipo: 'respaldo', etiqueta: 'Medidor respaldo', actual: d.respaldo_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_respaldo) })
   }
   return avisos
 })
