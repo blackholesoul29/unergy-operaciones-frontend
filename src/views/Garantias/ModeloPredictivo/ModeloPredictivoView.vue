@@ -27,9 +27,18 @@
       <Button label="Recalcular" icon="pi pi-refresh" :loading="cargando" outlined @click="cargar" />
     </div>
 
-    <div v-if="error" class="rounded-lg p-3"
-      style="background:#FEF2F2;border:1px solid rgba(214,68,85,0.2)">
-      <p class="text-xs" style="color:#D64455">{{ error }}</p>
+    <div v-if="error" class="rounded-xl p-5 text-center"
+      style="background:#fafafa;border:1px dashed #c4b8d4">
+      <i class="pi pi-clock text-2xl block mb-2" style="color:#c4b8d4" />
+      <p class="text-sm font-medium mb-1" style="color:#2C2039">
+        Todavía no hay datos que mostrar
+      </p>
+      <p class="text-xs leading-relaxed mx-auto" style="color:#6b5a8a;max-width:34rem">
+        El motor de cálculo del Modelo Predictivo aún no está publicado. Esta pestaña
+        queda operativa en cuanto lo esté; hasta entonces no hay estimaciones que
+        consultar y <b>Recalcular</b> va a seguir fallando.
+      </p>
+      <p class="text-[11px] mt-3" style="color:#9ca3af">{{ error }}</p>
     </div>
 
     <div v-if="cargando" class="text-sm" style="color:#6b5a8a">Calculando…</div>

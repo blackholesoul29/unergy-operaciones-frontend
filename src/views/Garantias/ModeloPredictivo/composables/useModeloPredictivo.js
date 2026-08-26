@@ -31,7 +31,7 @@ export function useModeloPredictivo() {
         horizonte: horizonte.value,
       })
     } catch (e) {
-      error.value = mensajeError(e, 'No se pudo cargar el plan de garantías')
+      error.value = mensajeError(e, 'El servicio no respondió. Puede que aún no esté publicado.')
       data.value = null
     } finally {
       cargando.value = false
@@ -46,7 +46,7 @@ export function useModeloPredictivo() {
     try {
       detalle.value = await getDetalle(id)
     } catch (e) {
-      detalleError.value = mensajeError(e, 'No se pudo cargar el detalle')
+      detalleError.value = mensajeError(e, 'El servicio no respondió. Puede que aún no esté publicado.')
       detalleAbierto.value = false
     } finally {
       detalleCargando.value = false
