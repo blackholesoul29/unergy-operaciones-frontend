@@ -64,7 +64,8 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, watch } from 'vue'
+import { useToast } from 'primevue/usetoast'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
 import SelectButton from 'primevue/selectbutton'
@@ -77,13 +78,32 @@ import SemanalesTabla from './SemanalesTabla.vue'
 import MensualCard from './MensualCard.vue'
 import DetalleDialog from './DetalleDialog.vue'
 
+const toast = useToast()
+
 const {
   agente, esquema, cuantil, horizonte,
   data, cargando, error,
   semanales, mensuales,
-  detalle, detalleCargando, detalleAbierto,
+  detalle, detalleCargando, detalleAbierto, detalleError,
   cargar, abrirDetalle, cerrarDetalle,
 } = useModeloPredictivo()
+
+// El plan es la carga que sostiene toda la vista: si falla, el toast avisa Y
+// queda el mensaje en pantalla (ver bloque `v-if="error"` arriba) porque la
+// página se queda vacía. El detalle vive en un diálogo sobre una tabla que
+// sigue intacta, así que ese error solo se avisa por toast.
+watch(error, (msg) => {
+  if (msg) {
+    toast.add({ severity: 'error', summary: 'No se pudo cargar el plan de garantías',
+      detail: msg, life: 6000 })
+  }
+})
+watch(detalleError, (msg) => {
+  if (msg) {
+    toast.add({ severity: 'error', summary: 'No se pudo cargar el detalle',
+      detail: msg, life: 5000 })
+  }
+})
 
 const opcionesAgente = [AGENTE.UNGG, AGENTE.UNGC]
 const opcionesEsquema = [

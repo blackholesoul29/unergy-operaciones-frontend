@@ -104,3 +104,26 @@ export function rangoCorto(ini, fin) {
   }
   return `${fechaCorta(ini)} – ${fechaCorta(fin)}`
 }
+
+// Textos genéricos que FastAPI/Starlette devuelven por defecto (p.ej. un 404
+// de una ruta que aún no existe en el backend). No son mensajes de aplicación
+// y no deben mostrarse tal cual al usuario.
+const DETALLE_GENERICO = new Set([
+  'Not Found',
+  'Internal Server Error',
+  'Unprocessable Entity',
+  'Method Not Allowed',
+])
+
+/**
+ * Mensaje de error apto para mostrar al usuario. Solo usa el `detail` que
+ * manda el backend cuando es plausible (status 4xx y no es un texto genérico
+ * de framework); en cualquier otro caso devuelve `fallback`.
+ */
+export function mensajeError(e, fallback) {
+  const status = e?.response?.status
+  const detail = e?.response?.data?.detail
+  const detalleValido = typeof status === 'number' && status >= 400 && status < 500
+    && typeof detail === 'string' && detail.trim() !== '' && !DETALLE_GENERICO.has(detail.trim())
+  return detalleValido ? detail : fallback
+}

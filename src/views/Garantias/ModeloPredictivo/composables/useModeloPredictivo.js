@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { getPlan, getDetalle } from '@/api/garantiasModelo'
-import { AGENTE, ESQUEMA } from '../utils/modeloPredictivo'
+import { AGENTE, ESQUEMA, mensajeError } from '../utils/modeloPredictivo'
 
 export function useModeloPredictivo() {
   const agente = ref(AGENTE.UNGG)
@@ -15,6 +15,7 @@ export function useModeloPredictivo() {
   const detalle = ref(null)
   const detalleCargando = ref(false)
   const detalleAbierto = ref(false)
+  const detalleError = ref('')
 
   const semanales = computed(() => data.value?.semanales ?? [])
   const mensuales = computed(() => data.value?.mensuales ?? [])
@@ -30,7 +31,7 @@ export function useModeloPredictivo() {
         horizonte: horizonte.value,
       })
     } catch (e) {
-      error.value = e?.response?.data?.detail || 'No se pudo cargar el plan de garantías'
+      error.value = mensajeError(e, 'No se pudo cargar el plan de garantías')
       data.value = null
     } finally {
       cargando.value = false
@@ -41,10 +42,11 @@ export function useModeloPredictivo() {
     detalleAbierto.value = true
     detalleCargando.value = true
     detalle.value = null
+    detalleError.value = ''
     try {
       detalle.value = await getDetalle(id)
     } catch (e) {
-      error.value = e?.response?.data?.detail || 'No se pudo cargar el detalle'
+      detalleError.value = mensajeError(e, 'No se pudo cargar el detalle')
       detalleAbierto.value = false
     } finally {
       detalleCargando.value = false
@@ -60,7 +62,7 @@ export function useModeloPredictivo() {
     agente, esquema, cuantil, horizonte,
     data, cargando, error,
     semanales, mensuales,
-    detalle, detalleCargando, detalleAbierto,
+    detalle, detalleCargando, detalleAbierto, detalleError,
     cargar, abrirDetalle, cerrarDetalle,
   }
 }
