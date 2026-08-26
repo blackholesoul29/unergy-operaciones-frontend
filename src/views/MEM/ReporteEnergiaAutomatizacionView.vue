@@ -311,6 +311,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
+import { useConfirm } from 'primevue/useconfirm'
 import api from '@/api/client'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
@@ -328,6 +329,7 @@ import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
 const toast = useToast()
+const confirm = useConfirm()
 const route = useRoute()
 const router = useRouter()
 
@@ -832,7 +834,23 @@ async function generarExcel() {
   }
 }
 
-async function enviarReporte() {
+// Manda datos reales al reporte regulatorio ASIC -- pide confirmación
+// antes de disparar el envío, no se dispara directo al hacer clic
+// (2026-08-26).
+function enviarReporte() {
+  const corregidas = resumen.value?.corregido_automatico ?? 0
+  confirm.require({
+    message: `Se va a enviar el reporte del ${fechaISO.value} a Quoia/ASIC` +
+      (corregidas ? ` -- ${corregidas} fronteras con datos corregidos.` : '.'),
+    header: 'Confirmar envío a Quoia',
+    icon: 'pi pi-send',
+    rejectProps: { label: 'Cancelar', severity: 'secondary' },
+    acceptProps: { label: 'Enviar' },
+    accept: _enviarReporteConfirmado,
+  })
+}
+
+async function _enviarReporteConfirmado() {
   enviando.value = true
   try {
     const { data } = await api.post('/reporte-energia/enviar', null, { params: { fecha: fechaISO.value }, timeout: 300000 })
