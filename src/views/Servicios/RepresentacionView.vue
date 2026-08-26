@@ -142,14 +142,34 @@
                 <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
                   @click="guardar(['numero_contrato', 'inversionista_nombre', 'portafolio',
                                    'codigo_sun_factory', 'nombre_proyecto_ref',
-                                   'proyecto_id', 'frontera_ids'])" />
+                                   'proyecto_id', 'inversionista_id', 'frontera_ids'])" />
               </template>
             </div>
           </header>
           <div class="cd-sec-body">
             <div v-if="edit !== 'id'" class="cd-grid">
               <InfoField label="Número de contrato" :value="c.numero_contrato" />
-              <InfoField label="Inversionista" :value="c.inversionista_nombre" />
+              <div class="flex flex-col gap-0.5">
+                <span class="cd-campo-lbl">
+                  Inversionista
+                  <i class="pi pi-info-circle text-[10px]"
+                     v-tooltip.top="'El texto del acta. El vínculo con el inversionista de la planta es el que decide si el contrato sigue vigente.'" />
+                </span>
+                <span class="text-sm" style="color:#2C2039">{{ c.inversionista_nombre || '—' }}</span>
+                <!-- Sin vínculo no se puede saber si su participación sigue
+                     abierta, así que el contrato nunca se cierra solo. -->
+                <span v-if="!c.inversionista_id && c.inversionista_nombre" class="mini-alerta">
+                  <i class="pi pi-exclamation-triangle" />Sin vincular a un inversionista de la planta
+                </span>
+                <!-- Verde solo cuando el inversionista sigue participando. Con
+                     la participación cerrada el dato es igual de correcto, pero
+                     no es una señal de "todo bien": es el motivo de que el
+                     contrato esté terminado. -->
+                <span v-else-if="c.inversionista" class="text-[10.5px]"
+                      :style="`color:${inversionistaParticipa ? '#15803d' : '#6b5a8a'}`">
+                  {{ inversionistaParticipa ? '✓' : '·' }} {{ vigenciaInversionista }}
+                </span>
+              </div>
               <InfoField label="Portafolio" :value="c.portafolio" />
               <InfoField label="Código Sun Factory" :value="c.codigo_sun_factory" />
               <div class="flex flex-col gap-0.5">
@@ -186,8 +206,19 @@
                 <InputText v-model="form.numero_contrato" placeholder="Ej: UNERGY-RC-002-2025" class="w-full" />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="cd-lbl">Inversionista</label>
+                <label class="cd-lbl">Inversionista (texto del acta)</label>
                 <InputText v-model="form.inversionista_nombre" class="w-full" />
+              </div>
+              <!-- El vínculo se elige entre los inversionistas de ESTA planta:
+                   es de donde sale la vigencia del contrato. -->
+              <div class="flex flex-col gap-1">
+                <label class="cd-lbl">Vincular con</label>
+                <Select v-model="form.inversionista_id" :options="opcionesInversionista"
+                  optionLabel="etiqueta" optionValue="cliente_id" showClear filter
+                  placeholder="Inversionista de la planta…" size="small" class="w-full" />
+                <span class="text-[10.5px]" style="color:#9b89b5">
+                  De aquí sale si el contrato sigue vigente.
+                </span>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Portafolio</label>
@@ -589,6 +620,10 @@ const contratos = ref([])
 const idSeleccionado = ref(null)
 const edit = ref(null)          // 'id' | 'partes' | 'vigencia' | 'comercial'
 const proyectos = ref([])       // catálogo para reasignar la planta
+// Inversionistas de ESTA planta, con sus períodos. Son las únicas opciones
+// válidas para vincular el contrato: el inversionista de un contrato de
+// representación participa en la planta, por definición.
+const inversionistasPlanta = ref([])
 const fronterasDelProyecto = ref([])
 const cargandoProyectos = ref(false)
 const guardando = ref(false)
@@ -630,6 +665,38 @@ const discrepanciaPlanta = computed(() => {
   if (!enRef.length || !enPlanta.length) return null
   if (enRef.some(n => enPlanta.includes(n))) return null
   return `El contrato dice "${x.nombre_proyecto_ref}" — revisa si la planta es la correcta`
+})
+
+// ── Vínculo con el inversionista de la planta ────────────────────────────────
+// Las opciones son los inversionistas de esta planta, con su período al lado:
+// elegir bien depende de ver quién estuvo cuándo, sobre todo cuando hay varios
+// fideicomisos de la misma fiduciaria.
+const opcionesInversionista = computed(() => inversionistasPlanta.value.map(i => ({
+  cliente_id: i.cliente_id,
+  etiqueta: `${i.cliente_nombre || `Cliente ${i.cliente_id}`}`
+           + ` · ${i.fecha_inicio || '—'} → ${i.fecha_fin || 'vigente'}`,
+})))
+
+// ¿El inversionista vinculado sigue participando? Es lo que decide si el
+// contrato puede seguir vigente.
+const inversionistaParticipa = computed(() => {
+  const x = c.value
+  if (!x?.inversionista_id) return false
+  return inversionistasPlanta.value.some(
+    i => i.cliente_id === x.inversionista_id && !i.fecha_fin)
+})
+
+// Texto del período del inversionista vinculado, para explicar de dónde sale el
+// estado del contrato.
+const vigenciaInversionista = computed(() => {
+  const x = c.value
+  if (!x?.inversionista_id) return ''
+  const suyas = inversionistasPlanta.value.filter(i => i.cliente_id === x.inversionista_id)
+  if (!suyas.length) return 'vinculado a alguien que no figura en la planta'
+  const abierta = suyas.find(i => !i.fecha_fin)
+  if (abierta) return `participa desde ${abierta.fecha_inicio || '—'}`
+  const ultima = suyas.map(i => i.fecha_fin).sort().at(-1)
+  return `participación terminada el ${ultima}`
 })
 
 // ── Duplicados ───────────────────────────────────────────────────────────────
@@ -784,6 +851,7 @@ function abrir(seccion) {
   Object.assign(form, {
     numero_contrato: x.numero_contrato || '',
     inversionista_nombre: x.inversionista_nombre || '',
+    inversionista_id: x.inversionista_id ?? null,
     portafolio: x.portafolio || '',
     codigo_sun_factory: x.codigo_sun_factory || '',
     nombre_proyecto_ref: x.nombre_proyecto_ref || '',
@@ -985,6 +1053,7 @@ onMounted(async () => {
   try {
     const { data } = await api.get(`/proyectos/${route.params.id}`)
     proyectoNombre.value = data.nombre_comercial || ''
+    inversionistasPlanta.value = data.inversionistas || []
   } catch { /* el nombre es decorativo: la vista funciona sin él */ }
   try {
     await cargar()
