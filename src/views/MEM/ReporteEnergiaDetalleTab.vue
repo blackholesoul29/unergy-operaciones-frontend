@@ -187,7 +187,7 @@
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Corrección manual (kWh)</p>
       <div class="flex flex-nowrap gap-4 overflow-x-auto">
         <table class="tabla-horas">
-          <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Principal</th><th>Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
           <tbody>
             <tr v-for="h in 12" :key="h - 1" :class="esHoraRellenada(h - 1) ? 'fila-rellenada' : ''">
               <td>{{ h - 1 }}h</td>
@@ -196,7 +196,7 @@
                            class="w-full text-xs text-right celda-input"
                            @paste="onPasteHora($event, h - 1)" />
               </td>
-              <td v-if="detalle.tipo === 'generacion'">
+              <td>
                 <InputText v-model="curvaRespaldoEditable[h - 1]" inputmode="decimal"
                            :placeholder="respaldoPlaceholder(h - 1)"
                            class="w-full text-xs text-right celda-input"
@@ -207,7 +207,7 @@
           </tbody>
         </table>
         <table class="tabla-horas">
-          <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Principal</th><th>Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
           <tbody>
             <tr v-for="h in 12" :key="h + 11" :class="esHoraRellenada(h + 11) ? 'fila-rellenada' : ''">
               <td>{{ h + 11 }}h</td>
@@ -216,7 +216,7 @@
                            class="w-full text-xs text-right celda-input"
                            @paste="onPasteHora($event, h + 11)" />
               </td>
-              <td v-if="detalle.tipo === 'generacion'">
+              <td>
                 <InputText v-model="curvaRespaldoEditable[h + 11]" inputmode="decimal"
                            :placeholder="respaldoPlaceholder(h + 11)"
                            class="w-full text-xs text-right celda-input"
