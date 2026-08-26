@@ -189,7 +189,7 @@
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Corrección manual (kWh)</p>
       <div class="flex flex-wrap gap-4">
         <table class="tabla-horas">
-          <thead><tr><th>Hora</th><th>kWh</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo</th></tr></thead>
           <tbody>
             <tr v-for="h in 12" :key="h - 1" :class="esHoraRellenada(h - 1) ? 'fila-rellenada' : ''">
               <td>{{ h - 1 }}h</td>
@@ -198,11 +198,16 @@
                            class="w-full text-xs text-right celda-input"
                            @paste="onPasteHora($event, h - 1)" />
               </td>
+              <td v-if="detalle.tipo === 'generacion'">
+                <InputText v-model="curvaRespaldoEditable[h - 1]" inputmode="decimal"
+                           class="w-full text-xs text-right celda-input"
+                           @paste="onPasteHoraRespaldo($event, h - 1)" />
+              </td>
             </tr>
           </tbody>
         </table>
         <table class="tabla-horas">
-          <thead><tr><th>Hora</th><th>kWh</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Principal</th><th v-if="detalle.tipo === 'generacion'">Respaldo</th></tr></thead>
           <tbody>
             <tr v-for="h in 12" :key="h + 11" :class="esHoraRellenada(h + 11) ? 'fila-rellenada' : ''">
               <td>{{ h + 11 }}h</td>
@@ -211,10 +216,18 @@
                            class="w-full text-xs text-right celda-input"
                            @paste="onPasteHora($event, h + 11)" />
               </td>
+              <td v-if="detalle.tipo === 'generacion'">
+                <InputText v-model="curvaRespaldoEditable[h + 11]" inputmode="decimal"
+                           class="w-full text-xs text-right celda-input"
+                           @paste="onPasteHoraRespaldo($event, h + 11)" />
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
+      <p v-if="detalle.tipo === 'generacion'" class="text-xs mt-1" style="color: #9b89b5;">
+        Respaldo vacío = se calcula solo (dato real del medidor si coincide con Principal, si no ±1% estimado). Si lo llenas a mano, se reporta tal cual.
+      </p>
       <div class="flex items-center gap-1.5 text-xs mt-2" style="color: #9b89b5;">
         <span class="inline-block rounded-sm" style="width: 12px; height: 12px; background: rgba(240, 192, 64, 0.35); border: 1px solid #F0C040;"></span>
         Hora rellenada
@@ -363,6 +376,10 @@ const toast = useToast()
 const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
+// Vacío por completo = "no la toqué, calcúlala sola" (dato real del medidor
+// de respaldo si coincide con Principal, si no ±1%). Si tiene al menos un
+// valor, se manda tal cual como confirmación manual -- ver guardarCurva().
+const curvaRespaldoEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
 const rellenando = ref(false)
 const deshaciendoRelleno = ref(false)
@@ -483,6 +500,7 @@ async function cargar() {
     const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}`, { params: { fecha: props.fecha } })
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    curvaRespaldoEditable.value = Array(24).fill(null)
     fuenteManualElegida.value = null
     cargarFallasActivas(data.proyecto_id)
   } catch (e) {
@@ -622,8 +640,20 @@ function onPasteHora(event, indiceInicio) {
   })
 }
 
+function onPasteHoraRespaldo(event, indiceInicio) {
+  const texto = event.clipboardData?.getData('text') || ''
+  const valores = texto.split(/[\n\t,]+/).map(s => s.trim()).filter(Boolean).map(Number).filter(n => !isNaN(n))
+  if (valores.length <= 1) return
+  event.preventDefault()
+  valores.forEach((v, i) => {
+    const idx = indiceInicio + i
+    if (idx < 24) curvaRespaldoEditable.value[idx] = v
+  })
+}
+
 function limpiarCurva() {
   curvaEditable.value = Array(24).fill(null)
+  curvaRespaldoEditable.value = Array(24).fill(null)
 }
 
 function esHoraRellenada(h) {
@@ -642,10 +672,9 @@ function esHoraRellenada(h) {
 // llega al backend y queda validado el valor anterior sin que se note.
 // Comparar contra curva_final (lo persistido) detecta ese caso y bloquea
 // Validar hasta que se guarde.
-const hayCambiosSinGuardar = computed(() => {
-  const persistida = detalle.value?.curva_final || Array(24).fill(null)
+function _curvaDifiere(editable, persistida) {
   for (let h = 0; h < 24; h++) {
-    const a = curvaEditable.value[h]
+    const a = editable[h]
     const b = persistida[h]
     // 'sin dato' (null/undefined/'') y un cero explícito NO son lo mismo --
     // Number(a || 0) los volvía indistinguibles (Number(null || 0) ===
@@ -656,6 +685,17 @@ const hayCambiosSinGuardar = computed(() => {
     const bVacio = b === null || b === undefined
     if (aVacio !== bVacio) return true
     if (!aVacio && Number(a).toFixed(2) !== Number(b).toFixed(2)) return true
+  }
+  return false
+}
+
+const hayCambiosSinGuardar = computed(() => {
+  if (_curvaDifiere(curvaEditable.value, detalle.value?.curva_final || Array(24).fill(null))) return true
+  // Respaldo vacío por completo = no lo tocaron -- no cuenta como cambio
+  // sin guardar (comparar contra curva_respaldo_reportada sería engañoso
+  // igual, porque el estimado ±1% cambia solo de recalcularse).
+  if (curvaRespaldoEditable.value.some(v => v !== null && v !== undefined && v !== '')) {
+    return true
   }
   return false
 })
@@ -679,6 +719,7 @@ async function rellenarHorario() {
     )
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    curvaRespaldoEditable.value = Array(24).fill(null)
     toast.add({ severity: 'success', summary: 'Horas rellenadas', life: 2500 })
     emit('actualizado')
   } catch (e) {
@@ -700,6 +741,7 @@ async function deshacerRelleno() {
     )
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    curvaRespaldoEditable.value = Array(24).fill(null)
     toast.add({ severity: 'success', summary: 'Relleno deshecho', life: 2500 })
     emit('actualizado')
   } catch (e) {
@@ -800,6 +842,15 @@ const opcionesReportarCon = computed(() => {
 function elegirFuenteReportar(op) {
   mostrarMenuReportar.value = false
   curvaEditable.value = [...op.curva]
+  // Solo 'Medidor principal' precarga la columna de Respaldo -- ahí sí hay
+  // un dato real de OTRO medidor para comparar/confirmar. Para las demás
+  // opciones (Medidor respaldo mismo, Inversores × FP, Histórico, Matriz de
+  // ceros) se deja vacía -- vuelve a calcularse sola (real si el medidor de
+  // respaldo coincide con lo nuevo, si no ±1%).
+  const d = detalle.value
+  curvaRespaldoEditable.value = (op.key === 'principal' && d?.curva_medidor_respaldo)
+    ? [...d.curva_medidor_respaldo]
+    : Array(24).fill(null)
   fuenteManualElegida.value = op.key === 'tipica' ? 'historico' : op.key
   toast.add({
     severity: 'info', summary: `${op.nombre} aplicado`,
@@ -807,24 +858,36 @@ function elegirFuenteReportar(op) {
   })
 }
 
+function _normalizarCurva(valores) {
+  // Las celdas son InputText (texto libre, no InputNumber) para que el
+  // cursor no salte al editar un dígito del medio -- así que acá pueden
+  // llegar strings ("45.6"), vacías (""), o numeros ya normales (paste,
+  // carga inicial). Se normaliza a float | null justo antes de enviar.
+  return valores.map(v => {
+    if (v === null || v === undefined || v === '') return null
+    const n = Number(v)
+    return Number.isNaN(n) ? null : n
+  })
+}
+
 async function guardarCurva() {
   guardando.value = true
   try {
-    // Las celdas son InputText (texto libre, no InputNumber) para que el
-    // cursor no salte al editar un dígito del medio -- así que acá pueden
-    // llegar strings ("45.6"), vacías (""), o numeros ya normales (paste,
-    // carga inicial). Se normaliza a float | null justo antes de enviar.
-    const curvaNormalizada = curvaEditable.value.map(v => {
-      if (v === null || v === undefined || v === '') return null
-      const n = Number(v)
-      return Number.isNaN(n) ? null : n
-    })
+    const curvaNormalizada = _normalizarCurva(curvaEditable.value)
+    const payload = { curva_final: curvaNormalizada, fuente: fuenteManualElegida.value }
+    // Columna de Respaldo vacía por completo = no la tocaron -> no se manda
+    // (el backend la recalcula sola). Al menos un valor = confirmación
+    // manual, se manda tal cual (incluidas las horas que sí quedaron vacías).
+    if (curvaRespaldoEditable.value.some(v => v !== null && v !== undefined && v !== '')) {
+      payload.curva_respaldo_final = _normalizarCurva(curvaRespaldoEditable.value)
+    }
     const { data } = await api.patch(
       `/reporte-energia/fronteras/${props.fronteraId}`,
-      { curva_final: curvaNormalizada, fuente: fuenteManualElegida.value },
+      payload,
       { params: { fecha: props.fecha } },
     )
     detalle.value = data
+    curvaRespaldoEditable.value = Array(24).fill(null)
     toast.add({ severity: 'success', summary: 'Corrección guardada', life: 2500 })
     emit('actualizado')
   } catch (e) {
@@ -1252,7 +1315,11 @@ function fmtKwh(v) {
   white-space: nowrap;
   background: #f9f7ff;
 }
-.tabla-horas tr.fila-rellenada td:last-child { background: rgba(240, 192, 64, 0.14); }
+/* nth-child(2), no last-child: la columna Principal es siempre la 2da (Hora
+   | Principal | Respaldo en Generación, Hora | Principal en Consumo) -- con
+   last-child, en Generación esto resaltaba la celda de Respaldo en vez de
+   la de Principal, que es la que de verdad se rellenó. */
+.tabla-horas tr.fila-rellenada td:nth-child(2) { background: rgba(240, 192, 64, 0.14); }
 :deep(.celda-input) {
   width: 110px;
   height: 32px;
