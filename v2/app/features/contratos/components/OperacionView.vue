@@ -1966,6 +1966,7 @@ function formatFecha(f) {
 // (compilados en runtime, ver `nuxt.config.ts` -> `vue.runtimeCompiler`): el
 // auto-import de Nuxt no los alcanza, así que sus dependencias se registran a
 // mano en `components: {...}` y por eso necesitan import explícito aquí.
+import { computed, ref, toRefs } from 'vue'
 import { GBadge } from '~/components/gandalf/base/badge'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
@@ -1993,6 +1994,9 @@ const InfoIcon = {
     color: String,
     label: String, value: [String, Number],
   },
+  setup(props) {
+    return { ...toRefs(props) }
+  },
   template: `
     <div class="flex items-start gap-2.5 min-w-0">
       <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -2011,8 +2015,8 @@ const InfoIcon = {
 const InfoBadge = {
   components: { GBadge, CreditCardIcon },
   props: { color: String, label: String, estado: String },
-  data() {
-    return { ESTADO_PAGO_LABELS_S, ESTADO_PAGO_SEVERITY_S }
+  setup(props) {
+    return { ...toRefs(props), ESTADO_PAGO_LABELS_S, ESTADO_PAGO_SEVERITY_S }
   },
   template: `
     <div class="flex items-start gap-2.5">
@@ -2032,8 +2036,11 @@ const InfoBadge = {
 // Contraseña wifi enmascarada, con botón para revelarla
 const InfoSecret = {
   props: { color: String, label: String, value: String },
-  data() { return { visible: false } },
   components: { EyeIcon, EyeOffIcon, LockIcon },
+  setup(props) {
+    const visible = ref(false)
+    return { ...toRefs(props), visible }
+  },
   template: `
     <div class="flex items-start gap-2.5 min-w-0">
       <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -2060,6 +2067,9 @@ const InfoLink = {
   props: { color: String, label: String, href: String, editable: Boolean },
   emits: ['editar'],
   components: { CirclePlusIcon, ExternalLinkIcon, LinkIcon },
+  setup(props) {
+    return { ...toRefs(props) }
+  },
   template: `
     <div class="flex items-start gap-2.5">
       <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -2101,35 +2111,42 @@ const PagosTabla = {
     loadingPagos: Boolean,
     filtros: { type: Object, default: () => ({ año: null, mes: null }) },
   },
-  data() {
+  setup(props) {
+    // `filtros` es un objeto pasado por el padre y se muta directamente (igual
+    // que hacía `this.filtros.año = null`): `toRefs` expone un ref hacia la
+    // misma prop reactiva, no una copia, así que la mutación sigue viéndola el
+    // padre.
+    const { filtros } = toRefs(props)
+
+    const pagosFiltrados = computed(() => {
+      let result = props.pagos || []
+      if (filtros.value.año) result = result.filter(p => p.año === filtros.value.año)
+      if (filtros.value.mes) result = result.filter(p => p.mes === filtros.value.mes)
+      return result
+    })
+    const hayFiltros = computed(() => filtros.value.año || filtros.value.mes)
+
+    function limpiar() {
+      filtros.value.año = null
+      filtros.value.mes = null
+    }
+    function formatCOPLocal(val) {
+      if (val == null) return '—'
+      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
+    }
+
     return {
+      ...toRefs(props),
       MESES_NOMBRES_STATIC,
       MESES_OPCIONES_STATIC,
       ESTADO_PAGO_LABELS_S,
       ESTADO_PAGO_SEVERITY_S,
       AÑOS_STATIC,
+      pagosFiltrados,
+      hayFiltros,
+      limpiar,
+      formatCOPLocal,
     }
-  },
-  computed: {
-    pagosFiltrados() {
-      let result = this.pagos || []
-      if (this.filtros.año) result = result.filter(p => p.año === this.filtros.año)
-      if (this.filtros.mes) result = result.filter(p => p.mes === this.filtros.mes)
-      return result
-    },
-    hayFiltros() {
-      return this.filtros.año || this.filtros.mes
-    },
-  },
-  methods: {
-    limpiar() {
-      this.filtros.año = null
-      this.filtros.mes = null
-    },
-    formatCOPLocal(val) {
-      if (val == null) return '—'
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
-    },
   },
   template: `
     <div class="rounded-xl border bg-white overflow-hidden" style="border-color:#e5e7eb">
@@ -2222,10 +2239,11 @@ const Acordeon = {
     color: { type: String, default: '#f59e0b' },
     count: { type: Number, default: 0 },
   },
-  data() {
-    return { abierto: false }
-  },
   components: { ChevronDownIcon },
+  setup(props) {
+    const abierto = ref(false)
+    return { ...toRefs(props), abierto }
+  },
   template: `
     <div class="rounded-xl border bg-white overflow-hidden" style="border-color:#e5e7eb">
       <button type="button"
@@ -2264,30 +2282,36 @@ const FacturasCobradas = {
     datos: { type: Array, default: () => [] },
     proyectoNombre: String,
   },
-  data() {
+  setup(props) {
+    const filtroAño = ref(null)
+    const filtroMes = ref(null)
+
+    const datosFiltrados = computed(() => {
+      let r = props.datos
+      if (filtroAño.value) r = r.filter(f => f.anio === filtroAño.value)
+      if (filtroMes.value) r = r.filter(f => f.mes === filtroMes.value)
+      return r
+    })
+    const hayFiltros = computed(() => filtroAño.value || filtroMes.value)
+
+    function limpiarFiltros() { filtroAño.value = null; filtroMes.value = null }
+    function formatCOP(val) {
+      if (val == null) return '—'
+      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
+    }
+
     return {
-      filtroAño: null,
-      filtroMes: null,
+      ...toRefs(props),
+      filtroAño,
+      filtroMes,
       AÑOS_STATIC,
       MESES_OPCIONES_STATIC,
       MESES_NOMBRES_STATIC,
+      datosFiltrados,
+      hayFiltros,
+      limpiarFiltros,
+      formatCOP,
     }
-  },
-  computed: {
-    datosFiltrados() {
-      let r = this.datos
-      if (this.filtroAño) r = r.filter(f => f.anio === this.filtroAño)
-      if (this.filtroMes) r = r.filter(f => f.mes === this.filtroMes)
-      return r
-    },
-    hayFiltros() { return this.filtroAño || this.filtroMes },
-  },
-  methods: {
-    limpiarFiltros() { this.filtroAño = null; this.filtroMes = null },
-    formatCOP(val) {
-      if (val == null) return '—'
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
-    },
   },
   template: `
     <Acordeon titulo="Facturas cobradas" :icono="FileInputIcon" color="#f59e0b" :count="datos.length">
@@ -2347,39 +2371,45 @@ const FacturasEmitidas = {
     datos: { type: Array, default: () => [] },
     proyectoNombre: String,
   },
-  data() {
-    return {
-      filtroAño: null,
-      filtroMes: null,
-      AÑOS_STATIC,
-      MESES_OPCIONES_STATIC,
-    }
-  },
-  computed: {
-    datosFiltrados() {
-      let r = this.datos
-      if (this.filtroAño) {
+  setup(props) {
+    const filtroAño = ref(null)
+    const filtroMes = ref(null)
+
+    const datosFiltrados = computed(() => {
+      let r = props.datos
+      if (filtroAño.value) {
         r = r.filter(f => {
           const d = f.fecha ? new Date(f.fecha) : null
-          return d && d.getFullYear() === this.filtroAño
+          return d && d.getFullYear() === filtroAño.value
         })
       }
-      if (this.filtroMes) {
+      if (filtroMes.value) {
         r = r.filter(f => {
           const d = f.fecha ? new Date(f.fecha) : null
-          return d && d.getMonth() + 1 === this.filtroMes
+          return d && d.getMonth() + 1 === filtroMes.value
         })
       }
       return r
-    },
-    hayFiltros() { return this.filtroAño || this.filtroMes },
-  },
-  methods: {
-    limpiarFiltros() { this.filtroAño = null; this.filtroMes = null },
-    formatCOP(val) {
+    })
+    const hayFiltros = computed(() => filtroAño.value || filtroMes.value)
+
+    function limpiarFiltros() { filtroAño.value = null; filtroMes.value = null }
+    function formatCOP(val) {
       if (val == null) return '—'
       return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
-    },
+    }
+
+    return {
+      ...toRefs(props),
+      filtroAño,
+      filtroMes,
+      AÑOS_STATIC,
+      MESES_OPCIONES_STATIC,
+      datosFiltrados,
+      hayFiltros,
+      limpiarFiltros,
+      formatCOP,
+    }
   },
   template: `
     <Acordeon titulo="Facturas emitidas" :icono="FileOutputIcon" color="#f59e0b" :count="datos.length">

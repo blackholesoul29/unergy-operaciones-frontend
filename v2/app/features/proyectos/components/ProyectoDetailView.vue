@@ -1401,19 +1401,20 @@ onMounted(async () => {
 </script>
 
 <script>
-import { h } from 'vue'
-
-// Definido con render function (no `template` string) -- el build runtime-only
-// de Vue no puede compilar strings de template en producción, lo que dejaba
-// cada InfoField invisible (solo se veía el label de la sección, sin datos).
+// Componente auxiliar local (Composition API): distinto del `InfoField` global
+// de `~/components/blocks/`, que lleva los colores de marca -- este usa la
+// paleta gris de Tailwind, así que no son intercambiables sin cambiar el diseño.
 const InfoField = {
   props: { label: String, value: [String, Number, Boolean] },
-  render() {
-    return h('div', [
-      h('p', { class: 'text-xs text-gray-400 uppercase tracking-wide' }, this.label),
-      h('p', { class: 'text-gray-800 font-medium mt-0.5' }, this.value ?? '—'),
-    ])
+  setup(props) {
+    return { props }
   },
+  template: `
+    <div>
+      <p class="text-xs text-gray-400 uppercase tracking-wide">{{ props.label }}</p>
+      <p class="text-gray-800 font-medium mt-0.5">{{ props.value ?? '—' }}</p>
+    </div>
+  `,
 }
 export default { components: { InfoField } }
 </script>

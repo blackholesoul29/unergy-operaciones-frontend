@@ -716,20 +716,18 @@ onMounted(() => {
 </script>
 
 <script>
-import { h } from 'vue'
-
-// Render function (no `template` string) -- el build runtime-only de Vue no
-// compila strings de template en producción, lo que dejaba esto invisible.
+// Componente auxiliar local (Composition API).
 const InfoField = {
   props: { label: String, value: [String, Number, Boolean], highlight: Boolean },
-  render() {
-    return h('div', [
-      h('p', { class: 'text-xs text-gray-400 uppercase tracking-wide' }, this.label),
-      h('p', {
-        class: ['mt-0.5', this.highlight ? 'font-bold text-gray-800' : 'font-medium text-gray-700'],
-      }, this.value || '—'),
-    ])
+  setup(props) {
+    return { props }
   },
+  template: `
+    <div>
+      <p class="text-xs text-gray-400 uppercase tracking-wide">{{ props.label }}</p>
+      <p class="mt-0.5" :class="props.highlight ? 'font-bold text-gray-800' : 'font-medium text-gray-700'">{{ props.value || '—' }}</p>
+    </div>
+  `,
 }
 export default { components: { InfoField } }
 </script>
