@@ -47,7 +47,7 @@
           </div>
 
           <div v-for="c in operador.contactos" :key="c.id" class="flex items-center gap-2">
-            <div class="flex-1 relative">
+            <div class="w-64 shrink-0 relative">
               <i class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color: #9b89b5;" />
               <input v-model="c.email" type="email" placeholder="correo@empresa.com"
                 @blur="guardarContacto(c)"
@@ -56,7 +56,7 @@
             </div>
             <input v-model="c.nombre" type="text" placeholder="Nombre (opcional)"
               @blur="guardarContacto(c)"
-              class="w-40 px-3 py-2 text-sm rounded-lg outline-none"
+              class="flex-1 px-3 py-2 text-sm rounded-lg outline-none"
               style="border:1.5px solid #e8e0f0;background:#fff;" />
             <button type="button" @click="eliminarContacto(c)"
               class="p-1.5 rounded-lg transition-colors hover:bg-red-50">
@@ -65,7 +65,7 @@
           </div>
 
           <div v-if="nuevo" class="flex items-center gap-2">
-            <div class="flex-1 relative">
+            <div class="w-64 shrink-0 relative">
               <i class="pi pi-envelope absolute left-3 top-1/2 -translate-y-1/2 text-xs" style="color: #9b89b5;" />
               <input v-model="nuevo.email" type="email" placeholder="correo@empresa.com" autofocus
                 @blur="crearContacto"
@@ -74,7 +74,7 @@
             </div>
             <input v-model="nuevo.nombre" type="text" placeholder="Nombre (opcional)"
               @blur="crearContacto"
-              class="w-40 px-3 py-2 text-sm rounded-lg outline-none"
+              class="flex-1 px-3 py-2 text-sm rounded-lg outline-none"
               style="border:1.5px solid #e8e0f0;background:#fff;" />
             <button type="button" @click="nuevo = null" class="p-1.5 rounded-lg hover:bg-gray-50">
               <i class="pi pi-times text-xs" style="color: #9b89b5;" />
