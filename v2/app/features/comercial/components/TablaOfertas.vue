@@ -22,7 +22,7 @@
       </Column>
       <Column field="estado" header="Etapa" sortable>
         <template #body="{ data }">
-          <Tag :value="labelEtapa(data.estado)" :severity="severidadEtapa(data.estado)" />
+          <GBadge :color="severidadEtapa(data.estado)">{{ labelEtapa(data.estado) }}</GBadge>
         </template>
       </Column>
       <Column field="planta_nombre" header="Planta" sortable style="min-width:12rem">
@@ -93,7 +93,7 @@
       </Column>
       <Column header="" style="width:4rem">
         <template #body="{ data }">
-          <Tag v-if="data.alerta" severity="danger" :value="`⚠ ${data.dias_sin_respuesta}d`" class="scale-90" />
+          <GBadge v-if="data.alerta" color="destructive" class="scale-90">⚠ {{ data.dias_sin_respuesta }}d</GBadge>
         </template>
       </Column>
       <template #empty>
@@ -107,7 +107,6 @@
 import { ref } from 'vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import { toast } from 'vue-sonner'
 import { exportarExcel } from '~/utils/exportarExcel'

@@ -5,11 +5,8 @@
                    :codigo="contrato.numero_codigo_contrato || ''"
                    :tabs="TABS" v-model="activeTab">
       <template #chips>
-        <Tag value="PPA" severity="warn" class="text-[10px]" />
-        <Tag :value="(contrato.tipo_contrato === 'compra') ? 'Compra' : 'Venta'"
-          :style="(contrato.tipo_contrato === 'compra')
-            ? 'background:var(--color-unergy-purple);color:#fff'
-            : 'background:var(--color-unergy-yellow);color:var(--color-unergy-deep)'" class="text-[10px]" />
+        <GBadge color="warning" class="text-[10px]">PPA</GBadge>
+        <GBadge :color="(contrato.tipo_contrato === 'compra') ? '#915BD8' : '#F6FF72'" class="text-[10px]">{{ (contrato.tipo_contrato === 'compra') ? 'Compra' : 'Venta' }}</GBadge>
       </template>
       <template #acciones>
         <!-- Atajo al contrato: el enlace se guarda en la pestaña Datos -->
@@ -88,7 +85,7 @@
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Comunidad energética</span>
                 <div>
-                  <Tag v-if="contrato.es_comunidad_energetica" severity="success" value="🏘 Sí" class="text-[10px]" />
+                  <GBadge v-if="contrato.es_comunidad_energetica" color="success" class="text-[10px]">🏘 Sí</GBadge>
                   <span v-else class="text-sm" style="color:var(--color-unergy-deep)">{{ contrato.es_comunidad_energetica === false ? 'No' : '—' }}</span>
                 </div>
               </div>
@@ -181,9 +178,9 @@
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Renovación automática</span>
                 <div>
-                  <Tag v-if="contrato.renovacion_automatica != null"
-                    :severity="contrato.renovacion_automatica ? 'success' : 'secondary'"
-                    :value="contrato.renovacion_automatica ? 'Sí' : 'No'" class="text-[10px]" />
+                  <GBadge v-if="contrato.renovacion_automatica != null"
+                    :color="contrato.renovacion_automatica ? 'success' : 'default'"
+                    class="text-[10px]">{{ contrato.renovacion_automatica ? 'Sí' : 'No' }}</GBadge>
                   <span v-else class="text-sm" style="color:var(--color-unergy-deep)">—</span>
                 </div>
               </div>
@@ -743,14 +740,12 @@
             </Column>
             <Column field="tipo_solicitud" header="Tipo" style="width:120px">
               <template #body="{ data }">
-                <Tag :value="data.tipo_solicitud" class="text-[10px] capitalize"
-                  :severity="{ registro: 'success', modificacion: 'info', terminacion: 'danger', desistimiento: 'secondary' }[data.tipo_solicitud] || 'secondary'" />
+                <GBadge :color="{ registro: 'success', modificacion: 'information', terminacion: 'destructive', desistimiento: 'default' }[data.tipo_solicitud] || 'default'" class="text-[10px] capitalize">{{ data.tipo_solicitud }}</GBadge>
               </template>
             </Column>
             <Column field="estado_solicitud" header="Estado" style="width:115px">
               <template #body="{ data }">
-                <Tag :value="data.estado_solicitud.replace('_', ' ')" class="text-[10px] capitalize"
-                  :severity="{ publicado: 'success', en_proceso: 'warn', rechazado: 'danger', desistido: 'secondary' }[data.estado_solicitud] || 'secondary'" />
+                <GBadge :color="{ publicado: 'success', en_proceso: 'warning', rechazado: 'destructive', desistido: 'default' }[data.estado_solicitud] || 'default'" class="text-[10px] capitalize">{{ data.estado_solicitud.replace('_', ' ') }}</GBadge>
               </template>
             </Column>
             <Column field="fecha_inicio" header="Inicio" sortable style="width:105px">
@@ -869,7 +864,6 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from 'vue-sonner'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import DetalleLayout from '~/components/blocks/DetalleLayout.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'

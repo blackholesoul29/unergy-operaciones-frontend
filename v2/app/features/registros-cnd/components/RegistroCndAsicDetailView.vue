@@ -181,7 +181,7 @@
             </Column>
             <Column header="Estado" style="width:110px">
               <template #body="{ data }">
-                <Tag :value="data.completado ? 'Completado' : 'Pendiente'" :severity="data.completado ? 'success' : 'secondary'" class="text-xs" />
+                <GBadge :color="data.completado ? 'success' : 'default'" class="text-xs">{{ data.completado ? 'Completado' : 'Pendiente' }}</GBadge>
               </template>
             </Column>
           </DataTable>
@@ -205,13 +205,13 @@
             <div>
               <div class="flex items-center justify-between mb-2">
                 <div class="text-sm font-semibold" style="color:var(--color-unergy-deep);">Validación</div>
-                <Tag v-if="validacion" :value="validacion.sin_parametros ? 'sin datos' : (validacion.valido ? 'sin errores' : 'con errores')"
-                  :severity="validacion.sin_parametros ? 'secondary' : (validacion.valido ? 'success' : 'danger')" class="text-xs" />
+                <GBadge v-if="validacion"
+                  :color="validacion.sin_parametros ? 'default' : (validacion.valido ? 'success' : 'destructive')" class="text-xs">{{ validacion.sin_parametros ? 'sin datos' : (validacion.valido ? 'sin errores' : 'con errores') }}</GBadge>
               </div>
               <div v-if="validacion && validacion.resultados.length" class="space-y-1">
                 <div v-for="(r, i) in validacion.resultados" :key="i" class="flex items-center justify-between text-xs rounded px-2 py-1" style="background:#faf8fd;">
                   <span style="color:var(--color-unergy-deep);">{{ r.regla }}</span>
-                  <Tag :value="r.severidad" :severity="sevColor(r.severidad)" class="text-xs" :title="r.mensaje" />
+                  <GBadge :color="sevColor(r.severidad)" class="text-xs" :title="r.mensaje">{{ r.severidad }}</GBadge>
                 </div>
               </div>
               <p v-else class="text-xs" style="color:#9b89b5;">Guarda parámetros para ver la validación.</p>
@@ -373,7 +373,6 @@ import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import Checkbox from 'primevue/checkbox'
@@ -465,7 +464,7 @@ function estadoLabel(s) {
   return s.replace(/_/g, ' ').toLowerCase().replace(/^\w/, c => c.toUpperCase())
 }
 function sevColor(s) {
-  return { OK: 'success', ERROR: 'danger', ADVERTENCIA: 'warn', PENDIENTE: 'secondary' }[s] || 'secondary'
+  return { OK: 'success', ERROR: 'destructive', ADVERTENCIA: 'warning', PENDIENTE: 'default' }[s] || 'default'
 }
 function siguientesEstados(e) {
   return (cat.value.transiciones?.[e.etapa]?.[e.estado_actual]) || []

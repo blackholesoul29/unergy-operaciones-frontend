@@ -187,7 +187,7 @@
 
         <Column header="Estado" style="width:130px">
           <template #body="{ data }">
-            <Tag :value="data.estado?.etiqueta || '—'" :style="estadoPillStyle(data.estado?.color_hex)" />
+            <GBadge :color="data.estado?.color_hex || '#915BD8'">{{ data.estado?.etiqueta || '—' }}</GBadge>
           </template>
         </Column>
 
@@ -264,12 +264,12 @@
 
             <!-- Badges (estado, prioridad, categoría) -->
             <div class="flex flex-wrap gap-1.5">
-              <Tag :value="drawerFalla.estado?.etiqueta" :style="estadoPillStyle(drawerFalla.estado?.color_hex)" />
+              <GBadge :color="drawerFalla.estado?.color_hex || '#915BD8'">{{ drawerFalla.estado?.etiqueta }}</GBadge>
               <span class="prio-pill" :style="prioPillStyle(drawerFalla.prioridad?.codigo)">
                 {{ drawerFalla.prioridad?.etiqueta }}
               </span>
-              <Tag v-if="categoriaFalla(drawerFalla).etiqueta" :value="categoriaFalla(drawerFalla).etiqueta"
-                :style="catTagStyle(categoriaFalla(drawerFalla).color)" />
+              <GBadge v-if="categoriaFalla(drawerFalla).etiqueta"
+                :color="categoriaFalla(drawerFalla).color || '#915BD8'">{{ categoriaFalla(drawerFalla).etiqueta }}</GBadge>
             </div>
 
             <!-- Hechos en grid compacto (todo a un vistazo) -->
@@ -355,7 +355,7 @@
               <header class="gf-section-head">
                 <ClockIcon class="gf-section-icon size-[1em]" />
                 <h3 class="gf-section-title">SLA</h3>
-                <Tag v-if="drawerFalla.sla_limite_horas" class="ml-auto" :value="slaText(drawerFalla)" :severity="slaSeverity(drawerFalla)" />
+                <GBadge v-if="drawerFalla.sla_limite_horas" class="ml-auto" :color="slaSeverity(drawerFalla)">{{ slaText(drawerFalla) }}</GBadge>
                 <span v-else class="ml-auto text-xs text-gray-500">Sin límite</span>
               </header>
               <template v-if="drawerFalla.sla_limite_horas">
@@ -436,7 +436,7 @@
                   </div>
                   <p v-if="seg.nota" class="gf-body-text whitespace-pre-line">{{ seg.nota }}</p>
                   <div v-if="seg.estado_nuevo" class="mt-1.5">
-                    <Tag :value="seg.estado_nuevo?.etiqueta" :style="estadoPillStyle(seg.estado_nuevo?.color_hex)" />
+                    <GBadge :color="seg.estado_nuevo?.color_hex || '#915BD8'">{{ seg.estado_nuevo?.etiqueta }}</GBadge>
                   </div>
                 </div>
               </div>
@@ -505,7 +505,6 @@ import { toast } from 'vue-sonner'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import Tag from 'primevue/tag'
 import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
@@ -996,14 +995,6 @@ function prioPillStyle(codigo) {
   const c = prioColor(codigo)
   return { background: c + '18', color: c, border: `1px solid ${c}40` }
 }
-function estadoPillStyle(hex) {
-  const c = hex || '#915BD8'
-  return { background: c + '1a', color: c, border: `1px solid ${c}40` }
-}
-function catTagStyle(hex) {
-  const c = hex || '#915BD8'
-  return { background: c + '18', color: c, border: `1px solid ${c}33` }
-}
 function bucketActiveStyle(color, active) {
   if (!active) return {}
   return { boxShadow: `inset 0 0 0 2px ${color}` }
@@ -1081,9 +1072,9 @@ function slaText(falla) {
 function slaSeverity(falla) {
   const c = slaTextColor(falla)
   if (c === '#16a34a') return 'success'
-  if (c === '#dc2626') return 'danger'
-  if (c === '#d97706') return 'warn'
-  return 'secondary'
+  if (c === '#dc2626') return 'destructive'
+  if (c === '#d97706') return 'warning'
+  return 'default'
 }
 
 function fmtFecha(d) {

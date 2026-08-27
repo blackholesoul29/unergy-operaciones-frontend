@@ -20,7 +20,7 @@
               <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
             </button>
           </div>
-          <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
+          <GBadge color="default" class="text-xs font-mono">{{ periodoActual }}</GBadge>
         </template>
         <span v-else class="text-sm text-gray-400">Sin facturas procesadas</span>
       </div>
@@ -122,11 +122,11 @@
                         {{ fila.nombre_comercial }}
                       </span>
                       <div v-else-if="fila.excluido" class="flex items-center gap-1.5">
-                        <Tag severity="secondary" value="No aplica" />
+                        <GBadge color="default">No aplica</GBadge>
                         <span class="text-[11px] text-gray-400">{{ fila.descripcion }}</span>
                       </div>
                       <div v-else class="flex items-center gap-1.5">
-                        <Tag severity="warn" value="Sin asignar" />
+                        <GBadge color="warning">Sin asignar</GBadge>
                         <button type="button" class="mn-asignar-btn" title="Asignar minigranja"
                           @click="abrirAsignarMinigranja(fila.descripcion)">
                           <LinkIcon class="text-xs size-[1em]" />
@@ -270,7 +270,6 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
 import IconField from 'primevue/iconfield'

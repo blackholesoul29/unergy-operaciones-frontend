@@ -144,14 +144,13 @@
               <td class="px-4 py-2 font-mono text-xs">{{ row.codigo || '—' }}</td>
               <td class="px-4 py-2">{{ row.nombre || '—' }}</td>
               <td class="px-4 py-2 whitespace-nowrap">
-                <Tag :value="row.agente || '—'" :severity="row.agente === 'GENERADOR' ? 'success' : 'info'" />
+                <GBadge :color="row.agente === 'GENERADOR' ? 'success' : 'information'">{{ row.agente || '—' }}</GBadge>
               </td>
               <td class="px-4 py-2 whitespace-nowrap">{{ row.mes_nombre || row.mes || '—' }} {{ row.anio || '' }}</td>
               <td class="px-4 py-2 whitespace-nowrap uppercase text-xs">{{ row.version || '—' }}</td>
               <td class="px-4 py-2 text-right whitespace-nowrap">{{ fmtCOP(row.valor_total) }}</td>
               <td class="px-4 py-2 whitespace-nowrap">
-                <Tag :value="row.estado_procesamiento || '—'"
-                     :severity="SEVERIDAD_ESTADO[row.estado_procesamiento] || 'secondary'" />
+                <GBadge :color="SEVERIDAD_ESTADO[row.estado_procesamiento] || 'default'">{{ row.estado_procesamiento || '—' }}</GBadge>
                 <InfoIcon class="ml-1 text-xs size-[1em]" v-if="row.error" style="color:#D64455" v-tooltip.top="row.error" />
               </td>
               <td class="px-4 py-2 text-center">
@@ -185,7 +184,6 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Tag from 'primevue/tag'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { toast } from 'vue-sonner'
@@ -215,9 +213,9 @@ const COLUMNAS = [
 
 const SEVERIDAD_ESTADO = {
   completed: 'success',
-  failed: 'danger',
-  processing: 'warn',
-  pending: 'secondary',
+  failed: 'destructive',
+  processing: 'warning',
+  pending: 'default',
 }
 
 // ── Estado ───────────────────────────────────────────────────────────────────

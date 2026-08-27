@@ -2,6 +2,7 @@
 // Helpers compartidos del módulo de Liquidaciones (formato + cálculo del neto).
 // Fuente única de verdad — antes estaban duplicados en 4 vistas.
 // ──────────────────────────────────────────────────────────────────────────
+import type { GandalfBadgeColor } from '~/components/gandalf/base/badge'
 import {
   ESTADO_SEVERITY, ESTADO_LABEL, ETIQUETAS, LABEL_SERVICIO,
   TIPOS_INGRESO_BRUTO, TIPOS_COMERCIALIZACION,
@@ -59,14 +60,15 @@ export interface EstadoFlujoEntry {
   key: string
   label: string
   color: string
-  sev: string
+  /** Color semántico de `GBadge`. */
+  sev: GandalfBadgeColor
 }
 
 // Flujo de estado del panel (#12), DERIVADO de señales existentes (sin migración):
 // Cargado (hay panel) → Numerado (tiene consecutivos) → Firmado (fecha_firma).
 export const ESTADO_FLUJO: EstadoFlujoEntry[] = [
-  { key: 'cargado', label: 'Cargado', color: '#F59E0B', sev: 'warn' },
-  { key: 'numerado', label: 'Numerado', color: '#3B82F6', sev: 'info' },
+  { key: 'cargado', label: 'Cargado', color: '#F59E0B', sev: 'warning' },
+  { key: 'numerado', label: 'Numerado', color: '#3B82F6', sev: 'information' },
   { key: 'firmado', label: 'Firmado', color: '#10B981', sev: 'success' },
 ]
 
@@ -96,13 +98,18 @@ export function pct(p: number | string | null | undefined): string {
   return `${(normPct(p) * 100).toFixed(2)}%`
 }
 
-export const estadoSeverity = (e: string | null | undefined): string =>
-  (e ? ESTADO_SEVERITY[e as keyof typeof ESTADO_SEVERITY] : undefined) || 'secondary'
+export const estadoSeverity = (e: string | null | undefined): GandalfBadgeColor =>
+  (e ? ESTADO_SEVERITY[e as keyof typeof ESTADO_SEVERITY] : undefined) || 'default'
 export const estadoLabel = (e: string | null | undefined): string =>
   (e ? ESTADO_LABEL[e as keyof typeof ESTADO_LABEL] : undefined) || e || '—'
 
-export function facturaEstadoSeverity(e: string | null | undefined): string {
-  return ({ emitida: 'info', pagada: 'success', vencida: 'danger' } as Record<string, string>)[e ?? ''] || 'secondary'
+export function facturaEstadoSeverity(e: string | null | undefined): GandalfBadgeColor {
+  return (
+    ({ emitida: 'information', pagada: 'success', vencida: 'destructive' } as Record<
+      string,
+      GandalfBadgeColor
+    >)[e ?? ''] || 'default'
+  )
 }
 
 // ── Cálculo del INGRESO NETO ─────────────────────────────────────────────────

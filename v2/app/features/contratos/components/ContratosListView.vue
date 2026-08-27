@@ -56,10 +56,7 @@
         </Column>
         <Column field="tipo_contrato" header="Tipo" sortable style="width:90px">
           <template #body="{ data }">
-            <Tag :value="(data.tipo_contrato === 'compra') ? 'Compra' : 'Venta'"
-              :style="(data.tipo_contrato === 'compra')
-                ? 'background:var(--color-unergy-purple);color:#fff'
-                : 'background:var(--color-unergy-yellow);color:var(--color-unergy-deep)'" class="text-xs" />
+            <GBadge :color="(data.tipo_contrato === 'compra') ? '#915BD8' : '#F6FF72'" class="text-xs">{{ (data.tipo_contrato === 'compra') ? 'Compra' : 'Venta' }}</GBadge>
           </template>
         </Column>
         <Column field="numero_codigo_contrato" header="N° contrato" sortable style="width:160px">
@@ -90,9 +87,8 @@
         </Column>
         <Column header="Cumplimiento" style="width:120px">
           <template #body="{ data }">
-            <Tag v-if="data.estado_cumplimiento"
-              :value="CUMPLIMIENTO_LABELS[data.estado_cumplimiento] || data.estado_cumplimiento"
-              :severity="CUMPLIMIENTO_SEVERITY[data.estado_cumplimiento] || 'secondary'" class="text-xs" />
+            <GBadge v-if="data.estado_cumplimiento"
+              :color="CUMPLIMIENTO_SEVERITY[data.estado_cumplimiento] || 'default'" class="text-xs">{{ CUMPLIMIENTO_LABELS[data.estado_cumplimiento] || data.estado_cumplimiento }}</GBadge>
             <span v-else class="text-xs" style="color: #9CA3AF;">—</span>
           </template>
         </Column>
@@ -163,8 +159,7 @@
         </Column>
         <Column field="estado" header="Estado" sortable style="width:130px">
           <template #body="{ data }">
-            <Tag :value="ESTADO_PROYECTO_LABELS[data.estado] || data.estado"
-              :severity="ESTADO_PROYECTO_SEVERITY[data.estado]" />
+            <GBadge :color="ESTADO_PROYECTO_SEVERITY[data.estado]">{{ ESTADO_PROYECTO_LABELS[data.estado] || data.estado }}</GBadge>
           </template>
         </Column>
         <Column header="Ubicación" style="width:180px">
@@ -179,9 +174,8 @@
         </Column>
         <Column header="Modalidad venta" style="width:160px">
           <template #body="{ data }">
-            <Tag v-if="data.servicio_representacion?.modalidad_venta"
-              :value="MODALIDAD_LABELS[data.servicio_representacion.modalidad_venta] || data.servicio_representacion.modalidad_venta"
-              severity="info" />
+            <GBadge v-if="data.servicio_representacion?.modalidad_venta"
+              color="information">{{ MODALIDAD_LABELS[data.servicio_representacion.modalidad_venta] || data.servicio_representacion.modalidad_venta }}</GBadge>
             <span v-else class="text-gray-300">—</span>
           </template>
         </Column>
@@ -249,7 +243,7 @@
         </Column>
         <Column header="Estado" style="width:120px">
           <template #body="{ data }">
-            <Tag :value="ESTADO_LABELS[data.estado] || data.estado" :severity="ESTADO_SEVERITY[data.estado]" />
+            <GBadge :color="ESTADO_SEVERITY[data.estado]">{{ ESTADO_LABELS[data.estado] || data.estado }}</GBadge>
           </template>
         </Column>
       </DataTable>
@@ -276,7 +270,6 @@ import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
@@ -304,9 +297,9 @@ const ESTADO_LABELS = {
 }
 const ESTADO_SEVERITY = {
   vigente:      'success',
-  vencido:      'danger',
-  terminado:    'secondary',
-  en_renovacion:'warn',
+  vencido:      'destructive',
+  terminado:    'default',
+  en_renovacion:'warning',
 }
 
 const ESTADO_PROYECTO_LABELS = {
@@ -316,10 +309,10 @@ const ESTADO_PROYECTO_LABELS = {
   cancelado:     'Cancelado',
 }
 const ESTADO_PROYECTO_SEVERITY = {
-  en_desarrollo: 'warn',
+  en_desarrollo: 'warning',
   en_operacion:  'success',
-  suspendido:    'danger',
-  cancelado:     'secondary',
+  suspendido:    'destructive',
+  cancelado:     'default',
 }
 
 const MODALIDAD_LABELS = {
@@ -336,8 +329,8 @@ const CUMPLIMIENTO_LABELS = {
 }
 const CUMPLIMIENTO_SEVERITY = {
   on_track: 'success',
-  at_risk: 'warn',
-  deficit: 'danger',
+  at_risk: 'warning',
+  deficit: 'destructive',
 }
 
 const servicioActivo = ref('ppa')

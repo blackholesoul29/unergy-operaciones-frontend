@@ -44,7 +44,7 @@
 
         <Column header="Siguiente paso">
           <template #body="{ data }">
-            <span v-if="data.avance_pct >= 100" class="text-xs"><Tag value="Completo" severity="success" class="text-xs" /></span>
+            <span v-if="data.avance_pct >= 100" class="text-xs"><GBadge color="success" class="text-xs">Completo</GBadge></span>
             <span v-else-if="data.siguiente_paso" class="text-xs" style="color:var(--color-unergy-deep);">
               <span class="font-mono font-semibold" style="color:var(--color-unergy-purple);">{{ data.siguiente_paso.codigo }}</span>
               — {{ data.siguiente_paso.descripcion }}
@@ -55,9 +55,9 @@
         <Column header="" style="width:170px">
           <template #body="{ data }">
             <div class="flex gap-1 justify-end items-center">
-              <Tag v-if="!data.tiene_registro" value="Sin iniciar" severity="secondary" class="text-xs" />
-              <Tag v-if="data.alertas_pendientes" :value="`⚠ ${data.alertas_pendientes}`" severity="warn" class="text-xs" />
-              <Tag v-if="data.bloqueos" :value="`⛔ ${data.bloqueos}`" severity="danger" class="text-xs" />
+              <GBadge v-if="!data.tiene_registro" color="default" class="text-xs">Sin iniciar</GBadge>
+              <GBadge v-if="data.alertas_pendientes" color="warning" class="text-xs">⚠ {{ data.alertas_pendientes }}</GBadge>
+              <GBadge v-if="data.bloqueos" color="destructive" class="text-xs">⛔ {{ data.bloqueos }}</GBadge>
               <Button text rounded size="small" @click.stop="irDetalle(data)">
                 <template #icon><EyeIcon class="size-[1em]" /></template>
               </Button>
@@ -76,7 +76,6 @@ import { toast } from 'vue-sonner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'

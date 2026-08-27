@@ -19,7 +19,7 @@
           <span class="font-mono text-xs" style="color:#9b89b5">
             {{ oferta.codigo_seguimiento || oferta.numero_oferta || 'sin código' }}
           </span>
-          <Tag v-if="oferta.alerta" severity="danger" :value="`⚠ ${oferta.dias_sin_respuesta}d`" class="scale-90" />
+          <GBadge v-if="oferta.alerta" color="destructive" class="scale-90">⚠ {{ oferta.dias_sin_respuesta }}d</GBadge>
         </div>
         <h2 class="text-base font-semibold truncate" style="color:var(--color-unergy-deep)">
           {{ oferta.planta_nombre || oferta.ficha?.proyecto_nombre || 'Sin planta' }}
@@ -264,7 +264,6 @@ import InputNumber from 'primevue/inputnumber'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import Message from 'primevue/message'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'

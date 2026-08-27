@@ -177,8 +177,8 @@
               <td class="px-4 py-2 whitespace-nowrap">{{ FRECUENCIAS[row.frecuencia_pago] || row.frecuencia_pago || '—' }}</td>
               <td class="px-4 py-2">
                 {{ row.tipo_pago_nombre || row.tipo_pago || '—' }}
-                <Tag v-if="row.grupo" :value="row.grupo" class="ml-1"
-                     :severity="row.grupo === 'xm' ? 'warn' : 'secondary'" />
+                <GBadge v-if="row.grupo" class="ml-1"
+                     :color="row.grupo === 'xm' ? 'warning' : 'default'">{{ row.grupo }}</GBadge>
               </td>
               <td class="px-4 py-2 whitespace-nowrap uppercase text-xs">{{ row.version || '—' }}</td>
             </tr>
@@ -225,7 +225,6 @@ import Select from 'primevue/select'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import Checkbox from 'primevue/checkbox'
-import Tag from 'primevue/tag'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { toast } from 'vue-sonner'

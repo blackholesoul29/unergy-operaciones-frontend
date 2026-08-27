@@ -11,7 +11,7 @@
                 size="small" class="w-40" />
       </template>
       <template v-if="!isEditMode" #chips>
-        <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="text-[10px]" />
+        <GBadge :color="estadoSeverity(proyecto.estado)" class="text-[10px]">{{ proyecto.estado }}</GBadge>
       </template>
       <template #acciones>
         <template v-if="isEditMode">
@@ -47,8 +47,7 @@
             <div class="flex flex-col gap-1">
               <p class="text-xs text-gray-400 uppercase tracking-wide">Comunidad energética</p>
               <div>
-                <Tag v-if="proyecto.es_comunidad_energetica" severity="success"
-                     :value="proyecto.nombre_comunidad ? ('🏘 ' + proyecto.nombre_comunidad) : '🏘 Sí'" />
+                <GBadge v-if="proyecto.es_comunidad_energetica" color="success">{{ proyecto.nombre_comunidad ? ('🏘 ' + proyecto.nombre_comunidad) : '🏘 Sí' }}</GBadge>
                 <span v-else class="text-gray-400">—</span>
               </div>
             </div>
@@ -462,8 +461,7 @@
             </Column>
             <Column header="Patrimonio autónomo">
               <template #body="{ data }">
-                <Tag :value="data.es_patrimonio_autonomo ? 'Sí' : 'No'"
-                     :severity="data.es_patrimonio_autonomo ? 'info' : 'secondary'" />
+                <GBadge :color="data.es_patrimonio_autonomo ? 'information' : 'default'">{{ data.es_patrimonio_autonomo ? 'Sí' : 'No' }}</GBadge>
               </template>
             </Column>
             <Column header="" style="width:110px">
@@ -514,7 +512,7 @@
               class="flex items-center justify-between text-sm border-t border-gray-100 pt-1 first:border-0 first:pt-0">
               <span class="text-gray-600">
                 {{ per.label }}
-                <Tag v-if="per.vigente" value="Vigente" severity="success" class="ml-2 scale-90" />
+                <GBadge v-if="per.vigente" color="success" class="ml-2 scale-90">Vigente</GBadge>
                 <span class="text-gray-400 ml-1">· {{ per.count }} inversionista(s)</span>
               </span>
               <span class="font-semibold tabular-nums" :class="per.ok ? 'text-green-600' : 'text-amber-600'">
@@ -644,7 +642,7 @@
               </Column>
               <Column header="Estado" style="width:120px">
                 <template #body="{ data }">
-                  <Tag :value="ESTADO_LABELS_SRV[data.estado] || data.estado" :severity="ESTADO_SEVERITY_SRV[data.estado]" />
+                  <GBadge :color="ESTADO_SEVERITY_SRV[data.estado]">{{ ESTADO_LABELS_SRV[data.estado] || data.estado }}</GBadge>
                 </template>
               </Column>
               <Column style="width:50px">
@@ -692,7 +690,7 @@
             <Column field="tipo_frontera" header="Tipo" />
             <Column header="Estado">
               <template #body="{ data }">
-                <Tag :value="data.estado" :severity="FRONTERA_ESTADO_SEVERITY[data.estado] || 'info'" />
+                <GBadge :color="FRONTERA_ESTADO_SEVERITY[data.estado] || 'information'">{{ data.estado }}</GBadge>
               </template>
             </Column>
           </DataTable>
@@ -793,7 +791,6 @@
 import { ArrowRightIcon, BadgeCheckIcon, BriefcaseIcon, ChartColumnIcon, ChartLineIcon, CheckIcon, CircleAlertIcon, DollarSignIcon, ExternalLinkIcon, FileIcon, FilePenIcon, FileSpreadsheetIcon, GlobeIcon, InfoIcon, LinkIcon, MailIcon, MapPinIcon, PencilIcon, PlusIcon, RefreshCwIcon, Trash2Icon, TriangleAlertIcon, UsersIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import ToggleSwitch from 'primevue/toggleswitch'
 import ProgressSpinner from 'primevue/progressspinner'
@@ -841,8 +838,8 @@ const SERVICIOS_FLAGS = [
   { key: 'srv_promotor',label: 'Promotor',icon: BriefcaseIcon, color: '#8b5cf6', bg: '#f5f3ff' },
 ]
 const ESTADO_LABELS_SRV = { vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación' }
-const ESTADO_SEVERITY_SRV = { vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn' }
-const FRONTERA_ESTADO_SEVERITY = { activa: 'success', en_registro: 'warn', en_falla: 'danger', cancelada: 'secondary' }
+const ESTADO_SEVERITY_SRV = { vigente: 'success', vencido: 'destructive', terminado: 'default', en_renovacion: 'warning' }
+const FRONTERA_ESTADO_SEVERITY = { activa: 'success', en_registro: 'warning', en_falla: 'destructive', cancelada: 'default' }
 
 // ── Estado base ───────────────────────────────────────────────────────────────
 const proyecto = ref(null)
@@ -1353,7 +1350,7 @@ function formatFechaSrv(f) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 const estadoSeverity = (e) => (
-  { en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', cancelado: 'secondary' }[e] || 'secondary'
+  { en_operacion: 'success', en_desarrollo: 'information', suspendido: 'warning', cancelado: 'default' }[e] || 'default'
 )
 
 // Departamento/municipio -- select en vez de texto libre (DIVIPOLA), para

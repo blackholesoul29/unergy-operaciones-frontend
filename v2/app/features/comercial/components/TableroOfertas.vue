@@ -61,9 +61,9 @@
               <span class="font-mono text-[10px] truncate" style="color:#9b89b5">
                 {{ of.codigo_seguimiento || of.numero_oferta || '—' }}
               </span>
-              <Tag v-if="of.alerta" severity="danger" :value="`${of.dias_sin_respuesta}d`"
+              <GBadge v-if="of.alerta" color="destructive"
                    class="flex-shrink-0 scale-90"
-                   v-tooltip.left="`${of.dias_sin_respuesta} días sin movimiento en esta etapa`" />
+                   v-tooltip.left="`${of.dias_sin_respuesta} días sin movimiento en esta etapa`">{{ of.dias_sin_respuesta }}d</GBadge>
             </div>
 
             <h3 class="font-medium text-sm mt-1 leading-snug" style="color:var(--color-unergy-deep)">
@@ -108,7 +108,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import { SendIcon, XIcon } from '@lucide/vue'
 import {

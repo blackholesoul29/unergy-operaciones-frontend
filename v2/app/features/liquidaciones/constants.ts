@@ -15,6 +15,7 @@
  * necesitar son las que se migran en la fase 3. Si al llegar ahí siguen sin
  * usarse, se borran.
  */
+import type { GandalfBadgeColor } from '~/components/gandalf/base/badge'
 
 // ── Estados del workflow ─────────────────────────────────────────────────────
 
@@ -44,20 +45,21 @@ export const ESTADO_LABEL: Record<EstadoLiquidacion, string> = {
 }
 
 /**
- * Severidad del `Tag` de PrimeVue por estado.
+ * Color de `GBadge` por estado.
  *
- * Es el único mapa de aquí acoplado a la librería de UI: desaparece con PrimeVue
- * en la fase 3, sustituido por las variantes de `GBadge`.
+ * Es el único mapa de aquí acoplado a la capa de UI. `entregado` usaba
+ * `contrast` en el `Tag` de PrimeVue, sin equivalente en `GBadge`; cae en
+ * `default`.
  */
-export const ESTADO_SEVERITY: Record<EstadoLiquidacion, string> = {
-  iniciada: 'secondary',
-  costos_registrados: 'info',
-  xm_procesado: 'info',
-  mandatos_emitidos: 'warn',
-  en_contabilidad: 'warn',
-  en_revisoria: 'warn',
+export const ESTADO_SEVERITY: Record<EstadoLiquidacion, GandalfBadgeColor> = {
+  iniciada: 'default',
+  costos_registrados: 'information',
+  xm_procesado: 'information',
+  mandatos_emitidos: 'warning',
+  en_contabilidad: 'warning',
+  en_revisoria: 'warning',
   facturado: 'success',
-  entregado: 'contrast',
+  entregado: 'default',
 }
 
 /** Color por estado, para barras de pipeline y gráficos. */

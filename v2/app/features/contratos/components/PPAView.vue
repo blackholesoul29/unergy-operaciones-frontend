@@ -45,7 +45,7 @@
                 <p v-if="c.nombre_interno && c.numero_codigo_contrato" class="text-xs text-gray-400 mt-0.5">{{ c.numero_codigo_contrato }}</p>
               </div>
               <div class="flex items-center gap-1">
-                <Tag :value="c.tipo_contrato || '—'" :severity="c.tipo_contrato === 'venta' ? 'success' : 'info'" class="text-xs" />
+                <GBadge :color="c.tipo_contrato === 'venta' ? 'success' : 'information'" class="text-xs">{{ c.tipo_contrato || '—' }}</GBadge>
                 <Button text size="small" severity="secondary" @click="abrirFormEditar(c)">
                   <template #icon><PencilIcon class="size-[1em]" /></template>
                 </Button>
@@ -63,8 +63,8 @@
               <span><b class="text-gray-600">Tiempo pago:</b> {{ c.tiempo_pago != null ? `${c.tiempo_pago} días` : '—' }}</span>
             </div>
             <div v-if="c.tarifas?.length || c.compromisos_energia?.length" class="mt-3 flex gap-2">
-              <Tag v-if="c.tarifas?.length" :value="`${c.tarifas.length} tarifas`" severity="secondary" class="text-xs" />
-              <Tag v-if="c.compromisos_energia?.length" :value="`${c.compromisos_energia.length} compromisos`" severity="secondary" class="text-xs" />
+              <GBadge v-if="c.tarifas?.length" color="default" class="text-xs">{{ c.tarifas.length }} tarifas</GBadge>
+              <GBadge v-if="c.compromisos_energia?.length" color="default" class="text-xs">{{ c.compromisos_energia.length }} compromisos</GBadge>
             </div>
           </div>
         </div>
@@ -87,7 +87,7 @@
             <Column field="contrato_interno" header="Contrato" style="min-width:120px" />
             <Column header="Tipo" style="min-width:110px">
               <template #body="{ data }">
-                <Tag :value="data.tipo_solicitud || '—'" :severity="tipoSeverity(data.tipo_solicitud)" class="text-xs" />
+                <GBadge :color="tipoSeverity(data.tipo_solicitud)" class="text-xs">{{ data.tipo_solicitud || '—' }}</GBadge>
               </template>
             </Column>
             <Column field="requerimiento_asic" header="Req." style="min-width:90px" />
@@ -103,7 +103,7 @@
             </Column>
             <Column header="Estado" style="min-width:110px">
               <template #body="{ data }">
-                <Tag :value="data.estado_solicitud || '—'" :severity="estadoSeverity(data.estado_solicitud)" class="text-xs" />
+                <GBadge :color="estadoSeverity(data.estado_solicitud)" class="text-xs">{{ data.estado_solicitud || '—' }}</GBadge>
               </template>
             </Column>
             <Column header="Desp. %" style="min-width:80px">
@@ -301,7 +301,6 @@ import { useRoute } from 'vue-router'
 import { toast } from 'vue-sonner'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
@@ -391,13 +390,13 @@ function esVencido(fecha) {
 }
 
 function tipoSeverity(tipo) {
-  const map = { registro: 'success', modificacion: 'info', terminacion: 'danger', desistimiento: 'warn' }
-  return map[tipo] || 'secondary'
+  const map = { registro: 'success', modificacion: 'information', terminacion: 'destructive', desistimiento: 'warning' }
+  return map[tipo] || 'default'
 }
 
 function estadoSeverity(estado) {
-  const map = { publicado: 'success', en_proceso: 'info', rechazado: 'danger', desistido: 'warn' }
-  return map[estado] || 'secondary'
+  const map = { publicado: 'success', en_proceso: 'information', rechazado: 'destructive', desistido: 'warning' }
+  return map[estado] || 'default'
 }
 
 function toISODate(v) {

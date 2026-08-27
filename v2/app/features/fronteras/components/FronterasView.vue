@@ -107,12 +107,12 @@
         </Column>
         <Column field="tipo_frontera" header="Tipo" sortable style="min-width: 130px">
           <template #body="{ data }">
-            <Tag :value="tipoLabel(data.tipo_frontera)" :severity="tipoSeverity(data.tipo_frontera)" />
+            <GBadge :color="tipoSeverity(data.tipo_frontera)">{{ tipoLabel(data.tipo_frontera) }}</GBadge>
           </template>
         </Column>
         <Column field="estado" header="Estado" sortable style="min-width: 120px">
           <template #body="{ data }">
-            <Tag :value="data.estado" :severity="estadoSeverity(data.estado)" />
+            <GBadge :color="estadoSeverity(data.estado)">{{ data.estado }}</GBadge>
           </template>
         </Column>
         <Column field="fecha_registro_asic" header="Fecha Registro ASIC" sortable style="min-width: 150px">
@@ -351,7 +351,6 @@ import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Dropdown from 'primevue/dropdown'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import { formatearNombre } from '~/utils/nombreFormato'
@@ -523,12 +522,12 @@ function tipoLabel(t) {
 }
 function tipoSeverity(t) {
   if (t === 'generacion') return 'success'
-  if (t === 'consumo') return 'info'
-  return 'warn'
+  if (t === 'consumo') return 'information'
+  return 'warning'
 }
 function estadoSeverity(e) {
-  const map = { activa: 'success', en_registro: 'warn', en_falla: 'danger', cancelada: 'secondary' }
-  return map[e] || 'info'
+  const map = { activa: 'success', en_registro: 'warning', en_falla: 'destructive', cancelada: 'default' }
+  return map[e] || 'information'
 }
 
 async function descargarExcel() {

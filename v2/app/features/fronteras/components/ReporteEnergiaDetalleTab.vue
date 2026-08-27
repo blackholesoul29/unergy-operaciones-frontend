@@ -11,8 +11,8 @@
           <span v-if="detalle.estado_reporte && detalle.estado_reporte !== 'WARNING'"> · Estado reporte {{ detalle.estado_reporte }}</span>
         </div>
       </div>
-      <Tag v-if="detalle.revisar_manualmente" value="Revisar manualmente" severity="danger" />
-      <Tag v-else value="OK" severity="success" />
+      <GBadge v-if="detalle.revisar_manualmente" color="destructive">Revisar manualmente</GBadge>
+      <GBadge v-else color="success">OK</GBadge>
     </div>
 
     <!-- Frontera de terceros: el CGM lo maneja otra empresa (ej. Cedillanos);
@@ -351,7 +351,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'

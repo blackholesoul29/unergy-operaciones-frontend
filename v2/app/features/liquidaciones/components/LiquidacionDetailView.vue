@@ -10,7 +10,7 @@
         <h2 class="text-base font-semibold" style="color:var(--color-unergy-deep)">
           {{ liq?.proyecto_nombre }} — {{ formatPeriodo(liq?.periodo) }}
         </h2>
-        <Tag v-if="liq" :value="liq.estado" :severity="estadoSeverity(liq.estado)" class="text-xs" />
+        <GBadge v-if="liq" :color="estadoSeverity(liq.estado)" class="text-xs">{{ liq.estado }}</GBadge>
       </div>
       <div class="ml-auto flex gap-2 flex-wrap items-center">
         <a v-if="liq?.estado_resultados_url" :href="liq.estado_resultados_url" target="_blank"
@@ -135,7 +135,6 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import Dialog from 'primevue/dialog'
 import Select from 'primevue/select'
@@ -234,10 +233,10 @@ function formatPeriodo(p) {
 }
 function estadoSeverity(e) {
   return {
-    iniciada: 'secondary', costos_registrados: 'info', xm_procesado: 'info',
-    mandatos_emitidos: 'warn', en_contabilidad: 'warn', en_revisoria: 'warn',
-    facturado: 'success', entregado: 'contrast',
-  }[e] || 'secondary'
+    iniciada: 'default', costos_registrados: 'information', xm_procesado: 'information',
+    mandatos_emitidos: 'warning', en_contabilidad: 'warning', en_revisoria: 'warning',
+    facturado: 'success', entregado: 'default',
+  }[e] || 'default'
 }
 function facturaEstadoSeverity(e) {
   return { emitida: 'info', pagada: 'success', vencida: 'danger' }[e] || 'secondary'

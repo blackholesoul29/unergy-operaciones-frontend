@@ -46,7 +46,7 @@
         <Column field="proyecto" header="Proyecto" sortable />
         <Column header="Estado" style="width:110px">
           <template #body="{ data }">
-            <Tag :value="estadoFlujoPanel(data, tipo).label" :severity="estadoFlujoPanel(data, tipo).sev" class="text-[10px]" />
+            <GBadge :color="estadoFlujoPanel(data, tipo).sev" class="text-[10px]">{{ estadoFlujoPanel(data, tipo).label }}</GBadge>
           </template>
         </Column>
         <Column v-if="tipo === 'oficial'" header="Consec. Ing." style="width:100px">
@@ -136,7 +136,6 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Tag from 'primevue/tag'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import IconField from 'primevue/iconfield'

@@ -16,7 +16,7 @@
                    :titulo="proyecto.nombre_comercial"
                    :codigo="proyecto.codigo_tsf"
                    :tabs="TABS" v-model="tab">
-      <template #chips> <Tag ... /> </template>
+      <template #chips> <GBadge ... /> </template>
       <template #acciones> <Button ... /> </template>
       <template #default="{ tab }">
         <div v-if="tab === 'general'"> ... </div>

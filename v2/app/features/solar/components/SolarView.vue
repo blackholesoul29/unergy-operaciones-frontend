@@ -494,7 +494,7 @@
             </Column>
             <Column field="estado" header="Estado" sortable style="width:110px">
               <template #body="{ data }">
-                <Tag :value="data.estado" :severity="estadoSev(data.estado)" class="text-[10px]" />
+                <GBadge :color="estadoColor(data.estado)" class="text-[10px]">{{ data.estado }}</GBadge>
               </template>
             </Column>
             <Column field="capacidad_mw" header="Cap. MW" sortable style="width:90px">
@@ -533,7 +533,6 @@ import Checkbox   from 'primevue/checkbox'
 import Button     from 'primevue/button'
 import DataTable  from 'primevue/datatable'
 import Column     from 'primevue/column'
-import Tag        from 'primevue/tag'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { ChartColumnIcon, ChartLineIcon, DatabaseIcon, DownloadIcon, GlobeIcon, LayoutGridIcon, ListIcon, MapIcon, MapPinIcon, RefreshCwIcon, SearchIcon, SlidersHorizontalIcon, SunIcon, TrophyIcon, XIcon, ZapIcon } from '@lucide/vue'
@@ -1019,8 +1018,8 @@ function fmtShort(n) {
 /** Alias para las KPI cards */
 const fmtK = fmtShort
 
-function estadoSev(e) {
-  return { 'OPERACIÓN': 'success', 'PRUEBAS': 'warn', 'INACTIVO': 'secondary' }[e] ?? 'secondary'
+function estadoColor(e) {
+  return { 'OPERACIÓN': 'success', 'PRUEBAS': 'warning', 'INACTIVO': 'default' }[e] ?? 'default'
 }
 </script>
 

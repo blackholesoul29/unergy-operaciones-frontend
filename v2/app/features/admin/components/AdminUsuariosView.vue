@@ -22,12 +22,12 @@
         <Column field="email" header="Correo" sortable />
         <Column field="rol" header="Rol" sortable style="width: 140px">
           <template #body="{ data }">
-            <Tag :value="ROL_LABELS[data.rol] || data.rol" :severity="ROL_SEVERITY[data.rol] || 'secondary'" />
+            <GBadge :color="ROL_SEVERITY[data.rol] || 'default'">{{ ROL_LABELS[data.rol] || data.rol }}</GBadge>
           </template>
         </Column>
         <Column field="activo" header="Estado" style="width: 100px">
           <template #body="{ data }">
-            <Tag :value="data.activo ? 'Activo' : 'Inactivo'" :severity="data.activo ? 'success' : 'danger'" />
+            <GBadge :color="data.activo ? 'success' : 'destructive'">{{ data.activo ? 'Activo' : 'Inactivo' }}</GBadge>
           </template>
         </Column>
         <Column header="Acciones" style="width: 140px">
@@ -61,7 +61,6 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import Tag from 'primevue/tag'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import UsuarioForm from './UsuarioForm.vue'
@@ -88,13 +87,13 @@ const ROL_LABELS = {
 }
 
 const ROL_SEVERITY = {
-  admin: 'danger',
-  operaciones: 'info',
-  monitoreo: 'warn',
+  admin: 'destructive',
+  operaciones: 'information',
+  monitoreo: 'warning',
   liquidaciones: 'success',
-  cgm: 'secondary',
-  solo_lectura: 'contrast',
-  comercial: 'info',
+  cgm: 'default',
+  solo_lectura: 'default',
+  comercial: 'information',
 }
 
 const filtered = computed(() => {

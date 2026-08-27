@@ -50,7 +50,7 @@
         <div class="flex items-center gap-2">
           <UserMinusIcon class="text-orange-500 size-[1em]" />
           <h3 class="font-semibold text-gray-700">Proyectos huérfanos</h3>
-          <Tag :value="`${huerfanos.length}`" severity="warn" class="text-xs" />
+          <GBadge color="warning" class="text-xs">{{ huerfanos.length }}</GBadge>
         </div>
         <p class="text-xs text-gray-400">
           Proyectos que no aparecen en ningún contrato activo del GESCON hoy.
@@ -75,12 +75,12 @@
           </Column>
           <Column header="Tipo" style="min-width:110px">
             <template #body="{ data }">
-              <Tag :value="data.tipo_proyecto || '—'" severity="secondary" class="text-xs" />
+              <GBadge color="default" class="text-xs">{{ data.tipo_proyecto || '—' }}</GBadge>
             </template>
           </Column>
           <Column header="Estado" style="min-width:110px">
             <template #body="{ data }">
-              <Tag :value="data.estado" :severity="estadoSev(data.estado)" class="text-xs" />
+              <GBadge :color="estadoSev(data.estado)" class="text-xs">{{ data.estado }}</GBadge>
             </template>
           </Column>
           <Column header="" style="width:60px">
@@ -102,7 +102,7 @@
         <div class="flex items-center gap-2">
           <CopyIcon class="text-red-500 size-[1em]" />
           <h3 class="font-semibold text-gray-700">Proyectos duplicados</h3>
-          <Tag :value="`${duplicados.length}`" severity="danger" class="text-xs" />
+          <GBadge color="destructive" class="text-xs">{{ duplicados.length }}</GBadge>
         </div>
         <p class="text-xs text-gray-400">
           Proyectos que están activos en 2 o más contratos GESCON simultáneamente.
@@ -124,9 +124,9 @@
                   class="font-semibold text-gray-800 hover:text-blue-600">
                   {{ dup.nombre_comercial }}
                 </RouterLink>
-                <Tag :value="dup.tipo_proyecto || '—'" severity="secondary" class="text-xs" />
+                <GBadge color="default" class="text-xs">{{ dup.tipo_proyecto || '—' }}</GBadge>
               </div>
-              <Tag :value="`${dup.sics.length} contratos activos`" severity="danger" class="text-xs" />
+              <GBadge color="destructive" class="text-xs">{{ dup.sics.length }} contratos activos</GBadge>
             </div>
 
             <DataTable :value="dup.sics" size="small" class="text-xs">
@@ -134,7 +134,7 @@
               <Column field="contrato_interno" header="Contrato" style="min-width:130px" />
               <Column header="Tipo" style="min-width:110px">
                 <template #body="{ data }">
-                  <Tag :value="data.tipo_solicitud" :severity="tipoSev(data.tipo_solicitud)" class="text-xs" />
+                  <GBadge :color="tipoSev(data.tipo_solicitud)" class="text-xs">{{ data.tipo_solicitud }}</GBadge>
                 </template>
               </Column>
               <Column header="Inicio" style="min-width:90px">
@@ -170,7 +170,6 @@ import { ref, computed, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
-import Tag from 'primevue/tag'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Divider from 'primevue/divider'
@@ -186,11 +185,11 @@ const duplicados = ref([])
 const huerfanosTabla = ref([])
 
 function estadoSev(e) {
-  return { en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn' }[e] || 'secondary'
+  return { en_operacion: 'success', en_desarrollo: 'information', suspendido: 'warning' }[e] || 'default'
 }
 
 function tipoSev(t) {
-  return { registro: 'success', modificacion: 'info', terminacion: 'danger', desistimiento: 'warn' }[t] || 'secondary'
+  return { registro: 'success', modificacion: 'information', terminacion: 'destructive', desistimiento: 'warning' }[t] || 'default'
 }
 
 onMounted(async () => {

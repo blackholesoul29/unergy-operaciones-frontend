@@ -283,16 +283,15 @@
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Estado</span>
                 <div>
-                  <Tag :value="ESTADO_LABELS[c.estado] || c.estado || '—'"
-                    :severity="ESTADO_SEVERITY[c.estado] || 'secondary'" class="text-[10px]" />
+                  <GBadge :color="ESTADO_SEVERITY[c.estado] || 'default'" class="text-[10px]">{{ ESTADO_LABELS[c.estado] || c.estado || '—' }}</GBadge>
                 </div>
               </div>
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Renovación automática</span>
                 <div>
-                  <Tag v-if="c.renovacion_automatica != null"
-                    :severity="c.renovacion_automatica ? 'success' : 'secondary'"
-                    :value="c.renovacion_automatica ? 'Sí' : 'No'" class="text-[10px]" />
+                  <GBadge v-if="c.renovacion_automatica != null"
+                    :color="c.renovacion_automatica ? 'success' : 'default'"
+                    class="text-[10px]">{{ c.renovacion_automatica ? 'Sí' : 'No' }}</GBadge>
                   <span v-else class="text-sm" style="color:var(--color-unergy-deep)">—</span>
                 </div>
               </div>
@@ -357,8 +356,8 @@
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Responsable de IVA</span>
                 <div>
-                  <Tag :severity="c.responsable_iva ? 'success' : 'secondary'"
-                    :value="c.responsable_iva ? 'Sí' : 'No'" class="text-[10px]" />
+                  <GBadge :color="c.responsable_iva ? 'success' : 'default'"
+                    class="text-[10px]">{{ c.responsable_iva ? 'Sí' : 'No' }}</GBadge>
                 </div>
               </div>
               <div class="cd-ancho flex flex-col gap-0.5">
@@ -532,7 +531,6 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
-import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
 import InfoField from '~/components/blocks/InfoField.vue'
@@ -545,7 +543,7 @@ const ESTADO_LABELS = {
   vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación',
 }
 const ESTADO_SEVERITY = {
-  vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn',
+  vigente: 'success', vencido: 'destructive', terminado: 'default', en_renovacion: 'warning',
 }
 const ESTADOS_OPCIONES = Object.entries(ESTADO_LABELS).map(([value, label]) => ({ value, label }))
 const SI_NO = [{ value: true, label: 'Sí' }, { value: false, label: 'No' }]

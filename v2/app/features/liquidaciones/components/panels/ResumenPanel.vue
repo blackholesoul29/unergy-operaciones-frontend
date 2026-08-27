@@ -112,7 +112,7 @@
           </Column>
           <Column header="Estado">
             <template #body="{ data }">
-              <Tag :value="estadoFlujoPanel(data, tipo).label" :severity="estadoFlujoPanel(data, tipo).sev" class="text-[10px]" />
+              <GBadge :color="estadoFlujoPanel(data, tipo).sev" class="text-[10px]">{{ estadoFlujoPanel(data, tipo).label }}</GBadge>
             </template>
           </Column>
           <Column header="Ingresos" style="width:130px">
@@ -165,7 +165,6 @@ import { useRouter } from 'vue-router'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import {
   Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement,

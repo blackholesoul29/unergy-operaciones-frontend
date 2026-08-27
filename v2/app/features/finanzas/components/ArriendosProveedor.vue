@@ -13,7 +13,7 @@
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
         <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
       </button>
-      <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
+      <GBadge color="default" class="text-xs font-mono">{{ periodoActual }}</GBadge>
     </div>
 
     <div v-if="!filas.length"
@@ -74,7 +74,7 @@
         <div class="flex items-center gap-2">
           <FileTextIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple)" />
           <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Soporte del período</span>
-          <Tag :value="periodoLabel" severity="secondary" class="text-xs font-mono" />
+          <GBadge color="default" class="text-xs font-mono">{{ periodoLabel }}</GBadge>
         </div>
         <span v-if="soporte.enlace"
           class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
@@ -118,7 +118,6 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
-import Tag from 'primevue/tag'
 import api from '~/core/client'
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, ExternalLinkIcon, FileTextIcon, InboxIcon, SaveIcon, XIcon } from '@lucide/vue'
 

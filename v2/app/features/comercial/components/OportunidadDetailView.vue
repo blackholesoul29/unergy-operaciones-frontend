@@ -29,15 +29,15 @@
             <span v-if="op.cliente_nit" style="color:#9b89b5">NIT {{ op.cliente_nit }}</span>
           </div>
         </div>
-        <Tag v-if="op.alerta" severity="danger" :value="`⚠ ${op.dias_sin_respuesta} días sin movimiento`" />
+        <GBadge v-if="op.alerta" color="destructive">⚠ {{ op.dias_sin_respuesta }} días sin movimiento</GBadge>
       </div>
     </div>
 
     <!-- En qué etapa está cada oferta del cliente -->
     <div class="flex items-center gap-2 mb-5 flex-wrap">
       <span class="text-sm" style="color:#7a6e8a">{{ totalOfertas }} oferta(s):</span>
-      <Tag v-for="e in etapasPresentes" :key="e.value" :value="`${e.n} ${e.label.toLowerCase()}`"
-           :severity="severidadEtapa(e.value)" />
+      <GBadge v-for="e in etapasPresentes" :key="e.value"
+           :color="severidadEtapa(e.value)">{{ e.n }} {{ e.label.toLowerCase() }}</GBadge>
       <span v-if="!totalOfertas" class="text-sm" style="color:#9b89b5">
         todavía sin ofertas — se agregan en la pestaña Ofertas
       </span>
@@ -172,7 +172,7 @@
                   <div class="flex items-center gap-2">
                     <span class="font-medium text-sm">{{ t.label }}</span>
                     <template v-if="docPorTipo(t.value)">
-                      <Tag :value="docPorTipo(t.value).estado" />
+                      <GBadge>{{ docPorTipo(t.value).estado }}</GBadge>
                       <span v-if="docPorTipo(t.value).numero" class="text-xs" style="color:#9b89b5">
                         Nº {{ docPorTipo(t.value).numero }}
                       </span>
@@ -205,7 +205,6 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
-import Tag from 'primevue/tag'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import DataTable from 'primevue/datatable'

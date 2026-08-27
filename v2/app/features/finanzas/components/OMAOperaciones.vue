@@ -17,7 +17,7 @@
             <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
           </button>
         </div>
-        <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
+        <GBadge color="default" class="text-xs font-mono">{{ periodoActual }}</GBadge>
       </div>
 
       <div class="flex items-center gap-2">
@@ -442,8 +442,7 @@
           </Column>
           <Column header="Estado">
             <template #body="{ data }">
-              <Tag :value="data.confirmado ? 'Confirmado' : 'Pendiente'"
-                :severity="data.confirmado ? 'success' : 'warn'" />
+              <GBadge :color="data.confirmado ? 'success' : 'warning'">{{ data.confirmado ? 'Confirmado' : 'Pendiente' }}</GBadge>
             </template>
           </Column>
           <Column header="Fuente">
@@ -481,7 +480,6 @@
 import { ref, computed, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter }  from 'vue-router'
 import Button        from 'primevue/button'
-import Tag           from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import Dialog        from 'primevue/dialog'
 import DataTable     from 'primevue/datatable'

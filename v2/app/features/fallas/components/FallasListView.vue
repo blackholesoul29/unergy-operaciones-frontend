@@ -73,8 +73,8 @@
 
         <Column header="Prioridad" style="width: 100px;">
           <template #body="{ data }">
-            <Tag :value="data.prioridad?.etiqueta" :severity="prioSeverity(data.prioridad?.nivel)"
-              class="text-[11px]" />
+            <GBadge :color="prioColor(data.prioridad?.nivel)"
+              class="text-[11px]">{{ data.prioridad?.etiqueta }}</GBadge>
           </template>
         </Column>
 
@@ -140,7 +140,6 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
@@ -197,7 +196,8 @@ function debouncedLoad() {
   debounceTimer = setTimeout(() => { page.value = 1; load() }, 350)
 }
 
-const prioSeverity = (n) => ({ 1: 'danger', 2: 'warn', 3: 'info', 4: 'secondary' }[n] ?? 'secondary')
+const prioColor = (n) =>
+  ({ 1: 'destructive', 2: 'warning', 3: 'information', 4: 'default' })[n] ?? 'default'
 
 function estadoStyle(estado) {
   const hex = estado?.color_hex ?? '#915BD8'

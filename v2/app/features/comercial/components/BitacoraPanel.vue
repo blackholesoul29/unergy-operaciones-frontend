@@ -37,7 +37,7 @@
         <li v-for="g in gestiones" :key="g.id" class="rounded-md p-2 text-sm"
             style="border:1px solid #e8e0f0">
           <div class="flex items-center gap-2 text-xs mb-1 flex-wrap" style="color:#9b89b5">
-            <Tag :value="labelGestion(g.tipo)" severity="info" class="scale-90" />
+            <GBadge color="information" class="scale-90">{{ labelGestion(g.tipo) }}</GBadge>
             <span>{{ fmtFechaHora(g.fecha) }}</span>
             <span v-if="g.oferta_id" class="rounded px-1.5 py-0.5 text-[10px]"
                   style="background:#F4EEFB;color:var(--color-unergy-purple-dark)">{{ nombreOferta(g.oferta_id) }}</span>
@@ -76,7 +76,6 @@ import { reactive, ref, computed } from 'vue'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
 import { TIPOS_GESTION, labelGestion, labelEtapa } from './comercial.js'

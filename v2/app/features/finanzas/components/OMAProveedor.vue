@@ -13,7 +13,7 @@
         class="w-7 h-7 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
         <ChevronRightIcon class="text-xs text-gray-500 size-[1em]" />
       </button>
-      <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
+      <GBadge color="default" class="text-xs font-mono">{{ periodoActual }}</GBadge>
     </div>
 
     <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center border" style="border-color:#ECE7F2">
@@ -77,7 +77,7 @@
         <div class="flex items-center gap-2">
           <FileTextIcon class="text-xs size-[1em]" style="color:var(--color-unergy-purple)" />
           <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Factura consolidada del mes</span>
-          <Tag :value="periodoLabel" severity="secondary" class="text-xs font-mono" />
+          <GBadge color="default" class="text-xs font-mono">{{ periodoLabel }}</GBadge>
         </div>
         <!-- indicador de estado -->
         <span v-if="factura.nombre_archivo"
@@ -238,7 +238,6 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
-import Tag             from 'primevue/tag'
 import { toast } from 'vue-sonner'
 import api             from '~/core/client'
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleCheckIcon, CircleXIcon, CloudUploadIcon, DownloadIcon, ExternalLinkIcon, FileTextIcon, InboxIcon, LoaderCircleIcon, PaperclipIcon, TriangleAlertIcon } from '@lucide/vue'

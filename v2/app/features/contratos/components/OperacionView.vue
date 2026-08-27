@@ -54,8 +54,7 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
-                  <Tag :value="CONTRATO_LABELS[contratos.mantenimiento.estado]"
-                       :severity="CONTRATO_SEVERITY[contratos.mantenimiento.estado]" class="text-xs" />
+                  <GBadge :color="CONTRATO_SEVERITY[contratos.mantenimiento.estado]" class="text-xs">{{ CONTRATO_LABELS[contratos.mantenimiento.estado] }}</GBadge>
                   <Button label="Editar" size="small" text severity="secondary" @click="openMantenimientoDialog('editar')">
                     <template #icon><PencilIcon class="size-[1em]" /></template>
                   </Button>
@@ -363,8 +362,7 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-2 flex-shrink-0">
-                  <Tag :value="CONTRATO_LABELS[contratos.arriendo.estado]"
-                       :severity="CONTRATO_SEVERITY[contratos.arriendo.estado]" class="text-xs" />
+                  <GBadge :color="CONTRATO_SEVERITY[contratos.arriendo.estado]" class="text-xs">{{ CONTRATO_LABELS[contratos.arriendo.estado] }}</GBadge>
                   <Button label="Editar" size="small" text severity="secondary" @click="openEditContrato('arriendo')">
                     <template #icon><PencilIcon class="size-[1em]" /></template>
                   </Button>
@@ -683,7 +681,7 @@
                     </div>
                   </div>
                   <div class="flex items-center gap-2 flex-shrink-0">
-                    <Tag value="Vigente" severity="success" class="text-xs" />
+                    <GBadge color="success" class="text-xs">Vigente</GBadge>
                     <Button label="Editar" size="small" text severity="secondary" @click="openEditContrato('arriendo')">
                       <template #icon><PencilIcon class="size-[1em]" /></template>
                     </Button>
@@ -887,8 +885,7 @@
                     <WifiIcon class="text-sm size-[1em]" style="color:#06b6d4" />
                   </div>
                   <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">Servicio de Internet</span>
-                  <Tag :value="CONTRATO_LABELS[contratos.internet.estado]"
-                       :severity="CONTRATO_SEVERITY[contratos.internet.estado]" class="text-xs" />
+                  <GBadge :color="CONTRATO_SEVERITY[contratos.internet.estado]" class="text-xs">{{ CONTRATO_LABELS[contratos.internet.estado] }}</GBadge>
                 </div>
                 <Button label="Editar" size="small" text severity="secondary" @click="openEditContrato('internet')">
                   <template #icon><PencilIcon class="size-[1em]" /></template>
@@ -1230,7 +1227,6 @@ import { useRoute, useRouter } from 'vue-router'
 import * as XLSX from 'xlsx'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
-import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
@@ -1283,7 +1279,7 @@ const ESTADO_PAGO_LABELS    = { pendiente: 'Pendiente', revisado: 'Revisado', ap
 const ESTADO_PAGO_SEVERITY  = { pendiente: 'danger', revisado: 'warn', aprobado: 'success' }
 
 const CONTRATO_LABELS   = { vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación', en_revision: 'En revisión' }
-const CONTRATO_SEVERITY = { vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn', en_revision: 'warn' }
+const CONTRATO_SEVERITY = { vigente: 'success', vencido: 'destructive', terminado: 'default', en_renovacion: 'warning', en_revision: 'warning' }
 
 const ESTADOS_MANT = [
   { label: 'Vigente',     value: 'vigente' },
@@ -1966,7 +1962,11 @@ function formatFecha(f) {
 
 <!-- ── Componentes inline ─────────────────────────────────────────────────────── -->
 <script>
-import Tag from 'primevue/tag'
+// Este bloque define componentes con Options API + `template:` como string
+// (compilados en runtime, ver `nuxt.config.ts` -> `vue.runtimeCompiler`): el
+// auto-import de Nuxt no los alcanza, así que sus dependencias se registran a
+// mano en `components: {...}` y por eso necesitan import explícito aquí.
+import { GBadge } from '~/components/gandalf/base/badge'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -1978,7 +1978,7 @@ const MESES_NOMBRES_STATIC = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 
 const MESES_OPCIONES_STATIC = MESES_NOMBRES_STATIC.slice(1).map((m, i) => ({ label: m, value: i + 1 }))
 
 const ESTADO_PAGO_LABELS_S   = { pendiente: 'Pendiente', revisado: 'Revisado', aprobado: 'Aprobado' }
-const ESTADO_PAGO_SEVERITY_S = { pendiente: 'danger', revisado: 'warn', aprobado: 'success' }
+const ESTADO_PAGO_SEVERITY_S = { pendiente: 'destructive', revisado: 'warning', aprobado: 'success' }
 
 const AÑOS_STATIC = (() => {
   const cur = new Date().getFullYear()
@@ -2009,7 +2009,7 @@ const InfoIcon = {
 
 // Badge de estado de pago con etiqueta
 const InfoBadge = {
-  components: { Tag, CreditCardIcon },
+  components: { GBadge, CreditCardIcon },
   props: { color: String, label: String, estado: String },
   data() {
     return { ESTADO_PAGO_LABELS_S, ESTADO_PAGO_SEVERITY_S }
@@ -2022,7 +2022,7 @@ const InfoBadge = {
       </div>
       <div>
         <p class="text-xs font-medium leading-none mb-1" style="color:#9b89b5">{{ label }}</p>
-        <Tag v-if="estado" :value="ESTADO_PAGO_LABELS_S[estado]" :severity="ESTADO_PAGO_SEVERITY_S[estado]" />
+        <GBadge v-if="estado" :color="ESTADO_PAGO_SEVERITY_S[estado]">{{ ESTADO_PAGO_LABELS_S[estado] }}</GBadge>
         <span v-else class="text-sm" style="color:#9ca3af">—</span>
       </div>
     </div>
@@ -2091,7 +2091,7 @@ const InfoLink = {
 
 // Tabla de pagos mensuales reutilizable
 const PagosTabla = {
-  components: { Tag, Button, DataTable, Column, Select, ExternalLinkIcon, FilterIcon, PlusIcon, TableIcon, Trash2Icon, XIcon },
+  components: { GBadge, Button, DataTable, Column, Select, ExternalLinkIcon, FilterIcon, PlusIcon, TableIcon, Trash2Icon, XIcon },
   emits: ['open-pago', 'eliminar'],
   props: {
     tipo: String,
@@ -2186,8 +2186,7 @@ const PagosTabla = {
         </Column>
         <Column header="Estado" style="width:130px">
           <template #body="{ data }">
-            <Tag :value="ESTADO_PAGO_LABELS_S[data.estado]"
-                 :severity="ESTADO_PAGO_SEVERITY_S[data.estado]" />
+            <GBadge :color="ESTADO_PAGO_SEVERITY_S[data.estado]">{{ ESTADO_PAGO_LABELS_S[data.estado] }}</GBadge>
           </template>
         </Column>
         <Column header="Factura" style="width:90px" bodyClass="text-center">

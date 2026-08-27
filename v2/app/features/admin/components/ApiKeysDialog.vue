@@ -51,7 +51,7 @@
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2">
               <span class="font-medium text-sm">{{ k.nombre }}</span>
-              <Tag :value="k.activo ? 'Activa' : 'Inactiva'" :severity="k.activo ? 'success' : 'danger'" class="text-xs" />
+              <GBadge :color="k.activo ? 'success' : 'destructive'" class="text-xs">{{ k.activo ? 'Activa' : 'Inactiva' }}</GBadge>
             </div>
             <div class="text-xs text-gray-400 mt-1">
               <code>{{ k.key_prefix }}...</code>
@@ -104,7 +104,6 @@ import { ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
-import Tag from 'primevue/tag'
 import Divider from 'primevue/divider'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'

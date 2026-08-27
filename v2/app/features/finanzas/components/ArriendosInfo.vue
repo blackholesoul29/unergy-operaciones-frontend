@@ -5,7 +5,7 @@
     <div class="bg-white rounded-xl shadow-sm p-3 flex items-center justify-between flex-wrap gap-2 border" style="border-color:#ECE7F2">
       <div class="flex items-center gap-3">
         <span class="text-sm font-semibold" style="color:var(--color-unergy-deep)">{{ periodoLabel }}</span>
-        <Tag :value="periodoActual" severity="secondary" class="text-xs font-mono" />
+        <GBadge color="default" class="text-xs font-mono">{{ periodoActual }}</GBadge>
       </div>
       <p class="text-xs text-gray-400">
         Edita estos datos en Proyecto&gt;Detalle&gt;Servicios&gt;Operación&gt;Arriendos (sección Arrendadores).
@@ -113,7 +113,6 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import Tag from 'primevue/tag'
 import api from '~/core/client'
 import { ChevronDownIcon } from '@lucide/vue'
 

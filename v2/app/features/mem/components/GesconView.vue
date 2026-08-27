@@ -83,7 +83,7 @@
 
         <Column field="tipo_solicitud" header="Tipo" sortable style="width:130px;">
           <template #body="{ data }">
-            <Tag :value="tipoLabel(data.tipo_solicitud)" :severity="tipoSeverity(data.tipo_solicitud)" class="text-xs" />
+            <GBadge :color="tipoSeverity(data.tipo_solicitud)" class="text-xs">{{ tipoLabel(data.tipo_solicitud) }}</GBadge>
           </template>
         </Column>
 
@@ -115,7 +115,7 @@
 
         <Column field="estado_solicitud" header="Estado" sortable style="width:110px;">
           <template #body="{ data }">
-            <Tag :value="estadoLabel(data.estado_solicitud)" :severity="estadoSeverity(data.estado_solicitud)" class="text-xs" />
+            <GBadge :color="estadoSeverity(data.estado_solicitud)" class="text-xs">{{ estadoLabel(data.estado_solicitud) }}</GBadge>
           </template>
         </Column>
 
@@ -576,7 +576,6 @@ import GesconTerminacionForm from './GesconTerminacionForm.vue'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import IconField from 'primevue/iconfield'
@@ -1166,14 +1165,14 @@ function despachoPct(v) {
 function despachoAnomalo(v) { return v != null && v !== '' && Number(v) > 1 }
 
 const TIPO_LABELS = { registro: 'Registro', modificacion: 'Modificación', terminacion: 'Terminación', desistimiento: 'Desistimiento' }
-const TIPO_SEV = { registro: 'success', modificacion: 'info', terminacion: 'warn', desistimiento: 'secondary' }
+const TIPO_SEV = { registro: 'success', modificacion: 'information', terminacion: 'warning', desistimiento: 'default' }
 function tipoLabel(v) { return TIPO_LABELS[v] || v }
-function tipoSeverity(v) { return TIPO_SEV[v] || 'secondary' }
+function tipoSeverity(v) { return TIPO_SEV[v] || 'default' }
 
 const ESTADO_LABELS = { publicado: 'Publicado', en_proceso: 'En proceso', rechazado: 'Rechazado', desistido: 'Desistido', terminado: 'Terminado' }
-const ESTADO_SEV = { publicado: 'success', en_proceso: 'info', rechazado: 'danger', desistido: 'secondary', terminado: 'warn' }
+const ESTADO_SEV = { publicado: 'success', en_proceso: 'information', rechazado: 'destructive', desistido: 'default', terminado: 'warning' }
 function estadoLabel(v) { return ESTADO_LABELS[v] || v }
-function estadoSeverity(v) { return ESTADO_SEV[v] || 'secondary' }
+function estadoSeverity(v) { return ESTADO_SEV[v] || 'default' }
 
 // ── Backfill de nombres internos faltantes ─────────────────────────
 const backfillDialog    = ref(false)

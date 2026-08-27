@@ -20,7 +20,7 @@
     <div v-if="fixResult" class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
       <h2 class="text-sm font-bold mb-3" style="color: var(--color-unergy-deep);">Resultado del Fix</h2>
       <div v-for="(a, i) in fixResult.actions" :key="i" class="text-xs py-1 border-b" style="border-color: #f0e8f8;">
-        <Tag :value="a.action" :severity="actionSev(a.action)" class="text-xs mr-2" />
+        <GBadge :color="actionSev(a.action)" class="text-xs mr-2">{{ a.action }}</GBadge>
         <b>{{ a.contrato }}</b>
         <span v-if="a.planta"> → {{ a.planta }}</span>
         <span v-if="a.sub_project" class="font-mono ml-1" style="color: #059669;">({{ a.sub_project }})</span>
@@ -62,7 +62,7 @@
             {{ c.numero_codigo_contrato || '(sin código)' }}
           </span>
           <span class="text-xs" style="color: #6b5a8a;">{{ c.comprador }}</span>
-          <Tag :value="c.tipo" :severity="c.tipo === 'compra' ? 'info' : 'secondary'" class="text-xs" />
+          <GBadge :color="c.tipo === 'compra' ? 'information' : 'default'" class="text-xs">{{ c.tipo }}</GBadge>
           <span class="ml-auto text-xs font-bold"
                 :style="'color: ' + (c.n_plantas_activas > 0 ? '#059669' : '#dc2626')">
             {{ c.n_plantas_activas }} planta(s) activa(s)
@@ -96,7 +96,7 @@
                     :style="r.estado !== 'publicado' ? 'opacity: 0.4;' : ''">
                   <td class="px-2 py-1 font-mono" style="border: 1px solid #e8e0f0;">{{ r.id }}</td>
                   <td class="px-2 py-1" style="border: 1px solid #e8e0f0;">
-                    <Tag :value="r.tipo" :severity="tipoSev(r.tipo)" class="text-xs" />
+                    <GBadge :color="tipoSev(r.tipo)" class="text-xs">{{ r.tipo }}</GBadge>
                   </td>
                   <td class="px-2 py-1" style="border: 1px solid #e8e0f0;">{{ r.estado }}</td>
                   <td class="px-2 py-1 font-mono" style="border: 1px solid #e8e0f0;">{{ r.codigo_sic }}</td>
@@ -151,7 +151,6 @@
 import { ref, onMounted } from 'vue'
 import api from '~/core/client'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import { LinkIcon, LoaderCircleIcon, RefreshCwIcon, TriangleAlertIcon, WrenchIcon } from '@lucide/vue'
 
 const data = ref(null)
@@ -160,11 +159,11 @@ const fixing = ref(false)
 const fixResult = ref(null)
 
 function tipoSev(tipo) {
-  return { registro: 'success', modificacion: 'info', terminacion: 'danger', desistimiento: 'secondary' }[tipo] || 'secondary'
+  return { registro: 'success', modificacion: 'information', terminacion: 'destructive', desistimiento: 'default' }[tipo] || 'default'
 }
 
 function actionSev(action) {
-  return { created: 'success', exists: 'info', skip: 'warn', delete_duplicate: 'danger', unflag_duplicate: 'success' }[action] || 'secondary'
+  return { created: 'success', exists: 'information', skip: 'warning', delete_duplicate: 'destructive', unflag_duplicate: 'success' }[action] || 'default'
 }
 
 async function load() {

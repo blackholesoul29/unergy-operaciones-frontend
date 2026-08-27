@@ -360,7 +360,7 @@
             </Column>
             <Column header="Estado" style="width:120px">
               <template #body="{ data }">
-                <Tag :value="data.estado?.etiqueta || '—'" :style="estadoPillStyle(data.estado?.color_hex)" />
+                <GBadge :color="data.estado?.color_hex || '#915BD8'">{{ data.estado?.etiqueta || '—' }}</GBadge>
               </template>
             </Column>
             <Column header="Energía perdida" style="width:140px">
@@ -388,7 +388,6 @@ import MultiSelect from 'primevue/multiselect'
 import Select from 'primevue/select'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
-import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as XLSX from 'xlsx'
 import { useRouter } from 'vue-router'
@@ -959,10 +958,6 @@ const PRIO_COLORS = { critica: '#dc2626', alta: '#ea580c', media: '#d97706', baj
 function prioPillStyle(codigo) {
   const c = PRIO_COLORS[codigo] || '#9ca3af'
   return { background: c + '18', color: c, border: `1px solid ${c}40` }
-}
-function estadoPillStyle(hex) {
-  const c = hex || '#915BD8'
-  return { background: c + '1a', color: c, border: `1px solid ${c}40` }
 }
 function fmtFechaCorta(d) {
   if (!d) return '—'

@@ -120,13 +120,13 @@
                 </span>
               </td>
               <td class="px-4 py-2 text-center">
-                <Tag v-if="row.from_generator === true" value="Sí" severity="success" class="text-[10px]" />
-                <Tag v-else-if="row.from_generator === false" value="No" severity="secondary" class="text-[10px]" />
+                <GBadge v-if="row.from_generator === true" color="success" class="text-[10px]">Sí</GBadge>
+                <GBadge v-else-if="row.from_generator === false" color="default" class="text-[10px]">No</GBadge>
                 <span v-else class="text-gray-300">—</span>
               </td>
               <td class="px-4 py-2 text-center">
-                <Tag v-if="row.from_commercializer === true" value="Sí" severity="success" class="text-[10px]" />
-                <Tag v-else-if="row.from_commercializer === false" value="No" severity="secondary" class="text-[10px]" />
+                <GBadge v-if="row.from_commercializer === true" color="success" class="text-[10px]">Sí</GBadge>
+                <GBadge v-else-if="row.from_commercializer === false" color="default" class="text-[10px]">No</GBadge>
                 <span v-else class="text-gray-300">—</span>
               </td>
               <td class="px-4 py-2 text-right font-mono text-xs"
@@ -205,7 +205,6 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
-import Tag from 'primevue/tag'
 import ToggleSwitch from 'primevue/toggleswitch'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'

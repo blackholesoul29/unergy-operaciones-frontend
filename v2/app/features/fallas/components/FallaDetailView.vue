@@ -27,10 +27,10 @@
         </Button>
         <div>
           <div class="flex items-center gap-2 mb-1.5">
-            <Tag :value="falla.estado?.etiqueta || '—'" :style="pillStyle(falla.estado?.color_hex)" />
-            <Tag :value="falla.prioridad?.etiqueta || '—'" :severity="prioSeverity(falla.prioridad?.codigo)" />
-            <Tag v-if="categoria.etiqueta" :value="categoria.etiqueta"
-              :style="catTagStyle(categoria.color)" />
+            <GBadge :color="falla.estado?.color_hex || '#915BD8'">{{ falla.estado?.etiqueta || '—' }}</GBadge>
+            <GBadge :color="prioSeverity(falla.prioridad?.codigo)">{{ falla.prioridad?.etiqueta || '—' }}</GBadge>
+            <GBadge v-if="categoria.etiqueta"
+              :color="categoria.color || '#915BD8'">{{ categoria.etiqueta }}</GBadge>
           </div>
           <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2 flex-wrap">
             <code class="text-base font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded">{{ falla.codigo_interno }}</code>
@@ -84,13 +84,13 @@
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
             <component :is="clasif.icono" class="text-sm size-[1em]" :style="{ color: clasif.categoriaColor }" />
             <h3 class="font-semibold text-sm text-gray-700">Clasificación</h3>
-            <Tag v-if="clasif.pendienteReclasificar" value="Pendiente de reclasificar"
-              severity="warn" class="ml-auto text-[11px]" />
+            <GBadge v-if="clasif.pendienteReclasificar"
+              color="warning" class="ml-auto text-[11px]">Pendiente de reclasificar</GBadge>
           </div>
 
           <!-- Sistema + equipo/evento -->
           <div class="flex flex-wrap items-center gap-2 mb-3">
-            <Tag :value="clasif.categoriaEtiqueta" :style="catTagStyle(clasif.categoriaColor)" />
+            <GBadge :color="clasif.categoriaColor || '#915BD8'">{{ clasif.categoriaEtiqueta }}</GBadge>
             <span v-if="clasif.subtitulo" class="text-sm font-semibold text-gray-800">{{ clasif.subtitulo }}</span>
           </div>
 
@@ -165,7 +165,7 @@
           <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
             <ClockIcon class="text-sm size-[1em]" style="color:var(--color-unergy-purple)" />
             <h3 class="font-semibold text-sm text-gray-700">SLA</h3>
-            <Tag :value="slaTexto" :severity="slaSeverity" class="ml-auto" />
+            <GBadge :color="slaSeverity" class="ml-auto">{{ slaTexto }}</GBadge>
           </div>
           <div v-if="falla.sla_limite_horas">
             <div class="flex items-center gap-3 text-xs mb-2">
@@ -278,7 +278,7 @@
                 <p v-if="seg.nota" class="text-sm text-gray-700 whitespace-pre-line">{{ seg.nota }}</p>
                 <div v-if="seg.estado_nuevo" class="mt-1.5 flex items-center gap-1 text-xs">
                   <ArrowRightIcon class="text-[10px] text-gray-400 size-[1em]" />
-                  <Tag :value="seg.estado_nuevo?.etiqueta || ''" :style="pillStyle(seg.estado_nuevo?.color_hex)" class="text-[10px]" />
+                  <GBadge :color="seg.estado_nuevo?.color_hex || '#915BD8'" class="text-[10px]">{{ seg.estado_nuevo?.etiqueta || '' }}</GBadge>
                 </div>
               </div>
             </div>
@@ -360,8 +360,7 @@
             </div>
             <div v-if="falla.sla_cumplido != null" class="flex items-center justify-between">
               <span class="text-gray-500">SLA</span>
-              <Tag :value="falla.sla_cumplido ? 'Cumplido' : 'Incumplido'"
-                :severity="falla.sla_cumplido ? 'success' : 'danger'" />
+              <GBadge :color="falla.sla_cumplido ? 'success' : 'destructive'">{{ falla.sla_cumplido ? 'Cumplido' : 'Incumplido' }}</GBadge>
             </div>
           </div>
         </div>
@@ -378,7 +377,6 @@ import { ref, computed, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 import Button from 'primevue/button'
-import Tag from 'primevue/tag'
 import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
@@ -466,11 +464,11 @@ const slaColor = computed(() => {
 
 const slaSeverity = computed(() => {
   if (falla.value?.sla_cumplido === true) return 'success'
-  if (falla.value?.sla_cumplido === false) return 'danger'
+  if (falla.value?.sla_cumplido === false) return 'destructive'
   const p = slaPct.value
-  if (p == null) return 'secondary'
-  if (p >= 100) return 'danger'
-  if (p >= 70) return 'warn'
+  if (p == null) return 'default'
+  if (p >= 100) return 'destructive'
+  if (p >= 70) return 'warning'
   return 'success'
 })
 
@@ -489,16 +487,8 @@ const slaFillStyle = computed(() => {
 })
 
 // ── Helpers ─────────────────────────────────────────────────────────────
-function pillStyle(hex) {
-  const c = hex || '#915BD8'
-  return { background: c + '1a', color: c, border: `1px solid ${c}33` }
-}
-function catTagStyle(hex) {
-  const c = hex || '#915BD8'
-  return { background: c + '18', color: c, border: `1px solid ${c}33` }
-}
 function prioSeverity(codigo) {
-  return { critica: 'danger', alta: 'warn', media: 'info', baja: 'secondary' }[codigo] || 'secondary'
+  return { critica: 'destructive', alta: 'warning', media: 'information', baja: 'default' }[codigo] || 'default'
 }
 function fmtDate(d) {
   if (!d) return '—'

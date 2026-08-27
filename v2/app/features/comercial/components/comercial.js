@@ -14,13 +14,13 @@ import { FilePenIcon, MailIcon, MessageSquareIcon, PhoneIcon, UsersIcon } from '
 // ── Etapas del pipeline (EstadoComercialEnum del backend) ────────────────────
 // El orden es el del avance del negocio y define el orden de las columnas.
 export const ETAPAS = [
-  { value: 'oportunidad', label: 'Oportunidad', severidad: 'info', color: '#3B82F6' },
-  { value: 'oferta', label: 'Oferta', severidad: 'warn', color: '#F59E0B' },
-  { value: 'contrato', label: 'Contrato', severidad: 'secondary', color: '#8B5CF6' },
-  { value: 'firmado', label: 'Firmado', severidad: 'contrast', color: '#14B8A6' },
+  { value: 'oportunidad', label: 'Oportunidad', severidad: 'information', color: '#3B82F6' },
+  { value: 'oferta', label: 'Oferta', severidad: 'warning', color: '#F59E0B' },
+  { value: 'contrato', label: 'Contrato', severidad: 'default', color: '#8B5CF6' },
+  { value: 'firmado', label: 'Firmado', severidad: 'default', color: '#14B8A6' },
   { value: 'operando', label: 'Operando', severidad: 'success', color: '#2e7d32' },
-  { value: 'terminado', label: 'Terminado', severidad: 'secondary', color: '#7a6e8a' },
-  { value: 'declinado', label: 'Declinado', severidad: 'danger', color: '#D64455' },
+  { value: 'terminado', label: 'Terminado', severidad: 'default', color: '#7a6e8a' },
+  { value: 'declinado', label: 'Declinado', severidad: 'destructive', color: '#D64455' },
 ]
 
 // Etapas que siguen abiertas: son las que cuentan como negocio vivo.
@@ -59,9 +59,9 @@ export const TIPOS_OFERTA = [
 export const TIPOS_ENERGIA = ['compra_energia', 'comunidad_energetica']
 
 export const RESULTADOS = [
-  { value: 'pendiente', label: 'Pendiente', severidad: 'warn' },
+  { value: 'pendiente', label: 'Pendiente', severidad: 'warning' },
   { value: 'aceptado', label: 'Aceptado', severidad: 'success' },
-  { value: 'declinado', label: 'Declinado', severidad: 'danger' },
+  { value: 'declinado', label: 'Declinado', severidad: 'destructive' },
 ]
 
 export const TIPOS_GESTION = [
@@ -95,12 +95,12 @@ export const FUENTES = {
 const buscar = (lista, v) => lista.find((x) => x.value === v)
 
 export function labelEtapa(v) { return buscar(ETAPAS, v)?.label ?? v ?? '—' }
-export function severidadEtapa(v) { return buscar(ETAPAS, v)?.severidad ?? 'info' }
+export function severidadEtapa(v) { return buscar(ETAPAS, v)?.severidad ?? 'information' }
 export function colorEtapa(v) { return buscar(ETAPAS, v)?.color ?? '#7a6e8a' }
 export function labelTipo(v) { return buscar(TIPOS_OFERTA, v)?.label ?? v ?? '—' }
 export function segmentoTipo(v) { return buscar(TIPOS_OFERTA, v)?.segmento ?? '—' }
 export function labelResultado(v) { return buscar(RESULTADOS, v)?.label ?? v ?? '—' }
-export function severidadResultado(v) { return buscar(RESULTADOS, v)?.severidad ?? 'secondary' }
+export function severidadResultado(v) { return buscar(RESULTADOS, v)?.severidad ?? 'default' }
 export function labelGestion(v) { return buscar(TIPOS_GESTION, v)?.label ?? v ?? '—' }
 
 export function puedeFirmarPPA(oferta) {
