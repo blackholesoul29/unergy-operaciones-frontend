@@ -474,7 +474,7 @@ async function applyInversoresBackfill() {
 
 // ── Catálogos ──────────────────────────────────────────────────────────────────
 const ESTADOS       = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
-const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
+const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'otro']
 
 const SERVICIOS_BADGES = [
   { key: 'srv_operacion',    badge: 'OP',   tooltip: null },

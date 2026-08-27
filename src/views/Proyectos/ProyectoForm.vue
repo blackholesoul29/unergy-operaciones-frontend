@@ -185,7 +185,7 @@ const estados = [
   { label: 'Suspendido', value: 'suspendido' },
   { label: 'Cancelado', value: 'cancelado' },
 ]
-const tipos = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
+const tipos = ['minigranja', 'autoconsumo', 'gd', 'otro']
 const tecnologias = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const clasificaciones = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 

@@ -820,7 +820,7 @@ const ESTADOS = [
   { label: 'Suspendido', value: 'suspendido' },
   { label: 'Cancelado', value: 'cancelado' },
 ]
-const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
+const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'otro']
 const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
