@@ -247,8 +247,7 @@ const segLoading = ref(false)
 
 // ── computed ──────────────────────────────────────────────────
 const proyectoNombre = computed(() =>
-  props.falla.proyecto?.nombre_display ||
-  props.falla.proyecto?.nombre_clientes ||
+  props.falla.proyecto?.nombre_comercial ||
   props.falla.proyecto_nombre_raw || '—'
 )
 
