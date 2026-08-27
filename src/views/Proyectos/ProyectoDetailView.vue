@@ -133,14 +133,6 @@
                 </a>
               </div>
             </div>
-            <!-- Documentación -->
-            <div v-if="proyecto.info_tecnica?.retie_url">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Documentación</p>
-              <a :href="proyecto.info_tecnica.retie_url" target="_blank" rel="noopener"
-                 class="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
-                <i class="pi pi-file" /> RETIE
-              </a>
-            </div>
             <!-- Eléctrico general -->
             <div>
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">General</p>
@@ -198,15 +190,6 @@
                 <InfoField label="Internet" :value="proyecto.info_tecnica?.tiene_internet" />
               </div>
             </div>
-            <!-- Almacenamiento -->
-            <div v-if="proyecto.info_tecnica?.tiene_almacenamiento">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Almacenamiento</p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Capacidad (kWh)" :value="proyecto.info_tecnica?.capacidad_almacenamiento_kwh" />
-                <InfoField label="Marca" :value="proyecto.info_tecnica?.marca_almacenamiento" />
-                <InfoField label="Modelo" :value="proyecto.info_tecnica?.modelo_almacenamiento" />
-              </div>
-            </div>
           </template>
 
           <!-- Vista edición -->
@@ -234,10 +217,6 @@
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Link Google Maps</label>
                   <InputText v-model="editInfoTecnica.url_ubicacion" class="w-full" placeholder="https://maps.app.goo.gl/..." />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">RETIE (link Drive)</label>
-                  <InputText v-model="editInfoTecnica.retie_url" class="w-full" placeholder="https://drive.google.com/..." />
                 </div>
               </div>
             </div>
@@ -364,28 +343,6 @@
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Internet</label>
                   <Select v-model="editInfoTecnica.tiene_internet" :options="['Sí','No']" class="w-full" showClear placeholder="Seleccionar" />
-                </div>
-              </div>
-            </div>
-            <!-- Almacenamiento -->
-            <div>
-              <div class="flex items-center gap-2 mb-3">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Almacenamiento</p>
-                <Checkbox v-model="editInfoTecnica.tiene_almacenamiento" binary />
-                <span class="text-xs text-gray-500">{{ editInfoTecnica.tiene_almacenamiento ? 'Sí' : 'No' }}</span>
-              </div>
-              <div v-if="editInfoTecnica.tiene_almacenamiento" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Capacidad (kWh)</label>
-                  <InputNumber v-model="editInfoTecnica.capacidad_almacenamiento_kwh" :maxFractionDigits="3" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Marca</label>
-                  <InputText v-model="editInfoTecnica.marca_almacenamiento" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Modelo</label>
-                  <InputText v-model="editInfoTecnica.modelo_almacenamiento" class="w-full" />
                 </div>
               </div>
             </div>
@@ -794,7 +751,6 @@ import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
-import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
 import { useToast } from 'primevue/usetoast'
 import * as XLSX from 'xlsx'
@@ -924,15 +880,10 @@ const editInfoTecnica = reactive({
   marca_modems_frontera: null,
   ip_modem_reconectador: null,
   url_ubicacion: null,
-  retie_url: null,
   cctv_estado: null,
   marca_cctv: null,
   seguridad_fisica: null,
   tiene_internet: null,
-  tiene_almacenamiento: false,
-  capacidad_almacenamiento_kwh: null,
-  marca_almacenamiento: null,
-  modelo_almacenamiento: null,
 })
 
 // Fechas del proyecto (DatePicker trabaja con Date; el API espera 'YYYY-MM-DD')
