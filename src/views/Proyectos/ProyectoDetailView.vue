@@ -187,7 +187,7 @@
                 <InfoField label="Estado CCTV" :value="proyecto.info_tecnica?.cctv_estado" />
                 <InfoField label="Marca CCTV" :value="proyecto.info_tecnica?.marca_cctv" />
                 <InfoField label="Seguridad física" :value="proyecto.info_tecnica?.seguridad_fisica" />
-                <InfoField label="Internet" :value="proyecto.info_tecnica?.tiene_internet" />
+                <InfoField label="Internet" :value="proyecto.info_tecnica?.tiene_internet === true ? 'Sí' : proyecto.info_tecnica?.tiene_internet === false ? 'No' : null" />
               </div>
             </div>
           </template>
@@ -342,7 +342,8 @@
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Internet</label>
-                  <Select v-model="editInfoTecnica.tiene_internet" :options="['Sí','No']" class="w-full" showClear placeholder="Seleccionar" />
+                  <Select v-model="editInfoTecnica.tiene_internet" :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+                          optionLabel="label" optionValue="value" class="w-full" showClear placeholder="Seleccionar" />
                 </div>
               </div>
             </div>
