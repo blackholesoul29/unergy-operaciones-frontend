@@ -7,7 +7,7 @@
  */
 import View from '~/features/mobile/components/MobileTecnicoFallasView.vue'
 
-definePageMeta({ layout: 'legacy-blank', mobile: true, roles: ['tecnico'] })
+definePageMeta({ layout: 'legacy-blank', mobile: true })
 </script>
 
 <template>

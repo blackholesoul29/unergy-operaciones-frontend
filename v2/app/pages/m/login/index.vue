@@ -7,7 +7,7 @@
  */
 import View from '~/features/mobile/components/MobileLoginView.vue'
 
-definePageMeta({ layout: 'legacy-blank', public: true, mobile: true })
+definePageMeta({ layout: 'legacy-blank', mobile: true })
 </script>
 
 <template>

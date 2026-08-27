@@ -29,16 +29,15 @@
 <script setup>
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '~/stores/auth'
 import { ChartColumnIcon, LogOutIcon, MailIcon, SunIcon, WrenchIcon } from '@lucide/vue'
 
-const auth = useAuthStore()
+const { user, signOut } = useAuth()
 const router = useRouter()
-const rol = computed(() => auth.role)
+const rol = computed(() => user.value?.role)
 const fallasPath = computed(() => rol.value === 'coordinador' ? '/m/coordinador' : '/m/tecnico')
 
 function logout() {
-  auth.logout()
+  signOut()
   router.push('/m/login')
 }
 </script>

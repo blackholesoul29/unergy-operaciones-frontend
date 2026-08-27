@@ -22,7 +22,7 @@ function userWith(role: string): User {
 describe('pageAccess', () => {
   it('lets anyone through a public route, signed in or not', () => {
     expect(pageAccess(null, '/login')).toBe('public')
-    expect(pageAccess(userWith(UserRole.MEMBER), '/logout')).toBe('public')
+    expect(pageAccess(userWith(UserRole.OPERACIONES), '/logout')).toBe('public')
     expect(pageAccess(null, '/authorize')).toBe('public')
   })
 
@@ -33,7 +33,7 @@ describe('pageAccess', () => {
 
   it('allows a role that holds the permission', () => {
     expect(pageAccess(userWith(UserRole.ADMIN), '/')).toBe('allowed')
-    expect(pageAccess(userWith(UserRole.MEMBER), '/')).toBe('allowed')
+    expect(pageAccess(userWith(UserRole.OPERACIONES), '/')).toBe('allowed')
   })
 
   it('refuses a signed-in role that lacks it', () => {

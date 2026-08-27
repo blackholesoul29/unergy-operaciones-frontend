@@ -84,11 +84,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '~/stores/auth'
+import { normalizeError } from '~/core/errors'
 import { LoaderCircleIcon } from '@lucide/vue'
 
 const router = useRouter()
-const auth = useAuthStore()
+const { signIn } = useAuth()
 
 const email    = ref('')
 const password = ref('')
@@ -99,10 +99,10 @@ async function submit() {
   loading.value = true
   error.value = ''
   try {
-    await auth.login(email.value, password.value)
+    await signIn({ email: email.value, password: password.value })
     router.push('/dashboard')
   } catch (e) {
-    error.value = e.response?.data?.detail || e.message || 'Error de conexión'
+    error.value = normalizeError(e).message
   } finally {
     loading.value = false
   }

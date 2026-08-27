@@ -181,7 +181,6 @@ import Message from 'primevue/message'
 import Skeleton from 'primevue/skeleton'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
-import { useAuthStore } from '~/stores/auth'
 import MetricaKpiCard from './MetricaKpiCard.vue'
 import MetricaDialog from './MetricaDialog.vue'
 import CopiarMetricasDialog from './CopiarMetricasDialog.vue'
@@ -196,7 +195,7 @@ const SemanaDrawer = defineAsyncComponent(() => import('./SemanaDrawer.vue'))
 
 const route = useRoute()
 const confirm = useConfirm()
-const auth = useAuthStore()
+const { user } = useAuth()
 
 // ── Estado ──────────────────────────────────────────────────────────────
 const reto = ref(null)
@@ -370,7 +369,7 @@ function aplicarValor(metricaId, semanaInicio, valor, nota) {
     mapa[semanaInicio] = {
       valor: sinValor ? null : Number(valor),
       nota: sinNota ? null : nota,
-      actualizado_por: auth.user?.nombre || mapa[semanaInicio]?.actualizado_por || null,
+      actualizado_por: user.value?.name || mapa[semanaInicio]?.actualizado_por || null,
       updated_at: new Date().toISOString(),
     }
   }

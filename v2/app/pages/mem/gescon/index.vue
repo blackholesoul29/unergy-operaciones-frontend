@@ -7,7 +7,7 @@
  */
 import View from '~/features/mem/components/GesconView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

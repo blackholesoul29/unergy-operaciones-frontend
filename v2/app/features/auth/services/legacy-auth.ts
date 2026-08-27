@@ -12,11 +12,14 @@
  * `password` (es el flujo de contraseña de OAuth2 tal como lo sirve FastAPI), no
  * JSON.
  *
- * MIGRACIÓN — desaparece en la fase 3, ola 1: el login pasa a
- * `POST /api/auth/login` de Nitro, que deja los tokens en cookies httpOnly.
- * Ver `~/features/auth/services/auth.ts`, que ya es ese servicio.
+ * Es el transporte real de la sesión (`~/composables/useAuth.ts`): el backend
+ * no expone `/auth/me`, así que el login no puede pasar por
+ * `POST /api/auth/login` de Nitro (`~/features/auth/services/auth.ts`), que
+ * asume ese endpoint para resolver la sesión en cada request.
  */
+import type { AxiosError } from 'axios'
 import axios from 'axios'
+import { AppError, codeFromHttpStatus } from '~/core/errors'
 import { LegacyBaseService } from '~/core/legacy-service'
 
 /** Vacío = mismo origen, que es lo normal: el proxy resuelve el resto. */
@@ -34,15 +37,39 @@ export interface RespuestaToken {
   token_type?: string
 }
 
+/** El detalle de error que devuelve FastAPI: `{ detail: "Credenciales inválidas" }`. */
+interface DetalleError {
+  detail?: string
+}
+
+/** Traduce el error de axios a `AppError`, para que `normalizeError` lo deje pasar tal cual. */
+function comoAppError(err: unknown): AppError {
+  if (!axios.isAxiosError(err)) return new AppError('UNKNOWN', err instanceof Error ? err.message : String(err))
+
+  const error = err as AxiosError<DetalleError>
+  const status = error.response?.status ?? 0
+  return new AppError(codeFromHttpStatus(status), error.response?.data?.detail, { cause: err })
+}
+
 export class LegacyAuthService extends LegacyBaseService {
   constructor() {
     super(axios.create({ baseURL: BASE_URL }))
   }
 
-  private solicitarToken(ruta: string, email: string, password: string): Promise<RespuestaToken> {
-    return this.post<RespuestaToken>(ruta, new URLSearchParams({ username: email, password }), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    })
+  private async solicitarToken(
+    ruta: string,
+    email: string,
+    password: string,
+  ): Promise<RespuestaToken> {
+    try {
+      return await this.post<RespuestaToken>(
+        ruta,
+        new URLSearchParams({ username: email, password }),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+      )
+    } catch (err) {
+      throw comoAppError(err)
+    }
   }
 
   login(email: string, password: string): Promise<RespuestaToken> {

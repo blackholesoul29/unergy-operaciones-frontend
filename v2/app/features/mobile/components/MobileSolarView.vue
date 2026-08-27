@@ -18,8 +18,8 @@
           <div class="ms-menu-user">
             <UserIcon class="size-[1em]" />
             <div>
-              <div class="ms-menu-name">{{ auth.user?.nombre || 'Usuario' }}</div>
-              <div class="ms-menu-email">{{ auth.user?.email }}</div>
+              <div class="ms-menu-name">{{ user?.name || 'Usuario' }}</div>
+              <div class="ms-menu-email">{{ user?.email }}</div>
             </div>
           </div>
           <button class="ms-menu-item" @click="cerrarSesion"><LogOutIcon class="size-[1em]" /> Cerrar sesión</button>
@@ -152,7 +152,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '~/stores/auth'
 import api from '~/core/client'
 import { usePwa } from '~/features/mobile/components/usePwa'
 import { inverterSeries, meterSeries, latest, fmtKw } from '~/features/mobile/components/solarSeries'
@@ -168,7 +167,7 @@ import { BellIcon, ChevronDownIcon, ChevronRightIcon, ClockIcon, LoaderCircleIco
 import { toast } from 'vue-sonner'
 
 const router = useRouter()
-const auth = useAuthStore()
+const { user, signOut } = useAuth()
 const { register } = usePwa()
 
 const STATUS_COLORS = {
@@ -376,7 +375,7 @@ function onReconnectDone({ active }) {
 }
 
 // ── Sesión ─────────────────────────────────────────────────────────────────
-function cerrarSesion() { auth.logout(); router.replace('/m/login') }
+function cerrarSesion() { signOut(); router.replace('/m/login') }
 
 // ── Ciclo de vida ─────────────────────────────────────────────────────────
 onMounted(() => {

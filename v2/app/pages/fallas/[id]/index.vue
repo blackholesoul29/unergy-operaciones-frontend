@@ -7,7 +7,7 @@
  */
 import View from '~/features/fallas/components/FallaDetailView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones', 'monitoreo'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

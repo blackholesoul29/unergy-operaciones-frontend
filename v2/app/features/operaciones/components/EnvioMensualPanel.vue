@@ -554,19 +554,18 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '~/core/client'
-import { useAuthStore } from '~/stores/auth'
 import { buildReportHtmlDoc } from '~/features/operaciones/utils/rptStyles'
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon, CircleCheckIcon, EyeIcon, FileIcon, FolderIcon, InboxIcon, InfoIcon, LoaderCircleIcon, LockIcon, MessagesSquareIcon, PencilIcon, PlusIcon, PrinterIcon, RefreshCwIcon, SaveIcon, SearchIcon, SendIcon, Trash2Icon, XIcon } from '@lucide/vue'
 
-const auth = useAuthStore()
+const { user } = useAuth()
 
 const EMAIL_VERIFICADOR     = 'juan.jose@unergy.io'
 const EMAIL_VERIFICADOR_ALT = 'juanjose@unergy.io'
 const EMAIL_REMITENTE       = 'laura.h@unergy.io'
 const LS_MES_KEY            = 'em_pipeline_mes'
 
-const userEmail = computed(() => (auth.user?.email || '').toLowerCase())
-const userRol   = computed(() => auth.user?.rol || '')
+const userEmail = computed(() => (user.value?.email || '').toLowerCase())
+const userRol   = computed(() => user.value?.role || '')
 const permisoVerificar = computed(() =>
   userRol.value === 'admin' || [EMAIL_VERIFICADOR, EMAIL_VERIFICADOR_ALT].includes(userEmail.value)
 )
@@ -1114,7 +1113,7 @@ async function enviarUno(inf) {
     if (idx >= 0) {
       informes.value[idx].correo_enviado    = true
       informes.value[idx].correo_enviado_en = new Date().toISOString()
-      informes.value[idx].enviado_por_nombre = auth.user?.nombre || ''
+      informes.value[idx].enviado_por_nombre = user.value?.name || ''
     }
     if (drawerInf.value?.id === inf.id) drawerInf.value = informes.value[idx]
     toast(`✉️ Enviado a ${data.enviado_a}`)
@@ -1156,7 +1155,7 @@ async function ejecutarEnvioBatch() {
         if (ix >= 0) {
           informes.value[ix].correo_enviado    = true
           informes.value[ix].correo_enviado_en = new Date().toISOString()
-          informes.value[ix].enviado_por_nombre = auth.user?.nombre || ''
+          informes.value[ix].enviado_por_nombre = user.value?.name || ''
         }
         detalles.push({ id: inf.id, nombre, ok: true, msg: `Enviado a ${data.enviado_a}` })
       } catch (e) {

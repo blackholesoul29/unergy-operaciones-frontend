@@ -7,7 +7,7 @@
  */
 import View from '~/features/comercial/components/ComercialView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'comercial'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

@@ -20,8 +20,8 @@ también: un tipo compartido que se queda con un solo consumidor, baja.
 | `api.ts`          | Cómo viajan las cosas, no qué son: `Id`, `FechaISO`, `Paginado<T>`, `Opcion<T>`, `ErrorApi`                                           |
 | `proyecto.ts`     | La planta y sus catálogos, su información técnica y sus inversionistas                                                                |
 | `cliente.ts`      | Quien firma —inversionista o comprador—, sus contactos y sus servicios                                                                |
-| `user.ts`         | El usuario del template (`User`, `UserRole`) y el del legacy (`UsuarioLegacy`, `RolLegacy`), que conviven hasta la ola 1 de la fase 3 |
-| `route-meta.d.ts` | El `meta` de ruta que lee el guard del legacy. Temporal                                                                               |
+| `user.ts`         | `User` y `UserRole` — los 7 roles reales del backend, decodificados del JWT (`~/composables/useAuth.ts`)                             |
+| `route-meta.d.ts` | El `meta` de ruta propio de la app. Hoy solo `mobile`, que lee `app/middleware/mobile.global.ts`                                     |
 
 ## Dos convenciones
 

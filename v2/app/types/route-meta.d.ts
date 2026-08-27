@@ -1,24 +1,18 @@
 /**
- * MIGRACIÓN — Fase 1. El `meta` de ruta que declaran las páginas puente y que
- * lee `app/middleware/legacy-auth.global.ts`.
+ * El `meta` de ruta propio de esta app, más allá de lo que trae `vue-router`.
  *
- * Sin esta ampliación, `definePageMeta({ roles: [...] })` no compila: el
- * `RouteMeta` de vue-router no conoce esas claves.
+ * `roles`/`requireEmail`/`public` desaparecieron con `legacy-auth.global.ts` en
+ * la fase 3, ola 1: el acceso de página se decide en una matriz central
+ * (`AUTH_ROUTE_PERMISSIONS`), no en el meta de cada página — así una página que
+ * se olvida de declararse no queda abierta por accidente.
  *
- * Desaparece con el guard, en la fase 3 ola 1. El template no lleva los roles en
- * el meta de cada página, sino en una matriz central (`AUTH_ROUTE_PERMISSIONS`),
- * justo para que una página que se olvida de declararlos no quede abierta.
+ * `mobile` se queda: distingue la app móvil (`/m/*`), que tiene su propio login
+ * y su propio layout, y lo sigue leyendo `app/middleware/mobile.global.ts`.
  */
 declare module 'vue-router' {
   interface RouteMeta {
-    /** Alcanzable sin sesión. */
-    public?: boolean
     /** Pertenece a la app móvil (`/m/*`): otro login y otro layout. */
     mobile?: boolean
-    /** Roles que pueden abrirla. Sin esta clave, basta con estar autenticado. */
-    roles?: string[]
-    /** Restricción a una persona concreta. Se sustituye por un permiso en la fase 3. */
-    requireEmail?: string
   }
 }
 

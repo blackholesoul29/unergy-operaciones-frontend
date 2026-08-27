@@ -88,8 +88,8 @@
       <div class="sb-user">
         <div class="sb-avatar">{{ initials }}</div>
         <div class="min-w-0 flex-1">
-          <p class="sb-user-name">{{ auth.user?.nombre || auth.user?.email }}</p>
-          <p class="sb-user-mail">{{ auth.user?.email }}</p>
+          <p class="sb-user-name">{{ user?.name || user?.email }}</p>
+          <p class="sb-user-mail">{{ user?.email }}</p>
         </div>
         <!-- Bell -->
         <div class="relative" ref="bellRef">
@@ -151,7 +151,6 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '~/stores/auth'
 import { useSidebar } from '~/composables/useSidebar'
 import {
   LEGACY_NAV_GROUP_LABELS,
@@ -161,12 +160,12 @@ import {
 import api from '~/core/client'
 import { BellIcon, BellOffIcon, ChevronDownIcon, ChevronsLeftIcon, CircleAlertIcon, CircleCheckIcon, InfoIcon, LogOutIcon, TriangleAlertIcon } from '@lucide/vue'
 
-const auth = useAuthStore()
+const { user, signOut } = useAuth()
 const router = useRouter()
 const { mobileOpen, collapsed, toggleCollapsed, isGroupCollapsed, toggleGroup } = useSidebar()
 
 const initials = computed(() => {
-  const name = (auth.user?.nombre || auth.user?.email || '').trim()
+  const name = (user.value?.name || user.value?.email || '').trim()
   return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
 })
 
@@ -246,7 +245,7 @@ function handleClickOutside(e) {
 
 // ── Logout ──────────────────────────────────────────────────────────────
 function handleLogout() {
-  auth.logout()
+  signOut()
   router.push('/login')
 }
 
@@ -274,8 +273,8 @@ function toggleItem(label) {
 
 const navGroups = computed(() => {
   const visible = (item) =>
-    (!item.roles || auth.can(...item.roles)) &&
-    (!item.requireEmail || auth.user?.email === item.requireEmail)
+    (!item.roles || (user.value && item.roles.includes(user.value.role))) &&
+    (!item.requireEmail || user.value?.email === item.requireEmail)
 
   return LEGACY_NAV_GROUP_ORDER.map((group) => ({
     label: LEGACY_NAV_GROUP_LABELS[group],

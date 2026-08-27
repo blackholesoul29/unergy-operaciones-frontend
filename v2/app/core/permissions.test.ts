@@ -13,7 +13,7 @@ import { hasPermission, permissionForRoute } from './permissions'
 describe('hasPermission', () => {
   const matrix: Array<[UserRole, Permission, boolean]> = [
     [UserRole.ADMIN, 'dashboard:read', true],
-    [UserRole.MEMBER, 'dashboard:read', true],
+    [UserRole.OPERACIONES, 'dashboard:read', true],
   ]
 
   it.each(matrix)('%s %s the permission %s', (role, permission, expected) => {
@@ -45,7 +45,7 @@ describe("permissionForRoute (the app's own table)", () => {
   it('does not let the root entry act as a prefix for every path', () => {
     // As a plain string prefix, '/' would swallow every path and undo the
     // deny-by-default — every role holds 'dashboard:read'.
-    expect(permissionForRoute(AUTH_ROUTE_PERMISSIONS, '/admin')).toBeNull()
+    expect(permissionForRoute(AUTH_ROUTE_PERMISSIONS, '/reports')).toBeNull()
     expect(permissionForRoute(AUTH_ROUTE_PERMISSIONS, '/anything/nested')).toBeNull()
   })
 })

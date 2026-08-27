@@ -7,7 +7,7 @@
  */
 import View from '~/features/liquidaciones/components/LiquidacionDetailView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'liquidaciones'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

@@ -7,7 +7,7 @@
  */
 import View from '~/features/registros-cnd/components/RegistrosCndAsicListView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

@@ -3,6 +3,10 @@
  * for every navigation after it, which is why it — and not the server
  * middleware — is where page access is decided. The decision itself is
  * `pageAccess`, shared and pure, so there is one table to keep right.
+ *
+ * `/m/*` is left to `mobile.global.ts`: coordinador/técnico land on their own
+ * tray, which "allowed/forbidden" cannot express, and `AUTH_ROUTE_PERMISSIONS`
+ * deliberately declares no mobile page.
  */
 import { AUTH_DEFAULT_REDIRECT_PATH, AUTH_LOGIN_PATH } from '~/config/app'
 import { logger } from '~/core/logger'
@@ -11,6 +15,13 @@ import { decodeRedirect } from '~/features/auth/redirect'
 
 export default defineNuxtRouteMiddleware((to) => {
   if (!useRuntimeConfig().public.authEnabled) return
+
+  // Vista previa local (solo DEV): ?preview=operaciones, ?preview=comercial…
+  if (import.meta.dev && typeof to.query.preview === 'string') {
+    useAuth().previewLogin(to.query.preview)
+  }
+
+  if (to.meta.mobile) return
 
   const { user } = useAuth()
   const access = pageAccess(user.value, to.path)

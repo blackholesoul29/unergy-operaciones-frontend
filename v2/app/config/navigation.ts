@@ -132,10 +132,11 @@ export interface LegacyNavItem {
   to?: string
   /**
    * Oculta la entrada a quien no tenga uno de estos roles. Solo presentación:
-   * quien hace cumplir el acceso es el guard (`legacy-auth.global.ts`).
+   * quien hace cumplir el acceso página por página es `auth.global.ts` contra
+   * `AUTH_ROUTE_PERMISSIONS`, no esta lista de roles.
    */
   roles?: string[]
-  /** Restricción a una persona concreta. Pasa a ser un permiso en la fase 3. */
+  /** Restricción a una persona concreta. Ver la nota sobre `/admin` en `~/config/permissions`. */
   requireEmail?: string
   children?: LegacyNavChild[]
 }

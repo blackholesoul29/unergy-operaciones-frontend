@@ -7,7 +7,7 @@
  */
 import View from '~/features/admin/components/DiagnosticoEnlacesView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin'], requireEmail: 'juanjose@unergy.io' })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

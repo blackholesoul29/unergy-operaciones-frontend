@@ -169,8 +169,8 @@ function codeFromStatus(status: string): ErrorCode | undefined {
   return STATUS_ALIASES[status]
 }
 
-/** Fallback when the body carries no status we recognize. */
-function codeFromHttpStatus(status: number): ErrorCode {
+/** Fallback when the body carries no status we recognize. Also used to translate axios errors, which ofetch never throws. */
+export function codeFromHttpStatus(status: number): ErrorCode {
   switch (status) {
     case 0:
       return 'NETWORK'

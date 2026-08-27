@@ -84,14 +84,13 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import api from '~/core/client'
-import { useAuthStore } from '~/stores/auth'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import TecnicoFallaDetailSheet from '~/features/mobile/components/components/TecnicoFallaDetailSheet.vue'
 import NotificationsSheet from '~/features/mobile/components/components/NotificationsSheet.vue'
 import { BellIcon, ChevronRightIcon, CircleCheckIcon, FilterXIcon, FlagIcon, ImageIcon, LoaderCircleIcon, WrenchIcon, ZapIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
-const auth = useAuthStore()
+const { user } = useAuth()
 const fallas = ref([])
 const catalogos = reactive({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
 const loading = ref(false)
@@ -101,7 +100,7 @@ const detailFalla = ref(null)
 const notifOpen = ref(false)
 const unreadCount = ref(0)
 
-const miId = computed(() => Number(auth.user?.id))
+const miId = computed(() => Number(user.value?.id))
 
 const misFallas = computed(() =>
   fallas.value.filter((f) => f.asignado_a && Number(f.asignado_a.id) === miId.value)

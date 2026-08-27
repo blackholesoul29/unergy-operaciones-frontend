@@ -109,7 +109,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import api from '~/core/client'
-import { useAuthStore } from '~/stores/auth'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
 import FallaCreateSheet from '~/features/mobile/components/components/FallaCreateSheet.vue'
@@ -117,7 +116,6 @@ import NotificationsSheet from '~/features/mobile/components/components/Notifica
 import { BellIcon, CircleCheckIcon, LoaderCircleIcon, PlusIcon, SearchIcon, UserPlusIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
-const auth = useAuthStore()
 const fallas = ref([])
 const catalogos = reactive({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
 const proyectos = ref([])

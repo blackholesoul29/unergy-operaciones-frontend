@@ -7,7 +7,7 @@
  */
 import View from '~/features/mobile/components/MobileCoordinadorFallasView.vue'
 
-definePageMeta({ layout: 'legacy-blank', mobile: true, roles: ['coordinador', 'admin'] })
+definePageMeta({ layout: 'legacy-blank', mobile: true })
 </script>
 
 <template>

@@ -7,7 +7,7 @@
  */
 import View from '~/features/operadores-red/components/OperadoresRedView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

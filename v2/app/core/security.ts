@@ -15,10 +15,12 @@
 //     emita el refresh token en una cookie httpOnly + Secure + SameSite=Strict
 //     y que el access token sea de vida corta. Eso no se puede lograr solo desde
 //     el frontend. Ver SECURITY.md.
-//   • **El template ya trae ese esquema montado** (`server/utils/auth-api.ts` +
-//     cookies httpOnly). Este archivo entero desaparece en la fase 3, ola 1.
+//   • El template ya trae ese esquema montado (`server/utils/auth-api.ts` +
+//     cookies httpOnly), pero necesita un `/auth/me` que el backend real no
+//     expone hoy — sin él no hay forma de resolver la sesión en cada request.
+//     Este archivo se queda hasta que ese endpoint exista; ver `~/composables/useAuth.ts`.
 // ─────────────────────────────────────────────────────────────────────────────
-import type { UsuarioLegacy } from '~/types/user'
+import type { User } from '~/types/user'
 
 const TOKEN_KEY = 'token'
 const USER_KEY = 'user'
@@ -62,16 +64,16 @@ export function setAccessToken(token: string | null): void {
 }
 
 // ── Usuario en caché ─────────────────────────────────────────────────────────
-export function getStoredUser(): UsuarioLegacy | null {
+export function getStoredUser(): User | null {
   try {
     const raw = almacen()?.getItem(USER_KEY)
-    return raw ? (JSON.parse(raw) as UsuarioLegacy) : null
+    return raw ? (JSON.parse(raw) as User) : null
   } catch {
     return null
   }
 }
 
-export function setStoredUser(user: UsuarioLegacy | null): void {
+export function setStoredUser(user: User | null): void {
   try {
     if (user) almacen()?.setItem(USER_KEY, JSON.stringify(user))
     else almacen()?.removeItem(USER_KEY)

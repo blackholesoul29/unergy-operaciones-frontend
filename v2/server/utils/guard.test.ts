@@ -36,7 +36,7 @@ describe('createPermissionGuard', () => {
     // There is no "unrestricted" permission: these roles reach the dashboard
     // because the grant is written down, not by falling through.
     expect(statusFor(userWith(UserRole.ADMIN), 'dashboard:read')).toBeNull()
-    expect(statusFor(userWith(UserRole.MEMBER), 'dashboard:read')).toBeNull()
+    expect(statusFor(userWith(UserRole.OPERACIONES), 'dashboard:read')).toBeNull()
   })
 
   it('denies a signed-in role that does not hold it with 403', () => {

@@ -7,7 +7,7 @@
  */
 import View from '~/features/admin/components/AdminUsuariosView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

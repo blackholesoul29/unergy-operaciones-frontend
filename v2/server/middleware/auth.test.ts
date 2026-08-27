@@ -116,7 +116,7 @@ describe('auth middleware', () => {
   })
 
   it('installs a guard bound to the resolved user', async () => {
-    fetchMe.mockResolvedValue(userWith(UserRole.MEMBER))
+    fetchMe.mockResolvedValue(userWith(UserRole.OPERACIONES))
     const granted = await callAuth('/', SESSION)
     expect(() => granted.context.requirePermission('dashboard:read')).not.toThrow()
 

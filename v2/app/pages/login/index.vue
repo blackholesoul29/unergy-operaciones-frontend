@@ -7,7 +7,7 @@
  */
 import View from '~/features/auth/components/LoginView.vue'
 
-definePageMeta({ layout: 'legacy-blank', public: true })
+definePageMeta({ layout: 'legacy-blank' })
 </script>
 
 <template>

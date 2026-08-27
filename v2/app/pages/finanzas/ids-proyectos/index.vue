@@ -7,7 +7,7 @@
  */
 import View from '~/features/finanzas/components/IdsProyectosView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'liquidaciones'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

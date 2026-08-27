@@ -7,7 +7,7 @@
  */
 import View from '~/features/alertas/components/AlertasContratosPPAView.vue'
 
-definePageMeta({ layout: 'legacy', roles: ['admin', 'operaciones'] })
+definePageMeta({ layout: 'legacy' })
 </script>
 
 <template>

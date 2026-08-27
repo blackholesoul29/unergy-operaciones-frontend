@@ -43,12 +43,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '~/stores/auth'
+import { normalizeError } from '~/core/errors'
 import { usePwa } from '~/features/mobile/components/usePwa'
 import { BriefcaseIcon, LoaderCircleIcon, SunIcon, TriangleAlertIcon, WrenchIcon } from '@lucide/vue'
 
 const router = useRouter()
-const auth = useAuthStore()
+const { user, signInMobile, previewLogin } = useAuth()
 const { register } = usePwa()
 
 const email = ref('')
@@ -61,20 +61,20 @@ async function onSubmit() {
   loading.value = true
   error.value = ''
   try {
-    await auth.loginMobile(email.value.trim(), password.value)
-    const rol = auth.role
+    await signInMobile({ email: email.value.trim(), password: password.value })
+    const rol = user.value?.role
     if (rol === 'coordinador') router.replace('/m/coordinador')
     else if (rol === 'tecnico') router.replace('/m/tecnico')
     else router.replace('/m/solar')
   } catch (err) {
-    error.value = err.response?.data?.detail || 'No se pudo ingresar. Verifica tus datos.'
+    error.value = normalizeError(err).message
   } finally {
     loading.value = false
   }
 }
 
 function previsualizarComo(rol) {
-  auth.previewLogin(rol)
+  previewLogin(rol)
   router.replace(rol === 'coordinador' ? '/m/coordinador' : '/m/tecnico')
 }
 

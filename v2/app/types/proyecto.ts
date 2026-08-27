@@ -10,10 +10,10 @@
  * `POST`/`PATCH /proyectos`, y contra las vistas que leen la respuesta. El
  * backend puede devolver más campos; lo que se afirma aquí es lo que se usa.
  *
- * Los catálogos van como `as const` + unión de literales, no como `enum`, por lo
- * mismo que `RolLegacy` en `~/types/user`: hay literales sueltos (`'en_operacion'`)
- * repartidos por las vistas del legacy y con un `enum` ninguno compilaría. Pasan
- * a `enum` cuando la fase 3 migre esos call sites.
+ * Los catálogos van como `as const` + unión de literales, no como `enum`: hay
+ * literales sueltos (`'en_operacion'`) repartidos por las vistas del legacy y
+ * con un `enum` ninguno compilaría. Pasan a `enum` cuando la fase 3 migre esos
+ * call sites.
  */
 import type { FechaISO, Id, Opcion } from '~/types/api'
 
