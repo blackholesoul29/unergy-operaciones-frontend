@@ -610,5 +610,8 @@ onMounted(() => {
 // Nota: el backfill de marca/modelo/serie de medidor (Quoia) ya no tiene
 // botón aquí -- ya se corrió y hoy no queda nada por completar (Quoia no
 // tiene más info para dar). El endpoint POST /fronteras/backfill-medidor
-// sigue vivo en el backend por si hace falta correrlo puntualmente.
+// se eliminó (commit 6648bb3) -- ahora una frontera nueva con
+// codigo_frontera se completa sola al crearla (ver
+// _enriquecer_medidor_desde_quoia() en fronteras.py). Corrección de
+// comentario desactualizado, auditoría de eficiencia 2026-08-26.
 </script>
