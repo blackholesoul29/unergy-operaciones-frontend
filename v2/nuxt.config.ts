@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
 
-  modules: ['@nuxt/eslint', 'shadcn-nuxt', '@vueuse/nuxt', '@pinia/nuxt', '@nuxtjs/color-mode'],
+  modules: ['@nuxt/eslint', 'shadcn-nuxt', '@vueuse/nuxt', '@nuxtjs/color-mode'],
 
   /**
    * MIGRACIÓN — Fase 1. La aplicación que se está trasladando es una SPA de Vite
@@ -101,22 +101,17 @@ export default defineNuxtConfig({
     public: {
       apiBaseUrl: '',
       /**
-       * MIGRACIÓN — Fase 1: apagado por defecto, no por `.env`.
+       * Fase 3, ola 1: el guard del template (`auth.global.ts`) gobierna la
+       * sesión, con `AUTH_ROUTE_PERMISSIONS` declarando las páginas de la
+       * plataforma. La sesión en sí sigue viajando por JWT/`localStorage`
+       * (`~/composables/useAuth.ts`), no por las cookies httpOnly que trae
+       * montadas el template: el backend real no expone `/auth/me`.
        *
-       * La sesión la gobierna el store del legacy y el guard
-       * `legacy-auth.global.ts`. El guard del template —y su middleware de
-       * servidor— trabajan contra `AUTH_ROUTE_PERMISSIONS`, donde solo está
-       * declarada `/`, así que encendidos redirigen **todas** las rutas a un
-       * `/login` que no gobiernan.
-       *
-       * Estaba en `.env`, pero un `.env` no viaja al build de producción: el
-       * servidor arrancaba con el valor por defecto `true` y devolvía 302 en
-       * todo. El valor por defecto tiene que ser el que hace que la app
-       * funcione; la variable de entorno queda para volver a encenderlo.
-       *
-       * Se vuelve a `true` en la fase 3, ola 1.
+       * Como valor por defecto y no solo en `.env`: un `.env` no viaja al build
+       * de producción, así que el default es el que de verdad gobierna un
+       * despliegue sin variables de entorno propias.
        */
-      authEnabled: false,
+      authEnabled: true,
       authPasswordEnabled: true,
       authGoogleEnabled: false,
       googleClientId: '',
