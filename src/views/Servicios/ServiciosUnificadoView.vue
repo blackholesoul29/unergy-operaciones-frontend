@@ -892,7 +892,13 @@ const FILTROS = {
 const filtros = ref({})
 const panelFiltros = ref(null)
 
-const filtrosActivos = computed(() => FILTROS[servicio.value] || [])
+// FILTROS solo tiene definiciones para los sub-ángulos de Servicios
+// (ppa/representacion/operacion) -- `servicio` nunca se resetea al cambiar
+// de pestaña (queda en su default 'ppa'), así que sin este guard el botón
+// Filtros aparecía también en Proyectos/Clientes mostrando los filtros de
+// PPA sobre datos que ni siquiera se habían cargado ahí (Todos (0), "No
+// available options" -- bug reportado 2026-08-26).
+const filtrosActivos = computed(() => vista.value === 'servicios' ? (FILTROS[servicio.value] || []) : [])
 
 // Filas sobre las que se calculan las opciones: las crudas del servicio, para
 // que quitar un filtro no vacíe las opciones de los demás.
