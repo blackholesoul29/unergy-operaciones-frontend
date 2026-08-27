@@ -267,8 +267,8 @@ const ALL_GROUPS = [
       // /clientes, /proyectos y /servicios siguen vivas -- solo salieron del
       // menú, así que nada se rompe y revertir es volver a poner estas líneas.
       { to: '/servicios-unificado', label: 'Proyectos',          icon: 'pi pi-bolt' },
-      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
+      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
       { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
     ],
   },
