@@ -6,9 +6,15 @@
  * security. If your API issues short-lived access tokens, add the refresh
  * flow and split the two lifetimes together.
  *
- * The access token still reaches the browser — through the SSR payload, put
- * there by `app/plugins/auth.server.ts` — because client-side services send it
- * to the data API. The refresh token never leaves this file's cookies.
+ * DORMANT — this whole cookie pipeline (this file, `server/middleware/auth.ts`,
+ * `server/utils/auth-api.ts`, `server/api/auth/*`) needs a `/auth/me` the real
+ * backend does not expose, so nothing calls it today: the session actually in
+ * use is JWT/`localStorage`, resolved client-side by `~/composables/useAuth.ts`.
+ * It stays wired and type-checked so switching transport later is editing
+ * `useAuth.ts`, not rebuilding this half. There is deliberately no
+ * `app/plugins/auth.server.ts` reading `event.context.user` into `useState`
+ * anymore — with `ssr: false` that plugin ran ahead of the client and clobbered
+ * the JWT-hydrated state with `null` on every load.
  */
 import type { H3Event } from 'h3'
 
