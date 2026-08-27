@@ -97,6 +97,15 @@ export default defineNuxtConfig({
     authCookieSecure: true,
     authCookieSameSite: 'lax',
     authCookieMaxAge: 60 * 60 * 24 * 7,
+    /**
+     * Gates the cookie-session half of `server/middleware/auth.ts` — separate
+     * from `public.authEnabled`, which gates the page guard and is on. This
+     * stays `false` until the real backend exposes `/auth/me`: with no cookie
+     * ever set (the session today is JWT/`localStorage`, see
+     * `~/composables/useAuth.ts`), resolving one on every request would 401
+     * every proxied `/api/v1/*` call and redirect every page on first load.
+     */
+    authSessionCookiesEnabled: false,
 
     public: {
       apiBaseUrl: '',

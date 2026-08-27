@@ -17,6 +17,10 @@ const TEST_RUNTIME_CONFIG = {
   authCookieSecure: true,
   authCookieSameSite: 'lax',
   authCookieMaxAge: 604800,
+  // Pinned true so server/middleware/auth.test.ts keeps exercising the cookie
+  // session logic even though it ships off (`authSessionCookiesEnabled` in
+  // nuxt.config.ts) until the real backend exposes `/auth/me`.
+  authSessionCookiesEnabled: true,
   public: {
     apiBaseUrl: 'https://api.test',
     authEnabled: true,

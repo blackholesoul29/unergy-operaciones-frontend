@@ -71,6 +71,13 @@ export default defineEventHandler(async (event) => {
   // later. Before the session resolves it answers 401, which is correct.
   event.context.requirePermission = createPermissionGuard(() => event.context.user)
 
+  // See `authSessionCookiesEnabled` in nuxt.config.ts and `server/utils/session.ts`:
+  // dormant until the real backend exposes `/auth/me`. Below this point is the
+  // cookie session this app is not using yet — leaving it live would 401 every
+  // proxied `/api/v1/*` call and redirect every page on first load, since no
+  // cookie is ever set.
+  if (!config.authSessionCookiesEnabled) return
+
   if (!isAppRequest(pathname)) return
   if (isPublicRoute(pathname)) return
 
