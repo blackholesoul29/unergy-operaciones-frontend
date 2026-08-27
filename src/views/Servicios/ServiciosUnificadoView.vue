@@ -886,41 +886,83 @@ const FILTROS = {
     { clave: 'proyecto', label: 'Proyecto', ancho: 'w-64',
       valor: c => c.proyecto?.nombre_comercial || SIN_ASIGNAR },
   ],
+  // Proyectos y Clientes recuperan el panel de Filtros (2026-08-26, pedido
+  // de Sara: "unificada no quiere decir que uno no quiera filtrar") -- mismos
+  // campos que ya se ven en sus columnas, para no inventar un criterio nuevo.
+  proyectos: [
+    { clave: 'estado', label: 'Estado', ancho: 'w-44',
+      valor: p => p.estado,
+      etiqueta: v => ESTADO_LABELS[v] || v },
+    { clave: 'tipo', label: 'Tipo', ancho: 'w-40',
+      valor: p => p.tipo_proyecto,
+      etiqueta: v => TIPO_LABELS[v] || v },
+    // Un proyecto puede tener varios servicios activos a la vez -- valor()
+    // devuelve una lista, no un escalar (ver valoresDe/opcionesDe/aplicarFiltros).
+    { clave: 'servicio', label: 'Servicios', ancho: 'w-44',
+      valor: p => SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.key),
+      etiqueta: v => SERVICIOS_BADGES.find(sb => sb.key === v)?.tooltip || v },
+  ],
+  clientes: [
+    { clave: 'servicio', label: 'Servicios', ancho: 'w-44',
+      valor: c => c.servicios || [],
+      etiqueta: v => servicioLabel(v) },
+    { clave: 'alerta', label: 'Alerta contrato', ancho: 'w-44',
+      valor: c => c.alerta_contrato || SIN_ASIGNAR,
+      etiqueta: v => SEMAFORO[v]?.label || v },
+  ],
 }
 
 // { tipo: ['compra'], estado: [...] } — vacío o ausente = no filtra.
 const filtros = ref({})
 const panelFiltros = ref(null)
 
-// FILTROS solo tiene definiciones para los sub-ángulos de Servicios
-// (ppa/representacion/operacion) -- `servicio` nunca se resetea al cambiar
-// de pestaña (queda en su default 'ppa'), así que sin este guard el botón
-// Filtros aparecía también en Proyectos/Clientes mostrando los filtros de
-// PPA sobre datos que ni siquiera se habían cargado ahí (Todos (0), "No
+// FILTROS tiene una entrada por pestaña ('proyectos', 'clientes'), salvo
+// Servicios, que en cambio se abre en sub-ángulos (ppa/representacion/
+// operacion, ver `servicio`) -- cada uno con su propio set. `servicio`
+// nunca se resetea al cambiar de pestaña (queda en su último valor), así
+// que hay que usarlo SOLO cuando la pestaña activa de verdad es Servicios;
+// si no, el botón Filtros mostraba los filtros de PPA en Proyectos/Clientes
+// sobre datos que ni siquiera se habían cargado ahí (Todos (0), "No
 // available options" -- bug reportado 2026-08-26).
-const filtrosActivos = computed(() => vista.value === 'servicios' ? (FILTROS[servicio.value] || []) : [])
+const filtrosActivos = computed(() => {
+  const clave = vista.value === 'servicios' ? servicio.value : vista.value
+  return FILTROS[clave] || []
+})
 
-// Filas sobre las que se calculan las opciones: las crudas del servicio, para
-// que quitar un filtro no vacíe las opciones de los demás.
-const filasCrudas = computed(() =>
-  servicio.value === 'ppa'
+// Filas sobre las que se calculan las opciones: las crudas de la pestaña
+// activa, para que quitar un filtro no vacíe las opciones de los demás.
+const filasCrudas = computed(() => {
+  if (vista.value === 'proyectos') return proyectos.value
+  if (vista.value === 'clientes') return clientes.value
+  return servicio.value === 'ppa'
     ? ppa.value.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) }))
-    : contratosServicio.value)
+    : contratosServicio.value
+})
+
+// filtro.valor(fila) normalmente es un escalar (un estado, un tipo) -- pero
+// "Servicios" puede tener varios activos a la vez en la misma fila (un
+// proyecto con OP+CGM+PPA, un cliente con dos servicios), así que devuelve
+// una lista. Esto uniforma ambos casos para opcionesDe/aplicarFiltros.
+function valoresDe(filtro, fila) {
+  const v = filtro.valor(fila)
+  return Array.isArray(v) ? v : [v]
+}
 
 function opcionesDe(filtro) {
   const vistos = new Map()
   for (const fila of filasCrudas.value) {
-    const v = filtro.valor(fila)
-    if (v == null || v === '') continue
-    if (!vistos.has(v)) {
-      vistos.set(v, {
-        value: v,
-        label: v === SIN_ASIGNAR ? 'Sin asignar'
-             : (filtro.etiqueta ? filtro.etiqueta(v, fila) : String(v)),
-        n: 0,
-      })
+    for (const v of valoresDe(filtro, fila)) {
+      if (v == null || v === '') continue
+      if (!vistos.has(v)) {
+        vistos.set(v, {
+          value: v,
+          label: v === SIN_ASIGNAR ? 'Sin asignar'
+               : (filtro.etiqueta ? filtro.etiqueta(v, fila) : String(v)),
+          n: 0,
+        })
+      }
+      vistos.get(v).n++
     }
-    vistos.get(v).n++
   }
   // "Sin asignar" al final; el resto alfabético. Se muestra el conteo para que
   // se vea de una si vale la pena filtrar por ese valor.
@@ -946,13 +988,18 @@ function quitarFiltro(clave, valor) {
 
 function limpiarFiltros() { filtros.value = {} }
 
-// Aplica los filtros de la pestaña activa a una lista de filas.
+// Aplica los filtros de la pestaña activa a una lista de filas. Para un
+// filtro multivalor (ver valoresDe), una fila pasa si comparte AL MENOS uno
+// de los valores seleccionados con los suyos -- no que coincidan todos.
 function aplicarFiltros(filas) {
   const activos = filtrosActivos.value
     .map(f => [f, filtros.value[f.clave]])
     .filter(([, vals]) => vals && vals.length)
   if (!activos.length) return filas
-  return filas.filter(fila => activos.every(([f, vals]) => vals.includes(f.valor(fila))))
+  return filas.filter(fila => activos.every(([f, vals]) => {
+    const propios = valoresDe(f, fila)
+    return vals.some(v => propios.includes(v))
+  }))
 }
 
 // Los filtros se sincronizan con la URL igual que la vista y la busqueda, para
@@ -1169,12 +1216,12 @@ const clientesCargados = ref(false)
 
 const clientesFiltrados = computed(() => {
   const t = q.value.trim().toLowerCase()
-  if (!t) return clientes.value
-  return clientes.value.filter(c =>
+  const base = !t ? clientes.value : clientes.value.filter(c =>
     (c.razon_social_nombre || '').toLowerCase().includes(t) ||
     (c.nit_cedula || '').toLowerCase().includes(t) ||
     (c.contacto_comercial_nombre || '').toLowerCase().includes(t) ||
     (c.contacto_comercial_correo || '').toLowerCase().includes(t))
+  return aplicarFiltros(base)
 })
 
 function rowClassCliente(data) {
@@ -1232,8 +1279,7 @@ function ppaVigentes(p) {
 
 const proyectosFiltrados = computed(() => {
   const t = q.value.trim().toLowerCase()
-  if (!t) return proyectos.value
-  return proyectos.value.filter(p =>
+  const base = !t ? proyectos.value : proyectos.value.filter(p =>
     (p.nombre_comercial || '').toLowerCase().includes(t) ||
     (p.codigo_tsf || '').toLowerCase().includes(t) ||
     (p.municipio || '').toLowerCase().includes(t) ||
@@ -1242,6 +1288,7 @@ const proyectosFiltrados = computed(() => {
     // se muestran, tienen que poder buscarse.
     ppaVigentes(p).some(c => ppaLabel(c).toLowerCase().includes(t)) ||
     (p.inversionistas || []).some(i => (i.cliente_nombre || '').toLowerCase().includes(t)))
+  return aplicarFiltros(base)
 })
 
 async function cargarProyectos() {
