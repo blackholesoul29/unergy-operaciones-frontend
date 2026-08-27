@@ -882,7 +882,7 @@ async function confirmarPendiente(p, forzar = false) {
 
 function ignorarPendiente(p) {
   p._loading = 'ignorar'
-  api.post(`/proyectos/pendientes/${p.clave}/ignorar`, {})
+  api.post(`/proyectos/pendientes/${p.clave}/ignorar`)
     .then(() => {
       pendientes.value = pendientes.value.filter(x => x.clave !== p.clave)
     })
