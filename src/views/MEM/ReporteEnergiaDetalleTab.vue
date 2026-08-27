@@ -892,7 +892,7 @@ const opcionesReportarCon = computed(() => {
     }
     return { key, nombre, curva: curvaPersistida, valor: suma(curvaPersistida), disabled: suma(curvaPersistida) == null }
   }
-  return [
+  const opciones = [
     {
       key: 'tipica', nombre: 'Curva típica (histórico)', curva: tipica?.curva,
       nota: tipica ? `mediana de ${tipica.dias_usados} días` : 'sin histórico suficiente',
@@ -901,8 +901,18 @@ const opcionesReportarCon = computed(() => {
     opcionMedidor('principal', 'Medidor principal', d.curva_medidor_principal),
     opcionMedidor('respaldo', 'Medidor respaldo', d.curva_medidor_respaldo),
     { key: 'inversores', nombre: 'Inversores × FP', curva: curvaInversoresFp, valor: suma(curvaInversoresFp), disabled: suma(curvaInversoresFp) == null },
-    { key: 'ceros', nombre: 'Matriz de ceros', curva: Array(24).fill(0), valor: 0 },
   ]
+  // El reconectador solo se ofrece como fuente manual cuando su dato del día
+  // está completo (mismo criterio de 'Dato completo' que ya se usa en
+  // 'Detalle de las fuentes') -- con horas faltantes no es una curva
+  // reportable de un solo clic, para eso ya está 'Rellenar horas' (caso
+  // real: Paso Norte, pedido 2026-08-27).
+  const sumaReconectador = suma(d.curva_reconectador)
+  if (sumaReconectador != null && !horasFaltantesSolares(d.curva_reconectador).length) {
+    opciones.push({ key: 'reconectador', nombre: 'Reconectador', curva: d.curva_reconectador, valor: sumaReconectador })
+  }
+  opciones.push({ key: 'ceros', nombre: 'Matriz de ceros', curva: Array(24).fill(0), valor: 0 })
+  return opciones
 })
 
 function elegirFuenteReportar(op) {
