@@ -1139,7 +1139,6 @@ const ANIDADOS = ['info_tecnica', 'servicio_representacion']
 // (2 en cliente). Para un checklist real ("faltan 3 de 7") hace falta backend.
 const DOCS = {
   clientes: [['rut_url', 'RUT'], ['documentos_comerciales', 'Documentos comerciales']],
-  proyectos: [['carpeta_drive_codigo', 'Carpeta Drive']],
   ppa: [['carpeta_link', 'Carpeta del contrato']],
   contrato: [['enlace_drive', 'Enlace Drive']],
 }

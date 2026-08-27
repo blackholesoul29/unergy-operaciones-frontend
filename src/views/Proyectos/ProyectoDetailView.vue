@@ -32,7 +32,6 @@
             <InfoField label="Municipio" :value="proyecto.municipio" />
             <InfoField label="Operador de red" :value="proyecto.operador_red_legal" />
             <InfoField label="Clasificación" :value="proyecto.clasificacion_regulatoria" />
-            <InfoField label="Carpeta Drive" :value="proyecto.carpeta_drive_codigo" />
             <InfoField label="API ID Unergy" :value="proyecto.sub_project" />
             <InfoField label="Código TSF" :value="proyecto.codigo_tsf" />
             <InfoField label="Fecha de entrada en operación" :value="fmtFecha(proyecto.fecha_entrada_operacion)" />
@@ -79,10 +78,6 @@
             <div class="flex flex-col gap-1">
               <label class="field-label">Clasificación regulatoria</label>
               <Select v-model="editForm.clasificacion_regulatoria" :options="CLASIFICACIONES" class="w-full" placeholder="Seleccionar" showClear />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Carpeta Drive</label>
-              <InputText v-model="editForm.carpeta_drive_codigo" class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">API ID Unergy</label>
@@ -896,7 +891,6 @@ const editForm = reactive({
   altitud_msnm: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
-  carpeta_drive_codigo: null,
   sub_project: null,
   codigo_tsf: null,
   topico_liquidaciones: null,

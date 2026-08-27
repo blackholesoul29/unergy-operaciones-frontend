@@ -80,10 +80,6 @@
         <InputText v-model="f.nombre_comunidad" class="w-full" placeholder="Opcional" />
       </div>
       <div>
-        <label class="field-label">Carpeta Drive (código)</label>
-        <InputText v-model="f.carpeta_drive_codigo" class="w-full" />
-      </div>
-      <div>
         <label class="field-label">Código base (topic)</label>
         <InputText v-model="f.sub_project" class="w-full" placeholder="ej: perija, vallenata" />
       </div>
@@ -202,7 +198,6 @@ const f = reactive({
   altitud_msnm: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
-  carpeta_drive_codigo: null,
   sub_project: null,
   codigo_tsf: null,
   es_comunidad_energetica: false,
