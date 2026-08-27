@@ -1112,8 +1112,8 @@ const nGrupos = computed(() => conteosPorGrupo.value.size)
 //   - derivados por el backend (num_plantas, dias_restantes, cobertura...)
 //   - relaciones a otras entidades (proyectos, inversionistas, contactos...)
 // Un booleano en false y un numero en 0 SI cuentan como llenos: son un dato.
-// Los objetos anidados (info_tecnica, servicio_representacion) se aplanan un
-// nivel, asi que sus campos tambien entran en la cuenta.
+// Los objetos anidados (info_tecnica) se aplanan un nivel, asi que sus
+// campos tambien entran en la cuenta.
 const TECNICOS = ['id', 'created_at', 'updated_at', 'deleted_at', '__grupo']
 
 const DERIVADOS = {
@@ -1132,7 +1132,7 @@ const DERIVADOS = {
 }
 
 // Objetos que se aplanan un nivel para que sus campos cuenten uno por uno.
-const ANIDADOS = ['info_tecnica', 'servicio_representacion']
+const ANIDADOS = ['info_tecnica']
 
 // Campos de enlace a documento por entidad. El backend no tiene una lista de
 // documentos esperados por entidad, asi que hoy esto solo puede valer 0 o 1

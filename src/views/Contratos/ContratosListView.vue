@@ -131,7 +131,7 @@
       <div class="flex gap-3 items-center">
         <IconField class="flex-1 max-w-sm">
           <InputIcon class="pi pi-search" />
-          <InputText v-model="filtroRepresentacion" placeholder="Buscar por planta, representante, comercializador…"
+          <InputText v-model="filtroRepresentacion" placeholder="Buscar por planta, departamento, municipio…"
             class="w-full" />
         </IconField>
       </div>
@@ -169,24 +169,6 @@
         <Column header="Ubicación" style="width:180px">
           <template #body="{ data }">
             <span class="text-gray-600 text-xs">{{ [data.municipio, data.departamento].filter(Boolean).join(', ') || '—' }}</span>
-          </template>
-        </Column>
-        <Column header="Representante" style="width:180px">
-          <template #body="{ data }">
-            <span class="text-gray-700">{{ data.servicio_representacion?.nombre_rf || '—' }}</span>
-          </template>
-        </Column>
-        <Column header="Modalidad venta" style="width:160px">
-          <template #body="{ data }">
-            <Tag v-if="data.servicio_representacion?.modalidad_venta"
-              :value="MODALIDAD_LABELS[data.servicio_representacion.modalidad_venta] || data.servicio_representacion.modalidad_venta"
-              severity="info" />
-            <span v-else class="text-gray-300">—</span>
-          </template>
-        </Column>
-        <Column header="Cód. despacho XM" style="width:140px">
-          <template #body="{ data }">
-            <span class="font-mono text-xs text-gray-500">{{ data.servicio_representacion?.codigo_despacho_xm || '—' }}</span>
           </template>
         </Column>
         <Column header="CGM" style="width:60px">
@@ -335,13 +317,6 @@ const ESTADO_PROYECTO_SEVERITY = {
   cancelado:     'secondary',
 }
 
-const MODALIDAD_LABELS = {
-  bolsa_directa:        'Bolsa directa',
-  bolsa_comercializador:'Bolsa comercializador',
-  ppa:                  'PPA',
-  interna:              'Interna',
-}
-
 const CUMPLIMIENTO_LABELS = {
   on_track: 'Al día',
   at_risk: 'En riesgo',
@@ -422,8 +397,6 @@ const plantasRepresentacionFiltradas = computed(() => {
   if (!q) return plantasRepresentacion.value
   return plantasRepresentacion.value.filter(p =>
     (p.nombre_comercial ?? '').toLowerCase().includes(q) ||
-    (p.servicio_representacion?.nombre_rf ?? '').toLowerCase().includes(q) ||
-    (p.servicio_representacion?.nombre_comercializador ?? '').toLowerCase().includes(q) ||
     (p.departamento ?? '').toLowerCase().includes(q) ||
     (p.municipio ?? '').toLowerCase().includes(q)
   )
