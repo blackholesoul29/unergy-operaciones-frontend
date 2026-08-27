@@ -768,13 +768,21 @@ const TIPO_CONTRATO_COLOR = {
   representacion: '#3b82f6', rec: '#14b8a6',
 }
 
+// `label` es el nombre corto del servicio (igual al que ya usan
+// ProyectoDetailView.vue y clientesUi.js -- mismo servicio, mismo nombre en
+// toda la plataforma). `tooltip` es la explicación larga que se ve al pasar
+// el mouse sobre el badge en la tabla -- no la toques para "acortarla":
+// ahí SÍ tiene que ser la frase completa, si no el tooltip queda diciendo
+// lo mismo que el badge ("CGM" → tooltip "CGM"), inútil (reportado
+// 2026-08-27: la etiqueta del filtro "Servicios" mostraba el tooltip largo
+// en vez de este nombre corto).
 const SERVICIOS_BADGES = [
-  { key: 'srv_operacion',      badge: 'OP',   tooltip: 'Operación' },
-  { key: 'srv_representacion', badge: 'REP',  tooltip: 'Reporte de energía producida' },
-  { key: 'srv_cgm',            badge: 'CGM',  tooltip: 'Control y gestión de medición' },
-  { key: 'srv_ppa',            badge: 'PPA',  tooltip: 'PPA' },
-  { key: 'srv_promotor',       badge: 'PROM', tooltip: 'Promotor' },
-  { key: 'srv_rec',            badge: 'REC',  tooltip: 'REC' },
+  { key: 'srv_operacion',      badge: 'OP',   label: 'Operación',      tooltip: 'Operación' },
+  { key: 'srv_representacion', badge: 'REP',  label: 'Representación', tooltip: 'Reporte de energía producida' },
+  { key: 'srv_cgm',            badge: 'CGM',  label: 'CGM',            tooltip: 'Control y gestión de medición' },
+  { key: 'srv_ppa',            badge: 'PPA',  label: 'PPA',            tooltip: 'PPA' },
+  { key: 'srv_promotor',       badge: 'PROM', label: 'Promotor',       tooltip: 'Promotor' },
+  { key: 'srv_rec',            badge: 'REC',  label: 'REC',            tooltip: 'REC' },
 ]
 
 const TIPO_LABELS = {
@@ -900,7 +908,7 @@ const FILTROS = {
     // devuelve una lista, no un escalar (ver valoresDe/opcionesDe/aplicarFiltros).
     { clave: 'servicio', label: 'Servicios', ancho: 'w-44',
       valor: p => SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.key),
-      etiqueta: v => SERVICIOS_BADGES.find(sb => sb.key === v)?.tooltip || v },
+      etiqueta: v => SERVICIOS_BADGES.find(sb => sb.key === v)?.label || v },
   ],
   clientes: [
     { clave: 'servicio', label: 'Servicios', ancho: 'w-44',
@@ -1057,7 +1065,7 @@ function gruposDe(p) {
       return n.length ? [...new Set(n)] : ['Sin PPA']
     }
     case 'servicio': {
-      const n = SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.tooltip)
+      const n = SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.label)
       return n.length ? n : ['Sin servicios']
     }
     case 'tipo':
