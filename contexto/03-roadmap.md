@@ -688,19 +688,27 @@ cambiaban icono y color de fondo).
 
 ### 3.3 Ola 1 · Auth, permisos y shell
 
-- Apuntar `server/utils/auth-api.ts` al backend real: rutas, tipos `External*` y los mappers
-  `toUser`/`toSession`. **Nunca tipar una respuesta externa directamente como un tipo interno.**
-- Migrar a cookies `httpOnly`; retirar `stores/auth.js`, `utils/security.js` y el interceptor
-  de axios. Esto cierra la deuda que el propio `SECURITY.md` del legacy lleva tiempo pidiendo.
-- **Traducir roles a permisos.** Partiendo de los `meta.roles` de las 75 rutas —23 de ellas sin
-  roles declarados, hoy abiertas a cualquier sesión—, definir los
-  tags `recurso:acción`, la matriz `ROLE_PERMISSIONS` (con `admin` recibiendo todo de forma
-  explícita, sin bypass) y `AUTH_ROUTE_PERMISSIONS`. Deny-by-default: una ruta sin declarar es
-  un 403, no un acceso.
-- `config/navigation.ts` con los 9 grupos y sus permisos.
-- `AppSidebar`/`NavMain`/`NavUser` sobre el sidebar del template, y la campana como slice
-  `notificaciones` (con su service y su composable, sin `setInterval` suelto).
-- Retirar la app móvil del guard web: layout y guard propios en su slice.
+- ~~Apuntar `server/utils/auth-api.ts` al backend real~~ — **bloqueado**: el backend no expone
+  `/auth/me`. La sesión sigue en JWT/`localStorage` (`~/composables/useAuth.ts`, Composition API,
+  con manejo de errores tipado y expiración automática), reemplazando `stores/auth.js` (Pinia,
+  retirado). El pipeline de cookies httpOnly del template quedó montado pero dormido
+  (`authSessionCookiesEnabled: false` en `nuxt.config.ts`) para no tener que rehacerlo cuando el
+  endpoint exista.
+- ✅ **Traducir roles a permisos.** Los 7 roles reales pasaron a `enum UserRole`; 19 tags
+  `recurso:acción` en `~/config/permissions.ts`, `ROLE_PERMISSIONS` completa (`admin` con todo
+  explícito, sin bypass) y `AUTH_ROUTE_PERMISSIONS` cubriendo las páginas web por prefijo.
+  `legacy-auth.global.ts` se retiró; `auth.global.ts` (el guard real) gobierna, deny-by-default.
+- ✅ `config/navigation.ts` fusionado: los 9 grupos y sus permisos en una sola fuente
+  (`NAVIGATION_ITEMS`), sin la lista aparte `LEGACY_NAV_ITEMS`.
+- ✅ `AppSidebar`/`NavMain`/`NavUser` sobre el sidebar del template — `NavMain.vue` ganó soporte de
+  submenú colapsable (`Collapsible` + `SidebarMenuSub`) para Liquidaciones/Panel Contable/
+  Herramientas liquidaciones. `LegacyAppSidebar.vue` y el `useSidebar` hecho a mano se retiraron.
+  **Pendiente real, no hecho todavía:** la campana se movió a `SiteHeader.vue`
+  (`NotificationsBell.vue`) tal cual estaba — mismo `setInterval` de 60s y llamadas `api.` directas,
+  no el slice `notificaciones` con service y composable que pide este punto.
+- 🟡 App móvil: tiene guard propio (`app/middleware/mobile.global.ts`), pero sigue en
+  `app/middleware/`, no "en su slice", y comparte `layouts/legacy-blank.vue` con login/recuperación
+  en vez de un layout propio.
 
 ### 3.4 Olas 2–7 · Los slices
 

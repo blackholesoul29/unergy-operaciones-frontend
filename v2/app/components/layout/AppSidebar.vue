@@ -28,7 +28,12 @@ const navGroups = computed<NavGroup[]>(() =>
       label: NAVIGATION_GROUP_LABELS[group],
       items: visibleItems.value
         .filter((item) => item.group === group)
-        .map((item) => ({ title: item.title, icon: item.icon, url: item.to })),
+        .map((item) => ({
+          title: item.title,
+          icon: item.icon,
+          url: item.to,
+          items: item.children?.map((child) => ({ title: child.title, url: child.to })),
+        })),
     }))
     .filter((group) => group.items.length > 0),
 )

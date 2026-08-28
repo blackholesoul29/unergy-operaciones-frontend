@@ -74,16 +74,25 @@ describe('the sidebar never offers a link the guard would refuse', () => {
   // Nav visibility and route access are declared separately on purpose — you
   // may want a screen reachable but unlisted. The reverse is always a bug: a
   // menu entry that 403s on click. This is the only direction worth pinning.
+  //
+  // A submenu (`children`) has no `to` of its own and shares its parent's
+  // `requiredPermission` — every child page still needs to check out under it.
+  function assertReachable(role: UserRole, to: string, label: string) {
+    const pathname = to.split('?')[0]!
+    const required = permissionForRoute(AUTH_ROUTE_PERMISSIONS, pathname)
+    expect(required, `${to} is in the menu but not in AUTH_ROUTE_PERMISSIONS`).not.toBeNull()
+    expect(
+      hasPermission(ROLE_PERMISSIONS, role, required!),
+      `${role} sees "${label}" but would be refused at ${to}`,
+    ).toBe(true)
+  }
+
   it.each(Object.values(UserRole))('holds for %s', (role) => {
     for (const item of NAVIGATION_ITEMS) {
       if (!hasPermission(ROLE_PERMISSIONS, role, item.requiredPermission)) continue
 
-      const required = permissionForRoute(AUTH_ROUTE_PERMISSIONS, item.to)
-      expect(required, `${item.to} is in the menu but not in AUTH_ROUTE_PERMISSIONS`).not.toBeNull()
-      expect(
-        hasPermission(ROLE_PERMISSIONS, role, required!),
-        `${role} sees "${item.title}" but would be refused at ${item.to}`,
-      ).toBe(true)
+      if (item.to) assertReachable(role, item.to, item.title)
+      for (const child of item.children ?? []) assertReachable(role, child.to, child.title)
     }
   })
 })

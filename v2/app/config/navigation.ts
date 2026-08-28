@@ -31,56 +31,6 @@ import {
  * is not rendered, so adding one costs an entry here and a label below.
  */
 export enum NavigationGroup {
-  Main = 'main',
-}
-
-export interface NavigationItem {
-  title: string
-  icon: Component
-  to: string
-  group: NavigationGroup
-  /**
-   * Hides the item when the user lacks it. Presentation only — the route
-   * middleware is what enforces the page, and it looks the permission up in
-   * AUTH_ROUTE_PERMISSIONS. Keep the two in agreement or the menu will offer a
-   * link that 403s.
-   */
-  requiredPermission: Permission
-}
-
-// ─── Navigation items ─────────────────────────────────────────────────────────
-// Add/remove items here. The sidebar and the site header derive from this list.
-export const NAVIGATION_ITEMS: NavigationItem[] = [
-  {
-    title: 'Dashboard',
-    icon: HouseIcon,
-    to: '/',
-    group: NavigationGroup.Main,
-    requiredPermission: 'dashboard:read',
-  },
-]
-
-export const NAVIGATION_GROUP_LABELS: Record<NavigationGroup, string> = {
-  [NavigationGroup.Main]: 'Main',
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MIGRACIÓN — la navegación de la plataforma.
-//
-// Vivía embebida en `app/components/AppSidebar.vue` como un array `ALL_GROUPS`.
-// Aquí está tipada y en el sitio que le corresponde, con la misma forma que
-// `NAVIGATION_ITEMS` de arriba: items planos, cada uno con su grupo.
-//
-// Va aparte de `NAVIGATION_ITEMS` a propósito. Aquel exige un `requiredPermission`
-// declarado en `AUTH_ROUTE_PERMISSIONS` —y `core/permissions.test.ts` lo verifica
-// entrada por entrada—, mientras que esto todavía filtra por rol. Fundirlos es la
-// ola 1 de la fase 3: cada `roles: [...]` de aquí se convierte en un permiso.
-//
-// Los iconos son componentes de `@lucide/vue`, igual que en `NAVIGATION_ITEMS`.
-// ─────────────────────────────────────────────────────────────────────────────
-
-/** Los grupos del menú, en el orden en que se pintan. */
-export enum LegacyNavGroup {
   General = 'general',
   Comercial = 'comercial',
   Operaciones = 'operaciones',
@@ -92,277 +42,286 @@ export enum LegacyNavGroup {
   Admin = 'admin',
 }
 
-/** El orden importa: es el de la barra lateral. */
-export const LEGACY_NAV_GROUP_ORDER: LegacyNavGroup[] = [
-  LegacyNavGroup.General,
-  LegacyNavGroup.Comercial,
-  LegacyNavGroup.Operaciones,
-  LegacyNavGroup.Fronteras,
-  LegacyNavGroup.RegistrosCnd,
-  LegacyNavGroup.Comercializacion,
-  LegacyNavGroup.Finanzas,
-  LegacyNavGroup.Alertas,
-  LegacyNavGroup.Admin,
-]
-
-export const LEGACY_NAV_GROUP_LABELS: Record<LegacyNavGroup, string> = {
-  [LegacyNavGroup.General]: 'General',
-  [LegacyNavGroup.Comercial]: 'Comercial',
-  [LegacyNavGroup.Operaciones]: 'Operaciones',
-  [LegacyNavGroup.Fronteras]: 'Fronteras Comerciales',
-  [LegacyNavGroup.RegistrosCnd]: 'Registros CND/ASIC',
-  [LegacyNavGroup.Comercializacion]: 'Comercialización',
-  [LegacyNavGroup.Finanzas]: 'Finanzas',
-  [LegacyNavGroup.Alertas]: 'Alertas',
-  [LegacyNavGroup.Admin]: 'Admin',
+export const NAVIGATION_GROUP_LABELS: Record<NavigationGroup, string> = {
+  [NavigationGroup.General]: 'General',
+  [NavigationGroup.Comercial]: 'Comercial',
+  [NavigationGroup.Operaciones]: 'Operaciones',
+  [NavigationGroup.Fronteras]: 'Fronteras Comerciales',
+  [NavigationGroup.RegistrosCnd]: 'Registros CND/ASIC',
+  [NavigationGroup.Comercializacion]: 'Comercialización',
+  [NavigationGroup.Finanzas]: 'Finanzas',
+  [NavigationGroup.Alertas]: 'Alertas',
+  [NavigationGroup.Admin]: 'Admin',
 }
 
-/** Una entrada de submenú: solo destino y etiqueta, sin icono propio. */
-export interface LegacyNavChild {
+/** Un hijo de submenú: solo destino y etiqueta, sin icono propio. */
+export interface NavigationSubItem {
+  title: string
   to: string
-  label: string
 }
 
-export interface LegacyNavItem {
-  label: string
-  /** Componente de `@lucide/vue`, p. ej. `ZapIcon`. */
+export interface NavigationItem {
+  title: string
   icon: Component
-  group: LegacyNavGroup
-  /** Ausente cuando el item solo despliega un submenú. */
+  group: NavigationGroup
+  /** Ausente cuando el item solo despliega un submenú (ver `children`). */
   to?: string
   /**
-   * Oculta la entrada a quien no tenga uno de estos roles. Solo presentación:
-   * quien hace cumplir el acceso página por página es `auth.global.ts` contra
-   * `AUTH_ROUTE_PERMISSIONS`, no esta lista de roles.
+   * Hides the item when the user lacks it. Presentation only — the route
+   * middleware is what enforces the page, and it looks the permission up in
+   * AUTH_ROUTE_PERMISSIONS. Keep the two in agreement or the menu will offer a
+   * link that 403s. Con `children`, el permiso cubre al padre y a todos los
+   * hijos por igual: comparten rol en `contexto/inventario-rutas.md`.
    */
-  roles?: string[]
-  /** Restricción a una persona concreta. Ver la nota sobre `/admin` en `~/config/permissions`. */
-  requireEmail?: string
-  children?: LegacyNavChild[]
+  requiredPermission: Permission
+  /** Submenú colapsable. Cuando está presente, el item no navega por sí mismo. */
+  children?: NavigationSubItem[]
 }
 
-const EMAIL_ADMIN_PLATAFORMA = 'juanjose@unergy.io'
-
-export const LEGACY_NAV_ITEMS: LegacyNavItem[] = [
+// ─── Navigation items ─────────────────────────────────────────────────────────
+// Add/remove items here. The sidebar derives from this list. Fusionado con lo
+// que era `LEGACY_NAV_ITEMS` en la fase 3, ola 1: cada `roles: [...]` del router
+// legacy ya se tradujo a un permiso en `~/config/permissions`.
+export const NAVIGATION_ITEMS: NavigationItem[] = [
   // ── General ────────────────────────────────────────────────────────────────
-  { label: 'Dashboard', icon: HouseIcon, to: '/dashboard', group: LegacyNavGroup.General },
-  // Esta entrada reemplaza a las tres que había antes (Clientes, Proyectos y
+  {
+    title: 'Dashboard',
+    icon: HouseIcon,
+    to: '/dashboard',
+    group: NavigationGroup.General,
+    requiredPermission: 'dashboard:read',
+  },
+  // Reemplaza a las tres entradas que había antes (Clientes, Proyectos y
   // Servicios). La base es el portafolio de plantas, y clientes y contratos son
   // formas de reagrupar ese mismo portafolio. Las rutas /clientes, /proyectos y
   // /servicios siguen vivas: solo salieron del menú.
   {
-    label: 'Proyectos',
+    title: 'Proyectos',
     icon: ZapIcon,
     to: '/servicios-unificado',
-    group: LegacyNavGroup.General,
+    group: NavigationGroup.General,
+    requiredPermission: 'servicios:read',
   },
   {
-    label: 'Operadores de Red',
+    title: 'Operadores de Red',
     icon: NetworkIcon,
     to: '/mem/operadores-red',
-    group: LegacyNavGroup.General,
-    roles: ['admin', 'operaciones', 'monitoreo'],
+    group: NavigationGroup.General,
+    requiredPermission: 'mem-frontera:read',
   },
   {
-    label: 'Próximos a energizar',
+    title: 'Próximos a energizar',
     icon: ClockIcon,
     to: '/general/proximos-energizar',
-    group: LegacyNavGroup.General,
+    group: NavigationGroup.General,
+    requiredPermission: 'general:read',
   },
   {
-    label: 'Retos Q',
+    title: 'Retos Q',
     icon: FlagIcon,
     to: '/general/retos',
-    group: LegacyNavGroup.General,
+    group: NavigationGroup.General,
+    requiredPermission: 'retos:read',
   },
 
   // ── Comercial ──────────────────────────────────────────────────────────────
   {
-    label: 'Pipeline',
+    title: 'Pipeline',
     icon: BriefcaseIcon,
     to: '/comercial',
-    group: LegacyNavGroup.Comercial,
-    roles: ['admin', 'comercial'],
+    group: NavigationGroup.Comercial,
+    requiredPermission: 'comercial:read',
   },
 
   // ── Operaciones ────────────────────────────────────────────────────────────
   {
-    label: 'Generación Solar',
+    title: 'Generación Solar',
     icon: SunIcon,
     to: '/solar-live',
-    group: LegacyNavGroup.Operaciones,
-    roles: ['admin', 'operaciones', 'monitoreo'],
+    group: NavigationGroup.Operaciones,
+    requiredPermission: 'solar:read',
   },
   {
-    label: 'Informes Mensuales',
+    title: 'Informes Mensuales',
     icon: FilePenIcon,
     to: '/operaciones/informes-mensuales',
-    group: LegacyNavGroup.Operaciones,
-    roles: ['admin', 'operaciones', 'monitoreo'],
+    group: NavigationGroup.Operaciones,
+    requiredPermission: 'informes:read',
   },
   {
-    label: 'Gestión de Fallas',
+    title: 'Gestión de Fallas',
     icon: WrenchIcon,
     to: '/fallas',
-    group: LegacyNavGroup.Operaciones,
-    roles: ['admin', 'operaciones', 'monitoreo'],
+    group: NavigationGroup.Operaciones,
+    requiredPermission: 'fallas:read',
   },
   {
-    label: 'Informe de Puesta en Marcha',
+    title: 'Informe de Puesta en Marcha',
     icon: FileTextIcon,
     to: '/operaciones/informe-om',
-    group: LegacyNavGroup.Operaciones,
-    roles: ['admin', 'operaciones'],
+    group: NavigationGroup.Operaciones,
+    requiredPermission: 'informe-om:read',
   },
   {
-    label: 'Pólizas',
+    title: 'Pólizas',
     icon: ShieldIcon,
     to: '/operaciones/polizas',
-    group: LegacyNavGroup.Operaciones,
-    roles: ['admin', 'operaciones'],
+    group: NavigationGroup.Operaciones,
+    requiredPermission: 'polizas:read',
   },
 
   // ── Fronteras Comerciales ──────────────────────────────────────────────────
   {
-    label: 'General',
+    title: 'General',
     icon: GlobeIcon,
     to: '/mem/fronteras',
-    group: LegacyNavGroup.Fronteras,
-    roles: ['admin', 'operaciones', 'monitoreo'],
+    group: NavigationGroup.Fronteras,
+    requiredPermission: 'mem-frontera:read',
   },
   {
-    label: 'Reporte de Energía',
+    title: 'Reporte de Energía',
     icon: FilePenIcon,
     to: '/mem/reporte-energia',
-    group: LegacyNavGroup.Fronteras,
-    roles: ['admin', 'operaciones', 'monitoreo'],
+    group: NavigationGroup.Fronteras,
+    requiredPermission: 'mem-frontera:read',
   },
 
   // ── Registros CND/ASIC ─────────────────────────────────────────────────────
   {
-    label: 'Proyectos en conexión',
+    title: 'Proyectos en conexión',
     icon: FlagIcon,
     to: '/registros-cnd-asic',
-    group: LegacyNavGroup.RegistrosCnd,
-    roles: ['admin', 'operaciones'],
+    group: NavigationGroup.RegistrosCnd,
+    requiredPermission: 'registros-cnd:read',
   },
 
   // ── Comercialización ───────────────────────────────────────────────────────
   {
-    label: 'Cumplimiento PPA',
+    title: 'Cumplimiento PPA',
     icon: ShieldIcon,
     to: '/mem/cumplimiento',
-    group: LegacyNavGroup.Comercializacion,
+    group: NavigationGroup.Comercializacion,
+    requiredPermission: 'mem-mercado:read',
   },
   {
-    label: 'Descubrimientos',
+    title: 'Descubrimientos',
     icon: ZapIcon,
     to: '/mem/descubrimientos',
-    group: LegacyNavGroup.Comercializacion,
+    group: NavigationGroup.Comercializacion,
+    requiredPermission: 'mem-mercado:read',
   },
   {
-    label: 'Garantías',
+    title: 'Garantías',
     icon: WalletIcon,
     to: '/garantias',
-    group: LegacyNavGroup.Comercializacion,
+    group: NavigationGroup.Comercializacion,
+    requiredPermission: 'liquidaciones:read',
   },
   {
-    label: 'GESCON / ASIC',
+    title: 'GESCON / ASIC',
     icon: BookIcon,
     to: '/mem/gescon',
-    group: LegacyNavGroup.Comercializacion,
+    group: NavigationGroup.Comercializacion,
+    requiredPermission: 'mem-frontera:read',
   },
   {
-    label: 'Precio de Bolsa',
+    title: 'Precio de Bolsa',
     icon: ChartLineIcon,
     to: '/mem/precio-bolsa',
-    group: LegacyNavGroup.Comercializacion,
+    group: NavigationGroup.Comercializacion,
+    requiredPermission: 'mem-mercado:read',
   },
   {
-    label: 'Balance Energía',
+    title: 'Balance Energía',
     icon: ChartColumnIcon,
     to: '/mem/balance',
-    group: LegacyNavGroup.Comercializacion,
+    group: NavigationGroup.Comercializacion,
+    requiredPermission: 'mem-mercado:read',
   },
   {
-    label: 'Clima & ENSO',
+    title: 'Clima & ENSO',
     icon: CloudIcon,
     to: '/mem/clima',
-    group: LegacyNavGroup.Comercializacion,
+    group: NavigationGroup.Comercializacion,
+    requiredPermission: 'mem-mercado:read',
   },
 
   // ── Finanzas ───────────────────────────────────────────────────────────────
   {
-    label: 'Liquidaciones',
+    title: 'Liquidaciones',
     icon: DollarSignIcon,
-    group: LegacyNavGroup.Finanzas,
-    roles: ['admin', 'liquidaciones'],
+    group: NavigationGroup.Finanzas,
+    requiredPermission: 'liquidaciones:read',
     children: [
       // Entrada directa: antes solo se llegaba a la pestaña de Facturación
       // entrando por Panel Contable → Minigranjas/Autoconsumo.
-      { to: '/liquidaciones?tab=facturacion', label: 'Facturación de energía' },
-      { to: '/finanzas/ids-proyectos', label: 'IDs proyectos' },
-      { to: '/finanzas/contratos-energia', label: 'Contratos de energía' },
-      { to: '/finanzas/despachos-liquidados', label: 'Despachos liquidados' },
-      { to: '/finanzas/consumo', label: 'Consumo' },
-      { to: '/finanzas/costos-comercializacion', label: 'Costos comercialización' },
-      { to: '/finanzas/facturas-xm', label: 'Facturas de XM' },
-      { to: '/finanzas/verificacion-costos', label: 'Verificación de costos' },
-      { to: '/finanzas/estados-resultados', label: 'Estados de resultados' },
-      { to: '/finanzas/mandatos', label: 'Mandatos' },
+      { to: '/liquidaciones?tab=facturacion', title: 'Facturación de energía' },
+      { to: '/finanzas/ids-proyectos', title: 'IDs proyectos' },
+      { to: '/finanzas/contratos-energia', title: 'Contratos de energía' },
+      { to: '/finanzas/despachos-liquidados', title: 'Despachos liquidados' },
+      { to: '/finanzas/consumo', title: 'Consumo' },
+      { to: '/finanzas/costos-comercializacion', title: 'Costos comercialización' },
+      { to: '/finanzas/facturas-xm', title: 'Facturas de XM' },
+      { to: '/finanzas/verificacion-costos', title: 'Verificación de costos' },
+      { to: '/finanzas/estados-resultados', title: 'Estados de resultados' },
+      { to: '/finanzas/mandatos', title: 'Mandatos' },
     ],
   },
   {
-    label: 'Panel Contable',
+    title: 'Panel Contable',
     icon: CalculatorIcon,
-    group: LegacyNavGroup.Finanzas,
-    roles: ['admin', 'liquidaciones'],
+    group: NavigationGroup.Finanzas,
+    requiredPermission: 'liquidaciones:read',
     children: [
-      { to: '/panel-contable', label: 'Panel contable' },
-      { to: '/liquidaciones?tipo=minigranja', label: 'Minigranjas' },
-      { to: '/liquidaciones?tipo=autoconsumo', label: 'Autoconsumo' },
-      { to: '/liquidaciones/inversionista', label: 'Por Inversionista' },
+      { to: '/panel-contable', title: 'Panel contable' },
+      { to: '/liquidaciones?tipo=minigranja', title: 'Minigranjas' },
+      { to: '/liquidaciones?tipo=autoconsumo', title: 'Autoconsumo' },
+      { to: '/liquidaciones/inversionista', title: 'Por Inversionista' },
     ],
   },
   {
-    label: 'Herramientas liquidaciones',
+    title: 'Herramientas liquidaciones',
     icon: WrenchIcon,
-    group: LegacyNavGroup.Finanzas,
-    roles: ['admin', 'liquidaciones'],
+    group: NavigationGroup.Finanzas,
+    requiredPermission: 'liquidaciones:read',
     children: [
-      { to: '/validador-mandatos', label: 'Validador de Mandatos' },
-      { to: '/finanzas/descarga-xm', label: 'Descarga de XM' },
+      { to: '/validador-mandatos', title: 'Validador de Mandatos' },
+      { to: '/finanzas/descarga-xm', title: 'Descarga de XM' },
     ],
   },
   {
-    label: 'Costos',
+    title: 'Costos',
     icon: CreditCardIcon,
     to: '/finanzas/costos',
-    group: LegacyNavGroup.Finanzas,
-    roles: ['admin', 'liquidaciones'],
+    group: NavigationGroup.Finanzas,
+    requiredPermission: 'liquidaciones:read',
   },
 
   // ── Alertas ────────────────────────────────────────────────────────────────
   {
-    label: 'Centro de Alertas',
+    title: 'Centro de Alertas',
     icon: CircleAlertIcon,
     to: '/alertas',
-    group: LegacyNavGroup.Alertas,
+    group: NavigationGroup.Alertas,
+    requiredPermission: 'alertas:read',
   },
 
   // ── Admin ──────────────────────────────────────────────────────────────────
+  // El legacy restringía estas dos además a un correo puntual; el modelo
+  // rol→permiso no expresa esa segunda restricción — ver la nota junto a
+  // `/admin` en `~/config/permissions`.
   {
-    label: 'Usuarios',
+    title: 'Usuarios',
     icon: UsersIcon,
     to: '/admin/usuarios',
-    group: LegacyNavGroup.Admin,
-    requireEmail: EMAIL_ADMIN_PLATAFORMA,
+    group: NavigationGroup.Admin,
+    requiredPermission: 'admin:manage',
   },
   {
-    label: 'Diagnóstico',
+    title: 'Diagnóstico',
     icon: LinkIcon,
     to: '/admin/diagnostico',
-    group: LegacyNavGroup.Admin,
-    requireEmail: EMAIL_ADMIN_PLATAFORMA,
+    group: NavigationGroup.Admin,
+    requiredPermission: 'admin:manage',
   },
 ]

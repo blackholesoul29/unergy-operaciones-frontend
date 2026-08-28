@@ -11,12 +11,12 @@
  * a value you would never change per environment does not belong in `.env`.
  */
 export const APP_BRANDING = {
-  name: 'App',
-  logo: '/logo.svg',
-  favicon: '/favicon.svg',
+  name: 'Plataforma Operaciones',
+  logo: '/favicon.png',
+  favicon: '/favicon.png',
   seo: {
-    title: 'App',
-    description: '',
+    title: 'Plataforma Operaciones',
+    description: 'Plataforma de operaciones de Unergy.',
   },
 } as const
 
