@@ -422,6 +422,12 @@ const ALL_GROUPS = [
         icon: 'pi pi-flag',
         roles: ['admin', 'operaciones'],
       },
+      {
+        to: '/registros',
+        label: 'Expediente documental',
+        icon: 'pi pi-folder-open',
+        roles: ['admin', 'operaciones'],
+      },
     ],
   },
   {

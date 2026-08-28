@@ -398,6 +398,20 @@ const routes = [
     meta: { roles: ['admin', 'operaciones'] },
   },
 
+  // ── Registros (expediente documental) ────────────────────────────
+  {
+    path: '/registros',
+    name: 'Registros',
+    component: () => import('@/views/Registros/RegistrosListView.vue'),
+    meta: { roles: ['admin', 'operaciones'] },
+  },
+  {
+    path: '/registros/:proyectoId',
+    name: 'RegistroExpediente',
+    component: () => import('@/views/Registros/RegistroExpedienteView.vue'),
+    meta: { roles: ['admin', 'operaciones'] },
+  },
+
   // ── Admin ────────────────────────────────────────────────────────
   {
     path: '/admin/usuarios',
