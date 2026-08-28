@@ -1,0 +1,152 @@
+diff --git a/src/views/Servicios/ServiciosUnificadoView.vue b/src/views/Servicios/ServiciosUnificadoView.vue
+index 747a2af..e4d1cbd 100644
+--- a/src/views/Servicios/ServiciosUnificadoView.vue
++++ b/src/views/Servicios/ServiciosUnificadoView.vue
+@@ -65,6 +65,21 @@
+           <i :class="s.icon" :style="servicio === s.key ? `color:${s.color}` : ''" />
+           <span>{{ s.label }}</span>
+         </button>
++
++        <!-- Venta / compra es el único corte que ordenar por la columna Tipo no
++             resuelve, porque el Excel baja las filas VISIBLES: para un archivo
++             sólo de contratos de venta hay que filtrar de verdad. Va en esta
++             misma fila para no abrir una fila de filtros (decisión de abajo). -->
++        <template v-if="servicio === 'ppa'">
++          <span class="mx-1 h-6 w-px" style="background:#E5E2EC" />
++          <button v-for="t in TIPOS_PPA" :key="t.value" type="button"
++                  class="svc-tab svc-tab--sm" :class="{ 'svc-tab--on': tipoPpa === t.value }"
++                  :style="tipoPpa === t.value ? 'background:#fffbeb; border-color:#f59e0b55; color:#f59e0b' : ''"
++                  v-tooltip.bottom="t.tip"
++                  @click="tipoPpa = t.value">
++            <span>{{ t.label }}</span>
++          </button>
++        </template>
+       </template>
+     </div>
+ 
+@@ -84,7 +99,8 @@
+          buscador de la cabecera cubre el caso y la fila le robaba alto a la
+          tabla, que es lo que interesa maximizar. Las columnas siguen siendo
+          ordenables, así que acotar por estado/tipo se hace con un clic en el
+-         encabezado. -->
++         encabezado. La única excepción es venta/compra en PPA, y va pegado a
++         los tabs de servicio para no abrir la fila que esta nota descarta. -->
+ 
+     <!-- ══════════════════ CLIENTES ══════════════════ -->
+     <div v-if="vista === 'clientes'" class="tabla-caja">
+@@ -599,6 +615,17 @@ const SERVICIOS_VALIDOS = SERVICIOS.map(s => s.key)
+ const vista = ref(VISTAS_VALIDAS.includes(route.query.vista) ? route.query.vista : 'proyectos')
+ const servicio = ref(SERVICIOS_VALIDOS.includes(route.query.srv) ? route.query.srv : 'ppa')
+ const q = ref(route.query.q || '')
++
++// Corte venta/compra de los PPA. Arranca en "Todos" para no cambiarle la vista
++// a nadie; `tipo_contrato` null cuenta como venta, igual que en la columna Tipo
++// (el server_default de la columna es 'venta').
++const TIPOS_PPA = [
++  { value: '',       label: 'Todos',  tip: 'Contratos de venta y de compra' },
++  { value: 'venta',  label: 'Venta',  tip: 'Sólo los contratos de venta' },
++  { value: 'compra', label: 'Compra', tip: 'Sólo los contratos de compra' },
++]
++const tipoPpa = ref(TIPOS_PPA.some(t => t.value === route.query.tipo) ? route.query.tipo : '')
++
+ const compacta = ref(localStorage.getItem('servicios_unificado_compacta') !== '0')
+ 
+ watch(compacta, v => localStorage.setItem('servicios_unificado_compacta', v ? '1' : '0'))
+@@ -634,11 +661,12 @@ const agruparPor = ref(AGRUPACIONES.some(a => a.value === route.query.grupo) ? r
+ 
+ // Los filtros se sincronizan con la URL para poder compartir la vista tal cual
+ // se esta viendo. Tiene que ir despues de `agruparPor`: es una de sus fuentes.
+-watch([vista, servicio, q, agruparPor], () => {
++watch([vista, servicio, q, agruparPor, tipoPpa], () => {
+   const query = {}
+   if (vista.value) query.vista = vista.value
+   if (vista.value === 'proyectos' && agruparPor.value) query.grupo = agruparPor.value
+   if (vista.value === 'servicios') query.srv = servicio.value
++  if (vista.value === 'servicios' && servicio.value === 'ppa' && tipoPpa.value) query.tipo = tipoPpa.value
+   if (q.value) query.q = q.value
+   router.replace({ query })
+ })
+@@ -919,9 +947,17 @@ const ppa = ref([])
+ const loadingPpa = ref(false)
+ const ppaCargados = ref(false)
+ 
++// `tipo_contrato` puede llegar null en contratos viejos: se lee como venta,
++// igual que lo pinta la columna Tipo. Así "Venta" no se come esas filas.
++function esTipoPpa(c, tipo) {
++  if (!tipo) return true
++  return (c.tipo_contrato || 'venta') === tipo
++}
++
+ const ppaFiltrados = computed(() => {
+   const t = q.value.trim().toLowerCase()
+-  const base = !t ? ppa.value : ppa.value.filter(c =>
++  const porTipo = ppa.value.filter(c => esTipoPpa(c, tipoPpa.value))
++  const base = !t ? porTipo : porTipo.filter(c =>
+     (c.nombre_interno || '').toLowerCase().includes(t) ||
+     (c.numero_codigo_contrato || '').toLowerCase().includes(t) ||
+     (c.comprador_nombre || '').toLowerCase().includes(t) ||
+@@ -1030,6 +1066,7 @@ const totalCrudo = computed(() => {
+ const subtitulo = computed(() => {
+   const etiqueta = vista.value === 'clientes' ? 'clientes'
+     : vista.value === 'proyectos' ? 'plantas'
++    : servicio.value === 'ppa' && tipoPpa.value ? `contratos PPA de ${tipoPpa.value}`
+     : `contratos de ${servicioInfo.value?.label}`
+   return `${filasVisibles.value.length} de ${totalCrudo.value} ${etiqueta} · vista unificada`
+ })
+@@ -1041,6 +1078,31 @@ const placeholderBusqueda = computed(() => {
+   return 'Buscar número, contratante, prestador…'
+ })
+ 
++// La energía comprometida de un PPA vive en `compromisos_energia`: una fila por
++// mes, en MWh (así la rotula el detalle del contrato). Los campos planos del
++// contrato -- cantidad_minima/maxima_kwh_mes, en kWh -- están vacíos en los 33
++// contratos de producción (revisado 2026-08-22), así que el Excel NO los saca:
++// serían dos columnas en blanco, y en otra unidad que la curva. Si algún día se
++// llenan, hay que agregarlos aparte, nunca como "fallback" de estos.
++//
++// Se exportan dos parejas porque responden preguntas distintas: qué debe el
++// contrato ESTE mes, y entre qué topes se mueve en toda su vida.
++// `campo` es 'energia_minima' | 'energia_maxima'; `f` es Math.min | Math.max.
++function rangoCompromisos(c, campo, f) {
++  const v = (c.compromisos_energia || []).map(x => x[campo]).filter(x => x != null).map(Number)
++  return v.length ? f(...v) : ''
++}
++
++const HOY = new Date()
++
++// Mismo criterio que `resumenCantidades.actual` en el detalle del contrato:
++// la fila del año y mes de hoy, o nada si el contrato no la tiene.
++function compromisoMesActual(c, campo) {
++  const r = (c.compromisos_energia || []).find(
++    x => x.año === HOY.getFullYear() && x.mes === HOY.getMonth() + 1)
++  return r?.[campo] ?? ''
++}
++
+ const COLUMNAS_EXCEL = {
+   clientes: () => [
+     { header: 'Razón social', value: c => formatearNombre(c.razon_social_nombre) },
+@@ -1076,6 +1138,11 @@ const COLUMNAS_EXCEL = {
+     { header: 'Inicio', value: c => fmtFecha(c.fecha_inicio) },
+     { header: 'Fin', value: c => fmtFecha(c.fecha_fin) },
+     { header: 'Días restantes', value: c => c.dias_restantes ?? '' },
++    { header: 'Mínimo mes actual (MWh)', value: c => compromisoMesActual(c, 'energia_minima') },
++    { header: 'Máximo mes actual (MWh)', value: c => compromisoMesActual(c, 'energia_maxima') },
++    { header: 'Mínimo del contrato (MWh/mes)', value: c => rangoCompromisos(c, 'energia_minima', Math.min) },
++    { header: 'Máximo del contrato (MWh/mes)', value: c => rangoCompromisos(c, 'energia_maxima', Math.max) },
++    { header: 'Meses con compromiso', value: c => (c.compromisos_energia || []).length },
+     { header: 'Cumplimiento', value: c => CUMPLIMIENTO_LABELS[c.estado_cumplimiento] || c.estado_cumplimiento || '' },
+     { header: 'Cobertura (%)', value: c => c.cobertura_actual_pct ?? '' },
+   ],
+@@ -1098,7 +1165,11 @@ async function descargarExcel() {
+   const hoja = vista.value === 'clientes' ? 'Clientes'
+     : vista.value === 'proyectos' ? 'Proyectos'
+     : (servicioInfo.value?.label || 'Servicios')
+-  const nombre = vista.value === 'servicios' && clave === 'contrato' ? servicio.value : clave
++  // El archivo dice de qué corte salió: "ppa_venta_2026-08-22.xlsx" no se
++  // confunde con el listado completo si quedan los dos en Descargas.
++  const nombre = vista.value === 'servicios' && clave === 'contrato' ? servicio.value
++    : clave === 'ppa' && tipoPpa.value ? `ppa_${tipoPpa.value}`
++    : clave
+   const fecha = new Date().toISOString().slice(0, 10)
+   await exportarExcel(filasVisibles.value, COLUMNAS_EXCEL[clave](), `${nombre}_${fecha}.xlsx`, hoja)
+ }
