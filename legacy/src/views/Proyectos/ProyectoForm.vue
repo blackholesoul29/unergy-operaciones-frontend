@@ -62,6 +62,10 @@
         <label class="field-label">Longitud</label>
         <InputNumber v-model="f.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" placeholder="-75.881000" />
       </div>
+      <div>
+        <label class="field-label">Altitud (msnm)</label>
+        <InputNumber v-model="f.altitud_msnm" class="w-full" placeholder="35" />
+      </div>
       <!-- Ortogonal al tipo y a la clasificación: cualquier planta puede o no
            pertenecer a una comunidad energética. -->
       <div>
@@ -74,10 +78,6 @@
       <div v-if="f.es_comunidad_energetica">
         <label class="field-label">Nombre de la comunidad</label>
         <InputText v-model="f.nombre_comunidad" class="w-full" placeholder="Opcional" />
-      </div>
-      <div>
-        <label class="field-label">Carpeta Drive (código)</label>
-        <InputText v-model="f.carpeta_drive_codigo" class="w-full" />
       </div>
       <div>
         <label class="field-label">Código base (topic)</label>
@@ -181,7 +181,7 @@ const estados = [
   { label: 'Suspendido', value: 'suspendido' },
   { label: 'Cancelado', value: 'cancelado' },
 ]
-const tipos = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
+const tipos = ['minigranja', 'autoconsumo', 'gd', 'otro']
 const tecnologias = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const clasificaciones = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 
@@ -195,9 +195,9 @@ const f = reactive({
   direccion_vereda: null,
   latitud: null,
   longitud: null,
+  altitud_msnm: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
-  carpeta_drive_codigo: null,
   sub_project: null,
   codigo_tsf: null,
   es_comunidad_energetica: false,

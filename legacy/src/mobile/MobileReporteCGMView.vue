@@ -230,7 +230,7 @@ function labelProyectos(row) {
 async function loadData() {
   loading.value = true
   try {
-    const { data } = await api.get('/fronteras', { params: { limit: 500 } })
+    const { data } = await api.get('/fronteras', { params: { limit: 500, incluir_clientes_cgm: true } })
     fronteras.value = data
   } catch (e) {
     console.error('Error loading fronteras:', e)

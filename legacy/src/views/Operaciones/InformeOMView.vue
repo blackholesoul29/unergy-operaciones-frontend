@@ -68,7 +68,6 @@
             <span class="om-hero-sub">Informe de Puesta en Marcha · Sistema de monitoreo</span>
           </div>
           <div class="om-hero-facts">
-            <div class="om-fact"><span class="om-fact-label">Cliente</span><span class="om-fact-val">{{ detalle.proyecto.nombre_clientes || '—' }}</span></div>
             <div class="om-fact"><span class="om-fact-label">Ubicación</span><span class="om-fact-val">{{ ubicacion || '—' }}</span></div>
             <div class="om-fact"><span class="om-fact-label">Potencia AC instalada</span><span class="om-fact-val">{{ fmtCapacidad(detalle.proyecto.potencia_instalada_kwp) }}</span></div>
             <div class="om-fact"><span class="om-fact-label">Puesta en marcha</span><span class="om-fact-val">{{ fmtFecha(detalle.fecha_inicio_operacion) || '—' }}</span></div>
@@ -677,7 +676,7 @@ async function descargarPdf() {
     doc.setFont('helvetica', 'bold'); doc.setFontSize(15); doc.setTextColor(44, 32, 57)
     doc.text(detalle.proyecto.nombre_comercial || '', marginX, y); y += 18
     doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(122, 110, 138)
-    doc.text([detalle.proyecto.nombre_clientes, ubicacion.value, fmtCapacidad(detalle.proyecto.potencia_instalada_kwp)].filter(Boolean).join(' · '), marginX, y); y += 14
+    doc.text([ubicacion.value, fmtCapacidad(detalle.proyecto.potencia_instalada_kwp)].filter(Boolean).join(' · '), marginX, y); y += 14
     doc.text(`Versión: ${ficha.version || '—'}  ·  Elaborado por: ${ficha.elaborado_por || '—'}  ·  Puesta en marcha: ${fmtFecha(detalle.fecha_inicio_operacion) || '—'}`, marginX, y); y += 22
 
     const k = detalle.kpis
@@ -821,7 +820,7 @@ function construirHtmlInforme() {
   html += '<div style="display:flex;align-items:center;gap:13px">' + unergyLogoSVG() +
     '<div><div style="color:#fff;font-size:14px;font-weight:800;letter-spacing:.8px">INFORME DE PUESTA EN MARCHA · UNERGY ENERGÍA DIGITAL S.A.S ESP</div>' +
     '<div style="color:#6B5F80;font-size:10px;letter-spacing:.6px;margin-top:2px">Sistema de monitoreo y adquisición de datos</div></div></div>'
-  html += `<div class="rpt-meta-grid">${rmeta('PROYECTO', detalle.proyecto.nombre_comercial)}${rmeta('CLIENTE', detalle.proyecto.nombre_clientes)}${rmeta('UBICACIÓN', ubicacion.value)}${rmeta('POTENCIA AC INSTALADA', fmtCapacidad(detalle.proyecto.potencia_instalada_kwp))}</div>`
+  html += `<div class="rpt-meta-grid">${rmeta('PROYECTO', detalle.proyecto.nombre_comercial)}${rmeta('UBICACIÓN', ubicacion.value)}${rmeta('POTENCIA AC INSTALADA', fmtCapacidad(detalle.proyecto.potencia_instalada_kwp))}</div>`
   html += '</div>'
 
   html += '<div class="rpt-kpi-row">' +

@@ -1091,6 +1091,12 @@
               class="w-full" placeholder="$ 0" />
           </div>
         </div>
+        <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
+          <label class="text-xs font-medium text-gray-600">Fronteras cubiertas</label>
+          <MultiSelect v-model="dialogEdit.form.frontera_ids" :options="fronterasDelProyecto"
+            optionLabel="nombre_frontera" optionValue="id" placeholder="Seleccionar fronteras"
+            filter display="chip" class="w-full" />
+        </div>
         <template v-if="dialogEdit.tipo === 'internet'">
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
@@ -1228,6 +1234,7 @@ import Tag from 'primevue/tag'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
@@ -1463,8 +1470,10 @@ const dialogEdit = reactive({
   visible: false,
   tipo: 'mantenimiento',
   form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false, plan_datos_gb: '', velocidad_mbps: null, tipo_conexion: null,
-    linea_servicio: '', id_router: '', numero_kit: '', latencia_ms: null, wifi_seguridad: null, wifi_password: '', ubicacion_lat: null, ubicacion_lng: null },
+    linea_servicio: '', id_router: '', numero_kit: '', latencia_ms: null, wifi_seguridad: null, wifi_password: '', ubicacion_lat: null, ubicacion_lng: null, frontera_ids: [] },
 })
+
+const fronterasDelProyecto = ref([])
 
 const dialogPago = reactive({
   visible: false,
@@ -1489,6 +1498,11 @@ onMounted(async () => {
     contratos.arriendo      = arrRes.status  === 'fulfilled' && arrRes.value.data.length  ? arrRes.value.data[0]  : null
     contratos.internet      = netRes.status  === 'fulfilled' && netRes.value.data.length  ? netRes.value.data[0]  : null
     await initInternetMap(contratos.internet)
+
+    try {
+      const { data } = await api.get('/fronteras', { params: { proyecto_id: proyId } })
+      fronterasDelProyecto.value = data
+    } catch { /* el select de fronteras queda vacio */ }
 
     await cargarIndexacionOM()
     await cargarArrendadores()
@@ -1596,6 +1610,7 @@ function openEditContrato(tipo) {
   dialogEdit.form.wifi_password = c.wifi_password || ''
   dialogEdit.form.ubicacion_lat = c.ubicacion_lat ?? null
   dialogEdit.form.ubicacion_lng = c.ubicacion_lng ?? null
+  dialogEdit.form.frontera_ids = (c.fronteras || []).map(f => f.id)
   dialogEdit.visible = true
   if (tipo === 'internet') {
     dialogEditMapRO?.disconnect(); dialogEditMapRO = null
@@ -1616,6 +1631,7 @@ async function saveContrato() {
     if (tipo !== 'internet') {
       payload.tarifa_base = dialogEdit.form.tarifa_base
       payload.estado_pago = dialogEdit.form.estado_pago || null
+      payload.frontera_ids = dialogEdit.form.frontera_ids || []
     }
     if (tipo === 'mantenimiento') {
       payload.fecha_inicio = toISO(dialogEdit.form.fecha_inicio)

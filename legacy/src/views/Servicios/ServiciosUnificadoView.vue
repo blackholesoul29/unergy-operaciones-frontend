@@ -22,6 +22,37 @@
                 severity="secondary" outlined size="small"
                 v-tooltip.bottom="compacta ? 'Densidad cómoda' : 'Densidad compacta'"
                 @click="compacta = !compacta" />
+        <!-- El panel se despliega en vez de ocupar una fila fija: la fila de
+             filtros que tuvo esta vista se quitó justamente por robarle alto a
+             la tabla (2026-08-20). -->
+        <Button v-if="filtrosActivos.length"
+                :label="nFiltros ? `Filtros · ${nFiltros}` : 'Filtros'"
+                icon="pi pi-filter" size="small"
+                :severity="nFiltros ? 'primary' : 'secondary'" :outlined="!nFiltros"
+                @click="panelFiltros?.toggle($event)" />
+        <Popover ref="panelFiltros">
+          <div class="filtros-panel">
+            <div v-for="f in filtrosActivos" :key="f.clave" class="flex flex-col gap-1">
+              <label class="text-xs font-semibold" style="color:#6b5a8a">{{ f.label }}</label>
+              <MultiSelect v-model="filtros[f.clave]" :options="opcionesDe(f)"
+                           optionLabel="label" optionValue="value" size="small"
+                           :class="f.ancho" display="chip" :maxSelectedLabels="2"
+                           :filter="opcionesDe(f).length > 8"
+                           filterPlaceholder="Buscar…"
+                           :placeholder="`Todos (${opcionesDe(f).length})`"
+                           :showToggleAll="false">
+                <template #option="{ option }">
+                  <div class="flex items-center justify-between gap-3 w-full">
+                    <span class="truncate">{{ option.label }}</span>
+                    <span class="opcion-n">{{ option.n }}</span>
+                  </div>
+                </template>
+              </MultiSelect>
+            </div>
+            <Button v-if="nFiltros" label="Limpiar filtros" icon="pi pi-times" text size="small"
+                    severity="secondary" @click="limpiarFiltros" />
+          </div>
+        </Popover>
         <Button v-if="vista"
                 label="Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small"
                 :disabled="!filasVisibles.length" @click="descargarExcel" />
@@ -66,6 +97,23 @@
           <span>{{ s.label }}</span>
         </button>
       </template>
+    </div>
+
+    <!-- Filtros aplicados. Van fuera del panel para que uno activo nunca quede
+         escondido: si la tabla muestra 3 de 112 filas, tiene que ser evidente
+         por qué. Solo aparece la fila cuando hay alguno. -->
+    <div v-if="chipsFiltro.length" class="flex flex-wrap items-center gap-1.5">
+      <span class="text-xs font-semibold" style="color:#6b5a8a">Filtrando por</span>
+      <button v-for="ch in chipsFiltro" :key="`${ch.clave}:${ch.valor}`" type="button"
+              class="chip-filtro" v-tooltip.bottom="`Quitar ${ch.label}: ${ch.texto}`"
+              @click="quitarFiltro(ch.clave, ch.valor)">
+        <span class="chip-filtro-lbl">{{ ch.label }}</span>
+        <span class="truncate">{{ ch.texto }}</span>
+        <i class="pi pi-times" />
+      </button>
+      <button type="button" class="chip-filtro chip-filtro--limpiar" @click="limpiarFiltros">
+        Limpiar todo
+      </button>
     </div>
 
     <!-- Agrupar el portafolio: reorganiza las mismas plantas por la dimensión
@@ -136,7 +184,7 @@
             <span class="celda-txt sutil">{{ fmt(data.contacto_comercial_correo) }}</span>
           </template>
         </Column>
-        <Column header="Falta" style="width:9%">
+        <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
@@ -244,7 +292,7 @@
             <span v-else class="vacio">—</span>
           </template>
         </Column>
-        <Column header="Falta" style="width:9%">
+        <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
@@ -391,7 +439,7 @@
       <!-- Todo contrato de representación pertenece a una planta. Los que no la
            tienen son un error de datos, no un estado válido: la barra los cuenta
            y deja aislarlos para irlos cerrando hasta llegar a cero. -->
-      <div v-if="esRepresentacion && nHuerfanos" class="barra-huerfanos">
+      <div v-if="nHuerfanos" class="barra-huerfanos">
         <i class="pi pi-exclamation-triangle" />
         <span><strong>{{ nHuerfanos }}</strong> de {{ contratosServicio.length }} contratos sin proyecto asociado</span>
         <Button :label="soloHuerfanos ? 'Ver todos' : 'Ver solo estos'" text size="small"
@@ -423,32 +471,18 @@
                  paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
                  sortField="fecha_inicio" :sortOrder="1" rowHover
                  :emptyMessage="`No hay contratos de ${servicioInfo?.label} registrados.`">
-        <Column v-if="tiposDelServicio.length > 1" field="servicio_aplica" header="Tipo"
-                sortable style="width:11%">
-          <template #body="{ data }">
-            <span class="mini-chip" :style="{
-              color: TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280',
-              background: (TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280') + '1f' }">
-              {{ TIPO_CONTRATO_LABELS[data.servicio_aplica] || data.servicio_aplica || '—' }}
-            </span>
-          </template>
-        </Column>
-        <!-- Proyecto: un contrato de representación se firma SOBRE una planta,
-             así que sin esta columna la tabla no dice de qué habla cada fila.
-             Cuando el contrato quedó huérfano (proyecto_id NULL) la celda es el
-             botón para arreglarlo, en vez de un "—" que no lleva a ninguna
-             parte. -->
-        <Column v-if="esRepresentacion" field="proyecto.nombre_comercial" header="Proyecto"
-                sortable style="width:24%">
+        <!-- Proyecto va PRIMERO: es de qué habla la fila. Todo contrato de
+             servicio se firma sobre una planta, sea de representación,
+             mantenimiento, arriendo, internet o REC. Cuando el contrato quedó
+             huérfano (proyecto_id NULL) la celda es el botón para arreglarlo,
+             en vez de un "—" que no lleva a ninguna parte. -->
+        <Column field="proyecto.nombre_comercial" header="Proyecto"
+                sortable :style="`width:${anchos.proyecto}`">
           <template #body="{ data }">
             <button v-if="data.proyecto" type="button" class="celda-enlace"
-                    v-tooltip.bottom="'Ver representación de la planta'"
-                    @click.stop="ir(`/proyectos/${data.proyecto.id}/representacion`)">
+                    v-tooltip.bottom="'Ver la ficha de la planta'"
+                    @click.stop="ir(destinoProyecto(data))">
               <span class="celda-txt font-semibold">{{ data.proyecto.nombre_comercial }}</span>
-              <span class="mini-chip shrink-0"
-                    :class="TIPO_BADGE_CLASS[data.proyecto.tipo_proyecto] || 'badge-otro'">
-                {{ TIPO_LABELS[data.proyecto.tipo_proyecto] || data.proyecto.tipo_proyecto || 'Sin tipo' }}
-              </span>
             </button>
             <button v-else type="button" class="chip-huerfano"
                     v-tooltip.bottom="'Este contrato no está asociado a ninguna planta. Click para asociarlo.'"
@@ -457,10 +491,36 @@
             </button>
           </template>
         </Column>
+        <!-- Clase de planta (minigranja / autoconsumo / GD) en su propia
+             columna: dentro de la celda de Proyecto competía con el nombre y no
+             se podía ordenar ni filtrar por ella. Se llama "Tipo" igual que en
+             la tabla de Proyectos, así que la del tipo de CONTRATO pasa a
+             llamarse "Servicio" -- dos columnas "Tipo" en la misma tabla no
+             dicen nada. -->
+        <Column field="proyecto.tipo_proyecto" header="Tipo" sortable
+                :style="`width:${anchos.tipoPlanta}`">
+          <template #body="{ data }">
+            <span v-if="data.proyecto" class="mini-chip"
+                  :class="TIPO_BADGE_CLASS[data.proyecto.tipo_proyecto] || 'badge-otro'">
+              {{ TIPO_LABELS[data.proyecto.tipo_proyecto] || data.proyecto.tipo_proyecto || 'Sin tipo' }}
+            </span>
+            <span v-else class="vacio">—</span>
+          </template>
+        </Column>
+        <Column v-if="tiposDelServicio.length > 1" field="servicio_aplica" header="Servicio"
+                sortable :style="`width:${anchos.servicio}`">
+          <template #body="{ data }">
+            <span class="mini-chip" :style="{
+              color: TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280',
+              background: (TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280') + '1f' }">
+              {{ TIPO_CONTRATO_LABELS[data.servicio_aplica] || data.servicio_aplica || '—' }}
+            </span>
+          </template>
+        </Column>
         <!-- El inversionista es lo que distingue dos contratos de la misma
              planta: La Reserva tiene dos, Baraya tres. -->
         <Column v-if="esRepresentacion" field="inversionista_nombre" header="Inversionista"
-                sortable style="width:20%">
+                sortable :style="`width:${anchos.inversionista}`">
           <template #body="{ data }">
             <span class="celda-txt">
               {{ data.inversionista_nombre ? formatearNombre(data.inversionista_nombre) : '—' }}
@@ -468,32 +528,63 @@
           </template>
         </Column>
         <Column field="numero_contrato" header="N° contrato" sortable
-                :style="esRepresentacion ? 'width:11%' : 'width:15%'">
+                :style="`width:${anchos.numero}`">
           <template #body="{ data }"><span class="celda-txt mono">{{ data.numero_contrato || '—' }}</span></template>
         </Column>
+        <!-- Tarifas: se muestra la que APLICA HOY, no la del contrato. La de
+             2024 ya no es lo que se cobra, y el valor vigente sale de la
+             indexación por aniversarios. El tooltip da el detalle: de qué año
+             es, cuántos aniversarios hay y cuál era la base. -->
+        <template v-if="esRepresentacion">
+          <Column field="tarifa_admin" header="Admin" sortable
+                  :style="`width:${anchos.admin}`" bodyStyle="text-align:right">
+            <template #body="{ data }">
+              <span class="mono tabular-nums">{{ fmtTarifaAdmin(data.tarifa_admin) }}</span>
+            </template>
+          </Column>
+          <Column v-for="t in TARIFAS_COLUMNA" :key="t.clave" :header="t.header" sortable
+                  :field="t.campoBase" :style="`width:${anchos.tarifa}`"
+                  bodyStyle="text-align:right">
+            <template #body="{ data }">
+              <span class="tarifa-celda" v-tooltip.bottom="tipTarifa(data, t)">
+                <span class="mono tabular-nums font-semibold">
+                  {{ fmtTarifa(vigenteDe(data, t).valor) }}
+                </span>
+                <span v-if="vigenteDe(data, t).anio" class="tarifa-anio">
+                  {{ vigenteDe(data, t).anio }}
+                </span>
+              </span>
+            </template>
+          </Column>
+        </template>
         <!-- Contratante y prestador salen del cuadro en Representación: el seed
              CGM no los llena y el par real es Unergy ↔ inversionista, que ya
              tiene columna propia. El buscador sí sigue mirándolos. -->
-        <Column v-if="!esRepresentacion" field="contratante_nombre" header="Contratante" sortable style="width:21%">
+        <Column v-if="!esRepresentacion" field="contratante_nombre" header="Contratante"
+                sortable :style="`width:${anchos.parte}`">
           <template #body="{ data }"><span class="celda-txt">{{ data.contratante_nombre || '—' }}</span></template>
         </Column>
-        <Column v-if="!esRepresentacion" field="prestador_nombre" header="Prestador" sortable style="width:21%">
+        <Column v-if="!esRepresentacion" field="prestador_nombre" header="Prestador"
+                sortable :style="`width:${anchos.parte}`">
           <template #body="{ data }"><span class="celda-txt">{{ data.prestador_nombre || '—' }}</span></template>
         </Column>
-        <Column field="fecha_inicio" header="Inicio" sortable style="width:8%">
+        <Column field="fecha_inicio" header="Inicio" sortable
+                :style="esRepresentacion ? 'width:6%' : 'width:8%'">
           <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template>
         </Column>
-        <Column field="fecha_fin" header="Fin" sortable style="width:8%">
+        <Column field="fecha_fin" header="Fin" sortable
+                :style="esRepresentacion ? 'width:6%' : 'width:8%'">
           <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_fin) }}</span></template>
         </Column>
-        <Column field="estado" header="Estado" sortable style="width:12%">
+        <Column field="estado" header="Estado" sortable
+                :style="esRepresentacion ? 'width:9%' : 'width:12%'">
           <template #body="{ data }">
             <span class="mini-chip" :class="ESTADO_CONTRATO_CLASS[data.estado] || 'chip-neutral'">
               {{ ESTADO_CONTRATO_LABELS[data.estado] || data.estado || '—' }}
             </span>
           </template>
         </Column>
-        <Column header="Falta" style="width:9%">
+        <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
               <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
@@ -507,10 +598,10 @@
             </div>
           </template>
         </Column>
-        <Column :style="esRepresentacion ? 'width:8%' : 'width:6%'">
+        <Column :style="`width:${anchos.acciones}`">
           <template #body="{ data }">
             <div class="acciones">
-              <Button v-if="esRepresentacion" icon="pi pi-link" text size="small" severity="secondary"
+              <Button icon="pi pi-link" text size="small" severity="secondary"
                       v-tooltip.bottom="data.proyecto ? 'Cambiar de proyecto' : 'Asociar a un proyecto'"
                       @click.stop="abrirAsociarProyecto(data)" />
               <Button icon="pi pi-pencil" text size="small" severity="secondary"
@@ -538,13 +629,32 @@
     <Dialog v-model:visible="dialogAsociarProyecto" header="Asociar contrato a un proyecto"
             modal class="w-full max-w-lg">
       <div v-if="contratoAAsociar" class="space-y-3">
+        <!-- Las pistas para elegir bien cambian según el servicio: en
+             Representación es el inversionista, en Operación el prestador (que a
+             veces trae el nombre de la planta). Se muestra lo que el contrato
+             tenga y se omite lo vacío, para no llenar el cuadro de guiones. -->
         <div class="rounded-lg p-3 text-xs space-y-0.5" style="background:#F7F5FB; color:#6b5a8a">
-          <p><span class="font-semibold">Inversionista:</span>
-            {{ contratoAAsociar.inversionista_nombre || '—' }}</p>
-          <p><span class="font-semibold">Proyecto según el contrato:</span>
-            {{ contratoAAsociar.nombre_proyecto_ref || '—' }}</p>
-          <p><span class="font-semibold">Código Sun Factory:</span>
-            {{ contratoAAsociar.codigo_sun_factory || '—' }}</p>
+          <p><span class="font-semibold">Tipo:</span>
+            {{ TIPO_CONTRATO_LABELS[contratoAAsociar.servicio_aplica]
+               || contratoAAsociar.servicio_aplica }}</p>
+          <p v-if="contratoAAsociar.numero_contrato">
+            <span class="font-semibold">N° contrato:</span>
+            {{ contratoAAsociar.numero_contrato }}</p>
+          <p v-if="contratoAAsociar.inversionista_nombre">
+            <span class="font-semibold">Inversionista:</span>
+            {{ contratoAAsociar.inversionista_nombre }}</p>
+          <p v-if="contratoAAsociar.prestador_nombre">
+            <span class="font-semibold">Prestador:</span>
+            {{ contratoAAsociar.prestador_nombre }}</p>
+          <p v-if="contratoAAsociar.nombre_proyecto_ref">
+            <span class="font-semibold">Proyecto según el contrato:</span>
+            {{ contratoAAsociar.nombre_proyecto_ref }}</p>
+          <p v-if="contratoAAsociar.codigo_sun_factory">
+            <span class="font-semibold">Código Sun Factory:</span>
+            {{ contratoAAsociar.codigo_sun_factory }}</p>
+          <p v-if="contratoAAsociar.proyecto">
+            <span class="font-semibold">Planta actual:</span>
+            {{ contratoAAsociar.proyecto.nombre_comercial }}</p>
         </div>
         <div>
           <label class="text-xs font-semibold" style="color:#6b5a8a">Planta</label>
@@ -599,6 +709,8 @@ import Button from 'primevue/button'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
+import Popover from 'primevue/popover'
 import Menu from 'primevue/menu'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
@@ -606,6 +718,7 @@ import api from '@/api/client'
 import { formatearNombre } from '@/utils/nombreFormato'
 import { exportarExcel } from '@/utils/exportarExcel'
 import { estadoVigenciaPPA } from '@/utils/ppaVigencia'
+import { tarifaVigente, fmtTarifa, fmtTarifaAdmin } from '@/utils/tarifasCgm'
 import { SEMAFORO, servicioLabel, fmt } from '@/views/Clientes/clientesUi'
 
 // Los formularios y wizards pesan; sólo se descargan cuando alguien crea algo.
@@ -655,13 +768,21 @@ const TIPO_CONTRATO_COLOR = {
   representacion: '#3b82f6', rec: '#14b8a6',
 }
 
+// `label` es el nombre corto del servicio (igual al que ya usan
+// ProyectoDetailView.vue y clientesUi.js -- mismo servicio, mismo nombre en
+// toda la plataforma). `tooltip` es la explicación larga que se ve al pasar
+// el mouse sobre el badge en la tabla -- no la toques para "acortarla":
+// ahí SÍ tiene que ser la frase completa, si no el tooltip queda diciendo
+// lo mismo que el badge ("CGM" → tooltip "CGM"), inútil (reportado
+// 2026-08-27: la etiqueta del filtro "Servicios" mostraba el tooltip largo
+// en vez de este nombre corto).
 const SERVICIOS_BADGES = [
-  { key: 'srv_operacion',      badge: 'OP',   tooltip: 'Operación' },
-  { key: 'srv_representacion', badge: 'REP',  tooltip: 'Reporte de energía producida' },
-  { key: 'srv_cgm',            badge: 'CGM',  tooltip: 'Control y gestión de medición' },
-  { key: 'srv_ppa',            badge: 'PPA',  tooltip: 'PPA' },
-  { key: 'srv_promotor',       badge: 'PROM', tooltip: 'Promotor' },
-  { key: 'srv_rec',            badge: 'REC',  tooltip: 'REC' },
+  { key: 'srv_operacion',      badge: 'OP',   label: 'Operación',      tooltip: 'Operación' },
+  { key: 'srv_representacion', badge: 'REP',  label: 'Representación', tooltip: 'Reporte de energía producida' },
+  { key: 'srv_cgm',            badge: 'CGM',  label: 'CGM',            tooltip: 'Control y gestión de medición' },
+  { key: 'srv_ppa',            badge: 'PPA',  label: 'PPA',            tooltip: 'PPA' },
+  { key: 'srv_promotor',       badge: 'PROM', label: 'Promotor',       tooltip: 'Promotor' },
+  { key: 'srv_rec',            badge: 'REC',  label: 'REC',            tooltip: 'REC' },
 ]
 
 const TIPO_LABELS = {
@@ -715,8 +836,6 @@ const filasPorPagina = computed(() => (compacta.value ? 100 : 50))
 // Ningún ángulo lleva fila de filtros, así que todos disponen del mismo alto.
 const scrollHeight = 'calc(100vh - 250px)'
 
-
-
 // ── Agrupar el portafolio ─────────────────────────────────────────────────────
 // Cliente, PPA y Servicio son multivaluados: una planta puede tener dos
 // inversionistas o estar en dos PPA. En esos casos la planta aparece en cada
@@ -736,14 +855,189 @@ const agruparPor = ref(AGRUPACIONES.some(a => a.value === route.query.grupo) ? r
 
 // Los filtros se sincronizan con la URL para poder compartir la vista tal cual
 // se esta viendo. Tiene que ir despues de `agruparPor`: es una de sus fuentes.
-watch([vista, servicio, q, agruparPor], () => {
+
+// ── Filtros por pestaña ──────────────────────────────────────────────────────
+// La vista tuvo una fila de filtros y se quitó el 2026-08-20 porque le robaba
+// alto a la tabla. Estos viven en un panel que se despliega desde la cabecera,
+// así que no ocupan nada mientras no se usen, y los activos se resumen en chips.
+//
+// Cada filtro declara de dónde sale el valor de una fila (`valor`) y cómo se
+// arman sus opciones. Las opciones se derivan de los datos cargados y no de un
+// catálogo fijo: así la lista nunca ofrece un inversionista que no existe en la
+// tabla, ni se queda corta cuando entra uno nuevo.
+const SIN_ASIGNAR = '__sin__'
+
+const FILTROS = {
+  ppa: [
+    { clave: 'tipo', label: 'Tipo', ancho: 'w-40',
+      valor: c => c.tipo_contrato,
+      etiqueta: v => (v === 'compra' ? 'Compra' : 'Venta') },
+    { clave: 'estado', label: 'Estado', ancho: 'w-44',
+      valor: c => (c._vigencia || estadoVigenciaPPA(c)).clave,
+      etiqueta: (v, c) => (c._vigencia || estadoVigenciaPPA(c)).label },
+  ],
+  representacion: [
+    { clave: 'proyecto', label: 'Proyecto', ancho: 'w-64',
+      valor: c => c.proyecto?.nombre_comercial || SIN_ASIGNAR },
+    { clave: 'portafolio', label: 'Portafolio', ancho: 'w-56',
+      valor: c => c.portafolio || SIN_ASIGNAR },
+    { clave: 'inversionista', label: 'Inversionista', ancho: 'w-64',
+      valor: c => c.inversionista_nombre || SIN_ASIGNAR,
+      etiqueta: v => formatearNombre(v) },
+  ],
+  operacion: [
+    // Se llama "Servicio" igual que su columna: en esta tabla "Tipo" es la
+    // clase de planta (minigranja / autoconsumo / GD).
+    { clave: 'tipo', label: 'Servicio', ancho: 'w-44',
+      valor: c => c.servicio_aplica,
+      etiqueta: v => TIPO_CONTRATO_LABELS[v] || v },
+    { clave: 'proyecto', label: 'Proyecto', ancho: 'w-64',
+      valor: c => c.proyecto?.nombre_comercial || SIN_ASIGNAR },
+  ],
+  // Proyectos y Clientes recuperan el panel de Filtros (2026-08-26, pedido
+  // de Sara: "unificada no quiere decir que uno no quiera filtrar") -- mismos
+  // campos que ya se ven en sus columnas, para no inventar un criterio nuevo.
+  proyectos: [
+    { clave: 'estado', label: 'Estado', ancho: 'w-44',
+      valor: p => p.estado,
+      etiqueta: v => ESTADO_LABELS[v] || v },
+    { clave: 'tipo', label: 'Tipo', ancho: 'w-40',
+      valor: p => p.tipo_proyecto,
+      etiqueta: v => TIPO_LABELS[v] || v },
+    // Un proyecto puede tener varios servicios activos a la vez -- valor()
+    // devuelve una lista, no un escalar (ver valoresDe/opcionesDe/aplicarFiltros).
+    { clave: 'servicio', label: 'Servicios', ancho: 'w-44',
+      valor: p => SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.key),
+      etiqueta: v => SERVICIOS_BADGES.find(sb => sb.key === v)?.label || v },
+  ],
+  clientes: [
+    { clave: 'servicio', label: 'Servicios', ancho: 'w-44',
+      valor: c => c.servicios || [],
+      etiqueta: v => servicioLabel(v) },
+    { clave: 'alerta', label: 'Alerta contrato', ancho: 'w-44',
+      valor: c => c.alerta_contrato || SIN_ASIGNAR,
+      etiqueta: v => SEMAFORO[v]?.label || v },
+  ],
+}
+
+// { tipo: ['compra'], estado: [...] } — vacío o ausente = no filtra.
+const filtros = ref({})
+const panelFiltros = ref(null)
+
+// FILTROS tiene una entrada por pestaña ('proyectos', 'clientes'), salvo
+// Servicios, que en cambio se abre en sub-ángulos (ppa/representacion/
+// operacion, ver `servicio`) -- cada uno con su propio set. `servicio`
+// nunca se resetea al cambiar de pestaña (queda en su último valor), así
+// que hay que usarlo SOLO cuando la pestaña activa de verdad es Servicios;
+// si no, el botón Filtros mostraba los filtros de PPA en Proyectos/Clientes
+// sobre datos que ni siquiera se habían cargado ahí (Todos (0), "No
+// available options" -- bug reportado 2026-08-26).
+const filtrosActivos = computed(() => {
+  const clave = vista.value === 'servicios' ? servicio.value : vista.value
+  return FILTROS[clave] || []
+})
+
+// Filas sobre las que se calculan las opciones: las crudas de la pestaña
+// activa, para que quitar un filtro no vacíe las opciones de los demás.
+const filasCrudas = computed(() => {
+  if (vista.value === 'proyectos') return proyectos.value
+  if (vista.value === 'clientes') return clientes.value
+  return servicio.value === 'ppa'
+    ? ppa.value.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) }))
+    : contratosServicio.value
+})
+
+// filtro.valor(fila) normalmente es un escalar (un estado, un tipo) -- pero
+// "Servicios" puede tener varios activos a la vez en la misma fila (un
+// proyecto con OP+CGM+PPA, un cliente con dos servicios), así que devuelve
+// una lista. Esto uniforma ambos casos para opcionesDe/aplicarFiltros.
+function valoresDe(filtro, fila) {
+  const v = filtro.valor(fila)
+  return Array.isArray(v) ? v : [v]
+}
+
+function opcionesDe(filtro) {
+  const vistos = new Map()
+  for (const fila of filasCrudas.value) {
+    for (const v of valoresDe(filtro, fila)) {
+      if (v == null || v === '') continue
+      if (!vistos.has(v)) {
+        vistos.set(v, {
+          value: v,
+          label: v === SIN_ASIGNAR ? 'Sin asignar'
+               : (filtro.etiqueta ? filtro.etiqueta(v, fila) : String(v)),
+          n: 0,
+        })
+      }
+      vistos.get(v).n++
+    }
+  }
+  // "Sin asignar" al final; el resto alfabético. Se muestra el conteo para que
+  // se vea de una si vale la pena filtrar por ese valor.
+  return [...vistos.values()].sort((a, b) =>
+    (a.value === SIN_ASIGNAR) - (b.value === SIN_ASIGNAR) ||
+    a.label.localeCompare(b.label, 'es'))
+}
+
+const nFiltros = computed(() =>
+  filtrosActivos.value.reduce((n, f) => n + (filtros.value[f.clave]?.length || 0), 0))
+
+// Chips de lo que está aplicado, para que un filtro activo nunca quede oculto
+// dentro del panel cerrado.
+const chipsFiltro = computed(() => filtrosActivos.value.flatMap(f =>
+  (filtros.value[f.clave] || []).map(v => ({
+    clave: f.clave, valor: v, label: f.label,
+    texto: opcionesDe(f).find(o => o.value === v)?.label ?? String(v),
+  }))))
+
+function quitarFiltro(clave, valor) {
+  filtros.value[clave] = (filtros.value[clave] || []).filter(v => v !== valor)
+}
+
+function limpiarFiltros() { filtros.value = {} }
+
+// Aplica los filtros de la pestaña activa a una lista de filas. Para un
+// filtro multivalor (ver valoresDe), una fila pasa si comparte AL MENOS uno
+// de los valores seleccionados con los suyos -- no que coincidan todos.
+function aplicarFiltros(filas) {
+  const activos = filtrosActivos.value
+    .map(f => [f, filtros.value[f.clave]])
+    .filter(([, vals]) => vals && vals.length)
+  if (!activos.length) return filas
+  return filas.filter(fila => activos.every(([f, vals]) => {
+    const propios = valoresDe(f, fila)
+    return vals.some(v => propios.includes(v))
+  }))
+}
+
+// Los filtros se sincronizan con la URL igual que la vista y la busqueda, para
+// poder compartir una tabla ya filtrada. Este watch va DESPUES de declarar
+// `filtros`: watch() evalua su arreglo de fuentes en el acto, y nombrar ahi una
+// const de mas abajo rompe la vista entera al montarla.
+watch([vista, servicio, q, agruparPor, filtros], () => {
   const query = {}
   if (vista.value) query.vista = vista.value
   if (vista.value === 'proyectos' && agruparPor.value) query.grupo = agruparPor.value
   if (vista.value === 'servicios') query.srv = servicio.value
   if (q.value) query.q = q.value
+  // Se usa "|" y no "," porque los nombres de planta y de inversionista traen
+  // comas ("Inversiones Estrada Arbelaez y CIA S. en C.").
+  for (const f of filtrosActivos.value) {
+    const vals = filtros.value[f.clave]
+    if (vals && vals.length) query[`f_${f.clave}`] = vals.join('|')
+  }
   router.replace({ query })
-})
+}, { deep: true })
+
+// Filtros que vengan en la URL al abrir la vista.
+function leerFiltrosDeLaUrl() {
+  const leidos = {}
+  for (const f of filtrosActivos.value) {
+    const crudo = route.query[`f_${f.clave}`]
+    if (typeof crudo === 'string' && crudo) leidos[f.clave] = crudo.split('|')
+  }
+  filtros.value = leidos
+}
 
 const SIN_DATO = 'Sin asignar'
 
@@ -771,7 +1065,7 @@ function gruposDe(p) {
       return n.length ? [...new Set(n)] : ['Sin PPA']
     }
     case 'servicio': {
-      const n = SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.tooltip)
+      const n = SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.label)
       return n.length ? n : ['Sin servicios']
     }
     case 'tipo':
@@ -818,8 +1112,8 @@ const nGrupos = computed(() => conteosPorGrupo.value.size)
 //   - derivados por el backend (num_plantas, dias_restantes, cobertura...)
 //   - relaciones a otras entidades (proyectos, inversionistas, contactos...)
 // Un booleano en false y un numero en 0 SI cuentan como llenos: son un dato.
-// Los objetos anidados (info_tecnica, servicio_representacion) se aplanan un
-// nivel, asi que sus campos tambien entran en la cuenta.
+// Los objetos anidados (info_tecnica) se aplanan un nivel, asi que sus
+// campos tambien entran en la cuenta.
 const TECNICOS = ['id', 'created_at', 'updated_at', 'deleted_at', '__grupo']
 
 const DERIVADOS = {
@@ -838,14 +1132,13 @@ const DERIVADOS = {
 }
 
 // Objetos que se aplanan un nivel para que sus campos cuenten uno por uno.
-const ANIDADOS = ['info_tecnica', 'servicio_representacion']
+const ANIDADOS = ['info_tecnica']
 
 // Campos de enlace a documento por entidad. El backend no tiene una lista de
 // documentos esperados por entidad, asi que hoy esto solo puede valer 0 o 1
 // (2 en cliente). Para un checklist real ("faltan 3 de 7") hace falta backend.
 const DOCS = {
   clientes: [['rut_url', 'RUT'], ['documentos_comerciales', 'Documentos comerciales']],
-  proyectos: [['carpeta_drive_codigo', 'Carpeta Drive']],
   ppa: [['carpeta_link', 'Carpeta del contrato']],
   contrato: [['enlace_drive', 'Enlace Drive']],
 }
@@ -930,12 +1223,12 @@ const clientesCargados = ref(false)
 
 const clientesFiltrados = computed(() => {
   const t = q.value.trim().toLowerCase()
-  if (!t) return clientes.value
-  return clientes.value.filter(c =>
+  const base = !t ? clientes.value : clientes.value.filter(c =>
     (c.razon_social_nombre || '').toLowerCase().includes(t) ||
     (c.nit_cedula || '').toLowerCase().includes(t) ||
     (c.contacto_comercial_nombre || '').toLowerCase().includes(t) ||
     (c.contacto_comercial_correo || '').toLowerCase().includes(t))
+  return aplicarFiltros(base)
 })
 
 function rowClassCliente(data) {
@@ -993,8 +1286,7 @@ function ppaVigentes(p) {
 
 const proyectosFiltrados = computed(() => {
   const t = q.value.trim().toLowerCase()
-  if (!t) return proyectos.value
-  return proyectos.value.filter(p =>
+  const base = !t ? proyectos.value : proyectos.value.filter(p =>
     (p.nombre_comercial || '').toLowerCase().includes(t) ||
     (p.codigo_tsf || '').toLowerCase().includes(t) ||
     (p.municipio || '').toLowerCase().includes(t) ||
@@ -1003,6 +1295,7 @@ const proyectosFiltrados = computed(() => {
     // se muestran, tienen que poder buscarse.
     ppaVigentes(p).some(c => ppaLabel(c).toLowerCase().includes(t)) ||
     (p.inversionistas || []).some(i => (i.cliente_nombre || '').toLowerCase().includes(t)))
+  return aplicarFiltros(base)
 })
 
 async function cargarProyectos() {
@@ -1034,7 +1327,8 @@ const ppaFiltrados = computed(() => {
     (c.proyectos || []).some(p => (p.nombre_comercial || '').toLowerCase().includes(t)))
   // `_vigencia` se precalcula acá y no en la celda para que la columna Estado
   // sea ordenable (PrimeVue ordena por campo, no por lo que pinta el template).
-  return base.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) }))
+  // Se calcula antes de filtrar porque el filtro de estado lee de ahí.
+  return aplicarFiltros(base.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) })))
 })
 
 async function cargarPpa() {
@@ -1059,6 +1353,75 @@ const servicioCargado = ref(null)   // el tipo que hay en memoria
 // inversionista en lugar de contratante y prestador), así que la bandera se
 // nombra una vez y la usan el template y los filtros.
 const esRepresentacion = computed(() => servicio.value === 'representacion')
+
+// Los anchos cambian según qué columnas aplican: Representación cambia
+// contratante/prestador por proyecto/inversionista, y Operación lleva además la
+// columna Tipo. Se agrupan acá para que sumen 100% en cada caso, en vez de
+// repartir ternarios por el template.
+const anchos = computed(() => {
+  if (esRepresentacion.value) {
+    // Con las tres columnas de tarifa hay que apretar el resto para no forzar
+    // scroll horizontal: proyecto e inversionista siguen siendo las anchas
+    // porque son las que llevan texto largo.
+    return { proyecto: '17%', tipoPlanta: '8%', servicio: '0',
+             inversionista: '14%', numero: '8%', parte: '0',
+             admin: '7%', tarifa: '8%', acciones: '7%' }
+  }
+  // Operación lleva además la columna Servicio (mantenimiento / arriendo /
+  // internet); REC no, porque agrupa un solo tipo.
+  const conServicio = tiposDelServicio.value.length > 1
+  return { proyecto: conServicio ? '19%' : '23%', tipoPlanta: '8%',
+           servicio: conServicio ? '10%' : '0', inversionista: '0',
+           numero: '9%', parte: conServicio ? '13%' : '15%',
+           admin: '0', tarifa: '0', acciones: '7%' }
+})
+
+// Las dos tarifas en $/kWh de un contrato de representación. Cada una tiene su
+// serie de indexación y su tarifa base en el contrato.
+const TARIFAS_COLUMNA = [
+  { clave: 'cgm', header: 'CGM', campoBase: 'tarifa_cgm', campoIdx: 'indexacion_cgm' },
+  { clave: 'rep', header: 'Repr.', campoBase: 'tarifa_representacion',
+    campoIdx: 'indexacion_representacion' },
+]
+
+function vigenteDe(fila, t) {
+  return tarifaVigente(fila[t.campoIdx], fila.fecha_firma_contrato, fila[t.campoBase])
+}
+
+function tipTarifa(fila, t) {
+  const v = vigenteDe(fila, t)
+  if (v.valor == null) return `Sin tarifa ${t.header} registrada`
+  const partes = [`${t.header}: ${fmtTarifa(v.valor)} $/kWh`]
+  if (v.desdeBase) partes.push('tarifa del contrato, sin indexación cargada')
+  else if (v.esBase) partes.push(`año base ${v.anio}, sin indexar todavía`)
+  else partes.push(`indexada al aniversario ${v.anio}`)
+  if (v.aniversarios) partes.push(`${v.aniversarios} aniversario(s) registrados`)
+  const base = fila[t.campoBase]
+  if (base != null && Number(base) !== v.valor) partes.push(`base del contrato: ${fmtTarifa(base)}`)
+  return partes.join(' · ')
+}
+
+// El enlace de la celda va a la ficha del servicio que se está mirando; para
+// Operación y REC no hay sub-vista propia, así que abre la ficha de la planta.
+// Sub-vista de la planta que corresponde al servicio abierto. REC no tiene ficha
+// propia (no hay ruta /proyectos/:id/rec), así que cae a la ficha general.
+const SUBVISTA_POR_SERVICIO = {
+  representacion: 'representacion',
+  operacion: 'operacion',
+}
+
+// Un solo lugar decide a dónde se va, y lo usan tanto el enlace del nombre de la
+// planta como el botón de editar. Estaban separados y divergieron: el botón
+// mandaba siempre a /operacion, así que desde Representación abría la pestaña
+// equivocada.
+function fichaDelServicio(proyectoId) {
+  const sub = SUBVISTA_POR_SERVICIO[servicio.value]
+  return sub ? `/proyectos/${proyectoId}/${sub}` : `/proyectos/${proyectoId}`
+}
+
+function destinoProyecto(fila) {
+  return fichaDelServicio(fila.proyecto.id)
+}
 
 // Contratos de representación sin planta asociada: son datos por corregir, no
 // una categoría del negocio. `soloHuerfanos` los aísla para poder cerrarlos.
@@ -1127,21 +1490,23 @@ const nHuerfanos = computed(() =>
 
 const contratosServicioFiltrados = computed(() => {
   let base = contratosServicio.value
-  if (esRepresentacion.value && soloHuerfanos.value) base = base.filter(c => !c.proyecto_id)
+  if (soloHuerfanos.value) base = base.filter(c => !c.proyecto_id)
   if (esRepresentacion.value && soloDuplicados.value) {
     base = base.filter(c => idsDuplicados.value.has(c.id))
   }
   const t = q.value.trim().toLowerCase()
-  if (!t) return base
-  return base.filter(c =>
-    (c.numero_contrato || '').toLowerCase().includes(t) ||
-    (c.contratante_nombre || '').toLowerCase().includes(t) ||
-    (c.prestador_nombre || '').toLowerCase().includes(t) ||
-    (c.inversionista_nombre || '').toLowerCase().includes(t) ||
-    (c.proyecto?.nombre_comercial || '').toLowerCase().includes(t) ||
-    // `nombre_proyecto_ref` es el nombre de planta que trae el contrato; buscar
-    // por él es lo que permite encontrar los huérfanos por su planta.
-    (c.nombre_proyecto_ref || '').toLowerCase().includes(t))
+  if (t) {
+    base = base.filter(c =>
+      (c.numero_contrato || '').toLowerCase().includes(t) ||
+      (c.contratante_nombre || '').toLowerCase().includes(t) ||
+      (c.prestador_nombre || '').toLowerCase().includes(t) ||
+      (c.inversionista_nombre || '').toLowerCase().includes(t) ||
+      (c.proyecto?.nombre_comercial || '').toLowerCase().includes(t) ||
+      // `nombre_proyecto_ref` es el nombre de planta que trae el contrato;
+      // buscar por él es lo que permite encontrar los huérfanos por su planta.
+      (c.nombre_proyecto_ref || '').toLowerCase().includes(t))
+  }
+  return aplicarFiltros(base)
 })
 
 async function cargarContratosServicio(servicioKey) {
@@ -1205,6 +1570,29 @@ function sugerirProyecto(contrato) {
       return
     }
   }
+  // Los contratos de Operación no traen código Sun Factory ni nombre de
+  // referencia, pero a varios se les capturó el nombre de la PLANTA en el campo
+  // prestador ("Minigranja Solar Uruaco" en vez de una empresa). Se aprovecha
+  // como pista, exigiendo coincidencia exacta del nombre normalizado: buscar por
+  // substring o por palabras es lo que colgaba contratos de plantas ajenas.
+  for (const campo of ['prestador_nombre', 'contratante_nombre']) {
+    const valor = normalizarPlanta(contrato[campo])
+    if (!valor) continue
+    const exacta = proyectos.value.find(p => normalizarPlanta(p.nombre_comercial) === valor)
+    if (exacta) {
+      proyectoElegido.value = exacta.id
+      proyectoSugerido.value = `nombre "${contrato[campo]}" del campo ${
+        campo === 'prestador_nombre' ? 'prestador' : 'contratante'}`
+      return
+    }
+  }
+}
+
+function normalizarPlanta(s) {
+  // NFD separa la tilde de la letra, y el filtro de ASCII alfanumerico se lleva
+  // los acentos junto con espacios y puntuacion: 'Canahuate' y 'Cañahuate'
+  // acaban iguales sin necesidad de un rango de diacriticos en el regex.
+  return (s || '').normalize('NFD').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
 }
 
 async function guardarProyectoContrato() {
@@ -1240,19 +1628,28 @@ function asegurarDatos() {
 }
 
 function seleccionarVista(key) {
+  if (key === vista.value) return
   vista.value = key
+  limpiarFiltros()
   asegurarDatos()
 }
 
 function seleccionarServicio(key) {
+  if (key === servicio.value) return
   servicio.value = key
+  // Cada pestaña filtra por dimensiones distintas: arrastrar el filtro de
+  // "portafolio" a Operación dejaría la tabla vacía sin explicación visible.
+  limpiarFiltros()
   asegurarDatos()
 }
 
 // Solo se pide lo de la vista elegida. Entrar sin ?vista= no dispara ninguna
 // peticion: la pagina espera en el selector. Los contadores de cada pestana
 // aparecen a medida que se visitan, no de entrada.
-onMounted(asegurarDatos)
+onMounted(() => {
+  leerFiltrosDeLaUrl()
+  asegurarDatos()
+})
 
 function conteoVista(key) {
   if (key === 'clientes')  return clientesCargados.value  ? clientesFiltrados.value.length  : null
@@ -1289,7 +1686,7 @@ const placeholderBusqueda = computed(() => {
   if (vista.value === 'proyectos') return 'Buscar planta, código TSF, ubicación, PPA, inversionista…'
   if (servicio.value === 'ppa')    return 'Buscar contrato, comprador, planta…'
   if (esRepresentacion.value)      return 'Buscar planta, inversionista, número…'
-  return 'Buscar número, contratante, prestador…'
+  return 'Buscar planta, número, contratante, prestador…'
 })
 
 const COLUMNAS_EXCEL = {
@@ -1346,6 +1743,19 @@ const COLUMNAS_EXCEL = {
     { header: 'Inicio', value: c => fmtFecha(c.fecha_inicio) },
     { header: 'Fin', value: c => fmtFecha(c.fecha_fin) },
     { header: 'Estado', value: c => ESTADO_CONTRATO_LABELS[c.estado] || c.estado || '' },
+    // Las tarifas van con la vigente Y la base: en una hoja de cálculo se
+    // trabaja con las dos, y sin la base no se puede rehacer la indexación.
+    { header: 'Tarifa admin (%)', value: c =>
+        c.tarifa_admin != null ? +(Number(c.tarifa_admin) * 100).toFixed(4) : '' },
+    { header: 'CGM vigente ($/kWh)', value: c =>
+        vigenteDe(c, TARIFAS_COLUMNA[0]).valor ?? '' },
+    { header: 'CGM año', value: c => vigenteDe(c, TARIFAS_COLUMNA[0]).anio ?? '' },
+    { header: 'CGM base ($/kWh)', value: c => c.tarifa_cgm ?? '' },
+    { header: 'Repr. vigente ($/kWh)', value: c =>
+        vigenteDe(c, TARIFAS_COLUMNA[1]).valor ?? '' },
+    { header: 'Repr. año', value: c => vigenteDe(c, TARIFAS_COLUMNA[1]).anio ?? '' },
+    { header: 'Repr. base ($/kWh)', value: c => c.tarifa_representacion ?? '' },
+    { header: 'Portafolio', value: c => c.portafolio || '' },
   ],
 }
 
@@ -1401,11 +1811,14 @@ function confirmarBorrarCliente(row) {
 // desde la pestaña Operación de su planta, que es donde viven tarifas y pagos.
 function irAEditarContratoServicio(row) {
   if (!row.proyecto_id) {
+    // Sin planta no hay ficha donde abrirlo, pero sí se puede asociar: se
+    // ofrece eso en vez de dejar el aviso en un callejón sin salida.
     toast.add({ severity: 'warn', summary: 'Sin planta asociada',
-      detail: 'Este contrato no tiene proyecto_id, así que no hay página donde editarlo.', life: 5000 })
+      detail: 'Asócialo a un proyecto (botón 🔗) y podrás editarlo en su ficha.',
+      life: 5000 })
     return
   }
-  ir(`/proyectos/${row.proyecto_id}/operacion`)
+  ir(fichaDelServicio(row.proyecto_id))
 }
 
 function confirmarBorrarContratoServicio(row) {
@@ -1691,6 +2104,39 @@ function confirmarBorrarPpa(contrato) {
   background: #FEF3C7; color: #92400E; border: 1px dashed #F59E0B;
 }
 .chip-huerfano:hover { background: #FDE68A; }
+
+.tarifa-celda {
+  display: inline-flex; align-items: baseline; gap: 4px; justify-content: flex-end;
+}
+/* El año del aniversario en pequeño: el número grande es la tarifa que aplica
+   hoy, y el año dice de qué indexación viene. */
+.tarifa-anio { font-size: 9px; font-weight: 700; color: #9b8fb0; }
+
+.filtros-panel {
+  display: flex; flex-direction: column; gap: 12px; padding: 4px 2px; min-width: 220px;
+}
+.opcion-n {
+  flex: 0 0 auto; font-size: 10px; font-weight: 700; color: #9b8fb0;
+  background: #F3F0F8; border-radius: 999px; padding: 0 6px;
+}
+
+/* Chip de filtro aplicado: se quita con un clic en cualquier parte del chip */
+.chip-filtro {
+  display: inline-flex; align-items: center; gap: 5px; max-width: 320px;
+  font-size: 11px; font-weight: 600; line-height: 1.7;
+  padding: 0 8px; border-radius: 999px; cursor: pointer;
+  background: #F0EBFD; color: #6B4BA8; border: 1px solid #DCD0F5;
+}
+.chip-filtro:hover { background: #E5DBFA; }
+.chip-filtro i { font-size: 9px; opacity: .7; }
+.chip-filtro-lbl {
+  font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .03em; opacity: .65; flex: 0 0 auto;
+}
+.chip-filtro--limpiar {
+  background: transparent; color: #6b5a8a; border-color: #E5E2EC; font-weight: 500;
+}
+.chip-filtro--limpiar:hover { background: #F7F5FB; }
 
 .barra-duplicados {
   display: flex; align-items: center; gap: 7px;

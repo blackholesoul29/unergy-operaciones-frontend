@@ -30,9 +30,8 @@
             <InfoField label="Capacidad instalada (kWp)" :value="proyecto.info_tecnica?.capacidad_instalada_kwp" />
             <InfoField label="Departamento" :value="proyecto.departamento" />
             <InfoField label="Municipio" :value="proyecto.municipio" />
-            <InfoField label="Operador de red" :value="proyecto.operador_red_legal || proyecto.operador_red" />
+            <InfoField label="Operador de red" :value="proyecto.operador_red_legal" />
             <InfoField label="Clasificación" :value="proyecto.clasificacion_regulatoria" />
-            <InfoField label="Carpeta Drive" :value="proyecto.carpeta_drive_codigo" />
             <InfoField label="API ID Unergy" :value="proyecto.sub_project" />
             <InfoField label="Código TSF" :value="proyecto.codigo_tsf" />
             <InfoField label="Fecha de entrada en operación" :value="fmtFecha(proyecto.fecha_entrada_operacion)" />
@@ -79,10 +78,6 @@
             <div class="flex flex-col gap-1">
               <label class="field-label">Clasificación regulatoria</label>
               <Select v-model="editForm.clasificacion_regulatoria" :options="CLASIFICACIONES" class="w-full" placeholder="Seleccionar" showClear />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Carpeta Drive</label>
-              <InputText v-model="editForm.carpeta_drive_codigo" class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">API ID Unergy</label>
@@ -138,14 +133,6 @@
                 </a>
               </div>
             </div>
-            <!-- Documentación -->
-            <div v-if="proyecto.info_tecnica?.retie_url">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Documentación</p>
-              <a :href="proyecto.info_tecnica.retie_url" target="_blank" rel="noopener"
-                 class="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
-                <i class="pi pi-file" /> RETIE
-              </a>
-            </div>
             <!-- Eléctrico general -->
             <div>
               <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">General</p>
@@ -157,6 +144,7 @@
                 <InfoField label="Producción específica (kWh/kWp)" :value="proyecto.produccion_especifica_kwh_kwp" />
                 <InfoField label="Latitud" :value="proyecto.latitud" />
                 <InfoField label="Longitud" :value="proyecto.longitud" />
+                <InfoField label="Altitud (msnm)" :value="proyecto.altitud_msnm" />
               </div>
             </div>
             <!-- Paneles -->
@@ -199,16 +187,7 @@
                 <InfoField label="Estado CCTV" :value="proyecto.info_tecnica?.cctv_estado" />
                 <InfoField label="Marca CCTV" :value="proyecto.info_tecnica?.marca_cctv" />
                 <InfoField label="Seguridad física" :value="proyecto.info_tecnica?.seguridad_fisica" />
-                <InfoField label="Internet" :value="proyecto.info_tecnica?.tiene_internet" />
-              </div>
-            </div>
-            <!-- Almacenamiento -->
-            <div v-if="proyecto.info_tecnica?.tiene_almacenamiento">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Almacenamiento</p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Capacidad (kWh)" :value="proyecto.info_tecnica?.capacidad_almacenamiento_kwh" />
-                <InfoField label="Marca" :value="proyecto.info_tecnica?.marca_almacenamiento" />
-                <InfoField label="Modelo" :value="proyecto.info_tecnica?.modelo_almacenamiento" />
+                <InfoField label="Internet" :value="proyecto.info_tecnica?.tiene_internet === true ? 'Sí' : proyecto.info_tecnica?.tiene_internet === false ? 'No' : null" />
               </div>
             </div>
           </template>
@@ -228,16 +207,16 @@
                   <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
                 </div>
                 <div class="flex flex-col gap-1">
+                  <label class="field-label">Altitud (msnm)</label>
+                  <InputNumber v-model="editForm.altitud_msnm" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
                   <label class="field-label">Dirección</label>
                   <InputText v-model="editForm.direccion_vereda" class="w-full" />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Link Google Maps</label>
                   <InputText v-model="editInfoTecnica.url_ubicacion" class="w-full" placeholder="https://maps.app.goo.gl/..." />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">RETIE (link Drive)</label>
-                  <InputText v-model="editInfoTecnica.retie_url" class="w-full" placeholder="https://drive.google.com/..." />
                 </div>
               </div>
             </div>
@@ -363,29 +342,8 @@
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Internet</label>
-                  <Select v-model="editInfoTecnica.tiene_internet" :options="['Sí','No']" class="w-full" showClear placeholder="Seleccionar" />
-                </div>
-              </div>
-            </div>
-            <!-- Almacenamiento -->
-            <div>
-              <div class="flex items-center gap-2 mb-3">
-                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Almacenamiento</p>
-                <Checkbox v-model="editInfoTecnica.tiene_almacenamiento" binary />
-                <span class="text-xs text-gray-500">{{ editInfoTecnica.tiene_almacenamiento ? 'Sí' : 'No' }}</span>
-              </div>
-              <div v-if="editInfoTecnica.tiene_almacenamiento" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Capacidad (kWh)</label>
-                  <InputNumber v-model="editInfoTecnica.capacidad_almacenamiento_kwh" :maxFractionDigits="3" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Marca</label>
-                  <InputText v-model="editInfoTecnica.marca_almacenamiento" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Modelo</label>
-                  <InputText v-model="editInfoTecnica.modelo_almacenamiento" class="w-full" />
+                  <Select v-model="editInfoTecnica.tiene_internet" :options="[{label:'Sí',value:true},{label:'No',value:false}]"
+                          optionLabel="label" optionValue="value" class="w-full" showClear placeholder="Seleccionar" />
                 </div>
               </div>
             </div>
@@ -794,7 +752,6 @@ import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import DatePicker from 'primevue/datepicker'
-import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
 import { useToast } from 'primevue/usetoast'
 import * as XLSX from 'xlsx'
@@ -815,7 +772,7 @@ const ESTADOS = [
   { label: 'Suspendido', value: 'suspendido' },
   { label: 'Cancelado', value: 'cancelado' },
 ]
-const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'movilidad_electrica']
+const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'otro']
 const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
@@ -888,9 +845,9 @@ const editForm = reactive({
   municipio: null,
   latitud: null,
   longitud: null,
+  altitud_msnm: null,
   operador_red_id: null,
   clasificacion_regulatoria: null,
-  carpeta_drive_codigo: null,
   sub_project: null,
   codigo_tsf: null,
   topico_liquidaciones: null,
@@ -924,15 +881,10 @@ const editInfoTecnica = reactive({
   marca_modems_frontera: null,
   ip_modem_reconectador: null,
   url_ubicacion: null,
-  retie_url: null,
   cctv_estado: null,
   marca_cctv: null,
   seguridad_fisica: null,
   tiene_internet: null,
-  tiene_almacenamiento: false,
-  capacidad_almacenamiento_kwh: null,
-  marca_almacenamiento: null,
-  modelo_almacenamiento: null,
 })
 
 // Fechas del proyecto (DatePicker trabaja con Date; el API espera 'YYYY-MM-DD')

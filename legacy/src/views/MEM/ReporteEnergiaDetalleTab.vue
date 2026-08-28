@@ -8,11 +8,9 @@
         <p class="text-sm font-bold" style="color: #2C2039;">{{ detalle.nombre_proyecto }}</p>
         <div class="text-xs font-mono" style="color: #9b89b5;">
           {{ detalle.fecha }}
-          <span v-if="detalle.estado_reporte && detalle.estado_reporte !== 'WARNING'"> · Estado reporte {{ detalle.estado_reporte }}</span>
         </div>
       </div>
       <Tag v-if="detalle.revisar_manualmente" value="Revisar manualmente" severity="danger" />
-      <Tag v-else value="OK" severity="success" />
     </div>
 
     <!-- Frontera de terceros: el CGM lo maneja otra empresa (ej. Cedillanos);
@@ -132,10 +130,10 @@
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Curva reportada (24 h)</p>
       <CurvaChart
         :final="detalle.curva_final"
-        :medidor="detalle.curva_medidor_principal || detalle.curva_medidor_respaldo"
-        :medidorLabel="medidorGraficadoLabel"
-        :solenium="detalle.curva_solenium"
-        :reconectador="detalle.curva_reconectador"
+        :medidorPrincipal="esCasoConfiado ? null : detalle.curva_medidor_principal"
+        :medidorRespaldo="esCasoConfiado ? null : detalle.curva_medidor_respaldo"
+        :solenium="esCasoConfiado ? null : detalle.curva_solenium"
+        :reconectador="esCasoConfiado ? null : detalle.curva_reconectador"
         :horasReconectador="detalle.horas_rellenadas_reconectador"
         :horasSolenium="detalle.horas_rellenadas_solenium"
         :horasHistorico="detalle.horas_rellenadas_historico"
@@ -156,11 +154,13 @@
            style="background: rgba(37,124,214,0.08); border: 1px solid #257CD6;">
         <span class="flex-none rounded-full w-[18px] h-[18px] flex items-center justify-center text-[11px] font-bold text-white"
               style="background: #257CD6; margin-top: 1px;">i</span>
-        <p class="text-xs" style="color: #1B5DA3; line-height: 1.5;">
+        <p class="text-xs flex-1" style="color: #1B5DA3; line-height: 1.5;">
           {{ aviso.etiqueta }} muestra un valor distinto en Quoia
           (<strong style="color: #2C2039;">{{ fmtKwh(aviso.actual) }}</strong> ahora
           vs. <strong style="color: #2C2039;">{{ fmtKwh(aviso.clasificacion) }}</strong> al momento de clasificar).
         </p>
+        <Button v-if="aviso.tipo === 'respaldo'" label="Usar" size="small" text
+          :loading="usandoRespaldoEnVivo" @click="usarRespaldoEnVivo" class="flex-none" />
       </div>
       <div class="space-y-0">
         <div v-for="f in fuentes" :key="f.clave"
@@ -185,9 +185,9 @@
     <!-- Edición manual -->
     <div class="rounded-xl p-4" style="border: 1px solid #e8e0f0;">
       <p class="text-xs font-semibold uppercase mb-3" style="color: #6b5a8a;">Corrección manual (kWh)</p>
-      <div class="flex flex-wrap gap-4">
+      <div class="flex flex-nowrap gap-4 overflow-x-auto">
         <table class="tabla-horas">
-          <thead><tr><th>Hora</th><th>kWh</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Principal</th><th>Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
           <tbody>
             <tr v-for="h in 12" :key="h - 1" :class="esHoraRellenada(h - 1) ? 'fila-rellenada' : ''">
               <td>{{ h - 1 }}h</td>
@@ -196,11 +196,18 @@
                            class="w-full text-xs text-right celda-input"
                            @paste="onPasteHora($event, h - 1)" />
               </td>
+              <td>
+                <InputText v-model="curvaRespaldoEditable[h - 1]" inputmode="decimal"
+                           :placeholder="respaldoPlaceholder(h - 1)"
+                           class="w-full text-xs text-right celda-input"
+                           :class="{ 'celda-respaldo-real': respaldoEsDatoReal }"
+                           @paste="onPasteHoraRespaldo($event, h - 1)" />
+              </td>
             </tr>
           </tbody>
         </table>
         <table class="tabla-horas">
-          <thead><tr><th>Hora</th><th>kWh</th></tr></thead>
+          <thead><tr><th>Hora</th><th>Principal</th><th>Respaldo ({{ etiquetaOrigenRespaldo }})</th></tr></thead>
           <tbody>
             <tr v-for="h in 12" :key="h + 11" :class="esHoraRellenada(h + 11) ? 'fila-rellenada' : ''">
               <td>{{ h + 11 }}h</td>
@@ -208,6 +215,13 @@
                 <InputText v-model="curvaEditable[h + 11]" inputmode="decimal"
                            class="w-full text-xs text-right celda-input"
                            @paste="onPasteHora($event, h + 11)" />
+              </td>
+              <td>
+                <InputText v-model="curvaRespaldoEditable[h + 11]" inputmode="decimal"
+                           :placeholder="respaldoPlaceholder(h + 11)"
+                           class="w-full text-xs text-right celda-input"
+                           :class="{ 'celda-respaldo-real': respaldoEsDatoReal }"
+                           @paste="onPasteHoraRespaldo($event, h + 11)" />
               </td>
             </tr>
           </tbody>
@@ -220,49 +234,48 @@
       <p class="text-xs mt-1" style="color: #9b89b5;">
         Tip: pega varios valores seguidos (ej. una columna copiada de Excel) en cualquier celda -- se reparten en las horas siguientes en orden.
       </p>
-      <div class="flex items-center justify-between mt-2">
-        <div class="flex items-center gap-2">
-          <Button label="Limpiar curva" icon="pi pi-eraser" size="small" severity="danger" outlined
-            @click="limpiarCurva" />
-          <!-- El relleno horario (medidor cruzado / reconectador / Solenium
-               × FP / histórico) ya no aplica solo durante la clasificación
-               -- queda a criterio de la persona: reportar la curva tal como
-               está (con el hueco) o rellenarla con este botón. Generación y
-               Consumo. -->
-          <!-- Si ya hubo un relleno antes (hayHorasRelleno) y todavía queda
-               un hueco, es porque esa hora YA se intentó contra las 4
-               fuentes en cascada y ninguna tenía dato -- un dato histórico
-               que no cambia. Mostrar el botón otra vez solo invita a un
-               clic que va a fallar con el mismo error (ver captura
-               2026-08-20: 6h vacía después de rellenar 7h-11h/17h-18h). -->
-          <Button v-if="hayHuecosSinRellenar && !hayHorasRelleno(detalle)" label="Rellenar horas" size="small" severity="secondary" outlined
-            :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
-          <Button v-if="hayHorasRelleno(detalle)" label="Deshacer relleno" icon="pi pi-undo" size="small" severity="secondary" outlined
-            :loading="deshaciendoRelleno" :disabled="hayCambiosSinGuardar" @click="deshacerRelleno" />
-          <div v-if="!esCasoConfiado" class="relative">
-            <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
-              style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
-              @click="mostrarMenuReportar = !mostrarMenuReportar" />
-            <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
-            <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
-                 style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
-              <div v-for="op in opcionesReportarCon" :key="op.key"
-                   class="flex items-center justify-between gap-3 px-3 py-2.5"
-                   :class="op.disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-[#f9f7ff]'"
-                   style="border-bottom: 1px solid #e8e0f0;"
-                   @click="!op.disabled && elegirFuenteReportar(op)">
-                <div class="min-w-0">
-                  <div class="text-xs font-semibold" style="color: #2C2039;">{{ op.nombre }}</div>
-                  <div v-if="op.nota" class="text-[10.5px]" style="color: #9b89b5;">{{ op.nota }}</div>
-                </div>
-                <div class="text-xs font-mono flex-none" style="color: #2C2039;">
-                  {{ op.valor != null ? fmtKwh(op.valor) : 'Sin dato' }}
-                </div>
+      <div class="flex items-center flex-wrap gap-2 mt-2">
+        <Button label="Limpiar curva" icon="pi pi-eraser" size="small" severity="danger" outlined
+          @click="limpiarCurva" />
+        <!-- El relleno horario (medidor cruzado / reconectador / Solenium
+             × FP / histórico) ya no aplica solo durante la clasificación
+             -- queda a criterio de la persona: reportar la curva tal como
+             está (con el hueco) o rellenarla con este botón. Generación y
+             Consumo. -->
+        <!-- Si ya hubo un relleno antes (hayHorasRelleno) y todavía queda
+             un hueco, es porque esa hora YA se intentó contra las 4
+             fuentes en cascada y ninguna tenía dato -- un dato histórico
+             que no cambia. Mostrar el botón otra vez solo invita a un
+             clic que va a fallar con el mismo error (ver captura
+             2026-08-20: 6h vacía después de rellenar 7h-11h/17h-18h). -->
+        <Button v-if="hayHuecosSinRellenar && !hayHorasRelleno(detalle)" label="Rellenar horas" size="small" severity="secondary" outlined
+          :loading="rellenando" :disabled="hayCambiosSinGuardar" @click="rellenarHorario" />
+        <Button v-if="hayHorasRelleno(detalle)" label="Deshacer relleno" icon="pi pi-undo" size="small" severity="secondary" outlined
+          :loading="deshaciendoRelleno" :disabled="hayCambiosSinGuardar" @click="deshacerRelleno" />
+        <div v-if="!esCasoConfiado" class="relative">
+          <Button label="Reportar con otra fuente" icon="pi pi-angle-down" iconPos="right" size="small"
+            style="background: #F0C040; border-color: #F0C040; color: #4a3200;"
+            @click="mostrarMenuReportar = !mostrarMenuReportar" />
+          <div v-if="mostrarMenuReportar" class="fixed inset-0 z-10" @click="mostrarMenuReportar = false"></div>
+          <div v-if="mostrarMenuReportar" class="absolute bottom-full left-0 mb-2 w-72 rounded-xl overflow-hidden z-20"
+               style="background: white; border: 1px solid #e8e0f0; box-shadow: 0 10px 30px rgba(44,32,57,0.16);">
+            <div v-for="op in opcionesReportarCon" :key="op.key"
+                 class="flex items-center justify-between gap-3 px-3 py-2.5"
+                 :class="op.disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer hover:bg-[#f9f7ff]'"
+                 style="border-bottom: 1px solid #e8e0f0;"
+                 @click="!op.disabled && elegirFuenteReportar(op)">
+              <div class="min-w-0">
+                <div class="text-xs font-semibold" style="color: #2C2039;">{{ op.nombre }}</div>
+                <div v-if="op.nota" class="text-[10.5px]" style="color: #9b89b5;">{{ op.nota }}</div>
+              </div>
+              <div class="text-xs font-mono flex-none" style="color: #2C2039;">
+                {{ op.valor != null ? fmtKwh(op.valor) : 'Sin dato' }}
               </div>
             </div>
           </div>
         </div>
-        <Button label="Guardar corrección" size="small" :loading="guardando" :disabled="!hayCambiosSinGuardar" @click="guardarCurva" />
+        <Button label="Guardar corrección" size="small"
+          :loading="guardando" :disabled="!hayCambiosSinGuardar" @click="guardarCurva" />
       </div>
     </div>
 
@@ -362,6 +375,10 @@ const toast = useToast()
 const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
+// Vacío por completo = "no la toqué, calcúlala sola" (dato real del medidor
+// de respaldo si coincide con Principal, si no ±1%). Si tiene al menos un
+// valor, se manda tal cual como confirmación manual -- ver guardarCurva().
+const curvaRespaldoEditable = ref(Array(24).fill(null))
 const guardando = ref(false)
 const rellenando = ref(false)
 const deshaciendoRelleno = ref(false)
@@ -482,6 +499,7 @@ async function cargar() {
     const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}`, { params: { fecha: props.fecha } })
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    curvaRespaldoEditable.value = Array(24).fill(null)
     fuenteManualElegida.value = null
     cargarFallasActivas(data.proyecto_id)
   } catch (e) {
@@ -621,8 +639,54 @@ function onPasteHora(event, indiceInicio) {
   })
 }
 
+function onPasteHoraRespaldo(event, indiceInicio) {
+  const texto = event.clipboardData?.getData('text') || ''
+  const valores = texto.split(/[\n\t,]+/).map(s => s.trim()).filter(Boolean).map(Number).filter(n => !isNaN(n))
+  if (valores.length <= 1) return
+  event.preventDefault()
+  valores.forEach((v, i) => {
+    const idx = indiceInicio + i
+    if (idx < 24) curvaRespaldoEditable.value[idx] = v
+  })
+}
+
 function limpiarCurva() {
   curvaEditable.value = Array(24).fill(null)
+  curvaRespaldoEditable.value = Array(24).fill(null)
+}
+
+// Placeholder de la columna Respaldo: la celda queda VACÍA a propósito
+// (vacío = "no la toqué, calcúlala sola", ver guardarCurva) -- sin esto no
+// había forma de ver en la tabla lo que ya se está reportando, solo en el
+// gráfico (confuso: parecía que Respaldo no tenía dato, ver 2026-08-25).
+// Solo dos opciones en el encabezado -- "Medidor" agrupa cualquier dato real
+// (terceros, el medidor de respaldo detectado solo, o confirmado a mano: si
+// alguien lo escribió a mano ya lo está viendo tal cual en la celda, no hace
+// falta una tercera etiqueta para eso, la propia acción de escribir y
+// guardar YA es la confirmación). "Estimado ±1%" es la única otra opción.
+const etiquetaOrigenRespaldo = computed(() => {
+  const origen = detalle.value?.respaldo_reportado_origen
+  if (origen === 'terceros' || origen === 'medidor' || origen === 'manual') return 'Medidor'
+  if (origen === 'estimado') return 'Estimado ±1%'
+  return 'sin calcular aún'
+})
+
+// Estimado (o sin calcular) es un número provisional, inventado por la
+// fórmula -- ahí sí tiene sentido que se vea como placeholder (tenue, "esto
+// es solo una pista"). Los otros tres orígenes son dato real y definitivo
+// que YA se está reportando -- mostrarlo desvanecido como si fuera una
+// sugerencia era engañoso (2026-08-25), así que se ve como texto sólido
+// aunque la celda siga técnicamente vacía (nadie escribió nada ahí).
+const respaldoEsDatoReal = computed(() => {
+  const origen = detalle.value?.respaldo_reportado_origen
+  return origen === 'terceros' || origen === 'medidor' || origen === 'manual'
+})
+
+function respaldoPlaceholder(h) {
+  const v = detalle.value?.curva_respaldo_reportada?.[h]
+  // Sin sufijo 'kWh' -- la celda es angosta (110px) y la columna Principal
+  // de al lado tampoco lo lleva, mismo estilo de número plano.
+  return v === null || v === undefined ? '' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 2 })
 }
 
 function esHoraRellenada(h) {
@@ -641,10 +705,9 @@ function esHoraRellenada(h) {
 // llega al backend y queda validado el valor anterior sin que se note.
 // Comparar contra curva_final (lo persistido) detecta ese caso y bloquea
 // Validar hasta que se guarde.
-const hayCambiosSinGuardar = computed(() => {
-  const persistida = detalle.value?.curva_final || Array(24).fill(null)
+function _curvaDifiere(editable, persistida) {
   for (let h = 0; h < 24; h++) {
-    const a = curvaEditable.value[h]
+    const a = editable[h]
     const b = persistida[h]
     // 'sin dato' (null/undefined/'') y un cero explícito NO son lo mismo --
     // Number(a || 0) los volvía indistinguibles (Number(null || 0) ===
@@ -655,6 +718,17 @@ const hayCambiosSinGuardar = computed(() => {
     const bVacio = b === null || b === undefined
     if (aVacio !== bVacio) return true
     if (!aVacio && Number(a).toFixed(2) !== Number(b).toFixed(2)) return true
+  }
+  return false
+}
+
+const hayCambiosSinGuardar = computed(() => {
+  if (_curvaDifiere(curvaEditable.value, detalle.value?.curva_final || Array(24).fill(null))) return true
+  // Respaldo vacío por completo = no lo tocaron -- no cuenta como cambio
+  // sin guardar (comparar contra curva_respaldo_reportada sería engañoso
+  // igual, porque el estimado ±1% cambia solo de recalcularse).
+  if (curvaRespaldoEditable.value.some(v => v !== null && v !== undefined && v !== '')) {
+    return true
   }
   return false
 })
@@ -678,6 +752,7 @@ async function rellenarHorario() {
     )
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    curvaRespaldoEditable.value = Array(24).fill(null)
     toast.add({ severity: 'success', summary: 'Horas rellenadas', life: 2500 })
     emit('actualizado')
   } catch (e) {
@@ -699,6 +774,7 @@ async function deshacerRelleno() {
     )
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
+    curvaRespaldoEditable.value = Array(24).fill(null)
     toast.add({ severity: 'success', summary: 'Relleno deshecho', life: 2500 })
     emit('actualizado')
   } catch (e) {
@@ -737,6 +813,39 @@ async function recuperarMedidor() {
     })
   } finally {
     recuperandoMedidor.value = false
+  }
+}
+
+// Botón "Usar" del banner de respaldo -- acción liviana (sin la
+// interrogación activa de 90s de "Recuperar medidor", sin tocar
+// Principal) para cuando el valor en vivo ya está disponible pasivamente
+// en el propio banner (ver MGS Agustín 1 2026-08-26). Adopta el snapshot
+// SOLO si pasa la tolerancia de coherencia -- si no, el backend lo deja
+// igual y el aviso sigue apareciendo.
+const usandoRespaldoEnVivo = ref(false)
+async function usarRespaldoEnVivo() {
+  usandoRespaldoEnVivo.value = true
+  try {
+    const { data } = await api.post(
+      `/reporte-energia/fronteras/${props.fronteraId}/revisar-respaldo`, null,
+      { params: { fecha: props.fecha } },
+    )
+    detalle.value = data
+    if (data.respaldo_reportado_origen === 'medidor') {
+      toast.add({ severity: 'success', summary: 'Respaldo actualizado', detail: 'Se adoptó el valor real del medidor.', life: 4000 })
+    } else {
+      toast.add({
+        severity: 'warn', summary: 'Sigue en estimado',
+        detail: 'El valor en vivo no quedó dentro de la tolerancia -- no se adoptó.', life: 5000,
+      })
+    }
+  } catch (e) {
+    toast.add({
+      severity: 'error', summary: 'No se pudo revisar',
+      detail: e?.response?.data?.detail || 'Falló la consulta del medidor de respaldo.', life: 4000,
+    })
+  } finally {
+    usandoRespaldoEnVivo.value = false
   }
 }
 
@@ -783,7 +892,7 @@ const opcionesReportarCon = computed(() => {
     }
     return { key, nombre, curva: curvaPersistida, valor: suma(curvaPersistida), disabled: suma(curvaPersistida) == null }
   }
-  return [
+  const opciones = [
     {
       key: 'tipica', nombre: 'Curva típica (histórico)', curva: tipica?.curva,
       nota: tipica ? `mediana de ${tipica.dias_usados} días` : 'sin histórico suficiente',
@@ -792,13 +901,33 @@ const opcionesReportarCon = computed(() => {
     opcionMedidor('principal', 'Medidor principal', d.curva_medidor_principal),
     opcionMedidor('respaldo', 'Medidor respaldo', d.curva_medidor_respaldo),
     { key: 'inversores', nombre: 'Inversores × FP', curva: curvaInversoresFp, valor: suma(curvaInversoresFp), disabled: suma(curvaInversoresFp) == null },
-    { key: 'ceros', nombre: 'Matriz de ceros', curva: Array(24).fill(0), valor: 0 },
   ]
+  // El reconectador solo se ofrece como fuente manual cuando su dato del día
+  // está completo (mismo criterio de 'Dato completo' que ya se usa en
+  // 'Detalle de las fuentes') -- con horas faltantes no es una curva
+  // reportable de un solo clic, para eso ya está 'Rellenar horas' (caso
+  // real: Paso Norte, pedido 2026-08-27).
+  const sumaReconectador = suma(d.curva_reconectador)
+  if (sumaReconectador != null && !horasFaltantesSolares(d.curva_reconectador).length) {
+    opciones.push({ key: 'reconectador', nombre: 'Reconectador', curva: d.curva_reconectador, valor: sumaReconectador })
+  }
+  opciones.push({ key: 'ceros', nombre: 'Matriz de ceros', curva: Array(24).fill(0), valor: 0 })
+  return opciones
 })
 
 function elegirFuenteReportar(op) {
   mostrarMenuReportar.value = false
   curvaEditable.value = [...op.curva]
+  // Respaldo siempre queda vacío acá, sin importar la opción elegida -- NO
+  // se precarga con curva_medidor_respaldo aunque se elija 'Medidor
+  // principal', porque eso mandaría el dato del medidor de respaldo como
+  // confirmación manual SIN el chequeo de coherencia (1.5 kWh vs el nuevo
+  // Principal) que sí aplica actualizar_respaldo_final() en el backend al
+  // guardar -- adoptar 'Medidor principal' no implica que el de respaldo
+  // sea confiable ese día (bug real 2026-08-25: se estaba precargando a
+  // ciegas). Dejarlo vacío deja que el backend decida solo con el mismo
+  // criterio de siempre.
+  curvaRespaldoEditable.value = Array(24).fill(null)
   fuenteManualElegida.value = op.key === 'tipica' ? 'historico' : op.key
   toast.add({
     severity: 'info', summary: `${op.nombre} aplicado`,
@@ -806,24 +935,36 @@ function elegirFuenteReportar(op) {
   })
 }
 
+function _normalizarCurva(valores) {
+  // Las celdas son InputText (texto libre, no InputNumber) para que el
+  // cursor no salte al editar un dígito del medio -- así que acá pueden
+  // llegar strings ("45.6"), vacías (""), o numeros ya normales (paste,
+  // carga inicial). Se normaliza a float | null justo antes de enviar.
+  return valores.map(v => {
+    if (v === null || v === undefined || v === '') return null
+    const n = Number(v)
+    return Number.isNaN(n) ? null : n
+  })
+}
+
 async function guardarCurva() {
   guardando.value = true
   try {
-    // Las celdas son InputText (texto libre, no InputNumber) para que el
-    // cursor no salte al editar un dígito del medio -- así que acá pueden
-    // llegar strings ("45.6"), vacías (""), o numeros ya normales (paste,
-    // carga inicial). Se normaliza a float | null justo antes de enviar.
-    const curvaNormalizada = curvaEditable.value.map(v => {
-      if (v === null || v === undefined || v === '') return null
-      const n = Number(v)
-      return Number.isNaN(n) ? null : n
-    })
+    const curvaNormalizada = _normalizarCurva(curvaEditable.value)
+    const payload = { curva_final: curvaNormalizada, fuente: fuenteManualElegida.value }
+    // Columna de Respaldo vacía por completo = no la tocaron -> no se manda
+    // (el backend la recalcula sola). Al menos un valor = confirmación
+    // manual, se manda tal cual (incluidas las horas que sí quedaron vacías).
+    if (curvaRespaldoEditable.value.some(v => v !== null && v !== undefined && v !== '')) {
+      payload.curva_respaldo_final = _normalizarCurva(curvaRespaldoEditable.value)
+    }
     const { data } = await api.patch(
       `/reporte-energia/fronteras/${props.fronteraId}`,
-      { curva_final: curvaNormalizada, fuente: fuenteManualElegida.value },
+      payload,
       { params: { fecha: props.fecha } },
     )
     detalle.value = data
+    curvaRespaldoEditable.value = Array(24).fill(null)
     toast.add({ severity: 'success', summary: 'Corrección guardada', life: 2500 })
     emit('actualizado')
   } catch (e) {
@@ -1009,26 +1150,16 @@ function sumaCurva(arr) {
 // ya haber sido corregido a mano con el valor en vivo (ver 'Reportar con
 // otra fuente' -> 'Medidor X (actualizado)'); si no, la comparación se
 // vuelve redundante contra sí misma justo después de aplicar esa corrección.
-// La gráfica grafica curva_medidor_principal, con fallback a respaldo si el
-// principal no existe (ver :medidor más arriba) -- la etiqueta "Medidor" a
-// secas era ambigua, no dejaba claro cuál de los dos es (pedido 2026-08-20).
-const medidorGraficadoLabel = computed(() => {
-  const d = detalle.value
-  if (!d) return 'Medidor'
-  if (d.curva_medidor_principal) return 'Medidor principal'
-  if (d.curva_medidor_respaldo) return 'Medidor respaldo'
-  return 'Medidor'
-})
 
 const avisosMedidor = computed(() => {
   const d = detalle.value
   if (!d) return []
   const avisos = []
   if (d.principal_actualizado_en_quoia) {
-    avisos.push({ etiqueta: 'Medidor principal', actual: d.principal_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_principal) })
+    avisos.push({ tipo: 'principal', etiqueta: 'Medidor principal', actual: d.principal_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_principal) })
   }
   if (d.respaldo_actualizado_en_quoia) {
-    avisos.push({ etiqueta: 'Medidor respaldo', actual: d.respaldo_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_respaldo) })
+    avisos.push({ tipo: 'respaldo', etiqueta: 'Medidor respaldo', actual: d.respaldo_energia_actual_kwh, clasificacion: sumaCurva(d.curva_medidor_respaldo) })
   }
   return avisos
 })
@@ -1251,7 +1382,11 @@ function fmtKwh(v) {
   white-space: nowrap;
   background: #f9f7ff;
 }
-.tabla-horas tr.fila-rellenada td:last-child { background: rgba(240, 192, 64, 0.14); }
+/* nth-child(2), no last-child: la columna Principal es siempre la 2da (Hora
+   | Principal | Respaldo en Generación, Hora | Principal en Consumo) -- con
+   last-child, en Generación esto resaltaba la celda de Respaldo en vez de
+   la de Principal, que es la que de verdad se rellenó. */
+.tabla-horas tr.fila-rellenada td:nth-child(2) { background: rgba(240, 192, 64, 0.14); }
 :deep(.celda-input) {
   width: 110px;
   height: 32px;
@@ -1261,5 +1396,14 @@ function fmtKwh(v) {
 :deep(.celda-input:focus) {
   outline: 2px solid #915BD8;
   outline-offset: -2px;
+}
+/* Respaldo con dato real (Medidor) -- el placeholder se ve como texto
+   normal, no como la pista tenue de siempre, porque no es una sugerencia:
+   es el valor real que ya se está reportando (ver respaldoEsDatoReal). El
+   caso 'Estimado ±1%' se queda con el gris tenue por defecto del navegador,
+   ahí sí es un número provisional. */
+:deep(.celda-respaldo-real::placeholder) {
+  color: #2C2039;
+  opacity: 1;
 }
 </style>

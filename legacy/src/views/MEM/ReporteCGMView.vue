@@ -24,7 +24,7 @@
         </div>
         <div class="flex items-center gap-1.5">
           <label class="text-xs font-medium" style="color: #6b5a8a;">Hasta</label>
-          <DatePicker v-model="fechaHasta" dateFormat="dd/mm/yy" :minDate="fechaDesde" :maxDate="ayer"
+          <DatePicker v-model="fechaHasta" dateFormat="dd/mm/yy" :minDate="fechaDesde" :maxDate="maxHasta"
             showIcon iconDisplay="input" style="width: 150px;" />
         </div>
         <button type="button" :disabled="!totalSeleccionados || enviando"
@@ -180,6 +180,15 @@ const busqueda = ref('')
 const ayer = new Date(Date.now() - 86400000)
 const fechaDesde = ref(new Date(ayer))
 const fechaHasta = ref(new Date(ayer))
+
+// Mismo tope que el backend (RANGO_MAXIMO_DIAS en reporte_cgm.py schema) --
+// evita elegir un rango que el servidor va a rechazar de todas formas.
+const RANGO_MAXIMO_DIAS = 92
+const maxHasta = computed(() => {
+  const limite = new Date(fechaDesde.value)
+  limite.setDate(limite.getDate() + RANGO_MAXIMO_DIAS - 1)
+  return limite < ayer ? limite : ayer
+})
 
 function formatFecha(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -353,11 +362,16 @@ async function enviarSeleccionados() {
     }, { timeout: 300000 }) // "Operaciones Unergy" (todas las fronteras) puede tardar >150s el ultimo dia del mes (se adjunta ademas el resumen mensual) -- medido en produccion 2026-08-12
     const ok = data.resultados.filter(r => r.ok)
     const conError = data.resultados.filter(r => !r.ok)
+    const conWarning = data.resultados.filter(r => r.ok && r.warning)
+    const detalles = [
+      ...conError.map(r => `${r.nombre}: ${r.error}`),
+      ...conWarning.map(r => `${r.nombre}: ${r.warning}`),
+    ]
     toast.add({
-      severity: conError.length ? 'warn' : 'success',
-      summary: `${ok.length} enviado${ok.length === 1 ? '' : 's'}${conError.length ? `, ${conError.length} con error` : ''}`,
-      detail: conError.length ? conError.map(r => `${r.nombre}: ${r.error}`).join(' · ') : undefined,
-      life: 6000,
+      severity: conError.length ? 'warn' : (conWarning.length ? 'warn' : 'success'),
+      summary: `${ok.length} enviado${ok.length === 1 ? '' : 's'}${conError.length ? `, ${conError.length} con error` : ''}${conWarning.length ? `, ${conWarning.length} con advertencia` : ''}`,
+      detail: detalles.length ? detalles.join(' · ') : undefined,
+      life: 8000,
     })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'Error al enviar', detail: e.response?.data?.detail || e.message, life: 5000 })
@@ -369,7 +383,7 @@ async function enviarSeleccionados() {
 async function loadData() {
   loading.value = true
   try {
-    const { data } = await api.get('/fronteras', { params: { limit: 500 } })
+    const { data } = await api.get('/fronteras', { params: { limit: 500, incluir_clientes_cgm: true } })
     fronteras.value = data
   } catch (e) {
     console.error('Error loading fronteras:', e)

@@ -104,7 +104,7 @@ import api from '@/api/client'
 
 const loading = ref(false)
 const creando = ref(false)
-const portafolios = ref([])      // [{id, nombre, descripcion, activo, proyectos:[...]}]
+const portafolios = ref([])      // [{id, nombre, activo, proyectos:[...]}]
 const sinPortafolio = ref([])    // [{id, nombre, sub_project, municipio}]
 const nuevoNombre = ref('')
 const editandoId = ref(null)
@@ -145,34 +145,69 @@ async function onChange(evt, portafolioId) {
   }
 }
 
+function _agregarPortafolioCreado(data) {
+  portafolios.value.push({ ...data, proyectos: data.proyectos || [] })
+  portafolios.value.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+  nuevoNombre.value = ''
+  toast('✅ Portafolio creado')
+}
+
 async function crear() {
   const nombre = nuevoNombre.value.trim()
   if (!nombre) return
   creando.value = true
   try {
     const { data } = await api.post('/portafolios', { nombre })
-    portafolios.value.push({ ...data, proyectos: data.proyectos || [] })
-    portafolios.value.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-    nuevoNombre.value = ''
-    toast('✅ Portafolio creado')
+    _agregarPortafolioCreado(data)
   } catch (e) {
-    toast('⚠️ ' + (e.response?.data?.detail || e.message), true)
+    const detail = e.response?.data?.detail
+    // 409 estructurado (nombre parecido, no exacto): se puede confirmar y
+    // crear igual -- mismo patrón que el aviso al crear un Proyecto.
+    if (e.response?.status === 409 && detail?.duplicado_nombre) {
+      if (confirm(`${detail.mensaje} ¿Crear "${nombre}" de todos modos?`)) {
+        try {
+          const { data } = await api.post('/portafolios', { nombre }, { params: { forzar: true } })
+          _agregarPortafolioCreado(data)
+        } catch (e2) {
+          toast('⚠️ ' + (e2.response?.data?.detail || e2.message), true)
+        }
+      }
+      return
+    }
+    toast('⚠️ ' + (typeof detail === 'string' ? detail : e.message), true)
   } finally {
     creando.value = false
   }
 }
 
 function empezarEdicion(pt) { editandoId.value = pt.id; editandoNombre.value = pt.nombre }
+
+function _renombrado(pt, nombre) {
+  pt.nombre = nombre
+  portafolios.value.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+  toast('✅ Renombrado')
+}
+
 async function renombrar(pt) {
   const nombre = editandoNombre.value.trim()
   if (!nombre || nombre === pt.nombre) { editandoId.value = null; return }
   try {
     await api.patch(`/portafolios/${pt.id}`, { nombre })
-    pt.nombre = nombre
-    portafolios.value.sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-    toast('✅ Renombrado')
+    _renombrado(pt, nombre)
   } catch (e) {
-    toast('⚠️ ' + (e.response?.data?.detail || e.message), true)
+    const detail = e.response?.data?.detail
+    if (e.response?.status === 409 && detail?.duplicado_nombre) {
+      if (confirm(`${detail.mensaje} ¿Renombrar "${pt.nombre}" a "${nombre}" de todos modos?`)) {
+        try {
+          await api.patch(`/portafolios/${pt.id}`, { nombre }, { params: { forzar: true } })
+          _renombrado(pt, nombre)
+        } catch (e2) {
+          toast('⚠️ ' + (e2.response?.data?.detail || e2.message), true)
+        }
+      }
+    } else {
+      toast('⚠️ ' + (typeof detail === 'string' ? detail : e.message), true)
+    }
   } finally {
     editandoId.value = null
   }

@@ -90,8 +90,57 @@ export async function listarCatalogos() {
 }
 
 // ── Despachos liquidados ─────────────────────────────────────────────────────
-export async function listarDespachos({ month, year, version = VERSION_INICIAL }) {
-  const { data } = await api.get('/liquidaciones-api/despachos', { params: { month, year, version } })
+/**
+ * Despachos ya liquidados del período, día por día y por contrato.
+ * `data_type`: dispatch (venta) | purchase (compra) | dispatch_fazni (bolsa).
+ */
+export async function listarDespachos({ month, year, version = VERSION_INICIAL, data_type, project }) {
+  const { data } = await api.get('/liquidaciones-api/despachos', {
+    params: { month, year, version, data_type, project },
+  })
+  return data
+}
+
+export const TIPOS_DESPACHO = [
+  { value: 'dispatch', label: 'Venta' },
+  { value: 'purchase', label: 'Compra' },
+  { value: 'dispatch_fazni', label: 'Venta en bolsa' },
+]
+
+// ── Consumo (energía contratada por hora) ────────────────────────────────────
+/** Las 24 horas de energía contratada que trae el FTP de XM, en kWh. */
+export async function listarConsumo({ month, year, version = VERSION_INICIAL, project, fecha }) {
+  const { data } = await api.get('/liquidaciones-api/consumo', {
+    params: { month, year, version, project, fecha },
+  })
+  return data
+}
+
+// ── IPP histórico ────────────────────────────────────────────────────────────
+/**
+ * IPP del DANE ya consultados. Hay una fila por consulta, no una por mes:
+ * la marcada con `vigente` es la que manda.
+ */
+export async function listarIpp({ year, month } = {}) {
+  const { data } = await api.get('/liquidaciones-api/ipp', { params: { year, month } })
+  return data
+}
+
+// ── Ids de Quoia (viven en los subproyectos de la API) ───────────────────────
+export async function listarSubproyectos({ project, topic } = {}) {
+  const { data } = await api.get('/liquidaciones-api/subproyectos', { params: { project, topic } })
+  return data
+}
+
+/**
+ * Escribe los ids de Quoia de un subproyecto.
+ * Ojo: es un PATCH parcial y mandar `null` **borra** el id, así que solo se
+ * deben incluir los campos que de verdad se quieren tocar.
+ */
+export async function actualizarSubproyecto(topico, cambios) {
+  const { data } = await api.patch(
+    `/liquidaciones-api/subproyectos/${encodeURIComponent(topico)}`, cambios,
+  )
   return data
 }
 

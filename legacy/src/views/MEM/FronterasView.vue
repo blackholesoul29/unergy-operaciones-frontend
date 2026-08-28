@@ -83,7 +83,8 @@
     <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
       <DataTable :value="filteredFronteras" :paginator="true" :rows="20"
                  :rowsPerPageOptions="[10, 20, 50]" responsiveLayout="scroll"
-                 stripedRows class="p-datatable-sm">
+                 stripedRows class="p-datatable-sm" rowHover
+                 @row-click="(e) => $router.push(`/mem/fronteras/${e.data.id}`)">
         <Column field="codigo_frontera" header="Código" sortable style="min-width: 140px">
           <template #body="{ data }">
             <span class="font-mono text-sm font-semibold" style="color: #915BD8;">{{ data.codigo_frontera || '—' }}</span>
@@ -96,7 +97,7 @@
         </Column>
         <Column field="proyecto_nombre" header="Proyecto" sortable style="min-width: 180px">
           <template #body="{ data }">
-            <RouterLink v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`"
+            <RouterLink v-if="data.proyecto_id" :to="`/proyectos/${data.proyecto_id}`" @click.stop
                         class="text-sm underline" style="color: #915BD8;">
               {{ data.proyecto_nombre || `#${data.proyecto_id}` }}
             </RouterLink>
@@ -133,122 +134,23 @@
         </Column>
         <Column field="operador_comercial" header="Operador" sortable style="min-width: 120px">
           <template #body="{ data }">
-            {{ data.operador_comercial || data.operador_red || '—' }}
+            {{ data.operador_comercial || '—' }}
           </template>
         </Column>
-        <Column field="capacidad_efectiva_mw" header="Cap. MW" sortable style="min-width: 100px">
+        <Column field="proyecto_potencia_instalada_mw" header="Cap. MW" sortable style="min-width: 100px">
           <template #body="{ data }">
-            {{ data.capacidad_efectiva_mw ? Number(data.capacidad_efectiva_mw).toFixed(3) : '—' }}
+            {{ data.proyecto_potencia_instalada_mw ? Number(data.proyecto_potencia_instalada_mw).toFixed(3) : '—' }}
           </template>
         </Column>
-        <Column field="municipio" header="Municipio" sortable style="min-width: 130px" />
-        <Column header="" style="width: 90px">
+        <Column field="proyecto_municipio" header="Municipio" sortable style="min-width: 130px" />
+        <Column header="" style="width: 60px">
           <template #body="{ data }">
-            <Button icon="pi pi-pencil" text rounded size="small" severity="secondary"
-              @click="editFrontera(data)" v-tooltip="'Editar'" />
             <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-              @click="deleteFrontera(data)" v-tooltip="'Eliminar'" />
+              @click.stop="deleteFrontera(data)" v-tooltip="'Eliminar'" />
           </template>
         </Column>
       </DataTable>
     </div>
-
-    <!-- Edit Dialog -->
-    <Dialog v-model:visible="showEdit" :header="editingFrontera ? 'Editar Frontera' : 'Frontera'"
-      modal class="w-full max-w-2xl">
-      <div v-if="editForm" class="space-y-4 pt-2">
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Código frontera</label>
-            <InputText v-model="editForm.codigo_frontera" class="w-full" />
-          </div>
-          <div>
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Nombre</label>
-            <InputText v-model="editForm.nombre_frontera" class="w-full" />
-          </div>
-          <div>
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Estado</label>
-            <Dropdown v-model="editForm.estado" :options="estadoOptions" optionLabel="label" optionValue="value" class="w-full" />
-          </div>
-          <div>
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Operador red</label>
-            <Dropdown v-model="editForm.operador_red_id" :options="operadoresRedOptions" optionLabel="label"
-              optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
-          </div>
-          <div class="col-span-2">
-            <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Proyecto</label>
-            <Dropdown v-model="editForm.proyecto_id" :options="proyectosAll" optionLabel="nombre_comercial"
-              optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
-          </div>
-        </div>
-
-        <!-- Ficha técnica medidor/módem (2026-08-14) -- antes solo vivía la
-             marca a nivel de proyecto (un valor para las 4 combinaciones
-             posibles ppal/resp x generación/consumo), acá sí se distingue
-             cada medidor/módem real de esta frontera. -->
-        <div class="pt-2" style="border-top: 1px solid #e8e0f0;">
-          <p class="text-xs font-semibold uppercase mb-2" style="color: #6b5a8a;">Medidor principal</p>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Tipo de extracción</label>
-              <InputText v-model="editForm.tipo_extraccion_ppal" class="w-full" placeholder="Ej. DLMS" />
-            </div>
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Contraseña del medidor</label>
-              <InputText v-model="editForm.password_medidor_ppal" class="w-full" />
-            </div>
-          </div>
-          <p class="text-xs font-semibold uppercase mt-3 mb-2" style="color: #6b5a8a;">Módem asociado</p>
-          <div class="grid grid-cols-3 gap-4">
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Dirección IP</label>
-              <InputText v-model="editForm.ip_modem_ppal" class="w-full" placeholder="10.10.10.1" />
-            </div>
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Puerto</label>
-              <InputNumber v-model="editForm.puerto_modem_ppal" class="w-full" :useGrouping="false" />
-            </div>
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Canal de comunicación</label>
-              <InputText v-model="editForm.canal_comunicacion_ppal" class="w-full" placeholder="Ej. IPsec" />
-            </div>
-          </div>
-        </div>
-
-        <div class="pt-2" style="border-top: 1px solid #e8e0f0;">
-          <p class="text-xs font-semibold uppercase mb-2" style="color: #6b5a8a;">Medidor respaldo</p>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Tipo de extracción</label>
-              <InputText v-model="editForm.tipo_extraccion_resp" class="w-full" placeholder="Ej. DLMS" />
-            </div>
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Contraseña del medidor</label>
-              <InputText v-model="editForm.password_medidor_resp" class="w-full" />
-            </div>
-          </div>
-          <p class="text-xs font-semibold uppercase mt-3 mb-2" style="color: #6b5a8a;">Módem asociado</p>
-          <div class="grid grid-cols-3 gap-4">
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Dirección IP</label>
-              <InputText v-model="editForm.ip_modem_resp" class="w-full" placeholder="10.10.10.1" />
-            </div>
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Puerto</label>
-              <InputNumber v-model="editForm.puerto_modem_resp" class="w-full" :useGrouping="false" />
-            </div>
-            <div>
-              <label class="text-xs font-semibold uppercase block mb-1" style="color: #6b5a8a;">Canal de comunicación</label>
-              <InputText v-model="editForm.canal_comunicacion_resp" class="w-full" placeholder="Ej. IPsec" />
-            </div>
-          </div>
-        </div>
-      </div>
-      <template #footer>
-        <Button label="Cancelar" severity="secondary" text @click="showEdit = false" />
-        <Button label="Guardar" :loading="saving" @click="saveFrontera" />
-      </template>
-    </Dialog>
 
     <!-- Create Dialog -->
     <Dialog v-model:visible="showCreate" header="Nueva Frontera" modal class="w-full max-w-lg">
@@ -361,7 +263,6 @@ const router = useRouter()
 
 const fronteras = ref([])
 const loading = ref(true)
-const saving = ref(false)
 
 // Filtros sincronizados con la URL (?q=&estado=&proyecto=&operador=&mes=&anio=&generando=)
 // para que se sostengan al volver con el boton "atras" o al refrescar.
@@ -384,9 +285,6 @@ watch([search, estadoFilter, proyectoFilter, operadorFilter, mesFilter, anioFilt
   if (generando) query.generando = '1'
   router.replace({ query })
 })
-const showEdit = ref(false)
-const editingFrontera = ref(null)
-const editForm = ref(null)
 function blankCreateForm() {
   return {
     proyecto_id: null,
@@ -438,7 +336,7 @@ const proyectoOptions = computed(() => {
 const operadorOptions = computed(() => {
   const seen = new Set()
   for (const f of fronteras.value) {
-    const nombre = f.operador_comercial || f.operador_red
+    const nombre = f.operador_comercial
     if (nombre) seen.add(nombre)
   }
   return [...seen].sort().map(v => ({ label: v, value: v }))
@@ -461,7 +359,7 @@ const filteredFronteras = computed(() => {
   let list = fronteras.value
   if (estadoFilter.value) list = list.filter(f => f.estado === estadoFilter.value)
   if (proyectoFilter.value) list = list.filter(f => f.proyecto_id === proyectoFilter.value)
-  if (operadorFilter.value) list = list.filter(f => (f.operador_comercial || f.operador_red) === operadorFilter.value)
+  if (operadorFilter.value) list = list.filter(f => f.operador_comercial === operadorFilter.value)
   if (mesFilter.value || anioFilter.value) {
     list = list.filter(f => {
       if (!f.fecha_registro_asic) return false
@@ -479,9 +377,8 @@ const filteredFronteras = computed(() => {
       (f.codigo_frontera || '').toLowerCase().includes(s) ||
       (f.nombre_frontera || '').toLowerCase().includes(s) ||
       (f.proyecto_nombre || '').toLowerCase().includes(s) ||
-      (f.operador_red || '').toLowerCase().includes(s) ||
       (f.operador_comercial || '').toLowerCase().includes(s) ||
-      (f.municipio || '').toLowerCase().includes(s)
+      (f.proyecto_municipio || '').toLowerCase().includes(s)
     )
   }
   return list
@@ -509,7 +406,7 @@ const stats = computed(() => {
     { label: 'Activas', value: all.filter(f => f.estado === 'activa').length, color: '#10B981' },
     { label: 'En registro', value: all.filter(f => f.estado === 'en_registro').length, color: '#F0C040' },
     { label: 'Generando actualmente', value: all.filter(generaDeVerdad).length, color: '#3B82F6', clave: 'generando' },
-    { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.capacidad_efectiva_mw) || 0), 0).toFixed(1), color: '#915BD8' },
+    { label: 'Cap. total MW', value: all.reduce((s, f) => s + (Number(f.proyecto_potencia_instalada_mw) || 0), 0).toFixed(1), color: '#915BD8' },
   ]
 })
 
@@ -537,48 +434,10 @@ async function descargarExcel() {
     { header: 'Fecha Registro ASIC', value: f => f.fecha_registro_asic || '' },
     { header: 'Serial Medidor Principal', value: f => f.nro_serie_med_ppal || '' },
     { header: 'Serial Medidor Respaldo', value: f => f.nro_serie_med_resp || '' },
-    { header: 'Operador', value: f => f.operador_comercial || f.operador_red || '' },
-    { header: 'Cap. MW', value: f => f.capacidad_efectiva_mw ? Number(f.capacidad_efectiva_mw).toFixed(3) : '' },
-    { header: 'Municipio', value: f => f.municipio || '' },
+    { header: 'Operador', value: f => f.operador_comercial || '' },
+    { header: 'Cap. MW', value: f => f.proyecto_potencia_instalada_mw ? Number(f.proyecto_potencia_instalada_mw).toFixed(3) : '' },
+    { header: 'Municipio', value: f => f.proyecto_municipio || '' },
   ], `fronteras_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Fronteras')
-}
-
-function editFrontera(f) {
-  loadProyectosAll()
-  editingFrontera.value = f
-  editForm.value = {
-    codigo_frontera: f.codigo_frontera,
-    nombre_frontera: f.nombre_frontera,
-    estado: f.estado,
-    operador_red_id: f.operador_red_id || null,
-    proyecto_id: f.proyecto_id || null,
-    tipo_extraccion_ppal: f.tipo_extraccion_ppal || null,
-    password_medidor_ppal: f.password_medidor_ppal || null,
-    ip_modem_ppal: f.ip_modem_ppal || null,
-    puerto_modem_ppal: f.puerto_modem_ppal || null,
-    canal_comunicacion_ppal: f.canal_comunicacion_ppal || null,
-    tipo_extraccion_resp: f.tipo_extraccion_resp || null,
-    password_medidor_resp: f.password_medidor_resp || null,
-    ip_modem_resp: f.ip_modem_resp || null,
-    puerto_modem_resp: f.puerto_modem_resp || null,
-    canal_comunicacion_resp: f.canal_comunicacion_resp || null,
-  }
-  showEdit.value = true
-}
-
-async function saveFrontera() {
-  if (!editingFrontera.value || !editForm.value) return
-  saving.value = true
-  try {
-    await api.patch(`/fronteras/${editingFrontera.value.id}`, editForm.value)
-    toast.add({ severity: 'success', summary: 'Frontera actualizada', life: 2000 })
-    showEdit.value = false
-    await loadData()
-  } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'Error al guardar', life: 4000 })
-  } finally {
-    saving.value = false
-  }
 }
 
 function abrirCrear() {
@@ -751,5 +610,8 @@ onMounted(() => {
 // Nota: el backfill de marca/modelo/serie de medidor (Quoia) ya no tiene
 // botón aquí -- ya se corrió y hoy no queda nada por completar (Quoia no
 // tiene más info para dar). El endpoint POST /fronteras/backfill-medidor
-// sigue vivo en el backend por si hace falta correrlo puntualmente.
+// se eliminó (commit 6648bb3) -- ahora una frontera nueva con
+// codigo_frontera se completa sola al crearla (ver
+// _enriquecer_medidor_desde_quoia() en fronteras.py). Corrección de
+// comentario desactualizado, auditoría de eficiencia 2026-08-26.
 </script>

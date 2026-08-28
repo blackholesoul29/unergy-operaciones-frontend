@@ -141,24 +141,64 @@
                 <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
                 <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
                   @click="guardar(['numero_contrato', 'inversionista_nombre', 'portafolio',
-                                   'codigo_sun_factory', 'nombre_proyecto_ref'])" />
+                                   'codigo_sun_factory', 'nombre_proyecto_ref',
+                                   'proyecto_id', 'inversionista_id', 'frontera_ids'])" />
               </template>
             </div>
           </header>
           <div class="cd-sec-body">
             <div v-if="edit !== 'id'" class="cd-grid">
               <InfoField label="Número de contrato" :value="c.numero_contrato" />
-              <InfoField label="Inversionista" :value="c.inversionista_nombre" />
+              <div class="flex flex-col gap-0.5">
+                <span class="cd-campo-lbl">
+                  Inversionista
+                  <i class="pi pi-info-circle text-[10px]"
+                     v-tooltip.top="'El texto del acta. El vínculo con el inversionista de la planta es el que decide si el contrato sigue vigente.'" />
+                </span>
+                <span class="text-sm" style="color:#2C2039">{{ c.inversionista_nombre || '—' }}</span>
+                <!-- Sin vínculo no se puede saber si su participación sigue
+                     abierta, así que el contrato nunca se cierra solo. -->
+                <span v-if="!c.inversionista_id && c.inversionista_nombre" class="mini-alerta">
+                  <i class="pi pi-exclamation-triangle" />Sin vincular a un inversionista de la planta
+                </span>
+                <!-- Verde solo cuando el inversionista sigue participando. Con
+                     la participación cerrada el dato es igual de correcto, pero
+                     no es una señal de "todo bien": es el motivo de que el
+                     contrato esté terminado. -->
+                <span v-else-if="c.inversionista" class="text-[10.5px]"
+                      :style="`color:${inversionistaParticipa ? '#15803d' : '#6b5a8a'}`">
+                  {{ inversionistaParticipa ? '✓' : '·' }} {{ vigenciaInversionista }}
+                </span>
+              </div>
               <InfoField label="Portafolio" :value="c.portafolio" />
               <InfoField label="Código Sun Factory" :value="c.codigo_sun_factory" />
-              <InfoField label="Proyecto según el contrato" :value="c.nombre_proyecto_ref" />
               <div class="flex flex-col gap-0.5">
-                <span class="cd-campo-lbl">Planta asociada</span>
+                <span class="cd-campo-lbl">
+                  Proyecto según el contrato
+                  <i class="pi pi-info-circle text-[10px]"
+                     v-tooltip.top="'Texto que traía el acta. Es informativo: la asociación real es la Planta asociada.'" />
+                </span>
+                <span class="text-sm" style="color:#2C2039">{{ c.nombre_proyecto_ref || '—' }}</span>
+              </div>
+              <div class="flex flex-col gap-0.5">
+                <span class="cd-campo-lbl">
+                  Planta asociada
+                  <i class="pi pi-info-circle text-[10px]"
+                     v-tooltip.top="'La relación que usa toda la plataforma. Se cambia desde Servicios > Representación.'" />
+                </span>
                 <span v-if="c.proyecto" class="text-sm" style="color:#2C2039">
                   {{ c.proyecto.nombre_comercial }}
                 </span>
                 <span v-else class="text-sm font-semibold" style="color:#92400E">Sin proyecto</span>
+                <!-- Las plantas hermanas numeradas (Agustín 1/2/3, Naos 1/2/3) son
+                     el caso donde una asignación equivocada pasa inadvertida: el
+                     nombre casi coincide y solo cambia el número. -->
+                <span v-if="discrepanciaPlanta" class="mini-alerta">
+                  <i class="pi pi-exclamation-triangle" />{{ discrepanciaPlanta }}
+                </span>
               </div>
+              <InfoField label="Fronteras cubiertas"
+                :value="(c.fronteras || []).map(f => f.nombre_frontera).join(', ') || null" />
             </div>
             <div v-else class="cd-grid">
               <div class="flex flex-col gap-1">
@@ -166,8 +206,19 @@
                 <InputText v-model="form.numero_contrato" placeholder="Ej: UNERGY-RC-002-2025" class="w-full" />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="cd-lbl">Inversionista</label>
+                <label class="cd-lbl">Inversionista (texto del acta)</label>
                 <InputText v-model="form.inversionista_nombre" class="w-full" />
+              </div>
+              <!-- El vínculo se elige entre los inversionistas de ESTA planta:
+                   es de donde sale la vigencia del contrato. -->
+              <div class="flex flex-col gap-1">
+                <label class="cd-lbl">Vincular con</label>
+                <Select v-model="form.inversionista_id" :options="opcionesInversionista"
+                  optionLabel="etiqueta" optionValue="cliente_id" showClear filter
+                  placeholder="Inversionista de la planta…" size="small" class="w-full" />
+                <span class="text-[10.5px]" style="color:#9b89b5">
+                  De aquí sale si el contrato sigue vigente.
+                </span>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Portafolio</label>
@@ -180,6 +231,25 @@
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Proyecto según el contrato</label>
                 <InputText v-model="form.nombre_proyecto_ref" class="w-full" />
+              </div>
+              <!-- La planta asociada se edita acá y no solo desde el listado:
+                   cuando el aviso de discrepancia salta, la corrección tiene que
+                   estar donde se ve el problema. -->
+              <div class="flex flex-col gap-1">
+                <label class="cd-lbl">Planta asociada</label>
+                <Select v-model="form.proyecto_id" :options="proyectos"
+                  optionLabel="nombre_comercial" optionValue="id" filter showClear
+                  :loading="cargandoProyectos" placeholder="Buscar planta…"
+                  filterPlaceholder="Escribe para filtrar…" size="small" class="w-full" />
+                <span class="text-[10.5px]" style="color:#9b89b5">
+                  Cambiarla mueve el contrato a otra planta.
+                </span>
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="cd-lbl">Fronteras cubiertas</label>
+                <MultiSelect v-model="form.frontera_ids" :options="fronterasDelProyecto"
+                  optionLabel="nombre_frontera" optionValue="id" placeholder="Seleccionar fronteras"
+                  :disabled="!form.proyecto_id" filter display="chip" size="small" class="w-full" />
               </div>
             </div>
           </div>
@@ -502,7 +572,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
@@ -510,11 +580,16 @@ import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
+import MultiSelect from 'primevue/multiselect'
 import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '@/api/client'
+import {
+  anioDeFila, ordenarIndexacion, fechaAniversario, indiceVigente,
+  estadoFilaIndexacion, fmtTarifa,
+} from '@/utils/tarifasCgm'
 import InfoField from '@/components/InfoField.vue'
 
 const route = useRoute()
@@ -544,6 +619,13 @@ const proyectoNombre = ref('')
 const contratos = ref([])
 const idSeleccionado = ref(null)
 const edit = ref(null)          // 'id' | 'partes' | 'vigencia' | 'comercial'
+const proyectos = ref([])       // catálogo para reasignar la planta
+// Inversionistas de ESTA planta, con sus períodos. Son las únicas opciones
+// válidas para vincular el contrato: el inversionista de un contrato de
+// representación participa en la planta, por definición.
+const inversionistasPlanta = ref([])
+const fronterasDelProyecto = ref([])
+const cargandoProyectos = ref(false)
 const guardando = ref(false)
 
 const c = computed(() => contratos.value.find(x => x.id === idSeleccionado.value) || null)
@@ -552,11 +634,8 @@ const hoy = new Date().toISOString().slice(0, 10)
 
 // ── Formato ──────────────────────────────────────────────────────────────────
 function fmtFecha(v) { return v ? String(v).slice(0, 10) : '—' }
-function fmtVal(v) {
-  if (v == null || v === '') return '—'
-  const n = Number(v)
-  return Number.isFinite(n) ? n.toFixed(n % 1 === 0 ? 0 : 4) : '—'
-}
+// Mismo formato que usa la tabla del listado.
+const fmtVal = fmtTarifa
 
 // Dos registros duplicados traen el mismo inversionista, así que la etiqueta a
 // secas los deja indistinguibles. Cuando eso pasa se añade lo que los separa.
@@ -569,6 +648,56 @@ function etiquetaContrato(x) {
     : (x.nombre_proyecto_ref ? `ref ${x.nombre_proyecto_ref}` : `#${x.id}`)
   return detalle ? `${base} · ${detalle}` : `${base} · #${x.id}`
 }
+
+// ── Coherencia entre la referencia del contrato y la planta asignada ─────────
+// Solo se comparan los NUMEROS de los dos nombres. Comparar el texto completo
+// daria falsas alarmas todo el tiempo, porque la referencia y el nombre comercial
+// casi nunca se escriben igual ("Minigranja 0012 - La Reserva" contra "Minigranja
+// Solar La Reserva"). Lo que de verdad importa son las plantas hermanas
+// numeradas -- Agustin 1/2/3, Naos 1/2/3 -- donde equivocarse de numero es facil
+// y el error pasa inadvertido porque el resto del nombre coincide.
+const discrepanciaPlanta = computed(() => {
+  const x = c.value
+  if (!x?.proyecto || !x.nombre_proyecto_ref) return null
+  const numeros = t => (String(t).match(/\d+/g) || []).map(n => String(Number(n)))
+  const enRef = numeros(x.nombre_proyecto_ref)
+  const enPlanta = numeros(x.proyecto.nombre_comercial)
+  if (!enRef.length || !enPlanta.length) return null
+  if (enRef.some(n => enPlanta.includes(n))) return null
+  return `El contrato dice "${x.nombre_proyecto_ref}" — revisa si la planta es la correcta`
+})
+
+// ── Vínculo con el inversionista de la planta ────────────────────────────────
+// Las opciones son los inversionistas de esta planta, con su período al lado:
+// elegir bien depende de ver quién estuvo cuándo, sobre todo cuando hay varios
+// fideicomisos de la misma fiduciaria.
+const opcionesInversionista = computed(() => inversionistasPlanta.value.map(i => ({
+  cliente_id: i.cliente_id,
+  etiqueta: `${i.cliente_nombre || `Cliente ${i.cliente_id}`}`
+           + ` · ${i.fecha_inicio || '—'} → ${i.fecha_fin || 'vigente'}`,
+})))
+
+// ¿El inversionista vinculado sigue participando? Es lo que decide si el
+// contrato puede seguir vigente.
+const inversionistaParticipa = computed(() => {
+  const x = c.value
+  if (!x?.inversionista_id) return false
+  return inversionistasPlanta.value.some(
+    i => i.cliente_id === x.inversionista_id && !i.fecha_fin)
+})
+
+// Texto del período del inversionista vinculado, para explicar de dónde sale el
+// estado del contrato.
+const vigenciaInversionista = computed(() => {
+  const x = c.value
+  if (!x?.inversionista_id) return ''
+  const suyas = inversionistasPlanta.value.filter(i => i.cliente_id === x.inversionista_id)
+  if (!suyas.length) return 'vinculado a alguien que no figura en la planta'
+  const abierta = suyas.find(i => !i.fecha_fin)
+  if (abierta) return `participa desde ${abierta.fecha_inicio || '—'}`
+  const ultima = suyas.map(i => i.fecha_fin).sort().at(-1)
+  return `participación terminada el ${ultima}`
+})
 
 // ── Duplicados ───────────────────────────────────────────────────────────────
 // El backend decide qué es duplicado y si se puede fusionar sin perder datos;
@@ -647,44 +776,31 @@ async function fusionar() {
 // El JSONB guarda {año, ipc, valor, esBase}. La fecha exacta del aniversario no
 // se persiste: se deriva de la firma manteniendo mes y día, igual que hace
 // `_anniversary_date` en el backend. Sin firma solo se puede mostrar el año.
-const idxCgm = computed(() => ordenar(c.value?.indexacion_cgm))
-const idxRep = computed(() => ordenar(c.value?.indexacion_representacion))
+// La lógica de indexación vive en utils/tarifasCgm.js porque el listado de
+// Servicios > Representación muestra la misma tarifa vigente: si cada pantalla
+// la calculara por su cuenta, la tabla podría decir 6.63 y la ficha otra cosa.
+const idxCgm = computed(() => ordenarIndexacion(c.value?.indexacion_cgm))
+const idxRep = computed(() => ordenarIndexacion(c.value?.indexacion_representacion))
 
 const TABLAS_IDX = computed(() => [
   { clave: 'cgm', titulo: 'Indexación CGM', filas: idxCgm.value },
   { clave: 'rep', titulo: 'Indexación Representación', filas: idxRep.value },
 ])
 
-function ordenar(filas) {
-  if (!Array.isArray(filas)) return []
-  return [...filas].sort((a, b) => (anio(a) || 0) - (anio(b) || 0))
-}
-function anio(f) { return Number(f?.año ?? f?.anio ?? f?.year) || null }
+const anio = anioDeFila
 
 function etiquetaAnio(f) {
-  const a = anio(f)
-  if (!a) return '—'
-  const firma = c.value?.fecha_firma_contrato
-  return firma && String(firma).length >= 10 ? `${a}-${String(firma).slice(5, 10)}` : String(a)
+  return fechaAniversario(f, c.value?.fecha_firma_contrato) || '—'
 }
-
-// Fila vigente: la del aniversario más reciente que ya pasó.
 function iVigente(filas) {
-  let idx = -1
-  for (let i = 0; i < filas.length; i++) {
-    if (etiquetaAnio(filas[i]) <= hoy || String(anio(filas[i])) <= hoy.slice(0, 4)) idx = i
-  }
-  return idx
+  return indiceVigente(filas, c.value?.fecha_firma_contrato, hoy)
 }
 function valorVigente(filas) {
   const i = iVigente(filas)
   return i >= 0 ? filas[i].valor : null
 }
 function estadoFila(filas, i) {
-  const v = iVigente(filas)
-  if (i < v) return 'pagado'
-  if (i === v) return 'vigente'
-  return 'pendiente'
+  return estadoFilaIndexacion(filas, i, c.value?.fecha_firma_contrato, hoy)
 }
 
 // ── Resumen ──────────────────────────────────────────────────────────────────
@@ -735,9 +851,12 @@ function abrir(seccion) {
   Object.assign(form, {
     numero_contrato: x.numero_contrato || '',
     inversionista_nombre: x.inversionista_nombre || '',
+    inversionista_id: x.inversionista_id ?? null,
     portafolio: x.portafolio || '',
     codigo_sun_factory: x.codigo_sun_factory || '',
     nombre_proyecto_ref: x.nombre_proyecto_ref || '',
+    proyecto_id: x.proyecto_id ?? null,
+    frontera_ids: (x.fronteras || []).map(f => f.id),
     contratante_nombre: x.contratante_nombre || '',
     contratante_nit: x.contratante_nit || '',
     prestador_nombre: x.prestador_nombre || '',
@@ -756,6 +875,40 @@ function abrir(seccion) {
     enlace_drive: x.enlace_drive || '',
   })
   edit.value = seccion
+  // El catálogo solo hace falta para reasignar la planta, así que se pide la
+  // primera vez que se abre esa sección y no al montar la vista.
+  if (seccion === 'id' && !proyectos.value.length) cargarProyectos()
+  if (seccion === 'id') cargarFronterasDelProyecto(form.proyecto_id)
+}
+
+async function cargarFronterasDelProyecto(proyectoId) {
+  fronterasDelProyecto.value = []
+  if (!proyectoId) return
+  try {
+    const { data } = await api.get('/fronteras', { params: { proyecto_id: proyectoId } })
+    fronterasDelProyecto.value = data
+  } catch { /* el select de fronteras queda vacio */ }
+}
+
+// Si se reasigna la planta a medio editar, las fronteras seleccionadas de la
+// planta anterior ya no aplican -- se limpian y se recarga el catalogo.
+watch(() => form.proyecto_id, (nuevo, viejo) => {
+  if (edit.value !== 'id' || nuevo === viejo) return
+  form.frontera_ids = []
+  cargarFronterasDelProyecto(nuevo)
+})
+
+async function cargarProyectos() {
+  cargandoProyectos.value = true
+  try {
+    const { data } = await api.get('/proyectos', { params: { page: 1, size: 500 } })
+    proyectos.value = data.items ?? data
+  } catch (e) {
+    toast.add({ severity: 'warn', summary: 'No se pudo cargar el listado de plantas',
+                detail: e.response?.data?.detail || e.message, life: 4000 })
+  } finally {
+    cargandoProyectos.value = false
+  }
 }
 
 function aFecha(v) { return v ? new Date(`${String(v).slice(0, 10)}T00:00:00`) : null }
@@ -788,9 +941,26 @@ async function enviar(payload) {
   guardando.value = true
   try {
     const { data } = await api.patch(`/contratos-servicio/${c.value.id}`, payload)
+    edit.value = null
+
+    // Si se reasignó la planta, el contrato ya no pertenece a esta ficha: se
+    // saca de la lista y se dice a dónde fue, en vez de dejarlo ahí como si
+    // nada hubiera cambiado.
+    const pid = Number(route.params.id)
+    if (data.proyecto_id !== pid) {
+      contratos.value = contratos.value.filter(x => x.id !== data.id)
+      idSeleccionado.value = contratos.value[0]?.id ?? null
+      toast.add({ severity: 'success', summary: 'Contrato movido',
+                  detail: data.proyecto
+                    ? `Ahora pertenece a ${data.proyecto.nombre_comercial}`
+                    : 'Quedó sin planta asociada',
+                  life: 5000 })
+      await cargarDuplicados()
+      return
+    }
+
     const i = contratos.value.findIndex(x => x.id === data.id)
     if (i !== -1) contratos.value[i] = data
-    edit.value = null
     toast.add({ severity: 'success', summary: 'Cambios guardados', life: 2500 })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo guardar',
@@ -883,6 +1053,7 @@ onMounted(async () => {
   try {
     const { data } = await api.get(`/proyectos/${route.params.id}`)
     proyectoNombre.value = data.nombre_comercial || ''
+    inversionistasPlanta.value = data.inversionistas || []
   } catch { /* el nombre es decorativo: la vista funciona sin él */ }
   try {
     await cargar()
@@ -961,6 +1132,12 @@ onMounted(async () => {
   font-size: 11px; color: #9b8fb0; margin-top: 1px;
 }
 
+.mini-alerta {
+  display: inline-flex; align-items: flex-start; gap: 4px; margin-top: 3px;
+  font-size: 10.5px; font-weight: 600; line-height: 1.35; color: #92400E;
+}
+.mini-alerta i { font-size: 10px; margin-top: 1px; flex-shrink: 0; }
+
 .dup-aviso {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 10px 13px; border-radius: 10px; font-size: 12px;
@@ -973,7 +1150,13 @@ onMounted(async () => {
   display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
   border: 1px solid #ECE7F2; border-radius: 10px; padding: 10px 12px; background: #fcfbfe;
 }
-@media (min-width: 768px) { .dup-aviso {
+@media (min-width: 768px) { .mini-alerta {
+  display: inline-flex; align-items: flex-start; gap: 4px; margin-top: 3px;
+  font-size: 10.5px; font-weight: 600; line-height: 1.35; color: #92400E;
+}
+.mini-alerta i { font-size: 10px; margin-top: 1px; flex-shrink: 0; }
+
+.dup-aviso {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 10px 13px; border-radius: 10px; font-size: 12px;
   background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;

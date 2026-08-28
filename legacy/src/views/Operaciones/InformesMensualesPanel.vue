@@ -247,11 +247,11 @@ const opcionesProyecto = computed(() => {
   const lista = tipo.value === 'fmo'
     ? contratosFmo.value.map(c => ({
         value: c.sub_project,
-        label: c.nombre_clientes || c.sub_project,
+        label: c.nombre_comercial || c.sub_project,
       }))
     : proyectos.value.map(p => ({
         value: p.sub_project,
-        label: p.nombre_display || p.nombre_clientes || p.nombre_comercial || p.sub_project,
+        label: p.nombre_comercial || p.sub_project,
       }))
   return [...lista].sort((a, b) => a.label.localeCompare(b.label, 'es'))
 })
@@ -520,14 +520,11 @@ function normNombre(s) {
 
 function getFaultsForRange(proyectoCfg, range) {
   // El endpoint `getProjects` no devuelve `id`, así que cruzamos por nombre.
-  // Se comparan TODOS los alias del proyecto (comercial, clientes, bitácora,
-  // display, sub_project) contra TODOS los alias que trae la falla, para no
-  // perder fallas cuando el nombre difiere entre sistemas.
+  // Se comparan los alias del proyecto (comercial, sub_project) contra los
+  // que trae la falla, para no perder fallas cuando el nombre difiere entre
+  // sistemas.
   const candidatos = new Set([
     proyectoCfg.nombre_comercial,
-    proyectoCfg.nombre_clientes,
-    proyectoCfg.nombre_display,
-    proyectoCfg.nombre_bitacora,
     proyectoCfg.sub_project,
   ].filter(Boolean).map(normNombre))
   return fallas.value.filter(f => {
@@ -535,7 +532,7 @@ function getFaultsForRange(proyectoCfg, range) {
     const fecha = f.fecha_identificacion.slice(0, 10)
     if (fecha < range.from || fecha > range.to) return false
     const p = f.proyecto || {}
-    const fNames = [p.nombre_comercial, p.nombre_clientes, p.nombre_bitacora, p.sub_project]
+    const fNames = [p.nombre_comercial, p.sub_project]
       .filter(Boolean).map(normNombre)
     return fNames.some(n => candidatos.has(n))
   })
@@ -892,7 +889,7 @@ function buildProjectPage(cfg, genRes, mf, range, pageNum, totalPages, fmoMeta) 
     if (v < avg * 0.7) atypical.push({ date: d, kwh: Math.round(v), pct: Math.round(v / avg * 100) })
   })
 
-  const pname = cfg.nombre_clientes || cfg.nombre_display || cfg.nombre_comercial
+  const pname = cfg.nombre_comercial
   const muni = cfg.municipio || '—'
   const resp = 'Operaciones Unergy'
   const obs = autoObs(pname, total, avg, p90m, mf, range, avail)
@@ -1072,7 +1069,7 @@ function buildConsolidatedPage(portName, projsData, range, totalPages) {
     totalPort += e.tot
     totalEv += e.pd.mf.length
     if (e.p90 !== null) totalP90 += e.p90
-    const pn = e.pd.cfg.nombre_clientes || e.pd.cfg.nombre_display || e.pd.cfg.nombre_comercial
+    const pn = e.pd.cfg.nombre_comercial
     let rankBadge = ''
     if (idx === 0) rankBadge = '<span style="font-size:10px;margin-left:5px">🥇</span>'
     else if (idx === 1) rankBadge = '<span style="font-size:10px;margin-left:5px">🥈</span>'
@@ -1094,7 +1091,7 @@ function buildConsolidatedPage(portName, projsData, range, totalPages) {
   const pctPortCol = pctPort === null ? '#F6FF72' : pctPort >= 0 ? '#4ADE80' : '#FF5757'
 
   const chart = svgPortfolioChart(enriched.map(e => ({
-    name: e.pd.cfg.nombre_clientes || e.pd.cfg.nombre_display || e.pd.cfg.nombre_comercial,
+    name: e.pd.cfg.nombre_comercial,
     real: e.tot, p90: e.p90,
   })))
 
@@ -1283,7 +1280,7 @@ function buildFMOPage(cfg, genRes, mf, range, fmoData) {
   const chart1 = svgDailyChart(days, kpd, p90d, atypical.map(a => a.date))
   const chart2 = svgCompareChart(Math.round(total), p50m, p90m, p90m ? Math.round(p90m * 0.9) : null)
 
-  const obsFMO = `El proyecto ${cfg.nombre_clientes || cfg.nombre_display || cfg.nombre_comercial} registró una generación total de ` +
+  const obsFMO = `El proyecto ${cfg.nombre_comercial} registró una generación total de ` +
     `${Math.round(total).toLocaleString('es-CO')} kWh durante ${range.monthName} ${range.year}` +
     (pct !== null ? `, ${pct >= 0 ? 'superando en +' : 'por debajo en '}${Math.abs(pct).toFixed(1)}% el umbral P90` : '') +
     `. La disponibilidad operativa calculada fue de ${dispStr}` +
@@ -1294,7 +1291,7 @@ function buildFMOPage(cfg, genRes, mf, range, fmoData) {
   const resp = 'Operaciones Unergy'
   const contratista = contrato?.contratista || 'Unergy S.A.S.'
   const muni = cfg.municipio || '—'
-  const pname = cfg.nombre_clientes || cfg.nombre_display || cfg.nombre_comercial
+  const pname = cfg.nombre_comercial
 
   return '<div class="rpt-page">' +
     '<div class="rpt-header">' +
@@ -1434,11 +1431,11 @@ async function generar() {
       })
       const mf = getFaultsForRange(cfg, range)
       htmlContent.value = buildProjectPage(cfg, r || {}, mf, range, 1, 1)
-      resultTitle.value = cfg.nombre_display || cfg.nombre_clientes || cfg.nombre_comercial || sp
+      resultTitle.value = cfg.nombre_comercial || sp
       rangeLabel.value = range.label
     } else if (tipo.value === 'fmo') {
       const sp = proyectoSel.value
-      const cfg = proyectos.value.find(p => p.sub_project === sp) || contratosFmo.value.find(c => c.sub_project === sp) || { sub_project: sp, nombre_clientes: sp }
+      const cfg = proyectos.value.find(p => p.sub_project === sp) || contratosFmo.value.find(c => c.sub_project === sp) || { sub_project: sp, nombre_comercial: sp }
       ultimoSubProject.value = sp
       loadingMsg.value = 'Consultando generación e inversores…'
       const [genRes, fmoRes] = await Promise.allSettled([
@@ -1449,7 +1446,7 @@ async function generar() {
       const fmoData = fmoRes.status === 'fulfilled' ? fmoRes.value.data : {}
       const mf = getFaultsForRange(cfg, range)
       htmlContent.value = buildFMOPage(cfg, r || {}, mf, range, fmoData || {})
-      resultTitle.value = cfg.nombre_clientes || cfg.nombre_display || cfg.nombre_comercial || sp
+      resultTitle.value = cfg.nombre_comercial || sp
       rangeLabel.value = range.label
     } else if (tipo.value === 'portafolio') {
       const portName = portafolioSel.value
@@ -1459,9 +1456,6 @@ async function generar() {
         .map(name => {
           const nl = String(name).trim().toLowerCase()
           return proyectos.value.find(p =>
-            nl === (p.nombre_clientes || '').trim().toLowerCase() ||
-            nl === (p.nombre_display || '').trim().toLowerCase() ||
-            nl === (p.nombre_bitacora || '').trim().toLowerCase() ||
             nl === (p.nombre_comercial || '').trim().toLowerCase()
           )
         })
@@ -1473,7 +1467,7 @@ async function generar() {
       const results = []
       for (let i = 0; i < cfgs.length; i++) {
         const c = cfgs[i]
-        loadingSub.value = `(${i + 1}/${cfgs.length}) ${c.nombre_clientes || c.nombre_display || c.nombre_comercial}`
+        loadingSub.value = `(${i + 1}/${cfgs.length}) ${c.nombre_comercial}`
         try {
           const { data: r } = await api.get('/monitoreo/_legacy', {
             params: { action: 'getGeneration', sub_project: c.sub_project, date_from: range.from, date_to: range.to },
@@ -1493,10 +1487,10 @@ async function generar() {
       const miembros = results.map((pd, i) => {
         const sp = pd.cfg.sub_project
         const html = buildProjectPage(pd.cfg, pd.genRes, pd.mf, range, i + 2, totalPages)
-          .replace('<div class="rpt-page">', `<div class="rpt-page" data-sub-project="${sp}" data-nombre="${pd.cfg.nombre_clientes || pd.cfg.nombre_display || pd.cfg.nombre_comercial || sp}">`)
+          .replace('<div class="rpt-page">', `<div class="rpt-page" data-sub-project="${sp}" data-nombre="${pd.cfg.nombre_comercial || sp}">`)
         return {
           sub_project: sp,
-          nombre: pd.cfg.nombre_clientes || pd.cfg.nombre_display || pd.cfg.nombre_comercial || sp,
+          nombre: pd.cfg.nombre_comercial || sp,
           orden: i,
           html,
         }
@@ -1517,9 +1511,6 @@ async function generar() {
           .map(name => {
             const nl = String(name).trim().toLowerCase()
             return proyectos.value.find(p =>
-              nl === (p.nombre_clientes || '').trim().toLowerCase() ||
-              nl === (p.nombre_display || '').trim().toLowerCase() ||
-              nl === (p.nombre_bitacora || '').trim().toLowerCase() ||
               nl === (p.nombre_comercial || '').trim().toLowerCase()
             )
           })
@@ -1541,7 +1532,7 @@ async function generar() {
         const items = []
         for (const c of cfgs) {
           done++
-          const cn = c.nombre_comercial || c.nombre_display || c.nombre_clientes || c.sub_project
+          const cn = c.nombre_comercial || c.sub_project
           loadingSub.value = `(${done}/${totalReq}) ${mes.label} — ${cn}`
           let tot = 0, p90 = null
           try {
