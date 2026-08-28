@@ -24,12 +24,6 @@ export interface ClienteEditable {
   ciudad: string | null
   direccion: string | null
 
-  // ── Datos bancarios: a dónde se le paga ───────────────────────────────────
-  banco: string | null
-  tipo_cuenta: string | null
-  numero_cuenta: string | null
-  titular_cuenta: string | null
-
   // ── Tributario: qué se le descuenta al facturar ───────────────────────────
   iva_pct: number | null
   retencion_pct: number | null

@@ -916,9 +916,18 @@ function totalCampos(fila) {
   return camposDe(fila).length
 }
 
+// `rut_url` era la columna vieja (eliminada, migracion 122): el RUT ahora
+// vive como un documento tipo='rut' dentro de documentos_comerciales.
+function valorDoc(fila, clave) {
+  if (clave === 'rut_url') {
+    return (fila?.documentos_comerciales || []).filter(d => d.tipo === 'rut')
+  }
+  return fila?.[clave]
+}
+
 function faltanDocs(fila) {
   const lista = DOCS[claveRequeridos.value] || []
-  return lista.filter(([k]) => estaVacio(fila?.[k])).map(([, et]) => et)
+  return lista.filter(([k]) => estaVacio(valorDoc(fila, k))).map(([, et]) => et)
 }
 
 function tipFalta(fila, tipo) {
@@ -965,7 +974,7 @@ async function cargarClientes() {
     // Dos fuentes, fusionadas por id:
     //  - /clientes/vista-comercial trae lo derivado (num_plantas, servicios,
     //    contacto comercial, alerta de contrato) pero NO las columnas crudas.
-    //  - /clientes trae la ficha (direccion, ciudad, banco, rut_url...), que es
+    //  - /clientes trae la ficha (direccion, ciudad, iva_pct...), que es
     //    lo que necesita el contador de campos faltantes.
     // Sin la segunda, el indicador solo podria mirar 8 campos y mentiria.
     const [vista, ficha] = await Promise.all([
