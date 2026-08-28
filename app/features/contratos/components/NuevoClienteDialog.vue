@@ -28,7 +28,7 @@
         <div class="space-y-3">
           <div class="flex flex-col gap-1">
             <label class="field-label">RUT</label>
-            <InputText v-model="form.rut_url" class="w-full" placeholder="https://drive.google.com/…" />
+            <InputText v-model="rut_url" class="w-full" placeholder="https://drive.google.com/…" />
           </div>
           <div class="flex flex-col gap-1">
             <label class="field-label">Cámara de comercio</label>
@@ -72,8 +72,8 @@ const form = reactive({
   razon_social_nombre: '',
   nit_cedula: '',
   tipo_persona: null,
-  rut_url: '',
 })
+const rut_url = ref('')
 
 async function guardar() {
   errores.nombre = form.razon_social_nombre.trim() ? null : 'Campo obligatorio'
@@ -86,10 +86,10 @@ async function guardar() {
       razon_social_nombre: form.razon_social_nombre.trim(),
       nit_cedula: form.nit_cedula.trim(),
       tipo_persona: form.tipo_persona,
-      rut_url: form.rut_url.trim() || null,
     })
 
     const docs = [
+      { tipo: 'rut', url: rut_url.value.trim(), nombre: 'RUT' },
       { tipo: 'camara_comercio', url: cc_url.value.trim(), nombre: 'Cámara de comercio' },
       { tipo: 'certificado_bancario', url: cert_url.value.trim(), nombre: 'Certificación bancaria' },
     ].filter(d => d.url)

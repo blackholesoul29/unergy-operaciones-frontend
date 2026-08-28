@@ -111,14 +111,6 @@
           </div>
         </div>
       </div>
-
-      <div v-if="esNuevo" class="col-span-2">
-        <div class="border-t pt-4 mt-1">
-          <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: var(--color-unergy-purple);">Servicios</p>
-          <MultiSelect v-model="serviciosSeleccionados" :options="TIPOS_SERVICIO" optionLabel="label" optionValue="value"
-            class="w-full" placeholder="Seleccionar servicios (opcional)" display="chip" />
-        </div>
-      </div>
     </div>
 
     <div class="flex justify-end gap-2 pt-2">
@@ -129,11 +121,10 @@
 </template>
 
 <script setup>
-import { reactive, ref, computed, watch } from 'vue'
+import { reactive, computed, watch } from 'vue'
 import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
-import MultiSelect from 'primevue/multiselect'
 import Dropdown from 'primevue/dropdown'
 import Button from 'primevue/button'
 import divipola from '~/data/colombia-divipola.json'
@@ -161,18 +152,10 @@ const TIPOS_CONTACTO = [
   { label: 'Liquidación', value: 'liquidacion' },
   { label: 'Contable', value: 'contable' },
 ]
-const TIPOS_SERVICIO = [
-  { label: 'Operación', value: 'operacion' },
-  { label: 'Representación', value: 'representacion' },
-  { label: 'CGM', value: 'cgm' },
-  { label: 'Promotor', value: 'promotor' },
-]
-
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 function emailValido(e) { return !e || EMAIL_RE.test(e.trim()) }
 
 const f = reactive({ origen_tipo: null, origen_detalle: '', ...props.initial, contactos: [] })
-const serviciosSeleccionados = ref([])
 
 // Departamento/ciudad -- select en vez de texto libre (DIVIPOLA), mismo
 // patrón que ProyectoForm, para evitar variantes de escritura.
@@ -191,12 +174,11 @@ function eliminarContacto(idx) { f.contactos = f.contactos.filter((_, i) => i !=
 function submit() {
   const payload = {}
   for (const [k, v] of Object.entries(f)) {
-    if (k === 'contactos' || k === 'servicios') continue
+    if (k === 'contactos') continue
     if (v !== null && v !== undefined && v !== '') payload[k] = v
   }
   if (esNuevo.value) {
     payload.contactos = (f.contactos || []).filter(c => c.email && emailValido(c.email))
-    payload.servicios = serviciosSeleccionados.value.map(tipo => ({ tipo }))
   }
   emit('save', payload)
 }

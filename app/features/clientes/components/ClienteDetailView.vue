@@ -96,78 +96,6 @@
             </div>
           </div>
 
-          <!-- Servicios registrados manualmente -->
-          <div class="flex items-center justify-between">
-            <p class="text-sm" style="color: #6b5a8a;">Servicios registrados manualmente.</p>
-            <button @click="abrirDialogoServicio"
-              class="px-4 py-2 rounded-lg text-sm font-semibold text-white flex items-center gap-1.5"
-              style="background: var(--color-unergy-purple);">
-              <PlusIcon class="text-xs size-[1em]" /> Agregar servicio
-            </button>
-          </div>
-
-          <div v-if="cliente.servicios.length === 0" class="text-center py-10 text-sm" style="color: #9b89b5;">
-            Ningún servicio registrado aún.
-          </div>
-
-          <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div v-for="s in cliente.servicios" :key="s.id"
-              class="rounded-xl p-4 space-y-2"
-              style="border: 1.5px solid #e8e0f0;">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                    :style="{ background: servicioColor(s.tipo) }">
-                    {{ s.tipo[0].toUpperCase() }}
-                  </div>
-                  <div>
-                    <p class="text-sm font-semibold capitalize" style="color: var(--color-unergy-deep);">{{ servicioLabel(s.tipo) }}</p>
-                    <p v-if="s.fecha_inicio" class="text-xs" style="color: #9b89b5;">
-                      Desde {{ formatDate(s.fecha_inicio) }}
-                    </p>
-                  </div>
-                </div>
-                <button @click="confirmarEliminarServicio(s)" class="text-red-400 hover:text-red-600 transition-colors">
-                  <Trash2Icon class="text-sm size-[1em]" />
-                </button>
-              </div>
-
-              <!-- Documentos vinculados al servicio -->
-              <div class="pt-1 space-y-1">
-                <template v-for="tipo in ['oferta', 'contrato']" :key="tipo">
-                  <div class="flex items-center justify-between rounded-lg px-3 py-1.5"
-                    style="background: #f8f5fd;">
-                    <div class="flex items-center gap-2">
-                      <span class="text-xs font-semibold px-1.5 py-0.5 rounded-full"
-                        :style="tipo === 'oferta' ? 'background:#f0ebfd;color:var(--color-unergy-purple)' : 'background:#e8f5e9;color:#2e7d32'">
-                        {{ tipo === 'oferta' ? 'Oferta' : 'Contrato' }}
-                      </span>
-                      <span v-if="docDeServicio(s.id, tipo)" class="text-xs truncate max-w-32" style="color:var(--color-unergy-deep);">
-                        {{ docDeServicio(s.id, tipo).archivo_nombre || docDeServicio(s.id, tipo).nombre }}
-                      </span>
-                      <span v-else class="text-xs italic" style="color:#bba8d4;">Sin archivo</span>
-                    </div>
-                    <div class="flex items-center gap-1">
-                      <a v-if="docDeServicio(s.id, tipo)?.archivo_url"
-                        :href="docDeServicio(s.id, tipo).archivo_url" target="_blank"
-                        class="text-xs hover:underline flex items-center gap-0.5" style="color: var(--color-unergy-purple);">
-                        <ExternalLinkIcon class="text-xs size-[1em]" />
-                      </a>
-                      <button v-if="docDeServicio(s.id, tipo)"
-                        @click="abrirDialogoDocumento(docDeServicio(s.id, tipo))"
-                        class="text-xs hover:text-purple-700" style="color:#6b5a8a;">
-                        <PencilIcon class="size-[1em]" />
-                      </button>
-                      <button v-else @click="abrirDialogoDocumento(null, tipo, s.id)"
-                        class="text-xs font-medium" style="color:var(--color-unergy-purple);">
-                        + Subir
-                      </button>
-                    </div>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- ── Tab: Documentos ── -->
@@ -366,48 +294,6 @@
     <LoaderCircleIcon class="text-2xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
   </div>
 
-  <!-- ── Dialog: Agregar servicio ── -->
-  <Dialog v-model:visible="dialogServicio" modal header="Agregar servicio" class="w-full max-w-sm">
-    <div class="space-y-4 pt-2">
-      <div>
-        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">
-          Tipo de servicio *
-        </label>
-        <Select v-model="nuevoServicio.tipo" :options="serviciosDisponibles"
-          optionLabel="label" optionValue="value" class="w-full" placeholder="Seleccionar" />
-      </div>
-      <div>
-        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">
-          Fecha de inicio
-        </label>
-        <DatePicker v-model="nuevoServicio.fecha_inicio" class="w-full" dateFormat="dd/mm/yy" showButtonBar />
-      </div>
-      <div>
-        <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Notas</label>
-        <Textarea v-model="nuevoServicio.notas" class="w-full" rows="2" />
-      </div>
-    </div>
-    <template #footer>
-      <Button label="Cancelar" severity="secondary" @click="dialogServicio = false" />
-      <Button label="Confirmar y agregar" :disabled="!nuevoServicio.tipo" @click="confirmarServicio"
-        style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);" />
-    </template>
-  </Dialog>
-
-  <!-- ── Dialog: Confirmar agregar servicio ── -->
-  <Dialog v-model:visible="dialogConfirmServicio" modal header="¿Está seguro?" class="w-full max-w-sm">
-    <div class="py-2 text-sm" style="color: var(--color-unergy-deep);">
-      ¿Confirma agregar el servicio
-      <strong>{{ servicioLabel(nuevoServicio.tipo) }}</strong>
-      al cliente <strong>{{ formatearNombre(cliente?.razon_social_nombre) }}</strong>?
-    </div>
-    <template #footer>
-      <Button label="Cancelar" severity="secondary" @click="dialogConfirmServicio = false" />
-      <Button label="Sí, agregar" @click="guardarServicio"
-        style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);" />
-    </template>
-  </Dialog>
-
   <!-- ── Dialog: Documento ── -->
   <Dialog v-model:visible="dialogDocumento" modal
     :header="editandoDocumento?.id ? 'Editar documento' : 'Nuevo documento'"
@@ -422,14 +308,6 @@
             class="w-full" placeholder="Seleccionar tipo" @change="onTipoChange" />
         </div>
 
-        <!-- Servicio (solo para oferta/contrato) -->
-        <div v-if="formDoc.tipo === 'oferta' || formDoc.tipo === 'contrato'" class="col-span-2">
-          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">
-            Servicio relacionado
-          </label>
-          <Select v-model="formDoc.servicio_id" :options="opcionesServicio" optionLabel="label" optionValue="value"
-            class="w-full" placeholder="Seleccionar servicio (opcional)" showClear />
-        </div>
 
         <!-- Nombre -->
         <div class="col-span-2">
@@ -548,13 +426,6 @@ const loadingRelated = ref(false)
 const serviciosContratos = ref([])
 const loadingServiciosContratos = ref(false)
 
-const SERVICIOS = [
-  { value: 'operacion',      label: 'Operación & Mantenimiento' },
-  { value: 'representacion', label: 'Representación en mercado' },
-  { value: 'cgm',            label: 'CGM' },
-  { value: 'promotor',       label: 'Promotor' },
-]
-
 const TIPOS_DOC = [
   { value: 'rut',                label: 'RUT' },
   { value: 'certificado_bancario', label: 'Certificado bancario' },
@@ -582,69 +453,9 @@ const docsIdentificacion = computed(() =>
 
 const docsComerciales = computed(() =>
   (cliente.value?.documentos_comerciales || [])
-    .filter(d => TIPOS_COMERCIAL.includes(d.tipo) && !d.servicio_id)
+    .filter(d => TIPOS_COMERCIAL.includes(d.tipo))
     .sort((a, b) => (a.tipo === b.tipo ? 0 : a.tipo === 'oferta' ? -1 : 1))
 )
-
-const opcionesServicio = computed(() =>
-  (cliente.value?.servicios || []).map(s => ({
-    label: servicioLabel(s.tipo),
-    value: s.id,
-  }))
-)
-
-function docDeServicio(servicioId, tipo) {
-  return (cliente.value?.documentos_comerciales || []).find(
-    d => d.servicio_id === servicioId && d.tipo === tipo
-  )
-}
-
-// ── Servicios ──────────────────────────────────────────────────────────────────
-
-const dialogServicio = ref(false)
-const dialogConfirmServicio = ref(false)
-const nuevoServicio = reactive({ tipo: '', fecha_inicio: null, notas: '' })
-
-const serviciosDisponibles = computed(() => {
-  const existentes = (cliente.value?.servicios || []).map(s => s.tipo)
-  return SERVICIOS.filter(s => !existentes.includes(s.value))
-})
-
-function abrirDialogoServicio() {
-  nuevoServicio.tipo = ''
-  nuevoServicio.fecha_inicio = null
-  nuevoServicio.notas = ''
-  dialogServicio.value = true
-}
-
-function confirmarServicio() {
-  dialogServicio.value = false
-  dialogConfirmServicio.value = true
-}
-
-async function guardarServicio() {
-  try {
-    await api.post(`/clientes/${route.params.id}/servicios`, {
-      tipo: nuevoServicio.tipo,
-      fecha_inicio: nuevoServicio.fecha_inicio
-        ? nuevoServicio.fecha_inicio.toISOString().split('T')[0]
-        : null,
-      notas: nuevoServicio.notas || null,
-    })
-    dialogConfirmServicio.value = false
-    toast.success('Servicio agregado', { duration: 3000 })
-    await cargar()
-  } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
-  }
-}
-
-async function confirmarEliminarServicio(s) {
-  if (!confirm(`¿Eliminar el servicio "${servicioLabel(s.tipo)}"?`)) return
-  await api.delete(`/clientes/${route.params.id}/servicios/${s.id}`)
-  toast.success('Servicio eliminado', { duration: 3000 })
-  await cargar()
-}
 
 // ── Documentos ────────────────────────────────────────────────────────────────
 
@@ -653,10 +464,10 @@ const editandoDocumento = ref(null)
 const formDoc = reactive({
   tipo: '', nombre: '', numero: '', fecha: null,
   estado: 'borrador', archivo_url: '', archivo_nombre: '',
-  servicio_id: null, notas: '',
+  notas: '',
 })
 
-function abrirDialogoDocumento(doc, tipoPreset = null, servicioPreset = null) {
+function abrirDialogoDocumento(doc, tipoPreset = null) {
   editandoDocumento.value = doc
   archivoSeleccionado.value = null
   if (doc) {
@@ -672,7 +483,7 @@ function abrirDialogoDocumento(doc, tipoPreset = null, servicioPreset = null) {
       nombre: tipoPreset ? nombreSugerido(tipoPreset) : '',
       numero: '', fecha: null, estado: 'borrador',
       archivo_url: '', archivo_nombre: '',
-      servicio_id: servicioPreset || null, notas: '',
+      notas: '',
     })
   }
   dialogDocumento.value = true
@@ -714,7 +525,6 @@ async function guardarDocumento() {
       estado: formDoc.estado,
       archivo_url: archivoSeleccionado.value ? null : (formDoc.archivo_url || null),
       archivo_nombre: formDoc.archivo_nombre || null,
-      servicio_id: formDoc.servicio_id || null,
       notas: formDoc.notas || null,
     }
 
@@ -776,15 +586,6 @@ async function doDelete() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function servicioLabel(tipo) {
-  return SERVICIOS.find(s => s.value === tipo)?.label || tipo
-}
-
-function servicioColor(tipo) {
-  const colors = { operacion: '#915BD8', representacion: '#2C2039', cgm: '#336791', promotor: '#E67E22' }
-  return colors[tipo] || '#9b89b5'
-}
 
 function tipoLabel(tipo) {
   return TIPOS_DOC.find(t => t.value === tipo)?.label || tipo
