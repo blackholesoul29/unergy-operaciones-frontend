@@ -1,6 +1,6 @@
 # nuxt-template
 
-A production-ready Nuxt 4 starter template with a layered architecture, full auth system, inset sidebar layout, and shadcn-vue UI
+A production-ready Nuxt 4 starter template with a layered architecture, full auth system, inset sidebar layout, and shadcn-vue UI.
 
 ## Stack
 
