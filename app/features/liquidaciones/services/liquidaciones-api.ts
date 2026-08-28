@@ -143,7 +143,9 @@ export class LiquidacionesApiService extends LegacyBaseService {
     project,
     fecha,
   }: FiltrosConsumo): Promise<RespuestaConsumo> {
-    return this.get<RespuestaConsumo>(RUTAS.consumo, { params: { month, year, version, project, fecha } })
+    return this.get<RespuestaConsumo>(RUTAS.consumo, {
+      params: { month, year, version, project, fecha },
+    })
   }
 
   // ── Costos e ingresos fijos ────────────────────────────────────────────────

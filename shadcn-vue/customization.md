@@ -128,7 +128,7 @@ module.exports = {
 
 ```html
 <!-- 3. Use in components. -->
-<div class="bg-warning text-warning-foreground">Warning</div>
+<div class="text-warning-foreground bg-warning">Warning</div>
 ```
 
 ---

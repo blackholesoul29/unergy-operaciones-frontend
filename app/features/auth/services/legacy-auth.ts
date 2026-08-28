@@ -44,7 +44,8 @@ interface DetalleError {
 
 /** Traduce el error de axios a `AppError`, para que `normalizeError` lo deje pasar tal cual. */
 function comoAppError(err: unknown): AppError {
-  if (!axios.isAxiosError(err)) return new AppError('UNKNOWN', err instanceof Error ? err.message : String(err))
+  if (!axios.isAxiosError(err))
+    return new AppError('UNKNOWN', err instanceof Error ? err.message : String(err))
 
   const error = err as AxiosError<DetalleError>
   const status = error.response?.status ?? 0

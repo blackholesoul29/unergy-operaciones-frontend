@@ -22,7 +22,9 @@ describe('mobileRedirect', () => {
   })
 
   it('lets an unauthenticated visitor stay on the login itself', () => {
-    expect(mobileRedirect(MOBILE_ROUTES.login, { isAuthenticated: false, role: undefined })).toBeNull()
+    expect(
+      mobileRedirect(MOBILE_ROUTES.login, { isAuthenticated: false, role: undefined }),
+    ).toBeNull()
   })
 
   it('sends an authenticated visitor away from the login, to their tray', () => {
@@ -42,7 +44,10 @@ describe('mobileRedirect', () => {
 
   it('keeps everyone else out of coordinador and técnico trays', () => {
     expect(
-      mobileRedirect(MOBILE_ROUTES.coordinador, { isAuthenticated: true, role: UserRole.OPERACIONES }),
+      mobileRedirect(MOBILE_ROUTES.coordinador, {
+        isAuthenticated: true,
+        role: UserRole.OPERACIONES,
+      }),
     ).toBe(MOBILE_ROUTES.solar)
     expect(
       mobileRedirect(MOBILE_ROUTES.tecnico, { isAuthenticated: true, role: UserRole.COORDINADOR }),

@@ -49,7 +49,11 @@ export function mobileRedirect(pathname: string, session: MobileSession): string
     return mobileHome(role)
   }
   // Y al revés: nadie más entra en esas dos (admin sí ve la de coordinador).
-  if (pathname === MOBILE_ROUTES.coordinador && role !== UserRole.COORDINADOR && role !== UserRole.ADMIN) {
+  if (
+    pathname === MOBILE_ROUTES.coordinador &&
+    role !== UserRole.COORDINADOR &&
+    role !== UserRole.ADMIN
+  ) {
     return MOBILE_ROUTES.solar
   }
   if (pathname === MOBILE_ROUTES.tecnico && role !== UserRole.TECNICO) {

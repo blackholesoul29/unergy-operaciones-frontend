@@ -1,10 +1,28 @@
 <script setup>
-import { BellIcon, BellOffIcon, CircleAlertIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon } from '@lucide/vue'
+import {
+  BellIcon,
+  BellOffIcon,
+  CircleAlertIcon,
+  CircleCheckIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+} from '@lucide/vue'
 
-const { items: notifications, unreadCount, cargar, marcarLeida, marcarTodasLeidas } = useNotificaciones()
+const {
+  items: notifications,
+  unreadCount,
+  cargar,
+  marcarLeida,
+  marcarTodasLeidas,
+} = useNotificaciones()
 
 function severityBg(sev) {
-  const map = { critica: 'rgba(214,68,85,0.12)', alta: 'rgba(234,88,12,0.12)', media: 'rgba(240,192,64,0.12)', baja: 'rgba(16,185,129,0.12)' }
+  const map = {
+    critica: 'rgba(214,68,85,0.12)',
+    alta: 'rgba(234,88,12,0.12)',
+    media: 'rgba(240,192,64,0.12)',
+    baja: 'rgba(16,185,129,0.12)',
+  }
   return map[sev] || 'rgba(145,91,216,0.08)'
 }
 function severityColor(sev) {
@@ -12,7 +30,12 @@ function severityColor(sev) {
   return map[sev] || '#915BD8'
 }
 function severityIcon(sev) {
-  const map = { critica: TriangleAlertIcon, alta: CircleAlertIcon, media: InfoIcon, baja: CircleCheckIcon }
+  const map = {
+    critica: TriangleAlertIcon,
+    alta: CircleAlertIcon,
+    media: InfoIcon,
+    baja: CircleCheckIcon,
+  }
   return map[sev] || BellIcon
 }
 
@@ -83,7 +106,9 @@ function onSelectNotificacion(e, n) {
             <p class="text-sm leading-snug" :class="n.leida ? 'font-normal' : 'font-semibold'">
               {{ n.titulo || n.mensaje }}
             </p>
-            <p v-if="n.titulo && n.mensaje" class="mt-0.5 text-xs text-muted-foreground">{{ n.mensaje }}</p>
+            <p v-if="n.titulo && n.mensaje" class="mt-0.5 text-xs text-muted-foreground">
+              {{ n.mensaje }}
+            </p>
             <p class="mt-1 text-[10px] text-muted-foreground">{{ formatTimeAgo(n.created_at) }}</p>
           </div>
           <div v-if="!n.leida" class="mt-2 size-2 shrink-0 rounded-full bg-primary" />
@@ -109,7 +134,7 @@ function onSelectNotificacion(e, n) {
   height: 16px;
   padding: 0 3px;
   border-radius: 8px;
-  background: #D64455;
+  background: #d64455;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
