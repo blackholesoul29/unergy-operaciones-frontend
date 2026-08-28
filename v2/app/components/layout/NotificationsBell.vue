@@ -1,49 +1,7 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import api from '~/core/client'
 import { BellIcon, BellOffIcon, CircleAlertIcon, CircleCheckIcon, InfoIcon, TriangleAlertIcon } from '@lucide/vue'
 
-const bellRef = ref(null)
-const showNotifications = ref(false)
-const unreadCount = ref(0)
-const notifications = ref([])
-let pollInterval = null
-
-function toggleNotifications() {
-  showNotifications.value = !showNotifications.value
-  if (showNotifications.value) fetchNotifications()
-}
-
-async function fetchUnreadCount() {
-  try {
-    const { data } = await api.get('/notificaciones/count')
-    unreadCount.value = data.count ?? data.unread ?? 0
-  } catch { /* no crítico */ }
-}
-
-async function fetchNotifications() {
-  try {
-    const { data } = await api.get('/notificaciones', { params: { limit: 20 } })
-    notifications.value = Array.isArray(data) ? data : (data.items ?? [])
-  } catch { notifications.value = [] }
-}
-
-async function markAsRead(n) {
-  if (n.leida) return
-  try {
-    await api.patch(`/notificaciones/${n.id}/leer`)
-    n.leida = true
-    if (unreadCount.value > 0) unreadCount.value--
-  } catch { /* no crítico */ }
-}
-
-async function markAllRead() {
-  try {
-    await api.post('/notificaciones/leer-todas')
-    notifications.value.forEach(n => { n.leida = true })
-    unreadCount.value = 0
-  } catch { /* no crítico */ }
-}
+const { items: notifications, unreadCount, cargar, marcarLeida, marcarTodasLeidas } = useNotificaciones()
 
 function severityBg(sev) {
   const map = { critica: 'rgba(214,68,85,0.12)', alta: 'rgba(234,88,12,0.12)', media: 'rgba(240,192,64,0.12)', baja: 'rgba(16,185,129,0.12)' }
@@ -72,92 +30,77 @@ function formatTimeAgo(dateStr) {
   return `Hace ${days} días`
 }
 
-function handleClickOutside(e) {
-  if (bellRef.value && !bellRef.value.contains(e.target)) showNotifications.value = false
+/** `preventDefault` en `@select` es lo que evita que marcar una notificación cierre el menú. */
+function onSelectNotificacion(e, n) {
+  e.preventDefault()
+  marcarLeida(n)
 }
-
-onMounted(() => {
-  fetchUnreadCount()
-  pollInterval = setInterval(fetchUnreadCount, 60000)
-  document.addEventListener('click', handleClickOutside)
-})
-
-onBeforeUnmount(() => {
-  if (pollInterval) clearInterval(pollInterval)
-  document.removeEventListener('click', handleClickOutside)
-})
 </script>
 
 <template>
-  <div ref="bellRef" class="relative">
-    <button class="nb-icon-btn relative" title="Notificaciones" @click="toggleNotifications">
-      <BellIcon class="size-[1em]" />
-      <span v-if="unreadCount > 0" class="nb-badge">
-        {{ unreadCount > 99 ? '99+' : unreadCount }}
-      </span>
-    </button>
+  <DropdownMenu>
+    <DropdownMenuTrigger as-child>
+      <Button variant="ghost" size="icon" class="relative" title="Notificaciones" @click="cargar">
+        <BellIcon />
+        <span v-if="unreadCount > 0" class="nb-badge">
+          {{ unreadCount > 99 ? '99+' : unreadCount }}
+        </span>
+      </Button>
+    </DropdownMenuTrigger>
 
-    <div
-v-if="showNotifications"
-      class="absolute top-full mt-2 right-0 w-80 bg-white rounded-xl shadow-xl z-50 overflow-hidden"
-      style="border: 1px solid #e8e0f0;">
-      <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: #e8e0f0;">
-        <span class="text-sm font-semibold" style="color: var(--color-unergy-deep);">Notificaciones</span>
+    <DropdownMenuContent class="w-80" align="end">
+      <div class="flex items-center justify-between px-2 py-1.5">
+        <span class="text-sm font-semibold">Notificaciones</span>
         <button
-v-if="unreadCount > 0" class="text-xs font-medium hover:underline"
-          style="color: var(--color-unergy-purple);" @click="markAllRead">
+          v-if="unreadCount > 0"
+          class="text-xs font-medium text-primary hover:underline"
+          @click="marcarTodasLeidas"
+        >
           Marcar todas leídas
         </button>
       </div>
+      <DropdownMenuSeparator />
+
       <div class="max-h-80 overflow-y-auto">
         <div v-if="notifications.length === 0" class="py-8 text-center">
-          <BellOffIcon class="text-2xl mb-2 block size-[1em]" style="color: #c4b8d4;" />
-          <p class="text-xs" style="color: #6b5a8a;">Sin notificaciones</p>
+          <BellOffIcon class="mx-auto mb-2 size-6 text-muted-foreground" />
+          <p class="text-xs text-muted-foreground">Sin notificaciones</p>
         </div>
-        <div
-v-for="n in notifications" :key="n.id"
-          class="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-gray-50 border-b last:border-b-0"
-          :style="{ borderColor: '#f3f0f7', backgroundColor: n.leida ? 'transparent' : 'rgba(145,91,216,0.04)' }"
-          @click="markAsRead(n)">
+
+        <DropdownMenuItem
+          v-for="n in notifications"
+          :key="n.id"
+          class="items-start gap-3 py-2"
+          @select="onSelectNotificacion($event, n)"
+        >
           <div
-class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-            :style="{ backgroundColor: severityBg(n.severidad), color: severityColor(n.severidad) }">
-            <component :is="severityIcon(n.severidad)" class="text-xs size-[1em]" />
+            class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full"
+            :style="{ backgroundColor: severityBg(n.severidad), color: severityColor(n.severidad) }"
+          >
+            <component :is="severityIcon(n.severidad)" class="size-3.5" />
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-sm leading-snug" :style="{ color: 'var(--color-unergy-deep)', fontWeight: n.leida ? '400' : '600' }">{{ n.titulo || n.mensaje }}</p>
-            <p v-if="n.titulo && n.mensaje" class="text-xs mt-0.5" style="color: #6b5a8a;">{{ n.mensaje }}</p>
-            <p class="text-[10px] mt-1" style="color: #9b89b5;">{{ formatTimeAgo(n.created_at) }}</p>
+            <p class="text-sm leading-snug" :class="n.leida ? 'font-normal' : 'font-semibold'">
+              {{ n.titulo || n.mensaje }}
+            </p>
+            <p v-if="n.titulo && n.mensaje" class="mt-0.5 text-xs text-muted-foreground">{{ n.mensaje }}</p>
+            <p class="mt-1 text-[10px] text-muted-foreground">{{ formatTimeAgo(n.created_at) }}</p>
           </div>
-          <div v-if="!n.leida" class="w-2 h-2 rounded-full shrink-0 mt-2" style="background-color: var(--color-unergy-purple);" />
-        </div>
+          <div v-if="!n.leida" class="mt-2 size-2 shrink-0 rounded-full bg-primary" />
+        </DropdownMenuItem>
       </div>
-      <NuxtLink
-to="/alertas"
-        class="block text-center py-2.5 text-xs font-medium border-t hover:bg-gray-50"
-        style="color: var(--color-unergy-purple); border-color: #e8e0f0;"
-        @click="showNotifications = false">
-        Ver todas las alertas
-      </NuxtLink>
-    </div>
-  </div>
+
+      <DropdownMenuSeparator />
+      <DropdownMenuItem as-child>
+        <NuxtLink to="/alertas" class="justify-center text-xs font-medium text-primary">
+          Ver todas las alertas
+        </NuxtLink>
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>
 
 <style scoped>
-.nb-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 10px;
-  color: #6b5a8a;
-  transition: background 0.15s;
-}
-.nb-icon-btn:hover {
-  background: rgba(145, 91, 216, 0.08);
-  color: var(--color-unergy-purple);
-}
 .nb-badge {
   position: absolute;
   top: 2px;
