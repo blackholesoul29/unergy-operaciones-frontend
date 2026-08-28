@@ -23,7 +23,9 @@
         @click="triggerFileInput"
       >
         <i class="pi pi-upload fa-dropzone-icon" />
-        <p class="fa-dropzone-text">Arrastra archivos aquí o <span class="fa-dropzone-link">haz clic para seleccionar</span></p>
+        <p class="fa-dropzone-text">
+          Arrastra archivos aquí o <span class="fa-dropzone-link">haz clic para seleccionar</span>
+        </p>
         <p class="fa-dropzone-hint">Imágenes, PDF, Excel, Word, CSV</p>
         <input
           ref="fileInputRef"
@@ -42,14 +44,15 @@
 
       <!-- Lista de archivos -->
       <div v-if="archivos.length" class="fa-list">
-        <div
-          v-for="archivo in archivos"
-          :key="archivo.id"
-          class="fa-row"
-        >
+        <div v-for="archivo in archivos" :key="archivo.id" class="fa-row">
           <!-- Thumbnail / Icono -->
           <div class="fa-thumb-wrap">
-            <a v-if="estaImagen(archivo)" :href="archivo.url" target="_blank" rel="noopener noreferrer">
+            <a
+              v-if="estaImagen(archivo)"
+              :href="archivo.url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <img :src="archivo.url" :alt="archivo.nombre" class="fa-thumb-img" />
             </a>
             <div v-else class="fa-thumb-icon-wrap">
@@ -69,10 +72,20 @@
 
           <!-- Acciones -->
           <div class="fa-row-actions">
-            <a :href="archivo.url" target="_blank" rel="noopener noreferrer" class="fa-action-btn fa-action-btn--download" title="Descargar">
+            <a
+              :href="archivo.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="fa-action-btn fa-action-btn--download"
+              title="Descargar"
+            >
               <i class="pi pi-download" />
             </a>
-            <button class="fa-action-btn fa-action-btn--delete" title="Eliminar" @click="eliminarArchivo(archivo)">
+            <button
+              class="fa-action-btn fa-action-btn--delete"
+              title="Eliminar"
+              @click="eliminarArchivo(archivo)"
+            >
               <i class="pi pi-trash" />
             </button>
           </div>
@@ -98,13 +111,13 @@ const props = defineProps({
 })
 
 // ── State ────────────────────────────────────────────────────────────────────
-const toast         = useToast()
-const archivos      = ref([])
-const noDisponible  = ref(false)
-const isDragging    = ref(false)
-const uploading     = ref(false)
+const toast = useToast()
+const archivos = ref([])
+const noDisponible = ref(false)
+const isDragging = ref(false)
+const uploading = ref(false)
 const uploadProgress = ref(0)
-const fileInputRef  = ref(null)
+const fileInputRef = ref(null)
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function formatSize(bytes) {
@@ -116,7 +129,11 @@ function formatSize(bytes) {
 
 function formatDate(str) {
   if (!str) return '—'
-  return new Date(str).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(str).toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 function estaImagen(archivo) {
@@ -126,10 +143,18 @@ function estaImagen(archivo) {
 function iconoArchivo(archivo) {
   const mime = archivo.tipo_mime || ''
   if (mime === 'application/pdf') return 'pi pi-file-pdf'
-  if (mime.includes('excel') || mime.includes('spreadsheet') ||
-      /\.(xls|xlsx|csv)$/i.test(archivo.nombre || '')) return 'pi pi-file-excel'
-  if (mime.includes('word') || mime.includes('document') ||
-      /\.(doc|docx)$/i.test(archivo.nombre || '')) return 'pi pi-file-word'
+  if (
+    mime.includes('excel') ||
+    mime.includes('spreadsheet') ||
+    /\.(xls|xlsx|csv)$/i.test(archivo.nombre || '')
+  )
+    return 'pi pi-file-excel'
+  if (
+    mime.includes('word') ||
+    mime.includes('document') ||
+    /\.(doc|docx)$/i.test(archivo.nombre || '')
+  )
+    return 'pi pi-file-word'
   return 'pi pi-file'
 }
 
@@ -154,18 +179,14 @@ async function cargarArchivos() {
 async function subirArchivo(file) {
   const form = new FormData()
   form.append('archivo', file)
-  const { data } = await api.post(
-    `/fallas/${props.fallaId}/archivos`,
-    form,
-    {
-      headers: { 'Content-Type': null },
-      onUploadProgress(event) {
-        if (event.lengthComputable) {
-          uploadProgress.value = Math.round((event.loaded / event.total) * 100)
-        }
-      },
-    }
-  )
+  const { data } = await api.post(`/fallas/${props.fallaId}/archivos`, form, {
+    headers: { 'Content-Type': null },
+    onUploadProgress(event) {
+      if (event.lengthComputable) {
+        uploadProgress.value = Math.round((event.loaded / event.total) * 100)
+      }
+    },
+  })
   return data
 }
 
@@ -236,12 +257,15 @@ function onDrop(event) {
 // ── Lifecycle ────────────────────────────────────────────────────────────────
 onMounted(cargarArchivos)
 
-watch(() => props.fallaId, (nuevo) => {
-  if (nuevo) {
-    archivos.value = []
-    cargarArchivos()
-  }
-})
+watch(
+  () => props.fallaId,
+  (nuevo) => {
+    if (nuevo) {
+      archivos.value = []
+      cargarArchivos()
+    }
+  },
+)
 </script>
 
 <style scoped>
@@ -261,14 +285,14 @@ watch(() => props.fallaId, (nuevo) => {
 }
 
 .fa-section-icon {
-  color: #915BD8;
+  color: #915bd8;
   font-size: 13px;
 }
 
 .fa-section-title {
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
   margin: 0;
 }
 
@@ -276,7 +300,7 @@ watch(() => props.fallaId, (nuevo) => {
   margin-left: auto;
   font-size: 12px;
   font-weight: 700;
-  color: #915BD8;
+  color: #915bd8;
   background: #f0eaf8;
   border-radius: 999px;
   padding: 1px 8px;
@@ -310,14 +334,16 @@ watch(() => props.fallaId, (nuevo) => {
   justify-content: center;
   gap: 6px;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
   margin-bottom: 14px;
   text-align: center;
 }
 
 .fa-dropzone:hover,
 .fa-dropzone--over {
-  border-color: #915BD8;
+  border-color: #915bd8;
   background: rgba(145, 91, 216, 0.05);
 }
 
@@ -328,7 +354,7 @@ watch(() => props.fallaId, (nuevo) => {
 }
 
 .fa-dropzone--over .fa-dropzone-icon {
-  color: #915BD8;
+  color: #915bd8;
 }
 
 .fa-dropzone-text {
@@ -338,7 +364,7 @@ watch(() => props.fallaId, (nuevo) => {
 }
 
 .fa-dropzone-link {
-  color: #915BD8;
+  color: #915bd8;
   font-weight: 600;
 }
 
@@ -363,7 +389,7 @@ watch(() => props.fallaId, (nuevo) => {
 
 .fa-progress-bar {
   height: 100%;
-  background: #915BD8;
+  background: #915bd8;
   border-radius: 999px;
   transition: width 0.2s ease;
 }
@@ -421,7 +447,7 @@ watch(() => props.fallaId, (nuevo) => {
 
 .fa-thumb-icon {
   font-size: 18px;
-  color: #915BD8;
+  color: #915bd8;
 }
 
 /* Info de fila */
@@ -433,7 +459,7 @@ watch(() => props.fallaId, (nuevo) => {
 .fa-row-name {
   font-size: 13px;
   font-weight: 600;
-  color: #2C2039;
+  color: #2c2039;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -471,13 +497,15 @@ watch(() => props.fallaId, (nuevo) => {
   border: none;
   cursor: pointer;
   font-size: 13px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
   text-decoration: none;
 }
 
 .fa-action-btn--download {
   background: #f0eaf8;
-  color: #915BD8;
+  color: #915bd8;
 }
 
 .fa-action-btn--download:hover {

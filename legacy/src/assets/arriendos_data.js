@@ -14,16 +14,16 @@ const _raw = [
     valor_mensual: 834109.47,
     enlace: 'https://drive.google.com/file/d/1DrTe_DoeEhiupgMsq1d__hM-TOgWfkE1/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2023, ipc_aplicado: null,  valor: 7999999.99 },
-      { anio: 2024, ipc_aplicado: 9.28,  valor: 8800000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 9389600 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 10009313.60 },
+      { anio: 2023, ipc_aplicado: null, valor: 7999999.99 },
+      { anio: 2024, ipc_aplicado: 9.28, valor: 8800000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 9389600 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 10009313.6 },
     ],
     indexacion_mensual: [
-      { anio: 2023, ipc_aplicado: null,  valor: 666666.67 },
-      { anio: 2024, ipc_aplicado: 9.28,  valor: 733333.33 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 782466.67 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 834109.47 },
+      { anio: 2023, ipc_aplicado: null, valor: 666666.67 },
+      { anio: 2024, ipc_aplicado: 9.28, valor: 733333.33 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 782466.67 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 834109.47 },
     ],
   },
   {
@@ -35,16 +35,16 @@ const _raw = [
     valor_mensual: 5195503,
     enlace: 'https://drive.google.com/file/d/1RKxrg8cX20emYpeYCDm6iyGaVj7r_2Im/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2023, ipc_aplicado: null,  valor: 51600000.21 },
-      { anio: 2024, ipc_aplicado: 9.28,  valor: 56388480.23 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 59320681.20 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 62346035.94 },
+      { anio: 2023, ipc_aplicado: null, valor: 51600000.21 },
+      { anio: 2024, ipc_aplicado: 9.28, valor: 56388480.23 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 59320681.2 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 62346035.94 },
     ],
     indexacion_mensual: [
-      { anio: 2023, ipc_aplicado: null,  valor: 4300000.02 },
-      { anio: 2024, ipc_aplicado: 9.28,  valor: 4699040.02 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 4943390.10 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 5195502.99 },
+      { anio: 2023, ipc_aplicado: null, valor: 4300000.02 },
+      { anio: 2024, ipc_aplicado: 9.28, valor: 4699040.02 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 4943390.1 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 5195502.99 },
     ],
   },
   {
@@ -56,14 +56,14 @@ const _raw = [
     valor_mensual: 829239,
     enlace: 'https://drive.google.com/file/d/1pxsoA1U-1GuhqswyYjq729TRZObcJ__C/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 9000000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 9468000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 9950868 },
+      { anio: 2024, ipc_aplicado: null, valor: 9000000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 9468000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 9950868 },
     ],
     indexacion_mensual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 750000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 789000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 829239 },
+      { anio: 2024, ipc_aplicado: null, valor: 750000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 789000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 829239 },
     ],
   },
   {
@@ -75,14 +75,14 @@ const _raw = [
     valor_mensual: 1216217.2,
     enlace: 'https://drive.google.com/file/d/1ODH4pz-1Z-Odn1Snv7xu-A0HgEq3-opZ/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 13200000.03 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 13886400.03 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 14594606.43 },
+      { anio: 2024, ipc_aplicado: null, valor: 13200000.03 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 13886400.03 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 14594606.43 },
     ],
     indexacion_mensual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 1100000.00 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 1157200.00 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1216217.20 },
+      { anio: 2024, ipc_aplicado: null, valor: 1100000.0 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 1157200.0 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1216217.2 },
     ],
   },
   {
@@ -94,12 +94,12 @@ const _raw = [
     valor_mensual: 1646075.88,
     enlace: 'https://drive.google.com/file/d/1RD7wyFDP3CracNd6eFybnkdrtxxunQsg/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 18794396.4 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 19752910.62 },
+      { anio: 2025, ipc_aplicado: null, valor: 18794396.4 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 19752910.62 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1566199.7 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1646075.88 },
+      { anio: 2025, ipc_aplicado: null, valor: 1566199.7 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1646075.88 },
     ],
   },
   {
@@ -111,14 +111,14 @@ const _raw = [
     valor_mensual: 1105652,
     enlace: 'https://drive.google.com/file/d/1YLsGNx-kEkYG8xV0hREE2ux-2HzS8VJk/view?usp=sharing',
     indexacion_anual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 12000000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 12624000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 13267824 },
+      { anio: 2024, ipc_aplicado: null, valor: 12000000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 12624000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 13267824 },
     ],
     indexacion_mensual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 1000000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 1052000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1105652 },
+      { anio: 2024, ipc_aplicado: null, valor: 1000000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 1052000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1105652 },
     ],
   },
   {
@@ -130,14 +130,14 @@ const _raw = [
     valor_mensual: 1105652,
     enlace: 'https://drive.google.com/file/d/104SHV_86S_QYHdO026A1Nvc7Cp-iQXcP/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 12000000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 12624000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 13267824 },
+      { anio: 2024, ipc_aplicado: null, valor: 12000000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 12624000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 13267824 },
     ],
     indexacion_mensual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 1000000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 1052000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1105652 },
+      { anio: 2024, ipc_aplicado: null, valor: 1000000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 1052000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1105652 },
     ],
   },
   {
@@ -149,14 +149,14 @@ const _raw = [
     valor_mensual: 967445.49,
     enlace: 'https://drive.google.com/file/d/17k23-3eXJ89YXC9hg-Hni3PtiUbr-f3e/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 10499999.94 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 11045999.94 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 11609345.93 },
+      { anio: 2024, ipc_aplicado: null, valor: 10499999.94 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 11045999.94 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 11609345.93 },
     ],
     indexacion_mensual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 874999.99 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 920499.99 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 967445.49 },
+      { anio: 2024, ipc_aplicado: null, valor: 874999.99 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 920499.99 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 967445.49 },
     ],
   },
   {
@@ -168,12 +168,12 @@ const _raw = [
     valor_mensual: 1513440,
     enlace: 'https://drive.google.com/file/d/16BGRm8UrzpiH07MGHWQPjNugALFRG4n0/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 17280000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 18161280 },
+      { anio: 2025, ipc_aplicado: null, valor: 17280000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 18161280 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1440000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1513440 },
+      { anio: 2025, ipc_aplicado: null, valor: 1440000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1513440 },
     ],
   },
   {
@@ -185,12 +185,12 @@ const _raw = [
     valor_mensual: 1646075.88,
     enlace: 'https://drive.google.com/file/d/1ssgYNZxGgG50ImLm-Z4LfZXCrK99uKUJ/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 18794396.4 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 19752910.62 },
+      { anio: 2025, ipc_aplicado: null, valor: 18794396.4 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 19752910.62 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1566199.7 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1646075.88 },
+      { anio: 2025, ipc_aplicado: null, valor: 1566199.7 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1646075.88 },
     ],
   },
   {
@@ -202,12 +202,12 @@ const _raw = [
     valor_mensual: 1646075.88,
     enlace: 'https://drive.google.com/file/d/1bHf4vNQMyWb49bV1Zi74JEsRRZyb0suZ/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 18794396.4 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 19752910.62 },
+      { anio: 2025, ipc_aplicado: null, valor: 18794396.4 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 19752910.62 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1566199.7 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1646075.88 },
+      { anio: 2025, ipc_aplicado: null, valor: 1566199.7 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1646075.88 },
     ],
   },
   {
@@ -219,14 +219,14 @@ const _raw = [
     valor_mensual: 2695026.74,
     enlace: 'https://drive.google.com/file/d/1E8h9kmCU2XjZ67MSZZvNkF751E_iluvG/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 29249999.91 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 30770999.91 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 32340320.90 },
+      { anio: 2024, ipc_aplicado: null, valor: 29249999.91 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 30770999.91 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 32340320.9 },
     ],
     indexacion_mensual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 2437499.99 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 2564249.99 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 2695026.74 },
+      { anio: 2024, ipc_aplicado: null, valor: 2437499.99 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 2564249.99 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 2695026.74 },
     ],
   },
   {
@@ -238,14 +238,14 @@ const _raw = [
     valor_mensual: 921376.67,
     enlace: 'https://drive.google.com/file/d/1nnNHaWkvNJ3k00NKtV2C085CkzTD7Y5X/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 10000000.08 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 10520000.08 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 11056520.09 },
+      { anio: 2024, ipc_aplicado: null, valor: 10000000.08 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 10520000.08 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 11056520.09 },
     ],
     indexacion_mensual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 833333.34 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 876666.67 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 921376.67 },
+      { anio: 2024, ipc_aplicado: null, valor: 833333.34 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 876666.67 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 921376.67 },
     ],
   },
   {
@@ -257,12 +257,12 @@ const _raw = [
     valor_mensual: 1704196.5,
     enlace: null,
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 19458000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 20450358 },
+      { anio: 2025, ipc_aplicado: null, valor: 19458000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 20450358 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1621500 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1704196.5 },
+      { anio: 2025, ipc_aplicado: null, valor: 1621500 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1704196.5 },
     ],
   },
   {
@@ -274,12 +274,12 @@ const _raw = [
     valor_mensual: 1704196.5,
     enlace: 'https://drive.google.com/file/d/1DEWD7yg75nTiTiutgSAOZgG5px3yuPy6/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 19458000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 20450358 },
+      { anio: 2025, ipc_aplicado: null, valor: 19458000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 20450358 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1621500 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1704196.5 },
+      { anio: 2025, ipc_aplicado: null, valor: 1621500 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1704196.5 },
     ],
   },
   {
@@ -291,12 +291,12 @@ const _raw = [
     valor_mensual: 1204270.48,
     enlace: 'https://drive.google.com/file/d/1YxBcVeFJGk1w8PHl44rMmMt_7Agb27Ks/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 13749996 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 14451245.80 },
+      { anio: 2025, ipc_aplicado: null, valor: 13749996 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 14451245.8 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1145833 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1204270.48 },
+      { anio: 2025, ipc_aplicado: null, valor: 1145833 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1204270.48 },
     ],
   },
   {
@@ -308,12 +308,12 @@ const _raw = [
     valor_mensual: 1204270.48,
     enlace: 'https://drive.google.com/file/d/1soVFDfS5GXbI_wOWVf4Z2dwv_ahBGHX2/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 13749996 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 14451245.80 },
+      { anio: 2025, ipc_aplicado: null, valor: 13749996 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 14451245.8 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1145833 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1204270.48 },
+      { anio: 2025, ipc_aplicado: null, valor: 1145833 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1204270.48 },
     ],
   },
   {
@@ -325,12 +325,12 @@ const _raw = [
     valor_mensual: 1564413.5,
     enlace: 'https://drive.google.com/file/d/1YscY5mcAgbtffQyVtpC1gImWugYe4J_c/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 17862000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 18772962 },
+      { anio: 2025, ipc_aplicado: null, valor: 17862000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 18772962 },
     ],
     indexacion_mensual: [
-      { anio: 2025, ipc_aplicado: null,  valor: 1488500 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1564413.5 },
+      { anio: 2025, ipc_aplicado: null, valor: 1488500 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1564413.5 },
     ],
   },
   {
@@ -342,14 +342,14 @@ const _raw = [
     valor_mensual: 1105652,
     enlace: 'https://drive.google.com/file/d/1cHEhutcupy4RPn2zE10Ct1RuVl-mgXrO/view?usp=drive_link',
     indexacion_anual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 12000000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 12624000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 13267824 },
+      { anio: 2024, ipc_aplicado: null, valor: 12000000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 12624000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 13267824 },
     ],
     indexacion_mensual: [
-      { anio: 2024, ipc_aplicado: null,  valor: 1000000 },
-      { anio: 2025, ipc_aplicado: 5.20,  valor: 1052000 },
-      { anio: 2025, ipc_aplicado: 5.10,  valor: 1105652 },
+      { anio: 2024, ipc_aplicado: null, valor: 1000000 },
+      { anio: 2025, ipc_aplicado: 5.2, valor: 1052000 },
+      { anio: 2025, ipc_aplicado: 5.1, valor: 1105652 },
     ],
   },
 ]

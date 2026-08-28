@@ -307,10 +307,10 @@ body {
  */
 export function buildReportHtmlDoc(html, opts = {}) {
   const {
-    title    = 'Informe Operacional',
-    bgGray   = true,
+    title = 'Informe Operacional',
+    bgGray = true,
     editable = false,
-    autoFit  = false,   // escala cada .rpt-page para que SIEMPRE quepa en una hoja A4 (Ranking vs P90)
+    autoFit = false, // escala cada .rpt-page para que SIEMPRE quepa en una hoja A4 (Ranking vs P90)
   } = opts
 
   // ── CSS extra según el modo ──────────────────────────────────────────
@@ -384,7 +384,8 @@ export function buildReportHtmlDoc(html, opts = {}) {
   // Script de auto-ajuste: envuelve cada .rpt-page, mide su alto natural a 733px
   // (ancho de contenido A4 con márgenes de 8mm) y aplica transform:scale() para que
   // entre completa en el alto imprimible de una hoja (~285mm). Dispara print() al terminar.
-  const fitScript = autoFit ? `
+  const fitScript = autoFit
+    ? `
 <script>
 (function () {
   var TARGET_H = 1040;  // alto imprimible útil en px (A4 285mm @96dpi ≈ 1077px, con margen de seguridad)
@@ -417,7 +418,8 @@ export function buildReportHtmlDoc(html, opts = {}) {
     window.addEventListener('load', function () { setTimeout(run, 600); });
   }
 })();
-</script>` : ''
+</script>`
+    : ''
 
   return `<!doctype html>
 <html lang="es">

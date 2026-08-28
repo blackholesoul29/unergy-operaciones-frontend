@@ -14,51 +14,86 @@
 -->
 <template>
   <div class="space-y-4">
-
     <!-- Migas -->
     <div class="flex items-center gap-2">
-      <Button icon="pi pi-arrow-left" text severity="secondary" @click="$router.back()" class="-ml-1" />
+      <Button
+        icon="pi pi-arrow-left"
+        text
+        severity="secondary"
+        @click="$router.back()"
+        class="-ml-1"
+      />
       <div>
-        <p class="text-xs leading-none mb-0.5" style="color:#9b89b5">
-          <span class="cursor-pointer hover:underline"
-            @click="$router.push(`/proyectos/${route.params.id}`)">{{ proyectoNombre || '…' }}</span>
+        <p class="mb-0.5 text-xs leading-none" style="color: #9b89b5">
+          <span
+            class="cursor-pointer hover:underline"
+            @click="$router.push(`/proyectos/${route.params.id}`)"
+            >{{ proyectoNombre || '…' }}</span
+          >
           <span class="mx-1.5">›</span><span>Servicios</span>
           <span class="mx-1.5">›</span>
-          <span class="font-medium" style="color:#2C2039">Representación</span>
+          <span class="font-medium" style="color: #2c2039">Representación</span>
         </p>
-        <h2 class="text-lg font-bold" style="color:#2C2039">Representación CGM</h2>
+        <h2 class="text-lg font-bold" style="color: #2c2039">Representación CGM</h2>
       </div>
       <div class="ml-auto flex items-center gap-2">
-        <Button v-if="c" label="Eliminar" icon="pi pi-trash" size="small" outlined
-          severity="danger" @click="confirmarEliminar" />
+        <Button
+          v-if="c"
+          label="Eliminar"
+          icon="pi pi-trash"
+          size="small"
+          outlined
+          severity="danger"
+          @click="confirmarEliminar"
+        />
         <Button label="Nuevo contrato" icon="pi pi-plus" size="small" @click="nuevoContrato" />
       </div>
     </div>
 
     <div v-if="loading" class="flex justify-center py-20"><ProgressSpinner /></div>
 
-    <div v-else-if="!contratos.length"
-      class="rounded-xl border border-dashed p-10 text-center" style="border-color:#3b82f640">
-      <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3" style="background:#eff6ff">
-        <i class="pi pi-file-edit text-xl" style="color:#3b82f6" />
+    <div
+      v-else-if="!contratos.length"
+      class="rounded-xl border border-dashed p-10 text-center"
+      style="border-color: #3b82f640"
+    >
+      <div
+        class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
+        style="background: #eff6ff"
+      >
+        <i class="pi pi-file-edit text-xl" style="color: #3b82f6" />
       </div>
-      <p class="text-sm font-medium text-gray-600 mb-1">Sin contratos de representación</p>
+      <p class="mb-1 text-sm font-medium text-gray-600">Sin contratos de representación</p>
       <p class="text-xs text-gray-400">
         Esta planta no tiene contratos de representación asociados.
       </p>
-      <Button label="Crear el primero" icon="pi pi-plus" size="small" class="mt-3" @click="nuevoContrato" />
+      <Button
+        label="Crear el primero"
+        icon="pi pi-plus"
+        size="small"
+        class="mt-3"
+        @click="nuevoContrato"
+      />
     </div>
 
     <template v-else>
       <!-- Selector: un contrato por inversionista. Los creados a mano pueden no
            traer inversionista, así que se rotulan con lo que tengan. -->
-      <div v-if="contratos.length > 1" class="flex items-center gap-2 flex-wrap">
+      <div v-if="contratos.length > 1" class="flex flex-wrap items-center gap-2">
         <span class="text-xs font-semibold text-gray-500">Contrato:</span>
-        <button v-for="c in contratos" :key="c.id" type="button"
-          class="text-xs px-3 py-1.5 rounded-full font-medium transition-all border"
-          :class="idSeleccionado === c.id ? 'text-white border-transparent' : 'bg-white text-gray-500 border-gray-200 hover:border-blue-300'"
+        <button
+          v-for="c in contratos"
+          :key="c.id"
+          type="button"
+          class="rounded-full border px-3 py-1.5 text-xs font-medium transition-all"
+          :class="
+            idSeleccionado === c.id
+              ? 'border-transparent text-white'
+              : 'border-gray-200 bg-white text-gray-500 hover:border-blue-300'
+          "
           :style="idSeleccionado === c.id ? 'background:#3b82f6' : ''"
-          @click="idSeleccionado = c.id">
+          @click="idSeleccionado = c.id"
+        >
           {{ etiquetaContrato(c) }}
         </button>
       </div>
@@ -73,76 +108,124 @@
             {{ grupoDuplicado.ids.length }} registros de esta planta son el mismo contrato
           </p>
           <p class="text-[11px] opacity-80">
-            Al fusionar se conserva uno con la unión de todos los datos y se
-            eliminan los demás. Ningún valor se sobreescribe.
+            Al fusionar se conserva uno con la unión de todos los datos y se eliminan los demás.
+            Ningún valor se sobreescribe.
           </p>
         </div>
-        <Button label="Fusionar" icon="pi pi-check" size="small" class="ml-auto shrink-0"
-          :loading="fusionando" @click="fusionar" />
+        <Button
+          label="Fusionar"
+          icon="pi pi-check"
+          size="small"
+          class="ml-auto shrink-0"
+          :loading="fusionando"
+          @click="fusionar"
+        />
       </div>
 
       <div v-else-if="grupoEnConflicto" class="dup-aviso dup-aviso--frena">
         <i class="pi pi-exclamation-triangle" />
         <div class="min-w-0">
           <p class="font-semibold">
-            {{ grupoEnConflicto.ids.length }} registros parecen el mismo contrato, pero se contradicen
+            {{ grupoEnConflicto.ids.length }} registros parecen el mismo contrato, pero se
+            contradicen
           </p>
           <p class="text-[11px] opacity-80">
             No se fusionan solos porque hay que decidir cuál valor vale:
-            {{ grupoEnConflicto.conflictos.map(c => c.campo).join(', ') }}.
-            Corrige el campo en los registros y el aviso pasará a ofrecer la fusión.
+            {{ grupoEnConflicto.conflictos.map((c) => c.campo).join(', ') }}. Corrige el campo en
+            los registros y el aviso pasará a ofrecer la fusión.
           </p>
         </div>
       </div>
 
       <template v-if="c">
         <!-- ── Resumen ──────────────────────────────────────────────────── -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <div class="cd-stat" :style="`background:${vigencia.bg};border-color:${vigencia.borde}`">
             <p class="cd-stat-lbl" :style="`color:${vigencia.color}`">
-              <i class="pi pi-circle-fill" style="font-size:6px" />Estado
+              <i class="pi pi-circle-fill" style="font-size: 6px" />Estado
             </p>
             <p class="cd-stat-val" :style="`color:${vigencia.color}`">{{ vigencia.label }}</p>
-            <p class="cd-stat-sub" :style="`color:${vigencia.color};opacity:.7`">{{ vigencia.detalle }}</p>
+            <p class="cd-stat-sub" :style="`color:${vigencia.color};opacity:.7`">
+              {{ vigencia.detalle }}
+            </p>
           </div>
 
           <div class="cd-stat">
-            <p class="cd-stat-lbl"><i class="pi pi-clock" style="font-size:9px" />Duración</p>
+            <p class="cd-stat-lbl"><i class="pi pi-clock" style="font-size: 9px" />Duración</p>
             <p class="cd-stat-val">{{ duracion || '—' }}</p>
             <p class="cd-stat-sub">{{ fmtFecha(c.fecha_inicio) }} → {{ fmtFecha(c.fecha_fin) }}</p>
           </div>
 
           <div class="cd-stat">
-            <p class="cd-stat-lbl"><i class="pi pi-chart-line" style="font-size:9px" />Tarifa CGM</p>
-            <p class="cd-stat-val">{{ fmtVal(valorVigente(idxCgm) ?? c.tarifa_cgm) }}
-              <span class="text-[10px] font-normal" style="color:#9b89b5">$/kWh</span>
+            <p class="cd-stat-lbl">
+              <i class="pi pi-chart-line" style="font-size: 9px" />Tarifa CGM
             </p>
-            <p class="cd-stat-sub">{{ idxCgm.length ? `${idxCgm.length} aniversarios` : 'sin indexación' }}</p>
+            <p class="cd-stat-val">
+              {{ fmtVal(valorVigente(idxCgm) ?? c.tarifa_cgm) }}
+              <span class="text-[10px] font-normal" style="color: #9b89b5">$/kWh</span>
+            </p>
+            <p class="cd-stat-sub">
+              {{ idxCgm.length ? `${idxCgm.length} aniversarios` : 'sin indexación' }}
+            </p>
           </div>
 
           <div class="cd-stat">
-            <p class="cd-stat-lbl"><i class="pi pi-chart-line" style="font-size:9px" />Tarifa Repr.</p>
-            <p class="cd-stat-val">{{ fmtVal(valorVigente(idxRep) ?? c.tarifa_representacion) }}
-              <span class="text-[10px] font-normal" style="color:#9b89b5">$/kWh</span>
+            <p class="cd-stat-lbl">
+              <i class="pi pi-chart-line" style="font-size: 9px" />Tarifa Repr.
             </p>
-            <p class="cd-stat-sub">{{ idxRep.length ? `${idxRep.length} aniversarios` : 'sin indexación' }}</p>
+            <p class="cd-stat-val">
+              {{ fmtVal(valorVigente(idxRep) ?? c.tarifa_representacion) }}
+              <span class="text-[10px] font-normal" style="color: #9b89b5">$/kWh</span>
+            </p>
+            <p class="cd-stat-sub">
+              {{ idxRep.length ? `${idxRep.length} aniversarios` : 'sin indexación' }}
+            </p>
           </div>
         </div>
 
         <!-- ── Identificación ───────────────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#915BD818"><i class="pi pi-id-card" style="color:#915BD8" /></span>
+            <span class="cd-ico" style="background: #915bd818"
+              ><i class="pi pi-id-card" style="color: #915bd8"
+            /></span>
             <h3 class="cd-sec-title">Identificación</h3>
             <div class="cd-sec-act">
-              <Button v-if="edit !== 'id'" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrir('id')" />
+              <Button
+                v-if="edit !== 'id'"
+                icon="pi pi-pencil"
+                label="Editar"
+                size="small"
+                text
+                severity="secondary"
+                @click="abrir('id')"
+              />
               <template v-else>
-                <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardar(['numero_contrato', 'inversionista_nombre', 'portafolio',
-                                   'codigo_sun_factory', 'nombre_proyecto_ref',
-                                   'proyecto_id', 'inversionista_id', 'frontera_ids'])" />
+                <Button
+                  label="Cancelar"
+                  size="small"
+                  text
+                  severity="secondary"
+                  @click="edit = null"
+                />
+                <Button
+                  label="Guardar"
+                  icon="pi pi-check"
+                  size="small"
+                  :loading="guardando"
+                  @click="
+                    guardar([
+                      'numero_contrato',
+                      'inversionista_nombre',
+                      'portafolio',
+                      'codigo_sun_factory',
+                      'nombre_proyecto_ref',
+                      'proyecto_id',
+                      'inversionista_id',
+                      'frontera_ids',
+                    ])
+                  "
+                />
               </template>
             </div>
           </header>
@@ -152,21 +235,31 @@
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">
                   Inversionista
-                  <i class="pi pi-info-circle text-[10px]"
-                     v-tooltip.top="'El texto del acta. El vínculo con el inversionista de la planta es el que decide si el contrato sigue vigente.'" />
+                  <i
+                    class="pi pi-info-circle text-[10px]"
+                    v-tooltip.top="
+                      'El texto del acta. El vínculo con el inversionista de la planta es el que decide si el contrato sigue vigente.'
+                    "
+                  />
                 </span>
-                <span class="text-sm" style="color:#2C2039">{{ c.inversionista_nombre || '—' }}</span>
+                <span class="text-sm" style="color: #2c2039">{{
+                  c.inversionista_nombre || '—'
+                }}</span>
                 <!-- Sin vínculo no se puede saber si su participación sigue
                      abierta, así que el contrato nunca se cierra solo. -->
                 <span v-if="!c.inversionista_id && c.inversionista_nombre" class="mini-alerta">
-                  <i class="pi pi-exclamation-triangle" />Sin vincular a un inversionista de la planta
+                  <i class="pi pi-exclamation-triangle" />Sin vincular a un inversionista de la
+                  planta
                 </span>
                 <!-- Verde solo cuando el inversionista sigue participando. Con
                      la participación cerrada el dato es igual de correcto, pero
                      no es una señal de "todo bien": es el motivo de que el
                      contrato esté terminado. -->
-                <span v-else-if="c.inversionista" class="text-[10.5px]"
-                      :style="`color:${inversionistaParticipa ? '#15803d' : '#6b5a8a'}`">
+                <span
+                  v-else-if="c.inversionista"
+                  class="text-[10.5px]"
+                  :style="`color:${inversionistaParticipa ? '#15803d' : '#6b5a8a'}`"
+                >
                   {{ inversionistaParticipa ? '✓' : '·' }} {{ vigenciaInversionista }}
                 </span>
               </div>
@@ -175,21 +268,33 @@
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">
                   Proyecto según el contrato
-                  <i class="pi pi-info-circle text-[10px]"
-                     v-tooltip.top="'Texto que traía el acta. Es informativo: la asociación real es la Planta asociada.'" />
+                  <i
+                    class="pi pi-info-circle text-[10px]"
+                    v-tooltip.top="
+                      'Texto que traía el acta. Es informativo: la asociación real es la Planta asociada.'
+                    "
+                  />
                 </span>
-                <span class="text-sm" style="color:#2C2039">{{ c.nombre_proyecto_ref || '—' }}</span>
+                <span class="text-sm" style="color: #2c2039">{{
+                  c.nombre_proyecto_ref || '—'
+                }}</span>
               </div>
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">
                   Planta asociada
-                  <i class="pi pi-info-circle text-[10px]"
-                     v-tooltip.top="'La relación que usa toda la plataforma. Se cambia desde Servicios > Representación.'" />
+                  <i
+                    class="pi pi-info-circle text-[10px]"
+                    v-tooltip.top="
+                      'La relación que usa toda la plataforma. Se cambia desde Servicios > Representación.'
+                    "
+                  />
                 </span>
-                <span v-if="c.proyecto" class="text-sm" style="color:#2C2039">
+                <span v-if="c.proyecto" class="text-sm" style="color: #2c2039">
                   {{ c.proyecto.nombre_comercial }}
                 </span>
-                <span v-else class="text-sm font-semibold" style="color:#92400E">Sin proyecto</span>
+                <span v-else class="text-sm font-semibold" style="color: #92400e"
+                  >Sin proyecto</span
+                >
                 <!-- Las plantas hermanas numeradas (Agustín 1/2/3, Naos 1/2/3) son
                      el caso donde una asignación equivocada pasa inadvertida: el
                      nombre casi coincide y solo cambia el número. -->
@@ -197,13 +302,19 @@
                   <i class="pi pi-exclamation-triangle" />{{ discrepanciaPlanta }}
                 </span>
               </div>
-              <InfoField label="Fronteras cubiertas"
-                :value="(c.fronteras || []).map(f => f.nombre_frontera).join(', ') || null" />
+              <InfoField
+                label="Fronteras cubiertas"
+                :value="(c.fronteras || []).map((f) => f.nombre_frontera).join(', ') || null"
+              />
             </div>
             <div v-else class="cd-grid">
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Número de contrato</label>
-                <InputText v-model="form.numero_contrato" placeholder="Ej: UNERGY-RC-002-2025" class="w-full" />
+                <InputText
+                  v-model="form.numero_contrato"
+                  placeholder="Ej: UNERGY-RC-002-2025"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Inversionista (texto del acta)</label>
@@ -213,10 +324,18 @@
                    es de donde sale la vigencia del contrato. -->
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Vincular con</label>
-                <Select v-model="form.inversionista_id" :options="opcionesInversionista"
-                  optionLabel="etiqueta" optionValue="cliente_id" showClear filter
-                  placeholder="Inversionista de la planta…" size="small" class="w-full" />
-                <span class="text-[10.5px]" style="color:#9b89b5">
+                <Select
+                  v-model="form.inversionista_id"
+                  :options="opcionesInversionista"
+                  optionLabel="etiqueta"
+                  optionValue="cliente_id"
+                  showClear
+                  filter
+                  placeholder="Inversionista de la planta…"
+                  size="small"
+                  class="w-full"
+                />
+                <span class="text-[10.5px]" style="color: #9b89b5">
                   De aquí sale si el contrato sigue vigente.
                 </span>
               </div>
@@ -237,19 +356,37 @@
                    estar donde se ve el problema. -->
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Planta asociada</label>
-                <Select v-model="form.proyecto_id" :options="proyectos"
-                  optionLabel="nombre_comercial" optionValue="id" filter showClear
-                  :loading="cargandoProyectos" placeholder="Buscar planta…"
-                  filterPlaceholder="Escribe para filtrar…" size="small" class="w-full" />
-                <span class="text-[10.5px]" style="color:#9b89b5">
+                <Select
+                  v-model="form.proyecto_id"
+                  :options="proyectos"
+                  optionLabel="nombre_comercial"
+                  optionValue="id"
+                  filter
+                  showClear
+                  :loading="cargandoProyectos"
+                  placeholder="Buscar planta…"
+                  filterPlaceholder="Escribe para filtrar…"
+                  size="small"
+                  class="w-full"
+                />
+                <span class="text-[10.5px]" style="color: #9b89b5">
                   Cambiarla mueve el contrato a otra planta.
                 </span>
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Fronteras cubiertas</label>
-                <MultiSelect v-model="form.frontera_ids" :options="fronterasDelProyecto"
-                  optionLabel="nombre_frontera" optionValue="id" placeholder="Seleccionar fronteras"
-                  :disabled="!form.proyecto_id" filter display="chip" size="small" class="w-full" />
+                <MultiSelect
+                  v-model="form.frontera_ids"
+                  :options="fronterasDelProyecto"
+                  optionLabel="nombre_frontera"
+                  optionValue="id"
+                  placeholder="Seleccionar fronteras"
+                  :disabled="!form.proyecto_id"
+                  filter
+                  display="chip"
+                  size="small"
+                  class="w-full"
+                />
               </div>
             </div>
           </div>
@@ -258,36 +395,68 @@
         <!-- ── Partes del contrato ──────────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#3b82f618"><i class="pi pi-users" style="color:#3b82f6" /></span>
+            <span class="cd-ico" style="background: #3b82f618"
+              ><i class="pi pi-users" style="color: #3b82f6"
+            /></span>
             <h3 class="cd-sec-title">Partes del contrato</h3>
             <div class="cd-sec-act">
-              <Button v-if="edit !== 'partes'" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrir('partes')" />
+              <Button
+                v-if="edit !== 'partes'"
+                icon="pi pi-pencil"
+                label="Editar"
+                size="small"
+                text
+                severity="secondary"
+                @click="abrir('partes')"
+              />
               <template v-else>
-                <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardar(['contratante_nombre', 'contratante_nit',
-                                   'prestador_nombre', 'prestador_nit'])" />
+                <Button
+                  label="Cancelar"
+                  size="small"
+                  text
+                  severity="secondary"
+                  @click="edit = null"
+                />
+                <Button
+                  label="Guardar"
+                  icon="pi pi-check"
+                  size="small"
+                  :loading="guardando"
+                  @click="
+                    guardar([
+                      'contratante_nombre',
+                      'contratante_nit',
+                      'prestador_nombre',
+                      'prestador_nit',
+                    ])
+                  "
+                />
               </template>
             </div>
           </header>
           <div class="cd-sec-body">
             <div v-if="edit !== 'partes'" class="cd-partes">
               <div class="cd-parte">
-                <p class="cd-parte-rol"><i class="pi pi-building" style="font-size:9px" />Contratante</p>
+                <p class="cd-parte-rol">
+                  <i class="pi pi-building" style="font-size: 9px" />Contratante
+                </p>
                 <p class="cd-parte-nom">{{ c.contratante_nombre || '—' }}</p>
                 <p class="cd-parte-nit">NIT {{ c.contratante_nit || '—' }}</p>
               </div>
               <i class="pi pi-arrow-right cd-partes-flecha" />
               <div class="cd-parte">
-                <p class="cd-parte-rol"><i class="pi pi-briefcase" style="font-size:9px" />Prestador</p>
+                <p class="cd-parte-rol">
+                  <i class="pi pi-briefcase" style="font-size: 9px" />Prestador
+                </p>
                 <p class="cd-parte-nom">{{ c.prestador_nombre || '—' }}</p>
                 <p class="cd-parte-nit">NIT {{ c.prestador_nit || '—' }}</p>
               </div>
             </div>
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div class="cd-parte space-y-3">
-                <p class="cd-parte-rol"><i class="pi pi-building" style="font-size:9px" />Contratante</p>
+                <p class="cd-parte-rol">
+                  <i class="pi pi-building" style="font-size: 9px" />Contratante
+                </p>
                 <div class="flex flex-col gap-1">
                   <label class="cd-lbl">Nombre / Razón social</label>
                   <InputText v-model="form.contratante_nombre" class="w-full" />
@@ -298,7 +467,9 @@
                 </div>
               </div>
               <div class="cd-parte space-y-3">
-                <p class="cd-parte-rol"><i class="pi pi-briefcase" style="font-size:9px" />Prestador</p>
+                <p class="cd-parte-rol">
+                  <i class="pi pi-briefcase" style="font-size: 9px" />Prestador
+                </p>
                 <div class="flex flex-col gap-1">
                   <label class="cd-lbl">Nombre / Razón social</label>
                   <InputText v-model="form.prestador_nombre" class="w-full" />
@@ -315,16 +486,43 @@
         <!-- ── Vigencia ─────────────────────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#10b98118"><i class="pi pi-calendar" style="color:#10b981" /></span>
+            <span class="cd-ico" style="background: #10b98118"
+              ><i class="pi pi-calendar" style="color: #10b981"
+            /></span>
             <h3 class="cd-sec-title">Vigencia</h3>
             <div class="cd-sec-act">
-              <Button v-if="edit !== 'vigencia'" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrir('vigencia')" />
+              <Button
+                v-if="edit !== 'vigencia'"
+                icon="pi pi-pencil"
+                label="Editar"
+                size="small"
+                text
+                severity="secondary"
+                @click="abrir('vigencia')"
+              />
               <template v-else>
-                <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardar(['estado', 'fecha_firma_contrato', 'fecha_inicio', 'fecha_fin',
-                                   'renovacion_automatica'])" />
+                <Button
+                  label="Cancelar"
+                  size="small"
+                  text
+                  severity="secondary"
+                  @click="edit = null"
+                />
+                <Button
+                  label="Guardar"
+                  icon="pi pi-check"
+                  size="small"
+                  :loading="guardando"
+                  @click="
+                    guardar([
+                      'estado',
+                      'fecha_firma_contrato',
+                      'fecha_inicio',
+                      'fecha_fin',
+                      'renovacion_automatica',
+                    ])
+                  "
+                />
               </template>
             </div>
           </header>
@@ -339,45 +537,78 @@
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Estado</span>
                 <div>
-                  <Tag :value="ESTADO_LABELS[c.estado] || c.estado || '—'"
-                    :severity="ESTADO_SEVERITY[c.estado] || 'secondary'" class="text-[10px]" />
+                  <Tag
+                    :value="ESTADO_LABELS[c.estado] || c.estado || '—'"
+                    :severity="ESTADO_SEVERITY[c.estado] || 'secondary'"
+                    class="text-[10px]"
+                  />
                 </div>
               </div>
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Renovación automática</span>
                 <div>
-                  <Tag v-if="c.renovacion_automatica != null"
+                  <Tag
+                    v-if="c.renovacion_automatica != null"
                     :severity="c.renovacion_automatica ? 'success' : 'secondary'"
-                    :value="c.renovacion_automatica ? 'Sí' : 'No'" class="text-[10px]" />
-                  <span v-else class="text-sm" style="color:#2C2039">—</span>
+                    :value="c.renovacion_automatica ? 'Sí' : 'No'"
+                    class="text-[10px]"
+                  />
+                  <span v-else class="text-sm" style="color: #2c2039">—</span>
                 </div>
               </div>
             </div>
             <div v-else class="cd-grid">
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Estado</label>
-                <Select v-model="form.estado" :options="ESTADOS_OPCIONES" optionLabel="label"
-                  optionValue="value" class="w-full" />
+                <Select
+                  v-model="form.estado"
+                  :options="ESTADOS_OPCIONES"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Fecha de firma</label>
-                <DatePicker v-model="form.fecha_firma_contrato" dateFormat="yy-mm-dd" showIcon
-                  :manualInput="true" class="w-full" />
+                <DatePicker
+                  v-model="form.fecha_firma_contrato"
+                  dateFormat="yy-mm-dd"
+                  showIcon
+                  :manualInput="true"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Fecha inicio</label>
-                <DatePicker v-model="form.fecha_inicio" dateFormat="yy-mm-dd" showIcon
-                  :manualInput="true" class="w-full" />
+                <DatePicker
+                  v-model="form.fecha_inicio"
+                  dateFormat="yy-mm-dd"
+                  showIcon
+                  :manualInput="true"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Fecha fin</label>
-                <DatePicker v-model="form.fecha_fin" dateFormat="yy-mm-dd" showIcon
-                  :manualInput="true" class="w-full" />
+                <DatePicker
+                  v-model="form.fecha_fin"
+                  dateFormat="yy-mm-dd"
+                  showIcon
+                  :manualInput="true"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Renovación automática</label>
-                <Select v-model="form.renovacion_automatica" :options="SI_NO" optionLabel="label"
-                  optionValue="value" class="w-full" placeholder="Sin dato" showClear />
+                <Select
+                  v-model="form.renovacion_automatica"
+                  :options="SI_NO"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full"
+                  placeholder="Sin dato"
+                  showClear
+                />
               </div>
             </div>
           </div>
@@ -386,59 +617,117 @@
         <!-- ── Condiciones comerciales ──────────────────────────────────── -->
         <section class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#f59e0b18"><i class="pi pi-dollar" style="color:#f59e0b" /></span>
+            <span class="cd-ico" style="background: #f59e0b18"
+              ><i class="pi pi-dollar" style="color: #f59e0b"
+            /></span>
             <h3 class="cd-sec-title">Condiciones comerciales</h3>
             <div class="cd-sec-act">
-              <Button v-if="edit !== 'comercial'" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrir('comercial')" />
+              <Button
+                v-if="edit !== 'comercial'"
+                icon="pi pi-pencil"
+                label="Editar"
+                size="small"
+                text
+                severity="secondary"
+                @click="abrir('comercial')"
+              />
               <template v-else>
-                <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardar(['tarifa_admin', 'tarifa_cgm', 'tarifa_representacion',
-                                   'indice_indexacion', 'periodicidad_pago', 'responsable_iva',
-                                   'enlace_drive'])" />
+                <Button
+                  label="Cancelar"
+                  size="small"
+                  text
+                  severity="secondary"
+                  @click="edit = null"
+                />
+                <Button
+                  label="Guardar"
+                  icon="pi pi-check"
+                  size="small"
+                  :loading="guardando"
+                  @click="
+                    guardar([
+                      'tarifa_admin',
+                      'tarifa_cgm',
+                      'tarifa_representacion',
+                      'indice_indexacion',
+                      'periodicidad_pago',
+                      'responsable_iva',
+                      'enlace_drive',
+                    ])
+                  "
+                />
               </template>
             </div>
           </header>
           <div class="cd-sec-body">
             <div v-if="edit !== 'comercial'" class="cd-grid">
-              <InfoField label="Tarifa admin"
-                :value="c.tarifa_admin != null ? (c.tarifa_admin * 100).toFixed(2) + ' %' : null" />
+              <InfoField
+                label="Tarifa admin"
+                :value="c.tarifa_admin != null ? (c.tarifa_admin * 100).toFixed(2) + ' %' : null"
+              />
               <InfoField label="Tarifa CGM base ($/kWh)" :value="fmtVal(c.tarifa_cgm)" />
-              <InfoField label="Tarifa representación base ($/kWh)" :value="fmtVal(c.tarifa_representacion)" />
+              <InfoField
+                label="Tarifa representación base ($/kWh)"
+                :value="fmtVal(c.tarifa_representacion)"
+              />
               <InfoField label="Índice de indexación" :value="c.indice_indexacion" />
               <InfoField label="Periodicidad de pago" :value="c.periodicidad_pago" />
               <div class="flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Responsable de IVA</span>
                 <div>
-                  <Tag :severity="c.responsable_iva ? 'success' : 'secondary'"
-                    :value="c.responsable_iva ? 'Sí' : 'No'" class="text-[10px]" />
+                  <Tag
+                    :severity="c.responsable_iva ? 'success' : 'secondary'"
+                    :value="c.responsable_iva ? 'Sí' : 'No'"
+                    class="text-[10px]"
+                  />
                 </div>
               </div>
               <div class="cd-ancho flex flex-col gap-0.5">
                 <span class="cd-campo-lbl">Contrato en Drive</span>
-                <a v-if="c.enlace_drive" :href="c.enlace_drive" target="_blank" rel="noopener"
-                  class="text-sm inline-flex items-center gap-1 hover:underline" style="color:#3b82f6">
+                <a
+                  v-if="c.enlace_drive"
+                  :href="c.enlace_drive"
+                  target="_blank"
+                  rel="noopener"
+                  class="inline-flex items-center gap-1 text-sm hover:underline"
+                  style="color: #3b82f6"
+                >
                   <i class="pi pi-external-link text-[10px]" />Ver contrato
                 </a>
-                <span v-else class="text-sm" style="color:#2C2039">—</span>
+                <span v-else class="text-sm" style="color: #2c2039">—</span>
               </div>
             </div>
             <div v-else class="cd-grid">
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Tarifa admin (%)</label>
-                <InputNumber v-model="form.tarifa_admin_pct" :minFractionDigits="1" :maxFractionDigits="2"
-                  suffix=" %" locale="en-US" class="w-full" />
+                <InputNumber
+                  v-model="form.tarifa_admin_pct"
+                  :minFractionDigits="1"
+                  :maxFractionDigits="2"
+                  suffix=" %"
+                  locale="en-US"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Tarifa CGM base ($/kWh)</label>
-                <InputNumber v-model="form.tarifa_cgm" :minFractionDigits="0" :maxFractionDigits="6"
-                  locale="en-US" class="w-full" />
+                <InputNumber
+                  v-model="form.tarifa_cgm"
+                  :minFractionDigits="0"
+                  :maxFractionDigits="6"
+                  locale="en-US"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Tarifa representación base ($/kWh)</label>
-                <InputNumber v-model="form.tarifa_representacion" :minFractionDigits="0"
-                  :maxFractionDigits="6" locale="en-US" class="w-full" />
+                <InputNumber
+                  v-model="form.tarifa_representacion"
+                  :minFractionDigits="0"
+                  :maxFractionDigits="6"
+                  locale="en-US"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Índice de indexación</label>
@@ -446,18 +735,33 @@
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Periodicidad de pago</label>
-                <Select v-model="form.periodicidad_pago" :options="PERIODICIDADES" optionLabel="label"
-                  optionValue="value" class="w-full" placeholder="Sin dato" showClear />
+                <Select
+                  v-model="form.periodicidad_pago"
+                  :options="PERIODICIDADES"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full"
+                  placeholder="Sin dato"
+                  showClear
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Responsable de IVA</label>
-                <Select v-model="form.responsable_iva" :options="SI_NO" optionLabel="label"
-                  optionValue="value" class="w-full" />
+                <Select
+                  v-model="form.responsable_iva"
+                  :options="SI_NO"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full"
+                />
               </div>
               <div class="cd-ancho flex flex-col gap-1">
                 <label class="cd-lbl">Contrato en Drive</label>
-                <InputText v-model="form.enlace_drive" placeholder="https://drive.google.com/..."
-                  class="w-full" />
+                <InputText
+                  v-model="form.enlace_drive"
+                  placeholder="https://drive.google.com/..."
+                  class="w-full"
+                />
               </div>
             </div>
           </div>
@@ -466,16 +770,38 @@
         <!-- ── Indexación ───────────────────────────────────────────────── -->
         <section v-for="t in TABLAS_IDX" :key="t.clave" class="cd-sec">
           <header class="cd-sec-head">
-            <span class="cd-ico" style="background:#1e40af18"><i class="pi pi-table" style="color:#1e40af" /></span>
+            <span class="cd-ico" style="background: #1e40af18"
+              ><i class="pi pi-table" style="color: #1e40af"
+            /></span>
             <h3 class="cd-sec-title">{{ t.titulo }}</h3>
             <div class="cd-sec-act">
-              <span v-if="edit !== t.clave" class="text-xs mr-1" style="color:#9b89b5">Hoy: {{ hoy }}</span>
-              <Button v-if="edit !== t.clave" icon="pi pi-pencil" label="Editar" size="small" text
-                severity="secondary" @click="abrirIdx(t.clave)" />
+              <span v-if="edit !== t.clave" class="mr-1 text-xs" style="color: #9b89b5"
+                >Hoy: {{ hoy }}</span
+              >
+              <Button
+                v-if="edit !== t.clave"
+                icon="pi pi-pencil"
+                label="Editar"
+                size="small"
+                text
+                severity="secondary"
+                @click="abrirIdx(t.clave)"
+              />
               <template v-else>
-                <Button label="Cancelar" size="small" text severity="secondary" @click="edit = null" />
-                <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando"
-                  @click="guardarIdx(t.clave)" />
+                <Button
+                  label="Cancelar"
+                  size="small"
+                  text
+                  severity="secondary"
+                  @click="edit = null"
+                />
+                <Button
+                  label="Guardar"
+                  icon="pi pi-check"
+                  size="small"
+                  :loading="guardando"
+                  @click="guardarIdx(t.clave)"
+                />
               </template>
             </div>
           </header>
@@ -485,79 +811,132 @@
             <div v-for="(f, i) in filasEdit" :key="i" class="idx-fila">
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Año</label>
-                <InputNumber v-model="f.anio" :useGrouping="false" :min="2000" :max="2100"
-                  class="w-full" />
+                <InputNumber
+                  v-model="f.anio"
+                  :useGrouping="false"
+                  :min="2000"
+                  :max="2100"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">IPC (%)</label>
-                <InputNumber v-model="f.ipc" :minFractionDigits="1" :maxFractionDigits="3"
-                  :disabled="f.esBase" placeholder="—" locale="en-US" class="w-full" />
+                <InputNumber
+                  v-model="f.ipc"
+                  :minFractionDigits="1"
+                  :maxFractionDigits="3"
+                  :disabled="f.esBase"
+                  placeholder="—"
+                  locale="en-US"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Valor ($/kWh)</label>
-                <InputNumber v-model="f.valor" :minFractionDigits="0" :maxFractionDigits="6"
-                  locale="en-US" class="w-full" />
+                <InputNumber
+                  v-model="f.valor"
+                  :minFractionDigits="0"
+                  :maxFractionDigits="6"
+                  locale="en-US"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="cd-lbl">Base</label>
-                <div class="flex items-center gap-2 h-9">
+                <div class="flex h-9 items-center gap-2">
                   <Checkbox v-model="f.esBase" :binary="true" @change="marcarBase(i)" />
-                  <Button icon="pi pi-trash" text severity="danger" size="small"
-                    v-tooltip.bottom="'Quitar fila'" @click="filasEdit.splice(i, 1)" />
+                  <Button
+                    icon="pi pi-trash"
+                    text
+                    severity="danger"
+                    size="small"
+                    v-tooltip.bottom="'Quitar fila'"
+                    @click="filasEdit.splice(i, 1)"
+                  />
                 </div>
               </div>
             </div>
-            <Button label="Agregar año" icon="pi pi-plus" size="small" text @click="agregarFilaIdx" />
-            <p class="text-[11px]" style="color:#9b89b5">
-              El año marcado como base es la tarifa inicial y no lleva IPC. Los demás llevan el
-              IPC con que se indexó ese aniversario.
+            <Button
+              label="Agregar año"
+              icon="pi pi-plus"
+              size="small"
+              text
+              @click="agregarFilaIdx"
+            />
+            <p class="text-[11px]" style="color: #9b89b5">
+              El año marcado como base es la tarifa inicial y no lleva IPC. Los demás llevan el IPC
+              con que se indexó ese aniversario.
             </p>
           </div>
 
           <div v-else class="cd-sec-body !p-0">
-            <div v-if="!t.filas.length" class="px-4 py-6 text-center text-xs" style="color:#9b89b5">
+            <div
+              v-if="!t.filas.length"
+              class="px-4 py-6 text-center text-xs"
+              style="color: #9b89b5"
+            >
               Sin datos de indexación. Usa <strong>Editar</strong> para capturarlos.
             </div>
-            <table v-else class="w-full text-sm border-collapse">
+            <table v-else class="w-full border-collapse text-sm">
               <thead>
-                <tr style="background:#faf8fd">
+                <tr style="background: #faf8fd">
                   <th class="cd-th">{{ c.fecha_firma_contrato ? 'Fecha aniversario' : 'Año' }}</th>
                   <th class="cd-th">IPC aplicado</th>
-                  <th class="cd-th" style="text-align:right">Valor ($/kWh)</th>
-                  <th class="cd-th" style="text-align:center">Estado</th>
+                  <th class="cd-th" style="text-align: right">Valor ($/kWh)</th>
+                  <th class="cd-th" style="text-align: center">Estado</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(f, i) in t.filas" :key="i" class="border-b" style="border-color:#f4f1f9"
-                  :style="iVigente(t.filas) === i ? 'background:#fff7ed' : ''">
+                <tr
+                  v-for="(f, i) in t.filas"
+                  :key="i"
+                  class="border-b"
+                  style="border-color: #f4f1f9"
+                  :style="iVigente(t.filas) === i ? 'background:#fff7ed' : ''"
+                >
                   <td class="px-4 py-2.5">
                     <div class="flex items-center gap-1.5">
-                      <span class="font-mono font-semibold"
-                        :style="iVigente(t.filas) === i ? 'color:#d97706' : 'color:#2C2039'">
+                      <span
+                        class="font-mono font-semibold"
+                        :style="iVigente(t.filas) === i ? 'color:#d97706' : 'color:#2C2039'"
+                      >
                         {{ etiquetaAnio(f) }}
                       </span>
-                      <span v-if="f.esBase" class="text-[10px] px-1.5 py-0.5 rounded font-bold"
-                        style="background:#e0f2fe;color:#0369a1">base</span>
-                      <span v-if="iVigente(t.filas) === i && !f.esBase"
-                        class="text-[10px] px-1.5 py-0.5 rounded font-bold"
-                        style="background:#fef3c7;color:#d97706">actual</span>
+                      <span
+                        v-if="f.esBase"
+                        class="rounded px-1.5 py-0.5 text-[10px] font-bold"
+                        style="background: #e0f2fe; color: #0369a1"
+                        >base</span
+                      >
+                      <span
+                        v-if="iVigente(t.filas) === i && !f.esBase"
+                        class="rounded px-1.5 py-0.5 text-[10px] font-bold"
+                        style="background: #fef3c7; color: #d97706"
+                        >actual</span
+                      >
                     </div>
                   </td>
                   <td class="px-4 py-2.5">
                     <!-- El año base no lleva IPC por definición; en cualquier otro
                          año un IPC vacío es un dato que falta, no "base". -->
-                    <span v-if="f.ipc == null" class="text-xs" style="color:#9b89b5">
+                    <span v-if="f.ipc == null" class="text-xs" style="color: #9b89b5">
                       {{ f.esBase ? '— (base)' : '—' }}
                     </span>
-                    <span v-else class="font-mono tabular-nums" style="color:#374151">{{ f.ipc }}%</span>
+                    <span v-else class="font-mono tabular-nums" style="color: #374151"
+                      >{{ f.ipc }}%</span
+                    >
                   </td>
-                  <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                    :style="iVigente(t.filas) === i ? 'color:#d97706' : 'color:#2C2039'">
+                  <td
+                    class="px-4 py-2.5 text-right font-semibold tabular-nums"
+                    :style="iVigente(t.filas) === i ? 'color:#d97706' : 'color:#2C2039'"
+                  >
                     {{ fmtVal(f.valor) }}
                   </td>
                   <td class="px-4 py-2.5 text-center">
-                    <span class="text-xs font-medium px-2 py-0.5 rounded-full"
-                      :style="ESTILO_FILA[estadoFila(t.filas, i)]">
+                    <span
+                      class="rounded-full px-2 py-0.5 text-xs font-medium"
+                      :style="ESTILO_FILA[estadoFila(t.filas, i)]"
+                    >
                       {{ LABEL_FILA[estadoFila(t.filas, i)] }}
                     </span>
                   </td>
@@ -587,8 +966,12 @@ import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import api from '@/api/client'
 import {
-  anioDeFila, ordenarIndexacion, fechaAniversario, indiceVigente,
-  estadoFilaIndexacion, fmtTarifa,
+  anioDeFila,
+  ordenarIndexacion,
+  fechaAniversario,
+  indiceVigente,
+  estadoFilaIndexacion,
+  fmtTarifa,
 } from '@/utils/tarifasCgm'
 import InfoField from '@/components/InfoField.vue'
 
@@ -597,20 +980,31 @@ const toast = useToast()
 const confirm = useConfirm()
 
 const ESTADO_LABELS = {
-  vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación',
+  vigente: 'Vigente',
+  vencido: 'Vencido',
+  terminado: 'Terminado',
+  en_renovacion: 'En renovación',
 }
 const ESTADO_SEVERITY = {
-  vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn',
+  vigente: 'success',
+  vencido: 'danger',
+  terminado: 'secondary',
+  en_renovacion: 'warn',
 }
 const ESTADOS_OPCIONES = Object.entries(ESTADO_LABELS).map(([value, label]) => ({ value, label }))
-const SI_NO = [{ value: true, label: 'Sí' }, { value: false, label: 'No' }]
-const PERIODICIDADES = ['mensual', 'bimestral', 'trimestral', 'semestral', 'anual']
-  .map(v => ({ value: v, label: v.charAt(0).toUpperCase() + v.slice(1) }))
+const SI_NO = [
+  { value: true, label: 'Sí' },
+  { value: false, label: 'No' },
+]
+const PERIODICIDADES = ['mensual', 'bimestral', 'trimestral', 'semestral', 'anual'].map((v) => ({
+  value: v,
+  label: v.charAt(0).toUpperCase() + v.slice(1),
+}))
 
 const LABEL_FILA = { pagado: 'Pagado', vigente: 'Vigente', pendiente: 'Pendiente' }
 const ESTILO_FILA = {
-  pagado:    'background:#dcfce7;color:#166534',
-  vigente:   'background:#fef3c7;color:#d97706',
+  pagado: 'background:#dcfce7;color:#166534',
+  vigente: 'background:#fef3c7;color:#d97706',
   pendiente: 'background:#f3f4f6;color:#9ca3af',
 }
 
@@ -618,8 +1012,8 @@ const loading = ref(true)
 const proyectoNombre = ref('')
 const contratos = ref([])
 const idSeleccionado = ref(null)
-const edit = ref(null)          // 'id' | 'partes' | 'vigencia' | 'comercial'
-const proyectos = ref([])       // catálogo para reasignar la planta
+const edit = ref(null) // 'id' | 'partes' | 'vigencia' | 'comercial'
+const proyectos = ref([]) // catálogo para reasignar la planta
 // Inversionistas de ESTA planta, con sus períodos. Son las únicas opciones
 // válidas para vincular el contrato: el inversionista de un contrato de
 // representación participa en la planta, por definición.
@@ -628,12 +1022,14 @@ const fronterasDelProyecto = ref([])
 const cargandoProyectos = ref(false)
 const guardando = ref(false)
 
-const c = computed(() => contratos.value.find(x => x.id === idSeleccionado.value) || null)
+const c = computed(() => contratos.value.find((x) => x.id === idSeleccionado.value) || null)
 
 const hoy = new Date().toISOString().slice(0, 10)
 
 // ── Formato ──────────────────────────────────────────────────────────────────
-function fmtFecha(v) { return v ? String(v).slice(0, 10) : '—' }
+function fmtFecha(v) {
+  return v ? String(v).slice(0, 10) : '—'
+}
 // Mismo formato que usa la tabla del listado.
 const fmtVal = fmtTarifa
 
@@ -641,11 +1037,16 @@ const fmtVal = fmtTarifa
 // secas los deja indistinguibles. Cuando eso pasa se añade lo que los separa.
 function etiquetaContrato(x) {
   const base = x.numero_contrato || x.inversionista_nombre || `Contrato ${x.id}`
-  const repetida = contratos.value.filter(o =>
-    (o.numero_contrato || o.inversionista_nombre || `Contrato ${o.id}`) === base).length > 1
+  const repetida =
+    contratos.value.filter(
+      (o) => (o.numero_contrato || o.inversionista_nombre || `Contrato ${o.id}`) === base,
+    ).length > 1
   if (!repetida) return base
-  const detalle = x.numero_contrato ? null
-    : (x.nombre_proyecto_ref ? `ref ${x.nombre_proyecto_ref}` : `#${x.id}`)
+  const detalle = x.numero_contrato
+    ? null
+    : x.nombre_proyecto_ref
+      ? `ref ${x.nombre_proyecto_ref}`
+      : `#${x.id}`
   return detalle ? `${base} · ${detalle}` : `${base} · #${x.id}`
 }
 
@@ -659,11 +1060,11 @@ function etiquetaContrato(x) {
 const discrepanciaPlanta = computed(() => {
   const x = c.value
   if (!x?.proyecto || !x.nombre_proyecto_ref) return null
-  const numeros = t => (String(t).match(/\d+/g) || []).map(n => String(Number(n)))
+  const numeros = (t) => (String(t).match(/\d+/g) || []).map((n) => String(Number(n)))
   const enRef = numeros(x.nombre_proyecto_ref)
   const enPlanta = numeros(x.proyecto.nombre_comercial)
   if (!enRef.length || !enPlanta.length) return null
-  if (enRef.some(n => enPlanta.includes(n))) return null
+  if (enRef.some((n) => enPlanta.includes(n))) return null
   return `El contrato dice "${x.nombre_proyecto_ref}" — revisa si la planta es la correcta`
 })
 
@@ -671,19 +1072,21 @@ const discrepanciaPlanta = computed(() => {
 // Las opciones son los inversionistas de esta planta, con su período al lado:
 // elegir bien depende de ver quién estuvo cuándo, sobre todo cuando hay varios
 // fideicomisos de la misma fiduciaria.
-const opcionesInversionista = computed(() => inversionistasPlanta.value.map(i => ({
-  cliente_id: i.cliente_id,
-  etiqueta: `${i.cliente_nombre || `Cliente ${i.cliente_id}`}`
-           + ` · ${i.fecha_inicio || '—'} → ${i.fecha_fin || 'vigente'}`,
-})))
+const opcionesInversionista = computed(() =>
+  inversionistasPlanta.value.map((i) => ({
+    cliente_id: i.cliente_id,
+    etiqueta:
+      `${i.cliente_nombre || `Cliente ${i.cliente_id}`}` +
+      ` · ${i.fecha_inicio || '—'} → ${i.fecha_fin || 'vigente'}`,
+  })),
+)
 
 // ¿El inversionista vinculado sigue participando? Es lo que decide si el
 // contrato puede seguir vigente.
 const inversionistaParticipa = computed(() => {
   const x = c.value
   if (!x?.inversionista_id) return false
-  return inversionistasPlanta.value.some(
-    i => i.cliente_id === x.inversionista_id && !i.fecha_fin)
+  return inversionistasPlanta.value.some((i) => i.cliente_id === x.inversionista_id && !i.fecha_fin)
 })
 
 // Texto del período del inversionista vinculado, para explicar de dónde sale el
@@ -691,11 +1094,14 @@ const inversionistaParticipa = computed(() => {
 const vigenciaInversionista = computed(() => {
   const x = c.value
   if (!x?.inversionista_id) return ''
-  const suyas = inversionistasPlanta.value.filter(i => i.cliente_id === x.inversionista_id)
+  const suyas = inversionistasPlanta.value.filter((i) => i.cliente_id === x.inversionista_id)
   if (!suyas.length) return 'vinculado a alguien que no figura en la planta'
-  const abierta = suyas.find(i => !i.fecha_fin)
+  const abierta = suyas.find((i) => !i.fecha_fin)
   if (abierta) return `participa desde ${abierta.fecha_inicio || '—'}`
-  const ultima = suyas.map(i => i.fecha_fin).sort().at(-1)
+  const ultima = suyas
+    .map((i) => i.fecha_fin)
+    .sort()
+    .at(-1)
   return `participación terminada el ${ultima}`
 })
 
@@ -705,13 +1111,17 @@ const vigenciaInversionista = computed(() => {
 const duplicados = ref({ grupos_fusionables: [], grupos_con_conflicto: [] })
 const fusionando = ref(false)
 
-const idsVista = computed(() => new Set(contratos.value.map(x => x.id)))
-function delaVista(g) { return g.ids.some(id => idsVista.value.has(id)) }
+const idsVista = computed(() => new Set(contratos.value.map((x) => x.id)))
+function delaVista(g) {
+  return g.ids.some((id) => idsVista.value.has(id))
+}
 
-const grupoDuplicado = computed(() =>
-  (duplicados.value.grupos_fusionables || []).find(delaVista) || null)
-const grupoEnConflicto = computed(() =>
-  (duplicados.value.grupos_con_conflicto || []).find(delaVista) || null)
+const grupoDuplicado = computed(
+  () => (duplicados.value.grupos_fusionables || []).find(delaVista) || null,
+)
+const grupoEnConflicto = computed(
+  () => (duplicados.value.grupos_con_conflicto || []).find(delaVista) || null,
+)
 
 async function cargarDuplicados() {
   try {
@@ -720,8 +1130,12 @@ async function cargarDuplicados() {
   } catch (e) {
     // Antes esto se tragaba el error y el aviso simplemente no aparecía, sin
     // forma de saber si no había duplicados o si la consulta había fallado.
-    toast.add({ severity: 'warn', summary: 'No se pudo revisar duplicados',
-                detail: e.response?.data?.detail || e.message, life: 5000 })
+    toast.add({
+      severity: 'warn',
+      summary: 'No se pudo revisar duplicados',
+      detail: e.response?.data?.detail || e.message,
+      life: 5000,
+    })
   }
 }
 
@@ -732,8 +1146,9 @@ function confirmarEliminar() {
   const x = c.value
   confirm.require({
     header: 'Eliminar contrato',
-    message: `Se eliminará "${etiquetaContrato(x)}" de ${proyectoNombre.value || 'esta planta'}. `
-           + 'Esta acción no se puede deshacer.',
+    message:
+      `Se eliminará "${etiquetaContrato(x)}" de ${proyectoNombre.value || 'esta planta'}. ` +
+      'Esta acción no se puede deshacer.',
     icon: 'pi pi-exclamation-triangle',
     acceptLabel: 'Eliminar',
     rejectLabel: 'Cancelar',
@@ -745,28 +1160,41 @@ function confirmarEliminar() {
 async function eliminar(id) {
   try {
     await api.delete(`/contratos-servicio/${id}`)
-    contratos.value = contratos.value.filter(x => x.id !== id)
+    contratos.value = contratos.value.filter((x) => x.id !== id)
     idSeleccionado.value = contratos.value[0]?.id ?? null
     toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2500 })
     await cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo eliminar',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo eliminar',
+      detail: e.response?.data?.detail || e.message,
+      life: 4000,
+    })
   }
 }
 
 async function fusionar() {
   fusionando.value = true
   try {
-    const { data } = await api.post('/contratos-servicio/fusionar-representacion',
-                                    { ids: grupoDuplicado.value.ids })
-    toast.add({ severity: 'success', summary: 'Registros fusionados',
-                detail: `${data.contratos_eliminados} duplicado(s) eliminado(s)`, life: 3500 })
+    const { data } = await api.post('/contratos-servicio/fusionar-representacion', {
+      ids: grupoDuplicado.value.ids,
+    })
+    toast.add({
+      severity: 'success',
+      summary: 'Registros fusionados',
+      detail: `${data.contratos_eliminados} duplicado(s) eliminado(s)`,
+      life: 3500,
+    })
     await cargar()
     await cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo fusionar',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo fusionar',
+      detail: e.response?.data?.detail || e.message,
+      life: 4000,
+    })
   } finally {
     fusionando.value = false
   }
@@ -805,9 +1233,11 @@ function estadoFila(filas, i) {
 
 // ── Resumen ──────────────────────────────────────────────────────────────────
 const duracion = computed(() => {
-  const ini = c.value?.fecha_inicio, fin = c.value?.fecha_fin
+  const ini = c.value?.fecha_inicio,
+    fin = c.value?.fecha_fin
   if (!ini || !fin) return ''
-  const a = new Date(ini), b = new Date(fin)
+  const a = new Date(ini),
+    b = new Date(fin)
   let meses = (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth())
   if (meses < 0) return ''
   const años = Math.floor(meses / 12)
@@ -820,26 +1250,58 @@ const duracion = computed(() => {
 
 const vigencia = computed(() => {
   const x = c.value
-  const neutro = { label: '—', detalle: 'sin fechas', color: '#6b5a8a', bg: '#fff', borde: '#ECE7F2' }
+  const neutro = {
+    label: '—',
+    detalle: 'sin fechas',
+    color: '#6b5a8a',
+    bg: '#fff',
+    borde: '#ECE7F2',
+  }
   if (!x) return neutro
   if (x.estado === 'terminado') {
-    return { label: 'Terminado', detalle: 'cerrado', color: '#374151', bg: '#f9fafb', borde: '#e5e7eb' }
+    return {
+      label: 'Terminado',
+      detalle: 'cerrado',
+      color: '#374151',
+      bg: '#f9fafb',
+      borde: '#e5e7eb',
+    }
   }
   if (!x.fecha_fin) {
-    return { label: ESTADO_LABELS[x.estado] || x.estado || '—', detalle: 'sin fecha fin',
-             color: '#0369a1', bg: '#f0f9ff', borde: '#bae6fd' }
+    return {
+      label: ESTADO_LABELS[x.estado] || x.estado || '—',
+      detalle: 'sin fecha fin',
+      color: '#0369a1',
+      bg: '#f0f9ff',
+      borde: '#bae6fd',
+    }
   }
   const dias = Math.round((new Date(x.fecha_fin) - new Date(hoy)) / 86400000)
   if (dias < 0) {
-    return { label: 'Vencido', detalle: `venció hace ${Math.abs(dias)} días`,
-             color: '#b91c1c', bg: '#fef2f2', borde: '#fecaca' }
+    return {
+      label: 'Vencido',
+      detalle: `venció hace ${Math.abs(dias)} días`,
+      color: '#b91c1c',
+      bg: '#fef2f2',
+      borde: '#fecaca',
+    }
   }
   if (dias <= 60) {
-    return { label: 'Por vencer', detalle: `en ${dias} días`,
-             color: '#b45309', bg: '#fffbeb', borde: '#fde68a' }
+    return {
+      label: 'Por vencer',
+      detalle: `en ${dias} días`,
+      color: '#b45309',
+      bg: '#fffbeb',
+      borde: '#fde68a',
+    }
   }
-  return { label: 'Vigente', detalle: `${dias} días restantes`,
-           color: '#15803d', bg: '#f0fdf4', borde: '#bbf7d0' }
+  return {
+    label: 'Vigente',
+    detalle: `${dias} días restantes`,
+    color: '#15803d',
+    bg: '#f0fdf4',
+    borde: '#bbf7d0',
+  }
 })
 
 // ── Edición por sección ──────────────────────────────────────────────────────
@@ -856,7 +1318,7 @@ function abrir(seccion) {
     codigo_sun_factory: x.codigo_sun_factory || '',
     nombre_proyecto_ref: x.nombre_proyecto_ref || '',
     proyecto_id: x.proyecto_id ?? null,
-    frontera_ids: (x.fronteras || []).map(f => f.id),
+    frontera_ids: (x.fronteras || []).map((f) => f.id),
     contratante_nombre: x.contratante_nombre || '',
     contratante_nit: x.contratante_nit || '',
     prestador_nombre: x.prestador_nombre || '',
@@ -887,16 +1349,21 @@ async function cargarFronterasDelProyecto(proyectoId) {
   try {
     const { data } = await api.get('/fronteras', { params: { proyecto_id: proyectoId } })
     fronterasDelProyecto.value = data
-  } catch { /* el select de fronteras queda vacio */ }
+  } catch {
+    /* el select de fronteras queda vacio */
+  }
 }
 
 // Si se reasigna la planta a medio editar, las fronteras seleccionadas de la
 // planta anterior ya no aplican -- se limpian y se recarga el catalogo.
-watch(() => form.proyecto_id, (nuevo, viejo) => {
-  if (edit.value !== 'id' || nuevo === viejo) return
-  form.frontera_ids = []
-  cargarFronterasDelProyecto(nuevo)
-})
+watch(
+  () => form.proyecto_id,
+  (nuevo, viejo) => {
+    if (edit.value !== 'id' || nuevo === viejo) return
+    form.frontera_ids = []
+    cargarFronterasDelProyecto(nuevo)
+  },
+)
 
 async function cargarProyectos() {
   cargandoProyectos.value = true
@@ -904,19 +1371,25 @@ async function cargarProyectos() {
     const { data } = await api.get('/proyectos', { params: { page: 1, size: 500 } })
     proyectos.value = data.items ?? data
   } catch (e) {
-    toast.add({ severity: 'warn', summary: 'No se pudo cargar el listado de plantas',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.add({
+      severity: 'warn',
+      summary: 'No se pudo cargar el listado de plantas',
+      detail: e.response?.data?.detail || e.message,
+      life: 4000,
+    })
   } finally {
     cargandoProyectos.value = false
   }
 }
 
-function aFecha(v) { return v ? new Date(`${String(v).slice(0, 10)}T00:00:00`) : null }
+function aFecha(v) {
+  return v ? new Date(`${String(v).slice(0, 10)}T00:00:00`) : null
+}
 function deFecha(v) {
   if (!v) return null
   if (typeof v === 'string') return v.slice(0, 10)
   // DatePicker entrega Date local; toISOString pasaría a UTC y podría restar un día.
-  const p = n => String(n).padStart(2, '0')
+  const p = (n) => String(n).padStart(2, '0')
   return `${v.getFullYear()}-${p(v.getMonth() + 1)}-${p(v.getDate())}`
 }
 
@@ -948,23 +1421,30 @@ async function enviar(payload) {
     // nada hubiera cambiado.
     const pid = Number(route.params.id)
     if (data.proyecto_id !== pid) {
-      contratos.value = contratos.value.filter(x => x.id !== data.id)
+      contratos.value = contratos.value.filter((x) => x.id !== data.id)
       idSeleccionado.value = contratos.value[0]?.id ?? null
-      toast.add({ severity: 'success', summary: 'Contrato movido',
-                  detail: data.proyecto
-                    ? `Ahora pertenece a ${data.proyecto.nombre_comercial}`
-                    : 'Quedó sin planta asociada',
-                  life: 5000 })
+      toast.add({
+        severity: 'success',
+        summary: 'Contrato movido',
+        detail: data.proyecto
+          ? `Ahora pertenece a ${data.proyecto.nombre_comercial}`
+          : 'Quedó sin planta asociada',
+        life: 5000,
+      })
       await cargarDuplicados()
       return
     }
 
-    const i = contratos.value.findIndex(x => x.id === data.id)
+    const i = contratos.value.findIndex((x) => x.id === data.id)
     if (i !== -1) contratos.value[i] = data
     toast.add({ severity: 'success', summary: 'Cambios guardados', life: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo guardar',
+      detail: e.response?.data?.detail || e.message,
+      life: 4000,
+    })
   } finally {
     guardando.value = false
   }
@@ -978,7 +1458,7 @@ const filasEdit = ref([])
 
 function abrirIdx(clave) {
   const origen = clave === 'cgm' ? idxCgm.value : idxRep.value
-  filasEdit.value = origen.map(f => ({
+  filasEdit.value = origen.map((f) => ({
     anio: anio(f),
     ipc: f.ipc != null ? Number(f.ipc) : null,
     valor: f.valor != null ? Number(f.valor) : null,
@@ -991,22 +1471,26 @@ function agregarFilaIdx() {
   const ultimo = filasEdit.value.reduce((m, f) => Math.max(m, f.anio || 0), 0)
   filasEdit.value.push({
     anio: ultimo ? ultimo + 1 : new Date().getFullYear(),
-    ipc: null, valor: null, esBase: !filasEdit.value.length,
+    ipc: null,
+    valor: null,
+    esBase: !filasEdit.value.length,
   })
 }
 
 // Solo un año puede ser la base: marcar uno desmarca el resto.
 function marcarBase(i) {
   if (!filasEdit.value[i].esBase) return
-  filasEdit.value.forEach((f, j) => { if (j !== i) f.esBase = false })
+  filasEdit.value.forEach((f, j) => {
+    if (j !== i) f.esBase = false
+  })
   filasEdit.value[i].ipc = null
 }
 
 function guardarIdx(clave) {
   const filas = filasEdit.value
-    .filter(f => f.anio)
+    .filter((f) => f.anio)
     .sort((a, b) => a.anio - b.anio)
-    .map(f => ({
+    .map((f) => ({
       año: f.anio,
       ipc: f.esBase ? null : (f.ipc ?? null),
       valor: f.valor ?? 0,
@@ -1026,11 +1510,19 @@ async function nuevoContrato() {
     })
     contratos.value.push(data)
     idSeleccionado.value = data.id
-    toast.add({ severity: 'success', summary: 'Contrato creado',
-                detail: 'Completa los datos con Editar', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: 'Contrato creado',
+      detail: 'Completa los datos con Editar',
+      life: 3000,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo crear',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo crear',
+      detail: e.response?.data?.detail || e.message,
+      life: 4000,
+    })
   }
 }
 
@@ -1043,8 +1535,8 @@ async function cargar() {
   // El endpoint ensancha la búsqueda con codigo_tsf y con el número de la planta
   // en nombre_proyecto_ref, lo que puede traer contratos de otras plantas. Acá
   // interesa solo lo que está asociado a ESTA, que es lo que la vista dice ser.
-  contratos.value = data.filter(x => x.proyecto_id === pid)
-  if (contratos.value.length && !contratos.value.some(x => x.id === idSeleccionado.value)) {
+  contratos.value = data.filter((x) => x.proyecto_id === pid)
+  if (contratos.value.length && !contratos.value.some((x) => x.id === idSeleccionado.value)) {
     idSeleccionado.value = contratos.value[0].id
   }
 }
@@ -1054,13 +1546,19 @@ onMounted(async () => {
     const { data } = await api.get(`/proyectos/${route.params.id}`)
     proyectoNombre.value = data.nombre_comercial || ''
     inversionistasPlanta.value = data.inversionistas || []
-  } catch { /* el nombre es decorativo: la vista funciona sin él */ }
+  } catch {
+    /* el nombre es decorativo: la vista funciona sin él */
+  }
   try {
     await cargar()
     await cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al cargar contratos',
+      detail: e.response?.data?.detail || e.message,
+      life: 4000,
+    })
   } finally {
     loading.value = false
   }
@@ -1070,104 +1568,258 @@ onMounted(async () => {
 <style scoped>
 /* Mismo lenguaje visual que el detalle de PPA (ContratoDetailView). */
 .cd-stat {
-  background: #fff; border: 1px solid #ECE7F2; border-radius: 12px;
-  padding: 11px 14px; min-width: 0;
+  background: #fff;
+  border: 1px solid #ece7f2;
+  border-radius: 12px;
+  padding: 11px 14px;
+  min-width: 0;
 }
 .cd-stat-lbl {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-  color: #9b89b5; margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9b89b5;
+  margin-bottom: 3px;
 }
 .cd-stat-val {
-  font-size: 15px; font-weight: 700; color: #2C2039; line-height: 1.25;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 15px;
+  font-weight: 700;
+  color: #2c2039;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.cd-stat-val::first-letter { text-transform: uppercase; }
+.cd-stat-val::first-letter {
+  text-transform: uppercase;
+}
 .cd-stat-sub {
-  font-size: 11px; color: #9b89b5; margin-top: 1px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 11px;
+  color: #9b89b5;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.cd-sec { background: #fff; border: 1.5px solid #e8e0f0; border-radius: 12px; overflow: hidden; }
+.cd-sec {
+  background: #fff;
+  border: 1.5px solid #e8e0f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
 .cd-sec-head {
-  display: flex; align-items: center; gap: 9px; min-height: 42px;
-  padding: 6px 14px; background: #faf8fd; border-bottom: 1px solid #f0eaf8;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 42px;
+  padding: 6px 14px;
+  background: #faf8fd;
+  border-bottom: 1px solid #f0eaf8;
 }
 .cd-sec-title {
-  font-size: 12px; font-weight: 700; letter-spacing: .03em;
-  text-transform: uppercase; color: #2C2039;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #2c2039;
 }
-.cd-sec-act { margin-left: auto; display: flex; align-items: center; gap: 4px; }
-.cd-sec-body { padding: 14px; }
+.cd-sec-act {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.cd-sec-body {
+  padding: 14px;
+}
 .cd-ico {
-  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
-  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-.cd-ico i { font-size: 11px; }
+.cd-ico i {
+  font-size: 11px;
+}
 
-.cd-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-@media (min-width: 768px) { .cd-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.cd-ancho { grid-column: 1 / -1; }
-.cd-campo-lbl { font-size: 12px; font-weight: 500; color: #9b89b5; }
-.cd-lbl { font-size: 12px; font-weight: 500; color: #4b5563; }
+.cd-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (min-width: 768px) {
+  .cd-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.cd-ancho {
+  grid-column: 1 / -1;
+}
+.cd-campo-lbl {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9b89b5;
+}
+.cd-lbl {
+  font-size: 12px;
+  font-weight: 500;
+  color: #4b5563;
+}
 
-.cd-partes { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
-.cd-partes-flecha { font-size: 12px; color: #c5b9db; }
+.cd-partes {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+}
+.cd-partes-flecha {
+  font-size: 12px;
+  color: #c5b9db;
+}
 @media (max-width: 640px) {
-  .cd-partes { grid-template-columns: 1fr; }
-  .cd-partes-flecha { transform: rotate(90deg); justify-self: center; }
+  .cd-partes {
+    grid-template-columns: 1fr;
+  }
+  .cd-partes-flecha {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
 }
 .cd-parte {
-  border: 1px solid #ECE7F2; border-radius: 10px; padding: 11px 13px;
-  background: #fcfbfe; min-width: 0;
+  border: 1px solid #ece7f2;
+  border-radius: 10px;
+  padding: 11px 13px;
+  background: #fcfbfe;
+  min-width: 0;
 }
 .cd-parte-rol {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 10px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
-  color: #9b89b5; margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #9b89b5;
+  margin-bottom: 3px;
 }
-.cd-parte-nom { font-size: 13px; font-weight: 600; color: #2C2039; }
+.cd-parte-nom {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c2039;
+}
 .cd-parte-nit {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px; color: #9b8fb0; margin-top: 1px;
+  font-size: 11px;
+  color: #9b8fb0;
+  margin-top: 1px;
 }
 
 .mini-alerta {
-  display: inline-flex; align-items: flex-start; gap: 4px; margin-top: 3px;
-  font-size: 10.5px; font-weight: 600; line-height: 1.35; color: #92400E;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #92400e;
 }
-.mini-alerta i { font-size: 10px; margin-top: 1px; flex-shrink: 0; }
+.mini-alerta i {
+  font-size: 10px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
 
 .dup-aviso {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 13px; border-radius: 10px; font-size: 12px;
-  background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  font-size: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
 }
-.dup-aviso--frena { background: #fffbeb; border-color: #fde68a; color: #92400E; }
-.dup-aviso i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+.dup-aviso--frena {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+.dup-aviso i {
+  font-size: 13px;
+  margin-top: 1px;
+  flex-shrink: 0;
+}
 
 .idx-fila {
-  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;
-  border: 1px solid #ECE7F2; border-radius: 10px; padding: 10px 12px; background: #fcfbfe;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid #ece7f2;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fcfbfe;
 }
-@media (min-width: 768px) { .mini-alerta {
-  display: inline-flex; align-items: flex-start; gap: 4px; margin-top: 3px;
-  font-size: 10.5px; font-weight: 600; line-height: 1.35; color: #92400E;
-}
-.mini-alerta i { font-size: 10px; margin-top: 1px; flex-shrink: 0; }
+@media (min-width: 768px) {
+  .mini-alerta {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 4px;
+    margin-top: 3px;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: #92400e;
+  }
+  .mini-alerta i {
+    font-size: 10px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
 
-.dup-aviso {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 13px; border-radius: 10px; font-size: 12px;
-  background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af;
-}
-.dup-aviso--frena { background: #fffbeb; border-color: #fde68a; color: #92400E; }
-.dup-aviso i { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+  .dup-aviso {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 13px;
+    border-radius: 10px;
+    font-size: 12px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1e40af;
+  }
+  .dup-aviso--frena {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #92400e;
+  }
+  .dup-aviso i {
+    font-size: 13px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
 
-.idx-fila { grid-template-columns: 1fr 1fr 1fr auto; } }
+  .idx-fila {
+    grid-template-columns: 1fr 1fr 1fr auto;
+  }
+}
 
 .cd-th {
-  padding: 8px 16px; text-align: left; font-size: 11px; font-weight: 700;
-  color: #9b89b5; border-bottom: 1px solid #f0eaf8;
+  padding: 8px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9b89b5;
+  border-bottom: 1px solid #f0eaf8;
 }
 </style>

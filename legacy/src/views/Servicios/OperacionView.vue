@@ -1,21 +1,28 @@
 <template>
   <div class="space-y-5">
-
     <!-- ── Header ───────────────────────────────────────────────────────────── -->
     <div class="flex items-center gap-2">
-      <Button icon="pi pi-arrow-left" text severity="secondary" @click="$router.back()" class="-ml-1" />
+      <Button
+        icon="pi pi-arrow-left"
+        text
+        severity="secondary"
+        @click="$router.back()"
+        class="-ml-1"
+      />
       <div>
-        <p class="text-xs leading-none mb-0.5" style="color:#9b89b5">
-          <span class="cursor-pointer hover:underline"
-            @click="$router.push(`/proyectos/${route.params.id}`)">
+        <p class="mb-0.5 text-xs leading-none" style="color: #9b89b5">
+          <span
+            class="cursor-pointer hover:underline"
+            @click="$router.push(`/proyectos/${route.params.id}`)"
+          >
             {{ proyectoNombre || '…' }}
           </span>
           <span class="mx-1.5">›</span>
           <span>Servicios</span>
           <span class="mx-1.5">›</span>
-          <span class="font-medium" style="color:#2C2039">Operación</span>
+          <span class="font-medium" style="color: #2c2039">Operación</span>
         </p>
-        <h2 class="text-lg font-bold" style="color:#2C2039">Operación</h2>
+        <h2 class="text-lg font-bold" style="color: #2c2039">Operación</h2>
       </div>
     </div>
 
@@ -26,7 +33,6 @@
 
     <!-- ── Tabs ──────────────────────────────────────────────────────────────── -->
     <TabView v-else v-model:activeIndex="activeIndex" @tab-change="onTabChange">
-
       <!-- ══════════ MANTENIMIENTO ══════════ -->
       <TabPanel>
         <template #header>
@@ -36,107 +42,203 @@
           </div>
         </template>
         <div class="space-y-5 pt-3">
-
           <!-- Info card -->
           <template v-if="contratos.mantenimiento">
-            <div class="rounded-xl border bg-white p-5" style="border-color:#f59e0b40">
+            <div class="rounded-xl border bg-white p-5" style="border-color: #f59e0b40">
               <!-- Header -->
-              <div class="flex items-start justify-between mb-4 gap-3">
-                <div class="flex items-center gap-2.5 flex-wrap">
-                  <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#fef3c7">
-                    <i class="pi pi-wrench text-sm" style="color:#f59e0b" />
+              <div class="mb-4 flex items-start justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <div
+                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
+                    style="background: #fef3c7"
+                  >
+                    <i class="pi pi-wrench text-sm" style="color: #f59e0b" />
                   </div>
                   <div>
-                    <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Mantenimiento O&amp;M</p>
-                    <span class="text-sm font-semibold" style="color:#2C2039">{{ proyectoNombre }}</span>
+                    <p class="mb-0.5 text-xs leading-none text-gray-400">
+                      Contrato de Mantenimiento O&amp;M
+                    </p>
+                    <span class="text-sm font-semibold" style="color: #2c2039">{{
+                      proyectoNombre
+                    }}</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <Tag :value="CONTRATO_LABELS[contratos.mantenimiento.estado]"
-                       :severity="CONTRATO_SEVERITY[contratos.mantenimiento.estado]" class="text-xs" />
-                  <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
-                    @click="openMantenimientoDialog('editar')" />
-                  <Button icon="pi pi-file-excel" label="Cargar desde Excel" size="small" severity="secondary" outlined
-                    @click="triggerExcelInput" />
-                  <input ref="excelInputRef" type="file" accept=".xlsx,.xls" class="hidden"
-                    @change="cargarDesdeExcel" />
+                <div class="flex flex-shrink-0 items-center gap-2">
+                  <Tag
+                    :value="CONTRATO_LABELS[contratos.mantenimiento.estado]"
+                    :severity="CONTRATO_SEVERITY[contratos.mantenimiento.estado]"
+                    class="text-xs"
+                  />
+                  <Button
+                    icon="pi pi-pencil"
+                    label="Editar"
+                    size="small"
+                    text
+                    severity="secondary"
+                    @click="openMantenimientoDialog('editar')"
+                  />
+                  <Button
+                    icon="pi pi-file-excel"
+                    label="Cargar desde Excel"
+                    size="small"
+                    severity="secondary"
+                    outlined
+                    @click="triggerExcelInput"
+                  />
+                  <input
+                    ref="excelInputRef"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    class="hidden"
+                    @change="cargarDesdeExcel"
+                  />
                 </div>
               </div>
               <!-- Mini-cards grid -->
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+              <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
                 <!-- Contratante -->
-                <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-user text-xs" style="color:#f59e0b" />Contratante
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #fffbeb; border: 1px solid #fde68a"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #92400e">
+                    <i class="pi pi-user text-xs" style="color: #f59e0b" />Contratante
                   </p>
-                  <p class="text-sm font-semibold leading-snug" style="color:#1c1917">
+                  <p class="text-sm leading-snug font-semibold" style="color: #1c1917">
                     {{ contratos.mantenimiento.contratante_nombre || '—' }}
                   </p>
                 </div>
                 <!-- Prestador -->
-                <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-building text-xs" style="color:#f59e0b" />Prestador
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #fffbeb; border: 1px solid #fde68a"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #92400e">
+                    <i class="pi pi-building text-xs" style="color: #f59e0b" />Prestador
                   </p>
-                  <p class="text-sm font-semibold leading-snug" style="color:#1c1917">
+                  <p class="text-sm leading-snug font-semibold" style="color: #1c1917">
                     {{ contratos.mantenimiento.prestador_nombre || '—' }}
                   </p>
                 </div>
                 <!-- Fecha inicio -->
-                <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-calendar text-xs" style="color:#f59e0b" />Fecha de inicio O&amp;M
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #fffbeb; border: 1px solid #fde68a"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #92400e">
+                    <i class="pi pi-calendar text-xs" style="color: #f59e0b" />Fecha de inicio
+                    O&amp;M
                   </p>
-                  <p class="text-sm font-semibold" style="color:#1c1917">
-                    {{ formatFecha(contratos.mantenimiento.fecha_inicio_om || contratos.mantenimiento.fecha_inicio) || '—' }}
+                  <p class="text-sm font-semibold" style="color: #1c1917">
+                    {{
+                      formatFecha(
+                        contratos.mantenimiento.fecha_inicio_om ||
+                          contratos.mantenimiento.fecha_inicio,
+                      ) || '—'
+                    }}
                   </p>
                 </div>
                 <!-- Valor anual -->
-                <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-dollar text-xs" style="color:#f59e0b" />Valor O&amp;M Anual (BASE)
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #fffbeb; border: 1px solid #fde68a"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #92400e">
+                    <i class="pi pi-dollar text-xs" style="color: #f59e0b" />Valor O&amp;M Anual
+                    (BASE)
                   </p>
-                  <p class="text-base font-bold" style="color:#d97706">
-                    {{ formatCOP(getValorVigente(contratos.mantenimiento.indexacion_anual)?.valor ?? contratos.mantenimiento.tarifa_base) || '—' }}
+                  <p class="text-base font-bold" style="color: #d97706">
+                    {{
+                      formatCOP(
+                        getValorVigente(contratos.mantenimiento.indexacion_anual)?.valor ??
+                          contratos.mantenimiento.tarifa_base,
+                      ) || '—'
+                    }}
                   </p>
-                  <button type="button"
-                    class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
-                    style="background:none;border:none;padding:0;cursor:pointer;color:#f59e0b"
-                    @click="showIndexacion.anual = !showIndexacion.anual">
-                    <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                      :style="showIndexacion.anual ? 'transform:rotate(180deg)' : ''" />
+                  <button
+                    type="button"
+                    class="mt-2 flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-75"
+                    style="
+                      background: none;
+                      border: none;
+                      padding: 0;
+                      cursor: pointer;
+                      color: #f59e0b;
+                    "
+                    @click="showIndexacion.anual = !showIndexacion.anual"
+                  >
+                    <i
+                      class="pi pi-chevron-down text-xs transition-transform duration-200"
+                      :style="showIndexacion.anual ? 'transform:rotate(180deg)' : ''"
+                    />
                     {{ showIndexacion.anual ? 'Ocultar' : 'Ver indexación' }}
                   </button>
                 </div>
                 <!-- Valor mensual -->
-                <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-calculator text-xs" style="color:#f59e0b" />Valor mensual
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #fffbeb; border: 1px solid #fde68a"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #92400e">
+                    <i class="pi pi-calculator text-xs" style="color: #f59e0b" />Valor mensual
                   </p>
-                  <p class="text-base font-bold" style="color:#d97706">
-                    {{ formatCOP(getValorVigente(contratos.mantenimiento.indexacion_mensual)?.valor ?? contratos.mantenimiento.tarifa_mensual ?? (contratos.mantenimiento.tarifa_base != null ? Math.round(contratos.mantenimiento.tarifa_base / 12) : null)) || '—' }}
+                  <p class="text-base font-bold" style="color: #d97706">
+                    {{
+                      formatCOP(
+                        getValorVigente(contratos.mantenimiento.indexacion_mensual)?.valor ??
+                          contratos.mantenimiento.tarifa_mensual ??
+                          (contratos.mantenimiento.tarifa_base != null
+                            ? Math.round(contratos.mantenimiento.tarifa_base / 12)
+                            : null),
+                      ) || '—'
+                    }}
                   </p>
-                  <button type="button"
-                    class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
-                    style="background:none;border:none;padding:0;cursor:pointer;color:#f59e0b"
-                    @click="showIndexacion.mensual = !showIndexacion.mensual">
-                    <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                      :style="showIndexacion.mensual ? 'transform:rotate(180deg)' : ''" />
+                  <button
+                    type="button"
+                    class="mt-2 flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-75"
+                    style="
+                      background: none;
+                      border: none;
+                      padding: 0;
+                      cursor: pointer;
+                      color: #f59e0b;
+                    "
+                    @click="showIndexacion.mensual = !showIndexacion.mensual"
+                  >
+                    <i
+                      class="pi pi-chevron-down text-xs transition-transform duration-200"
+                      :style="showIndexacion.mensual ? 'transform:rotate(180deg)' : ''"
+                    />
                     {{ showIndexacion.mensual ? 'Ocultar' : 'Ver indexación' }}
                   </button>
                 </div>
                 <!-- Enlace Drive -->
-                <div class="rounded-lg p-3.5" style="background:#fffbeb;border:1px solid #fde68a">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#92400e">
-                    <i class="pi pi-file-pdf text-xs" style="color:#f59e0b" />Contrato en Drive
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #fffbeb; border: 1px solid #fde68a"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #92400e">
+                    <i class="pi pi-file-pdf text-xs" style="color: #f59e0b" />Contrato en Drive
                   </p>
-                  <a v-if="contratos.mantenimiento.enlace_drive && contratos.mantenimiento.enlace_drive.startsWith('http')"
-                     :href="contratos.mantenimiento.enlace_drive" target="_blank" rel="noopener"
-                     class="text-sm font-semibold flex items-center gap-1.5 hover:underline" style="color:#f59e0b">
+                  <a
+                    v-if="
+                      contratos.mantenimiento.enlace_drive &&
+                      contratos.mantenimiento.enlace_drive.startsWith('http')
+                    "
+                    :href="contratos.mantenimiento.enlace_drive"
+                    target="_blank"
+                    rel="noopener"
+                    class="flex items-center gap-1.5 text-sm font-semibold hover:underline"
+                    style="color: #f59e0b"
+                  >
                     <i class="pi pi-external-link text-xs" />Ver contrato
                   </a>
-                  <button v-else @click="openMantenimientoDialog('editar')"
-                    class="text-sm font-medium flex items-center gap-1.5" style="color:#f59e0b">
+                  <button
+                    v-else
+                    @click="openMantenimientoDialog('editar')"
+                    class="flex items-center gap-1.5 text-sm font-medium"
+                    style="color: #f59e0b"
+                  >
                     <i class="pi pi-plus-circle text-xs" />Agregar enlace
                   </button>
                 </div>
@@ -145,75 +247,119 @@
               <!-- ── Paneles de indexación O&M ─────────────────────────────────── -->
 
               <!-- Panel ANUAL -->
-              <div :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacion.anual ? '800px' : '0px' }">
+              <div
+                :style="{
+                  overflow: 'hidden',
+                  transition: 'max-height 0.35s ease',
+                  maxHeight: showIndexacion.anual ? '800px' : '0px',
+                }"
+              >
                 <div class="pt-3">
-                  <div class="rounded-xl border border-amber-200 overflow-hidden">
-                    <div class="flex items-center justify-between px-4 py-2.5 bg-amber-50">
-                      <span class="text-xs font-semibold" style="color:#92400e">
-                        <i class="pi pi-dollar text-xs mr-1.5" style="color:#f59e0b" />Indexación anual O&M
+                  <div class="overflow-hidden rounded-xl border border-amber-200">
+                    <div class="flex items-center justify-between bg-amber-50 px-4 py-2.5">
+                      <span class="text-xs font-semibold" style="color: #92400e">
+                        <i class="pi pi-dollar mr-1.5 text-xs" style="color: #f59e0b" />Indexación
+                        anual O&M
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
-                    <table class="w-full text-sm border-collapse">
+                    <table class="w-full border-collapse text-sm">
                       <thead>
-                        <tr class="bg-gray-50 border-b border-gray-100">
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Año</th>
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">IPC aplicado</th>
-                          <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Valor anual</th>
-                          <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">Estado</th>
+                        <tr class="border-b border-gray-100 bg-gray-50">
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                            Año
+                          </th>
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                            IPC aplicado
+                          </th>
+                          <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">
+                            Valor anual
+                          </th>
+                          <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">
+                            Estado
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-if="!contratos.mantenimiento.indexacion_anual?.length">
                           <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
-                            Sin indexación aún — el contrato todavía no cumple un año desde la Fecha de inicio O&amp;M (o falta esa fecha / el valor base).
+                            Sin indexación aún — el contrato todavía no cumple un año desde la Fecha
+                            de inicio O&amp;M (o falta esa fecha / el valor base).
                           </td>
                         </tr>
-                        <tr v-for="fila in (contratos.mantenimiento.indexacion_anual || [])" :key="fila.anio"
-                          class="border-b border-gray-50 hover:bg-amber-50/20 transition-colors"
-                          :class="fila.anio === ANIO_ACTUAL ? 'bg-amber-50/50' : ''">
+                        <tr
+                          v-for="fila in contratos.mantenimiento.indexacion_anual || []"
+                          :key="fila.anio"
+                          class="border-b border-gray-50 transition-colors hover:bg-amber-50/20"
+                          :class="fila.anio === ANIO_ACTUAL ? 'bg-amber-50/50' : ''"
+                        >
                           <td class="px-4 py-2.5">
                             <div class="flex items-center gap-1.5">
-                              <span class="font-mono font-semibold"
-                                :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'">
+                              <span
+                                class="font-mono font-semibold"
+                                :style="
+                                  fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'
+                                "
+                              >
                                 {{ fila.anio }}
                               </span>
-                              <span v-if="fila.anio === ANIO_ACTUAL"
-                                class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
-                                style="background:#fef3c7;color:#d97706">actual</span>
-                              <i v-if="fila.anio === ANIO_ACTUAL" class="pi pi-arrow-left text-xs" style="color:#d97706" />
+                              <span
+                                v-if="fila.anio === ANIO_ACTUAL"
+                                class="rounded px-1.5 py-0.5 text-xs leading-none font-bold"
+                                style="background: #fef3c7; color: #d97706"
+                                >actual</span
+                              >
+                              <i
+                                v-if="fila.anio === ANIO_ACTUAL"
+                                class="pi pi-arrow-left text-xs"
+                                style="color: #d97706"
+                              />
                             </div>
                           </td>
                           <td class="px-4 py-2.5">
-                            <span v-if="fila.ipc_aplicado == null" class="text-gray-400 text-xs">— (base)</span>
-                            <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
+                            <span v-if="fila.ipc_aplicado == null" class="text-xs text-gray-400"
+                              >— (base)</span
+                            >
+                            <span v-else class="font-mono tabular-nums" style="color: #374151"
+                              >{{ fila.ipc_aplicado }}%</span
+                            >
                           </td>
-                          <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                            :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'">
+                          <td
+                            class="px-4 py-2.5 text-right font-semibold tabular-nums"
+                            :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'"
+                          >
                             {{ formatCOP(fila.valor) }}
                           </td>
                           <td class="px-4 py-2.5 text-center">
-                            <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#dcfce7;color:#166534">
+                            <span
+                              v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #dcfce7; color: #166534"
+                            >
                               <i class="pi pi-check text-xs" />Pagado
                             </span>
-                            <span v-else-if="fila.anio === ANIO_ACTUAL"
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#fef3c7;color:#d97706">
+                            <span
+                              v-else-if="fila.anio === ANIO_ACTUAL"
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #fef3c7; color: #d97706"
+                            >
                               Vigente
                             </span>
-                            <span v-else
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#f3f4f6;color:#9ca3af">
+                            <span
+                              v-else
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #f3f4f6; color: #9ca3af"
+                            >
                               Pendiente
                             </span>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <div class="flex items-center gap-1.5 px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-xs text-gray-400">
-                      <i class="pi pi-bolt text-xs" style="color:#f59e0b" />
+                    <div
+                      class="flex items-center gap-1.5 border-t border-gray-100 bg-gray-50/60 px-4 py-2 text-xs text-gray-400"
+                    >
+                      <i class="pi pi-bolt text-xs" style="color: #f59e0b" />
                       Calculado automáticamente desde la Fecha de inicio O&amp;M y el IPC por año.
                     </div>
                   </div>
@@ -221,94 +367,149 @@
               </div>
 
               <!-- Panel MENSUAL -->
-              <div :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacion.mensual ? '800px' : '0px' }">
+              <div
+                :style="{
+                  overflow: 'hidden',
+                  transition: 'max-height 0.35s ease',
+                  maxHeight: showIndexacion.mensual ? '800px' : '0px',
+                }"
+              >
                 <div class="pt-3">
-                  <div class="rounded-xl border border-amber-200 overflow-hidden">
-                    <div class="flex items-center justify-between px-4 py-2.5 bg-amber-50">
-                      <span class="text-xs font-semibold" style="color:#92400e">
-                        <i class="pi pi-calculator text-xs mr-1.5" style="color:#f59e0b" />Indexación mensual O&M
+                  <div class="overflow-hidden rounded-xl border border-amber-200">
+                    <div class="flex items-center justify-between bg-amber-50 px-4 py-2.5">
+                      <span class="text-xs font-semibold" style="color: #92400e">
+                        <i
+                          class="pi pi-calculator mr-1.5 text-xs"
+                          style="color: #f59e0b"
+                        />Indexación mensual O&M
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
-                    <table class="w-full text-sm border-collapse">
+                    <table class="w-full border-collapse text-sm">
                       <thead>
-                        <tr class="bg-gray-50 border-b border-gray-100">
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Año</th>
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">IPC aplicado</th>
-                          <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Valor mensual</th>
-                          <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">Estado</th>
+                        <tr class="border-b border-gray-100 bg-gray-50">
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                            Año
+                          </th>
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                            IPC aplicado
+                          </th>
+                          <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">
+                            Valor mensual
+                          </th>
+                          <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">
+                            Estado
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-if="!contratos.mantenimiento.indexacion_mensual?.length">
                           <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
-                            Sin indexación aún — el contrato todavía no cumple un año desde la Fecha de inicio O&amp;M (o falta esa fecha / el valor base).
+                            Sin indexación aún — el contrato todavía no cumple un año desde la Fecha
+                            de inicio O&amp;M (o falta esa fecha / el valor base).
                           </td>
                         </tr>
-                        <tr v-for="fila in (contratos.mantenimiento.indexacion_mensual || [])" :key="fila.anio"
-                          class="border-b border-gray-50 hover:bg-amber-50/20 transition-colors"
-                          :class="fila.anio === ANIO_ACTUAL ? 'bg-amber-50/50' : ''">
+                        <tr
+                          v-for="fila in contratos.mantenimiento.indexacion_mensual || []"
+                          :key="fila.anio"
+                          class="border-b border-gray-50 transition-colors hover:bg-amber-50/20"
+                          :class="fila.anio === ANIO_ACTUAL ? 'bg-amber-50/50' : ''"
+                        >
                           <td class="px-4 py-2.5">
                             <div class="flex items-center gap-1.5">
-                              <span class="font-mono font-semibold"
-                                :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'">
+                              <span
+                                class="font-mono font-semibold"
+                                :style="
+                                  fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'
+                                "
+                              >
                                 {{ fila.anio }}
                               </span>
-                              <span v-if="fila.anio === ANIO_ACTUAL"
-                                class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
-                                style="background:#fef3c7;color:#d97706">actual</span>
-                              <i v-if="fila.anio === ANIO_ACTUAL" class="pi pi-arrow-left text-xs" style="color:#d97706" />
+                              <span
+                                v-if="fila.anio === ANIO_ACTUAL"
+                                class="rounded px-1.5 py-0.5 text-xs leading-none font-bold"
+                                style="background: #fef3c7; color: #d97706"
+                                >actual</span
+                              >
+                              <i
+                                v-if="fila.anio === ANIO_ACTUAL"
+                                class="pi pi-arrow-left text-xs"
+                                style="color: #d97706"
+                              />
                             </div>
                           </td>
                           <td class="px-4 py-2.5">
-                            <span v-if="fila.ipc_aplicado == null" class="text-gray-400 text-xs">— (base)</span>
-                            <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
+                            <span v-if="fila.ipc_aplicado == null" class="text-xs text-gray-400"
+                              >— (base)</span
+                            >
+                            <span v-else class="font-mono tabular-nums" style="color: #374151"
+                              >{{ fila.ipc_aplicado }}%</span
+                            >
                           </td>
-                          <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                            :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'">
+                          <td
+                            class="px-4 py-2.5 text-right font-semibold tabular-nums"
+                            :style="fila.anio === ANIO_ACTUAL ? 'color:#d97706' : 'color:#2C2039'"
+                          >
                             {{ formatCOP(fila.valor) }}
                           </td>
                           <td class="px-4 py-2.5 text-center">
-                            <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#dcfce7;color:#166534">
+                            <span
+                              v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #dcfce7; color: #166534"
+                            >
                               <i class="pi pi-check text-xs" />Pagado
                             </span>
-                            <span v-else-if="fila.anio === ANIO_ACTUAL"
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#fef3c7;color:#d97706">
+                            <span
+                              v-else-if="fila.anio === ANIO_ACTUAL"
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #fef3c7; color: #d97706"
+                            >
                               Vigente
                             </span>
-                            <span v-else
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#f3f4f6;color:#9ca3af">
+                            <span
+                              v-else
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #f3f4f6; color: #9ca3af"
+                            >
                               Pendiente
                             </span>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <div class="flex items-center gap-1.5 px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-xs text-gray-400">
-                      <i class="pi pi-bolt text-xs" style="color:#f59e0b" />
+                    <div
+                      class="flex items-center gap-1.5 border-t border-gray-100 bg-gray-50/60 px-4 py-2 text-xs text-gray-400"
+                    >
+                      <i class="pi pi-bolt text-xs" style="color: #f59e0b" />
                       Calculado automáticamente desde la Fecha de inicio O&amp;M y el IPC por año.
                     </div>
                   </div>
                 </div>
               </div>
-
             </div>
           </template>
           <template v-else>
-            <div class="rounded-xl border border-dashed border-amber-200 bg-amber-50/40 p-10 text-center">
-              <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                style="background:#fef3c7">
-                <i class="pi pi-wrench text-xl" style="color:#f59e0b" />
+            <div
+              class="rounded-xl border border-dashed border-amber-200 bg-amber-50/40 p-10 text-center"
+            >
+              <div
+                class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
+                style="background: #fef3c7"
+              >
+                <i class="pi pi-wrench text-xl" style="color: #f59e0b" />
               </div>
-              <p class="text-sm font-medium text-gray-600 mb-1">Sin contrato de mantenimiento</p>
-              <p class="text-xs text-gray-400 mb-4">Registra el contrato para iniciar el seguimiento de pagos</p>
-              <Button label="Crear contrato" icon="pi pi-plus" size="small"
-                style="background:#f59e0b;border-color:#f59e0b"
-                @click="openMantenimientoDialog('crear')" />
+              <p class="mb-1 text-sm font-medium text-gray-600">Sin contrato de mantenimiento</p>
+              <p class="mb-4 text-xs text-gray-400">
+                Registra el contrato para iniciar el seguimiento de pagos
+              </p>
+              <Button
+                label="Crear contrato"
+                icon="pi pi-plus"
+                size="small"
+                style="background: #f59e0b; border-color: #f59e0b"
+                @click="openMantenimientoDialog('crear')"
+              />
             </div>
           </template>
 
@@ -325,15 +526,8 @@
           />
 
           <!-- Facturas -->
-          <FacturasCobradas
-            :datos="facturasCobradas"
-            :proyecto-nombre="proyectoNombre"
-          />
-          <FacturasEmitidas
-            :datos="facturasEmitidas"
-            :proyecto-nombre="proyectoNombre"
-          />
-
+          <FacturasCobradas :datos="facturasCobradas" :proyecto-nombre="proyectoNombre" />
+          <FacturasEmitidas :datos="facturasEmitidas" :proyecto-nombre="proyectoNombre" />
         </div>
       </TabPanel>
 
@@ -346,83 +540,157 @@
           </div>
         </template>
         <div class="space-y-5 pt-3">
-
           <template v-if="contratos.arriendo">
-            <div class="rounded-xl border bg-white p-5" style="border-color:#8b5cf640">
+            <div class="rounded-xl border bg-white p-5" style="border-color: #8b5cf640">
               <!-- Header -->
-              <div class="flex items-start justify-between mb-4 gap-3">
-                <div class="flex items-center gap-2.5 flex-wrap">
-                  <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f5f3ff">
-                    <i class="pi pi-home text-sm" style="color:#8b5cf6" />
+              <div class="mb-4 flex items-start justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2.5">
+                  <div
+                    class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
+                    style="background: #f5f3ff"
+                  >
+                    <i class="pi pi-home text-sm" style="color: #8b5cf6" />
                   </div>
                   <div>
-                    <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Arriendo</p>
-                    <span class="text-sm font-semibold" style="color:#2C2039">{{ proyectoNombre }}</span>
+                    <p class="mb-0.5 text-xs leading-none text-gray-400">Contrato de Arriendo</p>
+                    <span class="text-sm font-semibold" style="color: #2c2039">{{
+                      proyectoNombre
+                    }}</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 flex-shrink-0">
-                  <Tag :value="CONTRATO_LABELS[contratos.arriendo.estado]"
-                       :severity="CONTRATO_SEVERITY[contratos.arriendo.estado]" class="text-xs" />
-                  <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
-                    @click="openEditContrato('arriendo')" />
+                <div class="flex flex-shrink-0 items-center gap-2">
+                  <Tag
+                    :value="CONTRATO_LABELS[contratos.arriendo.estado]"
+                    :severity="CONTRATO_SEVERITY[contratos.arriendo.estado]"
+                    class="text-xs"
+                  />
+                  <Button
+                    icon="pi pi-pencil"
+                    label="Editar"
+                    size="small"
+                    text
+                    severity="secondary"
+                    @click="openEditContrato('arriendo')"
+                  />
                 </div>
               </div>
               <!-- Mini-cards -->
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-user text-xs" style="color:#8b5cf6" />Arrendatario
+              <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                    <i class="pi pi-user text-xs" style="color: #8b5cf6" />Arrendatario
                   </p>
-                  <p class="text-sm font-semibold leading-snug" style="color:#1c1917">{{ contratos.arriendo.contratante_nombre || '—' }}</p>
+                  <p class="text-sm leading-snug font-semibold" style="color: #1c1917">
+                    {{ contratos.arriendo.contratante_nombre || '—' }}
+                  </p>
                 </div>
-                <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-calendar text-xs" style="color:#8b5cf6" />Fecha de contrato
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                    <i class="pi pi-calendar text-xs" style="color: #8b5cf6" />Fecha de contrato
                   </p>
-                  <p class="text-sm font-semibold" style="color:#1c1917">{{ formatFecha(contratos.arriendo.fecha_firma_contrato) || '—' }}</p>
+                  <p class="text-sm font-semibold" style="color: #1c1917">
+                    {{ formatFecha(contratos.arriendo.fecha_firma_contrato) || '—' }}
+                  </p>
                 </div>
                 <!-- Valor anual con indexación -->
-                <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-dollar text-xs" style="color:#8b5cf6" />Valor anual ({{ ANIO_ACTUAL }})
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                    <i class="pi pi-dollar text-xs" style="color: #8b5cf6" />Valor anual ({{
+                      ANIO_ACTUAL
+                    }})
                   </p>
-                  <p class="text-base font-bold" style="color:#7c3aed">
-                    {{ formatCOP(getValorVigente(contratos.arriendo.indexacion_anual)?.valor ?? contratos.arriendo.tarifa_base) }}
+                  <p class="text-base font-bold" style="color: #7c3aed">
+                    {{
+                      formatCOP(
+                        getValorVigente(contratos.arriendo.indexacion_anual)?.valor ??
+                          contratos.arriendo.tarifa_base,
+                      )
+                    }}
                   </p>
-                  <button type="button"
-                    class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
-                    style="background:none;border:none;padding:0;cursor:pointer;color:#8b5cf6"
-                    @click="showIndexacionArriendo.anual = !showIndexacionArriendo.anual">
-                    <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                      :style="showIndexacionArriendo.anual ? 'transform:rotate(180deg)' : ''" />
+                  <button
+                    type="button"
+                    class="mt-2 flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-75"
+                    style="
+                      background: none;
+                      border: none;
+                      padding: 0;
+                      cursor: pointer;
+                      color: #8b5cf6;
+                    "
+                    @click="showIndexacionArriendo.anual = !showIndexacionArriendo.anual"
+                  >
+                    <i
+                      class="pi pi-chevron-down text-xs transition-transform duration-200"
+                      :style="showIndexacionArriendo.anual ? 'transform:rotate(180deg)' : ''"
+                    />
                     {{ showIndexacionArriendo.anual ? 'Ocultar' : 'Ver indexación' }}
                   </button>
                 </div>
                 <!-- Valor mensual -->
-                <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-calculator text-xs" style="color:#8b5cf6" />Valor mensual ({{ ANIO_ACTUAL }})
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                    <i class="pi pi-calculator text-xs" style="color: #8b5cf6" />Valor mensual ({{
+                      ANIO_ACTUAL
+                    }})
                   </p>
-                  <p class="text-base font-bold" style="color:#7c3aed">
-                    {{ formatCOP(getValorVigente(contratos.arriendo.indexacion_mensual)?.valor ?? contratos.arriendo.tarifa_mensual ?? (contratos.arriendo.tarifa_base != null ? Math.round(contratos.arriendo.tarifa_base / 12) : null)) }}
+                  <p class="text-base font-bold" style="color: #7c3aed">
+                    {{
+                      formatCOP(
+                        getValorVigente(contratos.arriendo.indexacion_mensual)?.valor ??
+                          contratos.arriendo.tarifa_mensual ??
+                          (contratos.arriendo.tarifa_base != null
+                            ? Math.round(contratos.arriendo.tarifa_base / 12)
+                            : null),
+                      )
+                    }}
                   </p>
-                  <button type="button"
-                    class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
-                    style="background:none;border:none;padding:0;cursor:pointer;color:#8b5cf6"
-                    @click="showIndexacionArriendo.mensual = !showIndexacionArriendo.mensual">
-                    <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                      :style="showIndexacionArriendo.mensual ? 'transform:rotate(180deg)' : ''" />
+                  <button
+                    type="button"
+                    class="mt-2 flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-75"
+                    style="
+                      background: none;
+                      border: none;
+                      padding: 0;
+                      cursor: pointer;
+                      color: #8b5cf6;
+                    "
+                    @click="showIndexacionArriendo.mensual = !showIndexacionArriendo.mensual"
+                  >
+                    <i
+                      class="pi pi-chevron-down text-xs transition-transform duration-200"
+                      :style="showIndexacionArriendo.mensual ? 'transform:rotate(180deg)' : ''"
+                    />
                     {{ showIndexacionArriendo.mensual ? 'Ocultar' : 'Ver indexación' }}
                   </button>
                 </div>
                 <!-- Contrato en Drive -->
-                <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                  <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-file-pdf text-xs" style="color:#8b5cf6" />Contrato en Drive
+                <div
+                  class="rounded-lg p-3.5"
+                  style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                >
+                  <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                    <i class="pi pi-file-pdf text-xs" style="color: #8b5cf6" />Contrato en Drive
                   </p>
-                  <a v-if="contratos.arriendo.enlace_drive?.startsWith('http')"
-                     :href="contratos.arriendo.enlace_drive" target="_blank" rel="noopener"
-                     class="text-sm font-semibold flex items-center gap-1.5 hover:underline" style="color:#8b5cf6">
+                  <a
+                    v-if="contratos.arriendo.enlace_drive?.startsWith('http')"
+                    :href="contratos.arriendo.enlace_drive"
+                    target="_blank"
+                    rel="noopener"
+                    class="flex items-center gap-1.5 text-sm font-semibold hover:underline"
+                    style="color: #8b5cf6"
+                  >
                     <i class="pi pi-external-link text-xs" />Ver contrato
                   </a>
                   <span v-else class="text-sm text-gray-400">Sin enlace</span>
@@ -430,109 +698,197 @@
               </div>
 
               <!-- Sección Arrendadores -->
-              <div class="rounded-xl border mt-3" style="border-color:#ddd6fe">
-                <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
-                  <span class="text-xs font-semibold flex items-center gap-1.5" style="color:#5b21b6">
-                    <i class="pi pi-users text-xs" style="color:#8b5cf6" />Arrendadores
+              <div class="mt-3 rounded-xl border" style="border-color: #ddd6fe">
+                <div
+                  class="flex items-center justify-between px-4 py-2.5"
+                  style="background: #f5f3ff"
+                >
+                  <span
+                    class="flex items-center gap-1.5 text-xs font-semibold"
+                    style="color: #5b21b6"
+                  >
+                    <i class="pi pi-users text-xs" style="color: #8b5cf6" />Arrendadores
                   </span>
-                  <Button icon="pi pi-plus" label="Agregar arrendador" size="small" text
-                    style="color:#8b5cf6" @click="openArrendadorDialog('crear')" />
+                  <Button
+                    icon="pi pi-plus"
+                    label="Agregar arrendador"
+                    size="small"
+                    text
+                    style="color: #8b5cf6"
+                    @click="openArrendadorDialog('crear')"
+                  />
                 </div>
-                <div v-if="!arrendadores.length" class="px-4 py-6 text-center text-xs text-gray-400">
+                <div
+                  v-if="!arrendadores.length"
+                  class="px-4 py-6 text-center text-xs text-gray-400"
+                >
                   Sin arrendadores registrados.
                 </div>
                 <div v-else class="divide-y divide-gray-100">
-                  <div v-for="a in arrendadores" :key="a.id"
-                    class="flex items-center justify-between gap-3 px-4 py-3 flex-wrap">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="text-sm font-semibold" style="color:#1c1917">{{ a.nombre }}</span>
-                      <span class="text-sm font-mono tabular-nums" style="color:#7c3aed">{{ formatCOP(a.valor_base) }}</span>
-                      <span v-if="a.responsable_iva" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
-                        style="background:#ede9fe;color:#7c3aed">Responsable IVA</span>
-                      <span v-if="a.activo === false" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
-                        style="background:#f3f4f6;color:#9ca3af">Inactivo</span>
+                  <div
+                    v-for="a in arrendadores"
+                    :key="a.id"
+                    class="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                  >
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="text-sm font-semibold" style="color: #1c1917">{{
+                        a.nombre
+                      }}</span>
+                      <span class="font-mono text-sm tabular-nums" style="color: #7c3aed">{{
+                        formatCOP(a.valor_base)
+                      }}</span>
+                      <span
+                        v-if="a.responsable_iva"
+                        class="rounded px-1.5 py-0.5 text-xs leading-none font-bold"
+                        style="background: #ede9fe; color: #7c3aed"
+                        >Responsable IVA</span
+                      >
+                      <span
+                        v-if="a.activo === false"
+                        class="rounded px-1.5 py-0.5 text-xs leading-none font-bold"
+                        style="background: #f3f4f6; color: #9ca3af"
+                        >Inactivo</span
+                      >
                     </div>
-                    <div class="flex items-center gap-1 flex-shrink-0">
-                      <Button icon="pi pi-pencil" size="small" text severity="secondary"
-                        @click="openArrendadorDialog('editar', a)" />
-                      <Button icon="pi pi-trash" size="small" text severity="danger"
-                        @click="eliminarArrendador(a)" />
+                    <div class="flex flex-shrink-0 items-center gap-1">
+                      <Button
+                        icon="pi pi-pencil"
+                        size="small"
+                        text
+                        severity="secondary"
+                        @click="openArrendadorDialog('editar', a)"
+                      />
+                      <Button
+                        icon="pi pi-trash"
+                        size="small"
+                        text
+                        severity="danger"
+                        @click="eliminarArrendador(a)"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- Panel indexación ANUAL por arrendador -->
-              <div v-for="a in arrendadores" :key="'anual-' + a.id"
-                :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.anual ? '800px' : '0px' }">
+              <div
+                v-for="a in arrendadores"
+                :key="'anual-' + a.id"
+                :style="{
+                  overflow: 'hidden',
+                  transition: 'max-height 0.35s ease',
+                  maxHeight: showIndexacionArriendo.anual ? '800px' : '0px',
+                }"
+              >
                 <div class="pt-3">
-                  <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
-                    <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
-                      <span class="text-xs font-semibold" style="color:#5b21b6">
-                        <i class="pi pi-dollar text-xs mr-1.5" style="color:#8b5cf6" />Indexación anual de arriendo — {{ a.nombre }}
+                  <div class="overflow-hidden rounded-xl border" style="border-color: #ddd6fe">
+                    <div
+                      class="flex items-center justify-between px-4 py-2.5"
+                      style="background: #f5f3ff"
+                    >
+                      <span class="text-xs font-semibold" style="color: #5b21b6">
+                        <i class="pi pi-dollar mr-1.5 text-xs" style="color: #8b5cf6" />Indexación
+                        anual de arriendo — {{ a.nombre }}
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
-                    <table class="w-full text-sm border-collapse">
+                    <table class="w-full border-collapse text-sm">
                       <thead>
-                        <tr class="bg-gray-50 border-b border-gray-100">
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Año</th>
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">IPC aplicado</th>
-                          <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Valor anual</th>
-                          <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">Estado</th>
+                        <tr class="border-b border-gray-100 bg-gray-50">
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                            Año
+                          </th>
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                            IPC aplicado
+                          </th>
+                          <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">
+                            Valor anual
+                          </th>
+                          <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">
+                            Estado
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-if="!a.indexacion_anual?.length">
                           <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
-                            Sin indexación aún — el contrato todavía no cumple un año desde la Fecha de contrato (o falta esa fecha / el valor base).
+                            Sin indexación aún — el contrato todavía no cumple un año desde la Fecha
+                            de contrato (o falta esa fecha / el valor base).
                           </td>
                         </tr>
-                        <tr v-for="fila in (a.indexacion_anual || [])" :key="fila.anio"
-                          class="border-b border-gray-50 hover:bg-violet-50/20 transition-colors"
-                          :class="fila.anio === ANIO_ACTUAL ? 'bg-violet-50/40' : ''">
+                        <tr
+                          v-for="fila in a.indexacion_anual || []"
+                          :key="fila.anio"
+                          class="border-b border-gray-50 transition-colors hover:bg-violet-50/20"
+                          :class="fila.anio === ANIO_ACTUAL ? 'bg-violet-50/40' : ''"
+                        >
                           <td class="px-4 py-2.5">
                             <div class="flex items-center gap-1.5">
-                              <span class="font-mono font-semibold"
-                                :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'">
+                              <span
+                                class="font-mono font-semibold"
+                                :style="
+                                  fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'
+                                "
+                              >
                                 {{ fila.anio }}
                               </span>
-                              <span v-if="fila.anio === ANIO_ACTUAL"
-                                class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
-                                style="background:#ede9fe;color:#7c3aed">actual</span>
-                              <i v-if="fila.anio === ANIO_ACTUAL" class="pi pi-arrow-left text-xs" style="color:#7c3aed" />
+                              <span
+                                v-if="fila.anio === ANIO_ACTUAL"
+                                class="rounded px-1.5 py-0.5 text-xs leading-none font-bold"
+                                style="background: #ede9fe; color: #7c3aed"
+                                >actual</span
+                              >
+                              <i
+                                v-if="fila.anio === ANIO_ACTUAL"
+                                class="pi pi-arrow-left text-xs"
+                                style="color: #7c3aed"
+                              />
                             </div>
                           </td>
                           <td class="px-4 py-2.5">
-                            <span v-if="fila.ipc_aplicado == null" class="text-gray-400 text-xs">— (base)</span>
-                            <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
+                            <span v-if="fila.ipc_aplicado == null" class="text-xs text-gray-400"
+                              >— (base)</span
+                            >
+                            <span v-else class="font-mono tabular-nums" style="color: #374151"
+                              >{{ fila.ipc_aplicado }}%</span
+                            >
                           </td>
-                          <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                            :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'">
+                          <td
+                            class="px-4 py-2.5 text-right font-semibold tabular-nums"
+                            :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'"
+                          >
                             {{ formatCOP(fila.valor) }}
                           </td>
                           <td class="px-4 py-2.5 text-center">
-                            <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#dcfce7;color:#166534">
+                            <span
+                              v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #dcfce7; color: #166534"
+                            >
                               <i class="pi pi-check text-xs" />Pagado
                             </span>
-                            <span v-else-if="fila.anio === ANIO_ACTUAL"
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#ede9fe;color:#7c3aed">
+                            <span
+                              v-else-if="fila.anio === ANIO_ACTUAL"
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #ede9fe; color: #7c3aed"
+                            >
                               Vigente
                             </span>
-                            <span v-else
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#f3f4f6;color:#9ca3af">
+                            <span
+                              v-else
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #f3f4f6; color: #9ca3af"
+                            >
                               Pendiente
                             </span>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <div class="flex items-center gap-1.5 px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-xs text-gray-400">
-                      <i class="pi pi-bolt text-xs" style="color:#8b5cf6" />
+                    <div
+                      class="flex items-center gap-1.5 border-t border-gray-100 bg-gray-50/60 px-4 py-2 text-xs text-gray-400"
+                    >
+                      <i class="pi pi-bolt text-xs" style="color: #8b5cf6" />
                       Calculado automáticamente desde la Fecha de contrato y el IPC por año.
                     </div>
                   </div>
@@ -540,117 +896,209 @@
               </div>
 
               <!-- Panel indexación MENSUAL por arrendador -->
-              <div v-for="a in arrendadores" :key="'mensual-' + a.id"
-                :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.mensual ? '800px' : '0px' }">
+              <div
+                v-for="a in arrendadores"
+                :key="'mensual-' + a.id"
+                :style="{
+                  overflow: 'hidden',
+                  transition: 'max-height 0.35s ease',
+                  maxHeight: showIndexacionArriendo.mensual ? '800px' : '0px',
+                }"
+              >
                 <div class="pt-3">
-                  <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
-                    <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
-                      <span class="text-xs font-semibold" style="color:#5b21b6">
-                        <i class="pi pi-calculator text-xs mr-1.5" style="color:#8b5cf6" />Indexación mensual de arriendo — {{ a.nombre }}
+                  <div class="overflow-hidden rounded-xl border" style="border-color: #ddd6fe">
+                    <div
+                      class="flex items-center justify-between px-4 py-2.5"
+                      style="background: #f5f3ff"
+                    >
+                      <span class="text-xs font-semibold" style="color: #5b21b6">
+                        <i
+                          class="pi pi-calculator mr-1.5 text-xs"
+                          style="color: #8b5cf6"
+                        />Indexación mensual de arriendo — {{ a.nombre }}
                       </span>
                       <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                     </div>
-                    <table class="w-full text-sm border-collapse">
+                    <table class="w-full border-collapse text-sm">
                       <thead>
-                        <tr class="bg-gray-50 border-b border-gray-100">
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Año</th>
-                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">IPC aplicado</th>
-                          <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Valor mensual</th>
-                          <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">Estado</th>
+                        <tr class="border-b border-gray-100 bg-gray-50">
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                            Año
+                          </th>
+                          <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                            IPC aplicado
+                          </th>
+                          <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">
+                            Valor mensual
+                          </th>
+                          <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">
+                            Estado
+                          </th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-if="!a.indexacion_mensual?.length">
                           <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
-                            Sin indexación aún — el contrato todavía no cumple un año desde la Fecha de contrato (o falta esa fecha / el valor base).
+                            Sin indexación aún — el contrato todavía no cumple un año desde la Fecha
+                            de contrato (o falta esa fecha / el valor base).
                           </td>
                         </tr>
-                        <tr v-for="fila in (a.indexacion_mensual || [])" :key="fila.anio"
-                          class="border-b border-gray-50 hover:bg-violet-50/20 transition-colors"
-                          :class="fila.anio === ANIO_ACTUAL ? 'bg-violet-50/40' : ''">
+                        <tr
+                          v-for="fila in a.indexacion_mensual || []"
+                          :key="fila.anio"
+                          class="border-b border-gray-50 transition-colors hover:bg-violet-50/20"
+                          :class="fila.anio === ANIO_ACTUAL ? 'bg-violet-50/40' : ''"
+                        >
                           <td class="px-4 py-2.5">
                             <div class="flex items-center gap-1.5">
-                              <span class="font-mono font-semibold"
-                                :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'">
+                              <span
+                                class="font-mono font-semibold"
+                                :style="
+                                  fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'
+                                "
+                              >
                                 {{ fila.anio }}
                               </span>
-                              <span v-if="fila.anio === ANIO_ACTUAL"
-                                class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
-                                style="background:#ede9fe;color:#7c3aed">actual</span>
-                              <i v-if="fila.anio === ANIO_ACTUAL" class="pi pi-arrow-left text-xs" style="color:#7c3aed" />
+                              <span
+                                v-if="fila.anio === ANIO_ACTUAL"
+                                class="rounded px-1.5 py-0.5 text-xs leading-none font-bold"
+                                style="background: #ede9fe; color: #7c3aed"
+                                >actual</span
+                              >
+                              <i
+                                v-if="fila.anio === ANIO_ACTUAL"
+                                class="pi pi-arrow-left text-xs"
+                                style="color: #7c3aed"
+                              />
                             </div>
                           </td>
                           <td class="px-4 py-2.5">
-                            <span v-if="fila.ipc_aplicado == null" class="text-gray-400 text-xs">— (base)</span>
-                            <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
+                            <span v-if="fila.ipc_aplicado == null" class="text-xs text-gray-400"
+                              >— (base)</span
+                            >
+                            <span v-else class="font-mono tabular-nums" style="color: #374151"
+                              >{{ fila.ipc_aplicado }}%</span
+                            >
                           </td>
-                          <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                            :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'">
+                          <td
+                            class="px-4 py-2.5 text-right font-semibold tabular-nums"
+                            :style="fila.anio === ANIO_ACTUAL ? 'color:#7c3aed' : 'color:#2C2039'"
+                          >
                             {{ formatCOP(fila.valor) }}
                           </td>
                           <td class="px-4 py-2.5 text-center">
-                            <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#dcfce7;color:#166534">
+                            <span
+                              v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #dcfce7; color: #166534"
+                            >
                               <i class="pi pi-check text-xs" />Pagado
                             </span>
-                            <span v-else-if="fila.anio === ANIO_ACTUAL"
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#ede9fe;color:#7c3aed">
+                            <span
+                              v-else-if="fila.anio === ANIO_ACTUAL"
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #ede9fe; color: #7c3aed"
+                            >
                               Vigente
                             </span>
-                            <span v-else
-                              class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                              style="background:#f3f4f6;color:#9ca3af">
+                            <span
+                              v-else
+                              class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                              style="background: #f3f4f6; color: #9ca3af"
+                            >
                               Pendiente
                             </span>
                           </td>
                         </tr>
                       </tbody>
                     </table>
-                    <div class="flex items-center gap-1.5 px-4 py-2 border-t border-gray-100 bg-gray-50/60 text-xs text-gray-400">
-                      <i class="pi pi-bolt text-xs" style="color:#8b5cf6" />
+                    <div
+                      class="flex items-center gap-1.5 border-t border-gray-100 bg-gray-50/60 px-4 py-2 text-xs text-gray-400"
+                    >
+                      <i class="pi pi-bolt text-xs" style="color: #8b5cf6" />
                       Calculado automáticamente desde la Fecha de contrato y el IPC por año.
                     </div>
                   </div>
                 </div>
               </div>
-
             </div>
 
             <!-- Dialog Arrendador (crear/editar) -->
-            <Dialog v-model:visible="arrendadorDialog.visible" modal
-              :header="arrendadorDialog.modo === 'editar' ? 'Editar arrendador' : 'Agregar arrendador'"
-              style="width: 26rem">
+            <Dialog
+              v-model:visible="arrendadorDialog.visible"
+              modal
+              :header="
+                arrendadorDialog.modo === 'editar' ? 'Editar arrendador' : 'Agregar arrendador'
+              "
+              style="width: 26rem"
+            >
               <div class="flex flex-col gap-3 pt-2">
                 <div>
-                  <label class="text-xs font-medium text-gray-600">Nombre <span class="text-red-400">*</span></label>
-                  <InputText v-model="arrendadorDialog.form.nombre" class="w-full" placeholder="Nombre o razón social" />
+                  <label class="text-xs font-medium text-gray-600"
+                    >Nombre <span class="text-red-400">*</span></label
+                  >
+                  <InputText
+                    v-model="arrendadorDialog.form.nombre"
+                    class="w-full"
+                    placeholder="Nombre o razón social"
+                  />
                 </div>
                 <div>
                   <label class="text-xs font-medium text-gray-600">Valor base</label>
-                  <InputNumber v-model="arrendadorDialog.form.valor_base" class="w-full" mode="currency"
-                    currency="COP" locale="es-CO" :maxFractionDigits="0" />
+                  <InputNumber
+                    v-model="arrendadorDialog.form.valor_base"
+                    class="w-full"
+                    mode="currency"
+                    currency="COP"
+                    locale="es-CO"
+                    :maxFractionDigits="0"
+                  />
                 </div>
                 <div>
                   <label class="text-xs font-medium text-gray-600">Responsable IVA</label>
-                  <Select v-model="arrendadorDialog.form.responsable_iva"
-                    :options="[{label:'Sí',value:true},{label:'No',value:false}]"
-                    optionLabel="label" optionValue="value" class="w-full" />
+                  <Select
+                    v-model="arrendadorDialog.form.responsable_iva"
+                    :options="[
+                      { label: 'Sí', value: true },
+                      { label: 'No', value: false },
+                    ]"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="w-full"
+                  />
                 </div>
                 <div>
                   <label class="text-xs font-medium text-gray-600">Activo</label>
-                  <Select v-model="arrendadorDialog.form.activo"
-                    :options="[{label:'Sí',value:true},{label:'No',value:false}]"
-                    optionLabel="label" optionValue="value" class="w-full" />
+                  <Select
+                    v-model="arrendadorDialog.form.activo"
+                    :options="[
+                      { label: 'Sí', value: true },
+                      { label: 'No', value: false },
+                    ]"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="w-full"
+                  />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="text-xs font-medium text-gray-600">Anticipo pagado desde</label>
-                  <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_desde" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+                  <DatePicker
+                    v-model="arrendadorDialog.form.anticipo_pagado_desde"
+                    dateFormat="yy-mm-dd"
+                    class="w-full"
+                    showClear
+                    placeholder="aaaa-mm-dd"
+                  />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="text-xs font-medium text-gray-600">Anticipo pagado hasta</label>
-                  <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_hasta" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+                  <DatePicker
+                    v-model="arrendadorDialog.form.anticipo_pagado_hasta"
+                    dateFormat="yy-mm-dd"
+                    class="w-full"
+                    showClear
+                    placeholder="aaaa-mm-dd"
+                  />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="text-xs font-medium text-gray-600">Observaciones</label>
@@ -658,101 +1106,174 @@
                 </div>
               </div>
               <template #footer>
-                <Button label="Cancelar" text severity="secondary" @click="arrendadorDialog.visible = false" />
-                <Button label="Guardar" :loading="arrendadorDialog.guardando" @click="guardarArrendador" />
+                <Button
+                  label="Cancelar"
+                  text
+                  severity="secondary"
+                  @click="arrendadorDialog.visible = false"
+                />
+                <Button
+                  label="Guardar"
+                  :loading="arrendadorDialog.guardando"
+                  @click="guardarArrendador"
+                />
               </template>
             </Dialog>
           </template>
           <template v-else>
             <!-- Datos estáticos desde JSON si existen -->
             <template v-if="buscarArriendoEstatico(proyectoNombre)">
-              <div class="rounded-xl border bg-white p-5" style="border-color:#8b5cf640">
+              <div class="rounded-xl border bg-white p-5" style="border-color: #8b5cf640">
                 <!-- Header -->
-                <div class="flex items-start justify-between mb-4 gap-3">
-                  <div class="flex items-center gap-2.5 flex-wrap">
-                    <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:#f5f3ff">
-                      <i class="pi pi-home text-sm" style="color:#8b5cf6" />
+                <div class="mb-4 flex items-start justify-between gap-3">
+                  <div class="flex flex-wrap items-center gap-2.5">
+                    <div
+                      class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
+                      style="background: #f5f3ff"
+                    >
+                      <i class="pi pi-home text-sm" style="color: #8b5cf6" />
                     </div>
                     <div>
-                      <p class="text-xs text-gray-400 leading-none mb-0.5">Contrato de Arriendo</p>
-                      <span class="text-sm font-semibold" style="color:#2C2039">{{ proyectoNombre }}</span>
+                      <p class="mb-0.5 text-xs leading-none text-gray-400">Contrato de Arriendo</p>
+                      <span class="text-sm font-semibold" style="color: #2c2039">{{
+                        proyectoNombre
+                      }}</span>
                     </div>
                   </div>
-                  <div class="flex items-center gap-2 flex-shrink-0">
+                  <div class="flex flex-shrink-0 items-center gap-2">
                     <Tag value="Vigente" severity="success" class="text-xs" />
-                    <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
-                      @click="openEditContrato('arriendo')" />
+                    <Button
+                      icon="pi pi-pencil"
+                      label="Editar"
+                      size="small"
+                      text
+                      severity="secondary"
+                      @click="openEditContrato('arriendo')"
+                    />
                   </div>
                 </div>
                 <!-- Mini-cards -->
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                <div class="grid grid-cols-2 gap-3 md:grid-cols-3">
                   <!-- Contratante -->
-                  <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                    <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-user text-xs" style="color:#8b5cf6" />Contratante
+                  <div
+                    class="rounded-lg p-3.5"
+                    style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                  >
+                    <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                      <i class="pi pi-user text-xs" style="color: #8b5cf6" />Contratante
                     </p>
-                    <p class="text-sm font-semibold leading-snug" style="color:#1c1917">
+                    <p class="text-sm leading-snug font-semibold" style="color: #1c1917">
                       {{ buscarArriendoEstatico(proyectoNombre).contratante }}
                     </p>
                   </div>
                   <!-- Prestador -->
-                  <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                    <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-building text-xs" style="color:#8b5cf6" />Prestador
+                  <div
+                    class="rounded-lg p-3.5"
+                    style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                  >
+                    <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                      <i class="pi pi-building text-xs" style="color: #8b5cf6" />Prestador
                     </p>
-                    <p class="text-sm font-semibold leading-snug" style="color:#1c1917">
+                    <p class="text-sm leading-snug font-semibold" style="color: #1c1917">
                       {{ buscarArriendoEstatico(proyectoNombre).prestador }}
                     </p>
                   </div>
                   <!-- Fecha firma -->
-                  <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                    <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-calendar text-xs" style="color:#8b5cf6" />Fecha firma contrato
+                  <div
+                    class="rounded-lg p-3.5"
+                    style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                  >
+                    <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                      <i class="pi pi-calendar text-xs" style="color: #8b5cf6" />Fecha firma
+                      contrato
                     </p>
-                    <p class="text-sm font-semibold" style="color:#1c1917">
+                    <p class="text-sm font-semibold" style="color: #1c1917">
                       {{ buscarArriendoEstatico(proyectoNombre).fecha_firma }}
                     </p>
                   </div>
                   <!-- Valor anual vigente -->
-                  <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                    <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-dollar text-xs" style="color:#8b5cf6" />Valor anual ({{ ANIO_ACTUAL }})
+                  <div
+                    class="rounded-lg p-3.5"
+                    style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                  >
+                    <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                      <i class="pi pi-dollar text-xs" style="color: #8b5cf6" />Valor anual ({{
+                        ANIO_ACTUAL
+                      }})
                     </p>
-                    <p class="text-base font-bold" style="color:#7c3aed">
-                      {{ formatCOP(getValorVigente(buscarArriendoEstatico(proyectoNombre).indexacion_anual)?.valor ?? buscarArriendoEstatico(proyectoNombre).valor_anual) }}
+                    <p class="text-base font-bold" style="color: #7c3aed">
+                      {{
+                        formatCOP(
+                          getValorVigente(buscarArriendoEstatico(proyectoNombre).indexacion_anual)
+                            ?.valor ?? buscarArriendoEstatico(proyectoNombre).valor_anual,
+                        )
+                      }}
                     </p>
                     <!-- Aviso IPC pendiente -->
-                    <p v-if="(buscarArriendoEstatico(proyectoNombre).indexacion_anual?.slice(-1)[0]?.anio ?? 0) < ANIO_ACTUAL"
-                      class="text-[10px] mt-1 font-medium" style="color:#dc2626">
+                    <p
+                      v-if="
+                        (buscarArriendoEstatico(proyectoNombre).indexacion_anual?.slice(-1)[0]
+                          ?.anio ?? 0) < ANIO_ACTUAL
+                      "
+                      class="mt-1 text-[10px] font-medium"
+                      style="color: #dc2626"
+                    >
                       IPC de {{ ANIO_ACTUAL }} pendiente de actualizar
                     </p>
-                    <button type="button"
-                      class="mt-2 flex items-center gap-1 text-xs font-medium hover:opacity-75 transition-opacity"
-                      style="background:none;border:none;padding:0;cursor:pointer;color:#8b5cf6"
-                      @click="showIndexacionArriendo.anual = !showIndexacionArriendo.anual">
-                      <i class="pi pi-chevron-down text-xs transition-transform duration-200"
-                        :style="showIndexacionArriendo.anual ? 'transform:rotate(180deg)' : ''" />
+                    <button
+                      type="button"
+                      class="mt-2 flex items-center gap-1 text-xs font-medium transition-opacity hover:opacity-75"
+                      style="
+                        background: none;
+                        border: none;
+                        padding: 0;
+                        cursor: pointer;
+                        color: #8b5cf6;
+                      "
+                      @click="showIndexacionArriendo.anual = !showIndexacionArriendo.anual"
+                    >
+                      <i
+                        class="pi pi-chevron-down text-xs transition-transform duration-200"
+                        :style="showIndexacionArriendo.anual ? 'transform:rotate(180deg)' : ''"
+                      />
                       {{ showIndexacionArriendo.anual ? 'Ocultar' : 'Ver indexación' }}
                     </button>
                   </div>
                   <!-- Valor mensual vigente -->
-                  <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                    <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-calculator text-xs" style="color:#8b5cf6" />Valor mensual ({{ ANIO_ACTUAL }})
+                  <div
+                    class="rounded-lg p-3.5"
+                    style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                  >
+                    <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                      <i class="pi pi-calculator text-xs" style="color: #8b5cf6" />Valor mensual ({{
+                        ANIO_ACTUAL
+                      }})
                     </p>
-                    <p class="text-base font-bold" style="color:#7c3aed">
-                      {{ formatCOP(getValorVigente(buscarArriendoEstatico(proyectoNombre).indexacion_mensual)?.valor ?? buscarArriendoEstatico(proyectoNombre).valor_mensual) }}
+                    <p class="text-base font-bold" style="color: #7c3aed">
+                      {{
+                        formatCOP(
+                          getValorVigente(buscarArriendoEstatico(proyectoNombre).indexacion_mensual)
+                            ?.valor ?? buscarArriendoEstatico(proyectoNombre).valor_mensual,
+                        )
+                      }}
                     </p>
                   </div>
                   <!-- Contrato en Drive -->
-                  <div class="rounded-lg p-3.5" style="background:#f5f3ff;border:1px solid #ddd6fe">
-                    <p class="text-xs mb-1.5 flex items-center gap-1.5" style="color:#5b21b6">
-                      <i class="pi pi-file-pdf text-xs" style="color:#8b5cf6" />Contrato en Drive
+                  <div
+                    class="rounded-lg p-3.5"
+                    style="background: #f5f3ff; border: 1px solid #ddd6fe"
+                  >
+                    <p class="mb-1.5 flex items-center gap-1.5 text-xs" style="color: #5b21b6">
+                      <i class="pi pi-file-pdf text-xs" style="color: #8b5cf6" />Contrato en Drive
                     </p>
-                    <a v-if="buscarArriendoEstatico(proyectoNombre).enlace"
-                       :href="buscarArriendoEstatico(proyectoNombre).enlace"
-                       target="_blank" rel="noopener"
-                       class="text-sm font-semibold flex items-center gap-1.5 hover:underline" style="color:#8b5cf6">
+                    <a
+                      v-if="buscarArriendoEstatico(proyectoNombre).enlace"
+                      :href="buscarArriendoEstatico(proyectoNombre).enlace"
+                      target="_blank"
+                      rel="noopener"
+                      class="flex items-center gap-1.5 text-sm font-semibold hover:underline"
+                      style="color: #8b5cf6"
+                    >
                       <i class="pi pi-external-link text-xs" />Ver contrato
                     </a>
                     <span v-else class="text-sm text-gray-400">Sin enlace</span>
@@ -760,69 +1281,149 @@
                 </div>
 
                 <!-- Panel indexación anual -->
-                <div :style="{ overflow: 'hidden', transition: 'max-height 0.35s ease', maxHeight: showIndexacionArriendo.anual ? '800px' : '0px' }">
+                <div
+                  :style="{
+                    overflow: 'hidden',
+                    transition: 'max-height 0.35s ease',
+                    maxHeight: showIndexacionArriendo.anual ? '800px' : '0px',
+                  }"
+                >
                   <div class="pt-3">
-                    <div class="rounded-xl border overflow-hidden" style="border-color:#ddd6fe">
-                      <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
-                        <span class="text-xs font-semibold" style="color:#5b21b6">
-                          <i class="pi pi-dollar text-xs mr-1.5" style="color:#8b5cf6" />Indexación anual de arriendo
+                    <div class="overflow-hidden rounded-xl border" style="border-color: #ddd6fe">
+                      <div
+                        class="flex items-center justify-between px-4 py-2.5"
+                        style="background: #f5f3ff"
+                      >
+                        <span class="text-xs font-semibold" style="color: #5b21b6">
+                          <i class="pi pi-dollar mr-1.5 text-xs" style="color: #8b5cf6" />Indexación
+                          anual de arriendo
                         </span>
                         <span class="text-xs text-gray-400">Año vigente: {{ ANIO_ACTUAL }}</span>
                       </div>
-                      <table class="w-full text-sm border-collapse">
+                      <table class="w-full border-collapse text-sm">
                         <thead>
-                          <tr class="bg-gray-50 border-b border-gray-100">
-                            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Año</th>
-                            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">IPC aplicado</th>
-                            <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">Valor anual</th>
-                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">Estado</th>
+                          <tr class="border-b border-gray-100 bg-gray-50">
+                            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                              Año
+                            </th>
+                            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">
+                              IPC aplicado
+                            </th>
+                            <th class="px-4 py-2 text-right text-xs font-semibold text-gray-500">
+                              Valor anual
+                            </th>
+                            <th class="px-4 py-2 text-center text-xs font-semibold text-gray-500">
+                              Estado
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr v-if="!buscarArriendoEstatico(proyectoNombre).indexacion_anual?.length">
+                          <tr
+                            v-if="!buscarArriendoEstatico(proyectoNombre).indexacion_anual?.length"
+                          >
                             <td colspan="4" class="px-4 py-6 text-center text-xs text-gray-400">
                               Sin indexación registrada
                             </td>
                           </tr>
-                          <tr v-for="(fila, idx) in (buscarArriendoEstatico(proyectoNombre).indexacion_anual || [])"
+                          <tr
+                            v-for="(fila, idx) in buscarArriendoEstatico(proyectoNombre)
+                              .indexacion_anual || []"
                             :key="idx"
                             class="border-b border-gray-50 transition-colors"
-                            :class="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1 ? 'bg-violet-50/40' : ''">
+                            :class="
+                              fila.anio === ANIO_ACTUAL &&
+                              idx ===
+                                buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1
+                                ? 'bg-violet-50/40'
+                                : ''
+                            "
+                          >
                             <td class="px-4 py-2.5">
                               <div class="flex items-center gap-1.5">
-                                <span class="font-mono font-semibold"
-                                  :style="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1 ? 'color:#7c3aed' : 'color:#2C2039'">
+                                <span
+                                  class="font-mono font-semibold"
+                                  :style="
+                                    fila.anio === ANIO_ACTUAL &&
+                                    idx ===
+                                      buscarArriendoEstatico(proyectoNombre).indexacion_anual
+                                        .length -
+                                        1
+                                      ? 'color:#7c3aed'
+                                      : 'color:#2C2039'
+                                  "
+                                >
                                   {{ fila.anio }}
                                 </span>
-                                <span v-if="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1"
-                                  class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
-                                  style="background:#ede9fe;color:#7c3aed">actual</span>
-                                <i v-if="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1"
-                                  class="pi pi-arrow-left text-xs" style="color:#7c3aed" />
+                                <span
+                                  v-if="
+                                    fila.anio === ANIO_ACTUAL &&
+                                    idx ===
+                                      buscarArriendoEstatico(proyectoNombre).indexacion_anual
+                                        .length -
+                                        1
+                                  "
+                                  class="rounded px-1.5 py-0.5 text-xs leading-none font-bold"
+                                  style="background: #ede9fe; color: #7c3aed"
+                                  >actual</span
+                                >
+                                <i
+                                  v-if="
+                                    fila.anio === ANIO_ACTUAL &&
+                                    idx ===
+                                      buscarArriendoEstatico(proyectoNombre).indexacion_anual
+                                        .length -
+                                        1
+                                  "
+                                  class="pi pi-arrow-left text-xs"
+                                  style="color: #7c3aed"
+                                />
                               </div>
                             </td>
                             <td class="px-4 py-2.5">
-                              <span v-if="fila.ipc_aplicado == null" class="text-gray-400 text-xs">— (base)</span>
-                              <span v-else class="font-mono tabular-nums" style="color:#374151">{{ fila.ipc_aplicado }}%</span>
+                              <span v-if="fila.ipc_aplicado == null" class="text-xs text-gray-400"
+                                >— (base)</span
+                              >
+                              <span v-else class="font-mono tabular-nums" style="color: #374151"
+                                >{{ fila.ipc_aplicado }}%</span
+                              >
                             </td>
-                            <td class="px-4 py-2.5 text-right font-semibold tabular-nums"
-                              :style="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1 ? 'color:#7c3aed' : 'color:#2C2039'">
+                            <td
+                              class="px-4 py-2.5 text-right font-semibold tabular-nums"
+                              :style="
+                                fila.anio === ANIO_ACTUAL &&
+                                idx ===
+                                  buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1
+                                  ? 'color:#7c3aed'
+                                  : 'color:#2C2039'
+                              "
+                            >
                               {{ formatCOP(fila.valor) }}
                             </td>
                             <td class="px-4 py-2.5 text-center">
-                              <span v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
-                                class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                                style="background:#dcfce7;color:#166534">
+                              <span
+                                v-if="fila.ipc_aplicado == null || fila.anio < ANIO_ACTUAL"
+                                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                                style="background: #dcfce7; color: #166534"
+                              >
                                 <i class="pi pi-check text-xs" />Pagado
                               </span>
-                              <span v-else-if="fila.anio === ANIO_ACTUAL && idx === buscarArriendoEstatico(proyectoNombre).indexacion_anual.length - 1"
-                                class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                                style="background:#ede9fe;color:#7c3aed">
+                              <span
+                                v-else-if="
+                                  fila.anio === ANIO_ACTUAL &&
+                                  idx ===
+                                    buscarArriendoEstatico(proyectoNombre).indexacion_anual.length -
+                                      1
+                                "
+                                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                                style="background: #ede9fe; color: #7c3aed"
+                              >
                                 Vigente
                               </span>
-                              <span v-else
-                                class="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full"
-                                style="background:#f3f4f6;color:#9ca3af">
+                              <span
+                                v-else
+                                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                                style="background: #f3f4f6; color: #9ca3af"
+                              >
                                 Pendiente
                               </span>
                             </td>
@@ -832,22 +1433,33 @@
                     </div>
                   </div>
                 </div>
-
               </div>
             </template>
 
             <!-- Sin datos en JSON ni en BD -->
             <template v-else>
-              <div class="rounded-xl border border-dashed border-violet-200 bg-violet-50/40 p-10 text-center">
-                <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style="background:#f5f3ff">
-                  <i class="pi pi-home text-xl" style="color:#8b5cf6" />
+              <div
+                class="rounded-xl border border-dashed border-violet-200 bg-violet-50/40 p-10 text-center"
+              >
+                <div
+                  class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
+                  style="background: #f5f3ff"
+                >
+                  <i class="pi pi-home text-xl" style="color: #8b5cf6" />
                 </div>
-                <p class="text-sm font-medium text-gray-600 mb-1">Sin contrato de arriendo registrado</p>
-                <p class="text-xs text-gray-400 mb-4">No se encontró contrato de arriendo para este proyecto</p>
-                <Button label="Crear contrato" icon="pi pi-plus" size="small"
-                  style="background:#8b5cf6;border-color:#8b5cf6"
-                  @click="openWizard('arriendo')" />
+                <p class="mb-1 text-sm font-medium text-gray-600">
+                  Sin contrato de arriendo registrado
+                </p>
+                <p class="mb-4 text-xs text-gray-400">
+                  No se encontró contrato de arriendo para este proyecto
+                </p>
+                <Button
+                  label="Crear contrato"
+                  icon="pi pi-plus"
+                  size="small"
+                  style="background: #8b5cf6; border-color: #8b5cf6"
+                  @click="openWizard('arriendo')"
+                />
               </div>
             </template>
           </template>
@@ -862,7 +1474,6 @@
             @open-pago="openNuevoPago('arriendo')"
             @eliminar="(id) => eliminarPago('arriendo', id)"
           />
-
         </div>
       </TabPanel>
 
@@ -875,85 +1486,183 @@
           </div>
         </template>
         <div class="space-y-5 pt-3">
-
           <template v-if="contratos.internet">
-            <div class="rounded-xl border bg-white p-5" style="border-color:#06b6d440">
-              <div class="flex items-center justify-between mb-5">
+            <div class="rounded-xl border bg-white p-5" style="border-color: #06b6d440">
+              <div class="mb-5 flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background:#ecfeff">
-                    <i class="pi pi-wifi text-sm" style="color:#06b6d4" />
+                  <div
+                    class="flex h-8 w-8 items-center justify-center rounded-lg"
+                    style="background: #ecfeff"
+                  >
+                    <i class="pi pi-wifi text-sm" style="color: #06b6d4" />
                   </div>
-                  <span class="text-sm font-semibold" style="color:#2C2039">Servicio de Internet</span>
-                  <Tag :value="CONTRATO_LABELS[contratos.internet.estado]"
-                       :severity="CONTRATO_SEVERITY[contratos.internet.estado]" class="text-xs" />
+                  <span class="text-sm font-semibold" style="color: #2c2039"
+                    >Servicio de Internet</span
+                  >
+                  <Tag
+                    :value="CONTRATO_LABELS[contratos.internet.estado]"
+                    :severity="CONTRATO_SEVERITY[contratos.internet.estado]"
+                    class="text-xs"
+                  />
                 </div>
-                <Button icon="pi pi-pencil" label="Editar" size="small" text severity="secondary"
-                  @click="openEditContrato('internet')" />
-                <Button icon="pi pi-plus" label="Nuevo servicio" size="small" outlined
-                  style="border-color:#06b6d4;color:#06b6d4"
-                  @click="openWizard('internet')" />
+                <Button
+                  icon="pi pi-pencil"
+                  label="Editar"
+                  size="small"
+                  text
+                  severity="secondary"
+                  @click="openEditContrato('internet')"
+                />
+                <Button
+                  icon="pi pi-plus"
+                  label="Nuevo servicio"
+                  size="small"
+                  outlined
+                  style="border-color: #06b6d4; color: #06b6d4"
+                  @click="openWizard('internet')"
+                />
               </div>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5">
-                <InfoIcon icon="pi pi-building" color="#06b6d4" label="Proveedor"
-                  :value="contratos.internet.prestador_nombre" />
-                <InfoIcon icon="pi pi-database" color="#06b6d4" label="Plan de datos"
-                  :value="contratos.internet.plan_datos_gb" />
-                <InfoIcon icon="pi pi-gauge" color="#06b6d4" label="Velocidad"
-                  :value="contratos.internet.velocidad_mbps != null ? `${contratos.internet.velocidad_mbps} Mbps` : null" />
-                <InfoIcon icon="pi pi-wifi" color="#06b6d4" label="Tipo de conexión"
-                  :value="contratos.internet.tipo_conexion" />
-                <InfoIcon icon="pi pi-sitemap" color="#06b6d4" label="Línea de servicio"
-                  :value="contratos.internet.linea_servicio" />
-                <InfoIcon icon="pi pi-desktop" color="#06b6d4" label="ID del router"
-                  :value="contratos.internet.id_router" />
-                <InfoIcon icon="pi pi-box" color="#06b6d4" label="Número de kit"
-                  :value="contratos.internet.numero_kit" />
-                <InfoIcon icon="pi pi-bolt" color="#06b6d4" label="Latencia"
-                  :value="contratos.internet.latencia_ms != null ? `${contratos.internet.latencia_ms} ms` : null" />
-                <InfoIcon icon="pi pi-shield" color="#06b6d4" label="Seguridad del wifi"
-                  :value="contratos.internet.wifi_seguridad" />
-                <InfoSecret color="#06b6d4" label="Contraseña wifi"
-                  :value="contratos.internet.wifi_password" />
-                <InfoLink color="#06b6d4" label="Factura / Contrato en Drive"
-                  :href="contratos.internet.enlace_drive" />
+              <div class="grid grid-cols-2 gap-x-6 gap-y-5 md:grid-cols-4">
+                <InfoIcon
+                  icon="pi pi-building"
+                  color="#06b6d4"
+                  label="Proveedor"
+                  :value="contratos.internet.prestador_nombre"
+                />
+                <InfoIcon
+                  icon="pi pi-database"
+                  color="#06b6d4"
+                  label="Plan de datos"
+                  :value="contratos.internet.plan_datos_gb"
+                />
+                <InfoIcon
+                  icon="pi pi-gauge"
+                  color="#06b6d4"
+                  label="Velocidad"
+                  :value="
+                    contratos.internet.velocidad_mbps != null
+                      ? `${contratos.internet.velocidad_mbps} Mbps`
+                      : null
+                  "
+                />
+                <InfoIcon
+                  icon="pi pi-wifi"
+                  color="#06b6d4"
+                  label="Tipo de conexión"
+                  :value="contratos.internet.tipo_conexion"
+                />
+                <InfoIcon
+                  icon="pi pi-sitemap"
+                  color="#06b6d4"
+                  label="Línea de servicio"
+                  :value="contratos.internet.linea_servicio"
+                />
+                <InfoIcon
+                  icon="pi pi-desktop"
+                  color="#06b6d4"
+                  label="ID del router"
+                  :value="contratos.internet.id_router"
+                />
+                <InfoIcon
+                  icon="pi pi-box"
+                  color="#06b6d4"
+                  label="Número de kit"
+                  :value="contratos.internet.numero_kit"
+                />
+                <InfoIcon
+                  icon="pi pi-bolt"
+                  color="#06b6d4"
+                  label="Latencia"
+                  :value="
+                    contratos.internet.latencia_ms != null
+                      ? `${contratos.internet.latencia_ms} ms`
+                      : null
+                  "
+                />
+                <InfoIcon
+                  icon="pi pi-shield"
+                  color="#06b6d4"
+                  label="Seguridad del wifi"
+                  :value="contratos.internet.wifi_seguridad"
+                />
+                <InfoSecret
+                  color="#06b6d4"
+                  label="Contraseña wifi"
+                  :value="contratos.internet.wifi_password"
+                />
+                <InfoLink
+                  color="#06b6d4"
+                  label="Factura / Contrato en Drive"
+                  :href="contratos.internet.enlace_drive"
+                />
               </div>
 
               <!-- Ubicación del servicio -->
-              <div v-if="contratos.internet.ubicacion_lat != null && contratos.internet.ubicacion_lng != null"
-                class="mt-5 pt-4 border-t border-gray-100">
-                <p class="text-xs font-medium mb-2" style="color:#9b89b5">
-                  Ubicación: {{ contratos.internet.ubicacion_lat }},{{ contratos.internet.ubicacion_lng }}
+              <div
+                v-if="
+                  contratos.internet.ubicacion_lat != null &&
+                  contratos.internet.ubicacion_lng != null
+                "
+                class="mt-5 border-t border-gray-100 pt-4"
+              >
+                <p class="mb-2 text-xs font-medium" style="color: #9b89b5">
+                  Ubicación: {{ contratos.internet.ubicacion_lat }},{{
+                    contratos.internet.ubicacion_lng
+                  }}
                 </p>
-                <div ref="internetMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#e5e3df"></div>
+                <div
+                  ref="internetMapEl"
+                  class="overflow-hidden rounded-md"
+                  style="height: 200px; background: #e5e3df"
+                ></div>
               </div>
             </div>
           </template>
           <template v-else>
-            <div class="rounded-xl border border-dashed border-cyan-200 bg-cyan-50/40 p-10 text-center">
-              <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
-                style="background:#ecfeff">
-                <i class="pi pi-wifi text-xl" style="color:#06b6d4" />
+            <div
+              class="rounded-xl border border-dashed border-cyan-200 bg-cyan-50/40 p-10 text-center"
+            >
+              <div
+                class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full"
+                style="background: #ecfeff"
+              >
+                <i class="pi pi-wifi text-xl" style="color: #06b6d4" />
               </div>
-              <p class="text-sm font-medium text-gray-600 mb-1">Sin servicio de internet registrado</p>
-              <p class="text-xs text-gray-400 mb-4">Registra el proveedor para iniciar el seguimiento de pagos</p>
-              <Button label="Registrar servicio" icon="pi pi-plus" size="small"
-                style="background:#06b6d4;border-color:#06b6d4"
-                @click="openWizard('internet')" />
+              <p class="mb-1 text-sm font-medium text-gray-600">
+                Sin servicio de internet registrado
+              </p>
+              <p class="mb-4 text-xs text-gray-400">
+                Registra el proveedor para iniciar el seguimiento de pagos
+              </p>
+              <Button
+                label="Registrar servicio"
+                icon="pi pi-plus"
+                size="small"
+                style="background: #06b6d4; border-color: #06b6d4"
+                @click="openWizard('internet')"
+              />
             </div>
           </template>
         </div>
       </TabPanel>
-
     </TabView>
 
     <!-- ── Dialog Mantenimiento (crear / editar) ─────────────────────────────── -->
-    <Dialog v-model:visible="dialogMant.visible" modal :style="{ width: '520px' }"
-      :breakpoints="{ '560px': '95vw' }">
+    <Dialog
+      v-model:visible="dialogMant.visible"
+      modal
+      :style="{ width: '520px' }"
+      :breakpoints="{ '560px': '95vw' }"
+    >
       <template #header>
         <div class="flex items-center gap-2">
-          <i class="pi pi-wrench text-sm" style="color:#f59e0b" />
-          <span class="font-semibold text-sm" style="color:#2C2039">
-            {{ dialogMant.modo === 'crear' ? 'Crear contrato de mantenimiento' : 'Editar contrato de mantenimiento' }}
+          <i class="pi pi-wrench text-sm" style="color: #f59e0b" />
+          <span class="text-sm font-semibold" style="color: #2c2039">
+            {{
+              dialogMant.modo === 'crear'
+                ? 'Crear contrato de mantenimiento'
+                : 'Editar contrato de mantenimiento'
+            }}
           </span>
         </div>
       </template>
@@ -961,82 +1670,165 @@
         <!-- Contratante / Prestador -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Contratante <span class="text-red-400">*</span></label>
-            <InputText v-model="dialogMant.form.contratante_nombre" class="w-full" placeholder="Nombre o razón social" />
-            <p v-if="dialogMant.errores.contratante_nombre" class="text-xs text-red-400">{{ dialogMant.errores.contratante_nombre }}</p>
+            <label class="text-xs font-medium text-gray-600"
+              >Contratante <span class="text-red-400">*</span></label
+            >
+            <InputText
+              v-model="dialogMant.form.contratante_nombre"
+              class="w-full"
+              placeholder="Nombre o razón social"
+            />
+            <p v-if="dialogMant.errores.contratante_nombre" class="text-xs text-red-400">
+              {{ dialogMant.errores.contratante_nombre }}
+            </p>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Prestador <span class="text-red-400">*</span></label>
-            <InputText v-model="dialogMant.form.prestador_nombre" class="w-full" placeholder="Nombre o razón social" />
-            <p v-if="dialogMant.errores.prestador_nombre" class="text-xs text-red-400">{{ dialogMant.errores.prestador_nombre }}</p>
+            <label class="text-xs font-medium text-gray-600"
+              >Prestador <span class="text-red-400">*</span></label
+            >
+            <InputText
+              v-model="dialogMant.form.prestador_nombre"
+              class="w-full"
+              placeholder="Nombre o razón social"
+            />
+            <p v-if="dialogMant.errores.prestador_nombre" class="text-xs text-red-400">
+              {{ dialogMant.errores.prestador_nombre }}
+            </p>
           </div>
         </div>
         <!-- Fecha / Estado -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Fecha de inicio O&amp;M <span class="text-red-400">*</span></label>
-            <DatePicker v-model="dialogMant.form.fecha_inicio_om" dateFormat="yy-mm-dd"
-              class="w-full" showClear placeholder="aaaa-mm-dd" />
+            <label class="text-xs font-medium text-gray-600"
+              >Fecha de inicio O&amp;M <span class="text-red-400">*</span></label
+            >
+            <DatePicker
+              v-model="dialogMant.form.fecha_inicio_om"
+              dateFormat="yy-mm-dd"
+              class="w-full"
+              showClear
+              placeholder="aaaa-mm-dd"
+            />
             <p class="text-xs text-gray-400">Es la fecha que Costos usa para indexar la tarifa.</p>
-            <p v-if="dialogMant.errores.fecha_inicio_om" class="text-xs text-red-400">{{ dialogMant.errores.fecha_inicio_om }}</p>
+            <p v-if="dialogMant.errores.fecha_inicio_om" class="text-xs text-red-400">
+              {{ dialogMant.errores.fecha_inicio_om }}
+            </p>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Estado <span class="text-red-400">*</span></label>
-            <Select v-model="dialogMant.form.estado" :options="ESTADOS_MANT"
-              optionLabel="label" optionValue="value" class="w-full" />
-            <p v-if="dialogMant.errores.estado" class="text-xs text-red-400">{{ dialogMant.errores.estado }}</p>
+            <label class="text-xs font-medium text-gray-600"
+              >Estado <span class="text-red-400">*</span></label
+            >
+            <Select
+              v-model="dialogMant.form.estado"
+              :options="ESTADOS_MANT"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+            />
+            <p v-if="dialogMant.errores.estado" class="text-xs text-red-400">
+              {{ dialogMant.errores.estado }}
+            </p>
           </div>
         </div>
         <!-- Fecha de suscripción (informativa; no interviene en la indexación) -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Fecha de suscripción del contrato</label>
-            <DatePicker v-model="dialogMant.form.fecha_firma_contrato" dateFormat="yy-mm-dd"
-              class="w-full" showClear placeholder="aaaa-mm-dd" />
-            <p class="text-xs text-gray-400">Solo informativa. La indexación usa la Fecha de inicio O&amp;M.</p>
+            <label class="text-xs font-medium text-gray-600"
+              >Fecha de suscripción del contrato</label
+            >
+            <DatePicker
+              v-model="dialogMant.form.fecha_firma_contrato"
+              dateFormat="yy-mm-dd"
+              class="w-full"
+              showClear
+              placeholder="aaaa-mm-dd"
+            />
+            <p class="text-xs text-gray-400">
+              Solo informativa. La indexación usa la Fecha de inicio O&amp;M.
+            </p>
           </div>
         </div>
         <!-- Periodicidad de cobro -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Periodicidad de cobro <span class="text-red-400">*</span></label>
-            <Select v-model="dialogMant.form.periodicidad_pago" :options="PERIODICIDADES"
-              optionLabel="label" optionValue="value" class="w-full" placeholder="Selecciona…" />
-            <p class="text-xs text-gray-400">Define en qué meses se cobra en el panel de Mantenimiento.</p>
+            <label class="text-xs font-medium text-gray-600"
+              >Periodicidad de cobro <span class="text-red-400">*</span></label
+            >
+            <Select
+              v-model="dialogMant.form.periodicidad_pago"
+              :options="PERIODICIDADES"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+              placeholder="Selecciona…"
+            />
+            <p class="text-xs text-gray-400">
+              Define en qué meses se cobra en el panel de Mantenimiento.
+            </p>
           </div>
         </div>
         <!-- Valor anual / Valor mensual -->
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Valor O&amp;M Anual (BASE) <span class="text-red-400">*</span></label>
-            <InputNumber v-model="dialogMant.form.tarifa_base"
-              mode="currency" currency="COP" locale="es-CO" :maxFractionDigits="0"
-              class="w-full" placeholder="$ 0"
-              @update:modelValue="v => { if (v != null) dialogMant.form.tarifa_mensual = Math.round(v / 12) }" />
-            <p v-if="dialogMant.errores.tarifa_base" class="text-xs text-red-400">{{ dialogMant.errores.tarifa_base }}</p>
+            <label class="text-xs font-medium text-gray-600"
+              >Valor O&amp;M Anual (BASE) <span class="text-red-400">*</span></label
+            >
+            <InputNumber
+              v-model="dialogMant.form.tarifa_base"
+              mode="currency"
+              currency="COP"
+              locale="es-CO"
+              :maxFractionDigits="0"
+              class="w-full"
+              placeholder="$ 0"
+              @update:modelValue="
+                (v) => {
+                  if (v != null) dialogMant.form.tarifa_mensual = Math.round(v / 12)
+                }
+              "
+            />
+            <p v-if="dialogMant.errores.tarifa_base" class="text-xs text-red-400">
+              {{ dialogMant.errores.tarifa_base }}
+            </p>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium text-gray-600">Valor mensual <span class="text-red-400">*</span></label>
-            <InputNumber v-model="dialogMant.form.tarifa_mensual"
-              mode="currency" currency="COP" locale="es-CO" :maxFractionDigits="0"
-              class="w-full" placeholder="$ 0" />
+            <label class="text-xs font-medium text-gray-600"
+              >Valor mensual <span class="text-red-400">*</span></label
+            >
+            <InputNumber
+              v-model="dialogMant.form.tarifa_mensual"
+              mode="currency"
+              currency="COP"
+              locale="es-CO"
+              :maxFractionDigits="0"
+              class="w-full"
+              placeholder="$ 0"
+            />
             <p class="text-xs text-gray-400">Sugerido: Valor Anual ÷ 12</p>
           </div>
         </div>
         <!-- Enlace Drive -->
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Enlace del contrato en Drive</label>
-          <InputText v-model="dialogMant.form.enlace_drive" class="w-full"
-            placeholder="https://drive.google.com/…" />
-          <p v-if="dialogMant.errores.enlace_drive" class="text-xs text-red-400">{{ dialogMant.errores.enlace_drive }}</p>
+          <InputText
+            v-model="dialogMant.form.enlace_drive"
+            class="w-full"
+            placeholder="https://drive.google.com/…"
+          />
+          <p v-if="dialogMant.errores.enlace_drive" class="text-xs text-red-400">
+            {{ dialogMant.errores.enlace_drive }}
+          </p>
         </div>
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" text @click="dialogMant.visible = false" />
-        <Button :label="dialogMant.modo === 'crear' ? 'Crear contrato' : 'Guardar cambios'"
-          icon="pi pi-check" :loading="guardandoMant"
-          style="background:#f59e0b;border-color:#f59e0b"
-          @click="saveMantenimiento" />
+        <Button
+          :label="dialogMant.modo === 'crear' ? 'Crear contrato' : 'Guardar cambios'"
+          icon="pi pi-check"
+          :loading="guardandoMant"
+          style="background: #f59e0b; border-color: #f59e0b"
+          @click="saveMantenimiento"
+        />
       </template>
     </Dialog>
 
@@ -1051,68 +1843,127 @@
     />
 
     <!-- ── Dialog editar contrato ───────────────────────────────────────────── -->
-    <Dialog v-model:visible="dialogEdit.visible" modal :style="{ width: '480px' }"
-      :breakpoints="{ '520px': '95vw' }">
+    <Dialog
+      v-model:visible="dialogEdit.visible"
+      modal
+      :style="{ width: '480px' }"
+      :breakpoints="{ '520px': '95vw' }"
+    >
       <template #header>
         <div class="flex items-center gap-2">
           <i class="pi pi-pencil text-sm" :style="`color:${DIALOG_EDIT_COLOR[dialogEdit.tipo]}`" />
-          <span class="font-semibold text-sm" style="color:#2C2039">
+          <span class="text-sm font-semibold" style="color: #2c2039">
             Editar — {{ DIALOG_EDIT_LABEL[dialogEdit.tipo] }}
           </span>
         </div>
       </template>
       <div class="space-y-4 pt-1">
         <div class="grid grid-cols-2 gap-4">
-          <div v-if="dialogEdit.tipo === 'mantenimiento'" class="col-span-2 md:col-span-1 flex flex-col gap-1">
+          <div
+            v-if="dialogEdit.tipo === 'mantenimiento'"
+            class="col-span-2 flex flex-col gap-1 md:col-span-1"
+          >
             <label class="text-xs font-medium text-gray-600">Fecha de inicio O&amp;M</label>
-            <DatePicker v-model="dialogEdit.form.fecha_inicio"
-              dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+            <DatePicker
+              v-model="dialogEdit.form.fecha_inicio"
+              dateFormat="yy-mm-dd"
+              class="w-full"
+              showClear
+              placeholder="aaaa-mm-dd"
+            />
           </div>
           <template v-else-if="dialogEdit.tipo === 'arriendo'">
-            <div class="col-span-2 md:col-span-1 flex flex-col gap-1">
+            <div class="col-span-2 flex flex-col gap-1 md:col-span-1">
               <label class="text-xs font-medium text-gray-600">Fecha de inicio O&amp;M</label>
-              <DatePicker v-model="dialogEdit.form.fecha_inicio_om"
-                dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+              <DatePicker
+                v-model="dialogEdit.form.fecha_inicio_om"
+                dateFormat="yy-mm-dd"
+                class="w-full"
+                showClear
+                placeholder="aaaa-mm-dd"
+              />
               <p class="text-xs text-gray-400">Solo informativa; no interviene en la indexación.</p>
             </div>
-            <div class="col-span-2 md:col-span-1 flex flex-col gap-1">
+            <div class="col-span-2 flex flex-col gap-1 md:col-span-1">
               <label class="text-xs font-medium text-gray-600">Fecha de contrato</label>
-              <DatePicker v-model="dialogEdit.form.fecha_firma_contrato"
-                dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+              <DatePicker
+                v-model="dialogEdit.form.fecha_firma_contrato"
+                dateFormat="yy-mm-dd"
+                class="w-full"
+                showClear
+                placeholder="aaaa-mm-dd"
+              />
               <p class="text-xs text-gray-400">Fecha base para la indexación en Costos.</p>
             </div>
           </template>
           <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-600">
-              {{ dialogEdit.tipo === 'mantenimiento' ? 'Valor O&M Anual BASE (COP)' : 'Valor anual BASE (COP)' }}
+              {{
+                dialogEdit.tipo === 'mantenimiento'
+                  ? 'Valor O&M Anual BASE (COP)'
+                  : 'Valor anual BASE (COP)'
+              }}
             </label>
-            <InputNumber v-model="dialogEdit.form.tarifa_base"
-              mode="currency" currency="COP" locale="es-CO" :maxFractionDigits="0"
-              class="w-full" placeholder="$ 0" />
+            <InputNumber
+              v-model="dialogEdit.form.tarifa_base"
+              mode="currency"
+              currency="COP"
+              locale="es-CO"
+              :maxFractionDigits="0"
+              class="w-full"
+              placeholder="$ 0"
+            />
           </div>
         </div>
         <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Fronteras cubiertas</label>
-          <MultiSelect v-model="dialogEdit.form.frontera_ids" :options="fronterasDelProyecto"
-            optionLabel="nombre_frontera" optionValue="id" placeholder="Seleccionar fronteras"
-            filter display="chip" class="w-full" />
+          <MultiSelect
+            v-model="dialogEdit.form.frontera_ids"
+            :options="fronterasDelProyecto"
+            optionLabel="nombre_frontera"
+            optionValue="id"
+            placeholder="Seleccionar fronteras"
+            filter
+            display="chip"
+            class="w-full"
+          />
         </div>
         <template v-if="dialogEdit.tipo === 'internet'">
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-600">Plan de datos</label>
-              <InputText v-model="dialogEdit.form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
+              <InputText
+                v-model="dialogEdit.form.plan_datos_gb"
+                class="w-full"
+                placeholder="50 GB / Ilimitado"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-600">Velocidad contratada</label>
-              <InputNumber v-model="dialogEdit.form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
+              <InputNumber
+                v-model="dialogEdit.form.velocidad_mbps"
+                suffix=" Mbps"
+                :useGrouping="false"
+                class="w-full"
+              />
             </div>
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-600">Tipo de conexión</label>
-            <Select v-model="dialogEdit.form.tipo_conexion"
-              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
-              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
+            <Select
+              v-model="dialogEdit.form.tipo_conexion"
+              :options="[
+                { label: 'Starlink', value: 'Starlink' },
+                { label: 'Fibra', value: 'Fibra' },
+                { label: '4G', value: '4G' },
+                { label: 'Otro', value: 'Otro' },
+              ]"
+              optionLabel="label"
+              optionValue="value"
+              editable
+              placeholder="Selecciona…"
+              class="w-full"
+            />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
@@ -1131,15 +1982,34 @@
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-600">Latencia</label>
-              <InputNumber v-model="dialogEdit.form.latencia_ms" suffix=" ms" :useGrouping="false" class="w-full" />
+              <InputNumber
+                v-model="dialogEdit.form.latencia_ms"
+                suffix=" ms"
+                :useGrouping="false"
+                class="w-full"
+              />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-600">Seguridad del wifi</label>
-              <Select v-model="dialogEdit.form.wifi_seguridad"
-                :options="[{label:'WPA2',value:'WPA2'},{label:'WPA3',value:'WPA3'},{label:'WPA2/WPA3',value:'WPA2/WPA3'},{label:'WPA3-OWE',value:'WPA3-OWE'},{label:'Remoto RADIUS',value:'Remoto RADIUS'},{label:'A bordo RADIUS',value:'A bordo RADIUS'},{label:'Abierta',value:'Abierta'}]"
-                optionLabel="label" optionValue="value" showClear placeholder="Selecciona…" class="w-full" />
+              <Select
+                v-model="dialogEdit.form.wifi_seguridad"
+                :options="[
+                  { label: 'WPA2', value: 'WPA2' },
+                  { label: 'WPA3', value: 'WPA3' },
+                  { label: 'WPA2/WPA3', value: 'WPA2/WPA3' },
+                  { label: 'WPA3-OWE', value: 'WPA3-OWE' },
+                  { label: 'Remoto RADIUS', value: 'Remoto RADIUS' },
+                  { label: 'A bordo RADIUS', value: 'A bordo RADIUS' },
+                  { label: 'Abierta', value: 'Abierta' },
+                ]"
+                optionLabel="label"
+                optionValue="value"
+                showClear
+                placeholder="Selecciona…"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-600">Contraseña wifi</label>
@@ -1149,78 +2019,146 @@
           <div class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-600">
               Ubicación del servicio
-              <span class="text-gray-400 font-normal">— haz clic en el mapa para ubicarlo</span>
+              <span class="font-normal text-gray-400">— haz clic en el mapa para ubicarlo</span>
             </label>
-            <div ref="dialogEditMapEl" class="rounded-md overflow-hidden" style="height:200px; background:#e5e3df"></div>
+            <div
+              ref="dialogEditMapEl"
+              class="overflow-hidden rounded-md"
+              style="height: 200px; background: #e5e3df"
+            ></div>
           </div>
         </template>
         <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Periodicidad de cobro</label>
-          <Select v-model="dialogEdit.form.periodicidad_pago" :options="PERIODICIDADES"
-            optionLabel="label" optionValue="value" class="w-full" placeholder="Selecciona…" />
+          <Select
+            v-model="dialogEdit.form.periodicidad_pago"
+            :options="PERIODICIDADES"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            placeholder="Selecciona…"
+          />
           <p class="text-xs text-gray-400">Define en qué meses se cobra en el panel de Costos.</p>
         </div>
         <div v-if="dialogEdit.tipo === 'arriendo'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">¿Responsable de IVA?</label>
-          <Select v-model="dialogEdit.form.responsable_iva" :options="[{label:'Sí',value:true},{label:'No',value:false}]"
-            optionLabel="label" optionValue="value" class="w-full" />
+          <Select
+            v-model="dialogEdit.form.responsable_iva"
+            :options="[
+              { label: 'Sí', value: true },
+              { label: 'No', value: false },
+            ]"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+          />
         </div>
         <div v-if="dialogEdit.tipo !== 'internet'" class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Estado del pago</label>
-          <Select v-model="dialogEdit.form.estado_pago" :options="ESTADO_PAGO_OPCIONES"
-            optionLabel="label" optionValue="value" placeholder="Sin definir" showClear class="w-full" />
+          <Select
+            v-model="dialogEdit.form.estado_pago"
+            :options="ESTADO_PAGO_OPCIONES"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Sin definir"
+            showClear
+            class="w-full"
+          />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Enlace en Drive</label>
-          <InputText v-model="dialogEdit.form.enlace_drive"
-            placeholder="https://drive.google.com/…" class="w-full" />
+          <InputText
+            v-model="dialogEdit.form.enlace_drive"
+            placeholder="https://drive.google.com/…"
+            class="w-full"
+          />
         </div>
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" text @click="dialogEdit.visible = false" />
-        <Button label="Guardar cambios" icon="pi pi-check" :loading="guardandoContrato"
+        <Button
+          label="Guardar cambios"
+          icon="pi pi-check"
+          :loading="guardandoContrato"
           @click="saveContrato"
-          :style="`background:${DIALOG_EDIT_COLOR[dialogEdit.tipo]};border-color:${DIALOG_EDIT_COLOR[dialogEdit.tipo]}`" />
+          :style="`background:${DIALOG_EDIT_COLOR[dialogEdit.tipo]};border-color:${DIALOG_EDIT_COLOR[dialogEdit.tipo]}`"
+        />
       </template>
     </Dialog>
 
     <!-- ── Dialog nuevo pago ─────────────────────────────────────────────────── -->
-    <Dialog v-model:visible="dialogPago.visible" modal header="Registrar pago" :style="{ width: '420px' }"
-      :breakpoints="{ '500px': '95vw' }">
+    <Dialog
+      v-model:visible="dialogPago.visible"
+      modal
+      header="Registrar pago"
+      :style="{ width: '420px' }"
+      :breakpoints="{ '500px': '95vw' }"
+    >
       <div class="space-y-4 pt-1">
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-600">Mes</label>
-            <Select v-model="dialogPago.form.mes" :options="MESES_OPCIONES"
-              optionLabel="label" optionValue="value" placeholder="Mes" class="w-full" />
+            <Select
+              v-model="dialogPago.form.mes"
+              :options="MESES_OPCIONES"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Mes"
+              class="w-full"
+            />
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-600">Año</label>
-            <InputNumber v-model="dialogPago.form.año" :useGrouping="false"
-              :min="2020" :max="2099" class="w-full" />
+            <InputNumber
+              v-model="dialogPago.form.año"
+              :useGrouping="false"
+              :min="2020"
+              :max="2099"
+              class="w-full"
+            />
           </div>
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Valor pagado (COP)</label>
-          <InputNumber v-model="dialogPago.form.valor_pagado" mode="currency" currency="COP"
-            locale="es-CO" :maxFractionDigits="0" class="w-full" placeholder="$ 0" />
+          <InputNumber
+            v-model="dialogPago.form.valor_pagado"
+            mode="currency"
+            currency="COP"
+            locale="es-CO"
+            :maxFractionDigits="0"
+            class="w-full"
+            placeholder="$ 0"
+          />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Estado</label>
-          <Select v-model="dialogPago.form.estado" :options="ESTADO_PAGO_OPCIONES"
-            optionLabel="label" optionValue="value" class="w-full" />
+          <Select
+            v-model="dialogPago.form.estado"
+            :options="ESTADO_PAGO_OPCIONES"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+          />
         </div>
         <div class="flex flex-col gap-1">
           <label class="text-xs font-medium text-gray-600">Enlace de factura (Drive)</label>
-          <InputText v-model="dialogPago.form.enlace_factura" placeholder="https://drive.google.com/…" class="w-full" />
+          <InputText
+            v-model="dialogPago.form.enlace_factura"
+            placeholder="https://drive.google.com/…"
+            class="w-full"
+          />
         </div>
       </div>
       <template #footer>
         <Button label="Cancelar" severity="secondary" text @click="dialogPago.visible = false" />
-        <Button label="Registrar" icon="pi pi-check" :loading="guardandoPago" @click="guardarPago" />
+        <Button
+          label="Registrar"
+          icon="pi pi-check"
+          :loading="guardandoPago"
+          @click="guardarPago"
+        />
       </template>
     </Dialog>
-
   </div>
 </template>
 
@@ -1254,72 +2192,119 @@ function buscarArriendoEstatico(nombre) {
   if (!nombre) return null
   const nombreLower = nombre.trim().toLowerCase()
   // 1. Coincidencia exacta
-  const exacto = ARRIENDOS_ESTATICOS.find(r => r.proyecto.toLowerCase() === nombreLower)
+  const exacto = ARRIENDOS_ESTATICOS.find((r) => r.proyecto.toLowerCase() === nombreLower)
   if (exacto) return exacto
   // 2. Por palabras clave (mismo patrón que FacturasMantenimiento)
-  const STOP = new Set(['mgs', 'de', 'la', 'el', 'los', 'las', 'del', 'solar', 'minigranja', 'y', 'con'])
-  const keywords = nombreLower.split(/\s+/).filter(w => w.length >= 3 && !STOP.has(w) && !/^\d+$/.test(w))
+  const STOP = new Set([
+    'mgs',
+    'de',
+    'la',
+    'el',
+    'los',
+    'las',
+    'del',
+    'solar',
+    'minigranja',
+    'y',
+    'con',
+  ])
+  const keywords = nombreLower
+    .split(/\s+/)
+    .filter((w) => w.length >= 3 && !STOP.has(w) && !/^\d+$/.test(w))
   if (!keywords.length) return null
-  let mejor = null; let mejorScore = 0
+  let mejor = null
+  let mejorScore = 0
   for (const r of ARRIENDOS_ESTATICOS) {
     const pLower = r.proyecto.toLowerCase()
-    const score = keywords.filter(kw => pLower.includes(kw)).length
-    if (score > mejorScore) { mejorScore = score; mejor = r }
+    const score = keywords.filter((kw) => pLower.includes(kw)).length
+    if (score > mejorScore) {
+      mejorScore = score
+      mejor = r
+    }
   }
   return mejorScore > 0 ? mejor : null
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
-const MESES_NOMBRES = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                       'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const MESES_NOMBRES = [
+  '',
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+]
 
 const MESES_OPCIONES = MESES_NOMBRES.slice(1).map((m, i) => ({ label: m, value: i + 1 }))
 
 const ESTADO_PAGO_OPCIONES = [
-  { label: 'Pendiente',  value: 'pendiente' },
-  { label: 'Revisado',   value: 'revisado' },
-  { label: 'Aprobado',   value: 'aprobado' },
+  { label: 'Pendiente', value: 'pendiente' },
+  { label: 'Revisado', value: 'revisado' },
+  { label: 'Aprobado', value: 'aprobado' },
 ]
 
-const ESTADO_PAGO_LABELS    = { pendiente: 'Pendiente', revisado: 'Revisado', aprobado: 'Aprobado' }
-const ESTADO_PAGO_SEVERITY  = { pendiente: 'danger', revisado: 'warn', aprobado: 'success' }
+const ESTADO_PAGO_LABELS = { pendiente: 'Pendiente', revisado: 'Revisado', aprobado: 'Aprobado' }
+const ESTADO_PAGO_SEVERITY = { pendiente: 'danger', revisado: 'warn', aprobado: 'success' }
 
-const CONTRATO_LABELS   = { vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación', en_revision: 'En revisión' }
-const CONTRATO_SEVERITY = { vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn', en_revision: 'warn' }
+const CONTRATO_LABELS = {
+  vigente: 'Vigente',
+  vencido: 'Vencido',
+  terminado: 'Terminado',
+  en_renovacion: 'En renovación',
+  en_revision: 'En revisión',
+}
+const CONTRATO_SEVERITY = {
+  vigente: 'success',
+  vencido: 'danger',
+  terminado: 'secondary',
+  en_renovacion: 'warn',
+  en_revision: 'warn',
+}
 
 const ESTADOS_MANT = [
-  { label: 'Vigente',     value: 'vigente' },
-  { label: 'Vencido',     value: 'vencido' },
+  { label: 'Vigente', value: 'vigente' },
+  { label: 'Vencido', value: 'vencido' },
   { label: 'En revisión', value: 'en_revision' },
 ]
 
 const PERIODICIDADES = [
-  { label: 'Mensual',    value: 'mensual' },
-  { label: 'Bimestral',  value: 'bimestral' },
+  { label: 'Mensual', value: 'mensual' },
+  { label: 'Bimestral', value: 'bimestral' },
   { label: 'Trimestral', value: 'trimestral' },
-  { label: 'Semestral',  value: 'semestral' },
-  { label: 'Anual',      value: 'anual' },
+  { label: 'Semestral', value: 'semestral' },
+  { label: 'Anual', value: 'anual' },
 ]
 
 const TABS_TIPOS = ['mantenimiento', 'arriendo', 'internet']
 const activeIndex = ref(Math.max(0, TABS_TIPOS.indexOf(route.query.subtab)))
 
 const DIALOG_EDIT_COLOR = { mantenimiento: '#f59e0b', arriendo: '#8b5cf6', internet: '#06b6d4' }
-const DIALOG_EDIT_LABEL = { mantenimiento: 'Mantenimiento', arriendo: 'Arriendo', internet: 'Internet' }
+const DIALOG_EDIT_LABEL = {
+  mantenimiento: 'Mantenimiento',
+  arriendo: 'Arriendo',
+  internet: 'Internet',
+}
 
 // ── Estado reactivo ───────────────────────────────────────────────────────────
-const loading          = ref(true)
-const proyectoNombre   = ref('')
-const guardandoPago    = ref(false)
+const loading = ref(true)
+const proyectoNombre = ref('')
+const guardandoPago = ref(false)
 const guardandoContrato = ref(false)
-const guardandoMant      = ref(false)
-const excelInputRef      = ref(null)
-const ANIO_ACTUAL        = new Date().getFullYear()
-const showIndexacion          = reactive({ anual: false, mensual: false })
-const showIndexacionArriendo  = reactive({ anual: false, mensual: false })
+const guardandoMant = ref(false)
+const excelInputRef = ref(null)
+const ANIO_ACTUAL = new Date().getFullYear()
+const showIndexacion = reactive({ anual: false, mensual: false })
+const showIndexacionArriendo = reactive({ anual: false, mensual: false })
 
-const facturasCobradas   = ref([])
-const facturasEmitidas   = ref([])
+const facturasCobradas = ref([])
+const facturasEmitidas = ref([])
 
 // ── Arrendadores (arriendo con múltiples arrendadores) ─────────────────────────
 const arrendadores = ref([])
@@ -1329,8 +2314,13 @@ const arrendadorDialog = reactive({
   editId: null,
   guardando: false,
   form: {
-    nombre: '', valor_base: null, responsable_iva: false, activo: true,
-    anticipo_pagado_desde: null, anticipo_pagado_hasta: null, observaciones: '',
+    nombre: '',
+    valor_base: null,
+    responsable_iva: false,
+    activo: true,
+    anticipo_pagado_desde: null,
+    anticipo_pagado_hasta: null,
+    observaciones: '',
   },
 })
 
@@ -1352,7 +2342,7 @@ const dialogMant = reactive({
 })
 
 const contratos = reactive({ mantenimiento: null, arriendo: null, internet: null })
-const pagos     = reactive({ mantenimiento: [],   arriendo: [],   internet: [] })
+const pagos = reactive({ mantenimiento: [], arriendo: [], internet: [] })
 
 // ── Mapa de ubicación del servicio de Internet (solo lectura) ─────────────────
 const internetMapEl = ref(null)
@@ -1386,7 +2376,9 @@ async function initInternetMap(c) {
     attributionControl: false,
     interactive: false,
   })
-  new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([c.ubicacion_lng, c.ubicacion_lat]).addTo(internetMap)
+  new maplibregl.Marker({ color: '#06b6d4' })
+    .setLngLat([c.ubicacion_lng, c.ubicacion_lat])
+    .addTo(internetMap)
 
   // El contenedor puede tener tamaño 0 si la pestaña Internet no está visible
   // todavía al crear el mapa (p.ej. TabView oculto con display:none); sin este
@@ -1407,9 +2399,10 @@ async function initDialogEditMap() {
   await import('maplibre-gl/dist/maplibre-gl.css')
   if (!dialogEditMapEl.value || dialogEditMap) return
 
-  const centro = (dialogEdit.form.ubicacion_lat != null && dialogEdit.form.ubicacion_lng != null)
-    ? [dialogEdit.form.ubicacion_lng, dialogEdit.form.ubicacion_lat]
-    : [-74.297, 4.571]
+  const centro =
+    dialogEdit.form.ubicacion_lat != null && dialogEdit.form.ubicacion_lng != null
+      ? [dialogEdit.form.ubicacion_lng, dialogEdit.form.ubicacion_lat]
+      : [-74.297, 4.571]
 
   dialogEditMap = new maplibregl.Map({
     container: dialogEditMapEl.value,
@@ -1426,13 +2419,15 @@ async function initDialogEditMap() {
       layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
     },
     center: centro,
-    zoom: (dialogEdit.form.ubicacion_lat != null) ? 12 : 5,
+    zoom: dialogEdit.form.ubicacion_lat != null ? 12 : 5,
     attributionControl: false,
   })
 
   dialogEditMarker = null
   if (dialogEdit.form.ubicacion_lat != null && dialogEdit.form.ubicacion_lng != null) {
-    dialogEditMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat(centro).addTo(dialogEditMap)
+    dialogEditMarker = new maplibregl.Marker({ color: '#06b6d4' })
+      .setLngLat(centro)
+      .addTo(dialogEditMap)
   }
 
   dialogEditMap.on('click', (e) => {
@@ -1440,7 +2435,10 @@ async function initDialogEditMap() {
     dialogEdit.form.ubicacion_lat = Number(lat.toFixed(6))
     dialogEdit.form.ubicacion_lng = Number(lng.toFixed(6))
     if (dialogEditMarker) dialogEditMarker.setLngLat([lng, lat])
-    else dialogEditMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([lng, lat]).addTo(dialogEditMap)
+    else
+      dialogEditMarker = new maplibregl.Marker({ color: '#06b6d4' })
+        .setLngLat([lng, lat])
+        .addTo(dialogEditMap)
   })
 
   dialogEditMapRO = new ResizeObserver(() => dialogEditMap?.resize())
@@ -1459,18 +2457,38 @@ const loadingPagos = reactive({ mantenimiento: false, arriendo: false, internet:
 
 const filtros = reactive({
   mantenimiento: { año: null, mes: null },
-  arriendo:      { año: null, mes: null },
-  internet:      { año: null, mes: null },
+  arriendo: { año: null, mes: null },
+  internet: { año: null, mes: null },
 })
 
 const wizardVisible = ref(false)
-const wizardTipo    = ref('mantenimiento')
+const wizardTipo = ref('mantenimiento')
 
 const dialogEdit = reactive({
   visible: false,
   tipo: 'mantenimiento',
-  form: { tarifa_base: null, fecha_firma_contrato: null, fecha_inicio: null, fecha_inicio_om: null, enlace_drive: '', estado_pago: null, periodicidad_pago: 'mensual', responsable_iva: false, plan_datos_gb: '', velocidad_mbps: null, tipo_conexion: null,
-    linea_servicio: '', id_router: '', numero_kit: '', latencia_ms: null, wifi_seguridad: null, wifi_password: '', ubicacion_lat: null, ubicacion_lng: null, frontera_ids: [] },
+  form: {
+    tarifa_base: null,
+    fecha_firma_contrato: null,
+    fecha_inicio: null,
+    fecha_inicio_om: null,
+    enlace_drive: '',
+    estado_pago: null,
+    periodicidad_pago: 'mensual',
+    responsable_iva: false,
+    plan_datos_gb: '',
+    velocidad_mbps: null,
+    tipo_conexion: null,
+    linea_servicio: '',
+    id_router: '',
+    numero_kit: '',
+    latencia_ms: null,
+    wifi_seguridad: null,
+    wifi_password: '',
+    ubicacion_lat: null,
+    ubicacion_lng: null,
+    frontera_ids: [],
+  },
 })
 
 const fronterasDelProyecto = ref([])
@@ -1478,7 +2496,13 @@ const fronterasDelProyecto = ref([])
 const dialogPago = reactive({
   visible: false,
   tipo: 'mantenimiento',
-  form: { mes: null, año: new Date().getFullYear(), valor_pagado: null, estado: 'pendiente', enlace_factura: '' },
+  form: {
+    mes: null,
+    año: new Date().getFullYear(),
+    valor_pagado: null,
+    estado: 'pendiente',
+    enlace_factura: '',
+  },
 })
 
 // ── Carga inicial ─────────────────────────────────────────────────────────────
@@ -1488,21 +2512,26 @@ onMounted(async () => {
     const [proyRes, mantRes, arrRes, netRes] = await Promise.allSettled([
       api.get(`/proyectos/${proyId}`),
       api.get('/contratos-servicio', { params: { tipo: 'mantenimiento', proyecto_id: proyId } }),
-      api.get('/contratos-servicio', { params: { tipo: 'arriendo',      proyecto_id: proyId } }),
-      api.get('/contratos-servicio', { params: { tipo: 'internet',      proyecto_id: proyId } }),
+      api.get('/contratos-servicio', { params: { tipo: 'arriendo', proyecto_id: proyId } }),
+      api.get('/contratos-servicio', { params: { tipo: 'internet', proyecto_id: proyId } }),
     ])
 
     if (proyRes.status === 'fulfilled') proyectoNombre.value = proyRes.value.data.nombre_comercial
 
-    contratos.mantenimiento = mantRes.status === 'fulfilled' && mantRes.value.data.length ? mantRes.value.data[0] : null
-    contratos.arriendo      = arrRes.status  === 'fulfilled' && arrRes.value.data.length  ? arrRes.value.data[0]  : null
-    contratos.internet      = netRes.status  === 'fulfilled' && netRes.value.data.length  ? netRes.value.data[0]  : null
+    contratos.mantenimiento =
+      mantRes.status === 'fulfilled' && mantRes.value.data.length ? mantRes.value.data[0] : null
+    contratos.arriendo =
+      arrRes.status === 'fulfilled' && arrRes.value.data.length ? arrRes.value.data[0] : null
+    contratos.internet =
+      netRes.status === 'fulfilled' && netRes.value.data.length ? netRes.value.data[0] : null
     await initInternetMap(contratos.internet)
 
     try {
       const { data } = await api.get('/fronteras', { params: { proyecto_id: proyId } })
       fronterasDelProyecto.value = data
-    } catch { /* el select de fronteras queda vacio */ }
+    } catch {
+      /* el select de fronteras queda vacio */
+    }
 
     await cargarIndexacionOM()
     await cargarArrendadores()
@@ -1517,7 +2546,10 @@ onMounted(async () => {
 
 // ── Pagos ─────────────────────────────────────────────────────────────────────
 async function loadPagos(tipo) {
-  if (!contratos[tipo]) { pagos[tipo] = []; return }
+  if (!contratos[tipo]) {
+    pagos[tipo] = []
+    return
+  }
   loadingPagos[tipo] = true
   try {
     const { data } = await api.get(`/contratos-servicio/${contratos[tipo].id}/pagos`)
@@ -1537,7 +2569,13 @@ function onTabChange(e) {
 
 function openNuevoPago(tipo) {
   dialogPago.tipo = tipo
-  dialogPago.form = { mes: null, año: new Date().getFullYear(), valor_pagado: null, estado: 'pendiente', enlace_factura: '' }
+  dialogPago.form = {
+    mes: null,
+    año: new Date().getFullYear(),
+    valor_pagado: null,
+    estado: 'pendiente',
+    enlace_factura: '',
+  }
   dialogPago.visible = true
 }
 
@@ -1551,10 +2589,10 @@ async function guardarPago() {
   guardandoPago.value = true
   try {
     await api.post(`/contratos-servicio/${contratos[tipo].id}/pagos`, {
-      mes:          dialogPago.form.mes,
-      año:          dialogPago.form.año,
+      mes: dialogPago.form.mes,
+      año: dialogPago.form.año,
       valor_pagado: dialogPago.form.valor_pagado,
-      estado:       dialogPago.form.estado,
+      estado: dialogPago.form.estado,
       enlace_factura: dialogPago.form.enlace_factura || null,
     })
     await loadPagos(tipo)
@@ -1579,7 +2617,7 @@ async function eliminarPago(tipo, pagoId) {
   if (!confirm('¿Eliminar este pago?')) return
   try {
     await api.delete(`/contratos-servicio/${contratos[tipo].id}/pagos/${pagoId}`)
-    pagos[tipo] = pagos[tipo].filter(p => p.id !== pagoId)
+    pagos[tipo] = pagos[tipo].filter((p) => p.id !== pagoId)
     toast.add({ severity: 'success', summary: 'Pago eliminado', life: 2000 })
   } catch {
     toast.add({ severity: 'error', summary: 'Error al eliminar', life: 3000 })
@@ -1592,7 +2630,9 @@ function openEditContrato(tipo) {
   if (!c) return
   dialogEdit.tipo = tipo
   dialogEdit.form.tarifa_base = c.tarifa_base
-  dialogEdit.form.fecha_firma_contrato = c.fecha_firma_contrato ? new Date(c.fecha_firma_contrato) : null
+  dialogEdit.form.fecha_firma_contrato = c.fecha_firma_contrato
+    ? new Date(c.fecha_firma_contrato)
+    : null
   dialogEdit.form.fecha_inicio = c.fecha_inicio ? new Date(c.fecha_inicio) : null
   dialogEdit.form.enlace_drive = c.enlace_drive || ''
   dialogEdit.form.estado_pago = c.estado_pago || null
@@ -1610,11 +2650,13 @@ function openEditContrato(tipo) {
   dialogEdit.form.wifi_password = c.wifi_password || ''
   dialogEdit.form.ubicacion_lat = c.ubicacion_lat ?? null
   dialogEdit.form.ubicacion_lng = c.ubicacion_lng ?? null
-  dialogEdit.form.frontera_ids = (c.fronteras || []).map(f => f.id)
+  dialogEdit.form.frontera_ids = (c.fronteras || []).map((f) => f.id)
   dialogEdit.visible = true
   if (tipo === 'internet') {
-    dialogEditMapRO?.disconnect(); dialogEditMapRO = null
-    dialogEditMap?.remove(); dialogEditMap = null
+    dialogEditMapRO?.disconnect()
+    dialogEditMapRO = null
+    dialogEditMap?.remove()
+    dialogEditMap = null
     nextTick().then(initDialogEditMap)
   }
 }
@@ -1624,7 +2666,7 @@ async function saveContrato() {
   if (!contratos[tipo]) return
   guardandoContrato.value = true
   try {
-    const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
+    const toISO = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : d || null)
     const payload = {
       enlace_drive: dialogEdit.form.enlace_drive?.trim() || null,
     }
@@ -1660,14 +2702,21 @@ async function saveContrato() {
     contratos[tipo] = { ...contratos[tipo], ...data }
     if (tipo === 'arriendo') await cargarIndexacionArriendo()
     if (tipo === 'internet') {
-      internetMapRO?.disconnect(); internetMapRO = null
-      internetMap?.remove(); internetMap = null
+      internetMapRO?.disconnect()
+      internetMapRO = null
+      internetMap?.remove()
+      internetMap = null
       await initInternetMap(contratos.internet)
     }
     dialogEdit.visible = false
     toast.add({ severity: 'success', summary: 'Contrato actualizado', life: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al guardar', detail: e.response?.data?.detail, life: 3000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al guardar',
+      detail: e.response?.data?.detail,
+      life: 3000,
+    })
   } finally {
     guardandoContrato.value = false
   }
@@ -1691,7 +2740,9 @@ async function onContratoCreado() {
     }
     if (tipo === 'internet') await initInternetMap(contratos.internet)
     await loadPagos(tipo)
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 }
 
 // ── Mantenimiento modal (crear / editar) ──────────────────────────────────────
@@ -1701,25 +2752,31 @@ function openMantenimientoDialog(modo) {
   if (modo === 'editar' && contratos.mantenimiento) {
     const c = contratos.mantenimiento
     dialogMant.form.contratante_nombre = c.contratante_nombre || ''
-    dialogMant.form.prestador_nombre   = c.prestador_nombre   || ''
-    dialogMant.form.fecha_inicio_om    = c.fecha_inicio_om ? new Date(c.fecha_inicio_om)
-                                        : (c.fecha_inicio ? new Date(c.fecha_inicio) : null)
-    dialogMant.form.fecha_firma_contrato = c.fecha_firma_contrato ? new Date(c.fecha_firma_contrato) : null
-    dialogMant.form.tarifa_base        = c.tarifa_base ?? null
-    dialogMant.form.tarifa_mensual     = c.tarifa_mensual ?? (c.tarifa_base != null ? Math.round(c.tarifa_base / 12) : null)
-    dialogMant.form.enlace_drive       = c.enlace_drive || ''
-    dialogMant.form.estado             = c.estado || 'vigente'
-    dialogMant.form.periodicidad_pago  = c.periodicidad_pago || 'mensual'
+    dialogMant.form.prestador_nombre = c.prestador_nombre || ''
+    dialogMant.form.fecha_inicio_om = c.fecha_inicio_om
+      ? new Date(c.fecha_inicio_om)
+      : c.fecha_inicio
+        ? new Date(c.fecha_inicio)
+        : null
+    dialogMant.form.fecha_firma_contrato = c.fecha_firma_contrato
+      ? new Date(c.fecha_firma_contrato)
+      : null
+    dialogMant.form.tarifa_base = c.tarifa_base ?? null
+    dialogMant.form.tarifa_mensual =
+      c.tarifa_mensual ?? (c.tarifa_base != null ? Math.round(c.tarifa_base / 12) : null)
+    dialogMant.form.enlace_drive = c.enlace_drive || ''
+    dialogMant.form.estado = c.estado || 'vigente'
+    dialogMant.form.periodicidad_pago = c.periodicidad_pago || 'mensual'
   } else {
     dialogMant.form.contratante_nombre = ''
-    dialogMant.form.prestador_nombre   = ''
-    dialogMant.form.fecha_inicio_om    = null
+    dialogMant.form.prestador_nombre = ''
+    dialogMant.form.fecha_inicio_om = null
     dialogMant.form.fecha_firma_contrato = null
-    dialogMant.form.tarifa_base        = null
-    dialogMant.form.tarifa_mensual     = null
-    dialogMant.form.enlace_drive       = ''
-    dialogMant.form.estado             = 'vigente'
-    dialogMant.form.periodicidad_pago  = 'mensual'
+    dialogMant.form.tarifa_base = null
+    dialogMant.form.tarifa_mensual = null
+    dialogMant.form.enlace_drive = ''
+    dialogMant.form.estado = 'vigente'
+    dialogMant.form.periodicidad_pago = 'mensual'
   }
   dialogMant.visible = true
 }
@@ -1727,12 +2784,13 @@ function openMantenimientoDialog(modo) {
 function validarFormMant() {
   const e = {}
   if (!dialogMant.form.contratante_nombre?.trim()) e.contratante_nombre = 'Campo requerido'
-  if (!dialogMant.form.prestador_nombre?.trim())   e.prestador_nombre   = 'Campo requerido'
-  if (!dialogMant.form.fecha_inicio_om)             e.fecha_inicio_om    = 'Campo requerido'
-  if (dialogMant.form.tarifa_base == null)          e.tarifa_base        = 'Campo requerido'
-  if (!dialogMant.form.estado)                      e.estado             = 'Campo requerido'
+  if (!dialogMant.form.prestador_nombre?.trim()) e.prestador_nombre = 'Campo requerido'
+  if (!dialogMant.form.fecha_inicio_om) e.fecha_inicio_om = 'Campo requerido'
+  if (dialogMant.form.tarifa_base == null) e.tarifa_base = 'Campo requerido'
+  if (!dialogMant.form.estado) e.estado = 'Campo requerido'
   const link = dialogMant.form.enlace_drive?.trim()
-  if (link && !link.startsWith('http')) e.enlace_drive = 'Debe ser una URL válida (debe iniciar con http)'
+  if (link && !link.startsWith('http'))
+    e.enlace_drive = 'Debe ser una URL válida (debe iniciar con http)'
   dialogMant.errores = e
   return Object.keys(e).length === 0
 }
@@ -1741,24 +2799,26 @@ async function saveMantenimiento() {
   if (!validarFormMant()) return
   guardandoMant.value = true
   try {
-    const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
+    const toISO = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : d || null)
     const payload = {
       contratante_nombre: dialogMant.form.contratante_nombre.trim(),
-      prestador_nombre:   dialogMant.form.prestador_nombre.trim(),
-      fecha_inicio_om:    toISO(dialogMant.form.fecha_inicio_om),
+      prestador_nombre: dialogMant.form.prestador_nombre.trim(),
+      fecha_inicio_om: toISO(dialogMant.form.fecha_inicio_om),
       fecha_firma_contrato: toISO(dialogMant.form.fecha_firma_contrato),
-      tarifa_base:        dialogMant.form.tarifa_base,
-      tarifa_mensual:     dialogMant.form.tarifa_mensual ?? null,
-      enlace_drive:       dialogMant.form.enlace_drive?.trim() || null,
-      estado:             dialogMant.form.estado,
-      periodicidad_pago:  dialogMant.form.periodicidad_pago,
+      tarifa_base: dialogMant.form.tarifa_base,
+      tarifa_mensual: dialogMant.form.tarifa_mensual ?? null,
+      enlace_drive: dialogMant.form.enlace_drive?.trim() || null,
+      estado: dialogMant.form.estado,
+      periodicidad_pago: dialogMant.form.periodicidad_pago,
     }
     if (dialogMant.modo === 'crear') {
       const proyId = route.params.id
       payload.servicio_aplica = 'mantenimiento'
-      payload.proyecto_id     = Number(proyId)
+      payload.proyecto_id = Number(proyId)
       await api.post('/contratos-servicio', payload)
-      const { data } = await api.get('/contratos-servicio', { params: { tipo: 'mantenimiento', proyecto_id: proyId } })
+      const { data } = await api.get('/contratos-servicio', {
+        params: { tipo: 'mantenimiento', proyecto_id: proyId },
+      })
       contratos.mantenimiento = data.length ? data[0] : null
       await loadPagos('mantenimiento')
     } else {
@@ -1768,9 +2828,18 @@ async function saveMantenimiento() {
     // Recalcular la indexación automática (cambió tarifa/fecha inicio O&M)
     await cargarIndexacionOM()
     dialogMant.visible = false
-    toast.add({ severity: 'success', summary: dialogMant.modo === 'crear' ? 'Contrato creado' : 'Contrato actualizado', life: 2500 })
+    toast.add({
+      severity: 'success',
+      summary: dialogMant.modo === 'crear' ? 'Contrato creado' : 'Contrato actualizado',
+      life: 2500,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail ?? e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: e.response?.data?.detail ?? e.message,
+      life: 4000,
+    })
   } finally {
     guardandoMant.value = false
   }
@@ -1787,12 +2856,12 @@ async function cargarDesdeExcel(event) {
   event.target.value = ''
   try {
     const buffer = await file.arrayBuffer()
-    const wb     = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true })
-    const ws     = wb.Sheets[wb.SheetNames[0]]
-    const rows   = XLSX.utils.sheet_to_json(ws, { defval: '' })
+    const wb = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true })
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const rows = XLSX.utils.sheet_to_json(ws, { defval: '' })
 
     const proyNombre = proyectoNombre.value?.trim().toLowerCase()
-    const fila = rows.find(r => {
+    const fila = rows.find((r) => {
       const val = r['Proyecto'] ?? r['proyecto'] ?? r['PROYECTO'] ?? ''
       return String(val).trim().toLowerCase() === proyNombre
     })
@@ -1807,13 +2876,13 @@ async function cargarDesdeExcel(event) {
       return
     }
 
-    const parseNum = v => {
+    const parseNum = (v) => {
       if (v == null || v === '') return null
       const n = typeof v === 'number' ? v : Number(String(v).replace(/[^0-9.-]/g, ''))
       return isNaN(n) ? null : n
     }
 
-    const parseFecha = v => {
+    const parseFecha = (v) => {
       if (!v) return null
       if (v instanceof Date) return v
       const d = new Date(v)
@@ -1821,27 +2890,39 @@ async function cargarDesdeExcel(event) {
     }
 
     dialogMant.form.contratante_nombre = String(fila['Contratante'] ?? '').trim()
-    dialogMant.form.prestador_nombre   = String(fila['Prestador'] ?? '').trim()
-    dialogMant.form.fecha_inicio_om    = parseFecha(fila['Fecha de inicio O&M'])
-    dialogMant.form.tarifa_base        = parseNum(fila['Valor O&M Anual (BASE)'])
-    const mensualExcel                 = parseNum(fila['Valor mensual'])
-    dialogMant.form.tarifa_mensual     = mensualExcel ?? (dialogMant.form.tarifa_base != null ? Math.round(dialogMant.form.tarifa_base / 12) : null)
-    dialogMant.form.enlace_drive       = String(fila['Enlace del contrato en Drive'] ?? '').trim()
-    dialogMant.form.estado             = contratos.mantenimiento?.estado ?? 'vigente'
-    dialogMant.errores                 = {}
-    dialogMant.modo                    = contratos.mantenimiento ? 'editar' : 'crear'
-    dialogMant.visible                 = true
+    dialogMant.form.prestador_nombre = String(fila['Prestador'] ?? '').trim()
+    dialogMant.form.fecha_inicio_om = parseFecha(fila['Fecha de inicio O&M'])
+    dialogMant.form.tarifa_base = parseNum(fila['Valor O&M Anual (BASE)'])
+    const mensualExcel = parseNum(fila['Valor mensual'])
+    dialogMant.form.tarifa_mensual =
+      mensualExcel ??
+      (dialogMant.form.tarifa_base != null ? Math.round(dialogMant.form.tarifa_base / 12) : null)
+    dialogMant.form.enlace_drive = String(fila['Enlace del contrato en Drive'] ?? '').trim()
+    dialogMant.form.estado = contratos.mantenimiento?.estado ?? 'vigente'
+    dialogMant.errores = {}
+    dialogMant.modo = contratos.mantenimiento ? 'editar' : 'crear'
+    dialogMant.visible = true
 
-    toast.add({ severity: 'info', summary: 'Datos cargados desde Excel', detail: 'Revisa los datos y confirma para guardar.', life: 4000 })
+    toast.add({
+      severity: 'info',
+      summary: 'Datos cargados desde Excel',
+      detail: 'Revisa los datos y confirma para guardar.',
+      life: 4000,
+    })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al leer el Excel', detail: e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al leer el Excel',
+      detail: e.message,
+      life: 4000,
+    })
   }
 }
 
 // ── Indexación O&M ────────────────────────────────────────────────────────────
 function getValorVigente(filas) {
   if (!filas || !filas.length) return null
-  return filas.find(f => f.anio === ANIO_ACTUAL) ?? filas[filas.length - 1]
+  return filas.find((f) => f.anio === ANIO_ACTUAL) ?? filas[filas.length - 1]
 }
 
 // Indexación O&M automática: la calcula el backend (mismo motor que Costos:
@@ -1852,10 +2933,10 @@ async function cargarIndexacionOM() {
   if (!contratos.mantenimiento?.id) return
   try {
     const { data } = await api.get(`/om/indexacion/${contratos.mantenimiento.id}`)
-    contratos.mantenimiento.indexacion_anual   = data.anual   || []
+    contratos.mantenimiento.indexacion_anual = data.anual || []
     contratos.mantenimiento.indexacion_mensual = data.mensual || []
   } catch {
-    contratos.mantenimiento.indexacion_anual   = []
+    contratos.mantenimiento.indexacion_anual = []
     contratos.mantenimiento.indexacion_mensual = []
   }
 }
@@ -1868,30 +2949,35 @@ async function cargarIndexacionArriendo() {
   if (!contratos.arriendo?.id) return
   try {
     const { data } = await api.get(`/arriendos/indexacion/${contratos.arriendo.id}`)
-    contratos.arriendo.indexacion_anual   = data.anual   || []
+    contratos.arriendo.indexacion_anual = data.anual || []
     contratos.arriendo.indexacion_mensual = data.mensual || []
   } catch {
-    contratos.arriendo.indexacion_anual   = []
+    contratos.arriendo.indexacion_anual = []
     contratos.arriendo.indexacion_mensual = []
   }
   // Indexación individual por cada arrendador (usa su propio valor_base)
-  await Promise.all(arrendadores.value.map(async (a) => {
-    try {
-      const { data } = await api.get(`/arriendos/indexacion/${contratos.arriendo.id}`, {
-        params: { arrendador_id: a.id },
-      })
-      a.indexacion_anual   = data.anual   || []
-      a.indexacion_mensual = data.mensual || []
-    } catch {
-      a.indexacion_anual   = []
-      a.indexacion_mensual = []
-    }
-  }))
+  await Promise.all(
+    arrendadores.value.map(async (a) => {
+      try {
+        const { data } = await api.get(`/arriendos/indexacion/${contratos.arriendo.id}`, {
+          params: { arrendador_id: a.id },
+        })
+        a.indexacion_anual = data.anual || []
+        a.indexacion_mensual = data.mensual || []
+      } catch {
+        a.indexacion_anual = []
+        a.indexacion_mensual = []
+      }
+    }),
+  )
 }
 
 // ── Arrendadores: CRUD ────────────────────────────────────────────────────────
 async function cargarArrendadores() {
-  if (!contratos.arriendo?.id) { arrendadores.value = []; return }
+  if (!contratos.arriendo?.id) {
+    arrendadores.value = []
+    return
+  }
   try {
     const { data } = await api.get(`/arriendos/contratos/${contratos.arriendo.id}/arrendadores`)
     arrendadores.value = data || []
@@ -1907,8 +2993,12 @@ function openArrendadorDialog(modo, arrendador = null) {
   arrendadorDialog.form.valor_base = arrendador?.valor_base ?? null
   arrendadorDialog.form.responsable_iva = arrendador?.responsable_iva ?? false
   arrendadorDialog.form.activo = arrendador?.activo ?? true
-  arrendadorDialog.form.anticipo_pagado_desde = arrendador?.anticipo_pagado_desde ? new Date(arrendador.anticipo_pagado_desde) : null
-  arrendadorDialog.form.anticipo_pagado_hasta = arrendador?.anticipo_pagado_hasta ? new Date(arrendador.anticipo_pagado_hasta) : null
+  arrendadorDialog.form.anticipo_pagado_desde = arrendador?.anticipo_pagado_desde
+    ? new Date(arrendador.anticipo_pagado_desde)
+    : null
+  arrendadorDialog.form.anticipo_pagado_hasta = arrendador?.anticipo_pagado_hasta
+    ? new Date(arrendador.anticipo_pagado_hasta)
+    : null
   arrendadorDialog.form.observaciones = arrendador?.observaciones || ''
   arrendadorDialog.visible = true
 }
@@ -1921,7 +3011,7 @@ async function guardarArrendador() {
   }
   arrendadorDialog.guardando = true
   try {
-    const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
+    const toISO = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : d || null)
     const payload = {
       nombre: arrendadorDialog.form.nombre.trim(),
       valor_base: arrendadorDialog.form.valor_base,
@@ -1941,7 +3031,12 @@ async function guardarArrendador() {
     await cargarIndexacionArriendo()
     toast.add({ severity: 'success', summary: 'Arrendador guardado', life: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al guardar arrendador', detail: e.response?.data?.detail, life: 3500 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al guardar arrendador',
+      detail: e.response?.data?.detail,
+      life: 3500,
+    })
   } finally {
     arrendadorDialog.guardando = false
   }
@@ -1967,7 +3062,11 @@ async function eliminarArrendador(arrendador) {
 // ── Helpers de formato ────────────────────────────────────────────────────────
 function formatCOP(val) {
   if (val == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(val)
 }
 
 function formatFecha(f) {
@@ -1984,12 +3083,28 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Select from 'primevue/select'
 
-const MESES_NOMBRES_STATIC = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-                               'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+const MESES_NOMBRES_STATIC = [
+  '',
+  'Enero',
+  'Febrero',
+  'Marzo',
+  'Abril',
+  'Mayo',
+  'Junio',
+  'Julio',
+  'Agosto',
+  'Septiembre',
+  'Octubre',
+  'Noviembre',
+  'Diciembre',
+]
 
-const MESES_OPCIONES_STATIC = MESES_NOMBRES_STATIC.slice(1).map((m, i) => ({ label: m, value: i + 1 }))
+const MESES_OPCIONES_STATIC = MESES_NOMBRES_STATIC.slice(1).map((m, i) => ({
+  label: m,
+  value: i + 1,
+}))
 
-const ESTADO_PAGO_LABELS_S   = { pendiente: 'Pendiente', revisado: 'Revisado', aprobado: 'Aprobado' }
+const ESTADO_PAGO_LABELS_S = { pendiente: 'Pendiente', revisado: 'Revisado', aprobado: 'Aprobado' }
 const ESTADO_PAGO_SEVERITY_S = { pendiente: 'danger', revisado: 'warn', aprobado: 'success' }
 
 const AÑOS_STATIC = (() => {
@@ -2000,8 +3115,10 @@ const AÑOS_STATIC = (() => {
 // Campo con ícono + etiqueta + valor
 const InfoIcon = {
   props: {
-    icon: String, color: String,
-    label: String, value: [String, Number],
+    icon: String,
+    color: String,
+    label: String,
+    value: [String, Number],
   },
   template: `
     <div class="flex items-start gap-2.5 min-w-0">
@@ -2042,7 +3159,9 @@ const InfoBadge = {
 // Contraseña wifi enmascarada, con botón para revelarla
 const InfoSecret = {
   props: { color: String, label: String, value: String },
-  data() { return { visible: false } },
+  data() {
+    return { visible: false }
+  },
   template: `
     <div class="flex items-start gap-2.5 min-w-0">
       <div class="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
@@ -2120,8 +3239,8 @@ const PagosTabla = {
   computed: {
     pagosFiltrados() {
       let result = this.pagos || []
-      if (this.filtros.año) result = result.filter(p => p.año === this.filtros.año)
-      if (this.filtros.mes) result = result.filter(p => p.mes === this.filtros.mes)
+      if (this.filtros.año) result = result.filter((p) => p.año === this.filtros.año)
+      if (this.filtros.mes) result = result.filter((p) => p.mes === this.filtros.mes)
       return result
     },
     hayFiltros() {
@@ -2135,7 +3254,11 @@ const PagosTabla = {
     },
     formatCOPLocal(val) {
       if (val == null) return '—'
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        maximumFractionDigits: 0,
+      }).format(val)
     },
   },
   template: `
@@ -2281,17 +3404,26 @@ const FacturasCobradas = {
   computed: {
     datosFiltrados() {
       let r = this.datos
-      if (this.filtroAño) r = r.filter(f => f.anio === this.filtroAño)
-      if (this.filtroMes) r = r.filter(f => f.mes === this.filtroMes)
+      if (this.filtroAño) r = r.filter((f) => f.anio === this.filtroAño)
+      if (this.filtroMes) r = r.filter((f) => f.mes === this.filtroMes)
       return r
     },
-    hayFiltros() { return this.filtroAño || this.filtroMes },
+    hayFiltros() {
+      return this.filtroAño || this.filtroMes
+    },
   },
   methods: {
-    limpiarFiltros() { this.filtroAño = null; this.filtroMes = null },
+    limpiarFiltros() {
+      this.filtroAño = null
+      this.filtroMes = null
+    },
     formatCOP(val) {
       if (val == null) return '—'
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        maximumFractionDigits: 0,
+      }).format(val)
     },
   },
   template: `
@@ -2364,26 +3496,35 @@ const FacturasEmitidas = {
     datosFiltrados() {
       let r = this.datos
       if (this.filtroAño) {
-        r = r.filter(f => {
+        r = r.filter((f) => {
           const d = f.fecha ? new Date(f.fecha) : null
           return d && d.getFullYear() === this.filtroAño
         })
       }
       if (this.filtroMes) {
-        r = r.filter(f => {
+        r = r.filter((f) => {
           const d = f.fecha ? new Date(f.fecha) : null
           return d && d.getMonth() + 1 === this.filtroMes
         })
       }
       return r
     },
-    hayFiltros() { return this.filtroAño || this.filtroMes },
+    hayFiltros() {
+      return this.filtroAño || this.filtroMes
+    },
   },
   methods: {
-    limpiarFiltros() { this.filtroAño = null; this.filtroMes = null },
+    limpiarFiltros() {
+      this.filtroAño = null
+      this.filtroMes = null
+    },
     formatCOP(val) {
       if (val == null) return '—'
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        maximumFractionDigits: 0,
+      }).format(val)
     },
   },
   template: `
@@ -2433,6 +3574,14 @@ const FacturasEmitidas = {
 }
 
 export default {
-  components: { InfoIcon, InfoBadge, InfoLink, PagosTabla, Acordeon, FacturasCobradas, FacturasEmitidas },
+  components: {
+    InfoIcon,
+    InfoBadge,
+    InfoLink,
+    PagosTabla,
+    Acordeon,
+    FacturasCobradas,
+    FacturasEmitidas,
+  },
 }
 </script>

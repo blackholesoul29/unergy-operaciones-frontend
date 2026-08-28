@@ -1,29 +1,39 @@
 <template>
   <div class="imv-page">
-
     <!-- ══ Topbar compacto ═══════════════════════════════════════ -->
     <div class="imv-topbar">
       <div class="imv-topbar-title">
-        <i class="pi pi-file-edit text-sm" style="color:#915BD8" />
-        <h2 class="text-base font-bold text-gray-800 whitespace-nowrap">Informes Mensuales</h2>
-        <span class="hidden lg:inline text-xs text-gray-500">· Generación, revisión y envío al cliente</span>
+        <i class="pi pi-file-edit text-sm" style="color: #915bd8" />
+        <h2 class="text-base font-bold whitespace-nowrap text-gray-800">Informes Mensuales</h2>
+        <span class="hidden text-xs text-gray-500 lg:inline"
+          >· Generación, revisión y envío al cliente</span
+        >
       </div>
 
       <!-- Tabs internas: Generar / Pipeline -->
       <div class="imv-tabs">
-        <button class="imv-tab" :class="{ 'imv-tab--on': tab === 'generar' }"
-                @click="tab = 'generar'">
+        <button
+          class="imv-tab"
+          :class="{ 'imv-tab--on': tab === 'generar' }"
+          @click="tab = 'generar'"
+        >
           <i class="pi pi-cog" />
           <span>Generar</span>
         </button>
-        <button class="imv-tab" :class="{ 'imv-tab--on': tab === 'pipeline' }"
-                @click="tab = 'pipeline'">
+        <button
+          class="imv-tab"
+          :class="{ 'imv-tab--on': tab === 'pipeline' }"
+          @click="tab = 'pipeline'"
+        >
           <i class="pi pi-send" />
           <span>Revisión y envío</span>
           <span class="imv-tab-badge" v-if="badgePipeline">{{ badgePipeline }}</span>
         </button>
-        <button class="imv-tab" :class="{ 'imv-tab--on': tab === 'portafolios' }"
-                @click="tab = 'portafolios'">
+        <button
+          class="imv-tab"
+          :class="{ 'imv-tab--on': tab === 'portafolios' }"
+          @click="tab = 'portafolios'"
+        >
           <i class="pi pi-th-large" />
           <span>Gestión de portafolios</span>
         </button>
@@ -40,7 +50,6 @@
 
     <!-- Gestión de portafolios (drag-and-drop) -->
     <PortafoliosGestionPanel v-else-if="tab === 'portafolios'" />
-
   </div>
 </template>
 
@@ -57,7 +66,7 @@ const router = useRouter()
 
 const _TABS = ['generar', 'pipeline', 'portafolios']
 const tab = ref(_TABS.includes(route.query.tab) ? route.query.tab : 'generar')
-const badgePipeline = ref(null)   // cantidad de informes del mes en curso pendientes/comentados
+const badgePipeline = ref(null) // cantidad de informes del mes en curso pendientes/comentados
 
 // Sync con query string para deep-link
 function setTab(t) {
@@ -74,17 +83,21 @@ watch(tab, (val) => setTab(val))
 // Cuenta informes pendientes/comentados del mes actual para mostrar badge en el tab Pipeline
 async function cargarBadge() {
   try {
-    const now   = new Date()
+    const now = new Date()
     const desde = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
-    const last  = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+    const last = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
     const hasta = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(last).padStart(2, '0')}`
     // ✅ Filtro en backend para no depender del orden/límite
     const { data } = await api.get('/informes/', {
-      params: { periodo_desde_gte: desde, periodo_desde_lte: hasta, limit: 500 }
+      params: { periodo_desde_gte: desde, periodo_desde_lte: hasta, limit: 500 },
     })
-    const pendientes = (data || []).filter(i => i.estado !== 'aprobado' || !i.correo_enviado).length
+    const pendientes = (data || []).filter(
+      (i) => i.estado !== 'aprobado' || !i.correo_enviado,
+    ).length
     badgePipeline.value = pendientes || null
-  } catch { /* no crítico */ }
+  } catch {
+    /* no crítico */
+  }
 }
 onMounted(cargarBadge)
 </script>
@@ -104,7 +117,7 @@ onMounted(cargarBadge)
   flex-wrap: wrap;
   padding: 6px 14px;
   background: #fff;
-  border-bottom: 1px solid #ECE7F2;
+  border-bottom: 1px solid #ece7f2;
   box-shadow: 0 1px 3px rgba(28, 18, 50, 0.04);
   min-height: 44px;
   position: sticky;
@@ -117,13 +130,15 @@ onMounted(cargarBadge)
   gap: 8px;
   flex-shrink: 0;
 }
-.imv-topbar-spacer { flex: 1; }
+.imv-topbar-spacer {
+  flex: 1;
+}
 
 /* Tabs */
 .imv-tabs {
   display: inline-flex;
-  background: #F4F1FA;
-  border: 1px solid #E5E2EC;
+  background: #f4f1fa;
+  border: 1px solid #e5e2ec;
   border-radius: 8px;
   padding: 2px;
   gap: 0;
@@ -139,22 +154,29 @@ onMounted(cargarBadge)
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-  color: #6B5A8A;
+  color: #6b5a8a;
   border-radius: 6px;
   cursor: pointer;
-  transition: all .15s;
+  transition: all 0.15s;
   white-space: nowrap;
 }
-.imv-tab i { font-size: 12px; }
-.imv-tab:hover:not(.imv-tab--on) { color: #2C2039; background: rgba(145,91,216,.08); }
-.imv-tab--on {
-  background: #915BD8;
-  color: #FDFAF7;
-  box-shadow: 0 1px 4px rgba(145,91,216,.3);
+.imv-tab i {
+  font-size: 12px;
 }
-.imv-tab--on:hover { color: #FDFAF7; }
+.imv-tab:hover:not(.imv-tab--on) {
+  color: #2c2039;
+  background: rgba(145, 91, 216, 0.08);
+}
+.imv-tab--on {
+  background: #915bd8;
+  color: #fdfaf7;
+  box-shadow: 0 1px 4px rgba(145, 91, 216, 0.3);
+}
+.imv-tab--on:hover {
+  color: #fdfaf7;
+}
 .imv-tab-badge {
-  background: #DC2626;
+  background: #dc2626;
   color: #fff;
   font-size: 9px;
   font-weight: 800;
@@ -166,6 +188,6 @@ onMounted(cargarBadge)
 }
 .imv-tab--on .imv-tab-badge {
   background: #fff;
-  color: #DC2626;
+  color: #dc2626;
 }
 </style>

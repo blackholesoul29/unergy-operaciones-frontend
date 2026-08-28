@@ -8,11 +8,13 @@ const CACHE = 'unergy-solar-v1'
 self.addEventListener('install', () => self.skipWaiting())
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys()
-    await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
-    await self.clients.claim()
-  })())
+  event.waitUntil(
+    (async () => {
+      const keys = await caches.keys()
+      await Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+      await self.clients.claim()
+    })(),
+  )
 })
 
 self.addEventListener('fetch', (event) => {
@@ -23,22 +25,24 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return
   if (url.pathname.startsWith('/api')) return // datos siempre en vivo
 
-  event.respondWith((async () => {
-    try {
-      const res = await fetch(req)
-      if (res && res.ok) {
-        const cache = await caches.open(CACHE)
-        cache.put(req, res.clone()).catch(() => {})
+  event.respondWith(
+    (async () => {
+      try {
+        const res = await fetch(req)
+        if (res && res.ok) {
+          const cache = await caches.open(CACHE)
+          cache.put(req, res.clone()).catch(() => {})
+        }
+        return res
+      } catch (err) {
+        const cached = await caches.match(req)
+        if (cached) return cached
+        if (req.mode === 'navigate') {
+          const shell = (await caches.match('/m/solar')) || (await caches.match('/index.html'))
+          if (shell) return shell
+        }
+        throw err
       }
-      return res
-    } catch (err) {
-      const cached = await caches.match(req)
-      if (cached) return cached
-      if (req.mode === 'navigate') {
-        const shell = (await caches.match('/m/solar')) || (await caches.match('/index.html'))
-        if (shell) return shell
-      }
-      throw err
-    }
-  })())
+    })(),
+  )
 })

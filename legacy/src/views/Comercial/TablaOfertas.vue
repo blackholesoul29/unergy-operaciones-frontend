@@ -5,18 +5,34 @@
 -->
 <template>
   <div>
-    <div class="flex items-center justify-between mb-2">
-      <span class="text-xs" style="color:#9b89b5">{{ ofertas.length }} ofertas</span>
-      <Button label="Excel" icon="pi pi-file-excel" size="small" outlined
-              :loading="exportando" @click="exportar" />
+    <div class="mb-2 flex items-center justify-between">
+      <span class="text-xs" style="color: #9b89b5">{{ ofertas.length }} ofertas</span>
+      <Button
+        label="Excel"
+        icon="pi pi-file-excel"
+        size="small"
+        outlined
+        :loading="exportando"
+        @click="exportar"
+      />
     </div>
 
-    <DataTable :value="ofertas" paginator :rows="25" :rowsPerPageOptions="[25, 50, 100]"
-               dataKey="id" class="text-sm" removableSort selectionMode="single"
-               @row-click="$emit('abrir', $event.data)">
-      <Column field="codigo_seguimiento" header="Código" sortable style="min-width:11rem">
+    <DataTable
+      :value="ofertas"
+      paginator
+      :rows="25"
+      :rowsPerPageOptions="[25, 50, 100]"
+      dataKey="id"
+      class="text-sm"
+      removableSort
+      selectionMode="single"
+      @row-click="$emit('abrir', $event.data)"
+    >
+      <Column field="codigo_seguimiento" header="Código" sortable style="min-width: 11rem">
         <template #body="{ data }">
-          <span class="font-mono text-xs">{{ data.codigo_seguimiento || data.numero_oferta || '—' }}</span>
+          <span class="font-mono text-xs">{{
+            data.codigo_seguimiento || data.numero_oferta || '—'
+          }}</span>
         </template>
       </Column>
       <Column field="estado" header="Etapa" sortable>
@@ -24,19 +40,22 @@
           <Tag :value="labelEtapa(data.estado)" :severity="severidadEtapa(data.estado)" />
         </template>
       </Column>
-      <Column field="planta_nombre" header="Planta" sortable style="min-width:12rem">
+      <Column field="planta_nombre" header="Planta" sortable style="min-width: 12rem">
         <template #body="{ data }">
           <div class="flex items-center gap-1.5">
             <span>{{ data.planta_nombre || data.ficha?.proyecto_nombre || '—' }}</span>
-            <span v-if="data.plantas?.length > 1" class="text-[10px] rounded px-1 py-0.5"
-                  style="background:#F3F4F6;color:#4B5563"
-                  v-tooltip.top="data.plantas.map(p => p.nombre_comercial).join(' · ')">
+            <span
+              v-if="data.plantas?.length > 1"
+              class="rounded px-1 py-0.5 text-[10px]"
+              style="background: #f3f4f6; color: #4b5563"
+              v-tooltip.top="data.plantas.map((p) => p.nombre_comercial).join(' · ')"
+            >
               +{{ data.plantas.length - 1 }}
             </span>
           </div>
         </template>
       </Column>
-      <Column field="cliente_razon_social" header="Cliente" sortable style="min-width:14rem" />
+      <Column field="cliente_razon_social" header="Cliente" sortable style="min-width: 14rem" />
       <Column field="tipo" header="Tipo" sortable>
         <template #body="{ data }">{{ labelTipo(data.tipo) }}</template>
       </Column>
@@ -45,7 +64,7 @@
       <Column field="ficha.energia_promedio_kwh_mes" header="Energía" sortable>
         <template #body="{ data }">
           <span v-if="mwhMes(data)">{{ fmtMwh(mwhMes(data)) }}</span>
-          <span v-else style="color:#c4b8d4">—</span>
+          <span v-else style="color: #c4b8d4">—</span>
         </template>
       </Column>
       <Column field="ficha.municipio" header="Municipio" sortable>
@@ -61,42 +80,64 @@
           </span>
           <!-- Sin fecha registrada, el mes vive dentro del propio código. Se
                muestra como aproximado y no se guarda nada. -->
-          <span v-else-if="mesDelCodigo(data)" style="color:#c4b8d4"
-                v-tooltip.top="'Aproximado: sale del mes que trae el código, no de una fecha registrada'">
+          <span
+            v-else-if="mesDelCodigo(data)"
+            style="color: #c4b8d4"
+            v-tooltip.top="
+              'Aproximado: sale del mes que trae el código, no de una fecha registrada'
+            "
+          >
             ≈ {{ mesDelCodigo(data) }}
           </span>
-          <span v-else style="color:#c4b8d4">—</span>
+          <span v-else style="color: #c4b8d4">—</span>
         </template>
       </Column>
       <Column field="seguimientos" header="Toques" sortable>
         <template #body="{ data }">
-          <span :class="alarmante(data) ? 'font-semibold' : ''"
-                :style="{ color: alarmante(data) ? '#D64455' : 'inherit' }">
+          <span
+            :class="alarmante(data) ? 'font-semibold' : ''"
+            :style="{ color: alarmante(data) ? '#D64455' : 'inherit' }"
+          >
             {{ data.seguimientos || 0 }}
           </span>
         </template>
       </Column>
       <Column field="fecha_ultima_respuesta" header="Última respuesta" sortable>
         <template #body="{ data }">
-          <span v-if="data.fecha_ultima_respuesta">{{ fmtFecha(data.fecha_ultima_respuesta) }}</span>
-          <span v-else-if="data.fecha_oferta" style="color:#D64455" class="text-xs">sin respuesta</span>
-          <span v-else style="color:#c4b8d4">—</span>
+          <span v-if="data.fecha_ultima_respuesta">{{
+            fmtFecha(data.fecha_ultima_respuesta)
+          }}</span>
+          <span v-else-if="data.fecha_oferta" style="color: #d64455" class="text-xs"
+            >sin respuesta</span
+          >
+          <span v-else style="color: #c4b8d4">—</span>
         </template>
       </Column>
       <Column header="Contrato">
         <template #body="{ data }">
-          <router-link v-if="data.ppa_contrato_id" :to="`/contratos/${data.ppa_contrato_id}`"
-                       class="text-xs underline" style="color:#915BD8" @click.stop>PPA</router-link>
-          <span v-else style="color:#c4b8d4">—</span>
+          <router-link
+            v-if="data.ppa_contrato_id"
+            :to="`/contratos/${data.ppa_contrato_id}`"
+            class="text-xs underline"
+            style="color: #915bd8"
+            @click.stop
+            >PPA</router-link
+          >
+          <span v-else style="color: #c4b8d4">—</span>
         </template>
       </Column>
-      <Column header="" style="width:4rem">
+      <Column header="" style="width: 4rem">
         <template #body="{ data }">
-          <Tag v-if="data.alerta" severity="danger" :value="`⚠ ${data.dias_sin_respuesta}d`" class="scale-90" />
+          <Tag
+            v-if="data.alerta"
+            severity="danger"
+            :value="`⚠ ${data.dias_sin_respuesta}d`"
+            class="scale-90"
+          />
         </template>
       </Column>
       <template #empty>
-        <span style="color:#9b89b5">No hay ofertas con esos filtros.</span>
+        <span style="color: #9b89b5">No hay ofertas con esos filtros.</span>
       </template>
     </DataTable>
   </div>
@@ -111,8 +152,15 @@ import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import { exportarExcel } from '@/utils/exportarExcel'
 import {
-  labelEtapa, severidadEtapa, labelTipo, mwhMes, fmtMwh, fmtFecha,
-  diasDesde, mesDelCodigo, alarmante,
+  labelEtapa,
+  severidadEtapa,
+  labelTipo,
+  mwhMes,
+  fmtMwh,
+  fmtFecha,
+  diasDesde,
+  mesDelCodigo,
+  alarmante,
 } from './comercial.js'
 
 const props = defineProps({ ofertas: { type: Array, default: () => [] } })
@@ -128,7 +176,10 @@ const COLUMNAS_EXCEL = [
   { header: 'Cliente', value: (o) => o.cliente_razon_social || '' },
   { header: 'NIT', value: (o) => o.cliente_nit || '' },
   { header: 'Planta', value: (o) => o.planta_nombre || o.ficha?.proyecto_nombre || '' },
-  { header: 'Plantas del contrato', value: (o) => (o.plantas || []).map((p) => p.nombre_comercial).join(' · ') },
+  {
+    header: 'Plantas del contrato',
+    value: (o) => (o.plantas || []).map((p) => p.nombre_comercial).join(' · '),
+  },
   { header: 'Tipo', value: (o) => labelTipo(o.tipo) },
   { header: 'Municipio', value: (o) => o.ficha?.municipio || '' },
   { header: 'Departamento', value: (o) => o.ficha?.departamento || '' },
@@ -149,7 +200,12 @@ async function exportar() {
     const hoy = new Date().toISOString().slice(0, 10)
     await exportarExcel(props.ofertas, COLUMNAS_EXCEL, `comercial_ofertas_${hoy}`, 'Ofertas')
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo exportar', detail: err.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo exportar',
+      detail: err.message,
+      life: 5000,
+    })
   } finally {
     exportando.value = false
   }

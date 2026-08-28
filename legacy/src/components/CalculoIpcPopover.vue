@@ -1,8 +1,8 @@
 <template>
   <!-- Popover de desglose del cálculo IPC. Mismo formato visual que Mantenimiento. -->
   <Popover ref="pop">
-    <div class="text-xs" style="min-width:280px; color:#2C2039">
-      <p class="font-semibold mb-2 flex items-center gap-1.5" style="color:#7c3aed">
+    <div class="text-xs" style="min-width: 280px; color: #2c2039">
+      <p class="mb-2 flex items-center gap-1.5 font-semibold" style="color: #7c3aed">
         <i class="pi pi-chart-bar text-[11px]" /> Cálculo del Valor a Facturar
       </p>
       <div class="space-y-1 font-mono">
@@ -23,10 +23,10 @@
           <span>{{ factor != null ? ((factor - 1) * 100).toFixed(3) : '—' }}%</span>
         </div>
       </div>
-      <div class="border-t mt-2 pt-2">
+      <div class="mt-2 border-t pt-2">
         <div class="flex justify-between gap-6 font-semibold">
           <span>Valor a Facturar</span>
-          <span style="color:#7c3aed">{{ fmt(valorAFacturar) }}</span>
+          <span style="color: #7c3aed">{{ fmt(valorAFacturar) }}</span>
         </div>
       </div>
     </div>
@@ -39,7 +39,7 @@ import Popover from 'primevue/popover'
 
 defineProps({
   valorBaseAnual: { type: Number, default: null },
-  factor:         { type: Number, default: null },
+  factor: { type: Number, default: null },
   valorAFacturar: { type: Number, default: null },
 })
 
@@ -47,11 +47,19 @@ const pop = ref(null)
 
 function fmt(v) {
   if (v == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(v)
 }
 
 // Reexpone los métodos del Popover de PrimeVue al padre.
-function show(ev) { pop.value?.show(ev) }
-function hide()   { pop.value?.hide() }
+function show(ev) {
+  pop.value?.show(ev)
+}
+function hide() {
+  pop.value?.hide()
+}
 defineExpose({ show, hide })
 </script>

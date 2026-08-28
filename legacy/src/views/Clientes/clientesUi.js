@@ -13,9 +13,9 @@ export const SERVICIO_LABELS = {
 }
 
 export const SEMAFORO = {
-  vigente:    { color: '#16a34a', bg: '#e8f5e9', label: 'Vigente' },
+  vigente: { color: '#16a34a', bg: '#e8f5e9', label: 'Vigente' },
   por_vencer: { color: '#d97706', bg: '#FFFBEB', label: 'Por vencer' },
-  vencido:    { color: '#dc2626', bg: '#FEF2F2', label: 'Vencido' },
+  vencido: { color: '#dc2626', bg: '#FEF2F2', label: 'Vencido' },
 }
 
 export function servicioLabel(slug) {
@@ -23,7 +23,7 @@ export function servicioLabel(slug) {
 }
 
 export function fmt(v) {
-  return (v === null || v === undefined || v === '') ? '—' : v
+  return v === null || v === undefined || v === '' ? '—' : v
 }
 
 export function fmtFecha(iso) {

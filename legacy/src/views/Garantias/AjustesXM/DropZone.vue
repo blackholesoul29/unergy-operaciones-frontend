@@ -1,36 +1,32 @@
 <template>
   <div
-    class="relative border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer"
+    class="relative cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors"
     :style="dropStyle"
     @click="fileInput.click()"
     @dragover.prevent="dragging = true"
     @dragleave.prevent="dragging = false"
     @drop.prevent="onDrop"
   >
-    <input
-      ref="fileInput"
-      type="file"
-      accept=".xlsx,.xls"
-      class="hidden"
-      @change="onSelect"
-    />
+    <input ref="fileInput" type="file" accept=".xlsx,.xls" class="hidden" @change="onSelect" />
 
     <div v-if="!file && !error" class="space-y-1">
-      <i class="pi pi-file-excel text-2xl block" style="color:#c4b8d4" />
-      <p class="text-sm font-medium" style="color:#6b5a8a">{{ label }}</p>
-      <p class="text-xs" style="color:#9ca3af">Arrastra o haz clic</p>
+      <i class="pi pi-file-excel block text-2xl" style="color: #c4b8d4" />
+      <p class="text-sm font-medium" style="color: #6b5a8a">{{ label }}</p>
+      <p class="text-xs" style="color: #9ca3af">Arrastra o haz clic</p>
     </div>
 
     <div v-else-if="error" class="space-y-1">
-      <i class="pi pi-times-circle text-2xl block" style="color:#D64455" />
-      <p class="text-sm font-medium" style="color:#D64455">{{ error }}</p>
-      <p class="text-xs" style="color:#9ca3af">Haz clic para intentar de nuevo</p>
+      <i class="pi pi-times-circle block text-2xl" style="color: #d64455" />
+      <p class="text-sm font-medium" style="color: #d64455">{{ error }}</p>
+      <p class="text-xs" style="color: #9ca3af">Haz clic para intentar de nuevo</p>
     </div>
 
     <div v-else class="space-y-1">
-      <i class="pi pi-check-circle text-2xl block" style="color:#10B981" />
-      <p class="text-sm font-medium truncate max-w-xs mx-auto" style="color:#2C2039">{{ file.name }}</p>
-      <p class="text-xs" style="color:#10B981">Archivo cargado</p>
+      <i class="pi pi-check-circle block text-2xl" style="color: #10b981" />
+      <p class="mx-auto max-w-xs truncate text-sm font-medium" style="color: #2c2039">
+        {{ file.name }}
+      </p>
+      <p class="text-xs" style="color: #10b981">Archivo cargado</p>
     </div>
   </div>
 </template>

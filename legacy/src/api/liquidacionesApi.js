@@ -43,7 +43,10 @@ const dormir = (ms) => new Promise((r) => setTimeout(r, ms))
  * @throws {TareaFallida} si la tarea terminó mal.
  * @throws {TareaSinRespuesta} si se agotó el tiempo de espera.
  */
-export async function esperarTarea(taskId, { timeoutMs = 30 * 60 * 1000, intervaloMs = 5000, onEstado } = {}) {
+export async function esperarTarea(
+  taskId,
+  { timeoutMs = 30 * 60 * 1000, intervaloMs = 5000, onEstado } = {},
+) {
   if (!taskId) throw new TareaSinRespuesta('La API no devolvió un identificador de tarea.')
 
   const limite = Date.now() + timeoutMs
@@ -94,7 +97,13 @@ export async function listarCatalogos() {
  * Despachos ya liquidados del período, día por día y por contrato.
  * `data_type`: dispatch (venta) | purchase (compra) | dispatch_fazni (bolsa).
  */
-export async function listarDespachos({ month, year, version = VERSION_INICIAL, data_type, project }) {
+export async function listarDespachos({
+  month,
+  year,
+  version = VERSION_INICIAL,
+  data_type,
+  project,
+}) {
   const { data } = await api.get('/liquidaciones-api/despachos', {
     params: { month, year, version, data_type, project },
   })
@@ -139,7 +148,8 @@ export async function listarSubproyectos({ project, topic } = {}) {
  */
 export async function actualizarSubproyecto(topico, cambios) {
   const { data } = await api.patch(
-    `/liquidaciones-api/subproyectos/${encodeURIComponent(topico)}`, cambios,
+    `/liquidaciones-api/subproyectos/${encodeURIComponent(topico)}`,
+    cambios,
   )
   return data
 }
@@ -196,7 +206,12 @@ export const generarCruceFacturas = (p, o) => lanzarYEsperar('cruce-facturas', p
 
 /** Por qué un proyecto no sale en el estado de resultados. Síncrono. */
 export async function diagnosticarProyecto({ project, month, year, version = VERSION_INICIAL }) {
-  const { data } = await api.post('/liquidaciones-api/ciclo/diagnostico', { project, month, year, version })
+  const { data } = await api.post('/liquidaciones-api/ciclo/diagnostico', {
+    project,
+    month,
+    year,
+    version,
+  })
   return data
 }
 

@@ -18,13 +18,13 @@ export function parseCOP(str) {
   let t = String(str).trim().replace(/\$/g, '').replace(/\s/g, '')
   if (t === '') return null
 
-  const neg = /^-/.test(t) || /^\(.*\)$/.test(t)   // guion o paréntesis contable
+  const neg = /^-/.test(t) || /^\(.*\)$/.test(t) // guion o paréntesis contable
   t = t.replace(/[()]/g, '').replace(/^-/, '')
   if (t === '') return null
 
   // Colombiano: quitar puntos de miles, coma decimal -> punto.
   t = t.replace(/\./g, '').replace(',', '.')
-  if (!/^\d+(\.\d+)?$/.test(t)) return null        // rechaza formatos ambiguos/no numéricos
+  if (!/^\d+(\.\d+)?$/.test(t)) return null // rechaza formatos ambiguos/no numéricos
 
   const n = Number(t)
   if (!Number.isFinite(n)) return null

@@ -28,14 +28,16 @@ export function opcionesSicVigentes(rows) {
       nombre_interno: r.nombre_interno,
       _plantas: [],
     }
-    if (r.planta_nombre && !acc._plantas.includes(r.planta_nombre)) acc._plantas.push(r.planta_nombre)
+    if (r.planta_nombre && !acc._plantas.includes(r.planta_nombre))
+      acc._plantas.push(r.planta_nombre)
     porSic.set(r.codigo_sic_contrato, acc)
   }
   return [...porSic.values()]
-    .map(o => ({
+    .map((o) => ({
       ...o,
       plantas: o._plantas.join(' · ') || 'sin planta',
-      _label: `${o.sic} — ${o.contrato_interno || ''} ${o.nombre_interno || ''} ${o._plantas.join(' ')}`.trim(),
+      _label:
+        `${o.sic} — ${o.contrato_interno || ''} ${o.nombre_interno || ''} ${o._plantas.join(' ')}`.trim(),
     }))
     .sort((a, b) => a.sic.localeCompare(b.sic, undefined, { numeric: true }))
 }
@@ -48,9 +50,9 @@ export function opcionesSicVigentes(rows) {
  */
 export function plantasInscritas(rows, codigoSic, fechaIso) {
   if (!codigoSic) return []
-  const vigentes = rows.filter(r => r.codigo_sic_contrato === codigoSic && esVersionDeContrato(r))
+  const vigentes = rows.filter((r) => r.codigo_sic_contrato === codigoSic && esVersionDeContrato(r))
   if (!fechaIso) return vigentes
-  const enVigor = vigentes.filter(r => {
+  const enVigor = vigentes.filter((r) => {
     const fin = r.fecha_fin_efectiva || r.fecha_fin
     return !fin || fin >= fechaIso
   })
@@ -59,7 +61,7 @@ export function plantasInscritas(rows, codigoSic, fechaIso) {
 
 /** Fila de la que se hereda la identidad del contrato (contrato interno, etc.). */
 export function filaIdentidad(inscritas) {
-  return inscritas.find(r => (r.contrato_interno || '').trim()) || inscritas[0] || {}
+  return inscritas.find((r) => (r.contrato_interno || '').trim()) || inscritas[0] || {}
 }
 
 // ── Formato ───────────────────────────────────────────────────────────────
@@ -74,7 +76,9 @@ export function toIso(v) {
   return null
 }
 
-export function parseIso(v) { return v ? new Date(v + 'T12:00:00') : null }
+export function parseIso(v) {
+  return v ? new Date(v + 'T12:00:00') : null
+}
 
 export function fmtFecha(d) {
   if (!d) return 'sin fecha'

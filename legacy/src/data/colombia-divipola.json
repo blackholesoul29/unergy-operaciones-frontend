@@ -1,8 +1,5 @@
 {
-  "Amazonas": [
-    "Leticia",
-    "Puerto Nariño"
-  ],
+  "Amazonas": ["Leticia", "Puerto Nariño"],
   "Antioquia": [
     "Abejorral",
     "Abriaquí",
@@ -130,15 +127,7 @@
     "Yondó",
     "Zaragoza"
   ],
-  "Arauca": [
-    "Arauca",
-    "Arauquita",
-    "Cravo Norte",
-    "Fortul",
-    "Puerto Rondón",
-    "Saravena",
-    "Tame"
-  ],
+  "Arauca": ["Arauca", "Arauquita", "Cravo Norte", "Fortul", "Puerto Rondón", "Saravena", "Tame"],
   "Atlántico": [
     "Baranoa",
     "Barranquilla",
@@ -164,9 +153,7 @@
     "Tubará",
     "Usiacurí"
   ],
-  "Bogotá D.C.": [
-    "Bogotá D.C."
-  ],
+  "Bogotá D.C.": ["Bogotá D.C."],
   "Bolívar": [
     "Achí",
     "Altos del Rosario",
@@ -662,15 +649,8 @@
     "Tuchín",
     "Valencia"
   ],
-  "Guainía": [
-    "Inírida"
-  ],
-  "Guaviare": [
-    "Calamar",
-    "El Retorno",
-    "Miraflores",
-    "San José del Guaviare"
-  ],
+  "Guainía": ["Inírida"],
+  "Guaviare": ["Calamar", "El Retorno", "Miraflores", "San José del Guaviare"],
   "Huila": [
     "Acevedo",
     "Agrado",
@@ -944,10 +924,7 @@
     "Santa Rosa de Cabal",
     "Santuario"
   ],
-  "San Andrés y Providencia": [
-    "Providencia y Santa Catalina Islas",
-    "San Andrés"
-  ],
+  "San Andrés y Providencia": ["Providencia y Santa Catalina Islas", "San Andrés"],
   "Santander": [
     "Aguada",
     "Albania",
@@ -1158,15 +1135,6 @@
     "Yumbo",
     "Zarzal"
   ],
-  "Vaupés": [
-    "Carurú",
-    "Mitú",
-    "Taraira"
-  ],
-  "Vichada": [
-    "Cumaribo",
-    "La Primavera",
-    "Puerto Carreño",
-    "Santa Rosalía"
-  ]
+  "Vaupés": ["Carurú", "Mitú", "Taraira"],
+  "Vichada": ["Cumaribo", "La Primavera", "Puerto Carreño", "Santa Rosalía"]
 }

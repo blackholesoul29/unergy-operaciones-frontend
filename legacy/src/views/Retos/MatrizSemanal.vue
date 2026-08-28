@@ -7,7 +7,12 @@
       <span class="rq-guardado" :style="{ color: guardado.color }">
         <template v-if="guardado.texto">
           <i v-if="guardado.icono" :class="guardado.icono" />
-          <button v-if="guardado.esError" type="button" class="rq-guardado-link" @click="irAPrimerError">
+          <button
+            v-if="guardado.esError"
+            type="button"
+            class="rq-guardado-link"
+            @click="irAPrimerError"
+          >
             {{ guardado.texto }}
           </button>
           <span v-else>{{ guardado.texto }}</span>
@@ -56,21 +61,25 @@
       >
         <span class="rq-angosto-s">{{ s.etiqueta || `S${s.numero}` }}</span>
         <span class="rq-angosto-rango">{{ s.rango_label }}</span>
-        <span class="rq-angosto-llenado" :style="{ color: colorLlenado(s) }">{{ textoLlenado(s) }}</span>
+        <span class="rq-angosto-llenado" :style="{ color: colorLlenado(s) }">{{
+          textoLlenado(s)
+        }}</span>
         <i class="pi pi-chevron-right" />
       </button>
     </div>
 
     <!-- ── Matriz ───────────────────────────────────────────────────────── -->
-    <div
-      v-else
-      ref="wrapEl"
-      class="rq-matriz-wrap"
-      @focusin="activa = true"
-      @focusout="onFocusOut"
-    >
-      <table class="rq-matriz" @mouseleave="hoverCol = null; hoverFila = null">
-        <caption class="sr-only">Valores semanales por métrica del trimestre</caption>
+    <div v-else ref="wrapEl" class="rq-matriz-wrap" @focusin="activa = true" @focusout="onFocusOut">
+      <table
+        class="rq-matriz"
+        @mouseleave="
+          hoverCol = null
+          hoverFila = null
+        "
+      >
+        <caption class="sr-only">
+          Valores semanales por métrica del trimestre
+        </caption>
 
         <colgroup>
           <col class="rq-c-metrica" />
@@ -90,7 +99,9 @@
               :colspan="g.n"
               scope="colgroup"
               :class="{ 'rq-mes-inicio': i > 0 }"
-            >{{ g.label }}</th>
+            >
+              {{ g.label }}
+            </th>
             <th class="rq-sticky-r-3" rowspan="2" scope="col">CONSOLIDADO</th>
             <th class="rq-sticky-r-2" rowspan="2" scope="col">META</th>
             <th class="rq-sticky-r-1" rowspan="2" scope="col">%</th>
@@ -107,7 +118,7 @@
                 columnaClases(s, c),
                 { 'rq-parcial': s.parcial, 'rq-mes-inicio': esInicioMes(c) },
               ]"
-              :ref="el => setCelda(-1, c, el)"
+              :ref="(el) => setCelda(-1, c, el)"
               :tabindex="foco.fila === -1 && foco.col === c ? 0 : -1"
               :aria-label="`Abrir semana ${s.numero}, ${s.rango_label}`"
               v-tooltip.top="tooltipSemana(s)"
@@ -167,11 +178,14 @@
                   'rq-mes-inicio': esInicioMes(c),
                 },
               ]"
-              @mouseenter="hoverCol = c; hoverFila = r"
+              @mouseenter="
+                hoverCol = c
+                hoverFila = r
+              "
             >
               <div
                 class="rq-cell-inner"
-                :ref="el => setCelda(r, c, el)"
+                :ref="(el) => setCelda(r, c, el)"
                 :tabindex="foco.fila === r && foco.col === c ? 0 : -1"
                 :aria-label="ariaCelda(m, s)"
                 @focus="onFocoCelda(r, c)"
@@ -226,7 +240,11 @@
                   class="rq-micro-fill"
                   :style="{ width: `${anchoAvance(m)}%`, background: estadoColor(m.estado) }"
                 />
-                <span v-if="posEsperada(m) !== null" class="rq-micro-marca" :style="{ left: `${posEsperada(m)}%` }" />
+                <span
+                  v-if="posEsperada(m) !== null"
+                  class="rq-micro-marca"
+                  :style="{ left: `${posEsperada(m)}%` }"
+                />
               </span>
             </td>
           </tr>
@@ -243,7 +261,9 @@
               :class="{ 'rq-mes-inicio': esInicioMes(c) }"
               @click="emit('abrir-semana', s)"
             >
-              <span class="rq-llenado-txt" :style="{ color: colorLlenado(s) }">{{ textoLlenado(s) }}</span>
+              <span class="rq-llenado-txt" :style="{ color: colorLlenado(s) }">{{
+                textoLlenado(s)
+              }}</span>
               <span v-if="!(s.es_futura && conDato(s) === 0)" class="rq-llenado-bar">
                 <span
                   class="rq-llenado-bar-fill"
@@ -300,33 +320,68 @@ const AYUDA_TECLADO =
 const ERR_PARSEO = 'No se reconoce el número. Usa coma para los decimales.'
 
 const MESES_LARGOS = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
 ]
-const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+const MESES_CORTOS = [
+  'ene',
+  'feb',
+  'mar',
+  'abr',
+  'may',
+  'jun',
+  'jul',
+  'ago',
+  'sep',
+  'oct',
+  'nov',
+  'dic',
+]
 
 // ── Semanas futuras ─────────────────────────────────────────────────────────
 const LS_KEY = 'retos:ocultarFuturas'
 const ocultarFuturas = ref(leerToggle())
 
 function leerToggle() {
-  try { return localStorage.getItem(LS_KEY) === '1' } catch { return false }
+  try {
+    return localStorage.getItem(LS_KEY) === '1'
+  } catch {
+    return false
+  }
 }
-watch(ocultarFuturas, v => {
-  try { localStorage.setItem(LS_KEY, v ? '1' : '0') } catch { /* modo privado */ }
+watch(ocultarFuturas, (v) => {
+  try {
+    localStorage.setItem(LS_KEY, v ? '1' : '0')
+  } catch {
+    /* modo privado */
+  }
 })
 
 const semanasVisibles = computed(() =>
-  ocultarFuturas.value ? props.semanas.filter(s => !s.es_futura) : props.semanas
+  ocultarFuturas.value ? props.semanas.filter((s) => !s.es_futura) : props.semanas,
 )
 const metricasVisibles = computed(() => props.metricas)
-const metricasActivas = computed(() => props.metricas.filter(m => m.activa !== false))
+const metricasActivas = computed(() => props.metricas.filter((m) => m.activa !== false))
 
-const semanaSugerida = computed(() => props.semanas.find(s => s.es_actual) || props.semanas[0] || null)
+const semanaSugerida = computed(
+  () => props.semanas.find((s) => s.es_actual) || props.semanas[0] || null,
+)
 
 // ── Banda de meses ──────────────────────────────────────────────────────────
 function mesDe(s) {
-  const [a, m] = String(s.inicio_efectivo || s.inicio || '').split('-').map(Number)
+  const [a, m] = String(s.inicio_efectivo || s.inicio || '')
+    .split('-')
+    .map(Number)
   return { a, m }
 }
 
@@ -352,15 +407,19 @@ const iniciosMes = computed(() => {
   }
   return set
 })
-function esInicioMes(c) { return iniciosMes.value.has(c) }
+function esInicioMes(c) {
+  return iniciosMes.value.has(c)
+}
 
 // ── Acceso a los valores ────────────────────────────────────────────────────
 /** Valores que el backend rechazó: se conservan para no perder el tecleo. */
 const locales = reactive({})
-const estados = reactive({})   // clave -> 'guardando' | 'ok' | 'error'
-const errores = reactive({})   // clave -> mensaje
+const estados = reactive({}) // clave -> 'guardando' | 'ok' | 'error'
+const errores = reactive({}) // clave -> mensaje
 
-function clave(m, s) { return `${m.id}|${s.inicio}` }
+function clave(m, s) {
+  return `${m.id}|${s.inicio}`
+}
 
 function registroDe(m, s) {
   const fila = props.valores?.[m.id]
@@ -396,7 +455,7 @@ function fechaCortaDe(iso) {
 }
 
 const hayAlgunValor = computed(() =>
-  props.metricas.some(m => props.semanas.some(s => valorDe(m, s) !== null))
+  props.metricas.some((m) => props.semanas.some((s) => valorDe(m, s) !== null)),
 )
 
 /** Advertencia (no bloqueo): negativo con "más es mejor", o 5× el ritmo esperado. */
@@ -437,11 +496,16 @@ function metaLinea(m) {
 
 function tooltipSemana(s) {
   if (s.parcial) {
-    const [, m1, d1] = String(s.inicio_efectivo || s.inicio).split('-').map(Number)
-    const [, m2, d2] = String(s.fin_efectivo || s.fin).split('-').map(Number)
-    const rango = m1 === m2
-      ? `del ${d1} al ${d2} de ${MESES_LARGOS[m2 - 1]}`
-      : `del ${d1} de ${MESES_LARGOS[m1 - 1]} al ${d2} de ${MESES_LARGOS[m2 - 1]}`
+    const [, m1, d1] = String(s.inicio_efectivo || s.inicio)
+      .split('-')
+      .map(Number)
+    const [, m2, d2] = String(s.fin_efectivo || s.fin)
+      .split('-')
+      .map(Number)
+    const rango =
+      m1 === m2
+        ? `del ${d1} al ${d2} de ${MESES_LARGOS[m2 - 1]}`
+        : `del ${d1} de ${MESES_LARGOS[m1 - 1]} al ${d2} de ${MESES_LARGOS[m2 - 1]}`
     return `Semana parcial: ${rango}`
   }
   if (s.es_futura) return 'Semana futura'
@@ -479,7 +543,7 @@ function tooltipPct(m) {
 
 // ── Llenado ─────────────────────────────────────────────────────────────────
 function conDato(s) {
-  return metricasActivas.value.filter(m => valorDe(m, s) !== null).length
+  return metricasActivas.value.filter((m) => valorDe(m, s) !== null).length
 }
 function textoLlenado(s) {
   if (s.es_futura && conDato(s) === 0) return '—'
@@ -564,17 +628,17 @@ function asegurarVisible(el) {
 
   const izq = wrap.querySelector('.rq-sticky-l')?.offsetWidth || 240
   const der = 238
-  if (re.left < rw.left + izq) wrap.scrollLeft -= (rw.left + izq) - re.left
+  if (re.left < rw.left + izq) wrap.scrollLeft -= rw.left + izq - re.left
   else if (re.right > rw.right - der) wrap.scrollLeft += re.right - (rw.right - der)
 
-  const arriba = 52   // banda de mes + fila de semanas
-  const abajo = 30    // fila de llenado
-  if (re.top < rw.top + arriba) wrap.scrollTop -= (rw.top + arriba) - re.top
+  const arriba = 52 // banda de mes + fila de semanas
+  const abajo = 30 // fila de llenado
+  if (re.top < rw.top + arriba) wrap.scrollTop -= rw.top + arriba - re.top
   else if (re.bottom > rw.bottom - abajo) wrap.scrollTop += re.bottom - (rw.bottom - abajo)
 }
 
 // ── Edición ─────────────────────────────────────────────────────────────────
-const editando = ref(null)   // { r, c }
+const editando = ref(null) // { r, c }
 const texto = ref('')
 
 function editableEn(r) {
@@ -614,7 +678,10 @@ function confirmar() {
   const { r, c } = editando.value
   const m = metricasVisibles.value[r]
   const s = semanasVisibles.value[c]
-  if (!m || !s) { salirEdicion(); return true }
+  if (!m || !s) {
+    salirEdicion()
+    return true
+  }
 
   const k = clave(m, s)
   const nuevo = parseValor(texto.value)
@@ -639,7 +706,10 @@ function descartar() {
   const s = semanasVisibles.value[c]
   if (m && s) {
     const k = clave(m, s)
-    if (errores[k] === ERR_PARSEO) { delete errores[k]; delete estados[k] }
+    if (errores[k] === ERR_PARSEO) {
+      delete errores[k]
+      delete estados[k]
+    }
   }
   salirEdicion()
   nextTick(() => celdas[`${foco.fila}:${foco.col}`]?.focus({ preventScroll: true }))
@@ -665,7 +735,7 @@ const pulsos = reactive({})
 
 async function guardar(m, s, valor, nota = undefined) {
   const k = clave(m, s)
-  locales[k] = valor           // se muestra lo tecleado mientras viaja
+  locales[k] = valor // se muestra lo tecleado mientras viaja
   estados[k] = 'guardando'
   delete errores[k]
   enVuelo.value += 1
@@ -681,8 +751,12 @@ async function guardar(m, s, valor, nota = undefined) {
     ultimoOk.value = new Date()
     anuncio.value = `Guardado ${horaCorta(ultimoOk.value)}`
     pulsos[m.id] = true
-    setTimeout(() => { delete pulsos[m.id] }, 500)
-    setTimeout(() => { if (estados[k] === 'ok') delete estados[k] }, 700)
+    setTimeout(() => {
+      delete pulsos[m.id]
+    }, 500)
+    setTimeout(() => {
+      if (estados[k] === 'ok') delete estados[k]
+    }, 700)
   } catch (e) {
     // El valor tecleado NO se revierte: queda en `locales` para reintentar.
     estados[k] = 'error'
@@ -719,11 +793,17 @@ const guardado = computed(() => {
     return { icono: 'pi pi-spin pi-spinner', texto: 'Guardando…', color: '#915BD8', esError: false }
   }
   if (nErrores.value > 0) {
-    const t = nErrores.value === 1 ? '1 cambio sin guardar' : `${nErrores.value} cambios sin guardar`
+    const t =
+      nErrores.value === 1 ? '1 cambio sin guardar' : `${nErrores.value} cambios sin guardar`
     return { icono: 'pi pi-exclamation-circle', texto: t, color: '#B0364A', esError: true }
   }
   if (ultimoOk.value) {
-    return { icono: 'pi pi-check', texto: `Guardado ${horaCorta(ultimoOk.value)}`, color: '#6b5a8a', esError: false }
+    return {
+      icono: 'pi pi-check',
+      texto: `Guardado ${horaCorta(ultimoOk.value)}`,
+      color: '#6b5a8a',
+      esError: false,
+    }
   }
   return { icono: '', texto: '', color: '#6b5a8a', esError: false }
 })
@@ -734,8 +814,8 @@ function irAPrimerError() {
   const corte = k.lastIndexOf('|')
   const idTxt = k.slice(0, corte)
   const inicio = k.slice(corte + 1)
-  const r = metricasVisibles.value.findIndex(m => String(m.id) === idTxt)
-  const c = semanasVisibles.value.findIndex(s => s.inicio === inicio)
+  const r = metricasVisibles.value.findIndex((m) => String(m.id) === idTxt)
+  const c = semanasVisibles.value.findIndex((s) => s.inicio === inicio)
   if (r >= 0 && c >= 0) irA(r, c)
 }
 
@@ -749,13 +829,39 @@ function onKeyHeader(e, c) {
     emit('abrir-semana', semanasVisibles.value[c])
     return
   }
-  if (k === 'ArrowRight') { e.preventDefault(); moverH(1); return }
-  if (k === 'ArrowLeft') { e.preventDefault(); moverH(-1); return }
-  if (k === 'ArrowDown') { e.preventDefault(); irA(0, c); return }
-  if (k === 'Home') { e.preventDefault(); irA(-1, 0); return }
-  if (k === 'End') { e.preventDefault(); irA(-1, nCols.value - 1); return }
-  if (k === 'Tab') { onTab(e); return }
-  if (k === 'Escape') { e.preventDefault(); e.target.blur() }
+  if (k === 'ArrowRight') {
+    e.preventDefault()
+    moverH(1)
+    return
+  }
+  if (k === 'ArrowLeft') {
+    e.preventDefault()
+    moverH(-1)
+    return
+  }
+  if (k === 'ArrowDown') {
+    e.preventDefault()
+    irA(0, c)
+    return
+  }
+  if (k === 'Home') {
+    e.preventDefault()
+    irA(-1, 0)
+    return
+  }
+  if (k === 'End') {
+    e.preventDefault()
+    irA(-1, nCols.value - 1)
+    return
+  }
+  if (k === 'Tab') {
+    onTab(e)
+    return
+  }
+  if (k === 'Escape') {
+    e.preventDefault()
+    e.target.blur()
+  }
 }
 
 function onKey(e, r, c) {
@@ -782,7 +888,11 @@ function onKey(e, r, c) {
   if (meta && (k === 'c' || k === 'C') && !enEdicion) {
     const m = metricasVisibles.value[r]
     const s = semanasVisibles.value[c]
-    try { navigator.clipboard?.writeText(fmtNumero(valorDe(m, s), m.decimales) ?? '') } catch { /* sin permisos */ }
+    try {
+      navigator.clipboard?.writeText(fmtNumero(valorDe(m, s), m.decimales) ?? '')
+    } catch {
+      /* sin permisos */
+    }
     return
   }
 
@@ -795,7 +905,10 @@ function onKey(e, r, c) {
   switch (k) {
     case 'Enter':
       e.preventDefault()
-      if (!enEdicion) { entrarEdicion(r, c); return }
+      if (!enEdicion) {
+        entrarEdicion(r, c)
+        return
+      }
       if (!confirmar()) return
       irA(e.shiftKey ? r - 1 : r + 1, c)
       return
@@ -852,7 +965,7 @@ function onKey(e, r, c) {
 
     case 'Delete':
     case 'Backspace':
-      if (enEdicion) return   // comportamiento normal de texto
+      if (enEdicion) return // comportamiento normal de texto
       e.preventDefault()
       borrar(r, c)
       return
@@ -886,9 +999,15 @@ function moverH(delta, { editar = false } = {}) {
   let c = foco.col + delta
   const n = nCols.value
   if (c < 0) {
-    if (r > -1) { r -= 1; c = n - 1 } else c = 0
+    if (r > -1) {
+      r -= 1
+      c = n - 1
+    } else c = 0
   } else if (c >= n) {
-    if (r < nFilas.value - 1) { r += 1; c = 0 } else c = n - 1
+    if (r < nFilas.value - 1) {
+      r += 1
+      c = 0
+    } else c = n - 1
   }
   irA(r, c, { editar: editar && r >= 0 })
 }
@@ -912,7 +1031,11 @@ async function pegar(r, c) {
   const s = semanasVisibles.value[c]
   if (!m || !s || m.activa === false) return
   let txt = ''
-  try { txt = await navigator.clipboard.readText() } catch { return }
+  try {
+    txt = await navigator.clipboard.readText()
+  } catch {
+    return
+  }
   const v = parseValor(txt)
   if (Number.isNaN(v)) {
     const k = clave(m, s)
@@ -927,9 +1050,18 @@ async function pegar(r, c) {
 const menuEl = ref(null)
 const metricaMenu = ref(null)
 const itemsMenu = computed(() => [
-  { label: 'Editar métrica', icon: 'pi pi-pencil', command: () => emit('editar-metrica', metricaMenu.value) },
+  {
+    label: 'Editar métrica',
+    icon: 'pi pi-pencil',
+    command: () => emit('editar-metrica', metricaMenu.value),
+  },
   { separator: true },
-  { label: 'Eliminar métrica', icon: 'pi pi-trash', class: 'rq-menu-danger', command: () => emit('eliminar-metrica', metricaMenu.value) },
+  {
+    label: 'Eliminar métrica',
+    icon: 'pi pi-trash',
+    class: 'rq-menu-danger',
+    command: () => emit('eliminar-metrica', metricaMenu.value),
+  },
 ])
 function abrirMenu(ev, m) {
   metricaMenu.value = m
@@ -939,7 +1071,9 @@ function abrirMenu(ev, m) {
 // ── Responsive (<768px la matriz se reemplaza, §10) ─────────────────────────
 const angosto = ref(false)
 let mq = null
-function onMq(e) { angosto.value = e.matches }
+function onMq(e) {
+  angosto.value = e.matches
+}
 onMounted(() => {
   if (typeof window === 'undefined' || !window.matchMedia) return
   mq = window.matchMedia('(max-width: 767px)')
@@ -955,7 +1089,7 @@ onBeforeUnmount(() => {
 
 /** Permite al padre llevar el foco a la fila de una métrica (clic en su KPI). */
 function enfocarMetrica(metricaId) {
-  const r = metricasVisibles.value.findIndex(m => String(m.id) === String(metricaId))
+  const r = metricasVisibles.value.findIndex((m) => String(m.id) === String(metricaId))
   if (r >= 0) irA(r, foco.col)
 }
 defineExpose({ enfocarMetrica })
@@ -976,10 +1110,16 @@ defineExpose({ enfocarMetrica })
   display: flex;
   align-items: center;
   gap: 8px;
-  border-bottom: 1px solid #ECE7F2;
+  border-bottom: 1px solid #ece7f2;
 }
-.rq-tb-title { font-size: 12.5px; font-weight: 700; color: #2C2039; }
-.rq-tb-spacer { flex: 1; }
+.rq-tb-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #2c2039;
+}
+.rq-tb-spacer {
+  flex: 1;
+}
 
 .rq-guardado {
   min-width: 110px;
@@ -990,28 +1130,44 @@ defineExpose({ enfocarMetrica })
   align-items: center;
   gap: 5px;
 }
-.rq-guardado i { font-size: 10px; }
+.rq-guardado i {
+  font-size: 10px;
+}
 .rq-guardado-link {
-  background: none; border: 0; padding: 0; cursor: pointer;
-  font: inherit; color: inherit; text-decoration: underline;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-decoration: underline;
 }
 
 .rq-tb-toggle {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; font-weight: 600; color: #6b5a8a; cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b5a8a;
+  cursor: pointer;
   white-space: nowrap;
 }
 
 /* ── Banner sin datos ──────────────────────────────────────────────────── */
 .rq-banner {
-  display: flex; align-items: center; gap: 8px;
-  background: rgba(145, 91, 216, .06);
-  border-bottom: 1px solid #ECE7F2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(145, 91, 216, 0.06);
+  border-bottom: 1px solid #ece7f2;
   padding: 8px 12px;
   font-size: 11.5px;
   color: #6b5a8a;
 }
-.rq-banner > span:first-child { flex: 1; }
+.rq-banner > span:first-child {
+  flex: 1;
+}
 
 /* ── Zona de scroll ────────────────────────────────────────────────────── */
 .rq-matriz-wrap {
@@ -1019,9 +1175,17 @@ defineExpose({ enfocarMetrica })
   max-height: calc(100vh - 340px);
   min-height: 200px;
 }
-.rq-matriz-wrap::-webkit-scrollbar { height: 8px; width: 8px; }
-.rq-matriz-wrap::-webkit-scrollbar-thumb { background: rgba(145, 91, 216, .25); border-radius: 4px; }
-.rq-matriz-wrap::-webkit-scrollbar-track { background: transparent; }
+.rq-matriz-wrap::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.rq-matriz-wrap::-webkit-scrollbar-thumb {
+  background: rgba(145, 91, 216, 0.25);
+  border-radius: 4px;
+}
+.rq-matriz-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 /* ── Tabla ─────────────────────────────────────────────────────────────── */
 .rq-matriz {
@@ -1036,224 +1200,526 @@ defineExpose({ enfocarMetrica })
  * superponen, así que ninguna puede quedar transparente; y así el orden de las
  * reglas (todas de una clase) define la prioridad sin peleas de especificidad.
  */
-.rq-matriz th, .rq-matriz td { background: var(--rq-bg, #fff); }
+.rq-matriz th,
+.rq-matriz td {
+  background: var(--rq-bg, #fff);
+}
 
-.rq-c-metrica { width: 240px; }
-.rq-c-semana  { width: 66px; }
-.rq-c-consol  { width: 92px; }
-.rq-c-meta    { width: 78px; }
-.rq-c-pct     { width: 68px; }
+.rq-c-metrica {
+  width: 240px;
+}
+.rq-c-semana {
+  width: 66px;
+}
+.rq-c-consol {
+  width: 92px;
+}
+.rq-c-meta {
+  width: 78px;
+}
+.rq-c-pct {
+  width: 68px;
+}
 
 @media (max-width: 1279px) {
-  .rq-c-metrica { width: 180px; }
+  .rq-c-metrica {
+    width: 180px;
+  }
 }
 
 /* banda de mes */
 .rq-meses th {
-  position: sticky; top: 0; z-index: 4; height: 18px;
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  height: 18px;
   --rq-bg: #faf8fd;
-  font-size: 9px; font-weight: 800; letter-spacing: .08em; color: #9b8fb0;
-  border-bottom: 1px solid #ECE7F2;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #9b8fb0;
+  border-bottom: 1px solid #ece7f2;
   text-align: center;
 }
 /* fila de semanas */
 .rq-semanas th {
-  position: sticky; top: 18px; z-index: 4; height: 34px;
+  position: sticky;
+  top: 18px;
+  z-index: 4;
+  height: 34px;
   --rq-bg: #faf8fd;
-  border-bottom: 1px solid #ECE7F2;
+  border-bottom: 1px solid #ece7f2;
   padding: 0 2px;
 }
 
-.rq-sticky-l   { position: sticky; left: 0;      z-index: 3; box-shadow: 1px 0 0 #ECE7F2; }
-.rq-sticky-r-1 { position: sticky; right: 0;     z-index: 3; }
-.rq-sticky-r-2 { position: sticky; right: 68px;  z-index: 3; }
-.rq-sticky-r-3 { position: sticky; right: 146px; z-index: 3; box-shadow: -1px 0 0 #ECE7F2; }
-
-thead .rq-sticky-l, thead .rq-sticky-r-1,
-thead .rq-sticky-r-2, thead .rq-sticky-r-3 { z-index: 6; --rq-bg: #faf8fd; }
-
-.rq-esquina {
-  text-align: left; vertical-align: bottom;
-  padding: 0 10px 5px; font-size: 10px; font-weight: 700;
-  color: #9b8fb0; letter-spacing: .05em; text-transform: uppercase;
+.rq-sticky-l {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  box-shadow: 1px 0 0 #ece7f2;
+}
+.rq-sticky-r-1 {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+}
+.rq-sticky-r-2 {
+  position: sticky;
+  right: 68px;
+  z-index: 3;
+}
+.rq-sticky-r-3 {
+  position: sticky;
+  right: 146px;
+  z-index: 3;
+  box-shadow: -1px 0 0 #ece7f2;
 }
 
-.rq-mes-inicio { border-left: 1px solid #ECE7F2; }
+thead .rq-sticky-l,
+thead .rq-sticky-r-1,
+thead .rq-sticky-r-2,
+thead .rq-sticky-r-3 {
+  z-index: 6;
+  --rq-bg: #faf8fd;
+}
+
+.rq-esquina {
+  text-align: left;
+  vertical-align: bottom;
+  padding: 0 10px 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9b8fb0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.rq-mes-inicio {
+  border-left: 1px solid #ece7f2;
+}
 
 /* ── Encabezado de semana ──────────────────────────────────────────────── */
-.rq-th-semana { cursor: pointer; text-align: center; line-height: 1.05; }
-.rq-th-semana:hover, .rq-th-semana.rq-col-hover { --rq-bg: #f0e9fb; }
-.rq-th-semana:focus-visible { outline: 2px solid #915BD8; outline-offset: -2px; }
-.rq-th-num { display: block; font-size: 11px; font-weight: 800; color: #2C2039; }
-.rq-th-rango { display: block; font-size: 9px; font-weight: 400; color: #9b8fb0; white-space: nowrap; }
+.rq-th-semana {
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.05;
+}
+.rq-th-semana:hover,
+.rq-th-semana.rq-col-hover {
+  --rq-bg: #f0e9fb;
+}
+.rq-th-semana:focus-visible {
+  outline: 2px solid #915bd8;
+  outline-offset: -2px;
+}
+.rq-th-num {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  color: #2c2039;
+}
+.rq-th-rango {
+  display: block;
+  font-size: 9px;
+  font-weight: 400;
+  color: #9b8fb0;
+  white-space: nowrap;
+}
 .rq-th-semana.rq-col-futura .rq-th-num,
-.rq-th-semana.rq-col-futura .rq-th-rango { color: #c7bdd8; }
-.rq-th-semana.rq-col-actual { border-top: 2px solid #915BD8; }
-.rq-th-semana.rq-col-actual .rq-th-num { color: #2C2039; font-weight: 800; }
-.rq-th-semana.rq-parcial { border-bottom: 1px dashed #c7bdd8; }
+.rq-th-semana.rq-col-futura .rq-th-rango {
+  color: #c7bdd8;
+}
+.rq-th-semana.rq-col-actual {
+  border-top: 2px solid #915bd8;
+}
+.rq-th-semana.rq-col-actual .rq-th-num {
+  color: #2c2039;
+  font-weight: 800;
+}
+.rq-th-semana.rq-parcial {
+  border-bottom: 1px dashed #c7bdd8;
+}
 
 /* ── Columna de métrica (sticky izquierda) ─────────────────────────────── */
 .rq-td-metrica {
   --rq-bg: #fff;
-  height: 38px; padding: 0 4px 0 10px; text-align: left;
-  border-bottom: 1px solid #F4F0F9; font-weight: 400;
+  height: 38px;
+  padding: 0 4px 0 10px;
+  text-align: left;
+  border-bottom: 1px solid #f4f0f9;
+  font-weight: 400;
 }
-tr.rq-fila-hover .rq-td-metrica { --rq-bg: #FBF9FD; }
-.rq-metrica-box { display: flex; align-items: center; gap: 4px; }
-.rq-metrica-txt { min-width: 0; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+tr.rq-fila-hover .rq-td-metrica {
+  --rq-bg: #fbf9fd;
+}
+.rq-metrica-box {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.rq-metrica-txt {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .rq-metrica-nombre {
-  font-size: 12.5px; font-weight: 600; color: #2C2039; line-height: 15px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #2c2039;
+  line-height: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .rq-metrica-meta {
-  font-size: 10px; font-weight: 400; color: #6b5a8a; line-height: 12px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 10px;
+  font-weight: 400;
+  color: #6b5a8a;
+  line-height: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .rq-chip-inactiva {
-  font-size: 9px; font-weight: 700; color: #6b5a8a;
-  background: rgba(44, 32, 57, .06); padding: 0 5px; border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #6b5a8a;
+  background: rgba(44, 32, 57, 0.06);
+  padding: 0 5px;
+  border-radius: 999px;
   margin-left: 4px;
 }
-.rq-fila-menu { opacity: 0; transition: opacity .12s; flex: none; }
+.rq-fila-menu {
+  opacity: 0;
+  transition: opacity 0.12s;
+  flex: none;
+}
 tbody tr:hover .rq-fila-menu,
-.rq-td-metrica:focus-within .rq-fila-menu { opacity: 1; }
+.rq-td-metrica:focus-within .rq-fila-menu {
+  opacity: 1;
+}
 
-.rq-fila-inactiva { opacity: .5; }
-.rq-fila-inactiva .rq-cell-inner { cursor: default; }
+.rq-fila-inactiva {
+  opacity: 0.5;
+}
+.rq-fila-inactiva .rq-cell-inner {
+  cursor: default;
+}
 
 /* ── Celda de valor ────────────────────────────────────────────────────── */
 .rq-cell {
-  height: 38px; padding: 0;
-  border-bottom: 1px solid #F4F0F9;
+  height: 38px;
+  padding: 0;
+  border-bottom: 1px solid #f4f0f9;
   position: relative;
 }
 /* Prioridad de fondo, de menor a mayor: el orden de estas reglas ES la regla. */
-tr.rq-fila-hover { --rq-bg: rgba(44, 32, 57, .025); }
-.rq-col-actual   { --rq-bg: rgba(145, 91, 216, .045); }
-.rq-col-futura   { --rq-bg: #FBFAFC; }
-.rq-cell-hover   { --rq-bg: rgba(145, 91, 216, .06); }
-.rq-cell-guardando { --rq-bg: rgba(145, 91, 216, .05); }
-.rq-cell-foco    { --rq-bg: #fff; }
-.rq-cell-editando { --rq-bg: #fff; box-shadow: inset 0 0 0 2px #915BD8; z-index: 2; }
-.rq-cell-error   { --rq-bg: rgba(214, 68, 85, .07); box-shadow: inset 0 0 0 2px #D64455; }
+tr.rq-fila-hover {
+  --rq-bg: rgba(44, 32, 57, 0.025);
+}
+.rq-col-actual {
+  --rq-bg: rgba(145, 91, 216, 0.045);
+}
+.rq-col-futura {
+  --rq-bg: #fbfafc;
+}
+.rq-cell-hover {
+  --rq-bg: rgba(145, 91, 216, 0.06);
+}
+.rq-cell-guardando {
+  --rq-bg: rgba(145, 91, 216, 0.05);
+}
+.rq-cell-foco {
+  --rq-bg: #fff;
+}
+.rq-cell-editando {
+  --rq-bg: #fff;
+  box-shadow: inset 0 0 0 2px #915bd8;
+  z-index: 2;
+}
+.rq-cell-error {
+  --rq-bg: rgba(214, 68, 85, 0.07);
+  box-shadow: inset 0 0 0 2px #d64455;
+}
 
 .rq-cell-inner {
   position: relative;
-  height: 38px; padding: 0 8px;
-  display: flex; align-items: center; justify-content: flex-end; gap: 3px;
-  text-align: right; font-size: 12.5px;
-  font-variant-numeric: tabular-nums; color: #2C2039;
+  height: 38px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  text-align: right;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+  color: #2c2039;
   cursor: cell;
 }
-.rq-cell-inner:focus { outline: none; }
-.rq-cell-inner:focus-visible { outline: 2px solid #915BD8; outline-offset: -2px; }
-.rq-vacio { color: #d9d0e6; font-size: 14px; margin: 0 auto; }
-.rq-num { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-.rq-cell-input {
-  width: 100%; height: 36px; border: 0; background: #fff;
-  text-align: right; font: inherit; outline: none; padding: 0 8px;
-  color: #2C2039;
+.rq-cell-inner:focus {
+  outline: none;
+}
+.rq-cell-inner:focus-visible {
+  outline: 2px solid #915bd8;
+  outline-offset: -2px;
+}
+.rq-vacio {
+  color: #d9d0e6;
+  font-size: 14px;
+  margin: 0 auto;
+}
+.rq-num {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.rq-col-futura .rq-num { color: #c7bdd8; opacity: .55; }
-.rq-cell-foco .rq-num { color: #2C2039; opacity: 1; }
-.rq-cell-inusual .rq-num { color: #A16207; }
-.rq-inusual { font-size: 8px; color: #CA8A04; flex: none; }
+.rq-cell-input {
+  width: 100%;
+  height: 36px;
+  border: 0;
+  background: #fff;
+  text-align: right;
+  font: inherit;
+  outline: none;
+  padding: 0 8px;
+  color: #2c2039;
+}
+
+.rq-col-futura .rq-num {
+  color: #c7bdd8;
+  opacity: 0.55;
+}
+.rq-cell-foco .rq-num {
+  color: #2c2039;
+  opacity: 1;
+}
+.rq-cell-inusual .rq-num {
+  color: #a16207;
+}
+.rq-inusual {
+  font-size: 8px;
+  color: #ca8a04;
+  flex: none;
+}
 
 .rq-progress {
-  position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #915BD8 40%, #915BD8 60%, transparent 100%);
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, #915bd8 40%, #915bd8 60%, transparent 100%);
   background-size: 220% 100%;
   animation: rq-indeterminate 1s linear infinite;
 }
 @keyframes rq-indeterminate {
-  0%   { background-position: 120% 0; }
-  100% { background-position: -120% 0; }
+  0% {
+    background-position: 120% 0;
+  }
+  100% {
+    background-position: -120% 0;
+  }
 }
 
 /* Flash de guardado: 700ms y se desvanece. Sin ícono, sin toast. */
-.rq-cell-ok { animation: rq-flash .7s ease-out; }
+.rq-cell-ok {
+  animation: rq-flash 0.7s ease-out;
+}
 @keyframes rq-flash {
-  0%   { background-color: rgba(16, 185, 129, .16); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgba(16, 185, 129, 0.16);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 .rq-err-icon {
-  position: absolute; left: 3px; bottom: 2px;
-  font-size: 9px; color: #D64455; cursor: pointer;
+  position: absolute;
+  left: 3px;
+  bottom: 2px;
+  font-size: 9px;
+  color: #d64455;
+  cursor: pointer;
 }
 
 /* triángulo de nota, patrón "comentario de Excel" */
 .rq-nota {
-  position: absolute; top: 0; right: 0;
-  width: 0; height: 0; border-style: solid;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
   border-width: 0 5px 5px 0;
-  border-color: transparent #915BD8 transparent transparent;
+  border-color: transparent #915bd8 transparent transparent;
   cursor: help;
 }
 
 /* ── Columnas de resultado ─────────────────────────────────────────────── */
 .rq-res {
-  --rq-bg: #FDFCFE;
-  height: 38px; border-bottom: 1px solid #F4F0F9;
+  --rq-bg: #fdfcfe;
+  height: 38px;
+  border-bottom: 1px solid #f4f0f9;
 }
 .rq-consol {
-  text-align: right; padding: 0 10px;
-  font-size: 12.5px; font-weight: 700; color: #2C2039;
+  text-align: right;
+  padding: 0 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #2c2039;
   font-variant-numeric: tabular-nums;
-  transition: color .25s ease-out;
+  transition: color 0.25s ease-out;
 }
-.rq-pulso { color: #915BD8; }
+.rq-pulso {
+  color: #915bd8;
+}
 .rq-meta {
-  text-align: right; padding: 0 10px;
-  font-size: 12px; font-weight: 400; color: #6b5a8a;
+  text-align: right;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 400;
+  color: #6b5a8a;
   font-variant-numeric: tabular-nums;
 }
-.rq-pct { text-align: center; padding: 0 6px; }
-.rq-pct-num { display: block; font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.rq-micro {
-  position: relative; display: block; width: 46px; height: 3px; margin: 2px auto 0;
-  border-radius: 2px; background: #F1ECF7; overflow: hidden;
+.rq-pct {
+  text-align: center;
+  padding: 0 6px;
 }
-.rq-micro-fill { position: absolute; left: 0; top: 0; height: 3px; border-radius: 2px; }
-.rq-micro-marca { position: absolute; top: 0; width: 1px; height: 3px; background: #2C2039; opacity: .45; }
+.rq-pct-num {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.rq-micro {
+  position: relative;
+  display: block;
+  width: 46px;
+  height: 3px;
+  margin: 2px auto 0;
+  border-radius: 2px;
+  background: #f1ecf7;
+  overflow: hidden;
+}
+.rq-micro-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 3px;
+  border-radius: 2px;
+}
+.rq-micro-marca {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 3px;
+  background: #2c2039;
+  opacity: 0.45;
+}
 
 /* ── Llenado ───────────────────────────────────────────────────────────── */
-.rq-llenado th, .rq-llenado td {
+.rq-llenado th,
+.rq-llenado td {
   --rq-bg: #faf8fd;
-  border-top: 1px solid #ECE7F2; height: 30px;
+  border-top: 1px solid #ece7f2;
+  height: 30px;
 }
 .rq-llenado-lbl {
-  text-align: left; padding: 0 10px;
-  font-size: 10px; font-weight: 700; color: #9b8fb0;
-  letter-spacing: .05em; text-transform: uppercase;
+  text-align: left;
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9b8fb0;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
-.rq-llenado-td { text-align: center; cursor: pointer; padding: 0 4px; }
-.rq-llenado-td:hover { --rq-bg: #f0e9fb; }
-.rq-llenado-txt { display: block; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rq-llenado-td {
+  text-align: center;
+  cursor: pointer;
+  padding: 0 4px;
+}
+.rq-llenado-td:hover {
+  --rq-bg: #f0e9fb;
+}
+.rq-llenado-txt {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
 .rq-llenado-bar {
-  display: block; width: 40px; height: 2px; margin: 2px auto 0;
-  border-radius: 1px; background: #F1ECF7; overflow: hidden; position: relative;
+  display: block;
+  width: 40px;
+  height: 2px;
+  margin: 2px auto 0;
+  border-radius: 1px;
+  background: #f1ecf7;
+  overflow: hidden;
+  position: relative;
 }
-.rq-llenado-bar-fill { position: absolute; left: 0; top: 0; height: 2px; }
+.rq-llenado-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 2px;
+}
 
 /* ── <768px ────────────────────────────────────────────────────────────── */
-.rq-angosto { padding: 10px 12px 12px; }
-.rq-angosto-aviso { font-size: 11.5px; color: #6b5a8a; margin-bottom: 8px; }
-.rq-angosto-fila {
-  width: 100%; display: flex; align-items: center; gap: 8px;
-  padding: 9px 4px; border: 0; border-bottom: 1px solid #F4F0F9;
-  background: none; cursor: pointer; text-align: left;
+.rq-angosto {
+  padding: 10px 12px 12px;
 }
-.rq-angosto-actual { background: rgba(145, 91, 216, .045); }
-.rq-angosto-s { font-size: 11.5px; font-weight: 800; color: #2C2039; width: 34px; }
-.rq-angosto-rango { flex: 1; font-size: 11px; color: #6b5a8a; }
-.rq-angosto-llenado { font-size: 11px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.rq-angosto-fila .pi { font-size: 10px; color: #c7bdd8; }
+.rq-angosto-aviso {
+  font-size: 11.5px;
+  color: #6b5a8a;
+  margin-bottom: 8px;
+}
+.rq-angosto-fila {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 4px;
+  border: 0;
+  border-bottom: 1px solid #f4f0f9;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+}
+.rq-angosto-actual {
+  background: rgba(145, 91, 216, 0.045);
+}
+.rq-angosto-s {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #2c2039;
+  width: 34px;
+}
+.rq-angosto-rango {
+  flex: 1;
+  font-size: 11px;
+  color: #6b5a8a;
+}
+.rq-angosto-llenado {
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.rq-angosto-fila .pi {
+  font-size: 10px;
+  color: #c7bdd8;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .rq-progress, .rq-cell-ok { animation: none; }
-  .rq-consol { transition: none; }
+  .rq-progress,
+  .rq-cell-ok {
+    animation: none;
+  }
+  .rq-consol {
+    transition: none;
+  }
 }
 </style>

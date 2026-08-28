@@ -26,14 +26,17 @@
  * @returns {number} fracción (1 = 100%)
  */
 export function maxConcurrente(tramos) {
-  const puntos = [...new Set(tramos.flatMap(t => [t.desde, t.hasta]).filter(Boolean))].sort()
+  const puntos = [...new Set(tramos.flatMap((t) => [t.desde, t.hasta]).filter(Boolean))].sort()
   // Sin ninguna fecha no hay eje sobre el que barrer: todos los tramos se
   // consideran simultáneos (ventanas abiertas).
   if (!puntos.length) return tramos.reduce((s, t) => s + (t.pct || 0), 0)
   let max = 0
   for (const punto of puntos) {
-    const suma = tramos.reduce((s, t) =>
-      s + ((!t.desde || t.desde <= punto) && (!t.hasta || t.hasta >= punto) ? (t.pct || 0) : 0), 0)
+    const suma = tramos.reduce(
+      (s, t) =>
+        s + ((!t.desde || t.desde <= punto) && (!t.hasta || t.hasta >= punto) ? t.pct || 0 : 0),
+      0,
+    )
     if (suma > max) max = suma
   }
   return max
@@ -55,8 +58,9 @@ export function claveContrato(a) {
 
 /** ¿Se cruzan dos ventanas en el tiempo? Bordes nulos = abiertos. */
 function seSolapan(a, b) {
-  return (!a.desde || !b.hasta || a.desde <= b.hasta)
-      && (!b.desde || !a.hasta || b.desde <= a.hasta)
+  return (
+    (!a.desde || !b.hasta || a.desde <= b.hasta) && (!b.desde || !a.hasta || b.desde <= a.hasta)
+  )
 }
 
 /**
@@ -92,17 +96,23 @@ export function repartirPares(apariciones) {
 
   const salida = []
   for (const patas of grupos.values()) {
-    const variasPatas = new Set(patas.map(claveContrato)).size > 1
-      || new Set(patas.map(p => p.modalidad_pago).filter(Boolean)).size > 1
+    const variasPatas =
+      new Set(patas.map(claveContrato)).size > 1 ||
+      new Set(patas.map((p) => p.modalidad_pago).filter(Boolean)).size > 1
     const cruzadas = patas.some((p, i) => patas.some((q, j) => i !== j && seSolapan(p, q)))
     const total = patas.reduce((s, p) => s + (p.pct || 0), 0)
     if (patas.length < 2 || !variasPatas || !cruzadas || !total) {
       salida.push(...patas)
       continue
     }
-    salida.push(...patas.map(p => ({
-      ...p, pct: (p.pct || 0) / total, pctOriginal: p.pct, repartido: true,
-    })))
+    salida.push(
+      ...patas.map((p) => ({
+        ...p,
+        pct: (p.pct || 0) / total,
+        pctOriginal: p.pct,
+        repartido: true,
+      })),
+    )
   }
   return salida
 }
@@ -121,24 +131,36 @@ export function motivoDuplicada({ nContratos, apariciones, marcada }) {
   // bolsa, sin garantías— y tiene su propia sección: no es una duplicación.
   // La escala y la ausencia de % se juzgan sobre lo REGISTRADO: prorratear
   // primero escondería un dato corrupto detrás de una fracción sana.
-  const escalaRota = apariciones.some(a => a.pct > 1)
-  const sinPct = apariciones.every(a => !a.pct)
+  const escalaRota = apariciones.some((a) => a.pct > 1)
+  const sinPct = apariciones.every((a) => !a.pct)
   const maxPct = maxConcurrente(repartirPares(apariciones))
 
   if (escalaRota && nContratos > 1) {
-    return { motivo: `En ${nContratos} contratos con % fuera de escala (0-1) — no verificable`, maxPct, escalaRota, sinPct }
+    return {
+      motivo: `En ${nContratos} contratos con % fuera de escala (0-1) — no verificable`,
+      maxPct,
+      escalaRota,
+      sinPct,
+    }
   }
   if (aPorcentaje(maxPct) > 100) {
     return {
       motivo: `${aPorcentaje(maxPct)}% a la vez en ${nContratos} contrato(s) · ${aPorcentaje(maxPct - 1)}% se cubre en bolsa`,
-      maxPct, escalaRota, sinPct,
+      maxPct,
+      escalaRota,
+      sinPct,
     }
   }
   if (marcada) {
     return { motivo: 'Marcada como compra en bolsa', maxPct, escalaRota, sinPct }
   }
   if (nContratos > 1 && sinPct) {
-    return { motivo: `En ${nContratos} contratos sin % registrado — no verificable`, maxPct, escalaRota, sinPct }
+    return {
+      motivo: `En ${nContratos} contratos sin % registrado — no verificable`,
+      maxPct,
+      escalaRota,
+      sinPct,
+    }
   }
   return null
 }
@@ -146,6 +168,6 @@ export function motivoDuplicada({ nContratos, apariciones, marcada }) {
 /** ¿Repartida entre varios contratos sin pasar del 100%? No es un duplicado. */
 export function esRepartida({ nContratos, apariciones, marcada }) {
   if (nContratos <= 1 || marcada) return false
-  if (apariciones.some(a => a.pct > 1) || apariciones.every(a => !a.pct)) return false
+  if (apariciones.some((a) => a.pct > 1) || apariciones.every((a) => !a.pct)) return false
   return aPorcentaje(maxConcurrente(repartirPares(apariciones))) <= 100
 }

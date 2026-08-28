@@ -10,21 +10,43 @@
 // sigla a propósito o alguien escribió el nombre completo en mayúscula, así
 // que si aparece una nueva, hay que agregarla acá a mano.
 const SIGLAS = [
-  'MGS', 'GD', 'COX', 'S.A.S.', 'E.S.P.',
-  'MDM', 'IML', 'AMC', 'IX', 'VIII', 'PSF', 'CSCI', 'FMO', 'FEM', 'BBVA', 'S.A', 'E2E', 'CGM',
-  'AGGE', 'AGPE', 'MVA', 'X', 'I',
-  'CEDENAR', 'CENS', 'EPM', 'ESSA', 'ENERCA',
+  'MGS',
+  'GD',
+  'COX',
+  'S.A.S.',
+  'E.S.P.',
+  'MDM',
+  'IML',
+  'AMC',
+  'IX',
+  'VIII',
+  'PSF',
+  'CSCI',
+  'FMO',
+  'FEM',
+  'BBVA',
+  'S.A',
+  'E2E',
+  'CGM',
+  'AGGE',
+  'AGPE',
+  'MVA',
+  'X',
+  'I',
+  'CEDENAR',
+  'CENS',
+  'EPM',
+  'ESSA',
+  'ENERCA',
 ]
-const SIGLAS_POR_CLAVE = new Map(SIGLAS.map(s => [s.replace(/\./g, '').toUpperCase(), s]))
+const SIGLAS_POR_CLAVE = new Map(SIGLAS.map((s) => [s.replace(/\./g, '').toUpperCase(), s]))
 
 // Palabras completas con capitalización fija que no siguen el patrón general
 // de siglas por fragmento -- ej. el operador de red "Air-e", con guion y solo
 // la primera letra de cada lado en mayúscula (no una sigla en mayúscula total).
 // Clave: la palabra sin guion, en mayúscula, para reconocerla venga como venga
 // ("AIR-E", "air-e", "Air-E"...).
-const PALABRAS_FIJAS = new Map([
-  ['AIRE', 'Air-e'],
-])
+const PALABRAS_FIJAS = new Map([['AIRE', 'Air-e']])
 
 // Conectores que siempre van en minúscula (nunca al inicio de una sigla ni
 // capitalizados), ej. "Ingeniería de Energía" -> "de", "Ayura y Cía" -> "y".
@@ -53,7 +75,7 @@ export function formatearNombre(nombre) {
   return nombre
     .replace(/_/g, ' ')
     .split(/\s+/)
-    .map(palabra => {
+    .map((palabra) => {
       if (!palabra) return ''
       const claveFija = palabra.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '').toUpperCase()
       const fija = PALABRAS_FIJAS.get(claveFija)
@@ -68,7 +90,7 @@ export function formatearNombre(nombre) {
       // suelto queda igual).
       return palabra
         .split('-')
-        .map(tramo => formatearFragmento(tramo.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ.]/g, '')))
+        .map((tramo) => formatearFragmento(tramo.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ.]/g, '')))
         .join('-')
     })
     .filter(Boolean)

@@ -17,57 +17,104 @@
           <InputIcon class="pi pi-search" />
           <InputText v-model="q" :placeholder="placeholderBusqueda" size="small" class="w-full" />
         </IconField>
-        <Button v-if="vista"
-                :icon="compacta ? 'pi pi-arrows-v' : 'pi pi-align-justify'"
-                severity="secondary" outlined size="small"
-                v-tooltip.bottom="compacta ? 'Densidad cómoda' : 'Densidad compacta'"
-                @click="compacta = !compacta" />
+        <Button
+          v-if="vista"
+          :icon="compacta ? 'pi pi-arrows-v' : 'pi pi-align-justify'"
+          severity="secondary"
+          outlined
+          size="small"
+          v-tooltip.bottom="compacta ? 'Densidad cómoda' : 'Densidad compacta'"
+          @click="compacta = !compacta"
+        />
         <!-- El panel se despliega en vez de ocupar una fila fija: la fila de
              filtros que tuvo esta vista se quitó justamente por robarle alto a
              la tabla (2026-08-20). -->
-        <Button v-if="filtrosActivos.length"
-                :label="nFiltros ? `Filtros · ${nFiltros}` : 'Filtros'"
-                icon="pi pi-filter" size="small"
-                :severity="nFiltros ? 'primary' : 'secondary'" :outlined="!nFiltros"
-                @click="panelFiltros?.toggle($event)" />
+        <Button
+          v-if="filtrosActivos.length"
+          :label="nFiltros ? `Filtros · ${nFiltros}` : 'Filtros'"
+          icon="pi pi-filter"
+          size="small"
+          :severity="nFiltros ? 'primary' : 'secondary'"
+          :outlined="!nFiltros"
+          @click="panelFiltros?.toggle($event)"
+        />
         <Popover ref="panelFiltros">
           <div class="filtros-panel">
             <div v-for="f in filtrosActivos" :key="f.clave" class="flex flex-col gap-1">
-              <label class="text-xs font-semibold" style="color:#6b5a8a">{{ f.label }}</label>
-              <MultiSelect v-model="filtros[f.clave]" :options="opcionesDe(f)"
-                           optionLabel="label" optionValue="value" size="small"
-                           :class="f.ancho" display="chip" :maxSelectedLabels="2"
-                           :filter="opcionesDe(f).length > 8"
-                           filterPlaceholder="Buscar…"
-                           :placeholder="`Todos (${opcionesDe(f).length})`"
-                           :showToggleAll="false">
+              <label class="text-xs font-semibold" style="color: #6b5a8a">{{ f.label }}</label>
+              <MultiSelect
+                v-model="filtros[f.clave]"
+                :options="opcionesDe(f)"
+                optionLabel="label"
+                optionValue="value"
+                size="small"
+                :class="f.ancho"
+                display="chip"
+                :maxSelectedLabels="2"
+                :filter="opcionesDe(f).length > 8"
+                filterPlaceholder="Buscar…"
+                :placeholder="`Todos (${opcionesDe(f).length})`"
+                :showToggleAll="false"
+              >
                 <template #option="{ option }">
-                  <div class="flex items-center justify-between gap-3 w-full">
+                  <div class="flex w-full items-center justify-between gap-3">
                     <span class="truncate">{{ option.label }}</span>
                     <span class="opcion-n">{{ option.n }}</span>
                   </div>
                 </template>
               </MultiSelect>
             </div>
-            <Button v-if="nFiltros" label="Limpiar filtros" icon="pi pi-times" text size="small"
-                    severity="secondary" @click="limpiarFiltros" />
+            <Button
+              v-if="nFiltros"
+              label="Limpiar filtros"
+              icon="pi pi-times"
+              text
+              size="small"
+              severity="secondary"
+              @click="limpiarFiltros"
+            />
           </div>
         </Popover>
-        <Button v-if="vista"
-                label="Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small"
-                :disabled="!filasVisibles.length" @click="descargarExcel" />
-        <Button v-if="vista === 'clientes'" label="Nuevo cliente" icon="pi pi-plus" size="small"
-                @click="dialogCliente = true" />
-        <Button v-else-if="vista === 'proyectos'" label="Nuevo proyecto" icon="pi pi-plus" size="small"
-                @click="dialogProyecto = true" />
-        <Button v-else-if="vista === 'servicios' && servicio === 'ppa'" label="Nuevo PPA" icon="pi pi-plus" size="small"
-                class="bg-amber-500 border-amber-500 hover:bg-amber-600" @click="abrirWizardPPA(null)" />
+        <Button
+          v-if="vista"
+          label="Excel"
+          icon="pi pi-file-excel"
+          severity="secondary"
+          outlined
+          size="small"
+          :disabled="!filasVisibles.length"
+          @click="descargarExcel"
+        />
+        <Button
+          v-if="vista === 'clientes'"
+          label="Nuevo cliente"
+          icon="pi pi-plus"
+          size="small"
+          @click="dialogCliente = true"
+        />
+        <Button
+          v-else-if="vista === 'proyectos'"
+          label="Nuevo proyecto"
+          icon="pi pi-plus"
+          size="small"
+          @click="dialogProyecto = true"
+        />
+        <Button
+          v-else-if="vista === 'servicios' && servicio === 'ppa'"
+          label="Nuevo PPA"
+          icon="pi pi-plus"
+          size="small"
+          class="border-amber-500 bg-amber-500 hover:bg-amber-600"
+          @click="abrirWizardPPA(null)"
+        />
         <template v-else-if="vista === 'servicios'">
-          <Button :label="`Nuevo ${servicioInfo?.label}`"
-                  :icon="tiposDelServicio.length > 1 ? 'pi pi-chevron-down' : 'pi pi-plus'"
-                  size="small"
-                  :style="`background:${servicioInfo?.color}; border-color:${servicioInfo?.color}`"
-                  @click="nuevoContrato($event)" />
+          <Button
+            :label="`Nuevo ${servicioInfo?.label}`"
+            :icon="tiposDelServicio.length > 1 ? 'pi pi-chevron-down' : 'pi pi-plus'"
+            size="small"
+            :style="`background:${servicioInfo?.color}; border-color:${servicioInfo?.color}`"
+            @click="nuevoContrato($event)"
+          />
           <Menu ref="menuNuevoContrato" :model="opcionesNuevoContrato" :popup="true" />
         </template>
       </template>
@@ -75,24 +122,43 @@
 
     <!-- Selector de ángulo (nivel 1) + tipo de servicio (nivel 2) -->
     <div class="flex flex-wrap items-center gap-2">
-      <button v-for="v in VISTAS" :key="v.key" type="button"
-              class="svc-tab" :class="{ 'svc-tab--on': vista === v.key }"
-              :style="vista === v.key ? `background:${v.bg}; border-color:${v.color}55; color:${v.color}` : ''"
-              @click="seleccionarVista(v.key)">
+      <button
+        v-for="v in VISTAS"
+        :key="v.key"
+        type="button"
+        class="svc-tab"
+        :class="{ 'svc-tab--on': vista === v.key }"
+        :style="
+          vista === v.key ? `background:${v.bg}; border-color:${v.color}55; color:${v.color}` : ''
+        "
+        @click="seleccionarVista(v.key)"
+      >
         <i :class="v.icon" :style="vista === v.key ? `color:${v.color}` : ''" />
         <span>{{ v.label }}</span>
-        <span v-if="conteoVista(v.key) !== null" class="svc-tab-count"
-              :style="vista === v.key ? `background:${v.color}22; color:${v.color}` : ''">
+        <span
+          v-if="conteoVista(v.key) !== null"
+          class="svc-tab-count"
+          :style="vista === v.key ? `background:${v.color}22; color:${v.color}` : ''"
+        >
           {{ conteoVista(v.key) }}
         </span>
       </button>
 
       <template v-if="vista === 'servicios'">
-        <span class="mx-1 h-6 w-px" style="background:#E5E2EC" />
-        <button v-for="s in SERVICIOS" :key="s.key" type="button"
-                class="svc-tab svc-tab--sm" :class="{ 'svc-tab--on': servicio === s.key }"
-                :style="servicio === s.key ? `background:${s.bg}; border-color:${s.color}55; color:${s.color}` : ''"
-                @click="seleccionarServicio(s.key)">
+        <span class="mx-1 h-6 w-px" style="background: #e5e2ec" />
+        <button
+          v-for="s in SERVICIOS"
+          :key="s.key"
+          type="button"
+          class="svc-tab svc-tab--sm"
+          :class="{ 'svc-tab--on': servicio === s.key }"
+          :style="
+            servicio === s.key
+              ? `background:${s.bg}; border-color:${s.color}55; color:${s.color}`
+              : ''
+          "
+          @click="seleccionarServicio(s.key)"
+        >
           <i :class="s.icon" :style="servicio === s.key ? `color:${s.color}` : ''" />
           <span>{{ s.label }}</span>
         </button>
@@ -103,10 +169,15 @@
          escondido: si la tabla muestra 3 de 112 filas, tiene que ser evidente
          por qué. Solo aparece la fila cuando hay alguno. -->
     <div v-if="chipsFiltro.length" class="flex flex-wrap items-center gap-1.5">
-      <span class="text-xs font-semibold" style="color:#6b5a8a">Filtrando por</span>
-      <button v-for="ch in chipsFiltro" :key="`${ch.clave}:${ch.valor}`" type="button"
-              class="chip-filtro" v-tooltip.bottom="`Quitar ${ch.label}: ${ch.texto}`"
-              @click="quitarFiltro(ch.clave, ch.valor)">
+      <span class="text-xs font-semibold" style="color: #6b5a8a">Filtrando por</span>
+      <button
+        v-for="ch in chipsFiltro"
+        :key="`${ch.clave}:${ch.valor}`"
+        type="button"
+        class="chip-filtro"
+        v-tooltip.bottom="`Quitar ${ch.label}: ${ch.texto}`"
+        @click="quitarFiltro(ch.clave, ch.valor)"
+      >
         <span class="chip-filtro-lbl">{{ ch.label }}</span>
         <span class="truncate">{{ ch.texto }}</span>
         <i class="pi pi-times" />
@@ -119,12 +190,19 @@
     <!-- Agrupar el portafolio: reorganiza las mismas plantas por la dimensión
          que interese, en vez de mandar al usuario a otra tabla. -->
     <div v-if="vista === 'proyectos'" class="flex flex-wrap items-center gap-2">
-      <label class="text-xs font-semibold" style="color:#6b5a8a">Agrupar por</label>
-      <Select v-model="agruparPor" :options="AGRUPACIONES" optionLabel="label" optionValue="value"
-              size="small" class="w-52" />
-      <span v-if="agruparPor" class="text-xs" style="color:#9b8fb0">
-        {{ nGrupos }} grupo{{ nGrupos === 1 ? '' : 's' }} ·
-        {{ proyectosAgrupados.length }} fila{{ proyectosAgrupados.length === 1 ? '' : 's' }}
+      <label class="text-xs font-semibold" style="color: #6b5a8a">Agrupar por</label>
+      <Select
+        v-model="agruparPor"
+        :options="AGRUPACIONES"
+        optionLabel="label"
+        optionValue="value"
+        size="small"
+        class="w-52"
+      />
+      <span v-if="agruparPor" class="text-xs" style="color: #9b8fb0">
+        {{ nGrupos }} grupo{{ nGrupos === 1 ? '' : 's' }} · {{ proyectosAgrupados.length }} fila{{
+          proyectosAgrupados.length === 1 ? '' : 's'
+        }}
       </span>
     </div>
 
@@ -136,50 +214,81 @@
 
     <!-- ══════════════════ CLIENTES ══════════════════ -->
     <div v-if="vista === 'clientes'" class="tabla-caja">
-      <DataTable :value="clientesFiltrados" :loading="loadingClientes" size="small"
-                 class="tabla tabla--clickable" :class="{ 'tabla--compacta': compacta }"
-                 scrollable :scrollHeight="scrollHeight" :rowClass="rowClassCliente"
-                 paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
-                 sortField="razon_social_nombre" :sortOrder="1" rowHover
-                 @row-click="e => ir(`/clientes/${e.data.id}`)"
-                 emptyMessage="No hay clientes.">
-        <Column field="razon_social_nombre" header="Razón social" sortable style="width:26%">
+      <DataTable
+        :value="clientesFiltrados"
+        :loading="loadingClientes"
+        size="small"
+        class="tabla tabla--clickable"
+        :class="{ 'tabla--compacta': compacta }"
+        scrollable
+        :scrollHeight="scrollHeight"
+        :rowClass="rowClassCliente"
+        paginator
+        :rows="filasPorPagina"
+        :rowsPerPageOptions="[50, 100, 200]"
+        sortField="razon_social_nombre"
+        :sortOrder="1"
+        rowHover
+        @row-click="(e) => ir(`/clientes/${e.data.id}`)"
+        emptyMessage="No hay clientes."
+      >
+        <Column field="razon_social_nombre" header="Razón social" sortable style="width: 26%">
           <template #body="{ data }">
-            <div class="flex items-center gap-1 min-w-0">
-              <span class="celda-txt font-semibold" style="color:#2C2039">
+            <div class="flex min-w-0 items-center gap-1">
+              <span class="celda-txt font-semibold" style="color: #2c2039">
                 {{ formatearNombre(data.razon_social_nombre) }}
               </span>
-              <span v-if="data.alerta_contrato && data.alerta_contrato !== 'vigente'"
-                    class="mini-chip shrink-0"
-                    :style="{ color: SEMAFORO[data.alerta_contrato].color, background: SEMAFORO[data.alerta_contrato].bg }">
+              <span
+                v-if="data.alerta_contrato && data.alerta_contrato !== 'vigente'"
+                class="mini-chip shrink-0"
+                :style="{
+                  color: SEMAFORO[data.alerta_contrato].color,
+                  background: SEMAFORO[data.alerta_contrato].bg,
+                }"
+              >
                 {{ SEMAFORO[data.alerta_contrato].label }}
               </span>
             </div>
           </template>
         </Column>
-        <Column field="nit_cedula" header="NIT" sortable style="width:9%">
-          <template #body="{ data }"><span class="mono">{{ fmt(data.nit_cedula) }}</span></template>
+        <Column field="nit_cedula" header="NIT" sortable style="width: 9%">
+          <template #body="{ data }"
+            ><span class="mono">{{ fmt(data.nit_cedula) }}</span></template
+          >
         </Column>
-        <Column field="num_plantas" header="Plantas" sortable style="width:6%" bodyStyle="text-align:right">
+        <Column
+          field="num_plantas"
+          header="Plantas"
+          sortable
+          style="width: 6%"
+          bodyStyle="text-align:right"
+        >
           <template #body="{ data }">
-            <span class="font-semibold tabular-nums" style="color:#2C2039">{{ data.num_plantas }}</span>
+            <span class="font-semibold tabular-nums" style="color: #2c2039">{{
+              data.num_plantas
+            }}</span>
           </template>
         </Column>
-        <Column header="Servicios" style="width:15%">
+        <Column header="Servicios" style="width: 15%">
           <template #body="{ data }">
             <div class="chips-fila">
-              <span v-for="sv in data.servicios" :key="sv" class="mini-chip"
-                    style="background:#f0ebfd;color:#915BD8">{{ servicioLabel(sv) }}</span>
+              <span
+                v-for="sv in data.servicios"
+                :key="sv"
+                class="mini-chip"
+                style="background: #f0ebfd; color: #915bd8"
+                >{{ servicioLabel(sv) }}</span
+              >
               <span v-if="!data.servicios?.length" class="vacio">—</span>
             </div>
           </template>
         </Column>
-        <Column field="contacto_comercial_nombre" header="Contacto" sortable style="width:14%">
+        <Column field="contacto_comercial_nombre" header="Contacto" sortable style="width: 14%">
           <template #body="{ data }">
             <span class="celda-txt">{{ fmt(data.contacto_comercial_nombre) }}</span>
           </template>
         </Column>
-        <Column field="contacto_comercial_correo" header="Correo" sortable style="width:15%">
+        <Column field="contacto_comercial_correo" header="Correo" sortable style="width: 15%">
           <template #body="{ data }">
             <span class="celda-txt sutil">{{ fmt(data.contacto_comercial_correo) }}</span>
           </template>
@@ -187,24 +296,42 @@
         <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
-              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'campos')">
+              <span
+                class="falta-chip"
+                :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                v-tooltip.bottom="tipFalta(data, 'campos')"
+              >
                 <i class="pi pi-list" />{{ faltanCampos(data).length }}
               </span>
-              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'docs')">
+              <span
+                class="falta-chip"
+                :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                v-tooltip.bottom="tipFalta(data, 'docs')"
+              >
                 <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
               </span>
             </div>
           </template>
         </Column>
-        <Column style="width:6%">
+        <Column style="width: 6%">
           <template #body="{ data }">
             <div class="acciones">
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="ir(`/clientes/${data.id}`)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarCliente(data)" />
+              <Button
+                icon="pi pi-pencil"
+                text
+                size="small"
+                severity="secondary"
+                v-tooltip.bottom="'Editar'"
+                @click.stop="ir(`/clientes/${data.id}`)"
+              />
+              <Button
+                icon="pi pi-trash"
+                text
+                size="small"
+                severity="danger"
+                v-tooltip.bottom="'Eliminar'"
+                @click.stop="confirmarBorrarCliente(data)"
+              />
             </div>
           </template>
         </Column>
@@ -213,79 +340,118 @@
 
     <!-- ══════════════════ PROYECTOS ══════════════════ -->
     <div v-else-if="vista === 'proyectos'" class="tabla-caja">
-      <DataTable :value="proyectosAgrupados" :loading="loadingProyectos" size="small"
-                 class="tabla" :class="{ 'tabla--compacta': compacta }"
-                 scrollable :scrollHeight="scrollHeight"
-                 paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
-                 :sortField="agruparPor ? '__grupo' : 'nombre_comercial'" :sortOrder="1" rowHover
-                 :rowGroupMode="agruparPor ? 'subheader' : null"
-                 :groupRowsBy="agruparPor ? '__grupo' : null"
-                 emptyMessage="No se encontraron proyectos.">
+      <DataTable
+        :value="proyectosAgrupados"
+        :loading="loadingProyectos"
+        size="small"
+        class="tabla"
+        :class="{ 'tabla--compacta': compacta }"
+        scrollable
+        :scrollHeight="scrollHeight"
+        paginator
+        :rows="filasPorPagina"
+        :rowsPerPageOptions="[50, 100, 200]"
+        :sortField="agruparPor ? '__grupo' : 'nombre_comercial'"
+        :sortOrder="1"
+        rowHover
+        :rowGroupMode="agruparPor ? 'subheader' : null"
+        :groupRowsBy="agruparPor ? '__grupo' : null"
+        emptyMessage="No se encontraron proyectos."
+      >
         <template v-if="agruparPor" #groupheader="{ data }">
           <span class="grupo-titulo">{{ data.__grupo }}</span>
           <span class="grupo-conteo">{{ conteoGrupo(data.__grupo) }}</span>
         </template>
-        <Column field="nombre_comercial" header="Nombre comercial" sortable style="width:21%">
+        <Column field="nombre_comercial" header="Nombre comercial" sortable style="width: 21%">
           <template #body="{ data }">
-            <span class="block text-[9px] leading-none mono"
-                  :style="{ color: data.codigo_tsf ? '#9ca3af' : '#d1d5db' }">
+            <span
+              class="mono block text-[9px] leading-none"
+              :style="{ color: data.codigo_tsf ? '#9ca3af' : '#d1d5db' }"
+            >
               {{ data.codigo_tsf || '—' }}
             </span>
-            <button type="button" class="nombre-link" @click="ir(`/proyectos/${data.id}`)"
-                    v-tooltip.bottom="'Ver detalle'">
+            <button
+              type="button"
+              class="nombre-link"
+              @click="ir(`/proyectos/${data.id}`)"
+              v-tooltip.bottom="'Ver detalle'"
+            >
               {{ formatearNombre(data.nombre_comercial) }}
             </button>
           </template>
         </Column>
-        <Column field="estado" header="Estado" sortable style="width:10%">
+        <Column field="estado" header="Estado" sortable style="width: 10%">
           <template #body="{ data }">
-            <span class="mini-chip inline-flex items-center gap-1"
-                  :class="ESTADO_CLASS[data.estado] || 'estado-default'">
+            <span
+              class="mini-chip inline-flex items-center gap-1"
+              :class="ESTADO_CLASS[data.estado] || 'estado-default'"
+            >
               <span v-if="data.estado === 'en_operacion'" class="pulse-dot" />
               {{ ESTADO_LABELS[data.estado] || data.estado || '—' }}
             </span>
           </template>
         </Column>
-        <Column field="tipo_proyecto" header="Tipo" sortable style="width:9%">
+        <Column field="tipo_proyecto" header="Tipo" sortable style="width: 9%">
           <template #body="{ data }">
             <span class="mini-chip" :class="TIPO_BADGE_CLASS[data.tipo_proyecto] || 'badge-otro'">
               {{ TIPO_LABELS[data.tipo_proyecto] || data.tipo_proyecto || '—' }}
             </span>
           </template>
         </Column>
-        <Column field="municipio" header="Ubicación" sortable style="width:12%">
+        <Column field="municipio" header="Ubicación" sortable style="width: 12%">
           <template #body="{ data }">
-            <span v-if="data.municipio || data.departamento" class="celda-txt sutil"
-                  v-tooltip.bottom="[data.municipio, data.departamento].filter(Boolean).join(', ')">
+            <span
+              v-if="data.municipio || data.departamento"
+              class="celda-txt sutil"
+              v-tooltip.bottom="[data.municipio, data.departamento].filter(Boolean).join(', ')"
+            >
               {{ [data.municipio, data.departamento].filter(Boolean).join(', ') }}
             </span>
             <span v-else class="vacio">—</span>
           </template>
         </Column>
-        <Column field="info_tecnica.capacidad_instalada_kwp" header="kWp" sortable
-                style="width:7%" bodyStyle="text-align:right">
+        <Column
+          field="info_tecnica.capacidad_instalada_kwp"
+          header="kWp"
+          sortable
+          style="width: 7%"
+          bodyStyle="text-align:right"
+        >
           <template #body="{ data }">
-            <span class="mono" v-tooltip.bottom="`AC: ${num(data.info_tecnica?.potencia_ac_kw)} kW`">
+            <span
+              class="mono"
+              v-tooltip.bottom="`AC: ${num(data.info_tecnica?.potencia_ac_kw)} kW`"
+            >
               {{ num(data.info_tecnica?.capacidad_instalada_kwp) }}
             </span>
           </template>
         </Column>
-        <Column header="Servicios" style="width:12%">
+        <Column header="Servicios" style="width: 12%">
           <template #body="{ data }">
             <div class="chips-fila">
               <template v-for="srv in SERVICIOS_BADGES" :key="srv.key">
-                <span v-if="data[srv.key]" class="mini-chip srv-badge"
-                      v-tooltip.bottom="srv.tooltip">{{ srv.badge }}</span>
+                <span
+                  v-if="data[srv.key]"
+                  class="mini-chip srv-badge"
+                  v-tooltip.bottom="srv.tooltip"
+                  >{{ srv.badge }}</span
+                >
               </template>
-              <span v-if="!SERVICIOS_BADGES.some(sb => data[sb.key])" class="vacio">—</span>
+              <span v-if="!SERVICIOS_BADGES.some((sb) => data[sb.key])" class="vacio">—</span>
             </div>
           </template>
         </Column>
-        <Column header="PPA" style="width:14%">
+        <Column header="PPA" style="width: 14%">
           <template #body="{ data }">
             <div v-if="ppaVigentes(data).length" class="chips-fila">
-              <button v-for="c in ppaVigentes(data)" :key="c.id" type="button" class="ppa-chip"
-                      v-tooltip.bottom="ppaTooltip(c)" @click="ir(`/proyectos/${data.id}/ppa`)">
+              <button
+                v-for="c in ppaVigentes(data)"
+                :key="c.id"
+                type="button"
+                class="ppa-chip"
+                v-tooltip.bottom="ppaTooltip(c)"
+                @click="ir(`/proyectos/${data.id}/ppa`)"
+              >
                 {{ ppaLabel(c) }}
               </button>
             </div>
@@ -295,24 +461,42 @@
         <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
-              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'campos')">
+              <span
+                class="falta-chip"
+                :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                v-tooltip.bottom="tipFalta(data, 'campos')"
+              >
                 <i class="pi pi-list" />{{ faltanCampos(data).length }}
               </span>
-              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'docs')">
+              <span
+                class="falta-chip"
+                :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                v-tooltip.bottom="tipFalta(data, 'docs')"
+              >
                 <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
               </span>
             </div>
           </template>
         </Column>
-        <Column style="width:6%">
+        <Column style="width: 6%">
           <template #body="{ data }">
             <div class="acciones">
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="ir(`/proyectos/${data.id}?edit=true`)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarProyecto(data)" />
+              <Button
+                icon="pi pi-pencil"
+                text
+                size="small"
+                severity="secondary"
+                v-tooltip.bottom="'Editar'"
+                @click.stop="ir(`/proyectos/${data.id}?edit=true`)"
+              />
+              <Button
+                icon="pi pi-trash"
+                text
+                size="small"
+                severity="danger"
+                v-tooltip.bottom="'Eliminar'"
+                @click.stop="confirmarBorrarProyecto(data)"
+              />
             </div>
           </template>
         </Column>
@@ -321,111 +505,167 @@
 
     <!-- ══════════════════ SERVICIOS · PPA ══════════════════ -->
     <div v-else-if="servicio === 'ppa'" class="tabla-caja">
-      <DataTable :value="ppaFiltrados" :loading="loadingPpa" size="small"
-                 class="tabla" :class="{ 'tabla--compacta': compacta }"
-                 scrollable :scrollHeight="scrollHeight"
-                 paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
-                 sortField="fecha_inicio" :sortOrder="1" rowHover
-                 emptyMessage="No hay contratos PPA registrados.">
-        <Column field="nombre_interno" header="Nombre interno" sortable style="width:16%">
+      <DataTable
+        :value="ppaFiltrados"
+        :loading="loadingPpa"
+        size="small"
+        class="tabla"
+        :class="{ 'tabla--compacta': compacta }"
+        scrollable
+        :scrollHeight="scrollHeight"
+        paginator
+        :rows="filasPorPagina"
+        :rowsPerPageOptions="[50, 100, 200]"
+        sortField="fecha_inicio"
+        :sortOrder="1"
+        rowHover
+        emptyMessage="No hay contratos PPA registrados."
+      >
+        <Column field="nombre_interno" header="Nombre interno" sortable style="width: 16%">
           <template #body="{ data }">
-            <button type="button" class="nombre-link" @click="ir(`/contratos/${data.id}`)"
-                    v-tooltip.bottom="'Ver detalle'">
+            <button
+              type="button"
+              class="nombre-link"
+              @click="ir(`/contratos/${data.id}`)"
+              v-tooltip.bottom="'Ver detalle'"
+            >
               {{ data.nombre_interno || data.numero_codigo_contrato || '—' }}
             </button>
           </template>
         </Column>
-        <Column field="numero_codigo_contrato" header="N° contrato" sortable style="width:9%">
+        <Column field="numero_codigo_contrato" header="N° contrato" sortable style="width: 9%">
           <template #body="{ data }">
-            <span v-if="data.numero_codigo_contrato" class="mono celda-txt"
-                  v-tooltip.bottom="data.numero_codigo_contrato">
+            <span
+              v-if="data.numero_codigo_contrato"
+              class="mono celda-txt"
+              v-tooltip.bottom="data.numero_codigo_contrato"
+            >
               {{ data.numero_codigo_contrato }}
             </span>
             <span v-else class="vacio">—</span>
           </template>
         </Column>
-        <Column field="tipo_contrato" header="Tipo" sortable style="width:6%">
+        <Column field="tipo_contrato" header="Tipo" sortable style="width: 6%">
           <template #body="{ data }">
-            <span class="mini-chip"
-                  :style="data.tipo_contrato === 'compra'
-                    ? 'background:#915BD8;color:#fff'
-                    : 'background:#F6FF72;color:#2C2039'">
+            <span
+              class="mini-chip"
+              :style="
+                data.tipo_contrato === 'compra'
+                  ? 'background:#915BD8;color:#fff'
+                  : 'background:#F6FF72;color:#2C2039'
+              "
+            >
               {{ data.tipo_contrato === 'compra' ? 'Compra' : 'Venta' }}
             </span>
           </template>
         </Column>
         <!-- Estado de vigencia: derivado de las fechas, mismo cálculo que el
              detalle del contrato (utils/ppaVigencia.js). Ordena por urgencia. -->
-        <Column field="_vigencia.orden" header="Estado" sortable style="width:8%">
+        <Column field="_vigencia.orden" header="Estado" sortable style="width: 8%">
           <template #body="{ data }">
-            <span class="mini-chip"
-                  :style="`background:${data._vigencia.bg};color:${data._vigencia.color}`"
-                  v-tooltip.bottom="data._vigencia.detalle">
+            <span
+              class="mini-chip"
+              :style="`background:${data._vigencia.bg};color:${data._vigencia.color}`"
+              v-tooltip.bottom="data._vigencia.detalle"
+            >
               {{ data._vigencia.label }}
             </span>
           </template>
         </Column>
-        <Column field="comprador_nombre" header="Comprador" sortable style="width:14%">
+        <Column field="comprador_nombre" header="Comprador" sortable style="width: 14%">
           <template #body="{ data }">
             <span class="celda-txt">{{ data.comprador_nombre || '—' }}</span>
           </template>
         </Column>
-        <Column field="vendedor_nombre" header="Vendedor" sortable style="width:14%">
+        <Column field="vendedor_nombre" header="Vendedor" sortable style="width: 14%">
           <template #body="{ data }">
             <span class="celda-txt">{{ data.vendedor_nombre || '—' }}</span>
           </template>
         </Column>
-        <Column field="fecha_inicio" header="Inicio" sortable style="width:7%">
-          <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template>
+        <Column field="fecha_inicio" header="Inicio" sortable style="width: 7%">
+          <template #body="{ data }"
+            ><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template
+          >
         </Column>
         <!-- Resaltado y tooltip salen de _vigencia, no de dias_restantes: el
              listado de /ppa devuelve las filas del ORM y ese campo llega null,
              así que este aviso nunca se veía. -->
-        <Column field="fecha_fin" header="Fin" sortable style="width:7%">
+        <Column field="fecha_fin" header="Fin" sortable style="width: 7%">
           <template #body="{ data }">
-            <span class="mono"
-                  :style="['vencido', 'por_vencer'].includes(data._vigencia.clave)
-                    ? { color: data._vigencia.color, fontWeight: 700 } : null"
-                  v-tooltip.bottom="data._vigencia.detalle">
+            <span
+              class="mono"
+              :style="
+                ['vencido', 'por_vencer'].includes(data._vigencia.clave)
+                  ? { color: data._vigencia.color, fontWeight: 700 }
+                  : null
+              "
+              v-tooltip.bottom="data._vigencia.detalle"
+            >
               {{ fmtFecha(data.fecha_fin) }}
             </span>
           </template>
         </Column>
-        <Column field="cobertura_actual_pct" header="Cobertura" sortable style="width:8%">
+        <Column field="cobertura_actual_pct" header="Cobertura" sortable style="width: 8%">
           <template #body="{ data }">
             <div v-if="data.cobertura_actual_pct != null" class="flex items-center gap-1">
-              <div class="flex-1 h-1.5 rounded-full overflow-hidden" style="background:#f3f0f7">
-                <div class="h-full rounded-full" :style="{
-                  width: Math.min(data.cobertura_actual_pct, 100) + '%',
-                  backgroundColor: data.cobertura_actual_pct >= 90 ? '#10B981'
-                    : data.cobertura_actual_pct >= 70 ? '#F0C040' : '#D64455' }" />
+              <div class="h-1.5 flex-1 overflow-hidden rounded-full" style="background: #f3f0f7">
+                <div
+                  class="h-full rounded-full"
+                  :style="{
+                    width: Math.min(data.cobertura_actual_pct, 100) + '%',
+                    backgroundColor:
+                      data.cobertura_actual_pct >= 90
+                        ? '#10B981'
+                        : data.cobertura_actual_pct >= 70
+                          ? '#F0C040'
+                          : '#D64455',
+                  }"
+                />
               </div>
               <span class="mono">{{ data.cobertura_actual_pct }}%</span>
             </div>
             <span v-else class="vacio">—</span>
           </template>
         </Column>
-        <Column header="Falta" style="width:6%">
+        <Column header="Falta" style="width: 6%">
           <template #body="{ data }">
             <div class="falta-celda">
-              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'campos')">
+              <span
+                class="falta-chip"
+                :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                v-tooltip.bottom="tipFalta(data, 'campos')"
+              >
                 <i class="pi pi-list" />{{ faltanCampos(data).length }}
               </span>
-              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'docs')">
+              <span
+                class="falta-chip"
+                :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                v-tooltip.bottom="tipFalta(data, 'docs')"
+              >
                 <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
               </span>
             </div>
           </template>
         </Column>
-        <Column style="width:5%">
+        <Column style="width: 5%">
           <template #body="{ data }">
             <div class="acciones">
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="ir(`/contratos/${data.id}`)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarPpa(data)" />
+              <Button
+                icon="pi pi-pencil"
+                text
+                size="small"
+                severity="secondary"
+                v-tooltip.bottom="'Editar'"
+                @click.stop="ir(`/contratos/${data.id}`)"
+              />
+              <Button
+                icon="pi pi-trash"
+                text
+                size="small"
+                severity="danger"
+                v-tooltip.bottom="'Eliminar'"
+                @click.stop="confirmarBorrarPpa(data)"
+              />
             </div>
           </template>
         </Column>
@@ -441,9 +681,17 @@
            y deja aislarlos para irlos cerrando hasta llegar a cero. -->
       <div v-if="nHuerfanos" class="barra-huerfanos">
         <i class="pi pi-exclamation-triangle" />
-        <span><strong>{{ nHuerfanos }}</strong> de {{ contratosServicio.length }} contratos sin proyecto asociado</span>
-        <Button :label="soloHuerfanos ? 'Ver todos' : 'Ver solo estos'" text size="small"
-                class="ml-auto" @click="soloHuerfanos = !soloHuerfanos" />
+        <span
+          ><strong>{{ nHuerfanos }}</strong> de {{ contratosServicio.length }} contratos sin
+          proyecto asociado</span
+        >
+        <Button
+          :label="soloHuerfanos ? 'Ver todos' : 'Ver solo estos'"
+          text
+          size="small"
+          class="ml-auto"
+          @click="soloHuerfanos = !soloHuerfanos"
+        />
       </div>
 
       <!-- Duplicados: el mismo contrato escrito por varias fuentes. Se limpian
@@ -458,35 +706,76 @@
             · {{ nEnConflicto }} grupo{{ nEnConflicto === 1 ? '' : 's' }} necesita revisión
           </template>
         </span>
-        <Button label="Ver solo estos" text size="small" class="ml-auto"
-                @click="soloDuplicados = !soloDuplicados" v-if="!soloDuplicados" />
-        <Button label="Ver todos" text size="small" class="ml-auto"
-                @click="soloDuplicados = false" v-else />
-        <Button label="Fusionar duplicados" icon="pi pi-check" size="small"
-                :loading="fusionando" @click="confirmarFusion" />
+        <Button
+          label="Ver solo estos"
+          text
+          size="small"
+          class="ml-auto"
+          @click="soloDuplicados = !soloDuplicados"
+          v-if="!soloDuplicados"
+        />
+        <Button
+          label="Ver todos"
+          text
+          size="small"
+          class="ml-auto"
+          @click="soloDuplicados = false"
+          v-else
+        />
+        <Button
+          label="Fusionar duplicados"
+          icon="pi pi-check"
+          size="small"
+          :loading="fusionando"
+          @click="confirmarFusion"
+        />
       </div>
-      <DataTable :value="contratosServicioFiltrados" :loading="loadingServicio" size="small"
-                 class="tabla" :class="{ 'tabla--compacta': compacta }"
-                 scrollable :scrollHeight="scrollHeight"
-                 paginator :rows="filasPorPagina" :rowsPerPageOptions="[50, 100, 200]"
-                 sortField="fecha_inicio" :sortOrder="1" rowHover
-                 :emptyMessage="`No hay contratos de ${servicioInfo?.label} registrados.`">
+      <DataTable
+        :value="contratosServicioFiltrados"
+        :loading="loadingServicio"
+        size="small"
+        class="tabla"
+        :class="{ 'tabla--compacta': compacta }"
+        scrollable
+        :scrollHeight="scrollHeight"
+        paginator
+        :rows="filasPorPagina"
+        :rowsPerPageOptions="[50, 100, 200]"
+        sortField="fecha_inicio"
+        :sortOrder="1"
+        rowHover
+        :emptyMessage="`No hay contratos de ${servicioInfo?.label} registrados.`"
+      >
         <!-- Proyecto va PRIMERO: es de qué habla la fila. Todo contrato de
              servicio se firma sobre una planta, sea de representación,
              mantenimiento, arriendo, internet o REC. Cuando el contrato quedó
              huérfano (proyecto_id NULL) la celda es el botón para arreglarlo,
              en vez de un "—" que no lleva a ninguna parte. -->
-        <Column field="proyecto.nombre_comercial" header="Proyecto"
-                sortable :style="`width:${anchos.proyecto}`">
+        <Column
+          field="proyecto.nombre_comercial"
+          header="Proyecto"
+          sortable
+          :style="`width:${anchos.proyecto}`"
+        >
           <template #body="{ data }">
-            <button v-if="data.proyecto" type="button" class="celda-enlace"
-                    v-tooltip.bottom="'Ver la ficha de la planta'"
-                    @click.stop="ir(destinoProyecto(data))">
+            <button
+              v-if="data.proyecto"
+              type="button"
+              class="celda-enlace"
+              v-tooltip.bottom="'Ver la ficha de la planta'"
+              @click.stop="ir(destinoProyecto(data))"
+            >
               <span class="celda-txt font-semibold">{{ data.proyecto.nombre_comercial }}</span>
             </button>
-            <button v-else type="button" class="chip-huerfano"
-                    v-tooltip.bottom="'Este contrato no está asociado a ninguna planta. Click para asociarlo.'"
-                    @click.stop="abrirAsociarProyecto(data)">
+            <button
+              v-else
+              type="button"
+              class="chip-huerfano"
+              v-tooltip.bottom="
+                'Este contrato no está asociado a ninguna planta. Click para asociarlo.'
+              "
+              @click.stop="abrirAsociarProyecto(data)"
+            >
               <i class="pi pi-link" />Sin proyecto
             </button>
           </template>
@@ -497,57 +786,99 @@
              la tabla de Proyectos, así que la del tipo de CONTRATO pasa a
              llamarse "Servicio" -- dos columnas "Tipo" en la misma tabla no
              dicen nada. -->
-        <Column field="proyecto.tipo_proyecto" header="Tipo" sortable
-                :style="`width:${anchos.tipoPlanta}`">
+        <Column
+          field="proyecto.tipo_proyecto"
+          header="Tipo"
+          sortable
+          :style="`width:${anchos.tipoPlanta}`"
+        >
           <template #body="{ data }">
-            <span v-if="data.proyecto" class="mini-chip"
-                  :class="TIPO_BADGE_CLASS[data.proyecto.tipo_proyecto] || 'badge-otro'">
-              {{ TIPO_LABELS[data.proyecto.tipo_proyecto] || data.proyecto.tipo_proyecto || 'Sin tipo' }}
+            <span
+              v-if="data.proyecto"
+              class="mini-chip"
+              :class="TIPO_BADGE_CLASS[data.proyecto.tipo_proyecto] || 'badge-otro'"
+            >
+              {{
+                TIPO_LABELS[data.proyecto.tipo_proyecto] ||
+                data.proyecto.tipo_proyecto ||
+                'Sin tipo'
+              }}
             </span>
             <span v-else class="vacio">—</span>
           </template>
         </Column>
-        <Column v-if="tiposDelServicio.length > 1" field="servicio_aplica" header="Servicio"
-                sortable :style="`width:${anchos.servicio}`">
+        <Column
+          v-if="tiposDelServicio.length > 1"
+          field="servicio_aplica"
+          header="Servicio"
+          sortable
+          :style="`width:${anchos.servicio}`"
+        >
           <template #body="{ data }">
-            <span class="mini-chip" :style="{
-              color: TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280',
-              background: (TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280') + '1f' }">
+            <span
+              class="mini-chip"
+              :style="{
+                color: TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280',
+                background: (TIPO_CONTRATO_COLOR[data.servicio_aplica] || '#6b7280') + '1f',
+              }"
+            >
               {{ TIPO_CONTRATO_LABELS[data.servicio_aplica] || data.servicio_aplica || '—' }}
             </span>
           </template>
         </Column>
         <!-- El inversionista es lo que distingue dos contratos de la misma
              planta: La Reserva tiene dos, Baraya tres. -->
-        <Column v-if="esRepresentacion" field="inversionista_nombre" header="Inversionista"
-                sortable :style="`width:${anchos.inversionista}`">
+        <Column
+          v-if="esRepresentacion"
+          field="inversionista_nombre"
+          header="Inversionista"
+          sortable
+          :style="`width:${anchos.inversionista}`"
+        >
           <template #body="{ data }">
             <span class="celda-txt">
               {{ data.inversionista_nombre ? formatearNombre(data.inversionista_nombre) : '—' }}
             </span>
           </template>
         </Column>
-        <Column field="numero_contrato" header="N° contrato" sortable
-                :style="`width:${anchos.numero}`">
-          <template #body="{ data }"><span class="celda-txt mono">{{ data.numero_contrato || '—' }}</span></template>
+        <Column
+          field="numero_contrato"
+          header="N° contrato"
+          sortable
+          :style="`width:${anchos.numero}`"
+        >
+          <template #body="{ data }"
+            ><span class="celda-txt mono">{{ data.numero_contrato || '—' }}</span></template
+          >
         </Column>
         <!-- Tarifas: se muestra la que APLICA HOY, no la del contrato. La de
              2024 ya no es lo que se cobra, y el valor vigente sale de la
              indexación por aniversarios. El tooltip da el detalle: de qué año
              es, cuántos aniversarios hay y cuál era la base. -->
         <template v-if="esRepresentacion">
-          <Column field="tarifa_admin" header="Admin" sortable
-                  :style="`width:${anchos.admin}`" bodyStyle="text-align:right">
+          <Column
+            field="tarifa_admin"
+            header="Admin"
+            sortable
+            :style="`width:${anchos.admin}`"
+            bodyStyle="text-align:right"
+          >
             <template #body="{ data }">
               <span class="mono tabular-nums">{{ fmtTarifaAdmin(data.tarifa_admin) }}</span>
             </template>
           </Column>
-          <Column v-for="t in TARIFAS_COLUMNA" :key="t.clave" :header="t.header" sortable
-                  :field="t.campoBase" :style="`width:${anchos.tarifa}`"
-                  bodyStyle="text-align:right">
+          <Column
+            v-for="t in TARIFAS_COLUMNA"
+            :key="t.clave"
+            :header="t.header"
+            sortable
+            :field="t.campoBase"
+            :style="`width:${anchos.tarifa}`"
+            bodyStyle="text-align:right"
+          >
             <template #body="{ data }">
               <span class="tarifa-celda" v-tooltip.bottom="tipTarifa(data, t)">
-                <span class="mono tabular-nums font-semibold">
+                <span class="mono font-semibold tabular-nums">
                   {{ fmtTarifa(vigenteDe(data, t).valor) }}
                 </span>
                 <span v-if="vigenteDe(data, t).anio" class="tarifa-anio">
@@ -560,24 +891,54 @@
         <!-- Contratante y prestador salen del cuadro en Representación: el seed
              CGM no los llena y el par real es Unergy ↔ inversionista, que ya
              tiene columna propia. El buscador sí sigue mirándolos. -->
-        <Column v-if="!esRepresentacion" field="contratante_nombre" header="Contratante"
-                sortable :style="`width:${anchos.parte}`">
-          <template #body="{ data }"><span class="celda-txt">{{ data.contratante_nombre || '—' }}</span></template>
+        <Column
+          v-if="!esRepresentacion"
+          field="contratante_nombre"
+          header="Contratante"
+          sortable
+          :style="`width:${anchos.parte}`"
+        >
+          <template #body="{ data }"
+            ><span class="celda-txt">{{ data.contratante_nombre || '—' }}</span></template
+          >
         </Column>
-        <Column v-if="!esRepresentacion" field="prestador_nombre" header="Prestador"
-                sortable :style="`width:${anchos.parte}`">
-          <template #body="{ data }"><span class="celda-txt">{{ data.prestador_nombre || '—' }}</span></template>
+        <Column
+          v-if="!esRepresentacion"
+          field="prestador_nombre"
+          header="Prestador"
+          sortable
+          :style="`width:${anchos.parte}`"
+        >
+          <template #body="{ data }"
+            ><span class="celda-txt">{{ data.prestador_nombre || '—' }}</span></template
+          >
         </Column>
-        <Column field="fecha_inicio" header="Inicio" sortable
-                :style="esRepresentacion ? 'width:6%' : 'width:8%'">
-          <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template>
+        <Column
+          field="fecha_inicio"
+          header="Inicio"
+          sortable
+          :style="esRepresentacion ? 'width:6%' : 'width:8%'"
+        >
+          <template #body="{ data }"
+            ><span class="mono">{{ fmtFecha(data.fecha_inicio) }}</span></template
+          >
         </Column>
-        <Column field="fecha_fin" header="Fin" sortable
-                :style="esRepresentacion ? 'width:6%' : 'width:8%'">
-          <template #body="{ data }"><span class="mono">{{ fmtFecha(data.fecha_fin) }}</span></template>
+        <Column
+          field="fecha_fin"
+          header="Fin"
+          sortable
+          :style="esRepresentacion ? 'width:6%' : 'width:8%'"
+        >
+          <template #body="{ data }"
+            ><span class="mono">{{ fmtFecha(data.fecha_fin) }}</span></template
+          >
         </Column>
-        <Column field="estado" header="Estado" sortable
-                :style="esRepresentacion ? 'width:9%' : 'width:12%'">
+        <Column
+          field="estado"
+          header="Estado"
+          sortable
+          :style="esRepresentacion ? 'width:9%' : 'width:12%'"
+        >
           <template #body="{ data }">
             <span class="mini-chip" :class="ESTADO_CONTRATO_CLASS[data.estado] || 'chip-neutral'">
               {{ ESTADO_CONTRATO_LABELS[data.estado] || data.estado || '—' }}
@@ -587,12 +948,18 @@
         <Column header="Falta" :style="esRepresentacion ? 'width:7%' : 'width:9%'">
           <template #body="{ data }">
             <div class="falta-celda">
-              <span class="falta-chip" :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'campos')">
+              <span
+                class="falta-chip"
+                :class="faltanCampos(data).length ? 'falta--mal' : 'falta--ok'"
+                v-tooltip.bottom="tipFalta(data, 'campos')"
+              >
                 <i class="pi pi-list" />{{ faltanCampos(data).length }}
               </span>
-              <span class="falta-chip" :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
-                    v-tooltip.bottom="tipFalta(data, 'docs')">
+              <span
+                class="falta-chip"
+                :class="faltanDocs(data).length ? 'falta--mal' : 'falta--ok'"
+                v-tooltip.bottom="tipFalta(data, 'docs')"
+              >
                 <i class="pi pi-paperclip" />{{ faltanDocs(data).length }}
               </span>
             </div>
@@ -601,13 +968,30 @@
         <Column :style="`width:${anchos.acciones}`">
           <template #body="{ data }">
             <div class="acciones">
-              <Button icon="pi pi-link" text size="small" severity="secondary"
-                      v-tooltip.bottom="data.proyecto ? 'Cambiar de proyecto' : 'Asociar a un proyecto'"
-                      @click.stop="abrirAsociarProyecto(data)" />
-              <Button icon="pi pi-pencil" text size="small" severity="secondary"
-                      v-tooltip.bottom="'Editar'" @click.stop="irAEditarContratoServicio(data)" />
-              <Button icon="pi pi-trash" text size="small" severity="danger"
-                      v-tooltip.bottom="'Eliminar'" @click.stop="confirmarBorrarContratoServicio(data)" />
+              <Button
+                icon="pi pi-link"
+                text
+                size="small"
+                severity="secondary"
+                v-tooltip.bottom="data.proyecto ? 'Cambiar de proyecto' : 'Asociar a un proyecto'"
+                @click.stop="abrirAsociarProyecto(data)"
+              />
+              <Button
+                icon="pi pi-pencil"
+                text
+                size="small"
+                severity="secondary"
+                v-tooltip.bottom="'Editar'"
+                @click.stop="irAEditarContratoServicio(data)"
+              />
+              <Button
+                icon="pi pi-trash"
+                text
+                size="small"
+                severity="danger"
+                v-tooltip.bottom="'Eliminar'"
+                @click.stop="confirmarBorrarContratoServicio(data)"
+              />
             </div>
           </template>
         </Column>
@@ -626,57 +1010,99 @@
     <!-- Asociar un contrato de representación a su planta. Se muestran los datos
          que el contrato trae del acta (nombre de referencia, código Sun Factory)
          porque son la única pista para elegir bien. -->
-    <Dialog v-model:visible="dialogAsociarProyecto" header="Asociar contrato a un proyecto"
-            modal class="w-full max-w-lg">
+    <Dialog
+      v-model:visible="dialogAsociarProyecto"
+      header="Asociar contrato a un proyecto"
+      modal
+      class="w-full max-w-lg"
+    >
       <div v-if="contratoAAsociar" class="space-y-3">
         <!-- Las pistas para elegir bien cambian según el servicio: en
              Representación es el inversionista, en Operación el prestador (que a
              veces trae el nombre de la planta). Se muestra lo que el contrato
              tenga y se omite lo vacío, para no llenar el cuadro de guiones. -->
-        <div class="rounded-lg p-3 text-xs space-y-0.5" style="background:#F7F5FB; color:#6b5a8a">
-          <p><span class="font-semibold">Tipo:</span>
-            {{ TIPO_CONTRATO_LABELS[contratoAAsociar.servicio_aplica]
-               || contratoAAsociar.servicio_aplica }}</p>
+        <div class="space-y-0.5 rounded-lg p-3 text-xs" style="background: #f7f5fb; color: #6b5a8a">
+          <p>
+            <span class="font-semibold">Tipo:</span>
+            {{
+              TIPO_CONTRATO_LABELS[contratoAAsociar.servicio_aplica] ||
+              contratoAAsociar.servicio_aplica
+            }}
+          </p>
           <p v-if="contratoAAsociar.numero_contrato">
             <span class="font-semibold">N° contrato:</span>
-            {{ contratoAAsociar.numero_contrato }}</p>
+            {{ contratoAAsociar.numero_contrato }}
+          </p>
           <p v-if="contratoAAsociar.inversionista_nombre">
             <span class="font-semibold">Inversionista:</span>
-            {{ contratoAAsociar.inversionista_nombre }}</p>
+            {{ contratoAAsociar.inversionista_nombre }}
+          </p>
           <p v-if="contratoAAsociar.prestador_nombre">
             <span class="font-semibold">Prestador:</span>
-            {{ contratoAAsociar.prestador_nombre }}</p>
+            {{ contratoAAsociar.prestador_nombre }}
+          </p>
           <p v-if="contratoAAsociar.nombre_proyecto_ref">
             <span class="font-semibold">Proyecto según el contrato:</span>
-            {{ contratoAAsociar.nombre_proyecto_ref }}</p>
+            {{ contratoAAsociar.nombre_proyecto_ref }}
+          </p>
           <p v-if="contratoAAsociar.codigo_sun_factory">
             <span class="font-semibold">Código Sun Factory:</span>
-            {{ contratoAAsociar.codigo_sun_factory }}</p>
+            {{ contratoAAsociar.codigo_sun_factory }}
+          </p>
           <p v-if="contratoAAsociar.proyecto">
             <span class="font-semibold">Planta actual:</span>
-            {{ contratoAAsociar.proyecto.nombre_comercial }}</p>
+            {{ contratoAAsociar.proyecto.nombre_comercial }}
+          </p>
         </div>
         <div>
-          <label class="text-xs font-semibold" style="color:#6b5a8a">Planta</label>
-          <Select v-model="proyectoElegido" :options="proyectos" optionLabel="nombre_comercial"
-                  optionValue="id" filter :loading="loadingProyectos" size="small" class="w-full mt-1"
-                  placeholder="Buscar planta…" filterPlaceholder="Escribe para filtrar…" />
-          <p v-if="proyectoSugerido" class="text-[11px] mt-1" style="color:#9b8fb0">
+          <label class="text-xs font-semibold" style="color: #6b5a8a">Planta</label>
+          <Select
+            v-model="proyectoElegido"
+            :options="proyectos"
+            optionLabel="nombre_comercial"
+            optionValue="id"
+            filter
+            :loading="loadingProyectos"
+            size="small"
+            class="mt-1 w-full"
+            placeholder="Buscar planta…"
+            filterPlaceholder="Escribe para filtrar…"
+          />
+          <p v-if="proyectoSugerido" class="mt-1 text-[11px]" style="color: #9b8fb0">
             Sugerido a partir del {{ proyectoSugerido }}. Verifica antes de guardar.
           </p>
         </div>
       </div>
       <template #footer>
-        <Button label="Cancelar" text severity="secondary" size="small"
-                @click="dialogAsociarProyecto = false" />
-        <Button label="Asociar" size="small" :disabled="!proyectoElegido" :loading="guardandoProyecto"
-                @click="guardarProyectoContrato" />
+        <Button
+          label="Cancelar"
+          text
+          severity="secondary"
+          size="small"
+          @click="dialogAsociarProyecto = false"
+        />
+        <Button
+          label="Asociar"
+          size="small"
+          :disabled="!proyectoElegido"
+          :loading="guardandoProyecto"
+          @click="guardarProyectoContrato"
+        />
       </template>
     </Dialog>
 
-    <Dialog v-model:visible="duplicadoVisible" header="Proyecto parecido ya existe" modal class="w-full max-w-sm">
+    <Dialog
+      v-model:visible="duplicadoVisible"
+      header="Proyecto parecido ya existe"
+      modal
+      class="w-full max-w-sm"
+    >
       <p class="text-sm text-gray-600">{{ duplicadoInfo?.mensaje }}</p>
-      <p v-if="duplicadoInfo?.candidato_nombre" class="text-sm mt-2 font-medium" style="color:#2C2039">
+      <p
+        v-if="duplicadoInfo?.candidato_nombre"
+        class="mt-2 text-sm font-medium"
+        style="color: #2c2039"
+      >
         {{ duplicadoInfo.candidato_nombre }}
       </p>
       <template #footer>
@@ -685,16 +1111,25 @@
       </template>
     </Dialog>
 
-    <PPAContratoWizard v-if="showWizardPPA" :visible="showWizardPPA" :initialData="ppaADuplicar"
-                       @cerrar="cerrarWizardPPA" @creado="cargarPpa" @editado="cargarPpa" />
+    <PPAContratoWizard
+      v-if="showWizardPPA"
+      :visible="showWizardPPA"
+      :initialData="ppaADuplicar"
+      @cerrar="cerrarWizardPPA"
+      @creado="cargarPpa"
+      @editado="cargarPpa"
+    />
 
     <!-- `servicio` es la llave de la pestaña; el wizard guarda servicio_aplica
          tal cual, asi que tiene que recibir un tipo real del enum o crea filas
          que ninguna vista lee. -->
-    <ContratoServicioWizard v-if="showWizardServicio" :visible="showWizardServicio"
-                            :tipo="tipoAcrear"
-                            @cerrar="showWizardServicio = false"
-                            @creado="cargarContratosServicio(servicio)" />
+    <ContratoServicioWizard
+      v-if="showWizardServicio"
+      :visible="showWizardServicio"
+      :tipo="tipoAcrear"
+      @cerrar="showWizardServicio = false"
+      @creado="cargarContratosServicio(servicio)"
+    />
   </div>
 </template>
 
@@ -724,8 +1159,12 @@ import { SEMAFORO, servicioLabel, fmt } from '@/views/Clientes/clientesUi'
 // Los formularios y wizards pesan; sólo se descargan cuando alguien crea algo.
 const ClienteForm = defineAsyncComponent(() => import('@/views/Clientes/ClienteForm.vue'))
 const ProyectoForm = defineAsyncComponent(() => import('@/views/Proyectos/ProyectoForm.vue'))
-const PPAContratoWizard = defineAsyncComponent(() => import('@/views/Contratos/PPAContratoWizard.vue'))
-const ContratoServicioWizard = defineAsyncComponent(() => import('@/views/Contratos/ContratoServicioWizard.vue'))
+const PPAContratoWizard = defineAsyncComponent(
+  () => import('@/views/Contratos/PPAContratoWizard.vue'),
+)
+const ContratoServicioWizard = defineAsyncComponent(
+  () => import('@/views/Contratos/ContratoServicioWizard.vue'),
+)
 
 const router = useRouter()
 const route = useRoute()
@@ -736,16 +1175,34 @@ const confirm = useConfirm()
 const VISTAS = [
   // Proyectos va primero y es el que abre: la planta es la base, y clientes y
   // contratos son formas de mirar ese mismo portafolio.
-  { key: 'proyectos', label: 'Proyectos', icon: 'pi pi-bolt',      color: '#10b981', bg: '#f0fdf4' },
-  { key: 'clientes',  label: 'Clientes',  icon: 'pi pi-building',  color: '#915BD8', bg: '#f5f0fd' },
-  { key: 'servicios', label: 'Servicios', icon: 'pi pi-file-edit', color: '#0C447C', bg: '#eff6ff' },
+  { key: 'proyectos', label: 'Proyectos', icon: 'pi pi-bolt', color: '#10b981', bg: '#f0fdf4' },
+  { key: 'clientes', label: 'Clientes', icon: 'pi pi-building', color: '#915BD8', bg: '#f5f0fd' },
+  {
+    key: 'servicios',
+    label: 'Servicios',
+    icon: 'pi pi-file-edit',
+    color: '#0C447C',
+    bg: '#eff6ff',
+  },
 ]
 
 const SERVICIOS = [
-  { key: 'ppa',            label: 'PPA',            icon: 'pi pi-bolt',      color: '#f59e0b', bg: '#fffbeb' },
-  { key: 'representacion', label: 'Representación', icon: 'pi pi-file-edit', color: '#3b82f6', bg: '#eff6ff' },
-  { key: 'operacion',      label: 'Operación',      icon: 'pi pi-chart-bar', color: '#10b981', bg: '#f0fdf4' },
-  { key: 'rec',            label: 'REC',            icon: 'pi pi-verified',  color: '#14b8a6', bg: '#f0fdfa' },
+  { key: 'ppa', label: 'PPA', icon: 'pi pi-bolt', color: '#f59e0b', bg: '#fffbeb' },
+  {
+    key: 'representacion',
+    label: 'Representación',
+    icon: 'pi pi-file-edit',
+    color: '#3b82f6',
+    bg: '#eff6ff',
+  },
+  {
+    key: 'operacion',
+    label: 'Operación',
+    icon: 'pi pi-chart-bar',
+    color: '#10b981',
+    bg: '#f0fdf4',
+  },
+  { key: 'rec', label: 'REC', icon: 'pi pi-verified', color: '#14b8a6', bg: '#f0fdfa' },
 ]
 
 // El enum `servicio_aplica` del backend NO tiene un valor "operacion": lo que
@@ -760,12 +1217,18 @@ const TIPOS_POR_SERVICIO = {
 }
 
 const TIPO_CONTRATO_LABELS = {
-  mantenimiento: 'Mantenimiento', arriendo: 'Arriendo', internet: 'Internet',
-  representacion: 'Representación', rec: 'REC',
+  mantenimiento: 'Mantenimiento',
+  arriendo: 'Arriendo',
+  internet: 'Internet',
+  representacion: 'Representación',
+  rec: 'REC',
 }
 const TIPO_CONTRATO_COLOR = {
-  mantenimiento: '#f59e0b', arriendo: '#8b5cf6', internet: '#06b6d4',
-  representacion: '#3b82f6', rec: '#14b8a6',
+  mantenimiento: '#f59e0b',
+  arriendo: '#8b5cf6',
+  internet: '#06b6d4',
+  representacion: '#3b82f6',
+  rec: '#14b8a6',
 }
 
 // `label` es el nombre corto del servicio (igual al que ya usan
@@ -777,45 +1240,68 @@ const TIPO_CONTRATO_COLOR = {
 // 2026-08-27: la etiqueta del filtro "Servicios" mostraba el tooltip largo
 // en vez de este nombre corto).
 const SERVICIOS_BADGES = [
-  { key: 'srv_operacion',      badge: 'OP',   label: 'Operación',      tooltip: 'Operación' },
-  { key: 'srv_representacion', badge: 'REP',  label: 'Representación', tooltip: 'Reporte de energía producida' },
-  { key: 'srv_cgm',            badge: 'CGM',  label: 'CGM',            tooltip: 'Control y gestión de medición' },
-  { key: 'srv_ppa',            badge: 'PPA',  label: 'PPA',            tooltip: 'PPA' },
-  { key: 'srv_promotor',       badge: 'PROM', label: 'Promotor',       tooltip: 'Promotor' },
-  { key: 'srv_rec',            badge: 'REC',  label: 'REC',            tooltip: 'REC' },
+  { key: 'srv_operacion', badge: 'OP', label: 'Operación', tooltip: 'Operación' },
+  {
+    key: 'srv_representacion',
+    badge: 'REP',
+    label: 'Representación',
+    tooltip: 'Reporte de energía producida',
+  },
+  { key: 'srv_cgm', badge: 'CGM', label: 'CGM', tooltip: 'Control y gestión de medición' },
+  { key: 'srv_ppa', badge: 'PPA', label: 'PPA', tooltip: 'PPA' },
+  { key: 'srv_promotor', badge: 'PROM', label: 'Promotor', tooltip: 'Promotor' },
+  { key: 'srv_rec', badge: 'REC', label: 'REC', tooltip: 'REC' },
 ]
 
 const TIPO_LABELS = {
-  minigranja: 'Minigranja', autoconsumo: 'Autoconsumo', gd: 'GD',
-  movilidad_electrica: 'Movilidad', otro: 'Otro',
+  minigranja: 'Minigranja',
+  autoconsumo: 'Autoconsumo',
+  gd: 'GD',
+  movilidad_electrica: 'Movilidad',
+  otro: 'Otro',
 }
 const TIPO_BADGE_CLASS = {
-  minigranja: 'badge-minigranja', autoconsumo: 'badge-autoconsumo', gd: 'badge-gd',
-  movilidad_electrica: 'badge-movilidad', otro: 'badge-otro',
+  minigranja: 'badge-minigranja',
+  autoconsumo: 'badge-autoconsumo',
+  gd: 'badge-gd',
+  movilidad_electrica: 'badge-movilidad',
+  otro: 'badge-otro',
 }
 const ESTADO_LABELS = {
-  en_operacion: 'En operación', en_desarrollo: 'En desarrollo', suspendido: 'Suspendido',
-  cancelado: 'Cancelado', en_construccion: 'En construcción',
+  en_operacion: 'En operación',
+  en_desarrollo: 'En desarrollo',
+  suspendido: 'Suspendido',
+  cancelado: 'Cancelado',
+  en_construccion: 'En construcción',
 }
 const ESTADO_CLASS = {
-  en_operacion: 'estado-operacion', suspendido: 'estado-suspendido',
-  en_construccion: 'estado-construccion', en_desarrollo: 'estado-default', cancelado: 'estado-default',
+  en_operacion: 'estado-operacion',
+  suspendido: 'estado-suspendido',
+  en_construccion: 'estado-construccion',
+  en_desarrollo: 'estado-default',
+  cancelado: 'estado-default',
 }
 const CUMPLIMIENTO_LABELS = { on_track: 'Al día', at_risk: 'En riesgo', deficit: 'Déficit' }
 const CUMPLIMIENTO_CLASS = { on_track: 'chip-ok', at_risk: 'chip-warn', deficit: 'chip-danger' }
 const ESTADO_CONTRATO_LABELS = {
-  vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación',
+  vigente: 'Vigente',
+  vencido: 'Vencido',
+  terminado: 'Terminado',
+  en_renovacion: 'En renovación',
 }
 // Chips propios en vez de <Tag>: los estilos de PrimeVue se inyectan después de
 // Tailwind y ganan el empate de especificidad, así que un Tag no se deja
 // encoger a la tipografía compacta del resto de la tabla.
 const ESTADO_CONTRATO_CLASS = {
-  vigente: 'chip-ok', vencido: 'chip-danger', terminado: 'chip-neutral', en_renovacion: 'chip-warn',
+  vigente: 'chip-ok',
+  vencido: 'chip-danger',
+  terminado: 'chip-neutral',
+  en_renovacion: 'chip-warn',
 }
 
 // ── Estado de la vista (se sincroniza con la URL para poder compartirla) ─────
-const VISTAS_VALIDAS = VISTAS.map(v => v.key)
-const SERVICIOS_VALIDOS = SERVICIOS.map(s => s.key)
+const VISTAS_VALIDAS = VISTAS.map((v) => v.key)
+const SERVICIOS_VALIDOS = SERVICIOS.map((s) => s.key)
 
 // La base son los proyectos: la vista abre directo en su tabla. Igual solo se
 // pide lo del angulo activo, nunca los tres a la vez.
@@ -824,7 +1310,7 @@ const servicio = ref(SERVICIOS_VALIDOS.includes(route.query.srv) ? route.query.s
 const q = ref(route.query.q || '')
 const compacta = ref(localStorage.getItem('servicios_unificado_compacta') !== '0')
 
-watch(compacta, v => localStorage.setItem('servicios_unificado_compacta', v ? '1' : '0'))
+watch(compacta, (v) => localStorage.setItem('servicios_unificado_compacta', v ? '1' : '0'))
 
 // El watch que sincroniza la URL vive mas abajo, junto a `agruparPor`: watch()
 // evalua su arreglo de fuentes en el acto, asi que nombrar ahi una const que
@@ -842,16 +1328,18 @@ const scrollHeight = 'calc(100vh - 250px)'
 // grupo al que pertenece, que es justo lo que se quiere ver -- por eso la lista
 // agrupada puede tener MAS filas que plantas, y el contador de arriba lo dice.
 const AGRUPACIONES = [
-  { value: '',             label: 'Sin agrupar' },
-  { value: 'cliente',      label: 'Cliente / inversionista' },
-  { value: 'ppa',          label: 'Contrato PPA' },
-  { value: 'servicio',     label: 'Servicio' },
-  { value: 'tipo',         label: 'Tipo de proyecto' },
-  { value: 'estado',       label: 'Estado' },
+  { value: '', label: 'Sin agrupar' },
+  { value: 'cliente', label: 'Cliente / inversionista' },
+  { value: 'ppa', label: 'Contrato PPA' },
+  { value: 'servicio', label: 'Servicio' },
+  { value: 'tipo', label: 'Tipo de proyecto' },
+  { value: 'estado', label: 'Estado' },
   { value: 'departamento', label: 'Departamento' },
 ]
 
-const agruparPor = ref(AGRUPACIONES.some(a => a.value === route.query.grupo) ? route.query.grupo : '')
+const agruparPor = ref(
+  AGRUPACIONES.some((a) => a.value === route.query.grupo) ? route.query.grupo : '',
+)
 
 // Los filtros se sincronizan con la URL para poder compartir la vista tal cual
 // se esta viendo. Tiene que ir despues de `agruparPor`: es una de sus fuentes.
@@ -869,54 +1357,102 @@ const SIN_ASIGNAR = '__sin__'
 
 const FILTROS = {
   ppa: [
-    { clave: 'tipo', label: 'Tipo', ancho: 'w-40',
-      valor: c => c.tipo_contrato,
-      etiqueta: v => (v === 'compra' ? 'Compra' : 'Venta') },
-    { clave: 'estado', label: 'Estado', ancho: 'w-44',
-      valor: c => (c._vigencia || estadoVigenciaPPA(c)).clave,
-      etiqueta: (v, c) => (c._vigencia || estadoVigenciaPPA(c)).label },
+    {
+      clave: 'tipo',
+      label: 'Tipo',
+      ancho: 'w-40',
+      valor: (c) => c.tipo_contrato,
+      etiqueta: (v) => (v === 'compra' ? 'Compra' : 'Venta'),
+    },
+    {
+      clave: 'estado',
+      label: 'Estado',
+      ancho: 'w-44',
+      valor: (c) => (c._vigencia || estadoVigenciaPPA(c)).clave,
+      etiqueta: (v, c) => (c._vigencia || estadoVigenciaPPA(c)).label,
+    },
   ],
   representacion: [
-    { clave: 'proyecto', label: 'Proyecto', ancho: 'w-64',
-      valor: c => c.proyecto?.nombre_comercial || SIN_ASIGNAR },
-    { clave: 'portafolio', label: 'Portafolio', ancho: 'w-56',
-      valor: c => c.portafolio || SIN_ASIGNAR },
-    { clave: 'inversionista', label: 'Inversionista', ancho: 'w-64',
-      valor: c => c.inversionista_nombre || SIN_ASIGNAR,
-      etiqueta: v => formatearNombre(v) },
+    {
+      clave: 'proyecto',
+      label: 'Proyecto',
+      ancho: 'w-64',
+      valor: (c) => c.proyecto?.nombre_comercial || SIN_ASIGNAR,
+    },
+    {
+      clave: 'portafolio',
+      label: 'Portafolio',
+      ancho: 'w-56',
+      valor: (c) => c.portafolio || SIN_ASIGNAR,
+    },
+    {
+      clave: 'inversionista',
+      label: 'Inversionista',
+      ancho: 'w-64',
+      valor: (c) => c.inversionista_nombre || SIN_ASIGNAR,
+      etiqueta: (v) => formatearNombre(v),
+    },
   ],
   operacion: [
     // Se llama "Servicio" igual que su columna: en esta tabla "Tipo" es la
     // clase de planta (minigranja / autoconsumo / GD).
-    { clave: 'tipo', label: 'Servicio', ancho: 'w-44',
-      valor: c => c.servicio_aplica,
-      etiqueta: v => TIPO_CONTRATO_LABELS[v] || v },
-    { clave: 'proyecto', label: 'Proyecto', ancho: 'w-64',
-      valor: c => c.proyecto?.nombre_comercial || SIN_ASIGNAR },
+    {
+      clave: 'tipo',
+      label: 'Servicio',
+      ancho: 'w-44',
+      valor: (c) => c.servicio_aplica,
+      etiqueta: (v) => TIPO_CONTRATO_LABELS[v] || v,
+    },
+    {
+      clave: 'proyecto',
+      label: 'Proyecto',
+      ancho: 'w-64',
+      valor: (c) => c.proyecto?.nombre_comercial || SIN_ASIGNAR,
+    },
   ],
   // Proyectos y Clientes recuperan el panel de Filtros (2026-08-26, pedido
   // de Sara: "unificada no quiere decir que uno no quiera filtrar") -- mismos
   // campos que ya se ven en sus columnas, para no inventar un criterio nuevo.
   proyectos: [
-    { clave: 'estado', label: 'Estado', ancho: 'w-44',
-      valor: p => p.estado,
-      etiqueta: v => ESTADO_LABELS[v] || v },
-    { clave: 'tipo', label: 'Tipo', ancho: 'w-40',
-      valor: p => p.tipo_proyecto,
-      etiqueta: v => TIPO_LABELS[v] || v },
+    {
+      clave: 'estado',
+      label: 'Estado',
+      ancho: 'w-44',
+      valor: (p) => p.estado,
+      etiqueta: (v) => ESTADO_LABELS[v] || v,
+    },
+    {
+      clave: 'tipo',
+      label: 'Tipo',
+      ancho: 'w-40',
+      valor: (p) => p.tipo_proyecto,
+      etiqueta: (v) => TIPO_LABELS[v] || v,
+    },
     // Un proyecto puede tener varios servicios activos a la vez -- valor()
     // devuelve una lista, no un escalar (ver valoresDe/opcionesDe/aplicarFiltros).
-    { clave: 'servicio', label: 'Servicios', ancho: 'w-44',
-      valor: p => SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.key),
-      etiqueta: v => SERVICIOS_BADGES.find(sb => sb.key === v)?.label || v },
+    {
+      clave: 'servicio',
+      label: 'Servicios',
+      ancho: 'w-44',
+      valor: (p) => SERVICIOS_BADGES.filter((sb) => p[sb.key]).map((sb) => sb.key),
+      etiqueta: (v) => SERVICIOS_BADGES.find((sb) => sb.key === v)?.label || v,
+    },
   ],
   clientes: [
-    { clave: 'servicio', label: 'Servicios', ancho: 'w-44',
-      valor: c => c.servicios || [],
-      etiqueta: v => servicioLabel(v) },
-    { clave: 'alerta', label: 'Alerta contrato', ancho: 'w-44',
-      valor: c => c.alerta_contrato || SIN_ASIGNAR,
-      etiqueta: v => SEMAFORO[v]?.label || v },
+    {
+      clave: 'servicio',
+      label: 'Servicios',
+      ancho: 'w-44',
+      valor: (c) => c.servicios || [],
+      etiqueta: (v) => servicioLabel(v),
+    },
+    {
+      clave: 'alerta',
+      label: 'Alerta contrato',
+      ancho: 'w-44',
+      valor: (c) => c.alerta_contrato || SIN_ASIGNAR,
+      etiqueta: (v) => SEMAFORO[v]?.label || v,
+    },
   ],
 }
 
@@ -943,7 +1479,7 @@ const filasCrudas = computed(() => {
   if (vista.value === 'proyectos') return proyectos.value
   if (vista.value === 'clientes') return clientes.value
   return servicio.value === 'ppa'
-    ? ppa.value.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) }))
+    ? ppa.value.map((c) => ({ ...c, _vigencia: estadoVigenciaPPA(c) }))
     : contratosServicio.value
 })
 
@@ -964,8 +1500,12 @@ function opcionesDe(filtro) {
       if (!vistos.has(v)) {
         vistos.set(v, {
           value: v,
-          label: v === SIN_ASIGNAR ? 'Sin asignar'
-               : (filtro.etiqueta ? filtro.etiqueta(v, fila) : String(v)),
+          label:
+            v === SIN_ASIGNAR
+              ? 'Sin asignar'
+              : filtro.etiqueta
+                ? filtro.etiqueta(v, fila)
+                : String(v),
           n: 0,
         })
       }
@@ -974,60 +1514,75 @@ function opcionesDe(filtro) {
   }
   // "Sin asignar" al final; el resto alfabético. Se muestra el conteo para que
   // se vea de una si vale la pena filtrar por ese valor.
-  return [...vistos.values()].sort((a, b) =>
-    (a.value === SIN_ASIGNAR) - (b.value === SIN_ASIGNAR) ||
-    a.label.localeCompare(b.label, 'es'))
+  return [...vistos.values()].sort(
+    (a, b) =>
+      (a.value === SIN_ASIGNAR) - (b.value === SIN_ASIGNAR) || a.label.localeCompare(b.label, 'es'),
+  )
 }
 
 const nFiltros = computed(() =>
-  filtrosActivos.value.reduce((n, f) => n + (filtros.value[f.clave]?.length || 0), 0))
+  filtrosActivos.value.reduce((n, f) => n + (filtros.value[f.clave]?.length || 0), 0),
+)
 
 // Chips de lo que está aplicado, para que un filtro activo nunca quede oculto
 // dentro del panel cerrado.
-const chipsFiltro = computed(() => filtrosActivos.value.flatMap(f =>
-  (filtros.value[f.clave] || []).map(v => ({
-    clave: f.clave, valor: v, label: f.label,
-    texto: opcionesDe(f).find(o => o.value === v)?.label ?? String(v),
-  }))))
+const chipsFiltro = computed(() =>
+  filtrosActivos.value.flatMap((f) =>
+    (filtros.value[f.clave] || []).map((v) => ({
+      clave: f.clave,
+      valor: v,
+      label: f.label,
+      texto: opcionesDe(f).find((o) => o.value === v)?.label ?? String(v),
+    })),
+  ),
+)
 
 function quitarFiltro(clave, valor) {
-  filtros.value[clave] = (filtros.value[clave] || []).filter(v => v !== valor)
+  filtros.value[clave] = (filtros.value[clave] || []).filter((v) => v !== valor)
 }
 
-function limpiarFiltros() { filtros.value = {} }
+function limpiarFiltros() {
+  filtros.value = {}
+}
 
 // Aplica los filtros de la pestaña activa a una lista de filas. Para un
 // filtro multivalor (ver valoresDe), una fila pasa si comparte AL MENOS uno
 // de los valores seleccionados con los suyos -- no que coincidan todos.
 function aplicarFiltros(filas) {
   const activos = filtrosActivos.value
-    .map(f => [f, filtros.value[f.clave]])
+    .map((f) => [f, filtros.value[f.clave]])
     .filter(([, vals]) => vals && vals.length)
   if (!activos.length) return filas
-  return filas.filter(fila => activos.every(([f, vals]) => {
-    const propios = valoresDe(f, fila)
-    return vals.some(v => propios.includes(v))
-  }))
+  return filas.filter((fila) =>
+    activos.every(([f, vals]) => {
+      const propios = valoresDe(f, fila)
+      return vals.some((v) => propios.includes(v))
+    }),
+  )
 }
 
 // Los filtros se sincronizan con la URL igual que la vista y la busqueda, para
 // poder compartir una tabla ya filtrada. Este watch va DESPUES de declarar
 // `filtros`: watch() evalua su arreglo de fuentes en el acto, y nombrar ahi una
 // const de mas abajo rompe la vista entera al montarla.
-watch([vista, servicio, q, agruparPor, filtros], () => {
-  const query = {}
-  if (vista.value) query.vista = vista.value
-  if (vista.value === 'proyectos' && agruparPor.value) query.grupo = agruparPor.value
-  if (vista.value === 'servicios') query.srv = servicio.value
-  if (q.value) query.q = q.value
-  // Se usa "|" y no "," porque los nombres de planta y de inversionista traen
-  // comas ("Inversiones Estrada Arbelaez y CIA S. en C.").
-  for (const f of filtrosActivos.value) {
-    const vals = filtros.value[f.clave]
-    if (vals && vals.length) query[`f_${f.clave}`] = vals.join('|')
-  }
-  router.replace({ query })
-}, { deep: true })
+watch(
+  [vista, servicio, q, agruparPor, filtros],
+  () => {
+    const query = {}
+    if (vista.value) query.vista = vista.value
+    if (vista.value === 'proyectos' && agruparPor.value) query.grupo = agruparPor.value
+    if (vista.value === 'servicios') query.srv = servicio.value
+    if (q.value) query.q = q.value
+    // Se usa "|" y no "," porque los nombres de planta y de inversionista traen
+    // comas ("Inversiones Estrada Arbelaez y CIA S. en C.").
+    for (const f of filtrosActivos.value) {
+      const vals = filtros.value[f.clave]
+      if (vals && vals.length) query[`f_${f.clave}`] = vals.join('|')
+    }
+    router.replace({ query })
+  },
+  { deep: true },
+)
 
 // Filtros que vengan en la URL al abrir la vista.
 function leerFiltrosDeLaUrl() {
@@ -1048,7 +1603,9 @@ const TOPE_PAGINA = 500
 function avisarSiTrunca(total, mostrados, etiqueta) {
   if (total == null || total <= mostrados) return
   toast.add({
-    severity: 'warn', summary: 'Listado incompleto', life: 8000,
+    severity: 'warn',
+    summary: 'Listado incompleto',
+    life: 8000,
     detail: `Se muestran ${mostrados} de ${total} ${etiqueta}: la vista pide como máximo ${TOPE_PAGINA}.`,
   })
 }
@@ -1057,7 +1614,7 @@ function avisarSiTrunca(total, mostrados, etiqueta) {
 function gruposDe(p) {
   switch (agruparPor.value) {
     case 'cliente': {
-      const n = (p.inversionistas || []).map(i => i.cliente_nombre).filter(Boolean)
+      const n = (p.inversionistas || []).map((i) => i.cliente_nombre).filter(Boolean)
       return n.length ? [...new Set(n)] : [SIN_DATO]
     }
     case 'ppa': {
@@ -1065,7 +1622,7 @@ function gruposDe(p) {
       return n.length ? [...new Set(n)] : ['Sin PPA']
     }
     case 'servicio': {
-      const n = SERVICIOS_BADGES.filter(sb => p[sb.key]).map(sb => sb.label)
+      const n = SERVICIOS_BADGES.filter((sb) => p[sb.key]).map((sb) => sb.label)
       return n.length ? n : ['Sin servicios']
     }
     case 'tipo':
@@ -1102,7 +1659,9 @@ const conteosPorGrupo = computed(() => {
   return m
 })
 
-function conteoGrupo(g) { return conteosPorGrupo.value.get(g) || 0 }
+function conteoGrupo(g) {
+  return conteosPorGrupo.value.get(g) || 0
+}
 const nGrupos = computed(() => conteosPorGrupo.value.size)
 
 // ── Completitud del registro ───────────────────────────────────
@@ -1119,16 +1678,35 @@ const TECNICOS = ['id', 'created_at', 'updated_at', 'deleted_at', '__grupo']
 const DERIVADOS = {
   // proximo_vencimiento y alerta_contrato los calcula la proyeccion a partir
   // de los contratos: no son datos que alguien llene en la ficha.
-  clientes: ['num_plantas', 'servicios', 'alerta_contrato', 'contactos_comerciales_extra',
-             'proximo_vencimiento'],
+  clientes: [
+    'num_plantas',
+    'servicios',
+    'alerta_contrato',
+    'contactos_comerciales_extra',
+    'proximo_vencimiento',
+  ],
   proyectos: ['ppa_contratos', 'inversionistas', 'servicios', 'info_tecnica'],
-  ppa: ['proyectos', 'dias_restantes', 'estado_cumplimiento', 'cobertura_actual_pct',
-        'fecha_fin_efectiva', 'comprador', 'vendedor'],
+  ppa: [
+    'proyectos',
+    'dias_restantes',
+    'estado_cumplimiento',
+    'cobertura_actual_pct',
+    'fecha_fin_efectiva',
+    'comprador',
+    'vendedor',
+  ],
   // `proyecto` es el objeto que el backend arma a partir de proyecto_id: el
   // campo por llenar es el id, y contarlos los dos inflaría el pendiente.
-  contrato: ['contratante', 'prestador', 'proyecto', 'facturas_solenium',
-             'facturas_inversionistas', 'indexacion_anual', 'indexacion_mensual',
-             'nombre_proyecto_ref'],
+  contrato: [
+    'contratante',
+    'prestador',
+    'proyecto',
+    'facturas_solenium',
+    'facturas_inversionistas',
+    'indexacion_anual',
+    'indexacion_mensual',
+    'nombre_proyecto_ref',
+  ],
 }
 
 // Objetos que se aplanan un nivel para que sus campos cuenten uno por uno.
@@ -1138,18 +1716,24 @@ const ANIDADOS = ['info_tecnica']
 // documentos esperados por entidad, asi que hoy esto solo puede valer 0 o 1
 // (2 en cliente). Para un checklist real ("faltan 3 de 7") hace falta backend.
 const DOCS = {
-  clientes: [['rut_url', 'RUT'], ['documentos_comerciales', 'Documentos comerciales']],
+  clientes: [
+    ['rut_url', 'RUT'],
+    ['documentos_comerciales', 'Documentos comerciales'],
+  ],
   ppa: [['carpeta_link', 'Carpeta del contrato']],
   contrato: [['enlace_drive', 'Enlace Drive']],
 }
 
 // La misma clave que usa el Excel: cada angulo cuenta contra su propia entidad.
-const claveRequeridos = computed(() => (
-  vista.value === 'clientes' ? 'clientes'
-  : vista.value === 'proyectos' ? 'proyectos'
-  : servicio.value === 'ppa' ? 'ppa'
-  : 'contrato'
-))
+const claveRequeridos = computed(() =>
+  vista.value === 'clientes'
+    ? 'clientes'
+    : vista.value === 'proyectos'
+      ? 'proyectos'
+      : servicio.value === 'ppa'
+        ? 'ppa'
+        : 'contrato',
+)
 
 function estaVacio(v) {
   if (v == null || v === '') return true
@@ -1165,13 +1749,16 @@ function etiquetar(clave) {
 
 // Pares [clave, valor] del registro que cuentan como campo por llenar.
 function camposDe(fila) {
-  const fuera = new Set([...TECNICOS, ...(DERIVADOS[claveRequeridos.value] || []),
-                         ...(DOCS[claveRequeridos.value] || []).map(([k]) => k)])
+  const fuera = new Set([
+    ...TECNICOS,
+    ...(DERIVADOS[claveRequeridos.value] || []),
+    ...(DOCS[claveRequeridos.value] || []).map(([k]) => k),
+  ])
   const pares = []
   for (const [k, v] of Object.entries(fila || {})) {
     if (fuera.has(k)) continue
-    if (ANIDADOS.includes(k)) continue          // se aplanan aparte, abajo
-    if (v && typeof v === 'object' && !Array.isArray(v)) continue   // otro objeto: no es un campo
+    if (ANIDADOS.includes(k)) continue // se aplanan aparte, abajo
+    if (v && typeof v === 'object' && !Array.isArray(v)) continue // otro objeto: no es un campo
     pares.push([etiquetar(k), v])
   }
   for (const anidado of ANIDADOS) {
@@ -1187,7 +1774,9 @@ function camposDe(fila) {
 }
 
 function faltanCampos(fila) {
-  return camposDe(fila).filter(([, v]) => estaVacio(v)).map(([et]) => et)
+  return camposDe(fila)
+    .filter(([, v]) => estaVacio(v))
+    .map(([et]) => et)
 }
 
 function totalCampos(fila) {
@@ -1212,9 +1801,15 @@ function tipFalta(fila, tipo) {
 }
 
 // ── Formateo ─────────────────────────────────────────────────────────────────
-function fmtFecha(v) { return v ? String(v).slice(0, 10) : '—' }
-function num(v) { return v == null || v === '' ? '—' : Number(v).toLocaleString('es-CO') }
-function ir(path) { router.push(path) }
+function fmtFecha(v) {
+  return v ? String(v).slice(0, 10) : '—'
+}
+function num(v) {
+  return v == null || v === '' ? '—' : Number(v).toLocaleString('es-CO')
+}
+function ir(path) {
+  router.push(path)
+}
 
 // ── Clientes ─────────────────────────────────────────────────────────────────
 const clientes = ref([])
@@ -1223,11 +1818,15 @@ const clientesCargados = ref(false)
 
 const clientesFiltrados = computed(() => {
   const t = q.value.trim().toLowerCase()
-  const base = !t ? clientes.value : clientes.value.filter(c =>
-    (c.razon_social_nombre || '').toLowerCase().includes(t) ||
-    (c.nit_cedula || '').toLowerCase().includes(t) ||
-    (c.contacto_comercial_nombre || '').toLowerCase().includes(t) ||
-    (c.contacto_comercial_correo || '').toLowerCase().includes(t))
+  const base = !t
+    ? clientes.value
+    : clientes.value.filter(
+        (c) =>
+          (c.razon_social_nombre || '').toLowerCase().includes(t) ||
+          (c.nit_cedula || '').toLowerCase().includes(t) ||
+          (c.contacto_comercial_nombre || '').toLowerCase().includes(t) ||
+          (c.contacto_comercial_correo || '').toLowerCase().includes(t),
+      )
   return aplicarFiltros(base)
 })
 
@@ -1251,12 +1850,17 @@ async function cargarClientes() {
       // size tope 500 en el backend: pedir mas devuelve 422, no una lista corta.
       api.get('/clientes', { params: { page: 1, size: TOPE_PAGINA } }),
     ])
-    const porId = new Map((ficha.data.items ?? ficha.data ?? []).map(c => [c.id, c]))
-    clientes.value = vista.data.map(c => ({ ...(porId.get(c.id) || {}), ...c }))
+    const porId = new Map((ficha.data.items ?? ficha.data ?? []).map((c) => [c.id, c]))
+    clientes.value = vista.data.map((c) => ({ ...(porId.get(c.id) || {}), ...c }))
     avisarSiTrunca(ficha.data.total, porId.size, 'clientes')
     clientesCargados.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar clientes', detail: e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al cargar clientes',
+      detail: e.message,
+      life: 4000,
+    })
   } finally {
     loadingClientes.value = false
   }
@@ -1267,7 +1871,9 @@ const proyectos = ref([])
 const loadingProyectos = ref(false)
 const proyectosCargados = ref(false)
 
-function ppaLabel(c) { return c?.nombre_interno || c?.numero_codigo_contrato || `PPA ${c?.id}` }
+function ppaLabel(c) {
+  return c?.nombre_interno || c?.numero_codigo_contrato || `PPA ${c?.id}`
+}
 
 function ppaTooltip(c) {
   const partes = []
@@ -1281,20 +1887,24 @@ function ppaTooltip(c) {
 
 // ppa_contratos es una relación viewonly: puede traer contratos ya borrados.
 function ppaVigentes(p) {
-  return (p.ppa_contratos || []).filter(c => !c.deleted_at && !c.eliminado)
+  return (p.ppa_contratos || []).filter((c) => !c.deleted_at && !c.eliminado)
 }
 
 const proyectosFiltrados = computed(() => {
   const t = q.value.trim().toLowerCase()
-  const base = !t ? proyectos.value : proyectos.value.filter(p =>
-    (p.nombre_comercial || '').toLowerCase().includes(t) ||
-    (p.codigo_tsf || '').toLowerCase().includes(t) ||
-    (p.municipio || '').toLowerCase().includes(t) ||
-    (p.departamento || '').toLowerCase().includes(t) ||
-    // El PPA es una columna visible y el inversionista es una agrupacion: si
-    // se muestran, tienen que poder buscarse.
-    ppaVigentes(p).some(c => ppaLabel(c).toLowerCase().includes(t)) ||
-    (p.inversionistas || []).some(i => (i.cliente_nombre || '').toLowerCase().includes(t)))
+  const base = !t
+    ? proyectos.value
+    : proyectos.value.filter(
+        (p) =>
+          (p.nombre_comercial || '').toLowerCase().includes(t) ||
+          (p.codigo_tsf || '').toLowerCase().includes(t) ||
+          (p.municipio || '').toLowerCase().includes(t) ||
+          (p.departamento || '').toLowerCase().includes(t) ||
+          // El PPA es una columna visible y el inversionista es una agrupacion: si
+          // se muestran, tienen que poder buscarse.
+          ppaVigentes(p).some((c) => ppaLabel(c).toLowerCase().includes(t)) ||
+          (p.inversionistas || []).some((i) => (i.cliente_nombre || '').toLowerCase().includes(t)),
+      )
   return aplicarFiltros(base)
 })
 
@@ -1306,7 +1916,12 @@ async function cargarProyectos() {
     avisarSiTrunca(data.total, proyectos.value.length, 'plantas')
     proyectosCargados.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar proyectos', detail: e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al cargar proyectos',
+      detail: e.message,
+      life: 4000,
+    })
   } finally {
     loadingProyectos.value = false
   }
@@ -1319,16 +1934,20 @@ const ppaCargados = ref(false)
 
 const ppaFiltrados = computed(() => {
   const t = q.value.trim().toLowerCase()
-  const base = !t ? ppa.value : ppa.value.filter(c =>
-    (c.nombre_interno || '').toLowerCase().includes(t) ||
-    (c.numero_codigo_contrato || '').toLowerCase().includes(t) ||
-    (c.comprador_nombre || '').toLowerCase().includes(t) ||
-    (c.vendedor_nombre || '').toLowerCase().includes(t) ||
-    (c.proyectos || []).some(p => (p.nombre_comercial || '').toLowerCase().includes(t)))
+  const base = !t
+    ? ppa.value
+    : ppa.value.filter(
+        (c) =>
+          (c.nombre_interno || '').toLowerCase().includes(t) ||
+          (c.numero_codigo_contrato || '').toLowerCase().includes(t) ||
+          (c.comprador_nombre || '').toLowerCase().includes(t) ||
+          (c.vendedor_nombre || '').toLowerCase().includes(t) ||
+          (c.proyectos || []).some((p) => (p.nombre_comercial || '').toLowerCase().includes(t)),
+      )
   // `_vigencia` se precalcula acá y no en la celda para que la columna Estado
   // sea ordenable (PrimeVue ordena por campo, no por lo que pinta el template).
   // Se calcula antes de filtrar porque el filtro de estado lee de ahí.
-  return aplicarFiltros(base.map(c => ({ ...c, _vigencia: estadoVigenciaPPA(c) })))
+  return aplicarFiltros(base.map((c) => ({ ...c, _vigencia: estadoVigenciaPPA(c) })))
 })
 
 async function cargarPpa() {
@@ -1338,7 +1957,12 @@ async function cargarPpa() {
     ppa.value = data
     ppaCargados.value = true
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos PPA', detail: e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al cargar contratos PPA',
+      detail: e.message,
+      life: 4000,
+    })
   } finally {
     loadingPpa.value = false
   }
@@ -1347,7 +1971,7 @@ async function cargarPpa() {
 // ── Servicios · Operación / REC ──────────────────────────────────────────────
 const contratosServicio = ref([])
 const loadingServicio = ref(false)
-const servicioCargado = ref(null)   // el tipo que hay en memoria
+const servicioCargado = ref(null) // el tipo que hay en memoria
 
 // Representación es el único servicio con columnas propias (proyecto e
 // inversionista en lugar de contratante y prestador), así que la bandera se
@@ -1363,25 +1987,44 @@ const anchos = computed(() => {
     // Con las tres columnas de tarifa hay que apretar el resto para no forzar
     // scroll horizontal: proyecto e inversionista siguen siendo las anchas
     // porque son las que llevan texto largo.
-    return { proyecto: '17%', tipoPlanta: '8%', servicio: '0',
-             inversionista: '14%', numero: '8%', parte: '0',
-             admin: '7%', tarifa: '8%', acciones: '7%' }
+    return {
+      proyecto: '17%',
+      tipoPlanta: '8%',
+      servicio: '0',
+      inversionista: '14%',
+      numero: '8%',
+      parte: '0',
+      admin: '7%',
+      tarifa: '8%',
+      acciones: '7%',
+    }
   }
   // Operación lleva además la columna Servicio (mantenimiento / arriendo /
   // internet); REC no, porque agrupa un solo tipo.
   const conServicio = tiposDelServicio.value.length > 1
-  return { proyecto: conServicio ? '19%' : '23%', tipoPlanta: '8%',
-           servicio: conServicio ? '10%' : '0', inversionista: '0',
-           numero: '9%', parte: conServicio ? '13%' : '15%',
-           admin: '0', tarifa: '0', acciones: '7%' }
+  return {
+    proyecto: conServicio ? '19%' : '23%',
+    tipoPlanta: '8%',
+    servicio: conServicio ? '10%' : '0',
+    inversionista: '0',
+    numero: '9%',
+    parte: conServicio ? '13%' : '15%',
+    admin: '0',
+    tarifa: '0',
+    acciones: '7%',
+  }
 })
 
 // Las dos tarifas en $/kWh de un contrato de representación. Cada una tiene su
 // serie de indexación y su tarifa base en el contrato.
 const TARIFAS_COLUMNA = [
   { clave: 'cgm', header: 'CGM', campoBase: 'tarifa_cgm', campoIdx: 'indexacion_cgm' },
-  { clave: 'rep', header: 'Repr.', campoBase: 'tarifa_representacion',
-    campoIdx: 'indexacion_representacion' },
+  {
+    clave: 'rep',
+    header: 'Repr.',
+    campoBase: 'tarifa_representacion',
+    campoIdx: 'indexacion_representacion',
+  },
 ]
 
 function vigenteDe(fila, t) {
@@ -1435,21 +2078,27 @@ const soloDuplicados = ref(false)
 const fusionando = ref(false)
 
 const nDuplicados = computed(() =>
-  (duplicados.value.grupos_fusionables || []).reduce((n, g) => n + g.ids.length, 0))
+  (duplicados.value.grupos_fusionables || []).reduce((n, g) => n + g.ids.length, 0),
+)
 const nEnConflicto = computed(() => (duplicados.value.grupos_con_conflicto || []).length)
 
 // Todos los ids involucrados, para poder aislarlos en la tabla.
-const idsDuplicados = computed(() => new Set([
-  ...(duplicados.value.grupos_fusionables || []).flatMap(g => g.ids),
-  ...(duplicados.value.grupos_con_conflicto || []).flatMap(g => g.ids),
-]))
+const idsDuplicados = computed(
+  () =>
+    new Set([
+      ...(duplicados.value.grupos_fusionables || []).flatMap((g) => g.ids),
+      ...(duplicados.value.grupos_con_conflicto || []).flatMap((g) => g.ids),
+    ]),
+)
 
 async function cargarDuplicados() {
   if (!esRepresentacion.value) return
   try {
     const { data } = await api.get('/contratos-servicio/duplicados-representacion')
     duplicados.value = data
-  } catch { /* el aviso es un extra: la tabla funciona sin él */ }
+  } catch {
+    /* el aviso es un extra: la tabla funciona sin él */
+  }
 }
 
 function confirmarFusion() {
@@ -1457,9 +2106,10 @@ function confirmarFusion() {
   const grupos = duplicados.value.grupos_fusionables.length
   confirm.require({
     header: 'Fusionar contratos duplicados',
-    message: `Se conservará un contrato por planta (${grupos}) con la unión de todos `
-           + `los datos y se eliminarán ${n - grupos} registros sobrantes. Ningún `
-           + `valor se sobreescribe, y los grupos que se contradicen no se tocan.`,
+    message:
+      `Se conservará un contrato por planta (${grupos}) con la unión de todos ` +
+      `los datos y se eliminarán ${n - grupos} registros sobrantes. Ningún ` +
+      `valor se sobreescribe, y los grupos que se contradicen no se tocan.`,
     icon: 'pi pi-clone',
     acceptLabel: 'Fusionar',
     rejectLabel: 'Cancelar',
@@ -1472,39 +2122,49 @@ async function fusionarDuplicados() {
   try {
     // Sin `ids`: fusiona todos los grupos limpios de una vez.
     const { data } = await api.post('/contratos-servicio/fusionar-representacion', {})
-    toast.add({ severity: 'success', summary: 'Duplicados fusionados',
-                detail: `${data.grupos_fusionados} contrato(s) consolidado(s), `
-                      + `${data.contratos_eliminados} registro(s) eliminado(s)`, life: 5000 })
+    toast.add({
+      severity: 'success',
+      summary: 'Duplicados fusionados',
+      detail:
+        `${data.grupos_fusionados} contrato(s) consolidado(s), ` +
+        `${data.contratos_eliminados} registro(s) eliminado(s)`,
+      life: 5000,
+    })
     soloDuplicados.value = false
     await cargarContratosServicio(servicio.value)
     await cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo fusionar',
-                detail: e.response?.data?.detail || e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo fusionar',
+      detail: e.response?.data?.detail || e.message,
+      life: 4000,
+    })
   } finally {
     fusionando.value = false
   }
 }
-const nHuerfanos = computed(() =>
-  contratosServicio.value.filter(c => !c.proyecto_id).length)
+const nHuerfanos = computed(() => contratosServicio.value.filter((c) => !c.proyecto_id).length)
 
 const contratosServicioFiltrados = computed(() => {
   let base = contratosServicio.value
-  if (soloHuerfanos.value) base = base.filter(c => !c.proyecto_id)
+  if (soloHuerfanos.value) base = base.filter((c) => !c.proyecto_id)
   if (esRepresentacion.value && soloDuplicados.value) {
-    base = base.filter(c => idsDuplicados.value.has(c.id))
+    base = base.filter((c) => idsDuplicados.value.has(c.id))
   }
   const t = q.value.trim().toLowerCase()
   if (t) {
-    base = base.filter(c =>
-      (c.numero_contrato || '').toLowerCase().includes(t) ||
-      (c.contratante_nombre || '').toLowerCase().includes(t) ||
-      (c.prestador_nombre || '').toLowerCase().includes(t) ||
-      (c.inversionista_nombre || '').toLowerCase().includes(t) ||
-      (c.proyecto?.nombre_comercial || '').toLowerCase().includes(t) ||
-      // `nombre_proyecto_ref` es el nombre de planta que trae el contrato;
-      // buscar por él es lo que permite encontrar los huérfanos por su planta.
-      (c.nombre_proyecto_ref || '').toLowerCase().includes(t))
+    base = base.filter(
+      (c) =>
+        (c.numero_contrato || '').toLowerCase().includes(t) ||
+        (c.contratante_nombre || '').toLowerCase().includes(t) ||
+        (c.prestador_nombre || '').toLowerCase().includes(t) ||
+        (c.inversionista_nombre || '').toLowerCase().includes(t) ||
+        (c.proyecto?.nombre_comercial || '').toLowerCase().includes(t) ||
+        // `nombre_proyecto_ref` es el nombre de planta que trae el contrato;
+        // buscar por él es lo que permite encontrar los huérfanos por su planta.
+        (c.nombre_proyecto_ref || '').toLowerCase().includes(t),
+    )
   }
   return aplicarFiltros(base)
 })
@@ -1515,15 +2175,21 @@ async function cargarContratosServicio(servicioKey) {
   const tipos = TIPOS_POR_SERVICIO[servicioKey] || [servicioKey]
   loadingServicio.value = true
   try {
-    const respuestas = await Promise.all(tipos.map(
-      t => api.get('/contratos-servicio', { params: { tipo: t, limit: 500 } })))
-    contratosServicio.value = respuestas.flatMap(r => r.data)
+    const respuestas = await Promise.all(
+      tipos.map((t) => api.get('/contratos-servicio', { params: { tipo: t, limit: 500 } })),
+    )
+    contratosServicio.value = respuestas.flatMap((r) => r.data)
     servicioCargado.value = servicioKey
     soloHuerfanos.value = false
     soloDuplicados.value = false
     if (servicioKey === 'representacion') cargarDuplicados()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al cargar contratos', detail: e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al cargar contratos',
+      detail: e.message,
+      life: 4000,
+    })
   } finally {
     loadingServicio.value = false
   }
@@ -1554,7 +2220,7 @@ async function abrirAsociarProyecto(contrato) {
 function sugerirProyecto(contrato) {
   const sf = (contrato.codigo_sun_factory || '').trim().toLowerCase()
   if (sf) {
-    const porTsf = proyectos.value.find(p => (p.codigo_tsf || '').trim().toLowerCase() === sf)
+    const porTsf = proyectos.value.find((p) => (p.codigo_tsf || '').trim().toLowerCase() === sf)
     if (porTsf) {
       proyectoElegido.value = porTsf.id
       proyectoSugerido.value = `código Sun Factory ${contrato.codigo_sun_factory}`
@@ -1563,7 +2229,7 @@ function sugerirProyecto(contrato) {
   }
   const ref_ = contrato.nombre_proyecto_ref || ''
   for (const num of ref_.match(/\d{4}/g) || []) {
-    const porNum = proyectos.value.find(p => (p.nombre_comercial || '').includes(num))
+    const porNum = proyectos.value.find((p) => (p.nombre_comercial || '').includes(num))
     if (porNum) {
       proyectoElegido.value = porNum.id
       proyectoSugerido.value = `número ${num} de "${ref_}"`
@@ -1578,11 +2244,12 @@ function sugerirProyecto(contrato) {
   for (const campo of ['prestador_nombre', 'contratante_nombre']) {
     const valor = normalizarPlanta(contrato[campo])
     if (!valor) continue
-    const exacta = proyectos.value.find(p => normalizarPlanta(p.nombre_comercial) === valor)
+    const exacta = proyectos.value.find((p) => normalizarPlanta(p.nombre_comercial) === valor)
     if (exacta) {
       proyectoElegido.value = exacta.id
       proyectoSugerido.value = `nombre "${contrato[campo]}" del campo ${
-        campo === 'prestador_nombre' ? 'prestador' : 'contratante'}`
+        campo === 'prestador_nombre' ? 'prestador' : 'contratante'
+      }`
       return
     }
   }
@@ -1592,21 +2259,29 @@ function normalizarPlanta(s) {
   // NFD separa la tilde de la letra, y el filtro de ASCII alfanumerico se lleva
   // los acentos junto con espacios y puntuacion: 'Canahuate' y 'Cañahuate'
   // acaban iguales sin necesidad de un rango de diacriticos en el regex.
-  return (s || '').normalize('NFD').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+  return (s || '')
+    .normalize('NFD')
+    .replace(/[^a-zA-Z0-9]/g, '')
+    .toUpperCase()
 }
 
 async function guardarProyectoContrato() {
   guardandoProyecto.value = true
   try {
-    const { data } = await api.patch(`/contratos-servicio/${contratoAAsociar.value.id}`,
-                                     { proyecto_id: proyectoElegido.value })
+    const { data } = await api.patch(`/contratos-servicio/${contratoAAsociar.value.id}`, {
+      proyecto_id: proyectoElegido.value,
+    })
     // Se reemplaza la fila con lo que devolvió el backend (trae ya el objeto
     // `proyecto` anidado) en vez de recargar los 112 contratos.
-    const i = contratosServicio.value.findIndex(c => c.id === data.id)
+    const i = contratosServicio.value.findIndex((c) => c.id === data.id)
     if (i !== -1) contratosServicio.value[i] = data
     dialogAsociarProyecto.value = false
-    toast.add({ severity: 'success', summary: 'Contrato asociado',
-                detail: data.proyecto?.nombre_comercial || '', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: 'Contrato asociado',
+      detail: data.proyecto?.nombre_comercial || '',
+      life: 3000,
+    })
   } catch (e) {
     toast.add({ severity: 'error', summary: 'No se pudo asociar', detail: e.message, life: 4000 })
   } finally {
@@ -1615,15 +2290,24 @@ async function guardarProyectoContrato() {
 }
 
 // ── Orquestación: cargar sólo lo que se mira, cachear el resto ──────────────
-const servicioInfo = computed(() => SERVICIOS.find(s => s.key === servicio.value))
+const servicioInfo = computed(() => SERVICIOS.find((s) => s.key === servicio.value))
 
 // Tipos reales de `servicio_aplica` que alimentan la pestana activa.
 const tiposDelServicio = computed(() => TIPOS_POR_SERVICIO[servicio.value] || [servicio.value])
 
 function asegurarDatos() {
-  if (vista.value === 'clientes') { if (!clientesCargados.value) cargarClientes(); return }
-  if (vista.value === 'proyectos') { if (!proyectosCargados.value) cargarProyectos(); return }
-  if (servicio.value === 'ppa') { if (!ppaCargados.value) cargarPpa(); return }
+  if (vista.value === 'clientes') {
+    if (!clientesCargados.value) cargarClientes()
+    return
+  }
+  if (vista.value === 'proyectos') {
+    if (!proyectosCargados.value) cargarProyectos()
+    return
+  }
+  if (servicio.value === 'ppa') {
+    if (!ppaCargados.value) cargarPpa()
+    return
+  }
   if (servicioCargado.value !== servicio.value) cargarContratosServicio(servicio.value)
 }
 
@@ -1652,7 +2336,7 @@ onMounted(() => {
 })
 
 function conteoVista(key) {
-  if (key === 'clientes')  return clientesCargados.value  ? clientesFiltrados.value.length  : null
+  if (key === 'clientes') return clientesCargados.value ? clientesFiltrados.value.length : null
   if (key === 'proyectos') return proyectosCargados.value ? proyectosFiltrados.value.length : null
   // Antes devolvia siempre ppaFiltrados: el badge decia 33 mirando "0 de 0".
   if (servicio.value === 'ppa') return ppaCargados.value ? ppaFiltrados.value.length : null
@@ -1661,112 +2345,147 @@ function conteoVista(key) {
 
 // ── Subtítulo / búsqueda / Excel según el ángulo activo ─────────────────────
 const filasVisibles = computed(() => {
-  if (vista.value === 'clientes')  return clientesFiltrados.value
+  if (vista.value === 'clientes') return clientesFiltrados.value
   if (vista.value === 'proyectos') return proyectosFiltrados.value
-  if (servicio.value === 'ppa')    return ppaFiltrados.value
+  if (servicio.value === 'ppa') return ppaFiltrados.value
   return contratosServicioFiltrados.value
 })
 
 const totalCrudo = computed(() => {
-  if (vista.value === 'clientes')  return clientes.value.length
+  if (vista.value === 'clientes') return clientes.value.length
   if (vista.value === 'proyectos') return proyectos.value.length
-  if (servicio.value === 'ppa')    return ppa.value.length
+  if (servicio.value === 'ppa') return ppa.value.length
   return contratosServicio.value.length
 })
 
 const subtitulo = computed(() => {
-  const etiqueta = vista.value === 'clientes' ? 'clientes'
-    : vista.value === 'proyectos' ? 'plantas'
-    : `contratos de ${servicioInfo.value?.label}`
+  const etiqueta =
+    vista.value === 'clientes'
+      ? 'clientes'
+      : vista.value === 'proyectos'
+        ? 'plantas'
+        : `contratos de ${servicioInfo.value?.label}`
   return `${filasVisibles.value.length} de ${totalCrudo.value} ${etiqueta} · vista unificada`
 })
 
 const placeholderBusqueda = computed(() => {
-  if (vista.value === 'clientes')  return 'Buscar cliente, NIT, contacto…'
-  if (vista.value === 'proyectos') return 'Buscar planta, código TSF, ubicación, PPA, inversionista…'
-  if (servicio.value === 'ppa')    return 'Buscar contrato, comprador, planta…'
-  if (esRepresentacion.value)      return 'Buscar planta, inversionista, número…'
+  if (vista.value === 'clientes') return 'Buscar cliente, NIT, contacto…'
+  if (vista.value === 'proyectos')
+    return 'Buscar planta, código TSF, ubicación, PPA, inversionista…'
+  if (servicio.value === 'ppa') return 'Buscar contrato, comprador, planta…'
+  if (esRepresentacion.value) return 'Buscar planta, inversionista, número…'
   return 'Buscar planta, número, contratante, prestador…'
 })
 
 const COLUMNAS_EXCEL = {
   clientes: () => [
-    { header: 'Razón social', value: c => formatearNombre(c.razon_social_nombre) },
-    { header: 'NIT', value: c => c.nit_cedula || '' },
-    { header: 'Plantas', value: c => c.num_plantas ?? 0 },
-    { header: 'Servicios', value: c => (c.servicios || []).map(servicioLabel).join(', ') },
-    { header: 'Contacto comercial', value: c => c.contacto_comercial_nombre || '' },
-    { header: 'Teléfono', value: c => c.contacto_comercial_telefono || '' },
-    { header: 'Correo comercial', value: c => c.contacto_comercial_correo || '' },
-    { header: 'Estado contrato', value: c => c.alerta_contrato || 'vigente' },
+    { header: 'Razón social', value: (c) => formatearNombre(c.razon_social_nombre) },
+    { header: 'NIT', value: (c) => c.nit_cedula || '' },
+    { header: 'Plantas', value: (c) => c.num_plantas ?? 0 },
+    { header: 'Servicios', value: (c) => (c.servicios || []).map(servicioLabel).join(', ') },
+    { header: 'Contacto comercial', value: (c) => c.contacto_comercial_nombre || '' },
+    { header: 'Teléfono', value: (c) => c.contacto_comercial_telefono || '' },
+    { header: 'Correo comercial', value: (c) => c.contacto_comercial_correo || '' },
+    { header: 'Estado contrato', value: (c) => c.alerta_contrato || 'vigente' },
   ],
   proyectos: () => [
-    { header: 'Cód. TSF', value: p => p.codigo_tsf || '' },
-    { header: 'Nombre comercial', value: p => formatearNombre(p.nombre_comercial) },
-    { header: 'Estado', value: p => ESTADO_LABELS[p.estado] || p.estado || '' },
-    { header: 'Tipo', value: p => TIPO_LABELS[p.tipo_proyecto] || p.tipo_proyecto || '' },
-    { header: 'Municipio', value: p => p.municipio || '' },
-    { header: 'Departamento', value: p => p.departamento || '' },
-    { header: 'Inicio comercialización', value: p => p.fecha_inicio_comercializacion ? fmtFecha(p.fecha_inicio_comercializacion) : '' },
-    { header: 'Capacidad instalada (kWp)', value: p => p.info_tecnica?.capacidad_instalada_kwp ?? '' },
-    { header: 'Potencia AC (kW)', value: p => p.info_tecnica?.potencia_ac_kw ?? '' },
-    { header: 'Servicios', value: p => SERVICIOS_BADGES.filter(s => p[s.key]).map(s => s.badge).join(', ') },
-    { header: 'PPA', value: p => ppaVigentes(p).map(ppaLabel).join(', ') },
-    { header: 'Inversionistas', value: p => (p.inversionistas || []).map(i => i.cliente_nombre).join(', ') },
+    { header: 'Cód. TSF', value: (p) => p.codigo_tsf || '' },
+    { header: 'Nombre comercial', value: (p) => formatearNombre(p.nombre_comercial) },
+    { header: 'Estado', value: (p) => ESTADO_LABELS[p.estado] || p.estado || '' },
+    { header: 'Tipo', value: (p) => TIPO_LABELS[p.tipo_proyecto] || p.tipo_proyecto || '' },
+    { header: 'Municipio', value: (p) => p.municipio || '' },
+    { header: 'Departamento', value: (p) => p.departamento || '' },
+    {
+      header: 'Inicio comercialización',
+      value: (p) =>
+        p.fecha_inicio_comercializacion ? fmtFecha(p.fecha_inicio_comercializacion) : '',
+    },
+    {
+      header: 'Capacidad instalada (kWp)',
+      value: (p) => p.info_tecnica?.capacidad_instalada_kwp ?? '',
+    },
+    { header: 'Potencia AC (kW)', value: (p) => p.info_tecnica?.potencia_ac_kw ?? '' },
+    {
+      header: 'Servicios',
+      value: (p) =>
+        SERVICIOS_BADGES.filter((s) => p[s.key])
+          .map((s) => s.badge)
+          .join(', '),
+    },
+    { header: 'PPA', value: (p) => ppaVigentes(p).map(ppaLabel).join(', ') },
+    {
+      header: 'Inversionistas',
+      value: (p) => (p.inversionistas || []).map((i) => i.cliente_nombre).join(', '),
+    },
   ],
   ppa: () => [
-    { header: 'Nombre interno', value: c => c.nombre_interno || '' },
-    { header: 'Tipo', value: c => c.tipo_contrato === 'compra' ? 'Compra' : 'Venta' },
-    { header: 'N° contrato', value: c => c.numero_codigo_contrato || '' },
-    { header: 'Estado', value: c => (c._vigencia || estadoVigenciaPPA(c)).label },
-    { header: 'Comprador', value: c => c.comprador_nombre || '' },
-    { header: 'Vendedor', value: c => c.vendedor_nombre || '' },
-    { header: 'Inicio', value: c => fmtFecha(c.fecha_inicio) },
-    { header: 'Fin', value: c => fmtFecha(c.fecha_fin) },
-    { header: 'Días restantes', value: c => c.dias_restantes ?? '' },
-    { header: 'Cumplimiento', value: c => CUMPLIMIENTO_LABELS[c.estado_cumplimiento] || c.estado_cumplimiento || '' },
-    { header: 'Cobertura (%)', value: c => c.cobertura_actual_pct ?? '' },
+    { header: 'Nombre interno', value: (c) => c.nombre_interno || '' },
+    { header: 'Tipo', value: (c) => (c.tipo_contrato === 'compra' ? 'Compra' : 'Venta') },
+    { header: 'N° contrato', value: (c) => c.numero_codigo_contrato || '' },
+    { header: 'Estado', value: (c) => (c._vigencia || estadoVigenciaPPA(c)).label },
+    { header: 'Comprador', value: (c) => c.comprador_nombre || '' },
+    { header: 'Vendedor', value: (c) => c.vendedor_nombre || '' },
+    { header: 'Inicio', value: (c) => fmtFecha(c.fecha_inicio) },
+    { header: 'Fin', value: (c) => fmtFecha(c.fecha_fin) },
+    { header: 'Días restantes', value: (c) => c.dias_restantes ?? '' },
+    {
+      header: 'Cumplimiento',
+      value: (c) => CUMPLIMIENTO_LABELS[c.estado_cumplimiento] || c.estado_cumplimiento || '',
+    },
+    { header: 'Cobertura (%)', value: (c) => c.cobertura_actual_pct ?? '' },
   ],
   contrato: () => [
-    { header: 'Tipo', value: c => TIPO_CONTRATO_LABELS[c.servicio_aplica] || c.servicio_aplica || '' },
+    {
+      header: 'Tipo',
+      value: (c) => TIPO_CONTRATO_LABELS[c.servicio_aplica] || c.servicio_aplica || '',
+    },
     // El proyecto va en el Excel de todos los servicios, no sólo de
     // Representación: es la llave con la que se cruza contra cualquier otro
     // reporte de la plataforma.
-    { header: 'Proyecto', value: c => c.proyecto?.nombre_comercial || '' },
-    { header: 'Tipo de planta', value: c =>
-        TIPO_LABELS[c.proyecto?.tipo_proyecto] || c.proyecto?.tipo_proyecto || '' },
-    { header: 'Proyecto según contrato', value: c => c.nombre_proyecto_ref || '' },
-    { header: 'Inversionista', value: c => c.inversionista_nombre || '' },
-    { header: 'N° contrato', value: c => c.numero_contrato || '' },
-    { header: 'Contratante', value: c => c.contratante_nombre || '' },
-    { header: 'Prestador', value: c => c.prestador_nombre || '' },
-    { header: 'Inicio', value: c => fmtFecha(c.fecha_inicio) },
-    { header: 'Fin', value: c => fmtFecha(c.fecha_fin) },
-    { header: 'Estado', value: c => ESTADO_CONTRATO_LABELS[c.estado] || c.estado || '' },
+    { header: 'Proyecto', value: (c) => c.proyecto?.nombre_comercial || '' },
+    {
+      header: 'Tipo de planta',
+      value: (c) => TIPO_LABELS[c.proyecto?.tipo_proyecto] || c.proyecto?.tipo_proyecto || '',
+    },
+    { header: 'Proyecto según contrato', value: (c) => c.nombre_proyecto_ref || '' },
+    { header: 'Inversionista', value: (c) => c.inversionista_nombre || '' },
+    { header: 'N° contrato', value: (c) => c.numero_contrato || '' },
+    { header: 'Contratante', value: (c) => c.contratante_nombre || '' },
+    { header: 'Prestador', value: (c) => c.prestador_nombre || '' },
+    { header: 'Inicio', value: (c) => fmtFecha(c.fecha_inicio) },
+    { header: 'Fin', value: (c) => fmtFecha(c.fecha_fin) },
+    { header: 'Estado', value: (c) => ESTADO_CONTRATO_LABELS[c.estado] || c.estado || '' },
     // Las tarifas van con la vigente Y la base: en una hoja de cálculo se
     // trabaja con las dos, y sin la base no se puede rehacer la indexación.
-    { header: 'Tarifa admin (%)', value: c =>
-        c.tarifa_admin != null ? +(Number(c.tarifa_admin) * 100).toFixed(4) : '' },
-    { header: 'CGM vigente ($/kWh)', value: c =>
-        vigenteDe(c, TARIFAS_COLUMNA[0]).valor ?? '' },
-    { header: 'CGM año', value: c => vigenteDe(c, TARIFAS_COLUMNA[0]).anio ?? '' },
-    { header: 'CGM base ($/kWh)', value: c => c.tarifa_cgm ?? '' },
-    { header: 'Repr. vigente ($/kWh)', value: c =>
-        vigenteDe(c, TARIFAS_COLUMNA[1]).valor ?? '' },
-    { header: 'Repr. año', value: c => vigenteDe(c, TARIFAS_COLUMNA[1]).anio ?? '' },
-    { header: 'Repr. base ($/kWh)', value: c => c.tarifa_representacion ?? '' },
-    { header: 'Portafolio', value: c => c.portafolio || '' },
+    {
+      header: 'Tarifa admin (%)',
+      value: (c) => (c.tarifa_admin != null ? +(Number(c.tarifa_admin) * 100).toFixed(4) : ''),
+    },
+    { header: 'CGM vigente ($/kWh)', value: (c) => vigenteDe(c, TARIFAS_COLUMNA[0]).valor ?? '' },
+    { header: 'CGM año', value: (c) => vigenteDe(c, TARIFAS_COLUMNA[0]).anio ?? '' },
+    { header: 'CGM base ($/kWh)', value: (c) => c.tarifa_cgm ?? '' },
+    { header: 'Repr. vigente ($/kWh)', value: (c) => vigenteDe(c, TARIFAS_COLUMNA[1]).valor ?? '' },
+    { header: 'Repr. año', value: (c) => vigenteDe(c, TARIFAS_COLUMNA[1]).anio ?? '' },
+    { header: 'Repr. base ($/kWh)', value: (c) => c.tarifa_representacion ?? '' },
+    { header: 'Portafolio', value: (c) => c.portafolio || '' },
   ],
 }
 
 async function descargarExcel() {
-  const clave = vista.value === 'clientes' ? 'clientes'
-    : vista.value === 'proyectos' ? 'proyectos'
-    : servicio.value === 'ppa' ? 'ppa'
-    : 'contrato'
-  const hoja = vista.value === 'clientes' ? 'Clientes'
-    : vista.value === 'proyectos' ? 'Proyectos'
-    : (servicioInfo.value?.label || 'Servicios')
+  const clave =
+    vista.value === 'clientes'
+      ? 'clientes'
+      : vista.value === 'proyectos'
+        ? 'proyectos'
+        : servicio.value === 'ppa'
+          ? 'ppa'
+          : 'contrato'
+  const hoja =
+    vista.value === 'clientes'
+      ? 'Clientes'
+      : vista.value === 'proyectos'
+        ? 'Proyectos'
+        : servicioInfo.value?.label || 'Servicios'
   const nombre = vista.value === 'servicios' && clave === 'contrato' ? servicio.value : clave
   const fecha = new Date().toISOString().slice(0, 10)
   await exportarExcel(filasVisibles.value, COLUMNAS_EXCEL[clave](), `${nombre}_${fecha}.xlsx`, hoja)
@@ -1797,11 +2516,15 @@ function confirmarBorrarCliente(row) {
     accept: async () => {
       try {
         await api.delete(`/clientes/${row.id}`)
-        clientes.value = clientes.value.filter(c => c.id !== row.id)
+        clientes.value = clientes.value.filter((c) => c.id !== row.id)
         toast.add({ severity: 'success', summary: 'Cliente eliminado', life: 2500 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'No se pudo eliminar',
-          detail: e.response?.data?.detail || 'Error al eliminar', life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: 'No se pudo eliminar',
+          detail: e.response?.data?.detail || 'Error al eliminar',
+          life: 5000,
+        })
       }
     },
   })
@@ -1813,9 +2536,12 @@ function irAEditarContratoServicio(row) {
   if (!row.proyecto_id) {
     // Sin planta no hay ficha donde abrirlo, pero sí se puede asociar: se
     // ofrece eso en vez de dejar el aviso en un callejón sin salida.
-    toast.add({ severity: 'warn', summary: 'Sin planta asociada',
+    toast.add({
+      severity: 'warn',
+      summary: 'Sin planta asociada',
       detail: 'Asócialo a un proyecto (botón 🔗) y podrás editarlo en su ficha.',
-      life: 5000 })
+      life: 5000,
+    })
     return
   }
   ir(fichaDelServicio(row.proyecto_id))
@@ -1833,11 +2559,15 @@ function confirmarBorrarContratoServicio(row) {
     accept: async () => {
       try {
         await api.delete(`/contratos-servicio/${row.id}`)
-        contratosServicio.value = contratosServicio.value.filter(c => c.id !== row.id)
+        contratosServicio.value = contratosServicio.value.filter((c) => c.id !== row.id)
         toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2500 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'No se pudo eliminar',
-          detail: e.response?.data?.detail || 'Error al eliminar', life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: 'No se pudo eliminar',
+          detail: e.response?.data?.detail || 'Error al eliminar',
+          life: 5000,
+        })
       }
     },
   })
@@ -1853,15 +2583,20 @@ const forzando = ref(false)
 
 async function guardarInfoTecnicaSiAplica(proyectoId, infoTecnica) {
   if (!infoTecnica) return
-  const vacia = infoTecnica.potencia_ac_kw == null
-    && infoTecnica.capacidad_instalada_kwp == null
-    && infoTecnica.cantidad_total_paneles == null
+  const vacia =
+    infoTecnica.potencia_ac_kw == null &&
+    infoTecnica.capacidad_instalada_kwp == null &&
+    infoTecnica.cantidad_total_paneles == null
   if (vacia) return
   try {
     await api.put(`/proyectos/${proyectoId}/info-tecnica`, infoTecnica)
   } catch (e) {
-    toast.add({ severity: 'warn', summary: 'Proyecto creado, pero la ficha técnica no se pudo guardar',
-      detail: e.response?.data?.detail, life: 5000 })
+    toast.add({
+      severity: 'warn',
+      summary: 'Proyecto creado, pero la ficha técnica no se pudo guardar',
+      detail: e.response?.data?.detail,
+      life: 5000,
+    })
   }
 }
 
@@ -1883,15 +2618,21 @@ async function crearProyecto(payload, infoTecnica) {
       duplicadoVisible.value = true
       return
     }
-    toast.add({ severity: 'error', summary: 'Error',
-      detail: typeof detail === 'string' ? detail : 'Error al guardar', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: typeof detail === 'string' ? detail : 'Error al guardar',
+      life: 4000,
+    })
   }
 }
 
 async function crearProyectoForzado() {
   forzando.value = true
   try {
-    const { data } = await api.post('/proyectos', pendingPayload.value, { params: { forzar: true } })
+    const { data } = await api.post('/proyectos', pendingPayload.value, {
+      params: { forzar: true },
+    })
     await guardarInfoTecnicaSiAplica(data.id, pendingInfoTecnica.value)
     toast.add({ severity: 'success', summary: 'Proyecto creado', life: 3000 })
     duplicadoVisible.value = false
@@ -1899,8 +2640,12 @@ async function crearProyectoForzado() {
     cargarProyectos()
   } catch (e) {
     const detail = e.response?.data?.detail
-    toast.add({ severity: 'error', summary: 'Error',
-      detail: typeof detail === 'string' ? detail : 'Error al guardar', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: typeof detail === 'string' ? detail : 'Error al guardar',
+      life: 4000,
+    })
   } finally {
     forzando.value = false
   }
@@ -1917,11 +2662,15 @@ function confirmarBorrarProyecto(row) {
     accept: async () => {
       try {
         await api.delete(`/proyectos/${row.id}`)
-        proyectos.value = proyectos.value.filter(p => p.id !== row.id)
+        proyectos.value = proyectos.value.filter((p) => p.id !== row.id)
         toast.add({ severity: 'success', summary: 'Proyecto eliminado', life: 2500 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'No se pudo eliminar',
-          detail: e.response?.data?.detail || 'Error al eliminar', life: 5000 })
+        toast.add({
+          severity: 'error',
+          summary: 'No se pudo eliminar',
+          detail: e.response?.data?.detail || 'Error al eliminar',
+          life: 5000,
+        })
       }
     },
   })
@@ -1936,11 +2685,16 @@ const ppaADuplicar = ref(null)
 const tipoAcrear = ref(null)
 const menuNuevoContrato = ref(null)
 
-const opcionesNuevoContrato = computed(() => tiposDelServicio.value.map(t => ({
-  label: TIPO_CONTRATO_LABELS[t] || t,
-  icon: 'pi pi-plus',
-  command: () => { tipoAcrear.value = t; showWizardServicio.value = true },
-})))
+const opcionesNuevoContrato = computed(() =>
+  tiposDelServicio.value.map((t) => ({
+    label: TIPO_CONTRATO_LABELS[t] || t,
+    icon: 'pi pi-plus',
+    command: () => {
+      tipoAcrear.value = t
+      showWizardServicio.value = true
+    },
+  })),
+)
 
 function nuevoContrato(evento) {
   if (tiposDelServicio.value.length === 1) {
@@ -1972,11 +2726,15 @@ function confirmarBorrarPpa(contrato) {
     accept: async () => {
       try {
         await api.delete(`/ppa/${contrato.id}`)
-        ppa.value = ppa.value.filter(c => c.id !== contrato.id)
+        ppa.value = ppa.value.filter((c) => c.id !== contrato.id)
         toast.add({ severity: 'success', summary: 'Contrato eliminado', life: 2500 })
       } catch (e) {
-        toast.add({ severity: 'error', summary: 'No se puede eliminar',
-          detail: e.response?.data?.detail || 'Error al eliminar el contrato.', life: 6000 })
+        toast.add({
+          severity: 'error',
+          summary: 'No se puede eliminar',
+          detail: e.response?.data?.detail || 'Error al eliminar el contrato.',
+          life: 6000,
+        })
       }
     },
   })
@@ -1986,31 +2744,72 @@ function confirmarBorrarPpa(contrato) {
 <style scoped>
 /* ── Selector de ángulo ─────────────────────────────────────────────────────── */
 .svc-tab {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 6px 12px; border: 1px solid #E5E2EC; border-radius: 9px;
-  background: #fff; font-size: 13px; font-weight: 700; color: #6b7280;
-  cursor: pointer; transition: border-color .12s, color .12s, background .12s; user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #e5e2ec;
+  border-radius: 9px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    color 0.12s,
+    background 0.12s;
+  user-select: none;
 }
-.svc-tab:hover { border-color: #cbb8e8; color: #2C2039; }
-.svc-tab i { font-size: 13px; color: #9ca3af; }
-.svc-tab--on { box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-.svc-tab--sm { padding: 4px 9px; font-size: 12px; font-weight: 600; }
-.svc-tab--sm i { font-size: 11px; }
+.svc-tab:hover {
+  border-color: #cbb8e8;
+  color: #2c2039;
+}
+.svc-tab i {
+  font-size: 13px;
+  color: #9ca3af;
+}
+.svc-tab--on {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.svc-tab--sm {
+  padding: 4px 9px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.svc-tab--sm i {
+  font-size: 11px;
+}
 .svc-tab-count {
-  background: #EEF0F2; color: #6b7280; border-radius: 999px;
-  font-size: 10px; font-weight: 800; padding: 0 6px; min-width: 18px; text-align: center;
+  background: #eef0f2;
+  color: #6b7280;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 0 6px;
+  min-width: 18px;
+  text-align: center;
 }
 
 /* ── Buscador de la cabecera ─────────────────────────────────────
    Angosto a propósito: cada píxel que ocupa la cabecera se lo quita a la tabla,
    y lo que se teclea acá suele ser una palabra. En móvil pasa a ancho completo. */
-.ph-buscar { width: 100%; }
-@media (min-width: 640px) { .ph-buscar { width: 190px; } }
+.ph-buscar {
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .ph-buscar {
+    width: 190px;
+  }
+}
 
 /* ── Caja de la tabla ──────────────────────────────────────────────────────── */
 .tabla-caja {
-  background: #fff; border: 1px solid #ECE7F2; border-radius: 12px; overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  background: #fff;
+  border: 1px solid #ece7f2;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 /* ── Densidad ──────────────────────────────────────────────────────────────────
@@ -2018,186 +2817,442 @@ function confirmarBorrarPpa(contrato) {
    perder legibilidad: encabezado en versalitas chicas, celdas de una línea. El
    botón de la cabecera alterna a "cómoda" para quien prefiera aire.          */
 .tabla :deep(.p-datatable-thead > tr > th) {
-  padding: 5px 8px; font-size: 10px; font-weight: 700; letter-spacing: .04em;
-  text-transform: uppercase; color: #8b7fa3; background: #FAF9FC; white-space: nowrap;
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b7fa3;
+  background: #faf9fc;
+  white-space: nowrap;
 }
 .tabla :deep(.p-datatable-tbody > tr > td) {
-  padding: 4px 8px; font-size: 12px; line-height: 1.3; white-space: nowrap;
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 1.3;
+  white-space: nowrap;
 }
-.tabla--compacta :deep(.p-datatable-thead > tr > th) { padding: 3px 6px; font-size: 9.5px; }
-.tabla--compacta :deep(.p-datatable-tbody > tr > td) { padding: 1px 6px; font-size: 11px; line-height: 1.2; }
-.tabla :deep(.p-datatable-tbody > tr > td .p-button) { width: 1.5rem; height: 1.5rem; }
-.tabla :deep(.p-datatable-tbody > tr > td .p-button .p-button-icon) { font-size: .7rem; }
-.tabla :deep(.p-paginator) { padding: 2px 6px; font-size: 12px; border-top: 1px solid #F1EDF7; }
+.tabla--compacta :deep(.p-datatable-thead > tr > th) {
+  padding: 3px 6px;
+  font-size: 9.5px;
+}
+.tabla--compacta :deep(.p-datatable-tbody > tr > td) {
+  padding: 1px 6px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+.tabla :deep(.p-datatable-tbody > tr > td .p-button) {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+.tabla :deep(.p-datatable-tbody > tr > td .p-button .p-button-icon) {
+  font-size: 0.7rem;
+}
+.tabla :deep(.p-paginator) {
+  padding: 2px 6px;
+  font-size: 12px;
+  border-top: 1px solid #f1edf7;
+}
 .tabla :deep(.p-paginator .p-paginator-page),
 .tabla :deep(.p-paginator .p-paginator-first),
 .tabla :deep(.p-paginator .p-paginator-prev),
 .tabla :deep(.p-paginator .p-paginator-next),
-.tabla :deep(.p-paginator .p-paginator-last) { min-width: 1.75rem; height: 1.75rem; }
-.tabla :deep(.p-datatable-sort-icon) { width: .65rem; height: .65rem; }
+.tabla :deep(.p-paginator .p-paginator-last) {
+  min-width: 1.75rem;
+  height: 1.75rem;
+}
+.tabla :deep(.p-datatable-sort-icon) {
+  width: 0.65rem;
+  height: 0.65rem;
+}
 
 /* Fila resaltada por vencimiento (misma semántica que la vista Clientes) */
-.tabla :deep(.row-vencido) > td    { background: #FEF2F2 !important; }
-.tabla :deep(.row-por-vencer) > td { background: #FFFBEB !important; }
+.tabla :deep(.row-vencido) > td {
+  background: #fef2f2 !important;
+}
+.tabla :deep(.row-por-vencer) > td {
+  background: #fffbeb !important;
+}
 
 /* La fila entera abre el detalle (sólo donde row-click está cableado) */
-.tabla--clickable :deep(.p-datatable-tbody > tr) { cursor: pointer; }
+.tabla--clickable :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
+}
 
 /* ── Sin scroll horizontal ────────────────────────────────────────
    `table-layout: fixed` hace que los porcentajes de cada <Column> manden: la
    tabla se reparte el ancho disponible y NUNCA lo excede. Lo que no cabe se
    recorta con puntos suspensivos (y el dato completo queda en el tooltip o en
    el Excel), en vez de empujar la tabla y aparecer una barra horizontal. */
-.tabla :deep(.p-datatable-table) { table-layout: fixed; width: 100%; }
-.tabla :deep(.p-datatable-table-container) { overflow-x: hidden; }
-.tabla :deep(.p-datatable-thead > tr > th) { overflow: hidden; }
-.tabla :deep(.p-datatable-tbody > tr > td) { overflow: hidden; text-overflow: ellipsis; }
+.tabla :deep(.p-datatable-table) {
+  table-layout: fixed;
+  width: 100%;
+}
+.tabla :deep(.p-datatable-table-container) {
+  overflow-x: hidden;
+}
+.tabla :deep(.p-datatable-thead > tr > th) {
+  overflow: hidden;
+}
+.tabla :deep(.p-datatable-tbody > tr > td) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* Texto de una línea que se recorta dentro de su celda */
 .celda-txt {
-  display: block; min-width: 0; max-width: 100%;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Chips en una sola línea: si sobran, se recortan en vez de agrandar la fila */
-.chips-fila { display: flex; gap: 2px; overflow: hidden; min-width: 0; }
+.chips-fila {
+  display: flex;
+  gap: 2px;
+  overflow: hidden;
+  min-width: 0;
+}
 
 /* Subencabezado de grupo (cuando se agrupa el portafolio) */
-.grupo-titulo { font-size: 12px; font-weight: 800; color: #2C2039; }
-.grupo-conteo {
-  margin-left: 7px; background: #f0ebfd; color: #915BD8;
-  border-radius: 999px; font-size: 10px; font-weight: 800; padding: 0 6px;
+.grupo-titulo {
+  font-size: 12px;
+  font-weight: 800;
+  color: #2c2039;
 }
-.tabla :deep(.p-rowgroup-header) { background: #FAF9FC; }
-.tabla :deep(.p-rowgroup-header > td) { padding: 4px 8px; }
+.grupo-conteo {
+  margin-left: 7px;
+  background: #f0ebfd;
+  color: #915bd8;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 0 6px;
+}
+.tabla :deep(.p-rowgroup-header) {
+  background: #faf9fc;
+}
+.tabla :deep(.p-rowgroup-header > td) {
+  padding: 4px 8px;
+}
 
 /* Celda "Falta": dos contadores, campos y documentos */
-.falta-celda { display: flex; gap: 3px; }
-.falta-chip {
-  display: inline-flex; align-items: center; gap: 3px;
-  font-size: 10px; font-weight: 700; line-height: 1.5;
-  padding: 0 5px; border-radius: 999px; cursor: default; white-space: nowrap;
+.falta-celda {
+  display: flex;
+  gap: 3px;
 }
-.falta-chip i { font-size: 8px; }
-.falta--ok  { background: #D1FAE5; color: #065F46; }
-.falta--mal { background: #FEF3C7; color: #92400E; }
+.falta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 0 5px;
+  border-radius: 999px;
+  cursor: default;
+  white-space: nowrap;
+}
+.falta-chip i {
+  font-size: 8px;
+}
+.falta--ok {
+  background: #d1fae5;
+  color: #065f46;
+}
+.falta--mal {
+  background: #fef3c7;
+  color: #92400e;
+}
 
 /* Celda de acciones: mismos dos iconos, misma posicion, en las 5 tablas */
-.acciones { display: flex; justify-content: flex-end; gap: 0; }
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0;
+}
 
 /* ── Celda Proyecto ──────────────────────────────────────────────────────────
    El nombre de la planta es un enlace: lleva a su ficha de representación. Se
    pinta como botón (no <a>) porque la navegación la hace el router.          */
 .celda-enlace {
-  display: flex; align-items: center; gap: 5px; min-width: 0; width: 100%;
-  background: none; border: none; padding: 0; text-align: left; cursor: pointer;
-  color: #2C2039;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  color: #2c2039;
 }
-.celda-enlace:hover .celda-txt { color: #915BD8; text-decoration: underline; }
+.celda-enlace:hover .celda-txt {
+  color: #915bd8;
+  text-decoration: underline;
+}
 
 /* Contrato sin planta: es un pendiente, así que se pinta como acción por hacer
    y no como un dato más. */
 .chip-huerfano {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: 10px; font-weight: 700; line-height: 1.6;
-  padding: 0 7px; border-radius: 999px; cursor: pointer;
-  background: #FEF3C7; color: #92400E; border: 1px dashed #F59E0B;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+  padding: 0 7px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px dashed #f59e0b;
 }
-.chip-huerfano:hover { background: #FDE68A; }
+.chip-huerfano:hover {
+  background: #fde68a;
+}
 
 .tarifa-celda {
-  display: inline-flex; align-items: baseline; gap: 4px; justify-content: flex-end;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  justify-content: flex-end;
 }
 /* El año del aniversario en pequeño: el número grande es la tarifa que aplica
    hoy, y el año dice de qué indexación viene. */
-.tarifa-anio { font-size: 9px; font-weight: 700; color: #9b8fb0; }
+.tarifa-anio {
+  font-size: 9px;
+  font-weight: 700;
+  color: #9b8fb0;
+}
 
 .filtros-panel {
-  display: flex; flex-direction: column; gap: 12px; padding: 4px 2px; min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 2px;
+  min-width: 220px;
 }
 .opcion-n {
-  flex: 0 0 auto; font-size: 10px; font-weight: 700; color: #9b8fb0;
-  background: #F3F0F8; border-radius: 999px; padding: 0 6px;
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: #9b8fb0;
+  background: #f3f0f8;
+  border-radius: 999px;
+  padding: 0 6px;
 }
 
 /* Chip de filtro aplicado: se quita con un clic en cualquier parte del chip */
 .chip-filtro {
-  display: inline-flex; align-items: center; gap: 5px; max-width: 320px;
-  font-size: 11px; font-weight: 600; line-height: 1.7;
-  padding: 0 8px; border-radius: 999px; cursor: pointer;
-  background: #F0EBFD; color: #6B4BA8; border: 1px solid #DCD0F5;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 320px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.7;
+  padding: 0 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  background: #f0ebfd;
+  color: #6b4ba8;
+  border: 1px solid #dcd0f5;
 }
-.chip-filtro:hover { background: #E5DBFA; }
-.chip-filtro i { font-size: 9px; opacity: .7; }
+.chip-filtro:hover {
+  background: #e5dbfa;
+}
+.chip-filtro i {
+  font-size: 9px;
+  opacity: 0.7;
+}
 .chip-filtro-lbl {
-  font-size: 9.5px; font-weight: 800; text-transform: uppercase;
-  letter-spacing: .03em; opacity: .65; flex: 0 0 auto;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  opacity: 0.65;
+  flex: 0 0 auto;
 }
 .chip-filtro--limpiar {
-  background: transparent; color: #6b5a8a; border-color: #E5E2EC; font-weight: 500;
+  background: transparent;
+  color: #6b5a8a;
+  border-color: #e5e2ec;
+  font-weight: 500;
 }
-.chip-filtro--limpiar:hover { background: #F7F5FB; }
+.chip-filtro--limpiar:hover {
+  background: #f7f5fb;
+}
 
 .barra-duplicados {
-  display: flex; align-items: center; gap: 7px;
-  padding: 6px 10px; font-size: 12px;
-  background: #EFF6FF; color: #1E40AF; border-bottom: 1px solid #BFDBFE;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  background: #eff6ff;
+  color: #1e40af;
+  border-bottom: 1px solid #bfdbfe;
 }
 
 .barra-huerfanos {
-  display: flex; align-items: center; gap: 7px;
-  padding: 6px 10px; font-size: 12px;
-  background: #FFFBEB; color: #92400E; border-bottom: 1px solid #FDE68A;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  font-size: 12px;
+  background: #fffbeb;
+  color: #92400e;
+  border-bottom: 1px solid #fde68a;
 }
 
 /* ── Piezas de celda ──────────────────────────────────────────────────────── */
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: #6b5a8a; }
-.sutil { font-size: 11px; color: #6b7280; }
-.vacio { font-size: 11px; color: #d1d5db; }
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  color: #6b5a8a;
+}
+.sutil {
+  font-size: 11px;
+  color: #6b7280;
+}
+.vacio {
+  font-size: 11px;
+  color: #d1d5db;
+}
 
 .mini-chip {
-  display: inline-flex; align-items: center; flex: 0 0 auto;
-  font-size: 9.5px; font-weight: 600; line-height: 1.5;
-  padding: 0 5px; border-radius: 999px; white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  font-size: 9.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  padding: 0 5px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
-.srv-badge { background: #D1FAE5; color: #065F46; font-weight: 700; }
-.chip-ok      { background: #D1FAE5; color: #065F46; }
-.chip-warn    { background: #FEF3C7; color: #92400E; }
-.chip-danger  { background: #FEE2E2; color: #991B1B; }
-.chip-neutral { background: #F3F4F6; color: #374151; }
+.srv-badge {
+  background: #d1fae5;
+  color: #065f46;
+  font-weight: 700;
+}
+.chip-ok {
+  background: #d1fae5;
+  color: #065f46;
+}
+.chip-warn {
+  background: #fef3c7;
+  color: #92400e;
+}
+.chip-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.chip-neutral {
+  background: #f3f4f6;
+  color: #374151;
+}
 
-.estado-operacion    { background: #D1FAE5; color: #065F46; }
-.estado-suspendido   { background: #FEF3C7; color: #92400E; }
-.estado-construccion { background: #DBEAFE; color: #1E40AF; }
-.estado-default      { background: #F3F4F6; color: #374151; }
-.badge-minigranja    { background: #D1FAE5; color: #065F46; }
-.badge-gd            { background: #DBEAFE; color: #1E40AF; }
-.badge-autoconsumo   { background: #E1F5EE; color: #085041; }
-.badge-movilidad     { background: #EEEDFE; color: #3C3489; }
-.badge-otro          { background: #F3F4F6; color: #374151; }
+.estado-operacion {
+  background: #d1fae5;
+  color: #065f46;
+}
+.estado-suspendido {
+  background: #fef3c7;
+  color: #92400e;
+}
+.estado-construccion {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.estado-default {
+  background: #f3f4f6;
+  color: #374151;
+}
+.badge-minigranja {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge-gd {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.badge-autoconsumo {
+  background: #e1f5ee;
+  color: #085041;
+}
+.badge-movilidad {
+  background: #eeedfe;
+  color: #3c3489;
+}
+.badge-otro {
+  background: #f3f4f6;
+  color: #374151;
+}
 
 .nombre-link {
-  display: block; max-width: 100%; text-align: left;
-  font-size: 11.5px; font-weight: 600; color: #2C2039;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  cursor: pointer; transition: color .12s;
+  display: block;
+  max-width: 100%;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #2c2039;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.12s;
 }
-.nombre-link:hover { color: #915BD8; text-decoration: underline; text-underline-offset: 2px; }
+.nombre-link:hover {
+  color: #915bd8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 
 .ppa-chip {
-  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  background: #EEEDFE; color: #3C3489; font-size: 9.5px; font-weight: 600;
-  padding: 0 5px; border-radius: 999px; cursor: pointer; transition: background .12s, color .12s;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: #eeedfe;
+  color: #3c3489;
+  font-size: 9.5px;
+  font-weight: 600;
+  padding: 0 5px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
-.ppa-chip:hover { background: #915BD8; color: #fff; }
+.ppa-chip:hover {
+  background: #915bd8;
+  color: #fff;
+}
 
 .pulse-dot {
-  display: inline-block; width: 5px; height: 5px; border-radius: 50%;
-  background: #10B981; flex-shrink: 0; animation: pulse-dot 1.5s ease-in-out infinite;
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+  animation: pulse-dot 1.5s ease-in-out infinite;
 }
 @keyframes pulse-dot {
-  0%, 100% { transform: scale(1);   opacity: 1; }
-  50%      { transform: scale(1.4); opacity: .65; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.65;
+  }
 }
-
 </style>

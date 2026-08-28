@@ -46,7 +46,10 @@ export function useModeloPredictivo() {
     try {
       detalle.value = await getDetalle(id)
     } catch (e) {
-      detalleError.value = mensajeError(e, 'El servicio no respondió. Puede que aún no esté publicado.')
+      detalleError.value = mensajeError(
+        e,
+        'El servicio no respondió. Puede que aún no esté publicado.',
+      )
       detalleAbierto.value = false
     } finally {
       detalleCargando.value = false
@@ -59,10 +62,21 @@ export function useModeloPredictivo() {
   }
 
   return {
-    agente, esquema, cuantil, horizonte,
-    data, cargando, error,
-    semanales, mensuales,
-    detalle, detalleCargando, detalleAbierto, detalleError,
-    cargar, abrirDetalle, cerrarDetalle,
+    agente,
+    esquema,
+    cuantil,
+    horizonte,
+    data,
+    cargando,
+    error,
+    semanales,
+    mensuales,
+    detalle,
+    detalleCargando,
+    detalleAbierto,
+    detalleError,
+    cargar,
+    abrirDetalle,
+    cerrarDetalle,
   }
 }

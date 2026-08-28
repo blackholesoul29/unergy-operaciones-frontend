@@ -1,11 +1,13 @@
 # Plataforma Operaciones Unergy — Frontend
 
 ## Qué es esto
+
 Dashboard web para el equipo interno de operaciones de Unergy. Gestiona proyectos
 solares, clientes, contratos/servicios, fallas, generación, alertas, liquidaciones,
 garantías y el módulo MEM (mercado de energía mayorista).
 
 ## Stack
+
 - **Vue 3** (Composition API + `<script setup>`)
 - **Vite 5** (bundler)
 - **PrimeVue 4** (componentes UI — tema **Aura** con preset propio `UnergPreset` en morado)
@@ -19,11 +21,13 @@ garantías y el módulo MEM (mercado de energía mayorista).
 - **vuedraggable** (drag & drop, ej. kanban de fallas)
 
 ## URLs
+
 - **Producción:** https://frontend-taupe-six-252g9aw47x.vercel.app
 - **API backend:** https://backend-production-63d8.up.railway.app
 - **Dev local:** http://localhost:5173 (proxea `/api` a localhost:8000)
 
 ## Estructura de carpetas
+
 ```
 src/
 ├── main.js              # Inicializa Vue, Pinia, Router, PrimeVue (preset UnergPreset),
@@ -79,13 +83,16 @@ src/
 ```
 
 ## Layout raíz (App.vue)
+
 - En rutas públicas (`/login`, etc.) renderiza solo el `<RouterView>`.
 - En el resto: `<AppSidebar>` + `<main>` con scroll. El sidebar es **colapsable** y
   **responsive** (overlay móvil con botón hamburguesa) vía el composable `useSidebar`.
 - `<Toast position="top-right">` y `<ConfirmDialog>` montados a nivel global.
 
 ## Colores de marca (Unergy)
+
 Definidos en `tailwind.config.js` bajo el namespace `unergy`:
+
 ```js
 purple:        '#915BD8'   // Púrpura Energético — principal, botones, activos
 deep:          '#2C2039'   // Púrpura Profundo — sidebar, textos oscuros
@@ -95,6 +102,7 @@ yellow:        '#F6FF72'   // Amarillo Solar — acentos, CTAs especiales
 'purple-dark': '#6E3FB8'
 'deep-light':  '#3D2F52'
 ```
+
 Usar con clases `text-unergy-purple`, `bg-unergy-deep`, etc., o con `style=""`.
 El preset de PrimeVue (`UnergPreset` en `main.js`) mapea `primary` al morado, así que
 los componentes de PrimeVue salen en la paleta de marca por defecto.
@@ -102,6 +110,7 @@ los componentes de PrimeVue salen en la paleta de marca por defecto.
 **Tipografías:** `font-display` (Forma DJR Display / Inter) y `font-body` (Lato / Inter).
 
 ## Logos disponibles (en /public/logos/)
+
 - `Logo_avena.png` — horizontal blanco (fondos oscuros)
 - `Logo_lineal_purpura_energico.png` — horizontal púrpura
 - `Logo_linea_purpura_profundo.png` — horizontal púrpura profundo
@@ -109,22 +118,24 @@ los componentes de PrimeVue salen en la paleta de marca por defecto.
 - `Icono_purpura_energico.png` / `Icono_purpura_profundo.png` — solo ícono
 
 ## Rutas y menú lateral
+
 Las rutas viven en `src/router/index.js`. El menú lateral se arma en
 `AppSidebar.vue` a partir del array **`navGroups`**, organizado en grupos:
 
-| Grupo | Entradas (ruta → label) |
-|-------|--------------------------|
-| **General** | `/dashboard` · `/clientes` · `/proyectos` · `/servicios` |
-| **Operaciones** | `/solar-live` · `/operaciones/informes-mensuales` · `/fallas` · `/alertas/monitoreo` (Alarmas MGS) · `/mem/fronteras` |
+| Grupo                | Entradas (ruta → label)                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| **General**          | `/dashboard` · `/clientes` · `/proyectos` · `/servicios`                                                                          |
+| **Operaciones**      | `/solar-live` · `/operaciones/informes-mensuales` · `/fallas` · `/alertas/monitoreo` (Alarmas MGS) · `/mem/fronteras`             |
 | **Comercialización** | `/mem/cumplimiento` · `/mem/descubrimientos` · `/garantias` · `/mem/gescon` · `/mem/precio-bolsa` · `/mem/balance` · `/mem/clima` |
-| **Finanzas** | `/liquidaciones` · `/liquidaciones?tab=inversionistas` · `/liquidaciones?tab=cargar` · `/finanzas/costos` |
-| **Alertas** | `/alertas` (Centro de Alertas) |
-| **Admin** | `/admin/usuarios` · `/admin/diagnostico` (solo email `juanjose@unergy.io`) |
+| **Finanzas**         | `/liquidaciones` · `/liquidaciones?tab=inversionistas` · `/liquidaciones?tab=cargar` · `/finanzas/costos`                         |
+| **Alertas**          | `/alertas` (Centro de Alertas)                                                                                                    |
+| **Admin**            | `/admin/usuarios` · `/admin/diagnostico` (solo email `juanjose@unergy.io`)                                                        |
 
 > Detalle de proyecto/contrato (`/proyectos/:id`, `/contratos/:id`, `/liquidaciones/:id`, etc.)
 > se navega desde las listas, no desde el menú.
 
 ## Roles y permisos
+
 Roles del sistema: `admin` · `operaciones` · `monitoreo` · `liquidaciones`.
 El guard de router lee `meta.roles` de cada ruta y `auth.can(...roles)`.
 **`admin` siempre pasa** (`can()` lo permite explícitamente).
@@ -133,31 +144,38 @@ El guard de router lee `meta.roles` de cada ruta y `auth.can(...roles)`.
 import { useAuthStore } from '@/stores/auth'
 const auth = useAuthStore()
 
-auth.user            // { id, rol, nombre, email }
-auth.role            // 'admin' | 'operaciones' | 'monitoreo' | 'liquidaciones'
+auth.user // { id, rol, nombre, email }
+auth.role // 'admin' | 'operaciones' | 'monitoreo' | 'liquidaciones'
 auth.isAuthenticated // true/false (valida también expiración del JWT)
-auth.can('admin', 'operaciones')  // true si el rol está en la lista (o es admin)
-auth.login(email, password)       // POST /api/v1/auth/token (form-urlencoded)
+auth.can('admin', 'operaciones') // true si el rol está en la lista (o es admin)
+auth.login(email, password) // POST /api/v1/auth/token (form-urlencoded)
 auth.logout()
 ```
+
 El store reconstruye el usuario decodificando el payload del JWT si `localStorage.user`
 se perdió pero el token sigue vivo.
 
 ## Cómo agregar una vista nueva
 
 ### 1. Crear el archivo de vista
+
 ```vue
 <!-- src/views/MiModulo/MiModuloListView.vue -->
 <template>
   <div class="space-y-4">
     <PageHeader title="Mi Módulo">
       <template #actions>
-        <button @click="abrirForm" class="px-4 py-2 rounded-lg text-sm font-semibold text-white"
-                style="background: #915BD8;">+ Nuevo</button>
+        <button
+          @click="abrirForm"
+          class="rounded-lg px-4 py-2 text-sm font-semibold text-white"
+          style="background: #915BD8;"
+        >
+          + Nuevo
+        </button>
       </template>
     </PageHeader>
 
-    <div class="bg-white rounded-xl shadow-sm" style="border: 1px solid #e8e0f0;">
+    <div class="rounded-xl bg-white shadow-sm" style="border: 1px solid #e8e0f0;">
       <!-- tabla o lista -->
     </div>
   </div>
@@ -176,6 +194,7 @@ onMounted(async () => {
 ```
 
 ### 2. Agregar la ruta (`src/router/index.js`)
+
 ```js
 { path: '/mi-modulo', name: 'MiModulo',
   component: () => import('@/views/MiModulo/MiModuloListView.vue'),
@@ -183,29 +202,35 @@ onMounted(async () => {
 ```
 
 ### 3. Agregar al menú (`src/components/AppSidebar.vue` → `navGroups`)
+
 ```js
 // dentro del grupo correspondiente, en su array items:
 { to: '/mi-modulo', label: 'Mi Módulo', icon: 'pi pi-star', roles: ['admin', 'operaciones'] }
 ```
+
 `roles` (y `requireEmail`) en el item del sidebar lo ocultan a quien no corresponda;
 el guard del router hace cumplir el permiso aunque alguien entre por URL.
 
 ## Llamadas a la API
+
 ```js
 import api from '@/api/client'
 
-const { data } = await api.get('/proyectos?page=1&size=20')  // data.items, data.total, data.page
+const { data } = await api.get('/proyectos?page=1&size=20') // data.items, data.total, data.page
 const { data } = await api.post('/proyectos', { nombre: '...', cliente_id: '...' })
 await api.put(`/proyectos/${id}`, payload)
 await api.delete(`/proyectos/${id}`)
 ```
+
 - `baseURL` = `VITE_API_BASE_URL` o `/api/v1` por defecto.
 - El JWT (`localStorage.token`) se adjunta automáticamente en cada request.
 - **401** → limpia sesión y redirige a `/login`.
 - **403** → muestra un toast de "Acceso denegado" con el `detail` del backend.
 
 ## Componentes y servicios globales
+
 Registrados en `main.js` (no requieren import en cada vista):
+
 - **`<PageHeader>`** — header de página estándar (título + slot de acciones).
 - **`<InfoField>`** — campo etiqueta/valor para detalles.
 - **ToastService** (`useToast`) y **ConfirmationService** (`useConfirm`) de PrimeVue.
@@ -220,20 +245,24 @@ toast.add({ severity: 'success', summary: 'Guardado', life: 3000 })
 ```
 
 ## Íconos
+
 **PrimeIcons**, prefijo `pi pi-`:
 `pi-home` `pi-bolt` `pi-building` `pi-dollar` `pi-wrench` `pi-bell` `pi-sun`
 `pi-globe` `pi-shield` `pi-file-edit` `pi-exclamation-triangle` `pi-check` `pi-times`
 `pi-pencil` `pi-trash` `pi-plus` `pi-search`. Lista: https://primevue.org/icons/
 
 ## Variables de entorno (.env local)
+
 ```
 VITE_API_BASE_URL=/api/v1     # usado por api/client.js (default /api/v1, proxy de Vite al backend)
 VITE_API_URL=                 # usado por stores/auth.js para el login (default "", mismo origen)
 ```
+
 En dev, Vite proxea `/api` → `http://localhost:8000`, así que normalmente basta con
 los valores por defecto.
 
 ## Correr localmente
+
 ```bash
 npm install
 npm run dev
@@ -242,11 +271,13 @@ npm run dev
 ```
 
 ## Producción
+
 - **Plataforma:** Vercel
 - **Deploy:** automático al hacer push a `master` en GitHub
 - **Build:** `npm run build` (output `dist/`)
 
 ## Convenciones de estilo
+
 - Fondo de página: `#FDFAF7` (avena) — definido globalmente.
 - Cards/paneles: `bg-white rounded-xl` con `border: 1px solid #e8e0f0`.
 - Textos principales: `color: #2C2039`; secundarios/labels: `color: #6b5a8a`.

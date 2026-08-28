@@ -19,7 +19,10 @@
     <template #header>
       <div class="rq-dw-head">
         <Button
-          icon="pi pi-chevron-left" text rounded size="small"
+          icon="pi pi-chevron-left"
+          text
+          rounded
+          size="small"
           :disabled="!haySemanaAnterior || guardando"
           aria-label="Semana anterior"
           @click="navegar(-1)"
@@ -30,13 +33,20 @@
             <span>{{ semana?.rango_label || '' }}</span>
             <span v-if="semana?.es_actual" class="rq-chip rq-chip-actual">En curso</span>
             <span v-else-if="semana?.es_futura" class="rq-chip rq-chip-neutro">Futura</span>
-            <span v-if="semana?.parcial" class="rq-chip rq-chip-neutro" v-tooltip.bottom="tooltipParcial">
+            <span
+              v-if="semana?.parcial"
+              class="rq-chip rq-chip-neutro"
+              v-tooltip.bottom="tooltipParcial"
+            >
               Parcial
             </span>
           </div>
         </div>
         <Button
-          icon="pi pi-chevron-right" text rounded size="small"
+          icon="pi pi-chevron-right"
+          text
+          rounded
+          size="small"
           :disabled="!haySemanaSiguiente || guardando"
           aria-label="Semana siguiente"
           @click="navegar(1)"
@@ -49,7 +59,11 @@
       <!-- Progreso de llenado (§6.4) -->
       <div class="rq-dw-progreso">
         <div class="rq-dw-progreso-txt">
-          {{ completa ? 'Semana completa' : `${conDato} de ${metricasActivas.length} métricas con dato` }}
+          {{
+            completa
+              ? 'Semana completa'
+              : `${conDato} de ${metricasActivas.length} métricas con dato`
+          }}
         </div>
         <div class="rq-dw-barra">
           <div
@@ -84,7 +98,7 @@
                 :invalid="!!erroresFila[m.id]"
                 placeholder="Sin dato"
                 :aria-label="`Valor de ${m.nombre} en la semana ${semana?.numero ?? ''}`"
-                @update:modelValue="v => fijarValor(m, v)"
+                @update:modelValue="(v) => fijarValor(m, v)"
                 @keydown.enter.prevent="enfocarInput(i + 1)"
               />
             </div>
@@ -106,7 +120,8 @@
           <!-- 3. Nota -->
           <button
             v-if="!notaAbierta(m)"
-            type="button" class="rq-dw-nota-link"
+            type="button"
+            class="rq-dw-nota-link"
             @click="abrirNota(m)"
           >
             <i class="pi pi-pencil" />
@@ -115,11 +130,13 @@
           <div v-else class="rq-dw-nota">
             <Textarea
               :modelValue="campos[m.id]?.nota ?? ''"
-              autoResize rows="2" :maxlength="500"
+              autoResize
+              rows="2"
+              :maxlength="500"
               class="w-full"
               placeholder="Qué pasó esta semana"
               :aria-label="`Nota de ${m.nombre}`"
-              @update:modelValue="v => fijarNota(m, v)"
+              @update:modelValue="(v) => fijarNota(m, v)"
             />
             <div v-if="(campos[m.id]?.nota || '').length >= 400" class="rq-dw-contador">
               {{ (campos[m.id]?.nota || '').length }}/500
@@ -134,10 +151,19 @@
       <div class="rq-dw-pie">
         <span class="rq-dw-edicion">{{ ultimaEdicion }}</span>
         <span class="rq-dw-espaciador" />
-        <Button label="Cancelar" severity="secondary" text size="small" @click="intentarCerrar(false)" />
         <Button
-          label="Guardar semana" icon="pi pi-check" size="small"
-          :disabled="!hayCambios" :loading="guardando"
+          label="Cancelar"
+          severity="secondary"
+          text
+          size="small"
+          @click="intentarCerrar(false)"
+        />
+        <Button
+          label="Guardar semana"
+          icon="pi pi-check"
+          size="small"
+          :disabled="!hayCambios"
+          :loading="guardando"
           @click="guardarSemana()"
         />
       </div>
@@ -182,21 +208,31 @@ const confirm = useConfirm()
 
 const cuerpoEl = ref(null)
 const guardando = ref(false)
-const campos = reactive({})        // metricaId -> { valor, nota }
-const originales = reactive({})    // metricaId -> { valor, nota } ya guardados
+const campos = reactive({}) // metricaId -> { valor, nota }
+const originales = reactive({}) // metricaId -> { valor, nota } ya guardados
 const notasForzadas = reactive({}) // metricaId -> true si se abrió el textarea a mano
-const erroresFila = reactive({})   // metricaId -> detail del backend
+const erroresFila = reactive({}) // metricaId -> detail del backend
 
 const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 const MESES_LARGOS = [
-  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
 ]
 
 // ── Derivados ───────────────────────────────────────────────────────────
 const metricasActivas = computed(() =>
   (props.metricas || [])
-    .filter(m => m.activa !== false)
+    .filter((m) => m.activa !== false)
     .slice()
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)),
 )
@@ -210,14 +246,19 @@ const haySemanaSiguiente = computed(() => {
 
 const semanaAnterior = computed(() => {
   if (!haySemanaAnterior.value) return null
-  return (props.semanas || []).find(s => s.numero === props.semana.numero - 1) || null
+  return (props.semanas || []).find((s) => s.numero === props.semana.numero - 1) || null
 })
 
 const conDato = computed(
-  () => metricasActivas.value.filter(m => campos[m.id]?.valor !== null && campos[m.id]?.valor !== undefined).length,
+  () =>
+    metricasActivas.value.filter(
+      (m) => campos[m.id]?.valor !== null && campos[m.id]?.valor !== undefined,
+    ).length,
 )
 
-const completa = computed(() => metricasActivas.value.length > 0 && conDato.value === metricasActivas.value.length)
+const completa = computed(
+  () => metricasActivas.value.length > 0 && conDato.value === metricasActivas.value.length,
+)
 
 const pctLlenado = computed(() => {
   const total = metricasActivas.value.length
@@ -229,7 +270,8 @@ const hayCambios = computed(() => metricasActivas.value.some(sucia))
 /** `Solo del 1 al 5 de julio cae dentro del trimestre` */
 const tooltipParcial = computed(() => {
   const s = props.semana
-  if (!s?.inicio_efectivo || !s?.fin_efectivo) return 'La semana no cae completa dentro del trimestre'
+  if (!s?.inicio_efectivo || !s?.fin_efectivo)
+    return 'La semana no cae completa dentro del trimestre'
   const [, mi, di] = String(s.inicio_efectivo).split('-').map(Number)
   const [, mf, df] = String(s.fin_efectivo).split('-').map(Number)
   const izq = mi === mf ? `${di}` : `${di} de ${MESES_LARGOS[mi - 1]}`
@@ -315,7 +357,9 @@ function notaAbierta(m) {
 function abrirNota(m) {
   notasForzadas[m.id] = true
   nextTick(() => {
-    const fila = cuerpoEl.value?.querySelector(`.rq-dw-input[data-metrica="${m.id}"]`)?.closest('.rq-dw-fila')
+    const fila = cuerpoEl.value
+      ?.querySelector(`.rq-dw-input[data-metrica="${m.id}"]`)
+      ?.closest('.rq-dw-fila')
     fila?.querySelector('textarea')?.focus()
   })
 }
@@ -359,12 +403,14 @@ async function guardarSemana({ cerrarAlTerminar = true } = {}) {
   for (const k of Object.keys(erroresFila)) delete erroresFila[k]
 
   const resultados = await Promise.allSettled(
-    sucias.map(m => props.guardarValor({
-      metricaId: m.id,
-      semanaInicio: inicio,
-      valor: campos[m.id].valor,
-      nota: (campos[m.id].nota || '').trim() || null,
-    })),
+    sucias.map((m) =>
+      props.guardarValor({
+        metricaId: m.id,
+        semanaInicio: inicio,
+        valor: campos[m.id].valor,
+        nota: (campos[m.id].nota || '').trim() || null,
+      }),
+    ),
   )
   guardando.value = false
 
@@ -427,7 +473,7 @@ async function navegar(delta) {
   // Moverse da la semana por buena: se guarda sin preguntar (§6.7).
   if (hayCambios.value) {
     const bien = await guardarSemana({ cerrarAlTerminar: false })
-    if (!bien) return   // con errores no se navega: se perderían los cambios
+    if (!bien) return // con errores no se navega: se perderían los cambios
   }
   emit('navegar', delta)
 }
@@ -438,8 +484,14 @@ function cerrar() {
 
 /** ✕, máscara y Escape pasan por aquí; solo se cierra si no hay pendientes. */
 function intentarCerrar(v) {
-  if (v) { emit('update:visible', true); return }
-  if (!hayCambios.value) { cerrar(); return }
+  if (v) {
+    emit('update:visible', true)
+    return
+  }
+  if (!hayCambios.value) {
+    cerrar()
+    return
+  }
   confirm.require({
     header: 'Cambios sin guardar',
     message: `Tienes cambios en la semana ${props.semana?.numero ?? ''} que no se han guardado.`,
@@ -447,7 +499,10 @@ function intentarCerrar(v) {
     acceptLabel: 'Descartar',
     rejectLabel: 'Seguir editando',
     acceptClass: 'p-button-danger p-button-sm',
-    accept: () => { sincronizar(); cerrar() },
+    accept: () => {
+      sincronizar()
+      cerrar()
+    },
   })
 }
 
@@ -459,10 +514,13 @@ function atajos(e) {
     return
   }
   if (e.altKey && e.key === 'ArrowLeft' && haySemanaAnterior.value) {
-    e.preventDefault(); navegar(-1); return
+    e.preventDefault()
+    navegar(-1)
+    return
   }
   if (e.altKey && e.key === 'ArrowRight' && haySemanaSiguiente.value) {
-    e.preventDefault(); navegar(1)
+    e.preventDefault()
+    navegar(1)
   }
 }
 
@@ -473,12 +531,17 @@ function inputs() {
 function enfocarInput(i) {
   const lista = inputs()
   const el = lista[Math.min(i, lista.length - 1)]
-  if (el) { el.focus(); el.select?.() }
+  if (el) {
+    el.focus()
+    el.select?.()
+  }
 }
 
 /** Al abrir, el foco va al primer campo vacío; si están todos llenos, al primero. */
 function enfocarPrimeroVacio() {
-  const idx = metricasActivas.value.findIndex(m => campos[m.id]?.valor === null || campos[m.id]?.valor === undefined)
+  const idx = metricasActivas.value.findIndex(
+    (m) => campos[m.id]?.valor === null || campos[m.id]?.valor === undefined,
+  )
   enfocarInput(idx >= 0 ? idx : 0)
 }
 
@@ -487,7 +550,9 @@ function fmtEdicion(d) {
   const hora = d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false })
   const hoy = new Date()
   const mismoDia = (a, b) =>
-    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
   if (mismoDia(d, hoy)) return `hoy ${hora}`
   const ayer = new Date(hoy)
   ayer.setDate(hoy.getDate() - 1)
@@ -510,93 +575,248 @@ watch(
 // Si el padre recarga el trimestre con el drawer abierto (p. ej. tras copiar
 // métricas), se rearman los borradores que no estén sucios.
 watch(
-  () => metricasActivas.value.map(m => m.id).join(','),
-  () => { if (props.visible && !hayCambios.value) sincronizar() },
+  () => metricasActivas.value.map((m) => m.id).join(','),
+  () => {
+    if (props.visible && !hayCambios.value) sincronizar()
+  },
 )
 </script>
 
 <style scoped>
-.rq-dw-head { display: flex; align-items: center; gap: 8px; width: 100%; min-width: 0; }
-.rq-dw-head-centro { flex: 1; min-width: 0; }
-.rq-dw-titulo { font-size: 16px; font-weight: 800; color: #2C2039; line-height: 1.2; }
+.rq-dw-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.rq-dw-head-centro {
+  flex: 1;
+  min-width: 0;
+}
+.rq-dw-titulo {
+  font-size: 16px;
+  font-weight: 800;
+  color: #2c2039;
+  line-height: 1.2;
+}
 .rq-dw-sub {
-  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  font-size: 12px; font-weight: 400; color: #9b8fb0; margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  font-weight: 400;
+  color: #9b8fb0;
+  margin-top: 1px;
 }
 
 .rq-chip {
-  font-size: 10px; font-weight: 700; line-height: 1.5;
-  padding: 1px 7px; border-radius: 999px; white-space: nowrap;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.5;
+  padding: 1px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
 }
-.rq-chip-actual { color: #6D28D9; background: rgba(145, 91, 216, .12); }
-.rq-chip-neutro { color: #6b5a8a; background: rgba(44, 32, 57, .06); }
+.rq-chip-actual {
+  color: #6d28d9;
+  background: rgba(145, 91, 216, 0.12);
+}
+.rq-chip-neutro {
+  color: #6b5a8a;
+  background: rgba(44, 32, 57, 0.06);
+}
 
 /* Progreso de llenado */
-.rq-dw-progreso { padding: 10px 16px; border-bottom: 1px solid #ECE7F2; margin: 0 -1.25rem; }
-.rq-dw-progreso-txt { font-size: 11px; font-weight: 600; color: #6b5a8a; margin-bottom: 5px; }
-.rq-dw-barra { height: 5px; border-radius: 3px; background: #F1ECF7; overflow: hidden; }
-.rq-dw-barra-fill {
-  height: 100%; border-radius: 3px; background: #915BD8;
-  transition: width .18s ease, background-color .18s ease;
+.rq-dw-progreso {
+  padding: 10px 16px;
+  border-bottom: 1px solid #ece7f2;
+  margin: 0 -1.25rem;
 }
-.rq-dw-barra-ok { background: #10B981; }
+.rq-dw-progreso-txt {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b5a8a;
+  margin-bottom: 5px;
+}
+.rq-dw-barra {
+  height: 5px;
+  border-radius: 3px;
+  background: #f1ecf7;
+  overflow: hidden;
+}
+.rq-dw-barra-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: #915bd8;
+  transition:
+    width 0.18s ease,
+    background-color 0.18s ease;
+}
+.rq-dw-barra-ok {
+  background: #10b981;
+}
 
 /* Filas */
-.rq-dw-filas { padding: 0 16px; margin: 0 -1.25rem; }
-.rq-dw-fila { padding-block: 12px; border-bottom: 1px solid #F4F0F9; }
-.rq-dw-fila:last-child { border-bottom: 0; }
+.rq-dw-filas {
+  padding: 0 16px;
+  margin: 0 -1.25rem;
+}
+.rq-dw-fila {
+  padding-block: 12px;
+  border-bottom: 1px solid #f4f0f9;
+}
+.rq-dw-fila:last-child {
+  border-bottom: 0;
+}
 
-.rq-dw-etiqueta { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.rq-dw-etiqueta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
 .rq-dw-nombre {
-  flex: 1; min-width: 0;
-  font-size: 12.5px; font-weight: 700; color: #2C2039;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 1;
+  min-width: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #2c2039;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.rq-dw-responsable { flex: none; font-size: 10px; font-weight: 600; color: #9b8fb0; }
-.rq-dw-punto { flex: none; width: 6px; height: 6px; border-radius: 50%; background: #915BD8; }
+.rq-dw-responsable {
+  flex: none;
+  font-size: 10px;
+  font-weight: 600;
+  color: #9b8fb0;
+}
+.rq-dw-punto {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #915bd8;
+}
 
-.rq-dw-input-fila { display: flex; align-items: center; gap: 10px; margin-top: 6px; min-width: 0; }
-.rq-dw-input { flex: none; width: 190px; }
-.rq-dw-input :deep(.p-inputtext) { height: 32px; font-size: 12.5px; width: 100%; }
+.rq-dw-input-fila {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  min-width: 0;
+}
+.rq-dw-input {
+  flex: none;
+  width: 190px;
+}
+.rq-dw-input :deep(.p-inputtext) {
+  height: 32px;
+  font-size: 12.5px;
+  width: 100%;
+}
 
-.rq-dw-ref { font-size: 11px; font-weight: 400; color: #9b8fb0; white-space: nowrap; }
+.rq-dw-ref {
+  font-size: 11px;
+  font-weight: 400;
+  color: #9b8fb0;
+  white-space: nowrap;
+}
 .rq-dw-delta {
-  display: inline-flex; align-items: center; gap: 3px;
-  font-size: 11px; font-weight: 700; white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
-.rq-dw-delta i { font-size: 8px; }
+.rq-dw-delta i {
+  font-size: 8px;
+}
 
-.rq-dw-error { font-size: 10px; color: #B0364A; margin-top: 4px; }
+.rq-dw-error {
+  font-size: 10px;
+  color: #b0364a;
+  margin-top: 4px;
+}
 
 /* Nota */
 .rq-dw-nota-link {
-  display: inline-flex; align-items: center; gap: 4px; height: 24px; margin-top: 4px;
-  font-size: 11px; font-weight: 600; color: #915BD8; background: none; border: 0; padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #915bd8;
+  background: none;
+  border: 0;
+  padding: 0;
   cursor: pointer;
 }
-.rq-dw-nota-link i { font-size: 9px; }
-.rq-dw-nota { margin-top: 6px; }
-.rq-dw-nota :deep(textarea) { font-size: 11.5px; }
-.rq-dw-contador { font-size: 9px; color: #c7bdd8; text-align: right; margin-top: 2px; }
+.rq-dw-nota-link i {
+  font-size: 9px;
+}
+.rq-dw-nota {
+  margin-top: 6px;
+}
+.rq-dw-nota :deep(textarea) {
+  font-size: 11.5px;
+}
+.rq-dw-contador {
+  font-size: 9px;
+  color: #c7bdd8;
+  text-align: right;
+  margin-top: 2px;
+}
 
 /* Pie */
-.rq-dw-pie { display: flex; align-items: center; gap: 8px; width: 100%; }
-.rq-dw-edicion { font-size: 10px; font-weight: 400; color: #9b8fb0; min-width: 0; }
-.rq-dw-espaciador { flex: 1; }
+.rq-dw-pie {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.rq-dw-edicion {
+  font-size: 10px;
+  font-weight: 400;
+  color: #9b8fb0;
+  min-width: 0;
+}
+.rq-dw-espaciador {
+  flex: 1;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .rq-dw-barra-fill { transition: none; }
+  .rq-dw-barra-fill {
+    transition: none;
+  }
 }
 </style>
 
 <style>
 /* El Drawer se teletransporta fuera del componente: estas no pueden ser scoped. */
-.rq-drawer { width: 420px; }
-.rq-drawer .p-drawer-header { border-bottom: 1px solid #ECE7F2; padding: 12px 16px; }
-.rq-drawer .p-drawer-content { padding: 0 1.25rem; }
-.rq-drawer .p-drawer-footer { border-top: 1px solid #ECE7F2; padding: 10px 16px; }
+.rq-drawer {
+  width: 420px;
+}
+.rq-drawer .p-drawer-header {
+  border-bottom: 1px solid #ece7f2;
+  padding: 12px 16px;
+}
+.rq-drawer .p-drawer-content {
+  padding: 0 1.25rem;
+}
+.rq-drawer .p-drawer-footer {
+  border-top: 1px solid #ece7f2;
+  padding: 10px 16px;
+}
 
 @media (max-width: 640px) {
-  .rq-drawer { width: 100%; }
+  .rq-drawer {
+    width: 100%;
+  }
 }
 </style>

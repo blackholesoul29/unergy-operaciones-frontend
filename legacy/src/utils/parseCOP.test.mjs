@@ -17,7 +17,9 @@ const { parseCOP } = new Function(src + '\nreturn { parseCOP };')()
 let ok = true
 const eq = (got, exp, msg) => {
   const pass = got === exp
-  console.log((pass ? '✅' : '❌') + ` ${msg} → ${JSON.stringify(got)} (esperado ${JSON.stringify(exp)})`)
+  console.log(
+    (pass ? '✅' : '❌') + ` ${msg} → ${JSON.stringify(got)} (esperado ${JSON.stringify(exp)})`,
+  )
   if (!pass) ok = false
 }
 

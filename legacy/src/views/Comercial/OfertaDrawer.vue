@@ -11,21 +11,33 @@
   · el botón de firmar, que cablea POST /comercial/ofertas/{id}/firmar
 -->
 <template>
-  <Drawer :visible="visible" position="right" class="!w-full md:!w-[34rem]"
-          @update:visible="$emit('update:visible', $event)">
+  <Drawer
+    :visible="visible"
+    position="right"
+    class="!w-full md:!w-[34rem]"
+    @update:visible="$emit('update:visible', $event)"
+  >
     <template #header>
       <div v-if="oferta" class="min-w-0 pr-2">
         <div class="flex items-center gap-2">
-          <span class="font-mono text-xs" style="color:#9b89b5">
+          <span class="font-mono text-xs" style="color: #9b89b5">
             {{ oferta.codigo_seguimiento || oferta.numero_oferta || 'sin código' }}
           </span>
-          <Tag v-if="oferta.alerta" severity="danger" :value="`⚠ ${oferta.dias_sin_respuesta}d`" class="scale-90" />
+          <Tag
+            v-if="oferta.alerta"
+            severity="danger"
+            :value="`⚠ ${oferta.dias_sin_respuesta}d`"
+            class="scale-90"
+          />
         </div>
-        <h2 class="text-base font-semibold truncate" style="color:#2C2039">
+        <h2 class="truncate text-base font-semibold" style="color: #2c2039">
           {{ oferta.planta_nombre || oferta.ficha?.proyecto_nombre || 'Sin planta' }}
         </h2>
-        <router-link :to="`/comercial/oportunidades/${oferta.oportunidad_id}`"
-                     class="text-xs underline" style="color:#915BD8">
+        <router-link
+          :to="`/comercial/oportunidades/${oferta.oportunidad_id}`"
+          class="text-xs underline"
+          style="color: #915bd8"
+        >
           {{ oferta.cliente_razon_social }}
         </router-link>
       </div>
@@ -35,15 +47,22 @@
       <!-- ── Etapa ───────────────────────────────────────────────────────── -->
       <section>
         <h3 class="seccion">Etapa</h3>
-        <Select :modelValue="oferta.estado" :options="ETAPAS" optionLabel="label" optionValue="value"
-                class="w-full" :loading="moviendo" @update:modelValue="cambiarEtapa" />
+        <Select
+          :modelValue="oferta.estado"
+          :options="ETAPAS"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          :loading="moviendo"
+          @update:modelValue="cambiarEtapa"
+        />
         <p class="ayuda">
           En esta etapa desde hace {{ diasDesde(oferta.estado_desde) ?? '—' }} días.
         </p>
         <Message v-if="puedeFirmarPPA(oferta)" severity="info" :closable="false" class="mt-2">
           <span class="text-xs">
-            Cuando se firme, usá <strong>Firmar → crear PPA</strong> (abajo) en vez de mover la etapa a
-            mano: así queda el contrato creado y enlazado.
+            Cuando se firme, usá <strong>Firmar → crear PPA</strong> (abajo) en vez de mover la
+            etapa a mano: así queda el contrato creado y enlazado.
           </span>
         </Message>
       </section>
@@ -51,35 +70,61 @@
       <!-- ── Seguimiento del envío ───────────────────────────────────────── -->
       <section>
         <h3 class="seccion">Seguimiento del envío</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label class="etiqueta">Enviada el</label>
-            <DatePicker v-model="f.fecha_oferta" dateFormat="yy-mm-dd" showIcon class="w-full"
-                        @update:modelValue="autosave" />
+            <DatePicker
+              v-model="f.fecha_oferta"
+              dateFormat="yy-mm-dd"
+              showIcon
+              class="w-full"
+              @update:modelValue="autosave"
+            />
           </div>
           <div>
             <label class="etiqueta">Última respuesta del cliente</label>
-            <DatePicker v-model="f.fecha_ultima_respuesta" dateFormat="yy-mm-dd" showIcon class="w-full"
-                        @update:modelValue="autosave" />
+            <DatePicker
+              v-model="f.fecha_ultima_respuesta"
+              dateFormat="yy-mm-dd"
+              showIcon
+              class="w-full"
+              @update:modelValue="autosave"
+            />
           </div>
         </div>
 
-        <div class="flex items-center justify-between gap-2 mt-3 rounded-md px-3 py-2"
-             style="background:#FAF8FC;border:1px solid #e8e0f0">
+        <div
+          class="mt-3 flex items-center justify-between gap-2 rounded-md px-3 py-2"
+          style="background: #faf8fc; border: 1px solid #e8e0f0"
+        >
           <div class="min-w-0">
-            <div class="text-xs font-medium" style="color:#2C2039">
+            <div class="text-xs font-medium" style="color: #2c2039">
               {{ oferta.seguimientos || 0 }} toque(s) enviados
             </div>
-            <div v-if="sinRespuesta(oferta)" class="text-[11px]" style="color:#D64455">
+            <div v-if="sinRespuesta(oferta)" class="text-[11px]" style="color: #d64455">
               El cliente nunca contestó
             </div>
           </div>
-          <div class="flex items-center gap-1 flex-shrink-0">
-            <Button label="+1 toque" icon="pi pi-send" size="small" outlined :loading="tocando"
-                    v-tooltip.top="'Reenvío o llamada de insistencia'" @click="tocar" />
-            <Button label="Respondió" icon="pi pi-check" size="small" severity="success" outlined
-                    :loading="guardando" v-tooltip.top="'Marca la respuesta de hoy y apaga la alerta'"
-                    @click="marcarRespuesta" />
+          <div class="flex flex-shrink-0 items-center gap-1">
+            <Button
+              label="+1 toque"
+              icon="pi pi-send"
+              size="small"
+              outlined
+              :loading="tocando"
+              v-tooltip.top="'Reenvío o llamada de insistencia'"
+              @click="tocar"
+            />
+            <Button
+              label="Respondió"
+              icon="pi pi-check"
+              size="small"
+              severity="success"
+              outlined
+              :loading="guardando"
+              v-tooltip.top="'Marca la respuesta de hoy y apaga la alerta'"
+              @click="marcarRespuesta"
+            />
           </div>
         </div>
       </section>
@@ -87,37 +132,67 @@
       <!-- ── Comercial ───────────────────────────────────────────────────── -->
       <section>
         <h3 class="seccion">Comercial</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label class="etiqueta">Tipo de oferta</label>
-            <Select v-model="f.tipo" :options="TIPOS_OFERTA" optionLabel="label" optionValue="value"
-                    class="w-full" @update:modelValue="autosave" />
+            <Select
+              v-model="f.tipo"
+              :options="TIPOS_OFERTA"
+              optionLabel="label"
+              optionValue="value"
+              class="w-full"
+              @update:modelValue="autosave"
+            />
           </div>
           <!-- El precio de una compra de energía es una tarifa en $/kWh, no la
                comisión en % de un servicio: la etiqueta y el ejemplo siguen al tipo. -->
           <div>
             <label class="etiqueta">{{ etiquetaPrecio(f.tipo) }}</label>
-            <InputText v-model.trim="f.precio_detalle" class="w-full"
-                       :placeholder="placeholderPrecio(f.tipo)" @update:modelValue="autosave" />
+            <InputText
+              v-model.trim="f.precio_detalle"
+              class="w-full"
+              :placeholder="placeholderPrecio(f.tipo)"
+              @update:modelValue="autosave"
+            />
           </div>
           <div>
             <label class="etiqueta">Inicio tentativo del suministro</label>
-            <DatePicker v-model="f.fecha_tentativa_inicio" dateFormat="yy-mm-dd" showIcon class="w-full"
-                        @update:modelValue="autosave" />
+            <DatePicker
+              v-model="f.fecha_tentativa_inicio"
+              dateFormat="yy-mm-dd"
+              showIcon
+              class="w-full"
+              @update:modelValue="autosave"
+            />
           </div>
           <div>
             <label class="etiqueta">Fin tentativo</label>
-            <DatePicker v-model="f.fecha_fin_tentativa" dateFormat="yy-mm-dd" showIcon class="w-full"
-                        @update:modelValue="autosave" />
+            <DatePicker
+              v-model="f.fecha_fin_tentativa"
+              dateFormat="yy-mm-dd"
+              showIcon
+              class="w-full"
+              @update:modelValue="autosave"
+            />
           </div>
           <div class="sm:col-span-2">
             <label class="etiqueta">Documento de la oferta (link)</label>
-            <InputText v-model.trim="f.documento_url" class="w-full" placeholder="https://…"
-                       @update:modelValue="autosave" />
+            <InputText
+              v-model.trim="f.documento_url"
+              class="w-full"
+              placeholder="https://…"
+              @update:modelValue="autosave"
+            />
           </div>
           <div class="sm:col-span-2">
             <label class="etiqueta">Notas</label>
-            <Textarea v-model="f.notas" rows="2" autoResize class="w-full" @update:modelValue="autosave" />
+            <Textarea
+              v-model="f.notas"
+              rows="2"
+              autoResize
+              class="w-full"
+              @update:modelValue="autosave"
+            />
           </div>
         </div>
         <p v-if="ayudaPrecio(f.tipo)" class="ayuda">{{ ayudaPrecio(f.tipo) }}</p>
@@ -127,39 +202,60 @@
       <section>
         <h3 class="seccion">Plantas de la oferta</h3>
         <p class="ayuda mb-2">
-          Son las que pasan al contrato al firmar. Una oferta puede cubrir varias
-          («Balmora 1 y 2»).
+          Son las que pasan al contrato al firmar. Una oferta puede cubrir varias («Balmora 1 y 2»).
         </p>
         <label class="etiqueta">Nombre de la planta (texto libre)</label>
         <InputText v-model.trim="f.planta_nombre" class="w-full" @update:modelValue="autosave" />
         <div class="mt-3">
-          <div class="flex items-center justify-between mb-1">
+          <div class="mb-1 flex items-center justify-between">
             <label class="etiqueta !mb-0">Proyectos vinculados</label>
-            <Button label="Crear planta" icon="pi pi-plus" text size="small"
-                    v-tooltip.top="'Crearla en Proyectos y vincularla a esta oferta'"
-                    @click="crearProyecto = true" />
+            <Button
+              label="Crear planta"
+              icon="pi pi-plus"
+              text
+              size="small"
+              v-tooltip.top="'Crearla en Proyectos y vincularla a esta oferta'"
+              @click="crearProyecto = true"
+            />
           </div>
-          <MultiSelect v-model="f.proyecto_ids" :options="proyectos" optionLabel="nombre_comercial"
-                       :filterFields="['nombre_comercial', 'municipio', 'departamento']"
-                       optionValue="id" filter display="chip" class="w-full"
-                       :loading="cargandoCatalogos" placeholder="Vincular a proyectos existentes…"
-                       filterPlaceholder="Buscar por nombre, municipio o departamento…"
-                       @update:modelValue="cambiarPlantas">
+          <MultiSelect
+            v-model="f.proyecto_ids"
+            :options="proyectos"
+            optionLabel="nombre_comercial"
+            :filterFields="['nombre_comercial', 'municipio', 'departamento']"
+            optionValue="id"
+            filter
+            display="chip"
+            class="w-full"
+            :loading="cargandoCatalogos"
+            placeholder="Vincular a proyectos existentes…"
+            filterPlaceholder="Buscar por nombre, municipio o departamento…"
+            @update:modelValue="cambiarPlantas"
+          >
             <template #option="{ option }">
               <div class="min-w-0">
-                <div class="text-sm" style="color:#2C2039">{{ option.nombre_comercial }}</div>
-                <div class="text-[11px]" style="color:#9b89b5">
-                  {{ [option.municipio, option.departamento].filter(Boolean).join(', ') || 'Sin ubicación' }}
+                <div class="text-sm" style="color: #2c2039">{{ option.nombre_comercial }}</div>
+                <div class="text-[11px]" style="color: #9b89b5">
+                  {{
+                    [option.municipio, option.departamento].filter(Boolean).join(', ') ||
+                    'Sin ubicación'
+                  }}
                   <span v-if="option.potencia_instalada_kwp">
-                    · {{ Number(option.potencia_instalada_kwp).toLocaleString('es-CO', { maximumFractionDigits: 0 }) }} kWp
+                    ·
+                    {{
+                      Number(option.potencia_instalada_kwp).toLocaleString('es-CO', {
+                        maximumFractionDigits: 0,
+                      })
+                    }}
+                    kWp
                   </span>
                 </div>
               </div>
             </template>
           </MultiSelect>
-          <p v-if="!f.proyecto_ids?.length" class="ayuda" style="color:#D64455">
-            Sin ningún proyecto vinculado, el PPA se crearía sin plantas: ni Cumplimiento
-            ni <code>/comercial/proyectos-operando</code> pueden ver esta oferta.
+          <p v-if="!f.proyecto_ids?.length" class="ayuda" style="color: #d64455">
+            Sin ningún proyecto vinculado, el PPA se crearía sin plantas: ni Cumplimiento ni
+            <code>/comercial/proyectos-operando</code> pueden ver esta oferta.
           </p>
         </div>
       </section>
@@ -168,27 +264,53 @@
       <section>
         <h3 class="seccion">Ficha operativa</h3>
         <p class="ayuda mb-2">
-          Cada dato dice de dónde salió. Lo que manda el proyecto no se edita acá:
-          se arregla en el proyecto.
+          Cada dato dice de dónde salió. Lo que manda el proyecto no se edita acá: se arregla en el
+          proyecto.
         </p>
         <div class="flex flex-col gap-3">
-          <div v-for="c in fichaCampos" :key="c.campo" class="flex items-start justify-between gap-2">
+          <div
+            v-for="c in fichaCampos"
+            :key="c.campo"
+            class="flex items-start justify-between gap-2"
+          >
             <div class="min-w-0 flex-1">
               <div class="etiqueta">{{ c.label }}</div>
               <!-- Editable solo cuando el dato es (o sería) el declarado en la
                    oferta: si lo gobierna el proyecto, escribirlo acá no cambiaría
                    nada visible y se leería como un bug. -->
-              <InputText v-if="c.editor === 'texto'" v-model.trim="f[c.campo]" class="w-full"
-                         @update:modelValue="autosave" />
-              <Select v-else-if="c.editor === 'operador'" v-model="f[c.campo]" :options="operadores"
-                      optionLabel="nombre" optionValue="id" filter showClear class="w-full"
-                      placeholder="Del catálogo…" @update:modelValue="autosave" />
-              <InputNumber v-else-if="c.editor === 'numero'" v-model="f[c.campo]" class="w-full"
-                           :maxFractionDigits="0" @update:modelValue="autosave" />
-              <div v-else class="text-sm" style="color:#2C2039">{{ c.valor ?? '—' }}</div>
+              <InputText
+                v-if="c.editor === 'texto'"
+                v-model.trim="f[c.campo]"
+                class="w-full"
+                @update:modelValue="autosave"
+              />
+              <Select
+                v-else-if="c.editor === 'operador'"
+                v-model="f[c.campo]"
+                :options="operadores"
+                optionLabel="nombre"
+                optionValue="id"
+                filter
+                showClear
+                class="w-full"
+                placeholder="Del catálogo…"
+                @update:modelValue="autosave"
+              />
+              <InputNumber
+                v-else-if="c.editor === 'numero'"
+                v-model="f[c.campo]"
+                class="w-full"
+                :maxFractionDigits="0"
+                @update:modelValue="autosave"
+              />
+              <div v-else class="text-sm" style="color: #2c2039">{{ c.valor ?? '—' }}</div>
             </div>
-            <span v-if="fuente(c.campo)" class="text-[10px] rounded px-1.5 py-0.5 flex-shrink-0 mt-4"
-                  :class="fuente(c.campo).clase">{{ fuente(c.campo).label }}</span>
+            <span
+              v-if="fuente(c.campo)"
+              class="mt-4 flex-shrink-0 rounded px-1.5 py-0.5 text-[10px]"
+              :class="fuente(c.campo).clase"
+              >{{ fuente(c.campo).label }}</span
+            >
           </div>
         </div>
       </section>
@@ -196,27 +318,43 @@
       <!-- ── Contrato ────────────────────────────────────────────────────── -->
       <section>
         <h3 class="seccion">Contrato</h3>
-        <div v-if="oferta.ppa_contrato_id" class="rounded-md px-3 py-2"
-             style="background:#E6F7F5;border:1px solid #99E0D8">
-          <router-link :to="`/contratos/${oferta.ppa_contrato_id}`" class="text-sm font-medium underline"
-                       style="color:#0F766E">
+        <div
+          v-if="oferta.ppa_contrato_id"
+          class="rounded-md px-3 py-2"
+          style="background: #e6f7f5; border: 1px solid #99e0d8"
+        >
+          <router-link
+            :to="`/contratos/${oferta.ppa_contrato_id}`"
+            class="text-sm font-medium underline"
+            style="color: #0f766e"
+          >
             Contrato PPA #{{ oferta.ppa_contrato_id }}
           </router-link>
-          <div class="text-xs mt-1" style="color:#0F766E">
-            {{ fmtFecha(oferta.ficha?.contrato_fecha_inicio) }} → {{ fmtFecha(oferta.ficha?.contrato_fecha_fin) }}
+          <div class="mt-1 text-xs" style="color: #0f766e">
+            {{ fmtFecha(oferta.ficha?.contrato_fecha_inicio) }} →
+            {{ fmtFecha(oferta.ficha?.contrato_fecha_fin) }}
             <span v-if="oferta.ficha?.contrato_compra_anios">
-              · {{ oferta.ficha.contrato_compra_anios }} años ({{ oferta.ficha.contrato_compra_meses }} meses)
+              · {{ oferta.ficha.contrato_compra_anios }} años ({{
+                oferta.ficha.contrato_compra_meses
+              }}
+              meses)
             </span>
           </div>
         </div>
         <div v-else-if="puedeFirmarPPA(oferta)">
-          <Button label="Firmar → crear PPA" icon="pi pi-file-check" class="w-full"
-                  @click="$emit('firmar', oferta)" />
+          <Button
+            label="Firmar → crear PPA"
+            icon="pi pi-file-check"
+            class="w-full"
+            @click="$emit('firmar', oferta)"
+          />
           <p class="ayuda">Crea el contrato con sus tarifas y lo enlaza a esta oferta.</p>
         </div>
         <p v-else-if="oferta.tipo === 'servicios_operacionales'" class="ayuda">
-          Las ofertas de servicios derivan en un contrato de representación, que se
-          crea en <router-link to="/servicios" class="underline" style="color:#915BD8">Servicios</router-link>.
+          Las ofertas de servicios derivan en un contrato de representación, que se crea en
+          <router-link to="/servicios" class="underline" style="color: #915bd8"
+            >Servicios</router-link
+          >.
         </p>
       </section>
 
@@ -224,29 +362,52 @@
       <section>
         <h3 class="seccion">Bitácora de esta oferta</h3>
         <div class="flex gap-2">
-          <Select v-model="gestion.tipo" :options="TIPOS_GESTION" optionLabel="label" optionValue="value"
-                  class="w-36" />
-          <InputText v-model.trim="gestion.descripcion" class="flex-1"
-                     placeholder="Qué pasó…" @keyup.enter="registrarGestion" />
-          <Button icon="pi pi-plus" :disabled="!gestion.descripcion" :loading="guardandoGestion"
-                  @click="registrarGestion" />
+          <Select
+            v-model="gestion.tipo"
+            :options="TIPOS_GESTION"
+            optionLabel="label"
+            optionValue="value"
+            class="w-36"
+          />
+          <InputText
+            v-model.trim="gestion.descripcion"
+            class="flex-1"
+            placeholder="Qué pasó…"
+            @keyup.enter="registrarGestion"
+          />
+          <Button
+            icon="pi pi-plus"
+            :disabled="!gestion.descripcion"
+            :loading="guardandoGestion"
+            @click="registrarGestion"
+          />
         </div>
         <p class="ayuda">
-          Queda colgada de esta oferta y apaga solo su alerta — no la de sus hermanas
-          del mismo cliente.
+          Queda colgada de esta oferta y apaga solo su alerta — no la de sus hermanas del mismo
+          cliente.
         </p>
       </section>
 
-      <div class="flex items-center justify-between pt-2 border-t" style="border-color:#e8e0f0">
-        <span class="text-xs" style="color:#9b89b5">{{ estadoGuardado }}</span>
-        <Button label="Eliminar oferta" icon="pi pi-trash" text severity="danger" size="small"
-                @click="confirmarEliminar" />
+      <div class="flex items-center justify-between border-t pt-2" style="border-color: #e8e0f0">
+        <span class="text-xs" style="color: #9b89b5">{{ estadoGuardado }}</span>
+        <Button
+          label="Eliminar oferta"
+          icon="pi pi-trash"
+          text
+          severity="danger"
+          size="small"
+          @click="confirmarEliminar"
+        />
       </div>
     </div>
 
-    <ProyectoDesdeCRMDialog v-if="oferta" v-model:visible="crearProyecto"
-                            :oportunidad-id="oferta.oportunidad_id" :oferta="oferta"
-                            @creado="proyectoCreado" />
+    <ProyectoDesdeCRMDialog
+      v-if="oferta"
+      v-model:visible="crearProyecto"
+      :oportunidad-id="oferta.oportunidad_id"
+      :oferta="oferta"
+      @creado="proyectoCreado"
+    />
   </Drawer>
 </template>
 
@@ -266,9 +427,19 @@ import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
 import api from '@/api/client'
 import {
-  ETAPAS, TIPOS_OFERTA, TIPOS_GESTION, FUENTES, puedeFirmarPPA,
-  aFecha, aFechaStr, fmtFecha, diasDesde, sinRespuesta,
-  etiquetaPrecio, placeholderPrecio, ayudaPrecio,
+  ETAPAS,
+  TIPOS_OFERTA,
+  TIPOS_GESTION,
+  FUENTES,
+  puedeFirmarPPA,
+  aFecha,
+  aFechaStr,
+  fmtFecha,
+  diasDesde,
+  sinRespuesta,
+  etiquetaPrecio,
+  placeholderPrecio,
+  ayudaPrecio,
 } from './comercial.js'
 import { cargarProyectos } from './catalogos.js'
 import ProyectoDesdeCRMDialog from './ProyectoDesdeCRMDialog.vue'
@@ -306,14 +477,17 @@ let temporizador = null
  * M2M, porque el backend ya la escribió y mandarla otra vez la reescribiría.
  */
 function proyectoCreado(p) {
-  proyectos.value = [...proyectos.value, {
-    id: p.id,
-    nombre_comercial: p.nombre_comercial,
-    municipio: p.municipio ?? null,
-    departamento: p.departamento ?? null,
-    estado: p.estado ?? null,
-    potencia_instalada_kwp: p.potencia_instalada_kwp ?? null,
-  }].sort((a, b) => (a.nombre_comercial || '').localeCompare(b.nombre_comercial || '', 'es'))
+  proyectos.value = [
+    ...proyectos.value,
+    {
+      id: p.id,
+      nombre_comercial: p.nombre_comercial,
+      municipio: p.municipio ?? null,
+      departamento: p.departamento ?? null,
+      estado: p.estado ?? null,
+      potencia_instalada_kwp: p.potencia_instalada_kwp ?? null,
+    },
+  ].sort((a, b) => (a.nombre_comercial || '').localeCompare(b.nombre_comercial || '', 'es'))
   if (!f.proyecto_ids?.includes(p.id)) f.proyecto_ids = [...(f.proyecto_ids ?? []), p.id]
 }
 
@@ -355,31 +529,42 @@ function cargarFormulario(o) {
   estadoGuardado.value = ''
 }
 
-watch(() => props.oferta?.id, () => {
-  clearTimeout(temporizador)
-  cargarFormulario(props.oferta)
-}, { immediate: true })
+watch(
+  () => props.oferta?.id,
+  () => {
+    clearTimeout(temporizador)
+    cargarFormulario(props.oferta)
+  },
+  { immediate: true },
+)
 
 // Los catálogos se cargan la primera vez que se abre el drawer, no al montar la
 // vista: son más de mil proyectos que la mayoría de las sesiones no necesita.
-watch(() => props.visible, async (abierto) => {
-  if (!abierto || proyectos.value.length || operadores.value.length) return
-  cargandoCatalogos.value = true
-  const [pr, op] = await Promise.allSettled([
-    cargarProyectos(),
-    api.get('/operadores-red'),
-  ])
-  if (pr.status === 'fulfilled') {
-    proyectos.value = pr.value
-  } else {
-    toast.add({ severity: 'warn', summary: 'No se pudo cargar la lista de proyectos', life: 4000 })
-  }
-  if (op.status === 'fulfilled') {
-    const filas = op.value.data.items ?? op.value.data
-    operadores.value = filas.map((o) => ({ id: o.id, nombre: o.nombre_comercial || o.nombre_legal }))
-  }
-  cargandoCatalogos.value = false
-})
+watch(
+  () => props.visible,
+  async (abierto) => {
+    if (!abierto || proyectos.value.length || operadores.value.length) return
+    cargandoCatalogos.value = true
+    const [pr, op] = await Promise.allSettled([cargarProyectos(), api.get('/operadores-red')])
+    if (pr.status === 'fulfilled') {
+      proyectos.value = pr.value
+    } else {
+      toast.add({
+        severity: 'warn',
+        summary: 'No se pudo cargar la lista de proyectos',
+        life: 4000,
+      })
+    }
+    if (op.status === 'fulfilled') {
+      const filas = op.value.data.items ?? op.value.data
+      operadores.value = filas.map((o) => ({
+        id: o.id,
+        nombre: o.nombre_comercial || o.nombre_legal,
+      }))
+    }
+    cargandoCatalogos.value = false
+  },
+)
 
 // ── Ficha operativa: valor + procedencia por campo ──────────────────────────
 function fuente(campo) {
@@ -395,23 +580,45 @@ const fichaCampos = computed(() => {
   const ficha = props.oferta?.ficha ?? {}
   const kwh = ficha.energia_promedio_kwh_mes
   return [
-    { campo: 'municipio', label: 'Municipio', valor: ficha.municipio,
-      editor: gobiernaProyecto('municipio') ? null : 'texto' },
-    { campo: 'departamento', label: 'Departamento', valor: ficha.departamento,
-      editor: gobiernaProyecto('departamento') ? null : 'texto' },
-    { campo: 'operador_red_id', label: 'Operador de red', valor: ficha.operador_red,
-      editor: gobiernaProyecto('operador_red') ? null : 'operador' },
-    { campo: 'energia_promedio_kwh_mes', label: 'Energía promedio estimada (kWh/mes)',
+    {
+      campo: 'municipio',
+      label: 'Municipio',
+      valor: ficha.municipio,
+      editor: gobiernaProyecto('municipio') ? null : 'texto',
+    },
+    {
+      campo: 'departamento',
+      label: 'Departamento',
+      valor: ficha.departamento,
+      editor: gobiernaProyecto('departamento') ? null : 'texto',
+    },
+    {
+      campo: 'operador_red_id',
+      label: 'Operador de red',
+      valor: ficha.operador_red,
+      editor: gobiernaProyecto('operador_red') ? null : 'operador',
+    },
+    {
+      campo: 'energia_promedio_kwh_mes',
+      label: 'Energía promedio estimada (kWh/mes)',
       valor: typeof kwh === 'number' ? kwh.toLocaleString('es-CO') : null,
-      editor: gobiernaProyecto('energia_promedio_kwh_mes') ? null : 'numero' },
-    { campo: 'energia_real_kwh_mes', label: 'Energía medida (último mes cerrado)',
-      valor: typeof ficha.energia_real_kwh_mes === 'number'
-        ? `${ficha.energia_real_kwh_mes.toLocaleString('es-CO')} kWh · ${ficha.energia_real_periodo}`
-        : null,
-      editor: null },
-    { campo: 'fecha_inicio_operacion', label: 'Inicio de operación',
+      editor: gobiernaProyecto('energia_promedio_kwh_mes') ? null : 'numero',
+    },
+    {
+      campo: 'energia_real_kwh_mes',
+      label: 'Energía medida (último mes cerrado)',
+      valor:
+        typeof ficha.energia_real_kwh_mes === 'number'
+          ? `${ficha.energia_real_kwh_mes.toLocaleString('es-CO')} kWh · ${ficha.energia_real_periodo}`
+          : null,
+      editor: null,
+    },
+    {
+      campo: 'fecha_inicio_operacion',
+      label: 'Inicio de operación',
       valor: ficha.fecha_inicio_operacion ? fmtFecha(ficha.fecha_inicio_operacion) : null,
-      editor: null },
+      editor: null,
+    },
   ]
 })
 
@@ -464,7 +671,12 @@ async function cambiarEtapa(estado) {
   const r = await props.acciones.moverEtapa(props.oferta, estado)
   moviendo.value = false
   if (!r.ok) {
-    toast.add({ severity: 'error', summary: 'No se pudo cambiar la etapa', detail: r.error, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo cambiar la etapa',
+      detail: r.error,
+      life: 5000,
+    })
   }
 }
 
@@ -473,7 +685,12 @@ async function tocar() {
   const r = await props.acciones.registrarSeguimiento(props.oferta.id)
   tocando.value = false
   if (!r.ok) {
-    toast.add({ severity: 'error', summary: 'No se pudo registrar el toque', detail: r.error, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo registrar el toque',
+      detail: r.error,
+      life: 5000,
+    })
   }
 }
 
@@ -499,7 +716,9 @@ async function registrarGestion() {
   if (!gestion.descripcion) return
   guardandoGestion.value = true
   const r = await props.acciones.registrarGestion(props.oferta.oportunidad_id, {
-    tipo: gestion.tipo, descripcion: gestion.descripcion, ofertaId: props.oferta.id,
+    tipo: gestion.tipo,
+    descripcion: gestion.descripcion,
+    ofertaId: props.oferta.id,
   })
   guardandoGestion.value = false
   if (r.ok) {
@@ -522,7 +741,13 @@ function confirmarEliminar() {
     accept: async () => {
       const r = await props.acciones.eliminarOferta(props.oferta.id)
       if (r.ok) emit('update:visible', false)
-      else toast.add({ severity: 'error', summary: 'No se pudo eliminar', detail: r.error, life: 5000 })
+      else
+        toast.add({
+          severity: 'error',
+          summary: 'No se pudo eliminar',
+          detail: r.error,
+          life: 5000,
+        })
     },
   })
 }

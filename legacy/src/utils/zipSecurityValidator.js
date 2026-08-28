@@ -31,12 +31,15 @@ const IGNORED_ENTRY = /(^|\/)(__MACOSX\/|\.DS_Store$|Thumbs\.db$)/i
 // ── Normalización de rutas ─────────────────────────────────────────────────────
 export function getSafeFilePath(rawPath) {
   if (!rawPath) return ''
-  let p = String(rawPath).replace(/\\/g, '/')   // separadores windows → unix
-  p = p.replace(/^[a-zA-Z]:/, '')                // descarta letra de unidad (C:)
+  let p = String(rawPath).replace(/\\/g, '/') // separadores windows → unix
+  p = p.replace(/^[a-zA-Z]:/, '') // descarta letra de unidad (C:)
   const out = []
   for (const seg of p.split('/')) {
     if (seg === '' || seg === '.') continue
-    if (seg === '..') { out.pop(); continue }    // colapsa sin escapar de la raíz
+    if (seg === '..') {
+      out.pop()
+      continue
+    } // colapsa sin escapar de la raíz
     out.push(seg)
   }
   return out.join('/')
@@ -49,11 +52,18 @@ function isAbsolutePath(rawPath) {
 }
 
 function hasTraversal(rawPath) {
-  return String(rawPath || '').replace(/\\/g, '/').split('/').some(seg => seg === '..')
+  return String(rawPath || '')
+    .replace(/\\/g, '/')
+    .split('/')
+    .some((seg) => seg === '..')
 }
 
 function getExtension(rawPath) {
-  const base = String(rawPath || '').replace(/\\/g, '/').split('/').pop() || ''
+  const base =
+    String(rawPath || '')
+      .replace(/\\/g, '/')
+      .split('/')
+      .pop() || ''
   const i = base.lastIndexOf('.')
   return i > 0 ? base.slice(i + 1).toLowerCase() : ''
 }
@@ -62,8 +72,9 @@ function getExtension(rawPath) {
 // zip: objeto JSZip (se lee su mapa `.files`: ruta → { name, dir }).
 // options.allowedExtensions: string[] de extensiones permitidas (sin punto).
 export function validateZipEntries(zip, options = {}) {
-  const allowed = (options.allowedExtensions || DEFAULT_ALLOWED_EXTENSIONS)
-    .map(e => String(e).toLowerCase())
+  const allowed = (options.allowedExtensions || DEFAULT_ALLOWED_EXTENSIONS).map((e) =>
+    String(e).toLowerCase(),
+  )
   const errors = []
   const files = (zip && zip.files) || {}
 
@@ -77,7 +88,11 @@ export function validateZipEntries(zip, options = {}) {
       continue
     }
     if (hasTraversal(path)) {
-      errors.push({ path, code: 'PATH_TRAVERSAL', message: `Ruta con recorrido de directorios (..): ${path}` })
+      errors.push({
+        path,
+        code: 'PATH_TRAVERSAL',
+        message: `Ruta con recorrido de directorios (..): ${path}`,
+      })
       continue
     }
     const ext = getExtension(path)

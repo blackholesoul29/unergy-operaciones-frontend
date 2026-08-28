@@ -26,8 +26,8 @@ export function useEnergizationProjects() {
   const projects = ref([])
   const loading = ref(false)
   const error = ref(null)
-  const warning = ref(null)   // aviso del backend (config faltante / fuente caída)
-  const source = ref(null)    // 'operaciones_db' | null
+  const warning = ref(null) // aviso del backend (config faltante / fuente caída)
+  const source = ref(null) // 'operaciones_db' | null
   const syncing = ref(false)
   const lastSync = ref(null)
 
@@ -56,7 +56,7 @@ export function useEnergizationProjects() {
   async function removeProject(projectId) {
     try {
       await api.delete(`/proyectos/${projectId}`)
-      projects.value = projects.value.filter(p => p.id !== projectId)
+      projects.value = projects.value.filter((p) => p.id !== projectId)
     } catch (e) {
       console.error('Error al eliminar el proyecto', e)
     }
@@ -79,7 +79,15 @@ export function useEnergizationProjects() {
   }
 
   return {
-    projects, loading, error, warning, source, syncing, lastSync,
-    loadProjects, removeProject, syncNow,
+    projects,
+    loading,
+    error,
+    warning,
+    source,
+    syncing,
+    lastSync,
+    loadProjects,
+    removeProject,
+    syncNow,
   }
 }

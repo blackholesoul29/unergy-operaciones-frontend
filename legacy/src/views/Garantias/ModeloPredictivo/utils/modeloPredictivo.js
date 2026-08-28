@@ -24,21 +24,46 @@ export const AGENTE = Object.freeze({
 })
 
 const ESTADO_CHIP = {
-  [ESTADO.FIRME]: { label: 'firme', bg: '#ECFDF5', color: '#059669',
-    title: 'XM ya publicó el monto' },
-  [ESTADO.ESTIMADO]: { label: 'estimado', bg: 'rgba(145,91,216,0.10)', color: '#915BD8',
-    title: 'La ventana base ya cerró: solo falta que XM liquide días ya ocurridos' },
-  [ESTADO.PRELIMINAR]: { label: 'preliminar', bg: '#F3F4F6', color: '#6b7280',
-    title: 'La ventana base sigue abierta: incluye días futuros' },
+  [ESTADO.FIRME]: {
+    label: 'firme',
+    bg: '#ECFDF5',
+    color: '#059669',
+    title: 'XM ya publicó el monto',
+  },
+  [ESTADO.ESTIMADO]: {
+    label: 'estimado',
+    bg: 'rgba(145,91,216,0.10)',
+    color: '#915BD8',
+    title: 'La ventana base ya cerró: solo falta que XM liquide días ya ocurridos',
+  },
+  [ESTADO.PRELIMINAR]: {
+    label: 'preliminar',
+    bg: '#F3F4F6',
+    color: '#6b7280',
+    title: 'La ventana base sigue abierta: incluye días futuros',
+  },
 }
 
 const PROCEDENCIA_CHIP = {
-  [PROCEDENCIA.OBSERVADA]: { label: 'observada', bg: '#ECFDF5', color: '#059669',
-    title: 'Ventana tomada de la hoja PERIODO BASE o del nombre del CGM' },
-  [PROCEDENCIA.DERIVADA]: { label: 'derivada', bg: 'rgba(145,91,216,0.10)', color: '#915BD8',
-    title: 'Ventana derivada de la regla general (cierra en 14, cálculo en 7)' },
-  [PROCEDENCIA.CANDIDATAS]: { label: 'candidatas', bg: '#FEF3C7', color: '#92400E',
-    title: 'Ventana no derivable: se calculó sobre todas las candidatas y la dispersión ensancha el intervalo' },
+  [PROCEDENCIA.OBSERVADA]: {
+    label: 'observada',
+    bg: '#ECFDF5',
+    color: '#059669',
+    title: 'Ventana tomada de la hoja PERIODO BASE o del nombre del CGM',
+  },
+  [PROCEDENCIA.DERIVADA]: {
+    label: 'derivada',
+    bg: 'rgba(145,91,216,0.10)',
+    color: '#915BD8',
+    title: 'Ventana derivada de la regla general (cierra en 14, cálculo en 7)',
+  },
+  [PROCEDENCIA.CANDIDATAS]: {
+    label: 'candidatas',
+    bg: '#FEF3C7',
+    color: '#92400E',
+    title:
+      'Ventana no derivable: se calculó sobre todas las candidatas y la dispersión ensancha el intervalo',
+  },
 }
 
 const CHIP_DESCONOCIDO = { label: '—', bg: '#F3F4F6', color: '#6b7280', title: '' }
@@ -73,8 +98,20 @@ export function insumoContaminado(insumo) {
   return !!insumo && insumo.version !== 'tx2'
 }
 
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+const MESES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+]
 
 /** '2026-09' -> 'Septiembre 2026'. Devuelve el crudo si no matchea. */
 export function nombreMes(periodo) {
@@ -123,7 +160,12 @@ const DETALLE_GENERICO = new Set([
 export function mensajeError(e, fallback) {
   const status = e?.response?.status
   const detail = e?.response?.data?.detail
-  const detalleValido = typeof status === 'number' && status >= 400 && status < 500
-    && typeof detail === 'string' && detail.trim() !== '' && !DETALLE_GENERICO.has(detail.trim())
+  const detalleValido =
+    typeof status === 'number' &&
+    status >= 400 &&
+    status < 500 &&
+    typeof detail === 'string' &&
+    detail.trim() !== '' &&
+    !DETALLE_GENERICO.has(detail.trim())
   return detalleValido ? detail : fallback
 }

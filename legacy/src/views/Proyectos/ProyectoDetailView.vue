@@ -1,736 +1,1221 @@
 <template>
   <div v-if="proyecto">
-    <DetalleLayout :volver="{ to: '/servicios-unificado?vista=proyectos', label: 'Proyectos' }"
-                   :titulo="proyecto.nombre_comercial"
-                   :codigo="proyecto.codigo_tsf || ''"
-                   :tabs="TABS" v-model="activeTab">
+    <DetalleLayout
+      :volver="{ to: '/servicios-unificado?vista=proyectos', label: 'Proyectos' }"
+      :titulo="proyecto.nombre_comercial"
+      :codigo="proyecto.codigo_tsf || ''"
+      :tabs="TABS"
+      v-model="activeTab"
+    >
       <!-- En modo edicion, nombre y estado se editan en la misma miga -->
       <template v-if="isEditMode" #titulo>
         <InputText v-model="editForm.nombre_comercial" size="small" class="w-64" />
-        <Select v-model="editForm.estado" :options="ESTADOS" optionLabel="label" optionValue="value"
-                size="small" class="w-40" />
+        <Select
+          v-model="editForm.estado"
+          :options="ESTADOS"
+          optionLabel="label"
+          optionValue="value"
+          size="small"
+          class="w-40"
+        />
       </template>
       <template v-if="!isEditMode" #chips>
-        <Tag :value="proyecto.estado" :severity="estadoSeverity(proyecto.estado)" class="text-[10px]" />
+        <Tag
+          :value="proyecto.estado"
+          :severity="estadoSeverity(proyecto.estado)"
+          class="text-[10px]"
+        />
       </template>
       <template #acciones>
         <template v-if="isEditMode">
           <Button label="Cancelar" severity="secondary" outlined size="small" @click="cancelEdit" />
-          <Button label="Guardar cambios" icon="pi pi-check" size="small" :loading="guardando" @click="saveEdit" />
+          <Button
+            label="Guardar cambios"
+            icon="pi pi-check"
+            size="small"
+            :loading="guardando"
+            @click="saveEdit"
+          />
         </template>
-        <Button v-else label="Editar" icon="pi pi-pencil" outlined size="small" @click="enterEditMode" />
+        <Button
+          v-else
+          label="Editar"
+          icon="pi pi-pencil"
+          outlined
+          size="small"
+          @click="enterEditMode"
+        />
       </template>
       <template #default="{ tab }">
-      <!-- ══ GENERAL ══ -->
-      <div v-if="tab === 'general'">
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
-          <template v-if="!isEditMode">
-            <InfoField label="Tipo" :value="proyecto.tipo_proyecto" />
-            <InfoField label="Tecnología" :value="proyecto.tipo_tecnologia" />
-            <InfoField label="Capacidad instalada (kWp)" :value="proyecto.info_tecnica?.capacidad_instalada_kwp" />
-            <InfoField label="Departamento" :value="proyecto.departamento" />
-            <InfoField label="Municipio" :value="proyecto.municipio" />
-            <InfoField label="Operador de red" :value="proyecto.operador_red_legal" />
-            <InfoField label="Clasificación" :value="proyecto.clasificacion_regulatoria" />
-            <InfoField label="API ID Unergy" :value="proyecto.sub_project" />
-            <InfoField label="Código TSF" :value="proyecto.codigo_tsf" />
-            <InfoField label="Fecha de entrada en operación" :value="fmtFecha(proyecto.fecha_entrada_operacion)" />
-            <InfoField
-              label="Inicio de comercialización"
-              :value="proyecto.fecha_inicio_comercializacion ? (fmtFecha(proyecto.fecha_inicio_comercializacion) + (proyecto.fecha_comercializacion_editada_manual ? ' (manual)' : ' (auto)')) : '—'" />
-            <InfoField label="Fecha fin de representación" :value="proyecto.fecha_fin_representacion ? fmtFecha(proyecto.fecha_fin_representacion) : '—'" />
-            <div class="flex flex-col gap-1">
-              <p class="text-xs text-gray-400 uppercase tracking-wide">Comunidad energética</p>
-              <div>
-                <Tag v-if="proyecto.es_comunidad_energetica" severity="success"
-                     :value="proyecto.nombre_comunidad ? ('🏘 ' + proyecto.nombre_comunidad) : '🏘 Sí'" />
-                <span v-else class="text-gray-400">—</span>
-              </div>
-            </div>
-          </template>
-          <template v-else>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Tipo de proyecto</label>
-              <Select v-model="editForm.tipo_proyecto" :options="TIPOS_PROYECTO" class="w-full" placeholder="Seleccionar" showClear />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Tecnología</label>
-              <Select v-model="editForm.tipo_tecnologia" :options="TIPOS_TECNOLOGIA" class="w-full" placeholder="Seleccionar" showClear />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Capacidad instalada (kWp)</label>
-              <InputNumber v-model="editInfoTecnica.capacidad_instalada_kwp" :maxFractionDigits="3" locale="en-US" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Departamento</label>
-              <Select v-model="editForm.departamento" :options="departamentos" class="w-full" placeholder="Seleccionar" showClear filter />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Municipio</label>
-              <Select v-model="editForm.municipio" :options="municipiosDisponibles" class="w-full" placeholder="Seleccionar" showClear filter
-                :disabled="!editForm.departamento" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Operador de red</label>
-              <Select v-model="editForm.operador_red_id" :options="operadoresRedOptions" optionLabel="label"
-                optionValue="id" class="w-full" placeholder="Seleccionar" showClear filter />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Clasificación regulatoria</label>
-              <Select v-model="editForm.clasificacion_regulatoria" :options="CLASIFICACIONES" class="w-full" placeholder="Seleccionar" showClear />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">API ID Unergy</label>
-              <InputText v-model="editForm.sub_project" class="w-full" placeholder="ej: ibirico, bayunca" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Código TSF</label>
-              <InputText v-model="editForm.codigo_tsf" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Fecha de entrada en operación</label>
-              <DatePicker v-model="editFechaEntrada" dateFormat="yy-mm-dd" showIcon showClear class="w-full" placeholder="Seleccionar" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Inicio de comercialización</label>
-              <DatePicker v-model="editFechaComerc" dateFormat="yy-mm-dd" showIcon showClear class="w-full" placeholder="Auto (1er día con generación)" />
-              <small class="text-xs text-gray-400">Se autoderiva del 1er día con generación. Si la fijas a mano, el sistema no la vuelve a cambiar.</small>
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Fecha fin de representación</label>
-              <DatePicker v-model="editFechaFinRep" dateFormat="yy-mm-dd" showIcon showClear class="w-full" placeholder="Vigente" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Comunidad energética</label>
-              <div class="flex items-center gap-2 h-full">
-                <ToggleSwitch v-model="editForm.es_comunidad_energetica" />
-                <span class="text-sm text-gray-500">{{ editForm.es_comunidad_energetica ? 'Sí' : 'No' }}</span>
-              </div>
-            </div>
-            <div v-if="editForm.es_comunidad_energetica" class="flex flex-col gap-1">
-              <label class="field-label">Nombre de la comunidad</label>
-              <InputText v-model="editForm.nombre_comunidad" class="w-full" placeholder="Opcional" />
-            </div>
-          </template>
-        </div>
-      </div>
-
-      <!-- ══ TÉCNICO ══ -->
-      <div v-if="tab === 'tecnico'">
-        <div class="p-4 space-y-6 text-sm">
-
-          <!-- Vista lectura -->
-          <template v-if="!isEditMode">
-            <!-- Ubicación -->
-            <div v-if="proyecto.direccion_vereda || proyecto.info_tecnica?.url_ubicacion">
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ubicación</p>
-              <div class="space-y-1">
-                <p v-if="proyecto.direccion_vereda" class="text-gray-700">{{ proyecto.direccion_vereda }}</p>
-                <a v-if="proyecto.info_tecnica?.url_ubicacion" :href="proyecto.info_tecnica.url_ubicacion"
-                   target="_blank" rel="noopener"
-                   class="inline-flex items-center gap-1 text-blue-600 hover:underline text-xs">
-                  <i class="pi pi-map-marker" /> Ver en Google Maps
-                </a>
-              </div>
-            </div>
-            <!-- Eléctrico general -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">General</p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Potencia AC (kW)" :value="proyecto.info_tecnica?.potencia_ac_kw" />
-                <InfoField label="Capacidad instalada (kWp)" :value="proyecto.info_tecnica?.capacidad_instalada_kwp" />
-                <InfoField label="Voltaje red" :value="proyecto.info_tecnica?.voltaje_red" />
-                <InfoField label="Tipo tracker" :value="proyecto.info_tecnica?.tipo_tracker" />
-                <InfoField label="Producción específica (kWh/kWp)" :value="proyecto.produccion_especifica_kwh_kwp" />
-                <InfoField label="Latitud" :value="proyecto.latitud" />
-                <InfoField label="Longitud" :value="proyecto.longitud" />
-                <InfoField label="Altitud (msnm)" :value="proyecto.altitud_msnm" />
-              </div>
-            </div>
-            <!-- Paneles -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Paneles</p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Cantidad de paneles" :value="proyecto.info_tecnica?.cantidad_total_paneles" />
-                <InfoField label="Potencia panel (kWp)" :value="proyecto.info_tecnica?.potencia_panel_kwp" />
-                <InfoField label="Marca paneles" :value="proyecto.info_tecnica?.marca_paneles" />
-              </div>
-            </div>
-            <!-- Inversores -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Inversores</p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Cantidad inversores" :value="proyecto.info_tecnica?.cantidad_inversores" />
-                <InfoField label="Potencia inversores (kWp)" :value="proyecto.info_tecnica?.potencia_inversores_kwp" />
-                <InfoField label="Marca inversores" :value="proyecto.info_tecnica?.marca_inversores" />
-                <InfoField label="Cantidad strings" :value="proyecto.info_tecnica?.cantidad_strings" />
-              </div>
-            </div>
-            <!-- Equipos -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Marcas de equipos</p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Transformador" :value="proyecto.info_tecnica?.marca_transformador" />
-                <InfoField label="Reconectador / Relé" :value="proyecto.info_tecnica?.marca_reconectador_rele" />
-                <InfoField label="Totalizador" :value="proyecto.info_tecnica?.marca_totalizador" />
-                <InfoField label="Seguidor solar" :value="proyecto.info_tecnica?.marca_seguidor_solar" />
-                <InfoField label="Medidores frontera" :value="proyecto.info_tecnica?.marca_medidores_frontera" />
-                <InfoField label="Módem reconectador/relé" :value="proyecto.info_tecnica?.marca_modem_reconectador" />
-                <InfoField label="Módems frontera" :value="proyecto.info_tecnica?.marca_modems_frontera" />
-                <InfoField label="IP módem reconectador" :value="proyecto.info_tecnica?.ip_modem_reconectador" />
-              </div>
-            </div>
-            <!-- CCTV y seguridad -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">CCTV y seguridad</p>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <InfoField label="Estado CCTV" :value="proyecto.info_tecnica?.cctv_estado" />
-                <InfoField label="Marca CCTV" :value="proyecto.info_tecnica?.marca_cctv" />
-                <InfoField label="Seguridad física" :value="proyecto.info_tecnica?.seguridad_fisica" />
-                <InfoField label="Internet" :value="proyecto.info_tecnica?.tiene_internet === true ? 'Sí' : proyecto.info_tecnica?.tiene_internet === false ? 'No' : null" />
-              </div>
-            </div>
-          </template>
-
-          <!-- Vista edición -->
-          <template v-else>
-            <!-- Ubicación -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Ubicación</p>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Latitud</label>
-                  <InputNumber v-model="editForm.latitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Longitud</label>
-                  <InputNumber v-model="editForm.longitud" :maxFractionDigits="6" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Altitud (msnm)</label>
-                  <InputNumber v-model="editForm.altitud_msnm" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Dirección</label>
-                  <InputText v-model="editForm.direccion_vereda" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Link Google Maps</label>
-                  <InputText v-model="editInfoTecnica.url_ubicacion" class="w-full" placeholder="https://maps.app.goo.gl/..." />
-                </div>
-              </div>
-            </div>
-            <!-- Eléctrico general -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">General</p>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Potencia AC (kW)</label>
-                  <InputNumber v-model="editInfoTecnica.potencia_ac_kw" :maxFractionDigits="3" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Capacidad instalada (kWp)</label>
-                  <InputNumber v-model="editInfoTecnica.capacidad_instalada_kwp" :maxFractionDigits="3" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Voltaje red</label>
-                  <InputText v-model="editInfoTecnica.voltaje_red" class="w-full" placeholder="ej: 13.8/800" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Tipo tracker</label>
-                  <Select v-model="editInfoTecnica.tipo_tracker" :options="['1P','2P']" class="w-full" showClear placeholder="Seleccionar" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Producción específica (kWh/kWp)</label>
-                  <InputNumber v-model="editForm.produccion_especifica_kwh_kwp" :maxFractionDigits="2" locale="en-US" class="w-full" />
-                </div>
-              </div>
-            </div>
-            <!-- Paneles -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Paneles</p>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Cantidad de paneles</label>
-                  <InputNumber v-model="editInfoTecnica.cantidad_total_paneles" :useGrouping="false" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Potencia panel (kWp)</label>
-                  <InputText v-model="editInfoTecnica.potencia_panel_kwp" class="w-full" placeholder="ej: 0.58" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Marca paneles</label>
-                  <InputText v-model="editInfoTecnica.marca_paneles" class="w-full" />
-                </div>
-              </div>
-            </div>
-            <!-- Inversores -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Inversores</p>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Cantidad inversores</label>
-                  <InputNumber v-model="editInfoTecnica.cantidad_inversores" :useGrouping="false" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Potencia inversores (kWp)</label>
-                  <InputText v-model="editInfoTecnica.potencia_inversores_kwp" class="w-full" placeholder="ej: 300, 50 y 40" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Marca inversores</label>
-                  <InputText v-model="editInfoTecnica.marca_inversores" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Cantidad strings</label>
-                  <InputNumber v-model="editInfoTecnica.cantidad_strings" :useGrouping="false" class="w-full" />
-                </div>
-              </div>
-            </div>
-            <!-- Equipos -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Marcas de equipos</p>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Transformador</label>
-                  <InputText v-model="editInfoTecnica.marca_transformador" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Reconectador / Relé</label>
-                  <InputText v-model="editInfoTecnica.marca_reconectador_rele" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Totalizador</label>
-                  <InputText v-model="editInfoTecnica.marca_totalizador" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Seguidor solar</label>
-                  <InputText v-model="editInfoTecnica.marca_seguidor_solar" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Medidores frontera</label>
-                  <InputText v-model="editInfoTecnica.marca_medidores_frontera" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Módem reconectador/relé</label>
-                  <InputText v-model="editInfoTecnica.marca_modem_reconectador" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Módems frontera</label>
-                  <InputText v-model="editInfoTecnica.marca_modems_frontera" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">IP módem reconectador</label>
-                  <InputText v-model="editInfoTecnica.ip_modem_reconectador" class="w-full" />
-                </div>
-              </div>
-            </div>
-            <!-- CCTV y seguridad -->
-            <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">CCTV y seguridad</p>
-              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div class="flex flex-col gap-1 md:col-span-2">
-                  <label class="field-label">Estado CCTV</label>
-                  <InputText v-model="editInfoTecnica.cctv_estado" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Marca CCTV</label>
-                  <InputText v-model="editInfoTecnica.marca_cctv" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Seguridad física</label>
-                  <InputText v-model="editInfoTecnica.seguridad_fisica" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Internet</label>
-                  <Select v-model="editInfoTecnica.tiene_internet" :options="[{label:'Sí',value:true},{label:'No',value:false}]"
-                          optionLabel="label" optionValue="value" class="w-full" showClear placeholder="Seleccionar" />
-                </div>
-              </div>
-            </div>
-          </template>
-
-        </div>
-      </div>
-
-      <!-- ══ SIMULACIÓN ══ -->
-      <div v-if="tab === 'simulacion'">
-        <div class="p-4 space-y-6">
-          <div v-if="!isEditMode && hasSimulacionData" class="flex justify-end">
-            <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" outlined
-              severity="success" @click="descargarSimulacionExcel" />
-          </div>
-          <div v-for="sim in SIMULACIONES" :key="sim.key">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              {{ sim.label }} <span class="normal-case font-normal">(kWh/mes)</span>
-            </p>
-            <div class="grid grid-cols-6 gap-2">
-              <div v-for="(mes, i) in MESES" :key="sim.key + '-' + i">
-                <label class="block text-[10px] text-gray-400 mb-0.5 text-center">{{ mes }}</label>
-                <InputNumber
-                  v-if="isEditMode"
-                  v-model="sim.editArray.value[i]"
-                  :maxFractionDigits="1"
-                  locale="en-US"
-                  class="w-full"
-                  inputClass="text-center text-xs px-1 py-1"
-                />
-                <p v-else class="text-center text-sm font-semibold text-gray-800 bg-gray-50 rounded py-1.5 px-1 tabular-nums">
-                  {{ sim.displayArray.value[i] != null ? Math.round(sim.displayArray.value[i]).toLocaleString('es-CO') : '—' }}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ INVERSIONISTAS ══ -->
-      <div v-if="tab === 'inversionistas'">
-        <div class="p-4 space-y-4">
-          <DataTable :value="proyecto.inversionistas" class="text-sm" stripedRows>
-            <Column field="cliente_nombre" header="Inversionista" />
-            <Column header="Participación (%)">
-              <template #body="{ data }">
-                <template v-if="editandoInvId === data.id">
-                  <InputNumber v-model="editPct" :min="0" :max="100" :minFractionDigits="2" :maxFractionDigits="7"
-                    suffix="%" locale="en-US" class="w-32" />
-                </template>
-                <template v-else>
-                  {{ data.porcentaje_participacion != null ? (data.porcentaje_participacion * 100).toFixed(4) + '%' : '—' }}
-                </template>
-              </template>
-            </Column>
-            <Column header="Inicio" style="width:170px">
-              <template #body="{ data }">
-                <DatePicker v-if="editandoInvId === data.id" v-model="editFechaInicio" dateFormat="yy-mm-dd"
-                  showIcon showClear class="w-40" placeholder="—" />
-                <span v-else>{{ fmtFecha(data.fecha_inicio) }}</span>
-              </template>
-            </Column>
-            <Column header="Fin" style="width:170px">
-              <template #body="{ data }">
-                <DatePicker v-if="editandoInvId === data.id" v-model="editFechaFin" dateFormat="yy-mm-dd"
-                  showIcon showClear class="w-40" placeholder="Vigente" />
-                <span v-else>{{ data.fecha_fin ? fmtFecha(data.fecha_fin) : 'Vigente' }}</span>
-              </template>
-            </Column>
-            <Column header="Patrimonio autónomo">
-              <template #body="{ data }">
-                <Tag :value="data.es_patrimonio_autonomo ? 'Sí' : 'No'"
-                     :severity="data.es_patrimonio_autonomo ? 'info' : 'secondary'" />
-              </template>
-            </Column>
-            <Column header="" style="width:110px">
-              <template #body="{ data }">
-                <div class="flex gap-1">
-                  <template v-if="editandoInvId === data.id">
-                    <Button icon="pi pi-check" text severity="success" size="small" :loading="guardando"
-                      @click="guardarEdicionInversionista(data.id)" v-tooltip="'Guardar'" />
-                    <Button icon="pi pi-times" text severity="secondary" size="small"
-                      @click="editandoInvId = null" v-tooltip="'Cancelar'" />
-                  </template>
-                  <template v-else>
-                    <Button icon="pi pi-pencil" text severity="info" size="small"
-                      @click="iniciarEdicionInversionista(data)" v-tooltip="'Editar'" />
-                    <Button icon="pi pi-trash" text severity="danger" size="small"
-                      @click="eliminarInversionista(data.id)" v-tooltip="'Eliminar'" />
-                  </template>
-                </div>
-              </template>
-            </Column>
-            <template #empty>
-              <p class="text-center text-gray-400 py-4">Sin inversionistas registrados.</p>
-            </template>
-            <ColumnGroup type="footer">
-              <Row>
-                <Column footer="Total" footerStyle="font-weight:600" />
-                <Column :footer="tieneVariosPeriodos ? '— (ver períodos)' : totalParticipacion.toFixed(4) + '%'"
-                  footerStyle="font-weight:600" />
-                <Column />
-                <Column />
-                <Column />
-                <Column />
-              </Row>
-            </ColumnGroup>
-          </DataTable>
-
-          <!-- Histórico por período (cuando hay inversionistas de distintas fechas) -->
-          <div v-if="tieneVariosPeriodos" class="rounded-lg bg-gray-50 border border-gray-100 p-3 space-y-2">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-              Histórico por período
-              <span class="normal-case font-normal text-gray-400">— el 100% se valida dentro de cada período, no sobre todo el histórico</span>
-            </p>
-            <div v-for="per in periodos" :key="per.key"
-              class="flex items-center justify-between text-sm border-t border-gray-100 pt-1 first:border-0 first:pt-0">
-              <span class="text-gray-600">
-                {{ per.label }}
-                <Tag v-if="per.vigente" value="Vigente" severity="success" class="ml-2 scale-90" />
-                <span class="text-gray-400 ml-1">· {{ per.count }} inversionista(s)</span>
-              </span>
-              <span class="font-semibold tabular-nums" :class="per.ok ? 'text-green-600' : 'text-amber-600'">
-                {{ per.total.toFixed(2) }}%
-                <i v-if="!per.ok" class="pi pi-exclamation-triangle text-xs ml-1"
-                  v-tooltip.left="'No suma ~100% en este período'" />
-              </span>
-            </div>
-          </div>
-
-          <Divider />
-          <p class="font-semibold text-gray-700">Agregar inversionista</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-gray-500">Cliente</label>
-              <Select v-model="nuevoInv.cliente_id" :options="clientesDisponibles"
-                optionLabel="razon_social_nombre" optionValue="id"
-                placeholder="Seleccionar cliente" filter class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-gray-500">Porcentaje de participación (%)</label>
-              <InputNumber v-model="nuevoInv.porcentaje_pct" :min="0" :max="100"
-                :minFractionDigits="2" :maxFractionDigits="7" suffix="%" locale="en-US" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-gray-500">Fecha inicio</label>
-              <DatePicker v-model="nuevoInv.fecha_inicio" dateFormat="yy-mm-dd" showIcon showClear
-                class="w-full" placeholder="—" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-gray-500">Fecha fin (opcional = vigente)</label>
-              <DatePicker v-model="nuevoInv.fecha_fin" dateFormat="yy-mm-dd" showIcon showClear
-                class="w-full" placeholder="Vigente" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="text-xs text-gray-500">Patrimonio autónomo</label>
-              <div class="flex items-center gap-2 h-10">
-                <ToggleSwitch v-model="nuevoInv.es_patrimonio_autonomo" />
-                <span class="text-sm text-gray-600">{{ nuevoInv.es_patrimonio_autonomo ? 'Sí' : 'No' }}</span>
-              </div>
-            </div>
-          </div>
-          <Button label="Agregar" icon="pi pi-plus" :loading="guardando"
-            :disabled="!nuevoInv.cliente_id" @click="agregarInversionista" class="mt-2" />
-        </div>
-      </div>
-
-      <!-- ══ CONTACTOS ══ -->
-      <div v-if="tab === 'contactos'">
-        <div class="p-4">
-          <ProyectoAreaContactosPanel
-            :proyecto-id="proyecto.id"
-            :inversionistas="proyecto.inversionistas"
-            :clientes-options="clientes"
-          />
-        </div>
-      </div>
-
-      <!-- ══ SERVICIOS ══ -->
-      <div v-if="tab === 'servicios'">
-        <div class="p-6 space-y-4">
-
-          <!-- Cards de servicio -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div
-              v-for="srv in SERVICIOS_CARDS" :key="srv.key"
-              class="relative flex flex-col items-center gap-3 rounded-xl border-2 p-5 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5 select-none"
-              :class="srvExpanded === srv.key ? 'ring-2 ring-offset-1 shadow-md' : (srvFlags[srv.key] ? 'shadow-sm' : '')"
-              :style="srvFlags[srv.key] || srvExpanded === srv.key
-                ? `background:${srv.bg}; border-color:${srv.color}40`
-                : 'background:#f9fafb; border-color:#e5e7eb'"
-              @click="clickServicio(srv)"
-            >
-              <div class="w-12 h-12 rounded-full flex items-center justify-center"
-                :style="`background:${(srvFlags[srv.key] || srvExpanded === srv.key) ? srv.color + '25' : '#e5e7eb'}`">
-                <i :class="srv.icon" class="text-2xl"
-                  :style="`color:${(srvFlags[srv.key] || srvExpanded === srv.key) ? srv.color : '#9ca3af'}`" />
-              </div>
-              <span class="text-sm font-semibold text-center"
-                :style="`color:${(srvFlags[srv.key] || srvExpanded === srv.key) ? srv.color : '#6b7280'}`">
-                {{ srv.label }}
-              </span>
-              <span v-if="srvFlags[srv.key]"
-                class="absolute top-2 right-2 w-2 h-2 rounded-full"
-                :style="`background:${srv.color}`" />
-              <i v-if="srv.key === 'srv_ppa'" class="pi pi-external-link absolute bottom-2 right-2 text-xs text-gray-300" />
-            </div>
-          </div>
-
-          <!-- Panel inline de contratos -->
-          <div v-if="srvExpanded" class="rounded-xl border border-gray-100 bg-white overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <div class="flex items-center gap-2">
-                <i :class="SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.icon" class="text-sm"
-                  :style="`color:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}`" />
-                <p class="text-sm font-semibold text-gray-700">
-                  Contratos · {{ SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.label }}
-                </p>
-              </div>
-              <Button label="Nuevo contrato" icon="pi pi-plus" size="small"
-                :style="`background:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}; border-color:${SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.color}`"
-                @click="showContratoWizard = true" />
-            </div>
-            <DataTable
-              :value="contratosInline"
-              :loading="loadingInline"
-              stripedRows
-              class="text-sm"
-              rowHover
-              emptyMessage="Sin contratos registrados para este proyecto."
-              @row-click="(e) => $router.push(`/contratos/${e.data.id}`)"
-            >
-              <Column field="numero_contrato" header="N° contrato" style="width:140px">
-                <template #body="{ data }">
-                  <span class="font-mono text-xs text-gray-500">{{ data.numero_contrato || '—' }}</span>
-                </template>
-              </Column>
-              <Column header="Contratante">
-                <template #body="{ data }">{{ data.contratante_nombre || '—' }}</template>
-              </Column>
-              <Column header="Prestador">
-                <template #body="{ data }">{{ data.prestador_nombre || '—' }}</template>
-              </Column>
-              <Column field="fecha_inicio" header="Inicio" style="width:95px">
-                <template #body="{ data }">{{ formatFechaSrv(data.fecha_inicio) }}</template>
-              </Column>
-              <Column field="fecha_fin" header="Fin" style="width:95px">
-                <template #body="{ data }">{{ formatFechaSrv(data.fecha_fin) }}</template>
-              </Column>
-              <Column header="Estado" style="width:120px">
-                <template #body="{ data }">
-                  <Tag :value="ESTADO_LABELS_SRV[data.estado] || data.estado" :severity="ESTADO_SEVERITY_SRV[data.estado]" />
-                </template>
-              </Column>
-              <Column style="width:50px">
-                <template #body="{ data }">
-                  <Button icon="pi pi-arrow-right" text size="small" severity="secondary"
-                    @click.stop="$router.push(`/contratos/${data.id}`)" />
-                </template>
-              </Column>
-            </DataTable>
-          </div>
-
-          <!-- Activar / desactivar servicios -->
-          <div class="pt-2 border-t border-gray-100">
-            <p class="text-xs text-gray-400 mb-3">Activar / desactivar servicios</p>
-            <div class="flex flex-wrap gap-3">
-              <div v-for="srv in SERVICIOS_FLAGS" :key="srv.key + '_toggle'"
-                class="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                <ToggleSwitch v-model="srvFlags[srv.key]" @change="toggleServicio(srv.key, srvFlags[srv.key])" />
-                <span class="text-xs text-gray-600">{{ srv.label }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Wizard nuevo contrato de servicio -->
-        <ContratoServicioWizard
-          v-if="showContratoWizard"
-          :visible="showContratoWizard"
-          :tipo="SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.tipo ?? 'operacion'"
-          :proyecto-id-default="Number(route.params.id)"
-          @cerrar="showContratoWizard = false"
-          @creado="onContratoServicioCreado"
-        />
-      </div>
-
-      <!-- ══ FRONTERAS ══ -->
-      <div v-if="tab === 'fronteras'">
-        <div class="p-4">
-          <DataTable :value="fronteras" class="text-sm" stripedRows>
-            <Column field="codigo_frontera" header="Código">
-              <template #body="{ data }">{{ data.codigo_frontera || '—' }}</template>
-            </Column>
-            <Column field="nombre_frontera" header="Nombre" />
-            <Column field="tipo_frontera" header="Tipo" />
-            <Column header="Estado">
-              <template #body="{ data }">
-                <Tag :value="data.estado" :severity="FRONTERA_ESTADO_SEVERITY[data.estado] || 'info'" />
-              </template>
-            </Column>
-          </DataTable>
-          <p class="text-xs mt-3" style="color: #9b89b5;">
-            Ve a la pestaña Fronteras del menú si deseas reasignar el proyecto.
-          </p>
-        </div>
-      </div>
-
-      <!-- ══ ID LIQUIDACIONES ══ -->
-      <div v-if="tab === 'id-liquidaciones'">
-        <div class="p-4 space-y-3 text-sm">
-          <p class="text-[11px] text-gray-400">
-            <i class="pi pi-info-circle mr-1" />
-            Estos códigos viven en la API de Liquidaciones de Unergy, no en esta base.
-            <span v-if="liqConfig?.nombre_topico"> Tópico: <b>{{ liqConfig.nombre_topico }}</b>.</span>
-          </p>
-
-          <div v-if="!proyecto.sub_project && !proyecto.topico_liquidaciones" class="rounded-lg px-3 py-2 text-xs"
-               style="background:#FEF3C7; color:#92400E">
-            El proyecto no tiene <b>API ID Unergy</b> (código base), así que no se puede
-            identificar en la API de Liquidaciones. Complétalo en la pestaña General.
-          </div>
-
-          <div v-else class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <!-- ══ GENERAL ══ -->
+        <div v-if="tab === 'general'">
+          <div class="grid grid-cols-2 gap-4 p-4 text-sm md:grid-cols-3">
             <template v-if="!isEditMode">
-              <InfoField label="SIC generación" :value="liqConfig?.sic_gen" />
-              <InfoField label="SIC consumo" :value="liqConfig?.sic_con" />
-              <InfoField label="Tópico en Liquidaciones"
-                         :value="proyecto.topico_liquidaciones || '(usa el API ID Unergy)'" />
+              <InfoField label="Tipo" :value="proyecto.tipo_proyecto" />
+              <InfoField label="Tecnología" :value="proyecto.tipo_tecnologia" />
+              <InfoField
+                label="Capacidad instalada (kWp)"
+                :value="proyecto.info_tecnica?.capacidad_instalada_kwp"
+              />
+              <InfoField label="Departamento" :value="proyecto.departamento" />
+              <InfoField label="Municipio" :value="proyecto.municipio" />
+              <InfoField label="Operador de red" :value="proyecto.operador_red_legal" />
+              <InfoField label="Clasificación" :value="proyecto.clasificacion_regulatoria" />
+              <InfoField label="API ID Unergy" :value="proyecto.sub_project" />
+              <InfoField label="Código TSF" :value="proyecto.codigo_tsf" />
+              <InfoField
+                label="Fecha de entrada en operación"
+                :value="fmtFecha(proyecto.fecha_entrada_operacion)"
+              />
+              <InfoField
+                label="Inicio de comercialización"
+                :value="
+                  proyecto.fecha_inicio_comercializacion
+                    ? fmtFecha(proyecto.fecha_inicio_comercializacion) +
+                      (proyecto.fecha_comercializacion_editada_manual ? ' (manual)' : ' (auto)')
+                    : '—'
+                "
+              />
+              <InfoField
+                label="Fecha fin de representación"
+                :value="
+                  proyecto.fecha_fin_representacion
+                    ? fmtFecha(proyecto.fecha_fin_representacion)
+                    : '—'
+                "
+              />
+              <div class="flex flex-col gap-1">
+                <p class="text-xs tracking-wide text-gray-400 uppercase">Comunidad energética</p>
+                <div>
+                  <Tag
+                    v-if="proyecto.es_comunidad_energetica"
+                    severity="success"
+                    :value="proyecto.nombre_comunidad ? '🏘 ' + proyecto.nombre_comunidad : '🏘 Sí'"
+                  />
+                  <span v-else class="text-gray-400">—</span>
+                </div>
+              </div>
             </template>
             <template v-else>
               <div class="flex flex-col gap-1">
-                <label class="field-label">SIC generación</label>
-                <InputText v-model="editLiq.sic_gen" class="w-full" placeholder="ej: 3A44" />
+                <label class="field-label">Tipo de proyecto</label>
+                <Select
+                  v-model="editForm.tipo_proyecto"
+                  :options="TIPOS_PROYECTO"
+                  class="w-full"
+                  placeholder="Seleccionar"
+                  showClear
+                />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="field-label">SIC consumo</label>
-                <InputText v-model="editLiq.sic_con" class="w-full" placeholder="ej: 3A3P" />
+                <label class="field-label">Tecnología</label>
+                <Select
+                  v-model="editForm.tipo_tecnologia"
+                  :options="TIPOS_TECNOLOGIA"
+                  class="w-full"
+                  placeholder="Seleccionar"
+                  showClear
+                />
               </div>
               <div class="flex flex-col gap-1">
-                <label class="field-label">Tópico en Liquidaciones</label>
-                <InputText v-model="editForm.topico_liquidaciones" class="w-full"
-                           :placeholder="proyecto.sub_project || 'ej: mgs18'" />
-                <small class="text-[11px] text-gray-400">
-                  Solo si esta planta se llama distinto allá que en generación. Vacío = se
-                  usa el API ID Unergy.
-                </small>
+                <label class="field-label">Capacidad instalada (kWp)</label>
+                <InputNumber
+                  v-model="editInfoTecnica.capacidad_instalada_kwp"
+                  :maxFractionDigits="3"
+                  locale="en-US"
+                  class="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Departamento</label>
+                <Select
+                  v-model="editForm.departamento"
+                  :options="departamentos"
+                  class="w-full"
+                  placeholder="Seleccionar"
+                  showClear
+                  filter
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Municipio</label>
+                <Select
+                  v-model="editForm.municipio"
+                  :options="municipiosDisponibles"
+                  class="w-full"
+                  placeholder="Seleccionar"
+                  showClear
+                  filter
+                  :disabled="!editForm.departamento"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Operador de red</label>
+                <Select
+                  v-model="editForm.operador_red_id"
+                  :options="operadoresRedOptions"
+                  optionLabel="label"
+                  optionValue="id"
+                  class="w-full"
+                  placeholder="Seleccionar"
+                  showClear
+                  filter
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Clasificación regulatoria</label>
+                <Select
+                  v-model="editForm.clasificacion_regulatoria"
+                  :options="CLASIFICACIONES"
+                  class="w-full"
+                  placeholder="Seleccionar"
+                  showClear
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">API ID Unergy</label>
+                <InputText
+                  v-model="editForm.sub_project"
+                  class="w-full"
+                  placeholder="ej: ibirico, bayunca"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Código TSF</label>
+                <InputText v-model="editForm.codigo_tsf" class="w-full" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Fecha de entrada en operación</label>
+                <DatePicker
+                  v-model="editFechaEntrada"
+                  dateFormat="yy-mm-dd"
+                  showIcon
+                  showClear
+                  class="w-full"
+                  placeholder="Seleccionar"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Inicio de comercialización</label>
+                <DatePicker
+                  v-model="editFechaComerc"
+                  dateFormat="yy-mm-dd"
+                  showIcon
+                  showClear
+                  class="w-full"
+                  placeholder="Auto (1er día con generación)"
+                />
+                <small class="text-xs text-gray-400"
+                  >Se autoderiva del 1er día con generación. Si la fijas a mano, el sistema no la
+                  vuelve a cambiar.</small
+                >
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Fecha fin de representación</label>
+                <DatePicker
+                  v-model="editFechaFinRep"
+                  dateFormat="yy-mm-dd"
+                  showIcon
+                  showClear
+                  class="w-full"
+                  placeholder="Vigente"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">Comunidad energética</label>
+                <div class="flex h-full items-center gap-2">
+                  <ToggleSwitch v-model="editForm.es_comunidad_energetica" />
+                  <span class="text-sm text-gray-500">{{
+                    editForm.es_comunidad_energetica ? 'Sí' : 'No'
+                  }}</span>
+                </div>
+              </div>
+              <div v-if="editForm.es_comunidad_energetica" class="flex flex-col gap-1">
+                <label class="field-label">Nombre de la comunidad</label>
+                <InputText
+                  v-model="editForm.nombre_comunidad"
+                  class="w-full"
+                  placeholder="Opcional"
+                />
               </div>
             </template>
           </div>
         </div>
-      </div>
 
-      <!-- ══ ID QUOIA ══ -->
-      <div v-if="tab === 'id-quoia'">
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
-          <template v-if="!isEditMode">
-            <InfoField label="ID Reporte Generación Quoia" :value="proyecto.quoia_reporte_generacion_id" />
-            <InfoField label="ID Reporte Consumo Quoia" :value="proyecto.quoia_reporte_consumo_id" />
-            <InfoField label="ID de Nodo Quoia" :value="proyecto.quoia_nodo_id" />
-          </template>
-          <template v-else>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">ID Reporte Generación Quoia</label>
-              <InputNumber v-model="editForm.quoia_reporte_generacion_id" :useGrouping="false" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">ID Reporte Consumo Quoia</label>
-              <InputNumber v-model="editForm.quoia_reporte_consumo_id" :useGrouping="false" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">ID de Nodo Quoia</label>
-              <InputNumber v-model="editForm.quoia_nodo_id" :useGrouping="false" class="w-full" />
-            </div>
-          </template>
+        <!-- ══ TÉCNICO ══ -->
+        <div v-if="tab === 'tecnico'">
+          <div class="space-y-6 p-4 text-sm">
+            <!-- Vista lectura -->
+            <template v-if="!isEditMode">
+              <!-- Ubicación -->
+              <div v-if="proyecto.direccion_vereda || proyecto.info_tecnica?.url_ubicacion">
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  Ubicación
+                </p>
+                <div class="space-y-1">
+                  <p v-if="proyecto.direccion_vereda" class="text-gray-700">
+                    {{ proyecto.direccion_vereda }}
+                  </p>
+                  <a
+                    v-if="proyecto.info_tecnica?.url_ubicacion"
+                    :href="proyecto.info_tecnica.url_ubicacion"
+                    target="_blank"
+                    rel="noopener"
+                    class="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                  >
+                    <i class="pi pi-map-marker" /> Ver en Google Maps
+                  </a>
+                </div>
+              </div>
+              <!-- Eléctrico general -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  General
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <InfoField
+                    label="Potencia AC (kW)"
+                    :value="proyecto.info_tecnica?.potencia_ac_kw"
+                  />
+                  <InfoField
+                    label="Capacidad instalada (kWp)"
+                    :value="proyecto.info_tecnica?.capacidad_instalada_kwp"
+                  />
+                  <InfoField label="Voltaje red" :value="proyecto.info_tecnica?.voltaje_red" />
+                  <InfoField label="Tipo tracker" :value="proyecto.info_tecnica?.tipo_tracker" />
+                  <InfoField
+                    label="Producción específica (kWh/kWp)"
+                    :value="proyecto.produccion_especifica_kwh_kwp"
+                  />
+                  <InfoField label="Latitud" :value="proyecto.latitud" />
+                  <InfoField label="Longitud" :value="proyecto.longitud" />
+                  <InfoField label="Altitud (msnm)" :value="proyecto.altitud_msnm" />
+                </div>
+              </div>
+              <!-- Paneles -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  Paneles
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <InfoField
+                    label="Cantidad de paneles"
+                    :value="proyecto.info_tecnica?.cantidad_total_paneles"
+                  />
+                  <InfoField
+                    label="Potencia panel (kWp)"
+                    :value="proyecto.info_tecnica?.potencia_panel_kwp"
+                  />
+                  <InfoField label="Marca paneles" :value="proyecto.info_tecnica?.marca_paneles" />
+                </div>
+              </div>
+              <!-- Inversores -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  Inversores
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <InfoField
+                    label="Cantidad inversores"
+                    :value="proyecto.info_tecnica?.cantidad_inversores"
+                  />
+                  <InfoField
+                    label="Potencia inversores (kWp)"
+                    :value="proyecto.info_tecnica?.potencia_inversores_kwp"
+                  />
+                  <InfoField
+                    label="Marca inversores"
+                    :value="proyecto.info_tecnica?.marca_inversores"
+                  />
+                  <InfoField
+                    label="Cantidad strings"
+                    :value="proyecto.info_tecnica?.cantidad_strings"
+                  />
+                </div>
+              </div>
+              <!-- Equipos -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  Marcas de equipos
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <InfoField
+                    label="Transformador"
+                    :value="proyecto.info_tecnica?.marca_transformador"
+                  />
+                  <InfoField
+                    label="Reconectador / Relé"
+                    :value="proyecto.info_tecnica?.marca_reconectador_rele"
+                  />
+                  <InfoField
+                    label="Totalizador"
+                    :value="proyecto.info_tecnica?.marca_totalizador"
+                  />
+                  <InfoField
+                    label="Seguidor solar"
+                    :value="proyecto.info_tecnica?.marca_seguidor_solar"
+                  />
+                  <InfoField
+                    label="Medidores frontera"
+                    :value="proyecto.info_tecnica?.marca_medidores_frontera"
+                  />
+                  <InfoField
+                    label="Módem reconectador/relé"
+                    :value="proyecto.info_tecnica?.marca_modem_reconectador"
+                  />
+                  <InfoField
+                    label="Módems frontera"
+                    :value="proyecto.info_tecnica?.marca_modems_frontera"
+                  />
+                  <InfoField
+                    label="IP módem reconectador"
+                    :value="proyecto.info_tecnica?.ip_modem_reconectador"
+                  />
+                </div>
+              </div>
+              <!-- CCTV y seguridad -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  CCTV y seguridad
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+                  <InfoField label="Estado CCTV" :value="proyecto.info_tecnica?.cctv_estado" />
+                  <InfoField label="Marca CCTV" :value="proyecto.info_tecnica?.marca_cctv" />
+                  <InfoField
+                    label="Seguridad física"
+                    :value="proyecto.info_tecnica?.seguridad_fisica"
+                  />
+                  <InfoField
+                    label="Internet"
+                    :value="
+                      proyecto.info_tecnica?.tiene_internet === true
+                        ? 'Sí'
+                        : proyecto.info_tecnica?.tiene_internet === false
+                          ? 'No'
+                          : null
+                    "
+                  />
+                </div>
+              </div>
+            </template>
+
+            <!-- Vista edición -->
+            <template v-else>
+              <!-- Ubicación -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  Ubicación
+                </p>
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Latitud</label>
+                    <InputNumber
+                      v-model="editForm.latitud"
+                      :maxFractionDigits="6"
+                      locale="en-US"
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Longitud</label>
+                    <InputNumber
+                      v-model="editForm.longitud"
+                      :maxFractionDigits="6"
+                      locale="en-US"
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Altitud (msnm)</label>
+                    <InputNumber v-model="editForm.altitud_msnm" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Dirección</label>
+                    <InputText v-model="editForm.direccion_vereda" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Link Google Maps</label>
+                    <InputText
+                      v-model="editInfoTecnica.url_ubicacion"
+                      class="w-full"
+                      placeholder="https://maps.app.goo.gl/..."
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- Eléctrico general -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  General
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Potencia AC (kW)</label>
+                    <InputNumber
+                      v-model="editInfoTecnica.potencia_ac_kw"
+                      :maxFractionDigits="3"
+                      locale="en-US"
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Capacidad instalada (kWp)</label>
+                    <InputNumber
+                      v-model="editInfoTecnica.capacidad_instalada_kwp"
+                      :maxFractionDigits="3"
+                      locale="en-US"
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Voltaje red</label>
+                    <InputText
+                      v-model="editInfoTecnica.voltaje_red"
+                      class="w-full"
+                      placeholder="ej: 13.8/800"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Tipo tracker</label>
+                    <Select
+                      v-model="editInfoTecnica.tipo_tracker"
+                      :options="['1P', '2P']"
+                      class="w-full"
+                      showClear
+                      placeholder="Seleccionar"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Producción específica (kWh/kWp)</label>
+                    <InputNumber
+                      v-model="editForm.produccion_especifica_kwh_kwp"
+                      :maxFractionDigits="2"
+                      locale="en-US"
+                      class="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- Paneles -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  Paneles
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Cantidad de paneles</label>
+                    <InputNumber
+                      v-model="editInfoTecnica.cantidad_total_paneles"
+                      :useGrouping="false"
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Potencia panel (kWp)</label>
+                    <InputText
+                      v-model="editInfoTecnica.potencia_panel_kwp"
+                      class="w-full"
+                      placeholder="ej: 0.58"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Marca paneles</label>
+                    <InputText v-model="editInfoTecnica.marca_paneles" class="w-full" />
+                  </div>
+                </div>
+              </div>
+              <!-- Inversores -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  Inversores
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Cantidad inversores</label>
+                    <InputNumber
+                      v-model="editInfoTecnica.cantidad_inversores"
+                      :useGrouping="false"
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Potencia inversores (kWp)</label>
+                    <InputText
+                      v-model="editInfoTecnica.potencia_inversores_kwp"
+                      class="w-full"
+                      placeholder="ej: 300, 50 y 40"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Marca inversores</label>
+                    <InputText v-model="editInfoTecnica.marca_inversores" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Cantidad strings</label>
+                    <InputNumber
+                      v-model="editInfoTecnica.cantidad_strings"
+                      :useGrouping="false"
+                      class="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- Equipos -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  Marcas de equipos
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Transformador</label>
+                    <InputText v-model="editInfoTecnica.marca_transformador" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Reconectador / Relé</label>
+                    <InputText v-model="editInfoTecnica.marca_reconectador_rele" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Totalizador</label>
+                    <InputText v-model="editInfoTecnica.marca_totalizador" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Seguidor solar</label>
+                    <InputText v-model="editInfoTecnica.marca_seguidor_solar" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Medidores frontera</label>
+                    <InputText v-model="editInfoTecnica.marca_medidores_frontera" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Módem reconectador/relé</label>
+                    <InputText v-model="editInfoTecnica.marca_modem_reconectador" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Módems frontera</label>
+                    <InputText v-model="editInfoTecnica.marca_modems_frontera" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">IP módem reconectador</label>
+                    <InputText v-model="editInfoTecnica.ip_modem_reconectador" class="w-full" />
+                  </div>
+                </div>
+              </div>
+              <!-- CCTV y seguridad -->
+              <div>
+                <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                  CCTV y seguridad
+                </p>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-3">
+                  <div class="flex flex-col gap-1 md:col-span-2">
+                    <label class="field-label">Estado CCTV</label>
+                    <InputText v-model="editInfoTecnica.cctv_estado" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Marca CCTV</label>
+                    <InputText v-model="editInfoTecnica.marca_cctv" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Seguridad física</label>
+                    <InputText v-model="editInfoTecnica.seguridad_fisica" class="w-full" />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="field-label">Internet</label>
+                    <Select
+                      v-model="editInfoTecnica.tiene_internet"
+                      :options="[
+                        { label: 'Sí', value: true },
+                        { label: 'No', value: false },
+                      ]"
+                      optionLabel="label"
+                      optionValue="value"
+                      class="w-full"
+                      showClear
+                      placeholder="Seleccionar"
+                    />
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
-      </div>
+
+        <!-- ══ SIMULACIÓN ══ -->
+        <div v-if="tab === 'simulacion'">
+          <div class="space-y-6 p-4">
+            <div v-if="!isEditMode && hasSimulacionData" class="flex justify-end">
+              <Button
+                label="Descargar Excel"
+                icon="pi pi-file-excel"
+                size="small"
+                outlined
+                severity="success"
+                @click="descargarSimulacionExcel"
+              />
+            </div>
+            <div v-for="sim in SIMULACIONES" :key="sim.key">
+              <p class="mb-3 text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                {{ sim.label }} <span class="font-normal normal-case">(kWh/mes)</span>
+              </p>
+              <div class="grid grid-cols-6 gap-2">
+                <div v-for="(mes, i) in MESES" :key="sim.key + '-' + i">
+                  <label class="mb-0.5 block text-center text-[10px] text-gray-400">{{
+                    mes
+                  }}</label>
+                  <InputNumber
+                    v-if="isEditMode"
+                    v-model="sim.editArray.value[i]"
+                    :maxFractionDigits="1"
+                    locale="en-US"
+                    class="w-full"
+                    inputClass="text-center text-xs px-1 py-1"
+                  />
+                  <p
+                    v-else
+                    class="rounded bg-gray-50 px-1 py-1.5 text-center text-sm font-semibold text-gray-800 tabular-nums"
+                  >
+                    {{
+                      sim.displayArray.value[i] != null
+                        ? Math.round(sim.displayArray.value[i]).toLocaleString('es-CO')
+                        : '—'
+                    }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ INVERSIONISTAS ══ -->
+        <div v-if="tab === 'inversionistas'">
+          <div class="space-y-4 p-4">
+            <DataTable :value="proyecto.inversionistas" class="text-sm" stripedRows>
+              <Column field="cliente_nombre" header="Inversionista" />
+              <Column header="Participación (%)">
+                <template #body="{ data }">
+                  <template v-if="editandoInvId === data.id">
+                    <InputNumber
+                      v-model="editPct"
+                      :min="0"
+                      :max="100"
+                      :minFractionDigits="2"
+                      :maxFractionDigits="7"
+                      suffix="%"
+                      locale="en-US"
+                      class="w-32"
+                    />
+                  </template>
+                  <template v-else>
+                    {{
+                      data.porcentaje_participacion != null
+                        ? (data.porcentaje_participacion * 100).toFixed(4) + '%'
+                        : '—'
+                    }}
+                  </template>
+                </template>
+              </Column>
+              <Column header="Inicio" style="width: 170px">
+                <template #body="{ data }">
+                  <DatePicker
+                    v-if="editandoInvId === data.id"
+                    v-model="editFechaInicio"
+                    dateFormat="yy-mm-dd"
+                    showIcon
+                    showClear
+                    class="w-40"
+                    placeholder="—"
+                  />
+                  <span v-else>{{ fmtFecha(data.fecha_inicio) }}</span>
+                </template>
+              </Column>
+              <Column header="Fin" style="width: 170px">
+                <template #body="{ data }">
+                  <DatePicker
+                    v-if="editandoInvId === data.id"
+                    v-model="editFechaFin"
+                    dateFormat="yy-mm-dd"
+                    showIcon
+                    showClear
+                    class="w-40"
+                    placeholder="Vigente"
+                  />
+                  <span v-else>{{ data.fecha_fin ? fmtFecha(data.fecha_fin) : 'Vigente' }}</span>
+                </template>
+              </Column>
+              <Column header="Patrimonio autónomo">
+                <template #body="{ data }">
+                  <Tag
+                    :value="data.es_patrimonio_autonomo ? 'Sí' : 'No'"
+                    :severity="data.es_patrimonio_autonomo ? 'info' : 'secondary'"
+                  />
+                </template>
+              </Column>
+              <Column header="" style="width: 110px">
+                <template #body="{ data }">
+                  <div class="flex gap-1">
+                    <template v-if="editandoInvId === data.id">
+                      <Button
+                        icon="pi pi-check"
+                        text
+                        severity="success"
+                        size="small"
+                        :loading="guardando"
+                        @click="guardarEdicionInversionista(data.id)"
+                        v-tooltip="'Guardar'"
+                      />
+                      <Button
+                        icon="pi pi-times"
+                        text
+                        severity="secondary"
+                        size="small"
+                        @click="editandoInvId = null"
+                        v-tooltip="'Cancelar'"
+                      />
+                    </template>
+                    <template v-else>
+                      <Button
+                        icon="pi pi-pencil"
+                        text
+                        severity="info"
+                        size="small"
+                        @click="iniciarEdicionInversionista(data)"
+                        v-tooltip="'Editar'"
+                      />
+                      <Button
+                        icon="pi pi-trash"
+                        text
+                        severity="danger"
+                        size="small"
+                        @click="eliminarInversionista(data.id)"
+                        v-tooltip="'Eliminar'"
+                      />
+                    </template>
+                  </div>
+                </template>
+              </Column>
+              <template #empty>
+                <p class="py-4 text-center text-gray-400">Sin inversionistas registrados.</p>
+              </template>
+              <ColumnGroup type="footer">
+                <Row>
+                  <Column footer="Total" footerStyle="font-weight:600" />
+                  <Column
+                    :footer="
+                      tieneVariosPeriodos ? '— (ver períodos)' : totalParticipacion.toFixed(4) + '%'
+                    "
+                    footerStyle="font-weight:600"
+                  />
+                  <Column />
+                  <Column />
+                  <Column />
+                  <Column />
+                </Row>
+              </ColumnGroup>
+            </DataTable>
+
+            <!-- Histórico por período (cuando hay inversionistas de distintas fechas) -->
+            <div
+              v-if="tieneVariosPeriodos"
+              class="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-3"
+            >
+              <p class="text-xs font-semibold tracking-wide text-gray-500 uppercase">
+                Histórico por período
+                <span class="font-normal text-gray-400 normal-case"
+                  >— el 100% se valida dentro de cada período, no sobre todo el histórico</span
+                >
+              </p>
+              <div
+                v-for="per in periodos"
+                :key="per.key"
+                class="flex items-center justify-between border-t border-gray-100 pt-1 text-sm first:border-0 first:pt-0"
+              >
+                <span class="text-gray-600">
+                  {{ per.label }}
+                  <Tag
+                    v-if="per.vigente"
+                    value="Vigente"
+                    severity="success"
+                    class="ml-2 scale-90"
+                  />
+                  <span class="ml-1 text-gray-400">· {{ per.count }} inversionista(s)</span>
+                </span>
+                <span
+                  class="font-semibold tabular-nums"
+                  :class="per.ok ? 'text-green-600' : 'text-amber-600'"
+                >
+                  {{ per.total.toFixed(2) }}%
+                  <i
+                    v-if="!per.ok"
+                    class="pi pi-exclamation-triangle ml-1 text-xs"
+                    v-tooltip.left="'No suma ~100% en este período'"
+                  />
+                </span>
+              </div>
+            </div>
+
+            <Divider />
+            <p class="font-semibold text-gray-700">Agregar inversionista</p>
+            <div class="grid grid-cols-1 items-end gap-3 md:grid-cols-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-xs text-gray-500">Cliente</label>
+                <Select
+                  v-model="nuevoInv.cliente_id"
+                  :options="clientesDisponibles"
+                  optionLabel="razon_social_nombre"
+                  optionValue="id"
+                  placeholder="Seleccionar cliente"
+                  filter
+                  class="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs text-gray-500">Porcentaje de participación (%)</label>
+                <InputNumber
+                  v-model="nuevoInv.porcentaje_pct"
+                  :min="0"
+                  :max="100"
+                  :minFractionDigits="2"
+                  :maxFractionDigits="7"
+                  suffix="%"
+                  locale="en-US"
+                  class="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs text-gray-500">Fecha inicio</label>
+                <DatePicker
+                  v-model="nuevoInv.fecha_inicio"
+                  dateFormat="yy-mm-dd"
+                  showIcon
+                  showClear
+                  class="w-full"
+                  placeholder="—"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs text-gray-500">Fecha fin (opcional = vigente)</label>
+                <DatePicker
+                  v-model="nuevoInv.fecha_fin"
+                  dateFormat="yy-mm-dd"
+                  showIcon
+                  showClear
+                  class="w-full"
+                  placeholder="Vigente"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-xs text-gray-500">Patrimonio autónomo</label>
+                <div class="flex h-10 items-center gap-2">
+                  <ToggleSwitch v-model="nuevoInv.es_patrimonio_autonomo" />
+                  <span class="text-sm text-gray-600">{{
+                    nuevoInv.es_patrimonio_autonomo ? 'Sí' : 'No'
+                  }}</span>
+                </div>
+              </div>
+            </div>
+            <Button
+              label="Agregar"
+              icon="pi pi-plus"
+              :loading="guardando"
+              :disabled="!nuevoInv.cliente_id"
+              @click="agregarInversionista"
+              class="mt-2"
+            />
+          </div>
+        </div>
+
+        <!-- ══ CONTACTOS ══ -->
+        <div v-if="tab === 'contactos'">
+          <div class="p-4">
+            <ProyectoAreaContactosPanel
+              :proyecto-id="proyecto.id"
+              :inversionistas="proyecto.inversionistas"
+              :clientes-options="clientes"
+            />
+          </div>
+        </div>
+
+        <!-- ══ SERVICIOS ══ -->
+        <div v-if="tab === 'servicios'">
+          <div class="space-y-4 p-6">
+            <!-- Cards de servicio -->
+            <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+              <div
+                v-for="srv in SERVICIOS_CARDS"
+                :key="srv.key"
+                class="relative flex cursor-pointer flex-col items-center gap-3 rounded-xl border-2 p-5 transition-all select-none hover:-translate-y-0.5 hover:shadow-md"
+                :class="
+                  srvExpanded === srv.key
+                    ? 'shadow-md ring-2 ring-offset-1'
+                    : srvFlags[srv.key]
+                      ? 'shadow-sm'
+                      : ''
+                "
+                :style="
+                  srvFlags[srv.key] || srvExpanded === srv.key
+                    ? `background:${srv.bg}; border-color:${srv.color}40`
+                    : 'background:#f9fafb; border-color:#e5e7eb'
+                "
+                @click="clickServicio(srv)"
+              >
+                <div
+                  class="flex h-12 w-12 items-center justify-center rounded-full"
+                  :style="`background:${srvFlags[srv.key] || srvExpanded === srv.key ? srv.color + '25' : '#e5e7eb'}`"
+                >
+                  <i
+                    :class="srv.icon"
+                    class="text-2xl"
+                    :style="`color:${srvFlags[srv.key] || srvExpanded === srv.key ? srv.color : '#9ca3af'}`"
+                  />
+                </div>
+                <span
+                  class="text-center text-sm font-semibold"
+                  :style="`color:${srvFlags[srv.key] || srvExpanded === srv.key ? srv.color : '#6b7280'}`"
+                >
+                  {{ srv.label }}
+                </span>
+                <span
+                  v-if="srvFlags[srv.key]"
+                  class="absolute top-2 right-2 h-2 w-2 rounded-full"
+                  :style="`background:${srv.color}`"
+                />
+                <i
+                  v-if="srv.key === 'srv_ppa'"
+                  class="pi pi-external-link absolute right-2 bottom-2 text-xs text-gray-300"
+                />
+              </div>
+            </div>
+
+            <!-- Panel inline de contratos -->
+            <div
+              v-if="srvExpanded"
+              class="overflow-hidden rounded-xl border border-gray-100 bg-white"
+            >
+              <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <i
+                    :class="SERVICIOS_CARDS.find((s) => s.key === srvExpanded)?.icon"
+                    class="text-sm"
+                    :style="`color:${SERVICIOS_CARDS.find((s) => s.key === srvExpanded)?.color}`"
+                  />
+                  <p class="text-sm font-semibold text-gray-700">
+                    Contratos · {{ SERVICIOS_CARDS.find((s) => s.key === srvExpanded)?.label }}
+                  </p>
+                </div>
+                <Button
+                  label="Nuevo contrato"
+                  icon="pi pi-plus"
+                  size="small"
+                  :style="`background:${SERVICIOS_CARDS.find((s) => s.key === srvExpanded)?.color}; border-color:${SERVICIOS_CARDS.find((s) => s.key === srvExpanded)?.color}`"
+                  @click="showContratoWizard = true"
+                />
+              </div>
+              <DataTable
+                :value="contratosInline"
+                :loading="loadingInline"
+                stripedRows
+                class="text-sm"
+                rowHover
+                emptyMessage="Sin contratos registrados para este proyecto."
+                @row-click="(e) => $router.push(`/contratos/${e.data.id}`)"
+              >
+                <Column field="numero_contrato" header="N° contrato" style="width: 140px">
+                  <template #body="{ data }">
+                    <span class="font-mono text-xs text-gray-500">{{
+                      data.numero_contrato || '—'
+                    }}</span>
+                  </template>
+                </Column>
+                <Column header="Contratante">
+                  <template #body="{ data }">{{ data.contratante_nombre || '—' }}</template>
+                </Column>
+                <Column header="Prestador">
+                  <template #body="{ data }">{{ data.prestador_nombre || '—' }}</template>
+                </Column>
+                <Column field="fecha_inicio" header="Inicio" style="width: 95px">
+                  <template #body="{ data }">{{ formatFechaSrv(data.fecha_inicio) }}</template>
+                </Column>
+                <Column field="fecha_fin" header="Fin" style="width: 95px">
+                  <template #body="{ data }">{{ formatFechaSrv(data.fecha_fin) }}</template>
+                </Column>
+                <Column header="Estado" style="width: 120px">
+                  <template #body="{ data }">
+                    <Tag
+                      :value="ESTADO_LABELS_SRV[data.estado] || data.estado"
+                      :severity="ESTADO_SEVERITY_SRV[data.estado]"
+                    />
+                  </template>
+                </Column>
+                <Column style="width: 50px">
+                  <template #body="{ data }">
+                    <Button
+                      icon="pi pi-arrow-right"
+                      text
+                      size="small"
+                      severity="secondary"
+                      @click.stop="$router.push(`/contratos/${data.id}`)"
+                    />
+                  </template>
+                </Column>
+              </DataTable>
+            </div>
+
+            <!-- Activar / desactivar servicios -->
+            <div class="border-t border-gray-100 pt-2">
+              <p class="mb-3 text-xs text-gray-400">Activar / desactivar servicios</p>
+              <div class="flex flex-wrap gap-3">
+                <div
+                  v-for="srv in SERVICIOS_FLAGS"
+                  :key="srv.key + '_toggle'"
+                  class="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2"
+                >
+                  <ToggleSwitch
+                    v-model="srvFlags[srv.key]"
+                    @change="toggleServicio(srv.key, srvFlags[srv.key])"
+                  />
+                  <span class="text-xs text-gray-600">{{ srv.label }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wizard nuevo contrato de servicio -->
+          <ContratoServicioWizard
+            v-if="showContratoWizard"
+            :visible="showContratoWizard"
+            :tipo="SERVICIOS_CARDS.find((s) => s.key === srvExpanded)?.tipo ?? 'operacion'"
+            :proyecto-id-default="Number(route.params.id)"
+            @cerrar="showContratoWizard = false"
+            @creado="onContratoServicioCreado"
+          />
+        </div>
+
+        <!-- ══ FRONTERAS ══ -->
+        <div v-if="tab === 'fronteras'">
+          <div class="p-4">
+            <DataTable :value="fronteras" class="text-sm" stripedRows>
+              <Column field="codigo_frontera" header="Código">
+                <template #body="{ data }">{{ data.codigo_frontera || '—' }}</template>
+              </Column>
+              <Column field="nombre_frontera" header="Nombre" />
+              <Column field="tipo_frontera" header="Tipo" />
+              <Column header="Estado">
+                <template #body="{ data }">
+                  <Tag
+                    :value="data.estado"
+                    :severity="FRONTERA_ESTADO_SEVERITY[data.estado] || 'info'"
+                  />
+                </template>
+              </Column>
+            </DataTable>
+            <p class="mt-3 text-xs" style="color: #9b89b5">
+              Ve a la pestaña Fronteras del menú si deseas reasignar el proyecto.
+            </p>
+          </div>
+        </div>
+
+        <!-- ══ ID LIQUIDACIONES ══ -->
+        <div v-if="tab === 'id-liquidaciones'">
+          <div class="space-y-3 p-4 text-sm">
+            <p class="text-[11px] text-gray-400">
+              <i class="pi pi-info-circle mr-1" />
+              Estos códigos viven en la API de Liquidaciones de Unergy, no en esta base.
+              <span v-if="liqConfig?.nombre_topico">
+                Tópico: <b>{{ liqConfig.nombre_topico }}</b
+                >.</span
+              >
+            </p>
+
+            <div
+              v-if="!proyecto.sub_project && !proyecto.topico_liquidaciones"
+              class="rounded-lg px-3 py-2 text-xs"
+              style="background: #fef3c7; color: #92400e"
+            >
+              El proyecto no tiene <b>API ID Unergy</b> (código base), así que no se puede
+              identificar en la API de Liquidaciones. Complétalo en la pestaña General.
+            </div>
+
+            <div v-else class="grid grid-cols-2 gap-4 md:grid-cols-3">
+              <template v-if="!isEditMode">
+                <InfoField label="SIC generación" :value="liqConfig?.sic_gen" />
+                <InfoField label="SIC consumo" :value="liqConfig?.sic_con" />
+                <InfoField
+                  label="Tópico en Liquidaciones"
+                  :value="proyecto.topico_liquidaciones || '(usa el API ID Unergy)'"
+                />
+              </template>
+              <template v-else>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">SIC generación</label>
+                  <InputText v-model="editLiq.sic_gen" class="w-full" placeholder="ej: 3A44" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">SIC consumo</label>
+                  <InputText v-model="editLiq.sic_con" class="w-full" placeholder="ej: 3A3P" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">Tópico en Liquidaciones</label>
+                  <InputText
+                    v-model="editForm.topico_liquidaciones"
+                    class="w-full"
+                    :placeholder="proyecto.sub_project || 'ej: mgs18'"
+                  />
+                  <small class="text-[11px] text-gray-400">
+                    Solo si esta planta se llama distinto allá que en generación. Vacío = se usa el
+                    API ID Unergy.
+                  </small>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ ID QUOIA ══ -->
+        <div v-if="tab === 'id-quoia'">
+          <div class="grid grid-cols-2 gap-4 p-4 text-sm md:grid-cols-3">
+            <template v-if="!isEditMode">
+              <InfoField
+                label="ID Reporte Generación Quoia"
+                :value="proyecto.quoia_reporte_generacion_id"
+              />
+              <InfoField
+                label="ID Reporte Consumo Quoia"
+                :value="proyecto.quoia_reporte_consumo_id"
+              />
+              <InfoField label="ID de Nodo Quoia" :value="proyecto.quoia_nodo_id" />
+            </template>
+            <template v-else>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">ID Reporte Generación Quoia</label>
+                <InputNumber
+                  v-model="editForm.quoia_reporte_generacion_id"
+                  :useGrouping="false"
+                  class="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">ID Reporte Consumo Quoia</label>
+                <InputNumber
+                  v-model="editForm.quoia_reporte_consumo_id"
+                  :useGrouping="false"
+                  class="w-full"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="field-label">ID de Nodo Quoia</label>
+                <InputNumber v-model="editForm.quoia_nodo_id" :useGrouping="false" class="w-full" />
+              </div>
+            </template>
+          </div>
+        </div>
       </template>
     </DetalleLayout>
-
   </div>
 
   <div v-else-if="loading" class="flex justify-center py-20">
     <ProgressSpinner />
   </div>
 
-  <div v-else class="flex flex-col items-center py-20 gap-3 text-gray-500">
+  <div v-else class="flex flex-col items-center gap-3 py-20 text-gray-500">
     <i class="pi pi-exclamation-circle text-3xl text-red-400"></i>
     <p class="text-sm">{{ errorMsg || 'No se pudo cargar el proyecto.' }}</p>
     <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="$router.go(0)" />
@@ -777,19 +1262,61 @@ const TIPOS_TECNOLOGIA = ['solar', 'eolica', 'hidraulica', 'biomasa', 'otra']
 const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 const SERVICIOS_CARDS = [
-  { key: 'srv_ppa',           label: 'PPA',           icon: 'pi pi-bolt',       color: '#f59e0b', bg: '#fef3c7', tipo: null },
-  { key: 'srv_operacion',     label: 'Operación',     icon: 'pi pi-wrench',     color: '#10b981', bg: '#ecfdf5', tipo: 'operacion' },
-  { key: 'srv_representacion',label: 'Representación', icon: 'pi pi-file-edit',  color: '#3b82f6', bg: '#eff6ff', tipo: 'representacion' },
-  { key: 'srv_rec',           label: 'REC',           icon: 'pi pi-verified',   color: '#14b8a6', bg: '#f0fdfa', tipo: 'rec' },
+  { key: 'srv_ppa', label: 'PPA', icon: 'pi pi-bolt', color: '#f59e0b', bg: '#fef3c7', tipo: null },
+  {
+    key: 'srv_operacion',
+    label: 'Operación',
+    icon: 'pi pi-wrench',
+    color: '#10b981',
+    bg: '#ecfdf5',
+    tipo: 'operacion',
+  },
+  {
+    key: 'srv_representacion',
+    label: 'Representación',
+    icon: 'pi pi-file-edit',
+    color: '#3b82f6',
+    bg: '#eff6ff',
+    tipo: 'representacion',
+  },
+  {
+    key: 'srv_rec',
+    label: 'REC',
+    icon: 'pi pi-verified',
+    color: '#14b8a6',
+    bg: '#f0fdfa',
+    tipo: 'rec',
+  },
 ]
 const SERVICIOS_FLAGS = [
   ...SERVICIOS_CARDS,
-  { key: 'srv_cgm',     label: 'CGM',     icon: 'pi pi-chart-bar', color: '#10b981', bg: '#ecfdf5' },
-  { key: 'srv_promotor',label: 'Promotor',icon: 'pi pi-briefcase', color: '#8b5cf6', bg: '#f5f3ff' },
+  { key: 'srv_cgm', label: 'CGM', icon: 'pi pi-chart-bar', color: '#10b981', bg: '#ecfdf5' },
+  {
+    key: 'srv_promotor',
+    label: 'Promotor',
+    icon: 'pi pi-briefcase',
+    color: '#8b5cf6',
+    bg: '#f5f3ff',
+  },
 ]
-const ESTADO_LABELS_SRV = { vigente: 'Vigente', vencido: 'Vencido', terminado: 'Terminado', en_renovacion: 'En renovación' }
-const ESTADO_SEVERITY_SRV = { vigente: 'success', vencido: 'danger', terminado: 'secondary', en_renovacion: 'warn' }
-const FRONTERA_ESTADO_SEVERITY = { activa: 'success', en_registro: 'warn', en_falla: 'danger', cancelada: 'secondary' }
+const ESTADO_LABELS_SRV = {
+  vigente: 'Vigente',
+  vencido: 'Vencido',
+  terminado: 'Terminado',
+  en_renovacion: 'En renovación',
+}
+const ESTADO_SEVERITY_SRV = {
+  vigente: 'success',
+  vencido: 'danger',
+  terminado: 'secondary',
+  en_renovacion: 'warn',
+}
+const FRONTERA_ESTADO_SEVERITY = {
+  activa: 'success',
+  en_registro: 'warn',
+  en_falla: 'danger',
+  cancelada: 'secondary',
+}
 
 // ── Estado base ───────────────────────────────────────────────────────────────
 const proyecto = ref(null)
@@ -818,18 +1345,23 @@ const activeTab = ref('general')
 // que se recalculaba, y un ?tab=id-liquidaciones o ?tab=id-quoia podia caer en
 // la pestana equivocada segun si la planta tenia fronteras.
 const TABS = computed(() => [
-  { key: 'general',          label: 'General',          icon: 'pi pi-info-circle' },
-  { key: 'tecnico',          label: 'Técnico',          icon: 'pi pi-wrench' },
-  { key: 'simulacion',       label: 'Simulación',       icon: 'pi pi-chart-line' },
+  { key: 'general', label: 'General', icon: 'pi pi-info-circle' },
+  { key: 'tecnico', label: 'Técnico', icon: 'pi pi-wrench' },
+  { key: 'simulacion', label: 'Simulación', icon: 'pi pi-chart-line' },
   // Mismo orden que el detalle de Cliente: identidad -> contactos -> servicios
   // -> relaciones -> integracion. Asi las tres vistas se leen igual.
-  { key: 'contactos',        label: 'Contactos',        icon: 'pi pi-envelope' },
-  { key: 'servicios',        label: 'Servicios',        icon: 'pi pi-briefcase' },
-  { key: 'inversionistas',   label: 'Inversionistas',   icon: 'pi pi-users' },
-  { key: 'fronteras',        label: 'Fronteras',        icon: 'pi pi-globe',
-    badge: fronteras.value.length || null, oculta: !fronteras.value.length },
+  { key: 'contactos', label: 'Contactos', icon: 'pi pi-envelope' },
+  { key: 'servicios', label: 'Servicios', icon: 'pi pi-briefcase' },
+  { key: 'inversionistas', label: 'Inversionistas', icon: 'pi pi-users' },
+  {
+    key: 'fronteras',
+    label: 'Fronteras',
+    icon: 'pi pi-globe',
+    badge: fronteras.value.length || null,
+    oculta: !fronteras.value.length,
+  },
   { key: 'id-liquidaciones', label: 'ID liquidaciones', icon: 'pi pi-dollar' },
-  { key: 'id-quoia',         label: 'ID Quoia',         icon: 'pi pi-link' },
+  { key: 'id-quoia', label: 'ID Quoia', icon: 'pi pi-link' },
 ])
 
 // ── Modo edición ──────────────────────────────────────────────────────────────
@@ -929,19 +1461,23 @@ const SIMULACIONES = [
 ]
 
 const hasSimulacionData = computed(() =>
-  SIMULACIONES.some(s => s.displayArray.value.some(v => v != null))
+  SIMULACIONES.some((s) => s.displayArray.value.some((v) => v != null)),
 )
 
 function sanitizeFilename(name) {
-  return String(name || 'proyecto').replace(/[\\/:*?"<>|]+/g, '_').trim() || 'proyecto'
+  return (
+    String(name || 'proyecto')
+      .replace(/[\\/:*?"<>|]+/g, '_')
+      .trim() || 'proyecto'
+  )
 }
 
 function descargarSimulacionExcel() {
   try {
     if (!proyecto.value) return
     const header = ['Escenario', ...MESES, 'Total anual (kWh)']
-    const rows = SIMULACIONES.map(sim => {
-      const vals = sim.displayArray.value.map(v => (v == null ? null : Number(v)))
+    const rows = SIMULACIONES.map((sim) => {
+      const vals = sim.displayArray.value.map((v) => (v == null ? null : Number(v)))
       const total = vals.reduce((acc, v) => acc + (v ?? 0), 0)
       return [sim.label, ...vals, total]
     })
@@ -964,34 +1500,44 @@ function descargarSimulacionExcel() {
     XLSX.writeFile(wb, filename)
     toast.add({ severity: 'success', summary: 'Excel descargado', life: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'No se pudo generar el Excel', detail: e?.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo generar el Excel',
+      detail: e?.message,
+      life: 4000,
+    })
   }
 }
 
 function parseMonthArray(val) {
   if (!val) return Array(12).fill(null)
   // Si ya es un array (API devuelve lista directamente), úsalo tal cual
-  if (Array.isArray(val)) return val.map(v => (v ?? null))
+  if (Array.isArray(val)) return val.map((v) => v ?? null)
   // Si es string JSON (formato legado), parsearlo
   try {
     const arr = JSON.parse(val)
-    return Array.isArray(arr) ? arr.map(v => (v ?? null)) : Array(12).fill(null)
+    return Array.isArray(arr) ? arr.map((v) => v ?? null) : Array(12).fill(null)
   } catch {
     return Array(12).fill(null)
   }
 }
 
 function serializeMonthArray(arr) {
-  if (arr.every(v => v === null || v === undefined)) return null
-  return JSON.stringify(arr.map(v => v ?? null))
+  if (arr.every((v) => v === null || v === undefined)) return null
+  return JSON.stringify(arr.map((v) => v ?? null))
 }
 
 function populateEditForm() {
   if (!proyecto.value) return
   const p = proyecto.value
-  Object.keys(editForm).forEach(k => { if (k in p) editForm[k] = p[k] ?? null })
+  Object.keys(editForm).forEach((k) => {
+    if (k in p) editForm[k] = p[k] ?? null
+  })
   const it = p.info_tecnica
-  if (it) Object.keys(editInfoTecnica).forEach(k => { if (k in it) editInfoTecnica[k] = it[k] ?? null })
+  if (it)
+    Object.keys(editInfoTecnica).forEach((k) => {
+      if (k in it) editInfoTecnica[k] = it[k] ?? null
+    })
   editP90.value = parseMonthArray(p.p90_mensual_kwh)
   editP50.value = parseMonthArray(p.p50_mensual_kwh)
   editP99.value = parseMonthArray(p.p99_mensual_kwh)
@@ -1028,7 +1574,12 @@ function cancelEdit() {
 
 async function saveEdit() {
   if (!editForm.nombre_comercial?.trim()) {
-    toast.add({ severity: 'error', summary: 'Falta el nombre', detail: 'El nombre comercial no puede quedar vacío.', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Falta el nombre',
+      detail: 'El nombre comercial no puede quedar vacío.',
+      life: 4000,
+    })
     return
   }
   guardando.value = true
@@ -1064,7 +1615,9 @@ async function saveEdit() {
     // vacío, y sin esto no habría forma de quitar un tópico ya puesto.
     payload.topico_liquidaciones = editForm.topico_liquidaciones || null
     payload.es_comunidad_energetica = !!editForm.es_comunidad_energetica
-    payload.nombre_comunidad = editForm.es_comunidad_energetica ? (editForm.nombre_comunidad || null) : null
+    payload.nombre_comunidad = editForm.es_comunidad_energetica
+      ? editForm.nombre_comunidad || null
+      : null
 
     await api.patch(`/proyectos/${route.params.id}`, payload)
     // Los códigos SIC se guardan en la API de Liquidaciones, no en esta base.
@@ -1097,7 +1650,9 @@ async function saveEdit() {
     try {
       const { data } = await api.get(`/liquidaciones-api/proyectos/${route.params.id}`)
       liqConfig.value = data
-    } catch { /* la API externa puede no responder; no bloquea el guardado */ }
+    } catch {
+      /* la API externa puede no responder; no bloquea el guardado */
+    }
     router.replace({ query: {} })
     toast.add({ severity: 'success', summary: 'Proyecto actualizado', life: 3000 })
   } catch (e) {
@@ -1113,22 +1668,30 @@ async function saveEdit() {
 }
 
 // ── Inversionistas ────────────────────────────────────────────────────────────
-const nuevoInv = reactive({ cliente_id: null, porcentaje_pct: null, es_patrimonio_autonomo: false, fecha_inicio: null, fecha_fin: null })
+const nuevoInv = reactive({
+  cliente_id: null,
+  porcentaje_pct: null,
+  es_patrimonio_autonomo: false,
+  fecha_inicio: null,
+  fecha_fin: null,
+})
 const editandoInvId = ref(null)
 const editPct = ref(null)
 const editFechaInicio = ref(null)
 const editFechaFin = ref(null)
 
-
 const clientesDisponibles = computed(() => {
   if (!proyecto.value) return clientes.value
-  const yaAgregados = new Set(proyecto.value.inversionistas.map(i => i.cliente_id))
-  return clientes.value.filter(c => !yaAgregados.has(c.id))
+  const yaAgregados = new Set(proyecto.value.inversionistas.map((i) => i.cliente_id))
+  return clientes.value.filter((c) => !yaAgregados.has(c.id))
 })
 
 const totalParticipacion = computed(() => {
   if (!proyecto.value?.inversionistas?.length) return 0
-  return proyecto.value.inversionistas.reduce((sum, i) => sum + (i.porcentaje_participacion ?? 0) * 100, 0)
+  return proyecto.value.inversionistas.reduce(
+    (sum, i) => sum + (i.porcentaje_participacion ?? 0) * 100,
+    0,
+  )
 })
 
 // Histórico separado por período: dos inversionistas son simultáneos si comparten
@@ -1149,7 +1712,7 @@ const periodos = computed(() => {
   }
   return [...grupos.values()]
     .sort((a, b) => (a.ini ?? '').localeCompare(b.ini ?? ''))
-    .map(g => ({
+    .map((g) => ({
       ...g,
       label: `${g.ini ?? 'Sin inicio'} → ${g.fin ?? 'Vigente'}`,
       vigente: g.fin == null,
@@ -1168,7 +1731,8 @@ async function agregarInversionista() {
   try {
     await api.post(`/proyectos/${route.params.id}/inversionistas`, {
       cliente_id: nuevoInv.cliente_id,
-      porcentaje_participacion: nuevoInv.porcentaje_pct != null ? nuevoInv.porcentaje_pct / 100 : null,
+      porcentaje_participacion:
+        nuevoInv.porcentaje_pct != null ? nuevoInv.porcentaje_pct / 100 : null,
       es_patrimonio_autonomo: nuevoInv.es_patrimonio_autonomo,
       fecha_inicio: formatFecha(nuevoInv.fecha_inicio),
       fecha_fin: formatFecha(nuevoInv.fecha_fin),
@@ -1182,7 +1746,12 @@ async function agregarInversionista() {
     nuevoInv.fecha_fin = null
     toast.add({ severity: 'success', summary: 'Inversionista agregado', life: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al agregar', detail: e.response?.data?.detail, life: 3000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al agregar',
+      detail: e.response?.data?.detail,
+      life: 3000,
+    })
   } finally {
     guardando.value = false
   }
@@ -1192,16 +1761,22 @@ async function eliminarInversionista(invId) {
   if (!confirm('¿Estás seguro de que deseas eliminar este inversionista?')) return
   try {
     await api.delete(`/proyectos/${route.params.id}/inversionistas/${invId}`)
-    proyecto.value.inversionistas = proyecto.value.inversionistas.filter(i => i.id !== invId)
+    proyecto.value.inversionistas = proyecto.value.inversionistas.filter((i) => i.id !== invId)
     toast.add({ severity: 'success', summary: 'Inversionista eliminado', life: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', detail: e.response?.data?.detail, life: 3000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al eliminar',
+      detail: e.response?.data?.detail,
+      life: 3000,
+    })
   }
 }
 
 function iniciarEdicionInversionista(inv) {
   editandoInvId.value = inv.id
-  editPct.value = inv.porcentaje_participacion != null ? +(inv.porcentaje_participacion * 100).toFixed(7) : null
+  editPct.value =
+    inv.porcentaje_participacion != null ? +(inv.porcentaje_participacion * 100).toFixed(7) : null
   editFechaInicio.value = toDate(inv.fecha_inicio)
   editFechaFin.value = toDate(inv.fecha_fin)
 }
@@ -1222,7 +1797,12 @@ async function guardarEdicionInversionista(invId) {
     proyecto.value.inversionistas = Array.isArray(data) ? data : (data.items ?? [])
     toast.add({ severity: 'success', summary: 'Porcentaje actualizado', life: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al actualizar', detail: e.response?.data?.detail, life: 3000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al actualizar',
+      detail: e.response?.data?.detail,
+      life: 3000,
+    })
   } finally {
     guardando.value = false
   }
@@ -1273,7 +1853,9 @@ async function cargarContratosInline(tipo) {
   contratosInline.value = []
   loadingInline.value = true
   try {
-    const { data } = await api.get('/contratos-servicio', { params: { tipo, proyecto_id: route.params.id } })
+    const { data } = await api.get('/contratos-servicio', {
+      params: { tipo, proyecto_id: route.params.id },
+    })
     contratosInline.value = data
   } catch {
     toast.add({ severity: 'error', summary: 'Error al cargar contratos', life: 3000 })
@@ -1283,7 +1865,7 @@ async function cargarContratosInline(tipo) {
 }
 
 function onContratoServicioCreado() {
-  const srv = SERVICIOS_CARDS.find(s => s.key === srvExpanded.value)
+  const srv = SERVICIOS_CARDS.find((s) => s.key === srvExpanded.value)
   if (srv?.tipo) cargarContratosInline(srv.tipo)
 }
 
@@ -1293,25 +1875,35 @@ function formatFechaSrv(f) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const estadoSeverity = (e) => (
-  { en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', cancelado: 'secondary' }[e] || 'secondary'
-)
+const estadoSeverity = (e) =>
+  ({ en_operacion: 'success', en_desarrollo: 'info', suspendido: 'warn', cancelado: 'secondary' })[
+    e
+  ] || 'secondary'
 
 // Departamento/municipio -- select en vez de texto libre (DIVIPOLA), para
 // evitar variantes de escritura que luego no se puedan agrupar/filtrar bien.
 const departamentos = Object.keys(divipola).sort()
-const municipiosDisponibles = computed(() => editForm.departamento ? (divipola[editForm.departamento] || []) : [])
-watch(() => editForm.departamento, (nuevo, anterior) => {
-  if (nuevo !== anterior && editForm.municipio && !(divipola[nuevo] || []).includes(editForm.municipio)) {
-    editForm.municipio = null
-  }
-})
+const municipiosDisponibles = computed(() =>
+  editForm.departamento ? divipola[editForm.departamento] || [] : [],
+)
+watch(
+  () => editForm.departamento,
+  (nuevo, anterior) => {
+    if (
+      nuevo !== anterior &&
+      editForm.municipio &&
+      !(divipola[nuevo] || []).includes(editForm.municipio)
+    ) {
+      editForm.municipio = null
+    }
+  },
+)
 
 // Catálogo de operadores de red -- select en vez de texto libre, para que
 // coincida con el vínculo real que usa Reporte CGM (Frontera.operador_red_id).
 const operadoresRed = ref([])
 const operadoresRedOptions = computed(() =>
-  operadoresRed.value.map(o => ({ id: o.id, label: o.nombre_comercial || o.nombre_legal }))
+  operadoresRed.value.map((o) => ({ id: o.id, label: o.nombre_comercial || o.nombre_legal })),
 )
 
 // ── Carga inicial ─────────────────────────────────────────────────────────────
@@ -1322,18 +1914,30 @@ onMounted(async () => {
       api.get('/clientes', { params: { size: 200 } }),
       api.get(`/proyectos/${route.params.id}/inversionistas`),
       api.get('/operadores-red').catch(() => ({ data: [] })),
-      api.get('/fronteras', { params: { proyecto_id: route.params.id } }).catch(() => ({ data: [] })),
+      api
+        .get('/fronteras', { params: { proyecto_id: route.params.id } })
+        .catch(() => ({ data: [] })),
     ])
-    api.get(`/liquidaciones-api/proyectos/${route.params.id}`)
-      .then(r => { liqConfig.value = r.data; if (isEditMode.value) populateEditForm() })
-      .catch(() => { liqConfig.value = null })
+    api
+      .get(`/liquidaciones-api/proyectos/${route.params.id}`)
+      .then((r) => {
+        liqConfig.value = r.data
+        if (isEditMode.value) populateEditForm()
+      })
+      .catch(() => {
+        liqConfig.value = null
+      })
     proyecto.value = {
       ...proyRes.data,
       inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
     }
     clientes.value = clientesRes.data.items
-    fronteras.value = Array.isArray(fronterasRes.data) ? fronterasRes.data : (fronterasRes.data.items ?? [])
-    operadoresRed.value = Array.isArray(operadoresRes.data) ? operadoresRes.data : (operadoresRes.data.items ?? [])
+    fronteras.value = Array.isArray(fronterasRes.data)
+      ? fronterasRes.data
+      : (fronterasRes.data.items ?? [])
+    operadoresRed.value = Array.isArray(operadoresRes.data)
+      ? operadoresRes.data
+      : (operadoresRes.data.items ?? [])
     for (const s of SERVICIOS_FLAGS) srvFlags[s.key] = proyRes.data[s.key]
     if (isEditMode.value) populateEditForm()
   } catch (e) {
@@ -1363,5 +1967,7 @@ export default { components: { InfoField } }
 </script>
 
 <style scoped>
-.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+.field-label {
+  @apply mb-1 block text-xs font-medium text-gray-600;
+}
 </style>

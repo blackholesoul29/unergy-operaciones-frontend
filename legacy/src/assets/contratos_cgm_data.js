@@ -14,21 +14,22 @@ const CONTRATOS_CGM = [
     estado: 'Operación',
     tarifaAdmin: 0.038,
     fechaFirma: '2024-04-02',
-    soporte: 'https://drive.google.com/file/d/1MJ-zyaEgVIKiqy4XbLjakmYoI3h2Mr0u/view?usp=drive_link',
+    soporte:
+      'https://drive.google.com/file/d/1MJ-zyaEgVIKiqy4XbLjakmYoI3h2Mr0u/view?usp=drive_link',
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -44,17 +45,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -72,17 +73,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 7,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 7,          esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 7.364 },
-        { año: 2026, ipc: 5.1,  valor: 7.739564 },
+        { año: 2024, ipc: null, valor: 7, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 7.364 },
+        { año: 2026, ipc: 5.1, valor: 7.739564 },
       ],
     },
     representacion: {
       tarifaBase: 3,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 3,          esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 3.156 },
-        { año: 2026, ipc: 5.1,  valor: 3.316956 },
+        { año: 2024, ipc: null, valor: 3, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 3.156 },
+        { año: 2026, ipc: 5.1, valor: 3.316956 },
       ],
     },
   },
@@ -100,17 +101,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -126,17 +127,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -154,17 +155,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -180,17 +181,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -206,17 +207,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -234,17 +235,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -262,17 +263,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -328,17 +329,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -376,17 +377,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -404,17 +405,17 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2024, ipc: null, valor: 6,        esBase: true },
-        { año: 2025, ipc: 5.2,  valor: 6.312 },
-        { año: 2026, ipc: 5.1,  valor: 6.633912 },
+        { año: 2024, ipc: null, valor: 6, esBase: true },
+        { año: 2025, ipc: 5.2, valor: 6.312 },
+        { año: 2026, ipc: 5.1, valor: 6.633912 },
       ],
     },
   },
@@ -428,19 +429,20 @@ const CONTRATOS_CGM = [
     estado: 'Operación',
     tarifaAdmin: null,
     fechaFirma: '2025-03-17',
-    soporte: 'https://drive.google.com/file/d/1uUIroNjUcCJdNiqcSpu3LRV3a7n8yDgH/view?usp=drive_link',
+    soporte:
+      'https://drive.google.com/file/d/1uUIroNjUcCJdNiqcSpu3LRV3a7n8yDgH/view?usp=drive_link',
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -458,15 +460,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 7,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 7,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 7.357 },
+        { año: 2025, ipc: null, valor: 7, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 7.357 },
       ],
     },
     representacion: {
       tarifaBase: 3,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 3,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 3.153 },
+        { año: 2025, ipc: null, valor: 3, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 3.153 },
       ],
     },
   },
@@ -484,15 +486,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 7,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 7,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 7.357 },
+        { año: 2025, ipc: null, valor: 7, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 7.357 },
       ],
     },
     representacion: {
       tarifaBase: 3,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 3,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 3.153 },
+        { año: 2025, ipc: null, valor: 3, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 3.153 },
       ],
     },
   },
@@ -511,14 +513,14 @@ const CONTRATOS_CGM = [
       tarifaBase: 0,
       indexaciones: [
         { año: 2025, ipc: null, valor: 0, esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 0 },
+        { año: 2026, ipc: 5.1, valor: 0 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -536,15 +538,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 7,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 7,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 7.357 },
+        { año: 2025, ipc: null, valor: 7, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 7.357 },
       ],
     },
     representacion: {
       tarifaBase: 3,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 3,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 3.153 },
+        { año: 2025, ipc: null, valor: 3, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 3.153 },
       ],
     },
   },
@@ -562,15 +564,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 7,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 7,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 7.357 },
+        { año: 2025, ipc: null, valor: 7, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 7.357 },
       ],
     },
     representacion: {
       tarifaBase: 3,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 3,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 3.153 },
+        { año: 2025, ipc: null, valor: 3, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 3.153 },
       ],
     },
   },
@@ -588,15 +590,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -614,15 +616,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -640,15 +642,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -666,15 +668,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -693,14 +695,14 @@ const CONTRATOS_CGM = [
       tarifaBase: 0,
       indexaciones: [
         { año: 2025, ipc: null, valor: 0, esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 0 },
+        { año: 2026, ipc: 5.1, valor: 0 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -718,15 +720,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 7,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 7,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 7.357 },
+        { año: 2025, ipc: null, valor: 7, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 7.357 },
       ],
     },
     representacion: {
       tarifaBase: 3,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 3,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 3.153 },
+        { año: 2025, ipc: null, valor: 3, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 3.153 },
       ],
     },
   },
@@ -744,15 +746,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.255 },
+        { año: 2025, ipc: null, valor: 5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.255 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -770,15 +772,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -796,15 +798,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 7,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 7,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 7.357 },
+        { año: 2025, ipc: null, valor: 7, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 7.357 },
       ],
     },
     representacion: {
       tarifaBase: 3,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 3,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 3.153 },
+        { año: 2025, ipc: null, valor: 3, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 3.153 },
       ],
     },
   },
@@ -822,15 +824,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -848,15 +850,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -874,15 +876,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.255 },
+        { año: 2025, ipc: null, valor: 5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.255 },
       ],
     },
     representacion: {
       tarifaBase: 5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.255 },
+        { año: 2025, ipc: null, valor: 5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.255 },
       ],
     },
   },
@@ -900,15 +902,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -922,19 +924,20 @@ const CONTRATOS_CGM = [
     estado: 'Construcción',
     tarifaAdmin: null,
     fechaFirma: '2025-11-19',
-    soporte: 'https://drive.google.com/file/d/1VowW9ZZqlW96GQ7d8UxzsIZ8m7fpRMqq/view?usp=drive_link',
+    soporte:
+      'https://drive.google.com/file/d/1VowW9ZZqlW96GQ7d8UxzsIZ8m7fpRMqq/view?usp=drive_link',
     cgm: {
       tarifaBase: 5.5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5.5,    esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.7805 },
+        { año: 2025, ipc: null, valor: 5.5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.7805 },
       ],
     },
     representacion: {
       tarifaBase: 5.5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5.5,    esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.7805 },
+        { año: 2025, ipc: null, valor: 5.5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.7805 },
       ],
     },
   },
@@ -948,19 +951,20 @@ const CONTRATOS_CGM = [
     estado: 'Operación',
     tarifaAdmin: null,
     fechaFirma: '2025-11-19',
-    soporte: 'https://drive.google.com/file/d/1L0MbDmQF5VE53Z03o3yDSNeXLy1Qqzf0/view?usp=drive_link',
+    soporte:
+      'https://drive.google.com/file/d/1L0MbDmQF5VE53Z03o3yDSNeXLy1Qqzf0/view?usp=drive_link',
     cgm: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
     representacion: {
       tarifaBase: 6,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 6,     esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 6.306 },
+        { año: 2025, ipc: null, valor: 6, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 6.306 },
       ],
     },
   },
@@ -978,15 +982,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 5.5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5.5,    esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.7805 },
+        { año: 2025, ipc: null, valor: 5.5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.7805 },
       ],
     },
     representacion: {
       tarifaBase: 5.5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5.5,    esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.7805 },
+        { año: 2025, ipc: null, valor: 5.5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.7805 },
       ],
     },
   },
@@ -1004,15 +1008,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 5.5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5.5,    esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.7805 },
+        { año: 2025, ipc: null, valor: 5.5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.7805 },
       ],
     },
     representacion: {
       tarifaBase: 5.5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5.5,    esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.7805 },
+        { año: 2025, ipc: null, valor: 5.5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.7805 },
       ],
     },
   },
@@ -1030,15 +1034,15 @@ const CONTRATOS_CGM = [
     cgm: {
       tarifaBase: 5.5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5.5,    esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.7805 },
+        { año: 2025, ipc: null, valor: 5.5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.7805 },
       ],
     },
     representacion: {
       tarifaBase: 5.5,
       indexaciones: [
-        { año: 2025, ipc: null, valor: 5.5,    esBase: true },
-        { año: 2026, ipc: 5.1,  valor: 5.7805 },
+        { año: 2025, ipc: null, valor: 5.5, esBase: true },
+        { año: 2026, ipc: 5.1, valor: 5.7805 },
       ],
     },
   },
@@ -1055,15 +1059,11 @@ const CONTRATOS_CGM = [
     soporte: 'https://drive.google.com/file/d/1nXWG8ZiwUVZm9LcwydXU7IcDAyuLICU8/view?usp=sharing',
     cgm: {
       tarifaBase: 5.5,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 5.5, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 5.5, esBase: true }],
     },
     representacion: {
       tarifaBase: 5.5,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 5.5, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 5.5, esBase: true }],
     },
   },
 
@@ -1079,15 +1079,11 @@ const CONTRATOS_CGM = [
     soporte: 'https://drive.google.com/file/d/1vT2OAng0d5SgXMJXFsARBHVTTodf3uyE/view?usp=sharing',
     cgm: {
       tarifaBase: 5.5,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 5.5, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 5.5, esBase: true }],
     },
     representacion: {
       tarifaBase: 5.5,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 5.5, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 5.5, esBase: true }],
     },
   },
 
@@ -1103,15 +1099,11 @@ const CONTRATOS_CGM = [
     soporte: 'https://drive.google.com/file/d/1ogA7nVDa4muew6s1aeh3CuXJdZN8MRJE/view?usp=sharing',
     cgm: {
       tarifaBase: 5.5,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 5.5, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 5.5, esBase: true }],
     },
     representacion: {
       tarifaBase: 5.5,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 5.5, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 5.5, esBase: true }],
     },
   },
 
@@ -1127,15 +1119,11 @@ const CONTRATOS_CGM = [
     soporte: 'https://drive.google.com/file/d/1Bs870ApgaiXu8oX2c-7MiuH20Mx71ipk/view?usp=sharing',
     cgm: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 6, esBase: true }],
     },
     representacion: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 6, esBase: true }],
     },
   },
 
@@ -1151,15 +1139,11 @@ const CONTRATOS_CGM = [
     soporte: 'https://drive.google.com/file/d/1ha7tiY1QEgU99SvgxWqxW75BAbI49Pz9/view?usp=sharing',
     cgm: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 6, esBase: true }],
     },
     representacion: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 6, esBase: true }],
     },
   },
 
@@ -1175,15 +1159,11 @@ const CONTRATOS_CGM = [
     soporte: 'https://drive.google.com/file/d/1OIO4dGe1Dqi-5fa4ZWaAE8lyUZSmiX9K/view?usp=sharing',
     cgm: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 6, esBase: true }],
     },
     representacion: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 6, esBase: true }],
     },
   },
 
@@ -1199,15 +1179,11 @@ const CONTRATOS_CGM = [
     soporte: 'https://drive.google.com/file/d/1tHc1YpqCgeKOfa77F18OxNRR0XfmWp1t/view?usp=sharing',
     cgm: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 6, esBase: true }],
     },
     representacion: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2026, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2026, ipc: null, valor: 6, esBase: true }],
     },
   },
 
@@ -1223,9 +1199,7 @@ const CONTRATOS_CGM = [
     soporte: null,
     cgm: {
       tarifaBase: 6,
-      indexaciones: [
-        { año: 2024, ipc: null, valor: 6, esBase: true },
-      ],
+      indexaciones: [{ año: 2024, ipc: null, valor: 6, esBase: true }],
     },
     representacion: {
       tarifaBase: null,

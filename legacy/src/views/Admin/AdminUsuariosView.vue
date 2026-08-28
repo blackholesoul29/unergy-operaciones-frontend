@@ -6,39 +6,75 @@
       </template>
     </PageHeader>
 
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-      <div class="p-4 border-b border-gray-100">
+    <div class="overflow-hidden rounded-xl bg-white shadow-sm">
+      <div class="border-b border-gray-100 p-4">
         <IconField>
           <InputIcon class="pi pi-search" />
-          <InputText v-model="q" placeholder="Buscar por nombre o correo..." class="w-72" @input="onSearch" />
+          <InputText
+            v-model="q"
+            placeholder="Buscar por nombre o correo..."
+            class="w-72"
+            @input="onSearch"
+          />
         </IconField>
       </div>
 
-      <DataTable :value="filtered" :loading="loading" :rows="20" paginator rowHover class="text-sm"
-        :globalFilterFields="['nombre', 'email']">
+      <DataTable
+        :value="filtered"
+        :loading="loading"
+        :rows="20"
+        paginator
+        rowHover
+        class="text-sm"
+        :globalFilterFields="['nombre', 'email']"
+      >
         <Column field="nombre" header="Nombre" sortable />
         <Column field="email" header="Correo" sortable />
         <Column field="rol" header="Rol" sortable style="width: 140px">
           <template #body="{ data }">
-            <Tag :value="ROL_LABELS[data.rol] || data.rol" :severity="ROL_SEVERITY[data.rol] || 'secondary'" />
+            <Tag
+              :value="ROL_LABELS[data.rol] || data.rol"
+              :severity="ROL_SEVERITY[data.rol] || 'secondary'"
+            />
           </template>
         </Column>
         <Column field="activo" header="Estado" style="width: 100px">
           <template #body="{ data }">
-            <Tag :value="data.activo ? 'Activo' : 'Inactivo'" :severity="data.activo ? 'success' : 'danger'" />
+            <Tag
+              :value="data.activo ? 'Activo' : 'Inactivo'"
+              :severity="data.activo ? 'success' : 'danger'"
+            />
           </template>
         </Column>
         <Column header="Acciones" style="width: 140px">
           <template #body="{ data }">
-            <Button icon="pi pi-key" text rounded size="small" v-tooltip.top="'API Keys'" @click="openApiKeys(data)" />
-            <Button icon="pi pi-pencil" text rounded size="small" v-tooltip.top="'Editar'" @click="openEdit(data)" />
+            <Button
+              icon="pi pi-key"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="'API Keys'"
+              @click="openApiKeys(data)"
+            />
+            <Button
+              icon="pi pi-pencil"
+              text
+              rounded
+              size="small"
+              v-tooltip.top="'Editar'"
+              @click="openEdit(data)"
+            />
           </template>
         </Column>
       </DataTable>
     </div>
 
-    <Dialog v-model:visible="dialogVisible" :header="editingId ? 'Editar usuario' : 'Nuevo usuario'"
-      modal class="w-full max-w-lg">
+    <Dialog
+      v-model:visible="dialogVisible"
+      :header="editingId ? 'Editar usuario' : 'Nuevo usuario'"
+      modal
+      class="w-full max-w-lg"
+    >
       <UsuarioForm :initial="form" @save="onSave" @cancel="dialogVisible = false" />
     </Dialog>
 
@@ -94,8 +130,8 @@ const ROL_SEVERITY = {
 const filtered = computed(() => {
   if (!q.value) return items.value
   const term = q.value.toLowerCase()
-  return items.value.filter(u =>
-    u.nombre.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)
+  return items.value.filter(
+    (u) => u.nombre.toLowerCase().includes(term) || u.email.toLowerCase().includes(term),
   )
 })
 
@@ -146,7 +182,12 @@ async function onSave(payload) {
     dialogVisible.value = false
     load()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'Error al guardar', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: e.response?.data?.detail || 'Error al guardar',
+      life: 4000,
+    })
   }
 }
 </script>

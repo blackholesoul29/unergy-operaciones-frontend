@@ -14,54 +14,87 @@
 -->
 <template>
   <form @submit.prevent="guardar" class="space-y-5 pt-1">
-
     <!-- 1 · Contrato a modificar -->
     <div class="flex flex-col gap-1">
-      <label class="text-xs font-medium" style="color:#6b5a8a;">
-        Contrato a modificar <span style="color:#9b89b5;">— por código SIC; de aquí se hereda todo lo demás</span>
+      <label class="text-xs font-medium" style="color: #6b5a8a">
+        Contrato a modificar
+        <span style="color: #9b89b5">— por código SIC; de aquí se hereda todo lo demás</span>
       </label>
-      <Select v-model="codigoSic" :options="opcionesSic" optionValue="sic" optionLabel="_label"
-        filter showClear placeholder="Buscar por SIC, contrato o planta…" class="w-full"
-        :class="{ 'p-invalid': errores.codigoSic }">
+      <Select
+        v-model="codigoSic"
+        :options="opcionesSic"
+        optionValue="sic"
+        optionLabel="_label"
+        filter
+        showClear
+        placeholder="Buscar por SIC, contrato o planta…"
+        class="w-full"
+        :class="{ 'p-invalid': errores.codigoSic }"
+      >
         <template #option="{ option }">
-          <div class="flex flex-col leading-tight py-0.5">
-            <span class="font-medium" style="color:#2C2039;">
-              <span class="font-mono" style="color:#5b3fa6;">{{ option.sic }}</span>
+          <div class="flex flex-col py-0.5 leading-tight">
+            <span class="font-medium" style="color: #2c2039">
+              <span class="font-mono" style="color: #5b3fa6">{{ option.sic }}</span>
               · {{ option.contrato_interno || '(sin contrato)' }}
             </span>
-            <span class="text-xs" style="color:#6b5a8a;">{{ option.plantas }}</span>
+            <span class="text-xs" style="color: #6b5a8a">{{ option.plantas }}</span>
           </div>
         </template>
       </Select>
-      <small v-if="errores.codigoSic" class="text-red-500 text-xs">{{ errores.codigoSic }}</small>
+      <small v-if="errores.codigoSic" class="text-xs text-red-500">{{ errores.codigoSic }}</small>
     </div>
 
     <!-- Estado actual del contrato (solo lectura: es lo que se hereda) -->
-    <div v-if="inscritas.length" class="rounded-lg px-3 py-2.5 space-y-2"
-      style="background:#FAF8FD; border:1px solid #ECE4F5;">
-      <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs" style="color:#6b5a8a;">
-        <span><b style="color:#2C2039;">{{ baseContrato.contrato_interno || '—' }}</b> · {{ baseContrato.nombre_interno || 'sin nombre interno' }}</span>
-        <span v-if="baseContrato.codigo_sic_comprador">Comprador {{ baseContrato.codigo_sic_comprador }}</span>
-        <span v-if="baseContrato.prioridad_limitacion != null">P.S {{ baseContrato.prioridad_limitacion }}</span>
+    <div
+      v-if="inscritas.length"
+      class="space-y-2 rounded-lg px-3 py-2.5"
+      style="background: #faf8fd; border: 1px solid #ece4f5"
+    >
+      <div class="flex flex-wrap gap-x-5 gap-y-1 text-xs" style="color: #6b5a8a">
+        <span
+          ><b style="color: #2c2039">{{ baseContrato.contrato_interno || '—' }}</b> ·
+          {{ baseContrato.nombre_interno || 'sin nombre interno' }}</span
+        >
+        <span v-if="baseContrato.codigo_sic_comprador"
+          >Comprador {{ baseContrato.codigo_sic_comprador }}</span
+        >
+        <span v-if="baseContrato.prioridad_limitacion != null"
+          >P.S {{ baseContrato.prioridad_limitacion }}</span
+        >
       </div>
-      <table class="w-full text-xs border-collapse">
+      <table class="w-full border-collapse text-xs">
         <thead>
-          <tr style="color:#9b89b5;">
-            <th class="text-left font-medium py-1">Planta inscrita</th>
-            <th class="text-right font-medium py-1 w-20">Despacho</th>
-            <th class="text-left font-medium py-1 w-28 pl-3">Fin</th>
-            <th class="text-left font-medium py-1 w-32">Modalidad</th>
+          <tr style="color: #9b89b5">
+            <th class="py-1 text-left font-medium">Planta inscrita</th>
+            <th class="w-20 py-1 text-right font-medium">Despacho</th>
+            <th class="w-28 py-1 pl-3 text-left font-medium">Fin</th>
+            <th class="w-32 py-1 text-left font-medium">Modalidad</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="r in inscritas" :key="r.id" class="border-t" style="border-color:#ECE4F5;">
-            <td class="py-1" :style="{ color: r.id === baseContrato.id ? '#2C2039' : '#9b89b5', fontWeight: r.id === baseContrato.id ? 600 : 400 }">
+          <tr v-for="r in inscritas" :key="r.id" class="border-t" style="border-color: #ece4f5">
+            <td
+              class="py-1"
+              :style="{
+                color: r.id === baseContrato.id ? '#2C2039' : '#9b89b5',
+                fontWeight: r.id === baseContrato.id ? 600 : 400,
+              }"
+            >
               {{ r.planta_nombre || 'sin planta' }}
-              <span v-if="inscritas.length > 1 && r.id === baseContrato.id" class="text-[10px] font-normal" style="color:#915BD8;">— la que se modifica</span>
+              <span
+                v-if="inscritas.length > 1 && r.id === baseContrato.id"
+                class="text-[10px] font-normal"
+                style="color: #915bd8"
+                >— la que se modifica</span
+              >
             </td>
-            <td class="py-1 text-right" style="color:#6b5a8a;">{{ r.porcentaje_despacho != null ? pctTexto(r.porcentaje_despacho) : '—' }}</td>
-            <td class="py-1 pl-3" style="color:#6b5a8a;">{{ fmt(r.fecha_fin_efectiva || r.fecha_fin) }}</td>
-            <td class="py-1" style="color:#6b5a8a;">{{ modalidadTexto(r) }}</td>
+            <td class="py-1 text-right" style="color: #6b5a8a">
+              {{ r.porcentaje_despacho != null ? pctTexto(r.porcentaje_despacho) : '—' }}
+            </td>
+            <td class="py-1 pl-3" style="color: #6b5a8a">
+              {{ fmt(r.fecha_fin_efectiva || r.fecha_fin) }}
+            </td>
+            <td class="py-1" style="color: #6b5a8a">{{ modalidadTexto(r) }}</td>
           </tr>
         </tbody>
       </table>
@@ -69,93 +102,173 @@
 
     <!-- Cuál planta sale, si el SIC tiene varias a la vez -->
     <div v-if="inscritas.length > 1" class="flex flex-col gap-1">
-      <label class="text-xs font-medium" style="color:#6b5a8a;">
+      <label class="text-xs font-medium" style="color: #6b5a8a">
         Planta que modifica esta solicitud *
-        <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
-          v-tooltip.top="'Este SIC tiene varias plantas inscritas a la vez. Las demás siguen intactas: solo se releva la que elijas aquí.'" />
+        <i
+          class="pi pi-info-circle cursor-help text-xs"
+          style="color: #9b89b5"
+          v-tooltip.top="
+            'Este SIC tiene varias plantas inscritas a la vez. Las demás siguen intactas: solo se releva la que elijas aquí.'
+          "
+        />
       </label>
-      <Select v-model="proyectoSalienteId" :options="inscritas" optionValue="proyecto_id"
-        optionLabel="planta_nombre" placeholder="Seleccionar" class="w-full"
-        :class="{ 'p-invalid': errores.proyectoSalienteId }" />
-      <small v-if="errores.proyectoSalienteId" class="text-red-500 text-xs">{{ errores.proyectoSalienteId }}</small>
+      <Select
+        v-model="proyectoSalienteId"
+        :options="inscritas"
+        optionValue="proyecto_id"
+        optionLabel="planta_nombre"
+        placeholder="Seleccionar"
+        class="w-full"
+        :class="{ 'p-invalid': errores.proyectoSalienteId }"
+      />
+      <small v-if="errores.proyectoSalienteId" class="text-xs text-red-500">{{
+        errores.proyectoSalienteId
+      }}</small>
     </div>
 
     <!-- 2 · Cuándo entra en vigencia + requerimiento nuevo -->
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium" style="color:#6b5a8a;">Entra en vigencia el *</label>
-        <DatePicker v-model="fechaEntrada" dateFormat="dd/mm/yy" placeholder="dd/mm/aa" showIcon class="w-full"
-          :class="{ 'p-invalid': errores.fechaEntrada }" />
-        <small v-if="errores.fechaEntrada" class="text-red-500 text-xs">{{ errores.fechaEntrada }}</small>
-        <small v-else class="text-xs" style="color:#9b8ab5;">Antes de ese día no cambia nada.</small>
+        <label class="text-xs font-medium" style="color: #6b5a8a">Entra en vigencia el *</label>
+        <DatePicker
+          v-model="fechaEntrada"
+          dateFormat="dd/mm/yy"
+          placeholder="dd/mm/aa"
+          showIcon
+          class="w-full"
+          :class="{ 'p-invalid': errores.fechaEntrada }"
+        />
+        <small v-if="errores.fechaEntrada" class="text-xs text-red-500">{{
+          errores.fechaEntrada
+        }}</small>
+        <small v-else class="text-xs" style="color: #9b8ab5"
+          >Antes de ese día no cambia nada.</small
+        >
       </div>
       <div class="flex flex-col gap-1">
-        <label class="text-xs font-medium" style="color:#6b5a8a;">N° Requerimiento ASIC *</label>
-        <InputText v-model="requerimiento" placeholder="20260819007" class="w-full"
-          :class="{ 'p-invalid': errores.requerimiento }" />
-        <small v-if="errores.requerimiento" class="text-red-500 text-xs">{{ errores.requerimiento }}</small>
-        <small v-else class="text-xs" style="color:#9b8ab5;">Nuevo: el código SIC sí se conserva.</small>
+        <label class="text-xs font-medium" style="color: #6b5a8a">N° Requerimiento ASIC *</label>
+        <InputText
+          v-model="requerimiento"
+          placeholder="20260819007"
+          class="w-full"
+          :class="{ 'p-invalid': errores.requerimiento }"
+        />
+        <small v-if="errores.requerimiento" class="text-xs text-red-500">{{
+          errores.requerimiento
+        }}</small>
+        <small v-else class="text-xs" style="color: #9b8ab5"
+          >Nuevo: el código SIC sí se conserva.</small
+        >
       </div>
     </div>
 
     <!-- 3 · Lo único modificable -->
-    <div class="rounded-lg px-3 py-3 space-y-4" style="border:1px solid #ECE4F5;">
-      <p class="text-[11px] font-semibold uppercase tracking-wide" style="color:#9b89b5;">Qué cambia</p>
+    <div class="space-y-4 rounded-lg px-3 py-3" style="border: 1px solid #ece4f5">
+      <p class="text-[11px] font-semibold tracking-wide uppercase" style="color: #9b89b5">
+        Qué cambia
+      </p>
 
       <div class="grid grid-cols-3 gap-4">
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium" style="color:#6b5a8a;">Nueva fecha de fin</label>
-          <DatePicker v-model="fechaFin" dateFormat="dd/mm/yy" placeholder="dd/mm/aa" showIcon class="w-full"
-            :disabled="!codigoSic" />
+          <label class="text-xs font-medium" style="color: #6b5a8a">Nueva fecha de fin</label>
+          <DatePicker
+            v-model="fechaFin"
+            dateFormat="dd/mm/yy"
+            placeholder="dd/mm/aa"
+            showIcon
+            class="w-full"
+            :disabled="!codigoSic"
+          />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium" style="color:#6b5a8a;">Planta inscrita</label>
-          <Select v-model="proyectoId" :options="proyectos" optionLabel="nombre_comercial" optionValue="id"
-            placeholder="Seleccionar" filter class="w-full" :disabled="!codigoSic" />
+          <label class="text-xs font-medium" style="color: #6b5a8a">Planta inscrita</label>
+          <Select
+            v-model="proyectoId"
+            :options="proyectos"
+            optionLabel="nombre_comercial"
+            optionValue="id"
+            placeholder="Seleccionar"
+            filter
+            class="w-full"
+            :disabled="!codigoSic"
+          />
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium" style="color:#6b5a8a;">% Despacho</label>
-          <InputNumber v-model="porcentajeDespacho" :min="0" :max="100" :minFractionDigits="0"
-            :maxFractionDigits="2" suffix="%" locale="en-US" class="w-full" inputClass="w-full"
-            :disabled="!codigoSic" />
+          <label class="text-xs font-medium" style="color: #6b5a8a">% Despacho</label>
+          <InputNumber
+            v-model="porcentajeDespacho"
+            :min="0"
+            :max="100"
+            :minFractionDigits="0"
+            :maxFractionDigits="2"
+            suffix="%"
+            locale="en-US"
+            class="w-full"
+            inputClass="w-full"
+            :disabled="!codigoSic"
+          />
         </div>
       </div>
 
       <div class="flex flex-col gap-1">
         <div class="flex items-center gap-2">
-          <label class="text-xs font-medium" style="color:#6b5a8a;">Modalidad de suministro de la planta</label>
-          <i class="pi pi-info-circle text-xs cursor-help" style="color:#9b89b5;"
-            v-tooltip.top="'Normal: suministro propio de la planta. Compra en bolsa: la planta ya está comprometida en otro contrato; su aporte aquí se cubre comprando en bolsa (genera garantías). Uso del recurso: el cliente está en bolsa y se le paga su generación a precio bolsa (sin garantías).'" />
+          <label class="text-xs font-medium" style="color: #6b5a8a"
+            >Modalidad de suministro de la planta</label
+          >
+          <i
+            class="pi pi-info-circle cursor-help text-xs"
+            style="color: #9b89b5"
+            v-tooltip.top="
+              'Normal: suministro propio de la planta. Compra en bolsa: la planta ya está comprometida en otro contrato; su aporte aquí se cubre comprando en bolsa (genera garantías). Uso del recurso: el cliente está en bolsa y se le paga su generación a precio bolsa (sin garantías).'
+            "
+          />
         </div>
-        <SelectButton v-model="modalidad" :options="MODALIDADES" optionLabel="label" optionValue="value"
-          :allowEmpty="false" :disabled="!codigoSic"
-          :pt="{ button: { style: 'font-size:12px; padding:5px 12px;' } }" />
+        <SelectButton
+          v-model="modalidad"
+          :options="MODALIDADES"
+          optionLabel="label"
+          optionValue="value"
+          :allowEmpty="false"
+          :disabled="!codigoSic"
+          :pt="{ button: { style: 'font-size:12px; padding:5px 12px;' } }"
+        />
       </div>
     </div>
 
     <!-- 4 · Resumen de lo que va a pasar -->
-    <div v-if="resumen" class="rounded-lg px-3 py-2 text-xs flex items-start gap-2"
-      style="background:#F3EEFB; border:1px solid #DCCFF2; color:#4A3570;">
+    <div
+      v-if="resumen"
+      class="flex items-start gap-2 rounded-lg px-3 py-2 text-xs"
+      style="background: #f3eefb; border: 1px solid #dccff2; color: #4a3570"
+    >
       <i class="pi pi-arrow-right-arrow-left mt-0.5" />
       <span>{{ resumen }}</span>
     </div>
 
     <!-- 5 · Lo opcional, plegado -->
     <details class="text-xs">
-      <summary class="cursor-pointer select-none" style="color:#915BD8;">Datos de la radicación (opcional)</summary>
-      <div class="pt-3 space-y-4">
+      <summary class="cursor-pointer select-none" style="color: #915bd8">
+        Datos de la radicación (opcional)
+      </summary>
+      <div class="space-y-4 pt-3">
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium" style="color:#6b5a8a;">Fecha de solicitud</label>
-            <DatePicker v-model="fechaSolicitud" dateFormat="dd/mm/yy" placeholder="hoy" showIcon class="w-full" />
+            <label class="text-xs font-medium" style="color: #6b5a8a">Fecha de solicitud</label>
+            <DatePicker
+              v-model="fechaSolicitud"
+              dateFormat="dd/mm/yy"
+              placeholder="hoy"
+              showIcon
+              class="w-full"
+            />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="text-xs font-medium" style="color:#6b5a8a;">Link archivo</label>
+            <label class="text-xs font-medium" style="color: #6b5a8a">Link archivo</label>
             <InputText v-model="linkArchivo" placeholder="https://..." class="w-full" />
           </div>
         </div>
         <div class="flex flex-col gap-1">
-          <label class="text-xs font-medium" style="color:#6b5a8a;">Observaciones</label>
+          <label class="text-xs font-medium" style="color: #6b5a8a">Observaciones</label>
           <Textarea v-model="observaciones" rows="2" class="w-full" autoResize />
         </div>
       </div>
@@ -163,8 +276,13 @@
 
     <div class="flex justify-end gap-2 pt-2">
       <Button label="Cancelar" severity="secondary" type="button" @click="$emit('cancelar')" />
-      <Button label="Registrar modificación" icon="pi pi-check" type="submit" :loading="guardando"
-        style="background:#915BD8; border-color:#915BD8;" />
+      <Button
+        label="Registrar modificación"
+        icon="pi pi-check"
+        type="submit"
+        :loading="guardando"
+        style="background: #915bd8; border-color: #915bd8"
+      />
     </div>
   </form>
 </template>
@@ -181,8 +299,13 @@ import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
 import {
-  opcionesSicVigentes, plantasInscritas,
-  toIso, parseIso, fmtFecha as fmt, pctTexto, modalidadTexto,
+  opcionesSicVigentes,
+  plantasInscritas,
+  toIso,
+  parseIso,
+  fmtFecha as fmt,
+  pctTexto,
+  modalidadTexto,
 } from './gesconVigencia.js'
 
 const props = defineProps({
@@ -218,23 +341,28 @@ const opcionesSic = computed(() => opcionesSicVigentes(props.rows))
 // Plantas inscritas en el SIC a la fecha de entrada (ver gesconVigencia.js:
 // hay que descartar por fecha o una planta que ya salió reaparece inscrita).
 const inscritas = computed(() =>
-  plantasInscritas(props.rows, codigoSic.value, toIso(fechaEntrada.value)))
+  plantasInscritas(props.rows, codigoSic.value, toIso(fechaEntrada.value)),
+)
 
 // Fila base: la versión que esta modificación releva.
 const baseContrato = computed(() => {
   if (inscritas.value.length === 1) return inscritas.value[0]
-  return inscritas.value.find(r => r.proyecto_id === proyectoSalienteId.value) || {}
+  return inscritas.value.find((r) => r.proyecto_id === proyectoSalienteId.value) || {}
 })
 
 // Al elegir contrato (o cambiar de planta saliente) se precargan los valores
 // actuales: así el usuario solo toca lo que de verdad cambia.
-watch(baseContrato, base => {
+watch(baseContrato, (base) => {
   if (!base?.id) return
   fechaFin.value = parseIso(base.fecha_fin_efectiva || base.fecha_fin)
   proyectoId.value = base.proyecto_id ?? null
-  porcentajeDespacho.value = base.porcentaje_despacho != null
-    ? Number((base.porcentaje_despacho * 100).toFixed(2)) : null
-  modalidad.value = base.uso_del_recurso ? 'uso_recurso' : base.es_duplicado ? 'duplicado' : 'normal'
+  porcentajeDespacho.value =
+    base.porcentaje_despacho != null ? Number((base.porcentaje_despacho * 100).toFixed(2)) : null
+  modalidad.value = base.uso_del_recurso
+    ? 'uso_recurso'
+    : base.es_duplicado
+      ? 'duplicado'
+      : 'normal'
 })
 
 watch(codigoSic, () => {
@@ -254,11 +382,16 @@ const resumen = computed(() => {
   if (!base?.id || !fechaEntrada.value) return ''
   const cambios = []
   if (proyectoId.value !== base.proyecto_id) {
-    cambios.push(`sale ${base.planta_nombre || 'la planta actual'} y entra ${nombrePlanta(proyectoId.value)}`)
+    cambios.push(
+      `sale ${base.planta_nombre || 'la planta actual'} y entra ${nombrePlanta(proyectoId.value)}`,
+    )
   }
-  const pctBase = base.porcentaje_despacho != null ? Number((base.porcentaje_despacho * 100).toFixed(2)) : null
+  const pctBase =
+    base.porcentaje_despacho != null ? Number((base.porcentaje_despacho * 100).toFixed(2)) : null
   if (porcentajeDespacho.value !== pctBase) {
-    cambios.push(`despacho ${pctBase != null ? pctBase + '%' : '—'} → ${porcentajeDespacho.value != null ? porcentajeDespacho.value + '%' : '—'}`)
+    cambios.push(
+      `despacho ${pctBase != null ? pctBase + '%' : '—'} → ${porcentajeDespacho.value != null ? porcentajeDespacho.value + '%' : '—'}`,
+    )
   }
   const finBase = base.fecha_fin_efectiva || base.fecha_fin
   if (toIso(fechaFin.value) !== finBase) {
@@ -277,8 +410,10 @@ async function guardar() {
   if (!codigoSic.value) errores.value.codigoSic = 'Elige el contrato a modificar'
   if (!fechaEntrada.value) errores.value.fechaEntrada = 'Requerido'
   if (!requerimiento.value.trim()) errores.value.requerimiento = 'Requerido'
-  else if (baseContrato.value?.requerimiento_asic
-    && requerimiento.value.trim() === String(baseContrato.value.requerimiento_asic).trim())
+  else if (
+    baseContrato.value?.requerimiento_asic &&
+    requerimiento.value.trim() === String(baseContrato.value.requerimiento_asic).trim()
+  )
     errores.value.requerimiento = 'Debe ser distinto al de la versión vigente'
   if (inscritas.value.length > 1 && !proyectoSalienteId.value)
     errores.value.proyectoSalienteId = 'Indica cuál planta modifica esta solicitud'
@@ -293,8 +428,10 @@ async function guardar() {
       fecha_fin: toIso(fechaFin.value),
       proyecto_id: proyectoId.value,
       // El backend guarda el despacho como fracción 0-1; el form lo edita 0-100.
-      porcentaje_despacho: porcentajeDespacho.value != null
-        ? Number((porcentajeDespacho.value / 100).toFixed(4)) : null,
+      porcentaje_despacho:
+        porcentajeDespacho.value != null
+          ? Number((porcentajeDespacho.value / 100).toFixed(4))
+          : null,
       modalidad: modalidad.value,
       proyecto_saliente_id: inscritas.value.length > 1 ? proyectoSalienteId.value : null,
       estado_solicitud: props.estado || 'publicado',
@@ -303,7 +440,12 @@ async function guardar() {
       observaciones: observaciones.value || null,
     }
     const { data } = await api.post('/asic/modificacion', payload)
-    toast.add({ severity: 'success', summary: 'Modificación registrada', detail: data.resumen, life: 6000 })
+    toast.add({
+      severity: 'success',
+      summary: 'Modificación registrada',
+      detail: data.resumen,
+      life: 6000,
+    })
     emit('guardado', data)
   } catch (e) {
     toast.add({
@@ -318,8 +460,10 @@ async function guardar() {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────
-function etiquetaModalidad(v) { return MODALIDADES.find(m => m.value === v)?.label || v }
+function etiquetaModalidad(v) {
+  return MODALIDADES.find((m) => m.value === v)?.label || v
+}
 function nombrePlanta(id) {
-  return props.proyectos.find(p => p.id === id)?.nombre_comercial || 'la planta nueva'
+  return props.proyectos.find((p) => p.id === id)?.nombre_comercial || 'la planta nueva'
 }
 </script>

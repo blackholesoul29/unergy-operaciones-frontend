@@ -11,13 +11,25 @@
        (p-4 sm:p-5). Sumarle otro dejaba ~32px de los 390px de un celular en
        padding anidado. Desde `md` el total queda igual que antes. -->
   <div class="md:p-6">
-    <PageHeader class="mb-4" title="Comercial"
-                subtitle="Pipeline de ofertas — la oferta es la unidad del negocio, no el cliente">
+    <PageHeader
+      class="mb-4"
+      title="Comercial"
+      subtitle="Pipeline de ofertas — la oferta es la unidad del negocio, no el cliente"
+    >
       <template #actions>
-        <SelectButton v-model="vista" :options="VISTAS" optionLabel="label" optionValue="value"
-                      :allowEmpty="false" />
-        <Button label="Registrar oferta" icon="pi pi-plus" class="whitespace-nowrap"
-                @click="mostrarWizard = true" />
+        <SelectButton
+          v-model="vista"
+          :options="VISTAS"
+          optionLabel="label"
+          optionValue="value"
+          :allowEmpty="false"
+        />
+        <Button
+          label="Registrar oferta"
+          icon="pi pi-plus"
+          class="whitespace-nowrap"
+          @click="mostrarWizard = true"
+        />
       </template>
     </PageHeader>
 
@@ -32,89 +44,174 @@
          desde `sm`, y debajo de `lg` los secundarios se pliegan detrás del
          botón "Filtros". En `lg`+ el botón no existe y todo va expandido en una
          sola fila, exactamente como hasta ahora. -->
-    <div class="flex flex-wrap items-center gap-2 mb-4">
+    <div class="mb-4 flex flex-wrap items-center gap-2">
       <IconField class="w-full sm:w-auto">
         <InputIcon class="pi pi-search" />
-        <InputText v-model.trim="filtros.texto" placeholder="Código, cliente, planta, municipio…"
-                   class="w-full sm:w-72" />
+        <InputText
+          v-model.trim="filtros.texto"
+          placeholder="Código, cliente, planta, municipio…"
+          class="w-full sm:w-72"
+        />
       </IconField>
 
       <!-- El conteo es lo que evita que un filtro quede activo y escondido:
            plegado, el botón sigue diciendo cuántos hay puestos. -->
-      <Button v-if="!esEscritorio" :label="filtrosAbiertos ? 'Ocultar' : etiquetaFiltros"
-              :icon="filtrosAbiertos ? 'pi pi-chevron-up' : 'pi pi-filter'" outlined size="small"
-              @click="filtrosAbiertos = !filtrosAbiertos" />
+      <Button
+        v-if="!esEscritorio"
+        :label="filtrosAbiertos ? 'Ocultar' : etiquetaFiltros"
+        :icon="filtrosAbiertos ? 'pi pi-chevron-up' : 'pi pi-filter'"
+        outlined
+        size="small"
+        @click="filtrosAbiertos = !filtrosAbiertos"
+      />
 
-      <MultiSelect v-show="filtrosVisibles" v-model="filtros.tipos" :options="TIPOS_OFERTA"
-                   optionLabel="label" optionValue="value" placeholder="Tipo de oferta"
-                   :maxSelectedLabels="1" class="w-full sm:w-52" />
-      <MultiSelect v-show="filtrosVisibles" v-model="filtros.clientes" :options="clientesDisponibles"
-                   optionLabel="nombre" optionValue="id" filter placeholder="Cliente"
-                   :maxSelectedLabels="1" class="w-full sm:w-52" />
-      <MultiSelect v-if="vista === 'tabla'" v-show="filtrosVisibles" v-model="filtros.etapas"
-                   :options="ETAPAS" optionLabel="label" optionValue="value" placeholder="Etapa"
-                   :maxSelectedLabels="1" class="w-full sm:w-48" />
-      <Select v-if="vista === 'tabla'" v-show="filtrosVisibles" v-model="orden" :options="ORDENES"
-              optionLabel="label" optionValue="value" class="w-full sm:w-48" />
+      <MultiSelect
+        v-show="filtrosVisibles"
+        v-model="filtros.tipos"
+        :options="TIPOS_OFERTA"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Tipo de oferta"
+        :maxSelectedLabels="1"
+        class="w-full sm:w-52"
+      />
+      <MultiSelect
+        v-show="filtrosVisibles"
+        v-model="filtros.clientes"
+        :options="clientesDisponibles"
+        optionLabel="nombre"
+        optionValue="id"
+        filter
+        placeholder="Cliente"
+        :maxSelectedLabels="1"
+        class="w-full sm:w-52"
+      />
+      <MultiSelect
+        v-if="vista === 'tabla'"
+        v-show="filtrosVisibles"
+        v-model="filtros.etapas"
+        :options="ETAPAS"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Etapa"
+        :maxSelectedLabels="1"
+        class="w-full sm:w-48"
+      />
+      <Select
+        v-if="vista === 'tabla'"
+        v-show="filtrosVisibles"
+        v-model="orden"
+        :options="ORDENES"
+        optionLabel="label"
+        optionValue="value"
+        class="w-full sm:w-48"
+      />
       <div v-show="filtrosVisibles" class="flex items-center gap-1.5">
         <Checkbox v-model="filtros.soloAlerta" binary inputId="soloAlerta" />
-        <label for="soloAlerta" class="text-sm" style="color:#7a6e8a">Solo con alerta</label>
+        <label for="soloAlerta" class="text-sm" style="color: #7a6e8a">Solo con alerta</label>
       </div>
       <div v-show="filtrosVisibles" class="flex items-center gap-1.5">
         <Checkbox v-model="filtros.soloSinRespuesta" binary inputId="soloSinResp" />
-        <label for="soloSinResp" class="text-sm" style="color:#7a6e8a">Solo sin respuesta</label>
+        <label for="soloSinResp" class="text-sm" style="color: #7a6e8a">Solo sin respuesta</label>
       </div>
-      <Button v-if="hayFiltros" v-show="filtrosVisibles" label="Limpiar" icon="pi pi-filter-slash"
-              text size="small" @click="limpiarFiltros" />
+      <Button
+        v-if="hayFiltros"
+        v-show="filtrosVisibles"
+        label="Limpiar"
+        icon="pi pi-filter-slash"
+        text
+        size="small"
+        @click="limpiarFiltros"
+      />
     </div>
 
     <!-- Falla de carga: se distingue de "no hay ofertas" a propósito -->
-    <div v-if="errorCarga" class="rounded-lg p-4 text-center space-y-2 mb-4"
-         style="background:#FEF2F2;border:1px solid rgba(214,68,85,0.2)">
-      <p class="text-sm" style="color:#D64455">No se pudieron cargar las ofertas: {{ errorCarga }}</p>
+    <div
+      v-if="errorCarga"
+      class="mb-4 space-y-2 rounded-lg p-4 text-center"
+      style="background: #fef2f2; border: 1px solid rgba(214, 68, 85, 0.2)"
+    >
+      <p class="text-sm" style="color: #d64455">
+        No se pudieron cargar las ofertas: {{ errorCarga }}
+      </p>
       <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined @click="cargar()" />
     </div>
 
     <div v-else-if="cargando && !ofertas.length" class="flex justify-center py-16">
-      <ProgressSpinner style="width:2.5rem;height:2.5rem" strokeWidth="4" />
+      <ProgressSpinner style="width: 2.5rem; height: 2.5rem" strokeWidth="4" />
     </div>
 
     <!-- Vacío real: no hay nada registrado todavía -->
-    <div v-else-if="!ofertas.length" class="rounded-lg p-10 text-center"
-         style="background:#FAF8FC;border:1px dashed #e0d3f5">
-      <i class="pi pi-briefcase text-3xl mb-3 block" style="color:#c4b8d4" />
-      <p class="text-sm mb-3" style="color:#7a6e8a">Todavía no hay ofertas registradas.</p>
+    <div
+      v-else-if="!ofertas.length"
+      class="rounded-lg p-10 text-center"
+      style="background: #faf8fc; border: 1px dashed #e0d3f5"
+    >
+      <i class="pi pi-briefcase mb-3 block text-3xl" style="color: #c4b8d4" />
+      <p class="mb-3 text-sm" style="color: #7a6e8a">Todavía no hay ofertas registradas.</p>
       <Button label="Registrar la primera" icon="pi pi-plus" @click="mostrarWizard = true" />
     </div>
 
     <template v-else>
-      <TableroOfertas v-if="vista === 'tablero'" :por-columna="porColumna"
-                      :oferta-abierta-id="ofertaAbierta?.id"
-                      @abrir="abrirOferta" @mover="mover" @firmar="pedirFirma" @declinar="pedirDeclinar" />
+      <TableroOfertas
+        v-if="vista === 'tablero'"
+        :por-columna="porColumna"
+        :oferta-abierta-id="ofertaAbierta?.id"
+        @abrir="abrirOferta"
+        @mover="mover"
+        @firmar="pedirFirma"
+        @declinar="pedirDeclinar"
+      />
       <TablaOfertas v-else :ofertas="filtradas" @abrir="abrirOferta" />
     </template>
 
-    <OfertaDrawer v-model:visible="drawerAbierto" :oferta="ofertaAbierta" :acciones="acciones"
-                  @firmar="pedirFirma" />
+    <OfertaDrawer
+      v-model:visible="drawerAbierto"
+      :oferta="ofertaAbierta"
+      :acciones="acciones"
+      @firmar="pedirFirma"
+    />
 
-    <RegistrarOfertaWizard v-model:visible="mostrarWizard" :acciones="acciones"
-                           @registrada="trasRegistrar" />
+    <RegistrarOfertaWizard
+      v-model:visible="mostrarWizard"
+      :acciones="acciones"
+      @registrada="trasRegistrar"
+    />
 
-    <FirmarOfertaDialog v-model:visible="mostrarFirmar" :oferta="ofertaAFirmar" :acciones="acciones"
-                        @firmada="cargar()" />
+    <FirmarOfertaDialog
+      v-model:visible="mostrarFirmar"
+      :oferta="ofertaAFirmar"
+      :acciones="acciones"
+      @firmada="cargar()"
+    />
 
     <!-- Declinar pide el motivo: sin él, el histórico solo dice que se perdió. -->
-    <Dialog v-model:visible="mostrarDeclinar" modal header="Declinar oferta" :style="{ width: '28rem' }">
-      <p class="text-sm mb-3" style="color:#7a6e8a">
+    <Dialog
+      v-model:visible="mostrarDeclinar"
+      modal
+      header="Declinar oferta"
+      :style="{ width: '28rem' }"
+    >
+      <p class="mb-3 text-sm" style="color: #7a6e8a">
         {{ ofertaADeclinar?.planta_nombre || ofertaADeclinar?.cliente_razon_social }}
       </p>
-      <label class="block text-xs mb-1" style="color:#7a6e8a">Motivo *</label>
-      <Textarea v-model="motivoDeclinar" rows="3" autoResize class="w-full"
-                placeholder="Por qué se cayó el negocio" />
+      <label class="mb-1 block text-xs" style="color: #7a6e8a">Motivo *</label>
+      <Textarea
+        v-model="motivoDeclinar"
+        rows="3"
+        autoResize
+        class="w-full"
+        placeholder="Por qué se cayó el negocio"
+      />
       <template #footer>
         <Button label="Cancelar" text severity="secondary" @click="mostrarDeclinar = false" />
-        <Button label="Declinar" severity="danger" :disabled="!motivoDeclinar.trim()"
-                :loading="declinando" @click="declinar" />
+        <Button
+          label="Declinar"
+          severity="danger"
+          :disabled="!motivoDeclinar.trim()"
+          :loading="declinando"
+          @click="declinar"
+        />
       </template>
     </Dialog>
   </div>
@@ -167,17 +264,38 @@ const vista = ref(localStorage.getItem('comercial:vista') || 'tablero')
 watch(vista, (v) => localStorage.setItem('comercial:vista', v))
 
 const {
-  ofertas, cargando, errorCarga, alertaDias,
-  filtros, orden, filtradas, porColumna, banda, clientesDisponibles, hayFiltros, limpiarFiltros,
-  cargar, moverEtapa, guardarOferta, registrarSeguimiento, registrarGestion,
-  eliminarOferta, firmar, registrar,
+  ofertas,
+  cargando,
+  errorCarga,
+  alertaDias,
+  filtros,
+  orden,
+  filtradas,
+  porColumna,
+  banda,
+  clientesDisponibles,
+  hayFiltros,
+  limpiarFiltros,
+  cargar,
+  moverEtapa,
+  guardarOferta,
+  registrarSeguimiento,
+  registrarGestion,
+  eliminarOferta,
+  firmar,
+  registrar,
 } = useOfertas()
 
 // Las mutaciones se pasan como un objeto a los hijos: el drawer y los diálogos
 // necesitan el RESULTADO de cada acción, que un emit no devuelve.
 const acciones = {
-  moverEtapa, guardarOferta, registrarSeguimiento, registrarGestion,
-  eliminarOferta, firmar, registrar,
+  moverEtapa,
+  guardarOferta,
+  registrarSeguimiento,
+  registrarGestion,
+  eliminarOferta,
+  firmar,
+  registrar,
 }
 
 // ── Filtros secundarios plegables (solo debajo de lg) ───────────────────────
@@ -192,7 +310,9 @@ const LG = '(min-width: 1024px)'
 // correcto: arrancar en false hacía parpadear los filtros en escritorio.
 const esEscritorio = ref(window.matchMedia(LG).matches)
 const consultaLg = window.matchMedia(LG)
-function alCambiarAncho(e) { esEscritorio.value = e.matches }
+function alCambiarAncho(e) {
+  esEscritorio.value = e.matches
+}
 onMounted(() => consultaLg.addEventListener('change', alCambiarAncho))
 onUnmounted(() => consultaLg.removeEventListener('change', alCambiarAncho))
 
@@ -200,15 +320,18 @@ const filtrosAbiertos = ref(false)
 const filtrosVisibles = computed(() => esEscritorio.value || filtrosAbiertos.value)
 
 // El buscador queda fuera del conteo porque nunca se esconde.
-const nFiltrosSecundarios = computed(() =>
-  (filtros.tipos.length ? 1 : 0)
-  + (filtros.clientes.length ? 1 : 0)
-  + (filtros.etapas.length ? 1 : 0)
-  + (filtros.soloAlerta ? 1 : 0)
-  + (filtros.soloSinRespuesta ? 1 : 0))
+const nFiltrosSecundarios = computed(
+  () =>
+    (filtros.tipos.length ? 1 : 0) +
+    (filtros.clientes.length ? 1 : 0) +
+    (filtros.etapas.length ? 1 : 0) +
+    (filtros.soloAlerta ? 1 : 0) +
+    (filtros.soloSinRespuesta ? 1 : 0),
+)
 
 const etiquetaFiltros = computed(() =>
-  nFiltrosSecundarios.value ? `Filtros (${nFiltrosSecundarios.value})` : 'Filtros')
+  nFiltrosSecundarios.value ? `Filtros (${nFiltrosSecundarios.value})` : 'Filtros',
+)
 
 const mostrarWizard = ref(false)
 const mostrarFirmar = ref(false)
@@ -223,12 +346,15 @@ const ofertaAbiertaId = computed(() => {
   const v = route.query.oferta
   return v ? Number(v) : null
 })
-const ofertaAbierta = computed(() =>
-  ofertas.value.find((o) => o.id === ofertaAbiertaId.value) ?? null)
+const ofertaAbierta = computed(
+  () => ofertas.value.find((o) => o.id === ofertaAbiertaId.value) ?? null,
+)
 
 const drawerAbierto = computed({
   get: () => !!ofertaAbierta.value,
-  set: (v) => { if (!v) router.replace({ query: { ...route.query, oferta: undefined } }) },
+  set: (v) => {
+    if (!v) router.replace({ query: { ...route.query, oferta: undefined } })
+  },
 })
 
 function abrirOferta(oferta) {
@@ -253,7 +379,12 @@ watch([ofertaAbiertaId, ofertas], () => {
 async function mover(oferta, estado) {
   const r = await moverEtapa(oferta, estado)
   if (!r.ok) {
-    toast.add({ severity: 'error', summary: 'No se pudo cambiar la etapa', detail: r.error, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo cambiar la etapa',
+      detail: r.error,
+      life: 5000,
+    })
   }
 }
 
@@ -263,7 +394,8 @@ function pedirFirma(oferta) {
     toast.add({
       severity: 'info',
       summary: 'Esta oferta no genera un PPA',
-      detail: 'Las de servicios derivan en un contrato de representación, que se crea en Servicios.',
+      detail:
+        'Las de servicios derivan en un contrato de representación, que se crea en Servicios.',
       life: 6000,
     })
     return

@@ -22,16 +22,69 @@ function setItem(i, val) {
   nueva[i] = val
   emit('update:modelValue', nueva)
 }
-function agregar() { emit('update:modelValue', [...props.modelValue, '']) }
-function quitar(i) { emit('update:modelValue', props.modelValue.filter((_, idx) => idx !== i)) }
+function agregar() {
+  emit('update:modelValue', [...props.modelValue, ''])
+}
+function quitar(i) {
+  emit(
+    'update:modelValue',
+    props.modelValue.filter((_, idx) => idx !== i),
+  )
+}
 </script>
 
 <style scoped>
-.le-wrap { display: flex; flex-direction: column; gap: 6px; }
-.le-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px; color: #9b8db5; }
-.le-row { display: flex; align-items: center; gap: 6px; }
-.le-row input { flex: 1; padding: 8px 11px; border: 1.5px solid #e8e0f0; border-radius: 8px; font-size: 13px; color: #2C2039; outline: none; }
-.le-row input:focus { border-color: #915BD8; }
-.le-del { border: none; background: #fef2f2; color: #b91c1c; border-radius: 7px; width: 28px; height: 28px; flex-shrink: 0; cursor: pointer; }
-.le-add { align-self: flex-start; display: flex; align-items: center; gap: 6px; border: 1.5px dashed #cbb8e8; background: #faf8fd; color: #6E3FB8; font-size: 12.5px; font-weight: 700; padding: 7px 12px; border-radius: 9px; cursor: pointer; }
+.le-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.le-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #9b8db5;
+}
+.le-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.le-row input {
+  flex: 1;
+  padding: 8px 11px;
+  border: 1.5px solid #e8e0f0;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #2c2039;
+  outline: none;
+}
+.le-row input:focus {
+  border-color: #915bd8;
+}
+.le-del {
+  border: none;
+  background: #fef2f2;
+  color: #b91c1c;
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.le-add {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1.5px dashed #cbb8e8;
+  background: #faf8fd;
+  color: #6e3fb8;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 7px 12px;
+  border-radius: 9px;
+  cursor: pointer;
+}
 </style>

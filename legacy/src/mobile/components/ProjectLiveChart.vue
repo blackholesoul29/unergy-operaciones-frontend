@@ -1,6 +1,12 @@
 <template>
   <div class="plc-wrap" @click="flashNowLabel" @touchstart.passive="flashNowLabel">
-    <Line v-if="hasData" ref="chartRef" :data="chartData" :options="chartOptions" :plugins="[nowLinePlugin]" />
+    <Line
+      v-if="hasData"
+      ref="chartRef"
+      :data="chartData"
+      :options="chartOptions"
+      :plugins="[nowLinePlugin]"
+    />
     <div v-else class="plc-empty">
       <i class="pi pi-chart-line" />
       <span>Sin datos de potencia hoy</span>
@@ -11,8 +17,14 @@
 <script setup>
 import { computed, ref, onBeforeUnmount } from 'vue'
 import {
-  Chart as ChartJS, CategoryScale, LinearScale,
-  PointElement, LineElement, Title, Legend, Filler,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Legend,
+  Filler,
 } from 'chart.js'
 import { Line } from 'vue-chartjs'
 import { TIME_LABELS, inverterSeries, meterSeries } from '@/mobile/solarSeries'
@@ -35,7 +47,11 @@ const chartData = computed(() => {
       data: inv.value,
       borderColor: '#915BD8',
       backgroundColor: 'rgba(145,91,216,0.12)',
-      fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2, spanGaps: true,
+      fill: true,
+      tension: 0.35,
+      pointRadius: 0,
+      borderWidth: 2,
+      spanGaps: true,
     })
   }
   if (med.value) {
@@ -44,7 +60,11 @@ const chartData = computed(() => {
       data: med.value,
       borderColor: '#14B8A6',
       backgroundColor: 'rgba(20,184,166,0.10)',
-      fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2, spanGaps: true,
+      fill: true,
+      tension: 0.35,
+      pointRadius: 0,
+      borderWidth: 2,
+      spanGaps: true,
     })
   }
   return { labels: TIME_LABELS, datasets }
@@ -87,7 +107,10 @@ const nowLinePlugin = {
     const { slot, label } = colombiaSlot()
     const px = xScale.getPixelForValue(slot)
     if (px == null || isNaN(px)) return
-    const { ctx, chartArea: { top, bottom } } = chart
+    const {
+      ctx,
+      chartArea: { top, bottom },
+    } = chart
 
     ctx.save()
     // línea vertical
@@ -107,10 +130,14 @@ const nowLinePlugin = {
       bx = Math.max(xScale.left, Math.min(bx, xScale.right - tw))
       const by = top + 2
       ctx.fillStyle = '#EAB308'
-      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(bx, by, tw, 18, 6); ctx.fill() }
-      else ctx.fillRect(bx, by, tw, 18)
+      if (ctx.roundRect) {
+        ctx.beginPath()
+        ctx.roundRect(bx, by, tw, 18, 6)
+        ctx.fill()
+      } else ctx.fillRect(bx, by, tw, 18)
       ctx.fillStyle = '#2C2039'
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
       ctx.fillText(text, bx + tw / 2, by + 9)
     }
     ctx.restore()
@@ -129,15 +156,26 @@ const chartOptions = {
       position: 'top',
       align: 'start',
       labels: {
-        boxWidth: 7, boxHeight: 7, usePointStyle: true, pointStyle: 'circle',
-        font: { size: 11.5, weight: '500' }, color: '#787774', padding: 12,
+        boxWidth: 7,
+        boxHeight: 7,
+        usePointStyle: true,
+        pointStyle: 'circle',
+        font: { size: 11.5, weight: '500' },
+        color: '#787774',
+        padding: 12,
       },
     },
     tooltip: { enabled: false },
   },
   scales: {
     x: {
-      ticks: { font: { size: 10 }, color: '#9b9a97', maxTicksLimit: 6, autoSkip: true, maxRotation: 0 },
+      ticks: {
+        font: { size: 10 },
+        color: '#9b9a97',
+        maxTicksLimit: 6,
+        autoSkip: true,
+        maxRotation: 0,
+      },
       grid: { display: false },
       border: { display: false },
     },
@@ -152,10 +190,23 @@ const chartOptions = {
 </script>
 
 <style scoped>
-.plc-wrap { position: relative; width: 100%; height: 100%; }
-.plc-empty {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 8px; height: 100%; color: #9ca3af; font-size: 14px;
+.plc-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
-.plc-empty .pi { font-size: 32px; color: #d1d5db; }
+.plc-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  color: #9ca3af;
+  font-size: 14px;
+}
+.plc-empty .pi {
+  font-size: 32px;
+  color: #d1d5db;
+}
 </style>

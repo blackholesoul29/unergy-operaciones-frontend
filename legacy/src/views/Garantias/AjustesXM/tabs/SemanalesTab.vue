@@ -5,22 +5,31 @@
       <template v-for="(step, idx) in steps" :key="step.key">
         <div class="flex items-center gap-2">
           <div
-            class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors"
+            class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-colors"
             :style="stepCircleStyle(idx)"
-          >{{ idx + 1 }}</div>
-          <span class="text-sm font-medium" :style="activeStep >= idx ? 'color:#915BD8' : 'color:#9ca3af'">
+          >
+            {{ idx + 1 }}
+          </div>
+          <span
+            class="text-sm font-medium"
+            :style="activeStep >= idx ? 'color:#915BD8' : 'color:#9ca3af'"
+          >
             {{ step.label }}
           </span>
         </div>
-        <div v-if="idx < steps.length - 1" class="flex-1 mx-3 h-px" style="background:#e8e0f0; min-width:24px" />
+        <div
+          v-if="idx < steps.length - 1"
+          class="mx-3 h-px flex-1"
+          style="background: #e8e0f0; min-width: 24px"
+        />
       </template>
     </div>
 
     <!-- Step 1: Cargar -->
     <div v-show="activeStep === 0" class="space-y-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div class="space-y-1">
-          <p class="text-xs font-semibold" style="color:#6b5a8a">Garantía Semanal Mensual</p>
+          <p class="text-xs font-semibold" style="color: #6b5a8a">Garantía Semanal Mensual</p>
           <DropZone
             label="Garantía Semanal Mensual"
             :pattern="PATTERNS.garantia"
@@ -28,7 +37,7 @@
           />
         </div>
         <div class="space-y-1">
-          <p class="text-xs font-semibold" style="color:#6b5a8a">Saldo Cuenta Custodia</p>
+          <p class="text-xs font-semibold" style="color: #6b5a8a">Saldo Cuenta Custodia</p>
           <DropZone
             label="Saldo Cuenta Custodia"
             :pattern="PATTERNS.saldo"
@@ -36,7 +45,7 @@
           />
         </div>
         <div class="space-y-1">
-          <p class="text-xs font-semibold" style="color:#6b5a8a">WEB Garantías</p>
+          <p class="text-xs font-semibold" style="color: #6b5a8a">WEB Garantías</p>
           <DropZone
             label="WEB Garantías"
             :pattern="PATTERNS.web"
@@ -46,18 +55,24 @@
       </div>
 
       <div class="space-y-1">
-        <p class="text-xs font-semibold" style="color:#6b5a8a">Facturas XM (PDF) — opcional</p>
-        <label class="border-2 border-dashed rounded-xl p-4 flex items-center justify-center gap-2 cursor-pointer text-xs"
-          style="border-color:#c4b8d4;background:#fafafa;color:#6b5a8a">
-          <i class="pi pi-file-pdf" style="color:#D64455" />
+        <p class="text-xs font-semibold" style="color: #6b5a8a">Facturas XM (PDF) — opcional</p>
+        <label
+          class="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed p-4 text-xs"
+          style="border-color: #c4b8d4; background: #fafafa; color: #6b5a8a"
+        >
+          <i class="pi pi-file-pdf" style="color: #d64455" />
           <span v-if="!files.pdfs.length">Arrastra o haz clic para subir uno o varios PDF</span>
           <span v-else>{{ files.pdfs.length }} PDF(s) seleccionado(s)</span>
           <input type="file" accept=".pdf" multiple class="hidden" @change="onPdfsSelect" />
         </label>
       </div>
 
-      <div v-if="parseErrors.length" class="rounded-lg p-3 space-y-1" style="background:#FEF2F2; border:1px solid rgba(214,68,85,0.2)">
-        <p v-for="e in parseErrors" :key="e" class="text-xs" style="color:#D64455">{{ e }}</p>
+      <div
+        v-if="parseErrors.length"
+        class="space-y-1 rounded-lg p-3"
+        style="background: #fef2f2; border: 1px solid rgba(214, 68, 85, 0.2)"
+      >
+        <p v-for="e in parseErrors" :key="e" class="text-xs" style="color: #d64455">{{ e }}</p>
       </div>
 
       <div class="flex justify-end">
@@ -67,7 +82,7 @@
           :loading="loading"
           :disabled="!allFilesLoaded"
           @click="procesar"
-          style="background:#915BD8;border-color:#915BD8"
+          style="background: #915bd8; border-color: #915bd8"
         />
       </div>
     </div>
@@ -79,9 +94,16 @@
         <HojaMadreView :data="vistaActual" class="mb-2" />
 
         <div v-if="facturas?.documentos?.length" class="mt-2">
-          <div class="flex items-center gap-2 justify-end mb-1">
-            <label class="text-xs font-semibold" style="color:#6b5a8a">Fecha objetivo (viernes):</label>
-            <input type="date" v-model="fechaObjetivo" class="rounded px-2 py-1 text-xs" style="border:1px solid #e8e0f0" />
+          <div class="mb-1 flex items-center justify-end gap-2">
+            <label class="text-xs font-semibold" style="color: #6b5a8a"
+              >Fecha objetivo (viernes):</label
+            >
+            <input
+              type="date"
+              v-model="fechaObjetivo"
+              class="rounded px-2 py-1 text-xs"
+              style="border: 1px solid #e8e0f0"
+            />
           </div>
           <FacturasDescuento
             :documentos="facturas.documentos"
@@ -91,13 +113,39 @@
           />
         </div>
 
-        <div class="flex justify-between mt-4">
-          <Button label="Volver" icon="pi pi-arrow-left" text severity="secondary" @click="activeStep = 0" />
+        <div class="mt-4 flex justify-between">
+          <Button
+            label="Volver"
+            icon="pi pi-arrow-left"
+            text
+            severity="secondary"
+            @click="activeStep = 0"
+          />
           <div class="flex gap-2">
-            <Button label="Exportar Excel" icon="pi pi-file-excel" outlined severity="secondary" size="small" @click="exportar" />
-            <Button label="Guardar en histórico" icon="pi pi-save" outlined size="small" :loading="guardando"
-              @click="guardarRegistro" style="color:#915BD8;border-color:#915BD8" />
-            <Button label="Generar mensaje" icon="pi pi-arrow-right" icon-pos="right" @click="generarYAvanzar" style="background:#915BD8;border-color:#915BD8" />
+            <Button
+              label="Exportar Excel"
+              icon="pi pi-file-excel"
+              outlined
+              severity="secondary"
+              size="small"
+              @click="exportar"
+            />
+            <Button
+              label="Guardar en histórico"
+              icon="pi pi-save"
+              outlined
+              size="small"
+              :loading="guardando"
+              @click="guardarRegistro"
+              style="color: #915bd8; border-color: #915bd8"
+            />
+            <Button
+              label="Generar mensaje"
+              icon="pi pi-arrow-right"
+              icon-pos="right"
+              @click="generarYAvanzar"
+              style="background: #915bd8; border-color: #915bd8"
+            />
           </div>
         </div>
       </div>
@@ -105,52 +153,93 @@
 
     <!-- Step 3: Mensaje -->
     <div v-show="activeStep === 2" class="space-y-4">
-      <div class="bg-white rounded-xl p-5 shadow-sm space-y-4" style="border:1px solid #e8e0f0">
+      <div class="space-y-4 rounded-xl bg-white p-5 shadow-sm" style="border: 1px solid #e8e0f0">
         <!-- Campos editables -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div class="space-y-1">
-            <label class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">{{ esNegativo ? 'Recursos que regresan ($)' : 'Total a consignar ($)' }}</label>
-            <InputNumber v-model="montoEditable" fluid :max-fraction-digits="0" @update:model-value="actualizarMensaje" />
+            <label class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a">{{
+              esNegativo ? 'Recursos que regresan ($)' : 'Total a consignar ($)'
+            }}</label>
+            <InputNumber
+              v-model="montoEditable"
+              fluid
+              :max-fraction-digits="0"
+              @update:model-value="actualizarMensaje"
+            />
           </div>
           <div class="space-y-1">
-            <label class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">% variación PB</label>
-            <InputNumber v-model="variacionPb" fluid :max-fraction-digits="2" suffix="%" @update:model-value="actualizarMensaje" />
+            <label class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a"
+              >% variación PB</label
+            >
+            <InputNumber
+              v-model="variacionPb"
+              fluid
+              :max-fraction-digits="2"
+              suffix="%"
+              @update:model-value="actualizarMensaje"
+            />
           </div>
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">Menciones</label>
+          <label class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a"
+            >Menciones</label
+          >
           <input
             v-model="mencionesEditable"
             @input="actualizarMensaje"
             class="w-full rounded-lg px-3 py-2 text-sm"
-            style="border:1px solid #e8e0f0; outline:none"
+            style="border: 1px solid #e8e0f0; outline: none"
             placeholder="@Juan @María"
           />
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">Nota de contexto (opcional)</label>
-          <Textarea v-model="contexto" rows="2" fluid @input="actualizarMensaje" placeholder="Notas adicionales..." />
+          <label class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a"
+            >Nota de contexto (opcional)</label
+          >
+          <Textarea
+            v-model="contexto"
+            rows="2"
+            fluid
+            @input="actualizarMensaje"
+            placeholder="Notas adicionales..."
+          />
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">Frase de tendencia (editable)</label>
+          <label class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a"
+            >Frase de tendencia (editable)</label
+          >
           <Textarea v-model="tendencia" rows="2" fluid @input="actualizarMensaje" />
         </div>
 
         <!-- Mensaje generado -->
         <div class="space-y-1">
-          <label class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">Borrador del mensaje</label>
+          <label class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a"
+            >Borrador del mensaje</label
+          >
           <Textarea v-model="mensajeEditable" rows="8" fluid class="font-mono text-xs" />
         </div>
       </div>
 
       <div class="flex justify-between">
-        <Button label="Volver" icon="pi pi-arrow-left" text severity="secondary" @click="activeStep = 1" />
+        <Button
+          label="Volver"
+          icon="pi pi-arrow-left"
+          text
+          severity="secondary"
+          @click="activeStep = 1"
+        />
         <div class="flex gap-2">
           <Button label="Copiar" icon="pi pi-copy" outlined severity="secondary" @click="copiar" />
-          <Button label="Confirmar y guardar" icon="pi pi-check" :loading="guardando" @click="guardarRegistro" style="background:#915BD8;border-color:#915BD8" />
+          <Button
+            label="Confirmar y guardar"
+            icon="pi pi-check"
+            :loading="guardando"
+            @click="guardarRegistro"
+            style="background: #915bd8; border-color: #915bd8"
+          />
         </div>
       </div>
     </div>
@@ -199,16 +288,14 @@ const totalDescontado = ref(0)
 
 const files = ref({ garantia: null, saldo: null, web: null, pdfs: [] })
 
-const allFilesLoaded = computed(
-  () => files.value.garantia && files.value.saldo && files.value.web,
-)
+const allFilesLoaded = computed(() => files.value.garantia && files.value.saldo && files.value.web)
 
 // Disponible (cuenta custodia, col 9 del Saldo) sin descuento.
 const disponibleCrudo = computed(() => resultado.value?.custodia?.disponible ?? null)
 
 // Suma neta de las facturas marcadas para descontar (0 si no hay facturas).
 const facturasDescontadas = computed(() =>
-  facturas.value?.documentos?.length ? (Number(totalDescontado.value) || 0) : 0,
+  facturas.value?.documentos?.length ? Number(totalDescontado.value) || 0 : 0,
 )
 
 // Disponible neto = crudo − facturas descontadas.
@@ -220,7 +307,9 @@ const disponibleAplicacion = computed(() => {
   if (disponibleNeto.value == null) return 0
   // Disponible neto − TOTAL A PAGAR (UNGG+UNGC). Ese total suele ser negativo,
   // por lo que restarlo aumenta el disponible.
-  return disponibleNeto.value - ((resultado.value?.totalUNGG ?? 0) + (resultado.value?.totalUNGC ?? 0))
+  return (
+    disponibleNeto.value - ((resultado.value?.totalUNGG ?? 0) + (resultado.value?.totalUNGC ?? 0))
+  )
 })
 
 const montoEditable = ref(0)
@@ -256,10 +345,8 @@ const vistaActual = computed(() => {
 })
 
 function stepCircleStyle(idx) {
-  if (activeStep.value > idx)
-    return 'background:#10B981; color:white'
-  if (activeStep.value === idx)
-    return 'background:#915BD8; color:white'
+  if (activeStep.value > idx) return 'background:#10B981; color:white'
+  if (activeStep.value === idx) return 'background:#915BD8; color:white'
   return 'background:#e8e0f0; color:#9ca3af'
 }
 
@@ -302,7 +389,7 @@ function generarYAvanzar() {
   const pbAnterior = store.getPbAnterior()
   const pbActual = resultado.value.precios?.pb
   if (pbAnterior != null && pbActual != null && pbAnterior !== 0) {
-    variacionPb.value = parseFloat(((pbActual - pbAnterior) / pbAnterior * 100).toFixed(2))
+    variacionPb.value = parseFloat((((pbActual - pbAnterior) / pbAnterior) * 100).toFixed(2))
   } else {
     variacionPb.value = null
   }
@@ -326,9 +413,13 @@ function variacionTexto() {
 function actualizarMensaje() {
   if (!resultado.value) return
   const pb = resultado.value.precios?.pb
-  const pbFmt = pb != null
-    ? new Intl.NumberFormat('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(pb)
-    : '—'
+  const pbFmt =
+    pb != null
+      ? new Intl.NumberFormat('es-CO', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }).format(pb)
+      : '—'
   const variStr = variacionTexto()
   const pbLinea = `Precio de bolsa del cálculo: $${pbFmt}${variStr ? ` (${variStr})` : ''}`
   const tendLinea = tendencia.value ? `\n${tendencia.value}` : ''
@@ -356,16 +447,19 @@ async function copiar() {
 
 function exportar() {
   if (!resultado.value) return
-  exportHojaMadreExcel({
-    ungc: resultado.value.ungc,
-    ungg: resultado.value.ungg,
-    totalConsignar: resultado.value.totalConsignar,
-    custodia: resultado.value.custodia,
-    disponibleCrudo: disponibleCrudo.value,
-    facturasDescontadas: facturasDescontadas.value,
-    disponibleNeto: disponibleNeto.value,
-    disponibleAplicacion: disponibleAplicacion.value,
-  }, `garantias_semanal_${resultado.value.fechaNombre || 'resultado'}.xlsx`)
+  exportHojaMadreExcel(
+    {
+      ungc: resultado.value.ungc,
+      ungg: resultado.value.ungg,
+      totalConsignar: resultado.value.totalConsignar,
+      custodia: resultado.value.custodia,
+      disponibleCrudo: disponibleCrudo.value,
+      facturasDescontadas: facturasDescontadas.value,
+      disponibleNeto: disponibleNeto.value,
+      disponibleAplicacion: disponibleAplicacion.value,
+    },
+    `garantias_semanal_${resultado.value.fechaNombre || 'resultado'}.xlsx`,
+  )
 }
 
 async function guardarRegistro() {
@@ -394,11 +488,21 @@ async function guardarRegistro() {
       snapshot: vistaActual.value,
     })
     if (p?.pb != null) store.setPbAnterior(p.pb)
-    toast.add({ severity: 'success', summary: 'Guardado en historial', detail: `Reporte del ${fecha}`, life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: 'Guardado en historial',
+      detail: `Reporte del ${fecha}`,
+      life: 3000,
+    })
   } catch (e) {
     const detalle = e?.response?.data?.detail || e?.message || 'Error desconocido'
     console.error('[garantias] error al guardar registro:', e?.response?.data || e)
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: String(detalle), life: 6000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo guardar',
+      detail: String(detalle),
+      life: 6000,
+    })
   } finally {
     guardando.value = false
   }

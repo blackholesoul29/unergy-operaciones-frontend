@@ -8,11 +8,26 @@
  */
 
 export const ESTADOS = {
-  sin_datos: { grafico: '#9b8fb0', texto: '#6b5a8a', fondo: 'rgba(155,143,176,0.14)', label: 'Sin datos' },
-  en_riesgo: { grafico: '#D64455', texto: '#B0364A', fondo: 'rgba(214,68,85,0.12)',  label: 'En riesgo' },
-  atencion:  { grafico: '#CA8A04', texto: '#A16207', fondo: 'rgba(202,138,4,0.14)',  label: 'Atención'  },
-  cumple:    { grafico: '#10B981', texto: '#047857', fondo: 'rgba(16,185,129,0.13)', label: 'Cumple'    },
-  excede:    { grafico: '#14B8A6', texto: '#0F766E', fondo: 'rgba(20,184,166,0.14)', label: 'Excede'    },
+  sin_datos: {
+    grafico: '#9b8fb0',
+    texto: '#6b5a8a',
+    fondo: 'rgba(155,143,176,0.14)',
+    label: 'Sin datos',
+  },
+  en_riesgo: {
+    grafico: '#D64455',
+    texto: '#B0364A',
+    fondo: 'rgba(214,68,85,0.12)',
+    label: 'En riesgo',
+  },
+  atencion: {
+    grafico: '#CA8A04',
+    texto: '#A16207',
+    fondo: 'rgba(202,138,4,0.14)',
+    label: 'Atención',
+  },
+  cumple: { grafico: '#10B981', texto: '#047857', fondo: 'rgba(16,185,129,0.13)', label: 'Cumple' },
+  excede: { grafico: '#14B8A6', texto: '#0F766E', fondo: 'rgba(20,184,166,0.14)', label: 'Excede' },
 }
 
 const FALLBACK = ESTADOS.sin_datos
@@ -33,9 +48,9 @@ export function estadoLabel(estado) {
 
 /** Estados del periodo del trimestre (no del cumplimiento). */
 export const PERIODOS = {
-  proximo:  { label: 'Próximo',  color: '#6b5a8a', fondo: 'rgba(155,143,176,0.14)' },
-  en_curso: { label: 'En curso', color: '#6D28D9', fondo: 'rgba(145,91,216,0.12)'  },
-  cerrado:  { label: 'Cerrado',  color: '#6b5a8a', fondo: 'rgba(44,32,57,0.07)'    },
+  proximo: { label: 'Próximo', color: '#6b5a8a', fondo: 'rgba(155,143,176,0.14)' },
+  en_curso: { label: 'En curso', color: '#6D28D9', fondo: 'rgba(145,91,216,0.12)' },
+  cerrado: { label: 'Cerrado', color: '#6b5a8a', fondo: 'rgba(44,32,57,0.07)' },
 }
 
 export function periodoBadge(periodo) {
@@ -107,7 +122,7 @@ export function parseValor(texto) {
   } else if (tienePunto) {
     // "1.240" es ambiguo. Se trata como miles solo si los grupos son de 3 dígitos.
     const partes = limpio.replace('-', '').split('.')
-    const esMiles = partes.length > 1 && partes.slice(1).every(p => p.length === 3)
+    const esMiles = partes.length > 1 && partes.slice(1).every((p) => p.length === 3)
     if (esMiles) normalizado = limpio.replace(/\./g, '')
   }
 
@@ -135,13 +150,17 @@ export function fmtRango(inicioIso, finIso) {
 }
 
 export const TIPOS_AGREGACION = [
-  { value: 'suma',     label: 'Suma',           ayuda: 'El consolidado es la suma de las semanas' },
-  { value: 'promedio', label: 'Promedio',       ayuda: 'El consolidado es el promedio de las semanas con dato' },
-  { value: 'ultimo',   label: 'Último valor',   ayuda: 'Vale la última semana registrada' },
-  { value: 'maximo',   label: 'Máximo',         ayuda: 'Vale la semana más alta' },
+  { value: 'suma', label: 'Suma', ayuda: 'El consolidado es la suma de las semanas' },
+  {
+    value: 'promedio',
+    label: 'Promedio',
+    ayuda: 'El consolidado es el promedio de las semanas con dato',
+  },
+  { value: 'ultimo', label: 'Último valor', ayuda: 'Vale la última semana registrada' },
+  { value: 'maximo', label: 'Máximo', ayuda: 'Vale la semana más alta' },
 ]
 
 export const DIRECCIONES = [
-  { value: 'mayor_mejor', label: 'Más es mejor'  },
+  { value: 'mayor_mejor', label: 'Más es mejor' },
   { value: 'menor_mejor', label: 'Menos es mejor' },
 ]

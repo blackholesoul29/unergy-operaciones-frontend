@@ -28,9 +28,13 @@ export function tituloFalla(f) {
     // Inversores: lista de inversores afectados + tipos de falla
     if (Array.isArray(c.inversores) && c.inversores.length) {
       const nombres = c.inversores
-        .map(i => i.nombre || (i.proyecto_inversor_id ? `Inversor ${i.proyecto_inversor_id}` : 'Inversor'))
+        .map(
+          (i) =>
+            i.nombre ||
+            (i.proyecto_inversor_id ? `Inversor ${i.proyecto_inversor_id}` : 'Inversor'),
+        )
         .join(', ')
-      const tipos = [...new Set(c.inversores.flatMap(i => i.tipos_etiquetas || []))].join(', ')
+      const tipos = [...new Set(c.inversores.flatMap((i) => i.tipos_etiquetas || []))].join(', ')
       return tipos ? `${nombres} — ${tipos}` : nombres
     }
     // Red / Frontera / Eventos adversos: el equipo o evento reportado (+ detalle libre)
@@ -67,20 +71,24 @@ export function clasificacionDetalle(f) {
   const cat = c.categoria
   const inversores = Array.isArray(c.inversores)
     ? c.inversores.map((i) => ({
-        nombre: i.nombre || (i.proyecto_inversor_id ? `Inversor ${i.proyecto_inversor_id}` : 'Inversor'),
+        nombre:
+          i.nombre || (i.proyecto_inversor_id ? `Inversor ${i.proyecto_inversor_id}` : 'Inversor'),
         potenciaKw: i.potencia_kw ?? null,
         // Preferir etiquetas resueltas; respaldo a códigos crudos.
-        tipos: (Array.isArray(i.tipos_etiquetas) && i.tipos_etiquetas.length)
-          ? i.tipos_etiquetas
-          : (Array.isArray(i.tipos) ? i.tipos : []),
+        tipos:
+          Array.isArray(i.tipos_etiquetas) && i.tipos_etiquetas.length
+            ? i.tipos_etiquetas
+            : Array.isArray(i.tipos)
+              ? i.tipos
+              : [],
       }))
     : []
   // Capa "tipo de falla": conjunto único de tipos across inversores, y si todos
   // los inversores comparten el mismo set (para no repetir chips por inversor).
   const inversorTipos = [...new Set(inversores.flatMap((i) => i.tipos))]
   const _key = (arr) => [...arr].sort().join('|')
-  const tiposUniformes = inversores.length > 0 &&
-    inversores.every((i) => _key(i.tipos) === _key(inversores[0].tipos))
+  const tiposUniformes =
+    inversores.length > 0 && inversores.every((i) => _key(i.tipos) === _key(inversores[0].tipos))
   return {
     categoria: cat,
     categoriaEtiqueta: c.categoria_etiqueta || cat,
@@ -89,11 +97,12 @@ export function clasificacionDetalle(f) {
     subtitulo: c.subtipo_etiqueta || '',
     detalle: c.detalle || null,
     pendienteReclasificar: !!f?.pendiente_reclasificar,
-    frontera: cat === 'frontera'
-      ? { afectaMedicion: !!c.afecta_medicion, perdidaComunicacion: !!c.perdida_comunicacion }
-      : null,
+    frontera:
+      cat === 'frontera'
+        ? { afectaMedicion: !!c.afecta_medicion, perdidaComunicacion: !!c.perdida_comunicacion }
+        : null,
     inversores,
-    inversorTipos,     // capa aparte: tipos de falla de inversor (conjunto único)
-    tiposUniformes,    // true si todos los inversores comparten los mismos tipos
+    inversorTipos, // capa aparte: tipos de falla de inversor (conjunto único)
+    tiposUniformes, // true si todos los inversores comparten los mismos tipos
   }
 }

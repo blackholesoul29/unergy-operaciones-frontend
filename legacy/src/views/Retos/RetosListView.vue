@@ -42,7 +42,7 @@
     <!-- Grilla -->
     <div
       v-else
-      class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4"
+      class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4"
       :class="{ 'rq-recargando': recargando }"
       :aria-busy="cargandoInicial || recargando"
     >
@@ -83,7 +83,7 @@ const cargandoInicial = ref(true)
 const recargando = ref(false)
 const error = ref(false)
 
-const retoEnCurso = computed(() => retos.value.find(r => r.estado_periodo === 'en_curso') || null)
+const retoEnCurso = computed(() => retos.value.find((r) => r.estado_periodo === 'en_curso') || null)
 
 const subtituloAnio = computed(() => {
   const r = retoEnCurso.value
@@ -138,7 +138,9 @@ onMounted(cargar)
 </script>
 
 <style scoped>
-.rq-header-wrap { position: relative; }
+.rq-header-wrap {
+  position: relative;
+}
 
 .rq-icon-tile {
   width: 40px;
@@ -148,7 +150,7 @@ onMounted(cargar)
   display: grid;
   place-items: center;
   background: rgba(145, 91, 216, 0.12);
-  color: #915BD8;
+  color: #915bd8;
   font-size: 17px;
 }
 
@@ -160,7 +162,7 @@ onMounted(cargar)
   bottom: -8px;
   height: 2px;
   border-radius: 999px;
-  background: rgba(145, 91, 216, .14);
+  background: rgba(145, 91, 216, 0.14);
   overflow: hidden;
 }
 .rq-barra::after {
@@ -169,24 +171,39 @@ onMounted(cargar)
   height: 100%;
   width: 38%;
   border-radius: 999px;
-  background: #915BD8;
+  background: #915bd8;
   animation: rq-indeterminada 1.1s ease-in-out infinite;
 }
 @keyframes rq-indeterminada {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(300%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
 }
 
 .rq-recargando {
-  opacity: .5;
+  opacity: 0.5;
   pointer-events: none;
-  transition: opacity .14s ease;
+  transition: opacity 0.14s ease;
 }
 
-.rq-error { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rq-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .rq-barra::after { animation: none; width: 100%; opacity: .6; }
-  .rq-recargando { transition: none; }
+  .rq-barra::after {
+    animation: none;
+    width: 100%;
+    opacity: 0.6;
+  }
+  .rq-recargando {
+    transition: none;
+  }
 }
 </style>

@@ -1,105 +1,180 @@
 <template>
   <div class="space-y-5">
     <!-- Barra superior -->
-    <div class="flex flex-wrap gap-2 justify-end">
-      <Button label="Exportar a Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small"
-        @click="exportarExcel" />
+    <div class="flex flex-wrap justify-end gap-2">
+      <Button
+        label="Exportar a Excel"
+        icon="pi pi-file-excel"
+        severity="secondary"
+        outlined
+        size="small"
+        @click="exportarExcel"
+      />
     </div>
 
     <!-- Loading (solo en la primera carga, cuando aún no hay datos) -->
-    <div v-if="loading && !historial.length" class="text-center py-6 space-y-3" style="color:#6b5a8a">
+    <div
+      v-if="loading && !historial.length"
+      class="space-y-3 py-6 text-center"
+      style="color: #6b5a8a"
+    >
       <p>Cargando…</p>
-      <p class="text-xs" style="color:#9ca3af">Si tarda, el servidor puede estar despertando (arranque en frío).</p>
+      <p class="text-xs" style="color: #9ca3af">
+        Si tarda, el servidor puede estar despertando (arranque en frío).
+      </p>
       <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined @click="cargar()" />
     </div>
 
     <!-- Error de carga (solo si no hay datos que mostrar) -->
-    <div v-else-if="errorMsg && !historial.length" class="rounded-lg p-4 text-center space-y-2" style="background:#FEF2F2;border:1px solid rgba(214,68,85,0.2)">
-      <p class="text-sm" style="color:#D64455">No se pudo cargar el historial: {{ errorMsg }}</p>
+    <div
+      v-else-if="errorMsg && !historial.length"
+      class="space-y-2 rounded-lg p-4 text-center"
+      style="background: #fef2f2; border: 1px solid rgba(214, 68, 85, 0.2)"
+    >
+      <p class="text-sm" style="color: #d64455">No se pudo cargar el historial: {{ errorMsg }}</p>
       <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined @click="cargar()" />
     </div>
 
     <!-- Si ya hay datos, se renderizan siempre (una recarga en curso no oculta el contenido) -->
     <template v-else>
-      <p v-if="loading" class="text-xs text-center" style="color:#9ca3af">Actualizando…</p>
+      <p v-if="loading" class="text-center text-xs" style="color: #9ca3af">Actualizando…</p>
       <!-- 1. Gráfica de tendencia -->
-      <div class="bg-white rounded-xl shadow-sm p-4 space-y-3" style="border:1px solid #e8e0f0">
+      <div class="space-y-3 rounded-xl bg-white p-4 shadow-sm" style="border: 1px solid #e8e0f0">
         <div class="flex flex-wrap items-center justify-between gap-3">
-          <h3 class="text-sm font-semibold" style="color:#2C2039">Tendencia histórica</h3>
+          <h3 class="text-sm font-semibold" style="color: #2c2039">Tendencia histórica</h3>
           <div class="flex flex-wrap items-center gap-3">
             <div class="flex gap-1">
-              <button v-for="r in rangos" :key="r.key"
+              <button
+                v-for="r in rangos"
+                :key="r.key"
                 type="button"
                 @click="rangoActivo = r.key"
-                class="px-3 py-1 text-xs rounded-lg font-medium transition-colors"
-                :style="rangoActivo === r.key
-                  ? 'background:#915BD8;color:white'
-                  : 'color:#6b5a8a;border:1px solid #e8e0f0'">
+                class="rounded-lg px-3 py-1 text-xs font-medium transition-colors"
+                :style="
+                  rangoActivo === r.key
+                    ? 'background:#915BD8;color:white'
+                    : 'color:#6b5a8a;border:1px solid #e8e0f0'
+                "
+              >
                 {{ r.label }}
               </button>
             </div>
-            <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none" style="color:#374151">
+            <label
+              class="flex cursor-pointer items-center gap-1.5 text-xs select-none"
+              style="color: #374151"
+            >
               <input type="checkbox" v-model="agruparPorMes" class="accent-purple-600" />
               Agrupar por mes
             </label>
           </div>
         </div>
 
-        <div v-if="puntosGrafica.length > 1" style="height:300px;position:relative">
+        <div v-if="puntosGrafica.length > 1" style="height: 300px; position: relative">
           <Line :data="chartData" :options="chartOptions" />
         </div>
-        <div v-else class="py-12 text-center text-sm" style="color:#6b5a8a">
+        <div v-else class="py-12 text-center text-sm" style="color: #6b5a8a">
           Aún no hay suficientes reportes semanales para la tendencia.
         </div>
       </div>
 
       <!-- 2. Navegación por mes (acordeón) -->
       <div v-if="mesesAgrupados.length" class="space-y-3">
-        <div v-for="grupo in mesesAgrupados" :key="grupo.mes"
-          class="bg-white rounded-xl shadow-sm overflow-hidden" style="border:1px solid #e8e0f0">
+        <div
+          v-for="grupo in mesesAgrupados"
+          :key="grupo.mes"
+          class="overflow-hidden rounded-xl bg-white shadow-sm"
+          style="border: 1px solid #e8e0f0"
+        >
           <!-- Cabecera mes -->
-          <button type="button"
-            class="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50/60 transition-colors"
-            @click="toggleMes(grupo.mes)">
+          <button
+            type="button"
+            class="flex w-full items-center justify-between px-4 py-3 transition-colors hover:bg-gray-50/60"
+            @click="toggleMes(grupo.mes)"
+          >
             <span class="flex items-center gap-2">
-              <i class="pi text-xs" :class="mesesAbiertos[grupo.mes] ? 'pi-chevron-down' : 'pi-chevron-right'"
-                style="color:#915BD8" />
-              <span class="text-sm font-semibold capitalize" style="color:#2C2039">{{ grupo.label }}</span>
+              <i
+                class="pi text-xs"
+                :class="mesesAbiertos[grupo.mes] ? 'pi-chevron-down' : 'pi-chevron-right'"
+                style="color: #915bd8"
+              />
+              <span class="text-sm font-semibold capitalize" style="color: #2c2039">{{
+                grupo.label
+              }}</span>
             </span>
-            <span class="text-[11px] font-medium px-2 py-0.5 rounded-full"
-              style="background:#f3f0f7;color:#915BD8">
-              {{ grupo.registros.length }} {{ grupo.registros.length === 1 ? 'reporte' : 'reportes' }}
+            <span
+              class="rounded-full px-2 py-0.5 text-[11px] font-medium"
+              style="background: #f3f0f7; color: #915bd8"
+            >
+              {{ grupo.registros.length }}
+              {{ grupo.registros.length === 1 ? 'reporte' : 'reportes' }}
             </span>
           </button>
 
           <!-- Reportes del mes -->
-          <div v-if="mesesAbiertos[grupo.mes]" style="border-top:1px solid #e8e0f0">
-            <div v-for="r in grupo.registros" :key="r.id"
-              style="border-bottom:1px solid #f0ebf7">
+          <div v-if="mesesAbiertos[grupo.mes]" style="border-top: 1px solid #e8e0f0">
+            <div v-for="r in grupo.registros" :key="r.id" style="border-bottom: 1px solid #f0ebf7">
               <div class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50/50">
-                <span class="text-sm tabular-nums w-24 shrink-0" style="color:#2C2039">{{ r.fecha }}</span>
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0"
-                  :style="tipoBadge(r.tipo)">
+                <span class="w-24 shrink-0 text-sm tabular-nums" style="color: #2c2039">{{
+                  r.fecha
+                }}</span>
+                <span
+                  class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                  :style="tipoBadge(r.tipo)"
+                >
                   {{ r.tipo }}
                 </span>
-                <span class="flex-1 text-right tabular-nums font-semibold text-sm" style="color:#2C2039">
+                <span
+                  class="flex-1 text-right text-sm font-semibold tabular-nums"
+                  style="color: #2c2039"
+                >
                   {{ cifraClave(r) }}
                 </span>
-                <div class="flex items-center gap-0.5 shrink-0">
-                  <Button v-if="r.snapshot" icon="pi pi-eye" text rounded size="small" severity="secondary"
+                <div class="flex shrink-0 items-center gap-0.5">
+                  <Button
+                    v-if="r.snapshot"
+                    icon="pi pi-eye"
+                    text
+                    rounded
+                    size="small"
+                    severity="secondary"
                     v-tooltip.top="'Ver hoja madre'"
                     :style="snapshotAbierto === r.id ? 'color:#915BD8' : ''"
-                    @click="toggleSnapshot(r.id)" />
-                  <Button v-else icon="pi pi-eye-slash" text rounded size="small" severity="secondary" disabled
-                    v-tooltip.top="'Sin detalle guardado'" />
-                  <Button icon="pi pi-pencil" text rounded size="small" severity="secondary"
-                    @click="abrirEditar(r)" />
-                  <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-                    @click="eliminar(r.id)" />
+                    @click="toggleSnapshot(r.id)"
+                  />
+                  <Button
+                    v-else
+                    icon="pi pi-eye-slash"
+                    text
+                    rounded
+                    size="small"
+                    severity="secondary"
+                    disabled
+                    v-tooltip.top="'Sin detalle guardado'"
+                  />
+                  <Button
+                    icon="pi pi-pencil"
+                    text
+                    rounded
+                    size="small"
+                    severity="secondary"
+                    @click="abrirEditar(r)"
+                  />
+                  <Button
+                    icon="pi pi-trash"
+                    text
+                    rounded
+                    size="small"
+                    severity="danger"
+                    @click="eliminar(r.id)"
+                  />
                 </div>
               </div>
               <!-- Hoja madre expandida -->
-              <div v-if="snapshotAbierto === r.id && r.snapshot" class="px-4 py-4" style="background:#faf8fd">
+              <div
+                v-if="snapshotAbierto === r.id && r.snapshot"
+                class="px-4 py-4"
+                style="background: #faf8fd"
+              >
                 <HojaMadreView :data="r.snapshot" />
               </div>
             </div>
@@ -107,17 +182,13 @@
         </div>
       </div>
 
-      <div v-else class="py-12 text-center" style="color:#6b5a8a">
-        <i class="pi pi-inbox text-3xl mb-2 block" style="color:#c4b8d4" />
+      <div v-else class="py-12 text-center" style="color: #6b5a8a">
+        <i class="pi pi-inbox mb-2 block text-3xl" style="color: #c4b8d4" />
         No hay registros en el historial. Confirma un reporte desde Semanales, TXR o Mensuales.
       </div>
     </template>
 
-    <EditAjusteDialog
-      v-model:visible="editVisible"
-      :ajuste="editAjuste"
-      @saved="cargar()"
-    />
+    <EditAjusteDialog v-model:visible="editVisible" :ajuste="editAjuste" @saved="cargar()" />
   </div>
 </template>
 
@@ -126,8 +197,14 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { Line } from 'vue-chartjs'
 import {
   Chart as ChartJS,
-  CategoryScale, LinearScale, PointElement,
-  LineElement, Title, Tooltip, Legend, Filler,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
 } from 'chart.js'
 import { useGarantiasHistorial } from '../composables/useGarantiasHistorial.js'
 import { fmtCOP } from '../utils/formatters.js'
@@ -136,7 +213,16 @@ import Button from 'primevue/button'
 import HojaMadreView from '../HojaMadreView.vue'
 import EditAjusteDialog from '../EditAjusteDialog.vue'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+)
 
 // Destructuramos las refs/funciones: al ser bindings de nivel superior, Vue las
 // auto-desempaqueta en el template (sin .value). Evita el bug de refs anidadas
@@ -157,13 +243,18 @@ function abrirEditar(ajuste) {
 /* ------------------ Helpers ------------------ */
 // Envuelve cálculos de render para que un dato inesperado nunca cuelgue la vista.
 function safe(fn, fallback) {
-  try { return fn() } catch (e) { console.error('[historico] error de render:', e); return fallback }
+  try {
+    return fn()
+  } catch (e) {
+    console.error('[historico] error de render:', e)
+    return fallback
+  }
 }
 
 function tipoBadge(tipo) {
   const map = {
     semanal: 'background:#f3f0f7;color:#915BD8',
-    txr:     'background:#dbeafe;color:#1d4ed8',
+    txr: 'background:#dbeafe;color:#1d4ed8',
     mensual: 'background:#d1fae5;color:#065f46',
   }
   return map[tipo] || 'background:#f3f4f6;color:#6b7280'
@@ -189,52 +280,62 @@ const rangoActivo = ref('12m')
 const agruparPorMes = ref(false)
 
 const rangos = [
-  { key: '3m',  label: 'Últimos 3 meses' },
+  { key: '3m', label: 'Últimos 3 meses' },
   { key: '12m', label: 'Últimos 12 meses' },
   { key: 'all', label: 'Todo' },
 ]
 
 // Solo semanales con datos de tendencia, ordenados ascendente por fecha
-const semanales = computed(() => safe(() =>
-  (historial.value || [])
-    .filter(r => r && r.tipo === 'semanal' && r.totalConsignar != null && r.pb != null && r.fecha)
-    .slice()
-    .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha))),
-  []))
+const semanales = computed(() =>
+  safe(
+    () =>
+      (historial.value || [])
+        .filter(
+          (r) => r && r.tipo === 'semanal' && r.totalConsignar != null && r.pb != null && r.fecha,
+        )
+        .slice()
+        .sort((a, b) => String(a.fecha).localeCompare(String(b.fecha))),
+    [],
+  ),
+)
 
-const semanalesEnRango = computed(() => safe(() => {
-  const all = semanales.value
-  if (rangoActivo.value === 'all') return all
-  const cutoff = new Date()
-  if (rangoActivo.value === '3m') cutoff.setMonth(cutoff.getMonth() - 3)
-  else cutoff.setMonth(cutoff.getMonth() - 12)
-  const cutStr = cutoff.toISOString().slice(0, 10)
-  return all.filter(r => String(r.fecha) >= cutStr)
-}, []))
+const semanalesEnRango = computed(() =>
+  safe(() => {
+    const all = semanales.value
+    if (rangoActivo.value === 'all') return all
+    const cutoff = new Date()
+    if (rangoActivo.value === '3m') cutoff.setMonth(cutoff.getMonth() - 3)
+    else cutoff.setMonth(cutoff.getMonth() - 12)
+    const cutStr = cutoff.toISOString().slice(0, 10)
+    return all.filter((r) => String(r.fecha) >= cutStr)
+  }, []),
+)
 
 // Puntos efectivos de la gráfica (con o sin agrupación por mes)
-const puntosGrafica = computed(() => safe(() => {
-  const base = semanalesEnRango.value
-  if (!agruparPorMes.value) {
-    return base.map(r => ({ label: r.fecha, totalConsignar: r.totalConsignar, pb: r.pb }))
-  }
-  // Agrupar: último reporte semanal de cada mes
-  const ultimoPorMes = new Map()
-  for (const r of base) {
-    const mes = String(r.fecha).slice(0, 7) // 'YYYY-MM' — base ya viene ascendente, así que el último gana
-    ultimoPorMes.set(mes, r)
-  }
-  return [...ultimoPorMes.entries()]
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([mes, r]) => ({ label: mes, totalConsignar: r.totalConsignar, pb: r.pb }))
-}, []))
+const puntosGrafica = computed(() =>
+  safe(() => {
+    const base = semanalesEnRango.value
+    if (!agruparPorMes.value) {
+      return base.map((r) => ({ label: r.fecha, totalConsignar: r.totalConsignar, pb: r.pb }))
+    }
+    // Agrupar: último reporte semanal de cada mes
+    const ultimoPorMes = new Map()
+    for (const r of base) {
+      const mes = String(r.fecha).slice(0, 7) // 'YYYY-MM' — base ya viene ascendente, así que el último gana
+      ultimoPorMes.set(mes, r)
+    }
+    return [...ultimoPorMes.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([mes, r]) => ({ label: mes, totalConsignar: r.totalConsignar, pb: r.pb }))
+  }, []),
+)
 
 const chartData = computed(() => ({
-  labels: puntosGrafica.value.map(p => p.label),
+  labels: puntosGrafica.value.map((p) => p.label),
   datasets: [
     {
       label: 'Total a consignar (semanal)',
-      data: puntosGrafica.value.map(p => p.totalConsignar),
+      data: puntosGrafica.value.map((p) => p.totalConsignar),
       borderColor: '#10B981',
       backgroundColor: 'rgba(16,185,129,0.12)',
       fill: true,
@@ -244,7 +345,7 @@ const chartData = computed(() => ({
     },
     {
       label: 'Precio de bolsa (PB)',
-      data: puntosGrafica.value.map(p => p.pb),
+      data: puntosGrafica.value.map((p) => p.pb),
       borderColor: '#915BD8',
       backgroundColor: 'rgba(145,91,216,0.08)',
       fill: false,
@@ -281,9 +382,12 @@ const chartOptions = computed(() => ({
     y: {
       position: 'left',
       ticks: {
-        callback: (v) => Math.abs(v) >= 1e9 ? '$' + (v / 1e9).toFixed(1) + 'B'
-          : Math.abs(v) >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M'
-          : '$' + (v / 1e3).toFixed(0) + 'k',
+        callback: (v) =>
+          Math.abs(v) >= 1e9
+            ? '$' + (v / 1e9).toFixed(1) + 'B'
+            : Math.abs(v) >= 1e6
+              ? '$' + (v / 1e6).toFixed(1) + 'M'
+              : '$' + (v / 1e3).toFixed(0) + 'k',
       },
     },
     y2: {
@@ -297,23 +401,25 @@ const chartOptions = computed(() => ({
 }))
 
 /* ------------------ Navegación por mes ------------------ */
-const mesesAgrupados = computed(() => safe(() => {
-  const groups = new Map()
-  for (const r of (historial.value || [])) {
-    if (!r) continue
-    const mes = String(r.fecha || '').slice(0, 7)
-    if (!mes) continue
-    if (!groups.has(mes)) groups.set(mes, [])
-    groups.get(mes).push(r)
-  }
-  return [...groups.entries()]
-    .sort((a, b) => b[0].localeCompare(a[0])) // meses desc
-    .map(([mes, registros]) => ({
-      mes,
-      label: mesLabel(mes),
-      registros: registros.slice().sort((a, b) => String(b.fecha).localeCompare(String(a.fecha))), // fecha desc
-    }))
-}, []))
+const mesesAgrupados = computed(() =>
+  safe(() => {
+    const groups = new Map()
+    for (const r of historial.value || []) {
+      if (!r) continue
+      const mes = String(r.fecha || '').slice(0, 7)
+      if (!mes) continue
+      if (!groups.has(mes)) groups.set(mes, [])
+      groups.get(mes).push(r)
+    }
+    return [...groups.entries()]
+      .sort((a, b) => b[0].localeCompare(a[0])) // meses desc
+      .map(([mes, registros]) => ({
+        mes,
+        label: mesLabel(mes),
+        registros: registros.slice().sort((a, b) => String(b.fecha).localeCompare(String(a.fecha))), // fecha desc
+      }))
+  }, []),
+)
 
 const mesesAbiertos = ref({})
 const snapshotAbierto = ref(null)
@@ -328,12 +434,16 @@ function toggleSnapshot(id) {
 }
 
 // Abrir por defecto el mes más reciente la primera vez que llega el historial
-watch(mesesAgrupados, (grupos) => {
-  if (!mesInicialAbierto.value && grupos.length) {
-    mesesAbiertos.value = { [grupos[0].mes]: true }
-    mesInicialAbierto.value = true
-  }
-}, { immediate: true })
+watch(
+  mesesAgrupados,
+  (grupos) => {
+    if (!mesInicialAbierto.value && grupos.length) {
+      mesesAbiertos.value = { [grupos[0].mes]: true }
+      mesInicialAbierto.value = true
+    }
+  },
+  { immediate: true },
+)
 
 /* ------------------ Export ------------------ */
 function exportarExcel() {

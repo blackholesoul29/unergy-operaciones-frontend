@@ -32,11 +32,11 @@
        la detección de CTs cruzados funciona igual.
    ========================================================================= */
 
-const CAMPOS_REQUERIDOS = ['vp1', 'vp2', 'vp3', 'cp1', 'cp2', 'cp3'];
+const CAMPOS_REQUERIDOS = ['vp1', 'vp2', 'vp3', 'cp1', 'cp2', 'cp3']
 
 function n(x) {
-  const v = Number(x);
-  return Number.isFinite(v) ? v : 0;
+  const v = Number(x)
+  return Number.isFinite(v) ? v : 0
 }
 
 /**
@@ -46,45 +46,49 @@ function n(x) {
  */
 export function validarSnapshot(snapshot) {
   if (!snapshot || typeof snapshot !== 'object') {
-    return { ok: false, error: 'El proyecto no tiene lectura de medidor disponible (sin snapshot de Gaia).' };
+    return {
+      ok: false,
+      error: 'El proyecto no tiene lectura de medidor disponible (sin snapshot de Gaia).',
+    }
   }
 
   const faltantes = CAMPOS_REQUERIDOS.filter(
-    (k) => snapshot[k] == null || Number.isNaN(Number(snapshot[k]))
-  );
+    (k) => snapshot[k] == null || Number.isNaN(Number(snapshot[k])),
+  )
   // También exigimos potencia activa en al menos una fase
-  const tieneActiva = ['ap1', 'ap2', 'ap3'].some((k) => snapshot[k] != null);
+  const tieneActiva = ['ap1', 'ap2', 'ap3'].some((k) => snapshot[k] != null)
   if (faltantes.length) {
     return {
       ok: false,
       faltantes,
       error: `El medidor no reporta ${faltantes.join(', ')}; no se puede calcular el fasorial.`,
-    };
+    }
   }
   if (!tieneActiva) {
     return {
       ok: false,
       faltantes: ['ap1/ap2/ap3'],
-      error: 'El medidor no reporta potencia activa (ap1/ap2/ap3); no se puede calcular el fasorial.',
-    };
+      error:
+        'El medidor no reporta potencia activa (ap1/ap2/ap3); no se puede calcular el fasorial.',
+    }
   }
 
-  return { ok: true, edadMin: edadLecturaMin(snapshot) };
+  return { ok: true, edadMin: edadLecturaMin(snapshot) }
 }
 
 /** Antigüedad de la lectura en minutos (o null si no hay last_time). */
 export function edadLecturaMin(snapshot) {
-  const t = parseLastTime(snapshot);
-  if (t == null) return null;
-  return Math.max(0, Math.round((Date.now() - t) / 60000));
+  const t = parseLastTime(snapshot)
+  if (t == null) return null
+  return Math.max(0, Math.round((Date.now() - t) / 60000))
 }
 
 /** last_time (ISO) → epoch ms, o null. */
 function parseLastTime(snapshot) {
-  const raw = snapshot?.last_time;
-  if (!raw) return null;
-  const ms = new Date(raw).getTime();
-  return Number.isFinite(ms) ? ms : null;
+  const raw = snapshot?.last_time
+  if (!raw) return null
+  const ms = new Date(raw).getTime()
+  return Number.isFinite(ms) ? ms : null
 }
 
 /**
@@ -94,19 +98,23 @@ function parseLastTime(snapshot) {
  * @returns {object} datos en el formato del módulo fasorial
  */
 export function gaiaSnapshotToFasorial(snapshot, info = {}) {
-  const s = snapshot || {};
+  const s = snapshot || {}
 
   // ── Normalización de unidades de potencia activa (kW) ──────────────────
   // Misma regla que usa el backend: si algún |ap| supera 5000, los valores
   // están en W y se dividen entre 1000.
-  const apVals = ['ap1', 'ap2', 'ap3'].map((k) => Math.abs(n(s[k])));
-  const maxAp = Math.max(...apVals, 0);
-  const apDivisor = maxAp > 5000 ? 1000 : 1;
+  const apVals = ['ap1', 'ap2', 'ap3'].map((k) => Math.abs(n(s[k])))
+  const maxAp = Math.max(...apVals, 0)
+  const apDivisor = maxAp > 5000 ? 1000 : 1
 
   const datos = {
     // Voltaje y corriente (mismos nombres)
-    vp1: n(s.vp1), vp2: n(s.vp2), vp3: n(s.vp3),
-    cp1: n(s.cp1), cp2: n(s.cp2), cp3: n(s.cp3),
+    vp1: n(s.vp1),
+    vp2: n(s.vp2),
+    vp3: n(s.vp3),
+    cp1: n(s.cp1),
+    cp2: n(s.cp2),
+    cp3: n(s.cp3),
     // Potencia activa por fase → kW
     app1: n(s.ap1) / apDivisor,
     app2: n(s.ap2) / apDivisor,
@@ -114,27 +122,27 @@ export function gaiaSnapshotToFasorial(snapshot, info = {}) {
     // Fecha
     timestamp: unixSecondsFrom(s),
     // Identificador de medidor (no hay serial expuesto: usamos node/nombre)
-    meter: info.meter != null ? info.meter : (info.nombre || ''),
-  };
+    meter: info.meter != null ? info.meter : info.nombre || '',
+  }
 
   // ── Reactiva: derivar importada/exportada del signo del valor neto ─────
   for (let f = 1; f <= 3; f++) {
-    const rp = n(s['rp' + f]);
+    const rp = n(s['rp' + f])
     if (rp >= 0) {
-      datos['irpp' + f] = Math.abs(rp);  // importa reactivo → atrasa
-      datos['erpp' + f] = 0;
+      datos['irpp' + f] = Math.abs(rp) // importa reactivo → atrasa
+      datos['erpp' + f] = 0
     } else {
-      datos['irpp' + f] = 0;
-      datos['erpp' + f] = Math.abs(rp);  // exporta reactivo → adelanta
+      datos['irpp' + f] = 0
+      datos['erpp' + f] = Math.abs(rp) // exporta reactivo → adelanta
     }
   }
 
-  return datos;
+  return datos
 }
 
 function unixSecondsFrom(snapshot) {
-  const ms = parseLastTime(snapshot);
-  return ms == null ? null : Math.round(ms / 1000);
+  const ms = parseLastTime(snapshot)
+  return ms == null ? null : Math.round(ms / 1000)
 }
 
-export default gaiaSnapshotToFasorial;
+export default gaiaSnapshotToFasorial

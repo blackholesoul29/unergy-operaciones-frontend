@@ -66,7 +66,8 @@
                 v-if="m.unidad"
                 class="rq-q-m-unidad"
                 :class="{ 'rq-q-m-unidad-pegada': m.unidad === '%' }"
-              >{{ m.unidad }}</span>
+                >{{ m.unidad }}</span
+              >
             </template>
           </div>
         </div>
@@ -155,16 +156,20 @@ const semanasTxt = computed(() => {
 const metricasActivas = computed(() => {
   const lista = Array.isArray(props.reto.metricas) ? props.reto.metricas : []
   return lista
-    .filter(m => m && m.activa !== false)
+    .filter((m) => m && m.activa !== false)
     .slice()
-    .sort((a, b) => (Number(a.orden) || 0) - (Number(b.orden) || 0) || (Number(a.id) || 0) - (Number(b.id) || 0))
+    .sort(
+      (a, b) =>
+        (Number(a.orden) || 0) - (Number(b.orden) || 0) ||
+        (Number(a.id) || 0) - (Number(b.id) || 0),
+    )
 })
 
 const metricasVisibles = computed(() => metricasActivas.value.slice(0, 3))
 const metricasRestantes = computed(() => Math.max(metricasActivas.value.length - 3, 0))
 
 const sinMetricas = computed(
-  () => !metricasActivas.value.length && !(Number(props.reto.total_metricas) > 0)
+  () => !metricasActivas.value.length && !(Number(props.reto.total_metricas) > 0),
 )
 
 function consolidadoDe(m) {
@@ -187,38 +192,61 @@ const pieTxt = computed(() => {
   border: 1px solid #e8e0f0;
   border-radius: 14px;
   padding: 14px;
-  box-shadow: 0 1px 2px rgba(44, 32, 57, .04);
+  box-shadow: 0 1px 2px rgba(44, 32, 57, 0.04);
   display: flex;
   flex-direction: column;
   gap: 10px;
   cursor: pointer;
-  transition: all .14s ease;
+  transition: all 0.14s ease;
 }
 .rq-card-q:hover {
-  border-color: #B08AE2;
-  box-shadow: 0 6px 18px rgba(44, 32, 57, .09);
+  border-color: #b08ae2;
+  box-shadow: 0 6px 18px rgba(44, 32, 57, 0.09);
   transform: translateY(-1px);
 }
 .rq-card-q:focus-visible {
-  outline: 2px solid #915BD8;
+  outline: 2px solid #915bd8;
   outline-offset: 2px;
 }
 /* Trimestre en curso: se mantiene también en hover */
 .rq-q-actual {
-  border: 1.5px solid #915BD8;
-  box-shadow: 0 0 0 3px rgba(145, 91, 216, .10);
+  border: 1.5px solid #915bd8;
+  box-shadow: 0 0 0 3px rgba(145, 91, 216, 0.1);
 }
 .rq-q-actual:hover {
-  border-color: #915BD8;
-  box-shadow: 0 0 0 3px rgba(145, 91, 216, .10), 0 6px 18px rgba(44, 32, 57, .09);
+  border-color: #915bd8;
+  box-shadow:
+    0 0 0 3px rgba(145, 91, 216, 0.1),
+    0 6px 18px rgba(44, 32, 57, 0.09);
 }
 
 /* ── a) Eyebrow ────────────────────────────────────────────────────────── */
-.rq-q-eyebrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.rq-q-eyebrow-l { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
-.rq-q-num { font-size: 11px; font-weight: 800; color: #915BD8; }
-.rq-q-punto-sep { font-size: 11px; color: #9b8fb0; }
-.rq-q-meses { font-size: 11px; font-weight: 600; color: #9b8fb0; }
+.rq-q-eyebrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.rq-q-eyebrow-l {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.rq-q-num {
+  font-size: 11px;
+  font-weight: 800;
+  color: #915bd8;
+}
+.rq-q-punto-sep {
+  font-size: 11px;
+  color: #9b8fb0;
+}
+.rq-q-meses {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9b8fb0;
+}
 
 .rq-chip {
   display: inline-flex;
@@ -234,48 +262,122 @@ const pieTxt = computed(() => {
   width: 5px;
   height: 5px;
   border-radius: 999px;
-  background: #915BD8;
+  background: #915bd8;
   animation: rq-pulse 2s ease-in-out infinite;
 }
-@keyframes rq-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@keyframes rq-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
 
 /* ── b) Identidad + anillo ─────────────────────────────────────────────── */
-.rq-q-identidad { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-.rq-q-ident-txt { min-width: 0; }
-.rq-q-nombre {
-  font-size: 15px; font-weight: 800; color: #2C2039; line-height: 1.2;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.rq-q-identidad {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
 }
-.rq-q-rango { font-size: 11px; color: #6b5a8a; margin-top: 2px; }
-.rq-q-semanas { font-size: 11px; color: #9b8fb0; }
-.rq-q-anillo { display: flex; flex-direction: column; align-items: center; gap: 2px; flex-shrink: 0; }
+.rq-q-ident-txt {
+  min-width: 0;
+}
+.rq-q-nombre {
+  font-size: 15px;
+  font-weight: 800;
+  color: #2c2039;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rq-q-rango {
+  font-size: 11px;
+  color: #6b5a8a;
+  margin-top: 2px;
+}
+.rq-q-semanas {
+  font-size: 11px;
+  color: #9b8fb0;
+}
+.rq-q-anillo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
 .rq-q-ritmo {
-  font-size: 8px; font-weight: 700; color: #9b8fb0;
-  text-transform: uppercase; letter-spacing: .06em;
+  font-size: 8px;
+  font-weight: 700;
+  color: #9b8fb0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 /* ── d) Separador ──────────────────────────────────────────────────────── */
-.rq-q-sep { height: 1px; background: #ECE7F2; }
+.rq-q-sep {
+  height: 1px;
+  background: #ece7f2;
+}
 
 /* ── e) Lista de métricas ──────────────────────────────────────────────── */
-.rq-q-metricas { display: flex; flex-direction: column; gap: 6px; }
-.rq-q-m-nombre {
-  font-size: 11px; font-weight: 600; color: #2C2039;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+.rq-q-metricas {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
-.rq-q-m-linea { display: flex; align-items: center; gap: 8px; }
-.rq-q-m-spacer { flex: 1; }
+.rq-q-m-nombre {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2c2039;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rq-q-m-linea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rq-q-m-spacer {
+  flex: 1;
+}
 .rq-q-m-valor {
-  font-size: 12px; font-weight: 700; color: #2C2039;
+  font-size: 12px;
+  font-weight: 700;
+  color: #2c2039;
   font-variant-numeric: tabular-nums;
 }
-.rq-q-m-unidad { font-size: 10px; font-weight: 600; color: #9b8fb0; margin-left: 3px; }
-.rq-q-m-unidad-pegada { margin-left: 0; }
-.rq-q-m-vacio { font-size: 12px; font-weight: 700; color: #c7bdd8; }
-.rq-q-mas { font-size: 10px; font-weight: 600; color: #915BD8; }
+.rq-q-m-unidad {
+  font-size: 10px;
+  font-weight: 600;
+  color: #9b8fb0;
+  margin-left: 3px;
+}
+.rq-q-m-unidad-pegada {
+  margin-left: 0;
+}
+.rq-q-m-vacio {
+  font-size: 12px;
+  font-weight: 700;
+  color: #c7bdd8;
+}
+.rq-q-mas {
+  font-size: 10px;
+  font-weight: 600;
+  color: #915bd8;
+}
 
 /* ── f) Pie ────────────────────────────────────────────────────────────── */
-.rq-q-pie { font-size: 10px; font-weight: 600; color: #6b5a8a; }
+.rq-q-pie {
+  font-size: 10px;
+  font-weight: 600;
+  color: #6b5a8a;
+}
 
 /* ── Tarjeta sin métricas ──────────────────────────────────────────────── */
 .rq-q-vacio {
@@ -284,12 +386,27 @@ const pieTxt = computed(() => {
   padding: 14px 10px;
   text-align: center;
 }
-.rq-q-vacio-titulo { font-size: 11px; font-weight: 600; color: #9b8fb0; }
-.rq-q-vacio-cta { font-size: 11px; font-weight: 700; color: #915BD8; margin-top: 3px; }
+.rq-q-vacio-titulo {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9b8fb0;
+}
+.rq-q-vacio-cta {
+  font-size: 11px;
+  font-weight: 700;
+  color: #915bd8;
+  margin-top: 3px;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .rq-card-q { transition: none; }
-  .rq-card-q:hover { transform: none; }
-  .rq-punto-vivo { animation: none; }
+  .rq-card-q {
+    transition: none;
+  }
+  .rq-card-q:hover {
+    transform: none;
+  }
+  .rq-punto-vivo {
+    animation: none;
+  }
 }
 </style>

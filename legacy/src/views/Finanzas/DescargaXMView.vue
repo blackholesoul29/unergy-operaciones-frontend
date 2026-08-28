@@ -1,21 +1,25 @@
 <template>
   <div class="gf-page">
     <div class="mon-tab-bar">
-      <i class="pi pi-cloud-download text-sm" style="color:#915BD8" />
-      <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Descarga de XM</span>
+      <i class="pi pi-cloud-download text-sm" style="color: #915bd8" />
+      <span class="mr-2 text-base font-bold whitespace-nowrap text-gray-800">Descarga de XM</span>
     </div>
 
-    <div class="max-w-3xl mx-auto mt-4 space-y-4">
-      <div class="rounded-xl border p-3 flex items-start gap-2" style="background:#F1EAF9;border-color:#E0D3F5">
-        <i class="pi pi-info-circle text-sm flex-shrink-0 mt-0.5" style="color:#6D28D9" />
-        <p class="text-xs" style="color:#4C1D95">
-          Esta pestaña necesita el <strong>agente local</strong> corriendo en tu computador (el FTP de XM
-          solo acepta conexiones desde tu máquina, no desde la plataforma). Abre
-          <code class="font-mono">iniciar_descarga_xm.bat</code> y déjalo abierto antes de descargar.
+    <div class="mx-auto mt-4 max-w-3xl space-y-4">
+      <div
+        class="flex items-start gap-2 rounded-xl border p-3"
+        style="background: #f1eaf9; border-color: #e0d3f5"
+      >
+        <i class="pi pi-info-circle mt-0.5 flex-shrink-0 text-sm" style="color: #6d28d9" />
+        <p class="text-xs" style="color: #4c1d95">
+          Esta pestaña necesita el <strong>agente local</strong> corriendo en tu computador (el FTP
+          de XM solo acepta conexiones desde tu máquina, no desde la plataforma). Abre
+          <code class="font-mono">iniciar_descarga_xm.bat</code> y déjalo abierto antes de
+          descargar.
         </p>
       </div>
 
-      <div class="rounded-xl border bg-white p-5" style="border-color:#ECE7F2">
+      <div class="rounded-xl border bg-white p-5" style="border-color: #ece7f2">
         <div class="grid grid-cols-2 gap-4">
           <div class="flex flex-col gap-1">
             <label class="text-xs font-medium text-gray-500">Usuario FTP</label>
@@ -59,7 +63,10 @@
           </div>
 
           <!-- Elegir agente (solo tipos que filtran por agente, ej. tgrl) -->
-          <div class="col-span-2 flex items-center gap-2 pl-6" v-if="tipoFiltraPorAgente && form.enriquecer">
+          <div
+            class="col-span-2 flex items-center gap-2 pl-6"
+            v-if="tipoFiltraPorAgente && form.enriquecer"
+          >
             <label class="text-xs font-medium text-gray-500">Agente</label>
             <Select v-model="form.agenteFiltro" :options="AGENTES" class="w-40" />
             <span class="text-xs text-gray-400">UNGG = generador · UNGC = comercializador</span>
@@ -73,38 +80,50 @@
             :loading="enProceso"
             :disabled="!formularioValido || enProceso"
             @click="onDescargar"
-            style="background:#915BD8;border-color:#915BD8"
+            style="background: #915bd8; border-color: #915bd8"
           />
         </div>
       </div>
 
-      <div v-if="estado" class="rounded-xl border p-4" style="border-color:#ECE7F2">
+      <div v-if="estado" class="rounded-xl border p-4" style="border-color: #ece7f2">
         <div v-if="estado.estado === 'descargando'" class="text-sm text-gray-600">
-          <i class="pi pi-spin pi-spinner mr-2" style="color:#915BD8" />
+          <i class="pi pi-spin pi-spinner mr-2" style="color: #915bd8" />
           Descargando archivos… {{ estado.archivos_procesados }}/{{ estado.archivos_totales }}
         </div>
 
         <div v-else-if="estado.estado === 'unificando'" class="text-sm text-gray-600">
-          <i class="pi pi-spin pi-spinner mr-2" style="color:#915BD8" />
+          <i class="pi pi-spin pi-spinner mr-2" style="color: #915bd8" />
           Unificando archivos…
         </div>
 
         <div v-else-if="estado.estado === 'exportando'" class="text-sm text-gray-600">
-          <i class="pi pi-spin pi-spinner mr-2" style="color:#915BD8" />
+          <i class="pi pi-spin pi-spinner mr-2" style="color: #915bd8" />
           Generando el archivo final… con rangos grandes puede tardar uno o dos minutos.
         </div>
 
         <div v-else-if="estado.estado === 'listo'" class="space-y-2">
-          <div class="text-sm font-semibold" style="color:#2C2039">Listo</div>
+          <div class="text-sm font-semibold" style="color: #2c2039">Listo</div>
           <div v-if="estado.archivos_faltantes?.length" class="text-xs text-amber-600">
-            {{ estado.archivos_faltantes.length }} archivo(s) no encontrados en el FTP para el rango.
+            {{ estado.archivos_faltantes.length }} archivo(s) no encontrados en el FTP para el
+            rango.
           </div>
           <div v-if="estado.codigos_sin_match?.length" class="text-xs text-amber-600">
             Códigos sin match en fronteras: {{ estado.codigos_sin_match.join(', ') }}
           </div>
           <div class="flex gap-2">
-            <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" @click="onDescargarArchivo('xlsx')" />
-            <Button label="Descargar TXT" icon="pi pi-file" size="small" outlined @click="onDescargarArchivo('txt')" />
+            <Button
+              label="Descargar Excel"
+              icon="pi pi-file-excel"
+              size="small"
+              @click="onDescargarArchivo('xlsx')"
+            />
+            <Button
+              label="Descargar TXT"
+              icon="pi pi-file"
+              size="small"
+              outlined
+              @click="onDescargarArchivo('txt')"
+            />
           </div>
         </div>
 
@@ -124,7 +143,18 @@ import Checkbox from 'primevue/checkbox'
 import Button from 'primevue/button'
 import { iniciarDescargaXM, consultarEstadoXM, agenteLocalNoDisponible } from '@/api/xm'
 
-const TIPOS = ['dspcttos', 'aenc', 'BalCttos', 'grip', 'arrpas', 'tgrl', 'trsd', 'cxcsb', 'tserv', 'afac']
+const TIPOS = [
+  'dspcttos',
+  'aenc',
+  'BalCttos',
+  'grip',
+  'arrpas',
+  'tgrl',
+  'trsd',
+  'cxcsb',
+  'tserv',
+  'afac',
+]
 const EXTENSIONES = ['txf', 'txr', 'tx1', 'tx2', 'tx3', 'tx4', 'tx5', 'tx6', 'tx7', 'tx8']
 // Tipos con código SIC de planta: el checkbox filtra a plantas Unergy y agrega nombre + MW.
 const TIPOS_ENRIQUECIBLES = ['grip', 'arrpas', 'cxcsb']
@@ -159,32 +189,29 @@ if (guardadas) {
   }
 }
 
-watch(
-  [recordarCredenciales, () => form.value.ftpUsuario, () => form.value.ftpClave],
-  () => {
-    if (recordarCredenciales.value) {
-      sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ usuario: form.value.ftpUsuario, clave: form.value.ftpClave })
-      )
-    } else {
-      sessionStorage.removeItem(STORAGE_KEY)
-    }
+watch([recordarCredenciales, () => form.value.ftpUsuario, () => form.value.ftpClave], () => {
+  if (recordarCredenciales.value) {
+    sessionStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ usuario: form.value.ftpUsuario, clave: form.value.ftpClave }),
+    )
+  } else {
+    sessionStorage.removeItem(STORAGE_KEY)
   }
-)
+})
 
 const tipoEsFiltrable = computed(() => TIPOS_FILTRABLES.includes(form.value.tipo))
 const tipoFiltraPorAgente = computed(() => TIPOS_FILTRO_AGENTE.includes(form.value.tipo))
 const etiquetaFiltro = computed(() =>
   tipoFiltraPorAgente.value
     ? 'Filtrar solo las filas del agente Unergy'
-    : 'Filtrar solo plantas Unergy y agregar nombre + MW'
+    : 'Filtrar solo plantas Unergy y agregar nombre + MW',
 )
 watch(
   () => form.value.tipo,
   () => {
     if (!tipoEsFiltrable.value) form.value.enriquecer = false
-  }
+  },
 )
 
 const formularioValido = computed(
@@ -194,12 +221,14 @@ const formularioValido = computed(
     form.value.tipo &&
     form.value.extension &&
     form.value.fechaInicio &&
-    form.value.fechaFin
+    form.value.fechaFin,
 )
 
 const jobId = ref(null)
 const estado = ref(null)
-const enProceso = computed(() => estado.value && ['descargando', 'unificando', 'exportando'].includes(estado.value.estado))
+const enProceso = computed(
+  () => estado.value && ['descargando', 'unificando', 'exportando'].includes(estado.value.estado),
+)
 let polling = null
 
 async function onDescargar() {
@@ -220,7 +249,10 @@ async function onDescargar() {
     estado.value = { estado: 'descargando', archivos_procesados: 0, archivos_totales: 0 }
     iniciarPolling()
   } catch (e) {
-    estado.value = { estado: 'error', error_message: mensajeError(e, 'No se pudo iniciar la descarga.') }
+    estado.value = {
+      estado: 'error',
+      error_message: mensajeError(e, 'No se pudo iniciar la descarga.'),
+    }
   }
 }
 
@@ -249,7 +281,10 @@ function iniciarPolling() {
       // archivo grande. Solo se da por perdida tras varios fallos seguidos.
       fallosConsecutivos += 1
       if (fallosConsecutivos >= MAX_FALLOS_CONSECUTIVOS) {
-        estado.value = { estado: 'error', error_message: mensajeError(e, 'Se perdió la conexión con el agente local.') }
+        estado.value = {
+          estado: 'error',
+          error_message: mensajeError(e, 'Se perdió la conexión con el agente local.'),
+        }
         detenerPolling()
       }
     }
@@ -275,7 +310,8 @@ function onDescargarArchivo(formato) {
   const url = `http://127.0.0.1:8420/descargas/${jobId.value}/archivo?formato=${formato}`
   const a = document.createElement('a')
   a.href = url
-  a.download = formato === 'xlsx' ? `${form.value.tipo}.xlsx` : `${form.value.tipo}.${form.value.extension}`
+  a.download =
+    formato === 'xlsx' ? `${form.value.tipo}.xlsx` : `${form.value.tipo}.${form.value.extension}`
   document.body.appendChild(a)
   a.click()
   a.remove()

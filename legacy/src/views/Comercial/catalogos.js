@@ -46,7 +46,8 @@ async function todasLasPaginas(ruta, params = {}) {
 
   const resto = await Promise.all(
     Array.from({ length: paginas - 1 }, (_, i) =>
-      api.get(ruta, { params: { ...params, page: i + 2, size: SIZE_MAX } })),
+      api.get(ruta, { params: { ...params, page: i + 2, size: SIZE_MAX } }),
+    ),
   )
   return primera.concat(...resto.map((r) => r.data.items ?? r.data ?? []))
 }

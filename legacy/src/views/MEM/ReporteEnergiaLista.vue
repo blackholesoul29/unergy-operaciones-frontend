@@ -1,16 +1,21 @@
 <template>
-  <div class="list-pane bg-white rounded-xl shadow-sm overflow-hidden flex flex-col" style="border: 1px solid #e8e0f0;">
-    <div class="p-3 space-y-2" style="border-bottom: 1px solid #f1ecf7;">
+  <div
+    class="list-pane flex flex-col overflow-hidden rounded-xl bg-white shadow-sm"
+    style="border: 1px solid #e8e0f0"
+  >
+    <div class="space-y-2 p-3" style="border-bottom: 1px solid #f1ecf7">
       <span class="p-input-icon-left w-full">
         <i class="pi pi-search" />
         <InputText v-model="search" placeholder="Buscar proyecto..." class="w-full" />
       </span>
       <div class="flex gap-2">
-        <button class="filter-pill" :class="{ on: genOn }" @click="genOn = !genOn">Generación</button>
+        <button class="filter-pill" :class="{ on: genOn }" @click="genOn = !genOn">
+          Generación
+        </button>
         <button class="filter-pill" :class="{ on: conOn }" @click="conOn = !conOn">Consumo</button>
       </div>
     </div>
-    <ul class="list-scroll flex-1 overflow-y-auto" style="list-style: none; margin: 0; padding: 0;">
+    <ul class="list-scroll flex-1 overflow-y-auto" style="list-style: none; margin: 0; padding: 0">
       <li v-for="f in filtradas" :key="f.frontera_id">
         <button
           class="row w-full text-left"
@@ -19,22 +24,32 @@
           @click="$emit('seleccionar', f)"
         >
           <div class="flex items-center justify-between gap-2">
-            <span class="font-medium text-sm truncate" style="color: #2C2039;">{{ f.nombre_proyecto }}</span>
-            <span class="font-mono text-xs flex-none" style="color: #6b5a8a;">{{ fmtKwh(f.energia_final_kwh) }}</span>
+            <span class="truncate text-sm font-medium" style="color: #2c2039">{{
+              f.nombre_proyecto
+            }}</span>
+            <span class="flex-none font-mono text-xs" style="color: #6b5a8a">{{
+              fmtKwh(f.energia_final_kwh)
+            }}</span>
           </div>
-          <div class="flex items-center gap-2 mt-1">
-            <span class="tipo-tag" :style="{ color: f.tipo === 'generacion' ? '#10B981' : '#3B82F6', borderColor: f.tipo === 'generacion' ? '#10B981' : '#3B82F6' }">
+          <div class="mt-1 flex items-center gap-2">
+            <span
+              class="tipo-tag"
+              :style="{
+                color: f.tipo === 'generacion' ? '#10B981' : '#3B82F6',
+                borderColor: f.tipo === 'generacion' ? '#10B981' : '#3B82F6',
+              }"
+            >
               {{ f.tipo === 'generacion' ? 'Gen' : 'Con' }}
             </span>
-            <span class="text-xs truncate" style="color: #9b89b5;">{{ etiquetaFuente(f) }}</span>
+            <span class="truncate text-xs" style="color: #9b89b5">{{ etiquetaFuente(f) }}</span>
           </div>
         </button>
       </li>
-      <li v-if="!filtradas.length" class="text-sm text-center py-8" style="color: #9b89b5;">
+      <li v-if="!filtradas.length" class="py-8 text-center text-sm" style="color: #9b89b5">
         Sin resultados para esa búsqueda.
       </li>
     </ul>
-    <div class="text-xs px-3 py-2" style="border-top: 1px solid #f1ecf7; color: #9b89b5;">
+    <div class="px-3 py-2 text-xs" style="border-top: 1px solid #f1ecf7; color: #9b89b5">
       Mostrando {{ filtradas.length }} de {{ filas.length }} fronteras
     </div>
   </div>
@@ -59,11 +74,11 @@ const filtradas = computed(() => {
   // Si se apagan las dos (o están las dos prendidas), no filtra por tipo --
   // apagar ambas por error nunca debería dejar la lista vacía.
   if (genOn.value !== conOn.value) {
-    list = list.filter(f => (f.tipo === 'generacion') === genOn.value)
+    list = list.filter((f) => (f.tipo === 'generacion') === genOn.value)
   }
   if (search.value) {
     const s = search.value.toLowerCase()
-    list = list.filter(f => (f.nombre_proyecto || '').toLowerCase().includes(s))
+    list = list.filter((f) => (f.nombre_proyecto || '').toLowerCase().includes(s))
   }
   return list
 })
@@ -79,15 +94,27 @@ function semaforoColor(f) {
 }
 
 const ETIQUETAS_FUENTE = {
-  cgm: 'CGM', principal: 'Medidor principal', respaldo: 'Medidor respaldo',
-  inversores: 'Inversores × FP', crudos: 'Datos crudos', crudos_parcial: 'Datos crudos (parcial)',
-  reconectador: 'Reconectador', solenium_power: 'Solenium (power)', ninguno: 'Apagado',
-  revisar: 'Sin fuente', relleno_horario: 'Relleno horario',
-  externo: 'Reporta otra empresa', historico: 'Histórico propio',
+  cgm: 'CGM',
+  principal: 'Medidor principal',
+  respaldo: 'Medidor respaldo',
+  inversores: 'Inversores × FP',
+  crudos: 'Datos crudos',
+  crudos_parcial: 'Datos crudos (parcial)',
+  reconectador: 'Reconectador',
+  solenium_power: 'Solenium (power)',
+  ninguno: 'Apagado',
+  revisar: 'Sin fuente',
+  relleno_horario: 'Relleno horario',
+  externo: 'Reporta otra empresa',
+  historico: 'Histórico propio',
   historico_vecino: 'Histórico (vecino de predio)',
-  principal_sin_historico: 'Medidor principal', respaldo_sin_historico: 'Medidor respaldo',
-  principal_sin_cgm: 'Medidor principal', respaldo_sin_cgm: 'Medidor respaldo',
-  excluida: 'Excluida', excel_terceros: 'Excel de terceros', editado_manualmente: 'Editado manualmente',
+  principal_sin_historico: 'Medidor principal',
+  respaldo_sin_historico: 'Medidor respaldo',
+  principal_sin_cgm: 'Medidor principal',
+  respaldo_sin_cgm: 'Medidor respaldo',
+  excluida: 'Excluida',
+  excel_terceros: 'Excel de terceros',
+  editado_manualmente: 'Editado manualmente',
 }
 function etiquetaFuente(f) {
   return ETIQUETAS_FUENTE[f.medidor_usado] || f.medidor_usado || '—'
@@ -99,7 +126,9 @@ function fmtKwh(v) {
 </script>
 
 <style scoped>
-.list-scroll { max-height: 32rem; }
+.list-scroll {
+  max-height: 32rem;
+}
 .row {
   display: block;
   width: 100%;
@@ -110,8 +139,12 @@ function fmtKwh(v) {
   border-left: 3px solid transparent;
   cursor: pointer;
 }
-.row:hover { background: #faf8fd; }
-.row-selected { background: #f5eefc; }
+.row:hover {
+  background: #faf8fd;
+}
+.row-selected {
+  background: #f5eefc;
+}
 .filter-pill {
   font-size: 12px;
   font-weight: 600;
@@ -122,7 +155,11 @@ function fmtKwh(v) {
   color: #9b89b5;
   cursor: pointer;
 }
-.filter-pill.on { background: #f5eefc; border-color: #915BD8; color: #6E3FB8; }
+.filter-pill.on {
+  background: #f5eefc;
+  border-color: #915bd8;
+  color: #6e3fb8;
+}
 .tipo-tag {
   font-size: 10px;
   font-weight: 700;

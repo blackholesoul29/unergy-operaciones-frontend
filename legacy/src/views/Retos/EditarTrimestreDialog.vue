@@ -60,14 +60,20 @@
       <p v-if="avisoValores" class="rq-aviso">
         <i class="pi pi-exclamation-triangle" />
         <span>
-          Los valores que queden fuera del nuevo rango dejan de mostrarse.
-          No se borran: vuelven a aparecer si restauras las fechas.
+          Los valores que queden fuera del nuevo rango dejan de mostrarse. No se borran: vuelven a
+          aparecer si restauras las fechas.
         </span>
       </p>
     </div>
 
     <template #footer>
-      <Button label="Cancelar" severity="secondary" text size="small" @click="emit('update:visible', false)" />
+      <Button
+        label="Cancelar"
+        severity="secondary"
+        text
+        size="small"
+        @click="emit('update:visible', false)"
+      />
       <Button
         label="Guardar"
         icon="pi pi-check"
@@ -100,8 +106,20 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'submit'])
 
 const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
-const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+const MESES = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+]
 
 const f = reactive({ nombre: '', descripcion: '', fechaInicio: null, fechaFin: null })
 
@@ -118,7 +136,7 @@ function isoADate(iso) {
 
 function dateAIso(d) {
   if (!d) return null
-  const p = n => String(n).padStart(2, '0')
+  const p = (n) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
 }
 
@@ -167,8 +185,10 @@ const vistaPrevia = computed(() => {
   if (!s.length) return ''
   const primera = s[0]
   const ultima = s[s.length - 1]
-  return `${s.length} ${s.length === 1 ? 'semana' : 'semanas'}. La S1 empieza el ${fechaLarga(primera.inicio)}` +
+  return (
+    `${s.length} ${s.length === 1 ? 'semana' : 'semanas'}. La S1 empieza el ${fechaLarga(primera.inicio)}` +
     ` y la S${ultima.numero} termina el ${fechaLarga(ultima.fin)}.`
+  )
 })
 
 /** Se anticipan los dos 400 del contrato para no gastar un viaje al servidor. */
@@ -192,8 +212,10 @@ const errorFin = computed(() => (esErrorDeInicio.value ? '' : errorMostrado.valu
 
 const fechasCambiaron = computed(() => {
   if (!props.reto) return false
-  return dateAIso(f.fechaInicio) !== props.reto.fecha_inicio ||
+  return (
+    dateAIso(f.fechaInicio) !== props.reto.fecha_inicio ||
     dateAIso(f.fechaFin) !== props.reto.fecha_fin
+  )
 })
 
 const avisoValores = computed(
@@ -225,10 +247,14 @@ function enviar() {
   color: #6b5a8a;
 }
 
-.rq-error-campo { font-size: 10px; color: #B0364A; margin-top: 3px; }
+.rq-error-campo {
+  font-size: 10px;
+  color: #b0364a;
+  margin-top: 3px;
+}
 
 .rq-preview {
-  background: rgba(145, 91, 216, .06);
+  background: rgba(145, 91, 216, 0.06);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 11px;
@@ -240,12 +266,16 @@ function enviar() {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  background: rgba(202, 138, 4, .10);
+  background: rgba(202, 138, 4, 0.1);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 11px;
-  color: #A16207;
+  color: #a16207;
   line-height: 1.5;
 }
-.rq-aviso .pi { font-size: 10px; margin-top: 2px; flex: none; }
+.rq-aviso .pi {
+  font-size: 10px;
+  margin-top: 2px;
+  flex: none;
+}
 </style>

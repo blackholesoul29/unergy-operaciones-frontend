@@ -13,12 +13,17 @@
   planta existía y la API seguía devolviendo `"proyectos": []`.
 -->
 <template>
-  <Dialog :visible="visible" modal :style="{ width: '46rem' }" :closable="!guardando"
-          @update:visible="$emit('update:visible', $event)">
+  <Dialog
+    :visible="visible"
+    modal
+    :style="{ width: '46rem' }"
+    :closable="!guardando"
+    @update:visible="$emit('update:visible', $event)"
+  >
     <template #header>
       <div>
-        <h2 class="text-base font-semibold" style="color:#2C2039">Crear planta</h2>
-        <p class="text-xs" style="color:#9b89b5">
+        <h2 class="text-base font-semibold" style="color: #2c2039">Crear planta</h2>
+        <p class="text-xs" style="color: #9b89b5">
           Se crea en <strong>Proyectos</strong>, con todos sus datos.
           <span v-if="oferta"> Queda vinculada a {{ codigoOferta }}.</span>
         </p>
@@ -28,13 +33,17 @@
     <Message v-if="!oferta" severity="warn" :closable="false" class="mb-3">
       <span class="text-xs">
         Se va a crear sin vincular a ninguna oferta. Cumplimiento y
-        <code>/comercial/proyectos-operando</code> no la van a ver hasta que la
-        vincules desde el panel de una oferta.
+        <code>/comercial/proyectos-operando</code> no la van a ver hasta que la vincules desde el
+        panel de una oferta.
       </span>
     </Message>
 
-    <ProyectoForm operador-red-obligatorio :guardando="guardando"
-                  @save="crear" @cancel="$emit('update:visible', false)" />
+    <ProyectoForm
+      operador-red-obligatorio
+      :guardando="guardando"
+      @save="crear"
+      @cancel="$emit('update:visible', false)"
+    />
 
     <Message v-if="error" severity="error" :closable="false" class="mt-3">
       <span class="text-xs">{{ error }}</span>
@@ -65,15 +74,31 @@ const confirm = useConfirm()
 const guardando = ref(false)
 const error = ref('')
 
-const codigoOferta = computed(() =>
-  props.oferta?.codigo_seguimiento || props.oferta?.numero_oferta || `la oferta #${props.oferta?.id}`)
+const codigoOferta = computed(
+  () =>
+    props.oferta?.codigo_seguimiento ||
+    props.oferta?.numero_oferta ||
+    `la oferta #${props.oferta?.id}`,
+)
 
-watch(() => props.visible, (v) => { if (!v) error.value = '' })
+watch(
+  () => props.visible,
+  (v) => {
+    if (!v) error.value = ''
+  },
+)
 
 function mensajeError(det) {
   if (typeof det === 'string') return det
-  if (Array.isArray(det)) return det.map((e) => e.msg).filter(Boolean).join('; ') || 'Datos inválidos'
-  if (det && typeof det === 'object') return det.mensaje ?? det.msg ?? 'No se pudo crear el proyecto'
+  if (Array.isArray(det))
+    return (
+      det
+        .map((e) => e.msg)
+        .filter(Boolean)
+        .join('; ') || 'Datos inválidos'
+    )
+  if (det && typeof det === 'object')
+    return det.mensaje ?? det.msg ?? 'No se pudo crear el proyecto'
   return 'No se pudo crear el proyecto'
 }
 
@@ -90,7 +115,10 @@ async function crear(payload, infoTecnica, forzar = false) {
     const params = { ...(forzar ? { forzar: true } : {}) }
     if (props.oferta?.id) params.oferta_id = props.oferta.id
     const { data } = await api.post(
-      `/comercial/oportunidades/${props.oportunidadId}/proyectos`, payload, { params })
+      `/comercial/oportunidades/${props.oportunidadId}/proyectos`,
+      payload,
+      { params },
+    )
 
     if (infoTecnica && Object.keys(infoTecnica).length) {
       try {
@@ -108,7 +136,9 @@ async function crear(payload, infoTecnica, forzar = false) {
     toast.add({
       severity: 'success',
       summary: `Planta «${data.nombre_comercial}» creada`,
-      detail: props.oferta ? `Vinculada a ${codigoOferta.value}.` : 'Sin vincular a ninguna oferta.',
+      detail: props.oferta
+        ? `Vinculada a ${codigoOferta.value}.`
+        : 'Sin vincular a ninguna oferta.',
       life: 4000,
     })
     emit('creado', data)

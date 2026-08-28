@@ -27,7 +27,7 @@
   "main": ".output/server/index.mjs",
   "assets": {
     "binding": "ASSETS",
-    "directory": ".output/public"
+    "directory": ".output/public",
   },
 
   "vars": {
@@ -44,7 +44,7 @@
     "NUXT_AUTH_COOKIE_MAX_AGE": "604800",
 
     "NUXT_API_PROXY_TARGET": "https://backend-production-63d8.up.railway.app",
-    "NUXT_EVO_API_URL": ""
+    "NUXT_EVO_API_URL": "",
   },
 
   // Workers Logs/Traces — separado del `vars` de arriba: esto no llega a la
@@ -56,12 +56,12 @@
       "enabled": true,
       "head_sampling_rate": 1,
       "persist": true,
-      "invocation_logs": true
+      "invocation_logs": true,
     },
     "traces": {
       "enabled": false,
       "persist": true,
-      "head_sampling_rate": 1
-    }
-  }
+      "head_sampling_rate": 1,
+    },
+  },
 }

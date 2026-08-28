@@ -7,15 +7,29 @@
       </div>
       <div class="col-span-2">
         <label class="field-label">Correo electrónico *</label>
-        <InputText v-model="f.email" type="email" class="w-full" required :disabled="!!props.initial?.id" />
+        <InputText
+          v-model="f.email"
+          type="email"
+          class="w-full"
+          required
+          :disabled="!!props.initial?.id"
+        />
       </div>
       <div>
         <label class="field-label">Rol *</label>
-        <Select v-model="f.rol" :options="ROLES" optionLabel="label" optionValue="value" class="w-full" placeholder="Seleccionar" required />
+        <Select
+          v-model="f.rol"
+          :options="ROLES"
+          optionLabel="label"
+          optionValue="value"
+          class="w-full"
+          placeholder="Seleccionar"
+          required
+        />
       </div>
       <div>
         <label class="field-label">Estado</label>
-        <div class="flex items-center gap-2 mt-2">
+        <div class="mt-2 flex items-center gap-2">
           <ToggleSwitch v-model="f.activo" />
           <span class="text-sm" :style="{ color: f.activo ? '#2e7d32' : '#D64455' }">
             {{ f.activo ? 'Activo' : 'Inactivo' }}
@@ -23,8 +37,16 @@
         </div>
       </div>
       <div class="col-span-2">
-        <label class="field-label">{{ props.initial?.id ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña *' }}</label>
-        <Password v-model="f.password" class="w-full" :feedback="false" toggleMask :required="!props.initial?.id" />
+        <label class="field-label">{{
+          props.initial?.id ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña *'
+        }}</label>
+        <Password
+          v-model="f.password"
+          class="w-full"
+          :feedback="false"
+          toggleMask
+          :required="!props.initial?.id"
+        />
       </div>
     </div>
 
@@ -59,8 +81,27 @@ const ROLES = [
 ]
 
 const saving = ref(false)
-const f = reactive({ nombre: '', email: '', rol: 'operaciones', activo: true, password: '', ...props.initial })
-watch(() => props.initial, (v) => Object.assign(f, { nombre: '', email: '', rol: 'operaciones', activo: true, password: '', ...v }), { deep: true })
+const f = reactive({
+  nombre: '',
+  email: '',
+  rol: 'operaciones',
+  activo: true,
+  password: '',
+  ...props.initial,
+})
+watch(
+  () => props.initial,
+  (v) =>
+    Object.assign(f, {
+      nombre: '',
+      email: '',
+      rol: 'operaciones',
+      activo: true,
+      password: '',
+      ...v,
+    }),
+  { deep: true },
+)
 
 function submit() {
   const payload = { nombre: f.nombre, email: f.email, rol: f.rol, activo: f.activo }
@@ -70,5 +111,7 @@ function submit() {
 </script>
 
 <style scoped>
-.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+.field-label {
+  @apply mb-1 block text-xs font-medium text-gray-600;
+}
 </style>

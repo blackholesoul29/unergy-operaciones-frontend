@@ -2,128 +2,215 @@
   <div class="space-y-4">
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-3">
-      <h2 class="text-lg font-semibold" style="color: #2C2039;">Gestión de fallas</h2>
-      <Button label="Registrar falla" icon="pi pi-plus" @click="openNew"
-        style="background: #915BD8; border-color: #915BD8;" />
+      <h2 class="text-lg font-semibold" style="color: #2c2039">Gestión de fallas</h2>
+      <Button
+        label="Registrar falla"
+        icon="pi pi-plus"
+        @click="openNew"
+        style="background: #915bd8; border-color: #915bd8"
+      />
     </div>
 
     <!-- Filtros -->
-    <div class="bg-white rounded-xl px-4 py-3 flex flex-wrap gap-3 items-center"
-      style="border: 1px solid #e8e0f0;">
-      <IconField class="flex-1 min-w-[180px]">
+    <div
+      class="flex flex-wrap items-center gap-3 rounded-xl bg-white px-4 py-3"
+      style="border: 1px solid #e8e0f0"
+    >
+      <IconField class="min-w-[180px] flex-1">
         <InputIcon class="pi pi-search" />
-        <InputText v-model="filters.q" placeholder="Buscar por código o descripción…"
-          class="w-full" @input="debouncedLoad" />
+        <InputText
+          v-model="filters.q"
+          placeholder="Buscar por código o descripción…"
+          class="w-full"
+          @input="debouncedLoad"
+        />
       </IconField>
 
-      <Select v-model="filters.estado_id" :options="catalogos.estados" optionLabel="etiqueta"
-        optionValue="id" placeholder="Estado" showClear class="min-w-[140px]" @change="load" />
+      <Select
+        v-model="filters.estado_id"
+        :options="catalogos.estados"
+        optionLabel="etiqueta"
+        optionValue="id"
+        placeholder="Estado"
+        showClear
+        class="min-w-[140px]"
+        @change="load"
+      />
 
-      <Select v-model="filters.prioridad_id" :options="catalogos.prioridades" optionLabel="etiqueta"
-        optionValue="id" placeholder="Prioridad" showClear class="min-w-[140px]" @change="load" />
+      <Select
+        v-model="filters.prioridad_id"
+        :options="catalogos.prioridades"
+        optionLabel="etiqueta"
+        optionValue="id"
+        placeholder="Prioridad"
+        showClear
+        class="min-w-[140px]"
+        @change="load"
+      />
 
-      <Select v-model="filters.proyecto_id" :options="proyectos" optionLabel="nombre_comercial"
-        optionValue="id" placeholder="Proyecto" showClear filter class="min-w-[180px]" @change="load" />
+      <Select
+        v-model="filters.proyecto_id"
+        :options="proyectos"
+        optionLabel="nombre_comercial"
+        optionValue="id"
+        placeholder="Proyecto"
+        showClear
+        filter
+        class="min-w-[180px]"
+        @change="load"
+      />
 
-      <Button v-if="hasFilters" label="Limpiar" icon="pi pi-times" severity="secondary"
-        size="small" @click="clearFilters" />
+      <Button
+        v-if="hasFilters"
+        label="Limpiar"
+        icon="pi pi-times"
+        severity="secondary"
+        size="small"
+        @click="clearFilters"
+      />
     </div>
 
     <!-- Tabla -->
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
-      <DataTable :value="items" lazy :loading="loading" :rows="size" :totalRecords="total"
-        paginator @page="onPage" rowHover size="small" class="text-xs" :rowsPerPageOptions="[10, 20, 50]"
-        @row-click="goToDetail">
+    <div class="overflow-hidden rounded-xl bg-white shadow-sm" style="border: 1px solid #e8e0f0">
+      <DataTable
+        :value="items"
+        lazy
+        :loading="loading"
+        :rows="size"
+        :totalRecords="total"
+        paginator
+        @page="onPage"
+        rowHover
+        size="small"
+        class="text-xs"
+        :rowsPerPageOptions="[10, 20, 50]"
+        @row-click="goToDetail"
+      >
         <template #empty>
-          <div class="py-10 text-center text-sm" style="color: #9b89b5;">
+          <div class="py-10 text-center text-sm" style="color: #9b89b5">
             No hay fallas registradas con los filtros actuales.
           </div>
         </template>
 
-        <Column field="codigo_interno" header="Código" style="width: 130px; font-family: monospace;" />
+        <Column
+          field="codigo_interno"
+          header="Código"
+          style="width: 130px; font-family: monospace"
+        />
 
-        <Column header="Proyecto" style="min-width: 160px;">
+        <Column header="Proyecto" style="min-width: 160px">
           <template #body="{ data }">
-            <span class="text-[11px] font-medium" style="color: #2C2039;">{{ data.proyecto?.nombre_comercial }}</span>
+            <span class="text-[11px] font-medium" style="color: #2c2039">{{
+              data.proyecto?.nombre_comercial
+            }}</span>
           </template>
         </Column>
 
-        <Column header="Tipo" style="min-width: 150px;">
+        <Column header="Tipo" style="min-width: 150px">
           <template #body="{ data }">
             <div>
-              <span class="text-[10px] px-1.5 py-0.5 rounded font-medium"
-                :style="{ background: data.tipo?.categoria?.color_hex + '18', color: data.tipo?.categoria?.color_hex }">
+              <span
+                class="rounded px-1.5 py-0.5 text-[10px] font-medium"
+                :style="{
+                  background: data.tipo?.categoria?.color_hex + '18',
+                  color: data.tipo?.categoria?.color_hex,
+                }"
+              >
                 {{ data.tipo?.categoria?.etiqueta }}
               </span>
-              <p class="text-[11px] mt-0.5" style="color: #9b89b5;">{{ data.tipo?.etiqueta }}</p>
+              <p class="mt-0.5 text-[11px]" style="color: #9b89b5">{{ data.tipo?.etiqueta }}</p>
             </div>
           </template>
         </Column>
 
-        <Column header="Estado" style="width: 120px;">
+        <Column header="Estado" style="width: 120px">
           <template #body="{ data }">
-            <span class="text-[11px] px-1.5 py-0.5 rounded font-medium"
-              :style="estadoStyle(data.estado)">
+            <span
+              class="rounded px-1.5 py-0.5 text-[11px] font-medium"
+              :style="estadoStyle(data.estado)"
+            >
               {{ data.estado?.etiqueta }}
             </span>
           </template>
         </Column>
 
-        <Column header="Prioridad" style="width: 100px;">
+        <Column header="Prioridad" style="width: 100px">
           <template #body="{ data }">
-            <Tag :value="data.prioridad?.etiqueta" :severity="prioSeverity(data.prioridad?.nivel)"
-              class="text-[11px]" />
+            <Tag
+              :value="data.prioridad?.etiqueta"
+              :severity="prioSeverity(data.prioridad?.nivel)"
+              class="text-[11px]"
+            />
           </template>
         </Column>
 
-        <Column header="Fecha" style="width: 100px;">
+        <Column header="Fecha" style="width: 100px">
           <template #body="{ data }">
-            <span class="text-[11px] font-normal" style="color: #9b89b5;">{{ formatDate(data.fecha_identificacion) }}</span>
+            <span class="text-[11px] font-normal" style="color: #9b89b5">{{
+              formatDate(data.fecha_identificacion)
+            }}</span>
           </template>
         </Column>
 
-        <Column header="SLA" style="width: 100px;">
+        <Column header="SLA" style="width: 100px">
           <template #body="{ data }">
-            <span v-if="data.sla_cumplido === true"
-              class="text-xs px-2 py-0.5 rounded-full font-semibold"
-              style="background: rgba(16,185,129,0.12); color: #10B981;">
+            <span
+              v-if="data.sla_cumplido === true"
+              class="rounded-full px-2 py-0.5 text-xs font-semibold"
+              style="background: rgba(16, 185, 129, 0.12); color: #10b981"
+            >
               OK
             </span>
-            <span v-else-if="data.sla_cumplido === false"
-              class="text-xs px-2 py-0.5 rounded-full font-semibold"
-              style="background: rgba(214,68,85,0.12); color: #D64455;">
+            <span
+              v-else-if="data.sla_cumplido === false"
+              class="rounded-full px-2 py-0.5 text-xs font-semibold"
+              style="background: rgba(214, 68, 85, 0.12); color: #d64455"
+            >
               Vencido
             </span>
-            <span v-else-if="slaAtRisk(data)"
-              class="text-xs px-2 py-0.5 rounded-full font-semibold"
-              style="background: rgba(240,192,64,0.12); color: #CA8A04;">
+            <span
+              v-else-if="slaAtRisk(data)"
+              class="rounded-full px-2 py-0.5 text-xs font-semibold"
+              style="background: rgba(240, 192, 64, 0.12); color: #ca8a04"
+            >
               En riesgo
             </span>
-            <span v-else class="text-xs" style="color: #9b89b5;">—</span>
+            <span v-else class="text-xs" style="color: #9b89b5">—</span>
           </template>
         </Column>
 
-        <Column header="Asignado a" style="min-width: 120px;">
+        <Column header="Asignado a" style="min-width: 120px">
           <template #body="{ data }">
-            <span v-if="data.asignado_a" class="text-[11px]" style="color: #6b5a8a;">
+            <span v-if="data.asignado_a" class="text-[11px]" style="color: #6b5a8a">
               {{ data.asignado_a.nombre }}
             </span>
-            <span v-else class="text-[11px] italic" style="color: #c5b9db;">Sin asignar</span>
+            <span v-else class="text-[11px] italic" style="color: #c5b9db">Sin asignar</span>
           </template>
         </Column>
 
-        <Column style="width: 60px;">
+        <Column style="width: 60px">
           <template #body="{ data }">
-            <Button icon="pi pi-chevron-right" text rounded severity="secondary" size="small"
-              @click.stop="goToDetail({ data })" />
+            <Button
+              icon="pi pi-chevron-right"
+              text
+              rounded
+              severity="secondary"
+              size="small"
+              @click.stop="goToDetail({ data })"
+            />
           </template>
         </Column>
       </DataTable>
     </div>
 
     <!-- Dialog crear -->
-    <Dialog v-model:visible="dialogVisible" header="Registrar nueva falla" modal
-      class="w-full max-w-2xl" :closable="!saving">
+    <Dialog
+      v-model:visible="dialogVisible"
+      header="Registrar nueva falla"
+      modal
+      class="w-full max-w-2xl"
+      :closable="!saving"
+    >
       <FallaForm :catalogos="catalogos" @save="onCreate" @cancel="dialogVisible = false" />
     </Dialog>
   </div>
@@ -167,16 +254,26 @@ const filters = ref({
   prioridad_id: route.query.prioridad_id ? Number(route.query.prioridad_id) : null,
   proyecto_id: route.query.proyecto_id ? Number(route.query.proyecto_id) : null,
 })
-const hasFilters = computed(() => filters.value.q || filters.value.estado_id || filters.value.prioridad_id || filters.value.proyecto_id)
+const hasFilters = computed(
+  () =>
+    filters.value.q ||
+    filters.value.estado_id ||
+    filters.value.prioridad_id ||
+    filters.value.proyecto_id,
+)
 
-watch(filters, (f) => {
-  const query = {}
-  if (f.q) query.q = f.q
-  if (f.estado_id) query.estado_id = f.estado_id
-  if (f.prioridad_id) query.prioridad_id = f.prioridad_id
-  if (f.proyecto_id) query.proyecto_id = f.proyecto_id
-  router.replace({ query })
-}, { deep: true })
+watch(
+  filters,
+  (f) => {
+    const query = {}
+    if (f.q) query.q = f.q
+    if (f.estado_id) query.estado_id = f.estado_id
+    if (f.prioridad_id) query.prioridad_id = f.prioridad_id
+    if (f.proyecto_id) query.proyecto_id = f.proyecto_id
+    router.replace({ query })
+  },
+  { deep: true },
+)
 
 function slaAtRisk(data) {
   if (!data.sla_limite_horas || data.sla_cumplido !== null) return false
@@ -191,10 +288,14 @@ function slaAtRisk(data) {
 let debounceTimer = null
 function debouncedLoad() {
   clearTimeout(debounceTimer)
-  debounceTimer = setTimeout(() => { page.value = 1; load() }, 350)
+  debounceTimer = setTimeout(() => {
+    page.value = 1
+    load()
+  }, 350)
 }
 
-const prioSeverity = (n) => ({ 1: 'danger', 2: 'warn', 3: 'info', 4: 'secondary' }[n] ?? 'secondary')
+const prioSeverity = (n) =>
+  ({ 1: 'danger', 2: 'warn', 3: 'info', 4: 'secondary' })[n] ?? 'secondary'
 
 function estadoStyle(estado) {
   const hex = estado?.color_hex ?? '#915BD8'
@@ -203,7 +304,11 @@ function estadoStyle(estado) {
 
 function formatDate(d) {
   if (!d) return '—'
-  return new Date(d + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(d + 'T00:00:00').toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 async function loadCatalogos() {

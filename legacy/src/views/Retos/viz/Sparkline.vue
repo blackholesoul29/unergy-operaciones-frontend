@@ -3,16 +3,30 @@
     <!-- Sin datos suficientes: solo una línea base -->
     <line
       v-if="!segmentos.length"
-      :x1="0" :y1="h / 2" :x2="w" :y2="h / 2"
-      stroke="#ECE7F2" stroke-width="1"
+      :x1="0"
+      :y1="h / 2"
+      :x2="w"
+      :y2="h / 2"
+      stroke="#ECE7F2"
+      stroke-width="1"
     />
     <template v-else>
-      <path v-for="(seg, i) in segmentos" :key="`a${i}`" :d="areaDe(seg)" :fill="color" opacity="0.12" />
+      <path
+        v-for="(seg, i) in segmentos"
+        :key="`a${i}`"
+        :d="areaDe(seg)"
+        :fill="color"
+        opacity="0.12"
+      />
       <polyline
-        v-for="(seg, i) in segmentos" :key="`l${i}`"
-        :points="seg.map(p => `${p.x},${p.y}`).join(' ')"
-        fill="none" :stroke="color" stroke-width="1.5"
-        stroke-linejoin="round" stroke-linecap="round"
+        v-for="(seg, i) in segmentos"
+        :key="`l${i}`"
+        :points="seg.map((p) => `${p.x},${p.y}`).join(' ')"
+        fill="none"
+        :stroke="color"
+        stroke-width="1.5"
+        stroke-linejoin="round"
+        stroke-linecap="round"
       />
       <circle v-if="ultimo" :cx="ultimo.x" :cy="ultimo.y" r="2" :fill="color" />
     </template>
@@ -41,8 +55,10 @@ const PAD = 2 // deja aire para que el trazo y el punto no se corten
  */
 const segmentos = computed(() => {
   const s = Array.isArray(props.serie) ? props.serie : []
-  const valores = s.map(p => (p?.valor === null || p?.valor === undefined ? null : Number(p.valor)))
-  const conDato = valores.filter(v => v !== null && Number.isFinite(v))
+  const valores = s.map((p) =>
+    p?.valor === null || p?.valor === undefined ? null : Number(p.valor),
+  )
+  const conDato = valores.filter((v) => v !== null && Number.isFinite(v))
   if (!conDato.length) return []
 
   const max = Math.max(...conDato)
@@ -82,7 +98,7 @@ function partir(pts) {
   }
   if (actual.length) out.push(actual)
   // Un tramo de un solo punto no dibuja polyline visible: se duplica para que se vea.
-  return out.map(seg => (seg.length === 1 ? [seg[0], { x: seg[0].x + 0.6, y: seg[0].y }] : seg))
+  return out.map((seg) => (seg.length === 1 ? [seg[0], { x: seg[0].x + 0.6, y: seg[0].y }] : seg))
 }
 
 const ultimo = computed(() => {
@@ -95,7 +111,7 @@ const ultimo = computed(() => {
 function areaDe(seg) {
   if (!seg.length) return ''
   const base = props.h
-  const cabeza = `M ${seg[0].x},${base} L ` + seg.map(p => `${p.x},${p.y}`).join(' L ')
+  const cabeza = `M ${seg[0].x},${base} L ` + seg.map((p) => `${p.x},${p.y}`).join(' L ')
   return `${cabeza} L ${seg[seg.length - 1].x},${base} Z`
 }
 </script>

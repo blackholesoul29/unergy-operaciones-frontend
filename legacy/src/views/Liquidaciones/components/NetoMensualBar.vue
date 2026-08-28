@@ -15,13 +15,15 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
 const props = defineProps({ bars: { type: Array, default: () => [] } })
 
 const data = computed(() => ({
-  labels: props.bars.map(b => b.label),
-  datasets: [{
-    data: props.bars.map(b => b.neto),
-    backgroundColor: props.bars.map(b => (b.neto >= 0 ? '#915BD8' : '#ef4444')),
-    borderRadius: 4,
-    maxBarThickness: 28,
-  }],
+  labels: props.bars.map((b) => b.label),
+  datasets: [
+    {
+      data: props.bars.map((b) => b.neto),
+      backgroundColor: props.bars.map((b) => (b.neto >= 0 ? '#915BD8' : '#ef4444')),
+      borderRadius: 4,
+      maxBarThickness: 28,
+    },
+  ],
 }))
 
 const options = {
@@ -33,7 +35,10 @@ const options = {
   },
   scales: {
     x: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { display: false } },
-    y: { ticks: { font: { size: 10 }, color: '#9ca3af', callback: (v) => fmtCompact(v) }, grid: { color: 'rgba(0,0,0,0.05)' } },
+    y: {
+      ticks: { font: { size: 10 }, color: '#9ca3af', callback: (v) => fmtCompact(v) },
+      grid: { color: 'rgba(0,0,0,0.05)' },
+    },
   },
 }
 </script>

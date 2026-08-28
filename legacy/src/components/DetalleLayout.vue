@@ -45,9 +45,14 @@
     <!-- Tarjeta unica: barra de pestañas + cuerpo -->
     <div class="dl-card">
       <div class="dl-tabs">
-        <button v-for="t in tabsVisibles" :key="t.key" type="button"
-                class="dl-tab" :class="{ 'dl-tab--on': tabActiva === t.key }"
-                @click="seleccionar(t.key)">
+        <button
+          v-for="t in tabsVisibles"
+          :key="t.key"
+          type="button"
+          class="dl-tab"
+          :class="{ 'dl-tab--on': tabActiva === t.key }"
+          @click="seleccionar(t.key)"
+        >
           <i v-if="t.icon" :class="t.icon" />
           <span>{{ t.label }}</span>
           <span v-if="t.badge != null && t.badge !== ''" class="dl-badge">{{ t.badge }}</span>
@@ -80,10 +85,10 @@ const emit = defineEmits(['update:modelValue'])
 const router = useRouter()
 const route = useRoute()
 
-const tabsVisibles = computed(() => props.tabs.filter(t => !t.oculta))
+const tabsVisibles = computed(() => props.tabs.filter((t) => !t.oculta))
 
 function esValida(key) {
-  return tabsVisibles.value.some(t => t.key === key)
+  return tabsVisibles.value.some((t) => t.key === key)
 }
 
 // Prioridad: ?tab= de la URL -> v-model -> primera pestaña visible.
@@ -123,44 +128,80 @@ watch(tabsVisibles, () => {
 })
 
 // Navegar hacia atras/adelante tambien cambia de pestaña.
-watch(() => route.query.tab, (t) => {
-  if (typeof t === 'string' && esValida(t) && t !== tabActiva.value) {
-    tabActiva.value = t
-    emit('update:modelValue', t)
-  }
-})
+watch(
+  () => route.query.tab,
+  (t) => {
+    if (typeof t === 'string' && esValida(t) && t !== tabActiva.value) {
+      tabActiva.value = t
+      emit('update:modelValue', t)
+    }
+  },
+)
 
-watch(() => props.modelValue, (v) => {
-  if (v && esValida(v) && v !== tabActiva.value) seleccionar(v)
-})
+watch(
+  () => props.modelValue,
+  (v) => {
+    if (v && esValida(v) && v !== tabActiva.value) seleccionar(v)
+  },
+)
 </script>
 
 <style scoped>
 /* ── Cabecera ─────────────────────────────────────────────────────────────── */
 .dl-cabecera {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 30px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-height: 30px;
 }
 .dl-volver {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 13px; font-weight: 600; color: #915BD8; cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #915bd8;
+  cursor: pointer;
 }
-.dl-volver:hover { text-decoration: underline; text-underline-offset: 2px; }
-.dl-volver i { font-size: 10px; }
-.dl-sep { color: #c5b9db; }
+.dl-volver:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.dl-volver i {
+  font-size: 10px;
+}
+.dl-sep {
+  color: #c5b9db;
+}
 .dl-titulo {
-  font-size: 14px; font-weight: 700; color: #2C2039;
-  max-width: 46ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 14px;
+  font-weight: 700;
+  color: #2c2039;
+  max-width: 46ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .dl-codigo {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px; color: #9b8fb0;
+  font-size: 11px;
+  color: #9b8fb0;
 }
-.dl-acciones { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.dl-acciones {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
 /* ── Tarjeta ──────────────────────────────────────────────────────────────── */
 .dl-card {
-  background: #fff; border: 1px solid #ECE7F2; border-radius: 12px; overflow: hidden;
-  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  background: #fff;
+  border: 1px solid #ece7f2;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 /* ── Barra de pestañas ────────────────────────────────────────────────────────
@@ -168,31 +209,75 @@ watch(() => props.modelValue, (v) => {
    pestañas la barra scrollea en horizontal: acá sí es aceptable, porque es
    navegacion y no una tabla de datos. */
 .dl-tabs {
-  display: flex; border-bottom: 1px solid #ECE7F2;
-  overflow-x: auto; scrollbar-width: thin;
+  display: flex;
+  border-bottom: 1px solid #ece7f2;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
-.dl-tabs::-webkit-scrollbar { height: 4px; }
-.dl-tabs::-webkit-scrollbar-thumb { background: #E5E2EC; border-radius: 999px; }
+.dl-tabs::-webkit-scrollbar {
+  height: 4px;
+}
+.dl-tabs::-webkit-scrollbar-thumb {
+  background: #e5e2ec;
+  border-radius: 999px;
+}
 .dl-tab {
-  display: inline-flex; align-items: center; gap: 6px; flex: 0 0 auto;
-  padding: 9px 16px; margin-bottom: -1px;
-  font-size: 13px; font-weight: 600; color: #6b5a8a; white-space: nowrap;
-  border-bottom: 2px solid transparent; cursor: pointer;
-  transition: color .12s, border-color .12s, background .12s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  padding: 9px 16px;
+  margin-bottom: -1px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b5a8a;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    border-color 0.12s,
+    background 0.12s;
 }
-.dl-tab:hover { color: #2C2039; background: #FAF9FC; }
-.dl-tab i { font-size: 11px; }
-.dl-tab--on { color: #915BD8; border-bottom-color: #915BD8; }
-.dl-tab--on i { color: #915BD8; }
+.dl-tab:hover {
+  color: #2c2039;
+  background: #faf9fc;
+}
+.dl-tab i {
+  font-size: 11px;
+}
+.dl-tab--on {
+  color: #915bd8;
+  border-bottom-color: #915bd8;
+}
+.dl-tab--on i {
+  color: #915bd8;
+}
 .dl-badge {
-  background: #EEF0F2; color: #6b7280; border-radius: 999px;
-  font-size: 10px; font-weight: 800; padding: 0 6px; min-width: 18px; text-align: center;
+  background: #eef0f2;
+  color: #6b7280;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 0 6px;
+  min-width: 18px;
+  text-align: center;
 }
-.dl-tab--on .dl-badge { background: #f0ebfd; color: #915BD8; }
+.dl-tab--on .dl-badge {
+  background: #f0ebfd;
+  color: #915bd8;
+}
 
-.dl-cuerpo { padding: 18px; }
+.dl-cuerpo {
+  padding: 18px;
+}
 @media (max-width: 640px) {
-  .dl-cuerpo { padding: 12px; }
-  .dl-tab { padding: 8px 12px; font-size: 12px; }
+  .dl-cuerpo {
+    padding: 12px;
+  }
+  .dl-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
 }
 </style>

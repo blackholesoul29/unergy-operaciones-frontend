@@ -9,7 +9,7 @@
     <div class="space-y-4 py-2">
       <!-- PB anterior -->
       <div class="space-y-1">
-        <label class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">
+        <label class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a">
           PB semana anterior ($)
         </label>
         <InputNumber
@@ -20,14 +20,14 @@
           placeholder="Ej: 547.88"
           fluid
         />
-        <p class="text-xs" style="color:#9ca3af">
+        <p class="text-xs" style="color: #9ca3af">
           Usado para calcular la variación % en el mensaje semanal.
         </p>
       </div>
 
       <!-- Menciones -->
       <div class="space-y-1">
-        <label class="text-xs font-semibold uppercase tracking-wide" style="color:#6b5a8a">
+        <label class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a">
           Menciones en el mensaje
         </label>
         <Textarea
@@ -37,15 +37,18 @@
           placeholder="@Juan @María @Pedro"
           fluid
         />
-        <p class="text-xs" style="color:#9ca3af">
-          Se insertan al final del mensaje generado.
-        </p>
+        <p class="text-xs" style="color: #9ca3af">Se insertan al final del mensaje generado.</p>
       </div>
     </div>
 
     <template #footer>
       <Button label="Cancelar" text severity="secondary" @click="$emit('close')" />
-      <Button label="Guardar" icon="pi pi-check" @click="guardar" style="background:#915BD8;border-color:#915BD8" />
+      <Button
+        label="Guardar"
+        icon="pi pi-check"
+        @click="guardar"
+        style="background: #915bd8; border-color: #915bd8"
+      />
     </template>
   </Dialog>
 </template>

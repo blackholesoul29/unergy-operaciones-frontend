@@ -6,7 +6,7 @@
  */
 const IPC_RATES = {
   2024: 9.28,
-  2025: 5.10,
+  2025: 5.1,
   // 2026: pendiente — agregar cuando el DANE publique el dato oficial
 }
 

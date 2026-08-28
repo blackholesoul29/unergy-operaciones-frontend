@@ -5,20 +5,34 @@
   </div>
   <div v-else-if="routeReady" class="flex h-screen overflow-hidden bg-gray-100">
     <AppSidebar />
-    <div class="flex flex-col flex-1 overflow-hidden">
+    <div class="flex flex-1 flex-col overflow-hidden">
       <!-- Mobile menu trigger (sólo en <lg cuando sidebar cerrado) -->
-      <button v-if="!mobileOpen" @click="toggle"
-        class="lg:hidden fixed top-3 left-3 z-30 w-9 h-9 rounded-lg bg-white shadow-md border border-gray-200 flex items-center justify-center"
-        style="color: #2C2039;" title="Menú">
+      <button
+        v-if="!mobileOpen"
+        @click="toggle"
+        class="fixed top-3 left-3 z-30 flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 bg-white shadow-md lg:hidden"
+        style="color: #2c2039"
+        title="Menú"
+      >
         <i class="pi pi-bars" />
       </button>
 
       <!-- Reabrir sidebar (escritorio, cuando está oculto) -->
-      <button v-if="collapsed" @click="toggleCollapsed"
-        class="hidden lg:flex sb-reopen" title="Mostrar barra lateral">
+      <button
+        v-if="collapsed"
+        @click="toggleCollapsed"
+        class="sb-reopen hidden lg:flex"
+        title="Mostrar barra lateral"
+      >
         <i class="pi pi-angle-double-right" />
       </button>
-      <main :class="isSolar ? 'flex-1 overflow-hidden p-0' : 'flex-1 overflow-y-auto p-4 pt-14 sm:p-5 sm:pt-14 lg:p-6 lg:pt-6'">
+      <main
+        :class="
+          isSolar
+            ? 'flex-1 overflow-hidden p-0'
+            : 'flex-1 overflow-y-auto p-4 pt-14 sm:p-5 sm:pt-14 lg:p-6 lg:pt-6'
+        "
+      >
         <RouterView />
       </main>
     </div>
@@ -40,9 +54,11 @@ const route = useRoute()
 const toast = useToast()
 const { mobileOpen, toggle, collapsed, toggleCollapsed } = useSidebar()
 const routeReady = computed(() => !!route.name)
-const isLoginPage = computed(() => ['Login', 'ForgotPassword', 'ResetPassword'].includes(route.name))
+const isLoginPage = computed(() =>
+  ['Login', 'ForgotPassword', 'ResetPassword'].includes(route.name),
+)
 const isMobileApp = computed(() => !!route.meta.mobile)
-const isSolar     = computed(() => route.name === 'SolarLive')
+const isSolar = computed(() => route.name === 'SolarLive')
 
 onMounted(() => {
   window.__primeToast = (opts) => toast.add(opts)
@@ -51,15 +67,30 @@ onMounted(() => {
 
 <style>
 .sb-reopen {
-  position: fixed; top: 14px; left: 0; z-index: 40;
-  width: 26px; height: 38px; padding-left: 2px;
-  align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #915BD8, #4C1D95);
-  color: #fff; border: none; cursor: pointer;
+  position: fixed;
+  top: 14px;
+  left: 0;
+  z-index: 40;
+  width: 26px;
+  height: 38px;
+  padding-left: 2px;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #915bd8, #4c1d95);
+  color: #fff;
+  border: none;
+  cursor: pointer;
   border-radius: 0 10px 10px 0;
-  box-shadow: 0 4px 14px rgba(76, 29, 149, .35);
-  transition: width .15s ease, padding-left .15s ease;
+  box-shadow: 0 4px 14px rgba(76, 29, 149, 0.35);
+  transition:
+    width 0.15s ease,
+    padding-left 0.15s ease;
 }
-.sb-reopen:hover { width: 32px; padding-left: 4px; }
-.sb-reopen .pi { font-size: 13px; }
+.sb-reopen:hover {
+  width: 32px;
+  padding-left: 4px;
+}
+.sb-reopen .pi {
+  font-size: 13px;
+}
 </style>

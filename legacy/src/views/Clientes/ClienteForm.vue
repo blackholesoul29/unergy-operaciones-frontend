@@ -11,7 +11,13 @@
       </div>
       <div>
         <label class="field-label">Tipo de persona</label>
-        <Select v-model="f.tipo_persona" :options="['natural', 'juridica']" class="w-full" placeholder="Seleccionar" showClear />
+        <Select
+          v-model="f.tipo_persona"
+          :options="['natural', 'juridica']"
+          class="w-full"
+          placeholder="Seleccionar"
+          showClear
+        />
       </div>
       <div>
         <label class="field-label">Representante legal</label>
@@ -19,12 +25,26 @@
       </div>
       <div>
         <label class="field-label">Departamento</label>
-        <Select v-model="f.departamento" :options="departamentos" class="w-full" placeholder="Seleccionar" showClear filter />
+        <Select
+          v-model="f.departamento"
+          :options="departamentos"
+          class="w-full"
+          placeholder="Seleccionar"
+          showClear
+          filter
+        />
       </div>
       <div>
         <label class="field-label">Ciudad</label>
-        <Select v-model="f.ciudad" :options="ciudadesDisponibles" class="w-full" placeholder="Seleccionar" showClear filter
-          :disabled="!f.departamento" />
+        <Select
+          v-model="f.ciudad"
+          :options="ciudadesDisponibles"
+          class="w-full"
+          placeholder="Seleccionar"
+          showClear
+          filter
+          :disabled="!f.departamento"
+        />
       </div>
       <div class="col-span-2">
         <label class="field-label">Dirección</label>
@@ -32,8 +52,15 @@
       </div>
       <div>
         <label class="field-label">Origen del cliente</label>
-        <Dropdown v-model="f.origen_tipo" :options="ORIGENES" optionLabel="label" optionValue="value"
-                  showClear class="w-full" placeholder="—" />
+        <Dropdown
+          v-model="f.origen_tipo"
+          :options="ORIGENES"
+          optionLabel="label"
+          optionValue="value"
+          showClear
+          class="w-full"
+          placeholder="—"
+        />
       </div>
       <div>
         <label class="field-label">Quién lo recomendó/consiguió</label>
@@ -42,8 +69,10 @@
 
       <!-- Información bancaria -->
       <div class="col-span-2">
-        <div class="border-t pt-4 mt-1">
-          <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: #915BD8;">Información bancaria</p>
+        <div class="mt-1 border-t pt-4">
+          <p class="mb-3 text-xs font-semibold tracking-wide uppercase" style="color: #915bd8">
+            Información bancaria
+          </p>
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="field-label">Banco</label>
@@ -51,7 +80,13 @@
             </div>
             <div>
               <label class="field-label">Tipo de cuenta</label>
-              <Select v-model="f.tipo_cuenta" :options="['ahorros', 'corriente']" class="w-full" placeholder="Seleccionar" showClear />
+              <Select
+                v-model="f.tipo_cuenta"
+                :options="['ahorros', 'corriente']"
+                class="w-full"
+                placeholder="Seleccionar"
+                showClear
+              />
             </div>
             <div>
               <label class="field-label">Número de cuenta</label>
@@ -71,7 +106,12 @@
       </div>
       <div>
         <label class="field-label">ReteFuente %</label>
-        <InputNumber v-model="f.retencion_pct" :maxFractionDigits="2" locale="en-US" class="w-full" />
+        <InputNumber
+          v-model="f.retencion_pct"
+          :maxFractionDigits="2"
+          locale="en-US"
+          class="w-full"
+        />
       </div>
       <div>
         <label class="field-label">ReteIVA %</label>
@@ -84,28 +124,62 @@
 
       <!-- ── Contactos y Servicios (solo al crear) ── -->
       <div v-if="esNuevo" class="col-span-2">
-        <div class="border-t pt-4 mt-1">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-xs font-semibold uppercase tracking-wide" style="color: #915BD8;">Contactos</p>
-            <button type="button" @click="agregarContacto"
-              class="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
-              style="background:#915BD8;color:#fff;">
+        <div class="mt-1 border-t pt-4">
+          <div class="mb-3 flex items-center justify-between">
+            <p class="text-xs font-semibold tracking-wide uppercase" style="color: #915bd8">
+              Contactos
+            </p>
+            <button
+              type="button"
+              @click="agregarContacto"
+              class="flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+              style="background: #915bd8; color: #fff"
+            >
               <i class="pi pi-plus text-xs" /> Agregar
             </button>
           </div>
-          <div class="rounded-xl p-4 space-y-3" style="background:#f9f7ff;border:1.5px solid #e8e0f0;">
-            <div v-if="!f.contactos.length" class="text-xs italic py-1" style="color:#c4b3df;">
+          <div
+            class="space-y-3 rounded-xl p-4"
+            style="background: #f9f7ff; border: 1.5px solid #e8e0f0"
+          >
+            <div v-if="!f.contactos.length" class="py-1 text-xs italic" style="color: #c4b3df">
               Sin contactos agregados
             </div>
 
             <div v-for="(c, idx) in f.contactos" :key="idx" class="flex items-center gap-2">
-              <InputText v-model="c.nombre" placeholder="Nombre" class="flex-1 min-w-0" size="small" />
-              <InputText v-model="c.telefono" placeholder="Teléfono" class="flex-1 min-w-0" size="small" />
-              <InputText v-model="c.email" type="email" placeholder="Correo *" class="flex-1 min-w-0" size="small" />
-              <Select v-model="c.tipo" :options="TIPOS_CONTACTO" optionLabel="label" optionValue="value"
-                class="w-40 shrink-0" size="small" />
-              <button type="button" @click="eliminarContacto(idx)" class="p-1.5 rounded-lg hover:bg-red-50 shrink-0">
-                <i class="pi pi-trash text-xs" style="color:#ef4444;" />
+              <InputText
+                v-model="c.nombre"
+                placeholder="Nombre"
+                class="min-w-0 flex-1"
+                size="small"
+              />
+              <InputText
+                v-model="c.telefono"
+                placeholder="Teléfono"
+                class="min-w-0 flex-1"
+                size="small"
+              />
+              <InputText
+                v-model="c.email"
+                type="email"
+                placeholder="Correo *"
+                class="min-w-0 flex-1"
+                size="small"
+              />
+              <Select
+                v-model="c.tipo"
+                :options="TIPOS_CONTACTO"
+                optionLabel="label"
+                optionValue="value"
+                class="w-40 shrink-0"
+                size="small"
+              />
+              <button
+                type="button"
+                @click="eliminarContacto(idx)"
+                class="shrink-0 rounded-lg p-1.5 hover:bg-red-50"
+              >
+                <i class="pi pi-trash text-xs" style="color: #ef4444" />
               </button>
             </div>
           </div>
@@ -113,10 +187,19 @@
       </div>
 
       <div v-if="esNuevo" class="col-span-2">
-        <div class="border-t pt-4 mt-1">
-          <p class="text-xs font-semibold uppercase tracking-wide mb-3" style="color: #915BD8;">Servicios</p>
-          <MultiSelect v-model="serviciosSeleccionados" :options="TIPOS_SERVICIO" optionLabel="label" optionValue="value"
-            class="w-full" placeholder="Seleccionar servicios (opcional)" display="chip" />
+        <div class="mt-1 border-t pt-4">
+          <p class="mb-3 text-xs font-semibold tracking-wide uppercase" style="color: #915bd8">
+            Servicios
+          </p>
+          <MultiSelect
+            v-model="serviciosSeleccionados"
+            :options="TIPOS_SERVICIO"
+            optionLabel="label"
+            optionValue="value"
+            class="w-full"
+            placeholder="Seleccionar servicios (opcional)"
+            display="chip"
+          />
         </div>
       </div>
     </div>
@@ -168,7 +251,9 @@ const TIPOS_SERVICIO = [
 ]
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-function emailValido(e) { return !e || EMAIL_RE.test(e.trim()) }
+function emailValido(e) {
+  return !e || EMAIL_RE.test(e.trim())
+}
 
 const f = reactive({ origen_tipo: null, origen_detalle: '', ...props.initial, contactos: [] })
 const serviciosSeleccionados = ref([])
@@ -176,16 +261,29 @@ const serviciosSeleccionados = ref([])
 // Departamento/ciudad -- select en vez de texto libre (DIVIPOLA), mismo
 // patrón que ProyectoForm, para evitar variantes de escritura.
 const departamentos = Object.keys(divipola).sort()
-const ciudadesDisponibles = computed(() => f.departamento ? (divipola[f.departamento] || []) : [])
-watch(() => f.departamento, (nuevo, anterior) => {
-  if (nuevo !== anterior && f.ciudad && !(divipola[nuevo] || []).includes(f.ciudad)) {
-    f.ciudad = null
-  }
-})
-watch(() => props.initial, (v) => { Object.assign(f, v) }, { deep: true })
+const ciudadesDisponibles = computed(() => (f.departamento ? divipola[f.departamento] || [] : []))
+watch(
+  () => f.departamento,
+  (nuevo, anterior) => {
+    if (nuevo !== anterior && f.ciudad && !(divipola[nuevo] || []).includes(f.ciudad)) {
+      f.ciudad = null
+    }
+  },
+)
+watch(
+  () => props.initial,
+  (v) => {
+    Object.assign(f, v)
+  },
+  { deep: true },
+)
 
-function agregarContacto()   { f.contactos = [...f.contactos, { nombre: '', telefono: '', email: '', tipo: 'comercial' }] }
-function eliminarContacto(idx) { f.contactos = f.contactos.filter((_, i) => i !== idx) }
+function agregarContacto() {
+  f.contactos = [...f.contactos, { nombre: '', telefono: '', email: '', tipo: 'comercial' }]
+}
+function eliminarContacto(idx) {
+  f.contactos = f.contactos.filter((_, i) => i !== idx)
+}
 
 function submit() {
   const payload = {}
@@ -194,13 +292,15 @@ function submit() {
     if (v !== null && v !== undefined && v !== '') payload[k] = v
   }
   if (esNuevo.value) {
-    payload.contactos = (f.contactos || []).filter(c => c.email && emailValido(c.email))
-    payload.servicios = serviciosSeleccionados.value.map(tipo => ({ tipo }))
+    payload.contactos = (f.contactos || []).filter((c) => c.email && emailValido(c.email))
+    payload.servicios = serviciosSeleccionados.value.map((tipo) => ({ tipo }))
   }
   emit('save', payload)
 }
 </script>
 
 <style scoped>
-.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+.field-label {
+  @apply mb-1 block text-xs font-medium text-gray-600;
+}
 </style>

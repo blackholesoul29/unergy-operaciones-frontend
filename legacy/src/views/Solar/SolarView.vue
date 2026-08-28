@@ -1,12 +1,11 @@
 <template>
   <div class="solar-layout">
-
     <!-- ═══════════════════════════════════════════════════════════════
          PANEL DE FILTROS (izquierda)
     ════════════════════════════════════════════════════════════════ -->
     <aside class="filter-panel">
       <div class="filter-header">
-        <i class="pi pi-sliders-h" style="color:#915BD8" />
+        <i class="pi pi-sliders-h" style="color: #915bd8" />
         <span>Filtros</span>
       </div>
 
@@ -26,7 +25,7 @@
           :options="filtros.municipios"
           placeholder="Todos"
           :maxSelectedLabels="2"
-          class="w-full filter-ms"
+          class="filter-ms w-full"
           filter
           emptyMessage="Sin opciones"
         />
@@ -39,7 +38,7 @@
           :options="filtros.departamentos"
           placeholder="Todos"
           :maxSelectedLabels="2"
-          class="w-full filter-ms"
+          class="filter-ms w-full"
           filter
           emptyMessage="Sin opciones"
         />
@@ -47,14 +46,14 @@
 
       <div class="filter-group">
         <label class="flabel">Estado</label>
-        <div class="flex flex-col gap-1.5 mt-1">
+        <div class="mt-1 flex flex-col gap-1.5">
           <label
             v-for="est in filtros.estados"
             :key="est"
-            class="flex items-center gap-2 cursor-pointer"
+            class="flex cursor-pointer items-center gap-2"
           >
             <Checkbox v-model="filters.estados" :value="est" />
-            <span class="text-xs" style="color:#2C2039">{{ est }}</span>
+            <span class="text-xs" style="color: #2c2039">{{ est }}</span>
           </label>
           <span v-if="!filtros.estados.length" class="text-xs text-gray-400">
             Sin estados disponibles
@@ -75,7 +74,7 @@
           icon="pi pi-times"
           severity="secondary"
           outlined
-          class="w-full mt-2 text-sm"
+          class="mt-2 w-full text-sm"
           @click="clearFilters"
         />
       </div>
@@ -85,14 +84,13 @@
          CONTENIDO PRINCIPAL
     ════════════════════════════════════════════════════════════════ -->
     <div class="solar-main">
-
       <!-- Encabezado ─────────────────────────────────────────────── -->
-      <div class="flex items-start justify-between mb-5 flex-wrap gap-3">
+      <div class="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 class="page-title">☀️ Monitoreo Solar</h1>
           <p class="page-sub">Generación distribuida · Datos XM SinergoX</p>
         </div>
-        <div class="flex gap-2 flex-wrap">
+        <div class="flex flex-wrap gap-2">
           <Button
             label="Recargar datos"
             icon="pi pi-refresh"
@@ -107,19 +105,20 @@
             icon="pi pi-download"
             size="small"
             @click="exportCSV"
-            style="background:#915BD8;border-color:#915BD8;"
+            style="background: #915bd8; border-color: #915bd8"
           />
         </div>
       </div>
 
       <!-- Sin datos ──────────────────────────────────────────────── -->
       <div v-if="!loading && !genData.length && initialLoaded" class="empty-state">
-        <i class="pi pi-sun text-5xl mb-4" style="color:#915BD8;opacity:0.25" />
-        <h3 class="text-base font-semibold text-gray-600 mb-2">Sin datos disponibles</h3>
-        <p class="text-sm text-gray-400 text-center max-w-xs leading-relaxed">
+        <i class="pi pi-sun mb-4 text-5xl" style="color: #915bd8; opacity: 0.25" />
+        <h3 class="mb-2 text-base font-semibold text-gray-600">Sin datos disponibles</h3>
+        <p class="max-w-xs text-center text-sm leading-relaxed text-gray-400">
           Los archivos Excel no se encontraron en
-          <code class="bg-gray-100 px-1 rounded">./datos/</code>.<br />
-          Ejecuta <code class="bg-gray-100 px-1 rounded">solar_sin.py</code> para descargar los datos de XM SinergoX.
+          <code class="rounded bg-gray-100 px-1">./datos/</code>.<br />
+          Ejecuta <code class="rounded bg-gray-100 px-1">solar_sin.py</code> para descargar los
+          datos de XM SinergoX.
         </p>
         <Button
           label="Reintentar"
@@ -132,18 +131,17 @@
 
       <!-- Loader ─────────────────────────────────────────────────── -->
       <div v-else-if="loading && !initialLoaded" class="empty-state">
-        <i class="pi pi-spin pi-sun text-4xl mb-3" style="color:#915BD8" />
+        <i class="pi pi-spin pi-sun mb-3 text-4xl" style="color: #915bd8" />
         <p class="text-sm text-gray-500">Cargando datos solares…</p>
       </div>
 
       <!-- Contenido con datos ─────────────────────────────────────── -->
       <div v-else>
-
         <!-- KPI Cards ─────────────────────────────────────────────── -->
         <div class="kpi-grid">
           <div class="kpi-card">
-            <div class="kpi-icon" style="background:rgba(145,91,216,0.1)">
-              <i class="pi pi-th-large" style="color:#915BD8" />
+            <div class="kpi-icon" style="background: rgba(145, 91, 216, 0.1)">
+              <i class="pi pi-th-large" style="color: #915bd8" />
             </div>
             <div>
               <p class="kpi-val">{{ kpis.proyectos }}</p>
@@ -151,8 +149,8 @@
             </div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-icon" style="background:rgba(246,255,114,0.25)">
-              <i class="pi pi-bolt" style="color:#a16207" />
+            <div class="kpi-icon" style="background: rgba(246, 255, 114, 0.25)">
+              <i class="pi pi-bolt" style="color: #a16207" />
             </div>
             <div>
               <p class="kpi-val">{{ fmtK(kpis.kwhTotal) }}</p>
@@ -160,8 +158,8 @@
             </div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-icon" style="background:rgba(145,91,216,0.1)">
-              <i class="pi pi-chart-line" style="color:#915BD8" />
+            <div class="kpi-icon" style="background: rgba(145, 91, 216, 0.1)">
+              <i class="pi pi-chart-line" style="color: #915bd8" />
             </div>
             <div>
               <p class="kpi-val">{{ fmtK(kpis.promDiario) }}</p>
@@ -169,8 +167,8 @@
             </div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-icon" style="background:rgba(74,222,128,0.1)">
-              <i class="pi pi-database" style="color:#16a34a" />
+            <div class="kpi-icon" style="background: rgba(74, 222, 128, 0.1)">
+              <i class="pi pi-database" style="color: #16a34a" />
             </div>
             <div>
               <p class="kpi-val">{{ kpis.capacidadMW.toFixed(2) }}</p>
@@ -195,8 +193,8 @@
 
           <!-- Tab: Comparación de proyectos (líneas SVG) -->
           <div v-show="activeTab === 'lineas'" class="pt-2">
-            <div class="flex gap-3 items-center mb-4 flex-wrap">
-              <div class="flex-1 min-w-48">
+            <div class="mb-4 flex flex-wrap items-center gap-3">
+              <div class="min-w-48 flex-1">
                 <MultiSelect
                   v-model="selectedSics"
                   :options="proyectoOpts"
@@ -214,7 +212,14 @@
               <svg v-if="lineChart.series.length" :viewBox="`0 0 ${C.W} ${C.H}`" class="svg-chart">
                 <!-- Y grid + labels -->
                 <g v-for="(y, i) in lineChart.yGrid" :key="`yg${i}`">
-                  <line :x1="C.ML" :y1="y" :x2="C.W - C.MR" :y2="y" stroke="#e5e7eb" stroke-width="1" />
+                  <line
+                    :x1="C.ML"
+                    :y1="y"
+                    :x2="C.W - C.MR"
+                    :y2="y"
+                    stroke="#e5e7eb"
+                    stroke-width="1"
+                  />
                   <text :x="C.ML - 6" :y="y + 4" text-anchor="end" class="chart-label">
                     {{ fmtShort(lineChart.yTicks[i]) }}
                   </text>
@@ -246,18 +251,45 @@
                   :y="C.H - C.MB + 14"
                   text-anchor="middle"
                   class="chart-label"
-                >{{ xl.text }}</text>
+                >
+                  {{ xl.text }}
+                </text>
                 <!-- Axes -->
-                <line :x1="C.ML" :y1="C.MT" :x2="C.ML" :y2="C.H - C.MB" stroke="#d1d5db" stroke-width="1" />
-                <line :x1="C.ML" :y1="C.H - C.MB" :x2="C.W - C.MR" :y2="C.H - C.MB" stroke="#d1d5db" stroke-width="1" />
+                <line
+                  :x1="C.ML"
+                  :y1="C.MT"
+                  :x2="C.ML"
+                  :y2="C.H - C.MB"
+                  stroke="#d1d5db"
+                  stroke-width="1"
+                />
+                <line
+                  :x1="C.ML"
+                  :y1="C.H - C.MB"
+                  :x2="C.W - C.MR"
+                  :y2="C.H - C.MB"
+                  stroke="#d1d5db"
+                  stroke-width="1"
+                />
               </svg>
-              <div v-else class="chart-empty">Selecciona proyectos para visualizar su generación diaria</div>
+              <div v-else class="chart-empty">
+                Selecciona proyectos para visualizar su generación diaria
+              </div>
             </div>
             <!-- Leyenda -->
-            <div v-if="lineChart.series.length" class="flex flex-wrap gap-4 mt-3">
-              <div v-for="(s, si) in lineChart.series" :key="s.sic" class="flex items-center gap-1.5">
-                <span class="w-4 h-0.5 rounded-full inline-block" :style="`background:${COLORS[si % COLORS.length]}`" />
-                <span class="text-xs text-gray-600 truncate max-w-[150px]" :title="s.nombre">{{ s.nombre }}</span>
+            <div v-if="lineChart.series.length" class="mt-3 flex flex-wrap gap-4">
+              <div
+                v-for="(s, si) in lineChart.series"
+                :key="s.sic"
+                class="flex items-center gap-1.5"
+              >
+                <span
+                  class="inline-block h-0.5 w-4 rounded-full"
+                  :style="`background:${COLORS[si % COLORS.length]}`"
+                />
+                <span class="max-w-[150px] truncate text-xs text-gray-600" :title="s.nombre">{{
+                  s.nombre
+                }}</span>
               </div>
             </div>
           </div>
@@ -268,14 +300,13 @@
               <div v-for="item in barMunicipio" :key="item.label" class="bar-row">
                 <div class="bar-lbl">{{ item.label }}</div>
                 <div class="bar-track">
-                  <div
-                    class="bar-fill"
-                    :style="`width:${item.pct}%;background:#915BD8`"
-                  />
+                  <div class="bar-fill" :style="`width:${item.pct}%;background:#915BD8`" />
                 </div>
                 <div class="bar-val">{{ fmtShort(item.val) }}</div>
               </div>
-              <div v-if="!barMunicipio.length" class="chart-empty">Sin datos para el período seleccionado</div>
+              <div v-if="!barMunicipio.length" class="chart-empty">
+                Sin datos para el período seleccionado
+              </div>
             </div>
           </div>
 
@@ -292,7 +323,9 @@
                 </div>
                 <div class="bar-val">{{ fmtShort(item.val) }} · {{ item.proyectos }} proy.</div>
               </div>
-              <div v-if="!barDepto.length" class="chart-empty">Sin datos para el período seleccionado</div>
+              <div v-if="!barDepto.length" class="chart-empty">
+                Sin datos para el período seleccionado
+              </div>
             </div>
           </div>
 
@@ -312,7 +345,9 @@
                 </div>
                 <div class="bar-val">{{ fmtShort(item.kwh_total) }}</div>
               </div>
-              <div v-if="!rankingWithPct.length" class="chart-empty">Sin datos para el período seleccionado</div>
+              <div v-if="!rankingWithPct.length" class="chart-empty">
+                Sin datos para el período seleccionado
+              </div>
             </div>
           </div>
         </div>
@@ -320,13 +355,14 @@
         <!-- Comparación Nacional XM vs. Interno BD ─────────────────── -->
         <div class="card mb-6">
           <h3 class="section-title">
-            <i class="pi pi-chart-bar mr-2" style="color:#915BD8" />
+            <i class="pi pi-chart-bar mr-2" style="color: #915bd8" />
             Comparación: XM Nacional vs. Proyectos Internos
           </h3>
-          <p class="text-xs text-gray-400 mb-4">
-            Contrasta la generación de proyectos del archivo XM con los proyectos registrados en tu base de datos.
+          <p class="mb-4 text-xs text-gray-400">
+            Contrasta la generación de proyectos del archivo XM con los proyectos registrados en tu
+            base de datos.
           </p>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label class="flabel">Proyectos Nacionales (XM)</label>
               <MultiSelect
@@ -337,7 +373,7 @@
                 placeholder="Seleccionar por SIC…"
                 :maxSelectedLabels="3"
                 :selectionLimit="8"
-                class="w-full mt-1"
+                class="mt-1 w-full"
                 filter
               />
             </div>
@@ -351,7 +387,7 @@
                 placeholder="Seleccionar proyecto…"
                 :maxSelectedLabels="3"
                 :selectionLimit="8"
-                class="w-full mt-1"
+                class="mt-1 w-full"
                 filter
               />
             </div>
@@ -368,7 +404,14 @@
           <div v-if="cmpChart.series.length" class="svg-wrap mt-5">
             <svg :viewBox="`0 0 ${C.W} ${C.H}`" class="svg-chart">
               <g v-for="(y, i) in cmpChart.yGrid" :key="`cy${i}`">
-                <line :x1="C.ML" :y1="y" :x2="C.W - C.MR" :y2="y" stroke="#e5e7eb" stroke-width="1" />
+                <line
+                  :x1="C.ML"
+                  :y1="y"
+                  :x2="C.W - C.MR"
+                  :y2="y"
+                  stroke="#e5e7eb"
+                  stroke-width="1"
+                />
                 <text :x="C.ML - 6" :y="y + 4" text-anchor="end" class="chart-label">
                   {{ fmtShort(cmpChart.yTicks[i]) }}
                 </text>
@@ -377,14 +420,24 @@
                 <path
                   :d="s.path"
                   fill="none"
-                  :stroke="s.tipo === 'nacional' ? CMP_COLORS_NAC[si % CMP_COLORS_NAC.length] : CMP_COLORS_INT[si % CMP_COLORS_INT.length]"
+                  :stroke="
+                    s.tipo === 'nacional'
+                      ? CMP_COLORS_NAC[si % CMP_COLORS_NAC.length]
+                      : CMP_COLORS_INT[si % CMP_COLORS_INT.length]
+                  "
                   :stroke-dasharray="s.tipo === 'interno' ? '6 3' : 'none'"
                   stroke-width="2"
                   stroke-linejoin="round"
                 />
               </g>
               <line :x1="C.ML" :y1="C.MT" :x2="C.ML" :y2="C.H - C.MB" stroke="#d1d5db" />
-              <line :x1="C.ML" :y1="C.H - C.MB" :x2="C.W - C.MR" :y2="C.H - C.MB" stroke="#d1d5db" />
+              <line
+                :x1="C.ML"
+                :y1="C.H - C.MB"
+                :x2="C.W - C.MR"
+                :y2="C.H - C.MB"
+                stroke="#d1d5db"
+              />
               <text
                 v-for="xl in cmpChart.xLabels"
                 :key="xl.x"
@@ -392,12 +445,18 @@
                 :y="C.H - C.MB + 14"
                 text-anchor="middle"
                 class="chart-label"
-              >{{ xl.text }}</text>
+              >
+                {{ xl.text }}
+              </text>
             </svg>
-            <div class="flex flex-wrap gap-4 mt-3">
-              <div v-for="(s, si) in cmpChart.series" :key="s.sic" class="flex items-center gap-1.5">
+            <div class="mt-3 flex flex-wrap gap-4">
+              <div
+                v-for="(s, si) in cmpChart.series"
+                :key="s.sic"
+                class="flex items-center gap-1.5"
+              >
                 <span
-                  class="w-3 h-3 rounded-sm inline-block"
+                  class="inline-block h-3 w-3 rounded-sm"
                   :style="`background:${s.tipo === 'nacional' ? CMP_COLORS_NAC[si % CMP_COLORS_NAC.length] : CMP_COLORS_INT[si % CMP_COLORS_INT.length]}`"
                 />
                 <span class="cmp-badge" :class="s.tipo === 'nacional' ? 'badge-nac' : 'badge-int'">
@@ -413,14 +472,14 @@
         </div>
 
         <!-- Mapa + Resumen por Depto ──────────────────────────────── -->
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
+        <div class="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-5">
           <!-- Mapa Colombia -->
           <div class="card lg:col-span-2">
             <h3 class="section-title mb-3">
-              <i class="pi pi-map-marker mr-2" style="color:#915BD8" />
+              <i class="pi pi-map-marker mr-2" style="color: #915bd8" />
               Mapa de Generación
             </h3>
-            <svg viewBox="0 0 420 520" class="w-full max-h-80">
+            <svg viewBox="0 0 420 520" class="max-h-80 w-full">
               <!-- Puntos por departamento -->
               <g v-for="d in mapData" :key="d.name">
                 <circle
@@ -433,32 +492,28 @@
                 >
                   <title>{{ d.name }}: {{ fmtShort(d.kwh) }} kWh</title>
                 </circle>
-                <text
-                  :x="d.x"
-                  :y="d.y + d.r + 9"
-                  text-anchor="middle"
-                  font-size="7"
-                  fill="#6b7280"
-                >{{ d.short }}</text>
+                <text :x="d.x" :y="d.y + d.r + 9" text-anchor="middle" font-size="7" fill="#6b7280">
+                  {{ d.short }}
+                </text>
               </g>
               <!-- Gradiente leyenda -->
               <defs>
                 <linearGradient id="mapGrad" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%"   stop-color="#2C2039" />
-                  <stop offset="45%"  stop-color="#915BD8" />
+                  <stop offset="0%" stop-color="#2C2039" />
+                  <stop offset="45%" stop-color="#915BD8" />
                   <stop offset="100%" stop-color="#F6FF72" />
                 </linearGradient>
               </defs>
               <rect x="20" y="498" width="130" height="8" rx="4" fill="url(#mapGrad)" />
-              <text x="18"  y="493" font-size="7.5" fill="#9ca3af">Bajo</text>
+              <text x="18" y="493" font-size="7.5" fill="#9ca3af">Bajo</text>
               <text x="152" y="493" text-anchor="end" font-size="7.5" fill="#9ca3af">Alto</text>
             </svg>
           </div>
 
           <!-- Tabla resumen por depto -->
-          <div class="card lg:col-span-3 overflow-auto">
+          <div class="card overflow-auto lg:col-span-3">
             <h3 class="section-title mb-3">
-              <i class="pi pi-chart-bar mr-2" style="color:#915BD8" />
+              <i class="pi pi-chart-bar mr-2" style="color: #915bd8" />
               Resumen por Departamento
             </h3>
             <table class="sum-table">
@@ -478,7 +533,7 @@
                   <td class="text-right font-mono text-xs">{{ row.mw.toFixed(2) }}</td>
                 </tr>
                 <tr v-if="!deptSummary.length">
-                  <td colspan="4" class="text-center text-gray-400 text-xs py-4">Sin datos</td>
+                  <td colspan="4" class="py-4 text-center text-xs text-gray-400">Sin datos</td>
                 </tr>
               </tbody>
             </table>
@@ -487,11 +542,13 @@
 
         <!-- Tabla de proyectos ─────────────────────────────────────── -->
         <div class="card">
-          <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
             <h3 class="section-title">
-              <i class="pi pi-list mr-2" style="color:#915BD8" />
+              <i class="pi pi-list mr-2" style="color: #915bd8" />
               Detalle por Proyecto
-              <span class="ml-2 text-xs font-normal text-gray-400">({{ tableRows.length }} proyectos)</span>
+              <span class="ml-2 text-xs font-normal text-gray-400"
+                >({{ tableRows.length }} proyectos)</span
+              >
             </h3>
           </div>
           <DataTable
@@ -504,77 +561,116 @@
             rowHover
             :rowsPerPageOptions="[10, 20, 50]"
           >
-            <Column field="nombre" header="Proyecto" sortable style="min-width:160px">
+            <Column field="nombre" header="Proyecto" sortable style="min-width: 160px">
               <template #body="{ data }">
-                <div class="font-medium text-gray-800 truncate" style="max-width:200px" :title="data.nombre">
+                <div
+                  class="truncate font-medium text-gray-800"
+                  style="max-width: 200px"
+                  :title="data.nombre"
+                >
                   {{ data.nombre }}
                 </div>
-                <div class="text-[10px] text-gray-400 font-mono">{{ data.sic }}</div>
+                <div class="font-mono text-[10px] text-gray-400">{{ data.sic }}</div>
               </template>
             </Column>
-            <Column field="municipio"    header="Municipio"    sortable />
+            <Column field="municipio" header="Municipio" sortable />
             <Column field="departamento" header="Departamento" sortable />
-            <Column field="agente"       header="Agente"       style="max-width:160px">
+            <Column field="agente" header="Agente" style="max-width: 160px">
               <template #body="{ data }">
-                <span class="truncate block text-xs" :title="data.agente">{{ data.agente || '—' }}</span>
+                <span class="block truncate text-xs" :title="data.agente">{{
+                  data.agente || '—'
+                }}</span>
               </template>
             </Column>
-            <Column field="estado" header="Estado" sortable style="width:110px">
+            <Column field="estado" header="Estado" sortable style="width: 110px">
               <template #body="{ data }">
                 <Tag :value="data.estado" :severity="estadoSev(data.estado)" class="text-[10px]" />
               </template>
             </Column>
-            <Column field="capacidad_mw" header="Cap. MW" sortable style="width:90px">
+            <Column field="capacidad_mw" header="Cap. MW" sortable style="width: 90px">
               <template #body="{ data }">
                 <span class="font-mono text-xs">{{ data.capacidad_mw.toFixed(3) }}</span>
               </template>
             </Column>
-            <Column field="kwh_total" header="kWh Total" sortable style="width:120px">
+            <Column field="kwh_total" header="kWh Total" sortable style="width: 120px">
               <template #body="{ data }">
                 <span class="font-mono text-xs">{{ fmtShort(data.kwh_total) }}</span>
               </template>
             </Column>
-            <Column field="kwh_dia_prom" header="kWh/día" sortable style="width:100px">
+            <Column field="kwh_dia_prom" header="kWh/día" sortable style="width: 100px">
               <template #body="{ data }">
                 <span class="font-mono text-xs">{{ fmtShort(data.kwh_dia_prom) }}</span>
               </template>
             </Column>
-            <Column field="dias" header="Días" sortable style="width:65px">
+            <Column field="dias" header="Días" sortable style="width: 65px">
               <template #body="{ data }">
                 <span class="font-mono text-xs text-gray-500">{{ data.dias }}</span>
               </template>
             </Column>
           </DataTable>
         </div>
-
-      </div><!-- /v-else datos -->
-    </div><!-- /solar-main -->
-  </div><!-- /solar-layout -->
+      </div>
+      <!-- /v-else datos -->
+    </div>
+    <!-- /solar-main -->
+  </div>
+  <!-- /solar-layout -->
 </template>
 
 <script setup>
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import MultiSelect from 'primevue/multiselect'
-import Checkbox   from 'primevue/checkbox'
-import Button     from 'primevue/button'
-import DataTable  from 'primevue/datatable'
-import Column     from 'primevue/column'
-import Tag        from 'primevue/tag'
+import Checkbox from 'primevue/checkbox'
+import Button from 'primevue/button'
+import DataTable from 'primevue/datatable'
+import Column from 'primevue/column'
+import Tag from 'primevue/tag'
 import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 
 // ─── Constantes de diseño ────────────────────────────────────────────────────
 
-const COLORS = ['#915BD8','#3b82f6','#16a34a','#ea580c','#0891b2','#db2777','#7c3aed','#ca8a04','#dc2626','#059669','#6366f1','#d97706']
-const CMP_COLORS_NAC = ['#915BD8','#7c3aed','#6366f1','#3b82f6','#0891b2','#0ea5e9','#06b6d4','#14b8a6']
-const CMP_COLORS_INT = ['#16a34a','#15803d','#166534','#65a30d','#84cc16','#22c55e','#4ade80','#86efac']
+const COLORS = [
+  '#915BD8',
+  '#3b82f6',
+  '#16a34a',
+  '#ea580c',
+  '#0891b2',
+  '#db2777',
+  '#7c3aed',
+  '#ca8a04',
+  '#dc2626',
+  '#059669',
+  '#6366f1',
+  '#d97706',
+]
+const CMP_COLORS_NAC = [
+  '#915BD8',
+  '#7c3aed',
+  '#6366f1',
+  '#3b82f6',
+  '#0891b2',
+  '#0ea5e9',
+  '#06b6d4',
+  '#14b8a6',
+]
+const CMP_COLORS_INT = [
+  '#16a34a',
+  '#15803d',
+  '#166534',
+  '#65a30d',
+  '#84cc16',
+  '#22c55e',
+  '#4ade80',
+  '#86efac',
+]
 
 const CHART_TABS = [
-  { id: 'lineas',       label: 'Comparación proyectos', icon: 'pi pi-chart-line' },
-  { id: 'municipio',    label: 'Por Municipio',          icon: 'pi pi-map' },
-  { id: 'departamento', label: 'Por Departamento',       icon: 'pi pi-globe' },
-  { id: 'top',          label: 'Top Generadores',        icon: 'pi pi-trophy' },
+  { id: 'lineas', label: 'Comparación proyectos', icon: 'pi pi-chart-line' },
+  { id: 'municipio', label: 'Por Municipio', icon: 'pi pi-map' },
+  { id: 'departamento', label: 'Por Departamento', icon: 'pi pi-globe' },
+  { id: 'top', label: 'Top Generadores', icon: 'pi pi-trophy' },
 ]
 
 // Dimensiones SVG de los gráficos de líneas
@@ -582,73 +678,73 @@ const C = { W: 700, H: 230, ML: 58, MR: 16, MT: 16, MB: 32 }
 
 // Posiciones geográficas de departamentos en SVG 420×520
 const DEPT_POSITIONS = [
-  { name: 'LA GUAJIRA',              short: 'Guajira',       x: 305, y: 38  },
-  { name: 'MAGDALENA',               short: 'Magdalena',     x: 255, y: 72  },
-  { name: 'ATLÁNTICO',               short: 'Atlántico',     x: 205, y: 78  },
-  { name: 'BOLÍVAR',                 short: 'Bolívar',       x: 192, y: 120 },
-  { name: 'SUCRE',                   short: 'Sucre',         x: 183, y: 152 },
-  { name: 'CÓRDOBA',                 short: 'Córdoba',       x: 163, y: 138 },
-  { name: 'CESAR',                   short: 'Cesar',         x: 285, y: 110 },
-  { name: 'NORTE DE SANTANDER',      short: 'N.Santander',   x: 308, y: 155 },
-  { name: 'SANTANDER',               short: 'Santander',     x: 272, y: 196 },
-  { name: 'BOYACÁ',                  short: 'Boyacá',        x: 287, y: 240 },
-  { name: 'ARAUCA',                  short: 'Arauca',        x: 340, y: 188 },
-  { name: 'CASANARE',                short: 'Casanare',      x: 337, y: 228 },
-  { name: 'VICHADA',                 short: 'Vichada',       x: 392, y: 265 },
-  { name: 'META',                    short: 'Meta',          x: 332, y: 297 },
-  { name: 'CUNDINAMARCA',            short: 'Cundina.',      x: 270, y: 278 },
-  { name: 'ANTIOQUIA',               short: 'Antioquia',     x: 192, y: 212 },
-  { name: 'CHOCÓ',                   short: 'Chocó',         x: 148, y: 238 },
-  { name: 'CALDAS',                  short: 'Caldas',        x: 208, y: 268 },
-  { name: 'RISARALDA',               short: 'Risaralda',     x: 195, y: 284 },
-  { name: 'QUINDÍO',                 short: 'Quindío',       x: 198, y: 300 },
-  { name: 'VALLE DEL CAUCA',         short: 'Valle',         x: 165, y: 325 },
-  { name: 'TOLIMA',                  short: 'Tolima',        x: 245, y: 312 },
-  { name: 'HUILA',                   short: 'Huila',         x: 260, y: 358 },
-  { name: 'CAUCA',                   short: 'Cauca',         x: 183, y: 375 },
-  { name: 'NARIÑO',                  short: 'Nariño',        x: 178, y: 426 },
-  { name: 'PUTUMAYO',                short: 'Putumayo',      x: 232, y: 432 },
-  { name: 'CAQUETÁ',                 short: 'Caquetá',       x: 285, y: 395 },
-  { name: 'GUAVIARE',                short: 'Guaviare',      x: 342, y: 370 },
-  { name: 'AMAZONAS',                short: 'Amazonas',      x: 300, y: 475 },
-  { name: 'GUAINÍA',                 short: 'Guainía',       x: 396, y: 348 },
-  { name: 'VAUPÉS',                  short: 'Vaupés',        x: 372, y: 425 },
-  { name: 'SAN ANDRÉS',              short: 'S.Andrés',      x: 70,  y: 128 },
+  { name: 'LA GUAJIRA', short: 'Guajira', x: 305, y: 38 },
+  { name: 'MAGDALENA', short: 'Magdalena', x: 255, y: 72 },
+  { name: 'ATLÁNTICO', short: 'Atlántico', x: 205, y: 78 },
+  { name: 'BOLÍVAR', short: 'Bolívar', x: 192, y: 120 },
+  { name: 'SUCRE', short: 'Sucre', x: 183, y: 152 },
+  { name: 'CÓRDOBA', short: 'Córdoba', x: 163, y: 138 },
+  { name: 'CESAR', short: 'Cesar', x: 285, y: 110 },
+  { name: 'NORTE DE SANTANDER', short: 'N.Santander', x: 308, y: 155 },
+  { name: 'SANTANDER', short: 'Santander', x: 272, y: 196 },
+  { name: 'BOYACÁ', short: 'Boyacá', x: 287, y: 240 },
+  { name: 'ARAUCA', short: 'Arauca', x: 340, y: 188 },
+  { name: 'CASANARE', short: 'Casanare', x: 337, y: 228 },
+  { name: 'VICHADA', short: 'Vichada', x: 392, y: 265 },
+  { name: 'META', short: 'Meta', x: 332, y: 297 },
+  { name: 'CUNDINAMARCA', short: 'Cundina.', x: 270, y: 278 },
+  { name: 'ANTIOQUIA', short: 'Antioquia', x: 192, y: 212 },
+  { name: 'CHOCÓ', short: 'Chocó', x: 148, y: 238 },
+  { name: 'CALDAS', short: 'Caldas', x: 208, y: 268 },
+  { name: 'RISARALDA', short: 'Risaralda', x: 195, y: 284 },
+  { name: 'QUINDÍO', short: 'Quindío', x: 198, y: 300 },
+  { name: 'VALLE DEL CAUCA', short: 'Valle', x: 165, y: 325 },
+  { name: 'TOLIMA', short: 'Tolima', x: 245, y: 312 },
+  { name: 'HUILA', short: 'Huila', x: 260, y: 358 },
+  { name: 'CAUCA', short: 'Cauca', x: 183, y: 375 },
+  { name: 'NARIÑO', short: 'Nariño', x: 178, y: 426 },
+  { name: 'PUTUMAYO', short: 'Putumayo', x: 232, y: 432 },
+  { name: 'CAQUETÁ', short: 'Caquetá', x: 285, y: 395 },
+  { name: 'GUAVIARE', short: 'Guaviare', x: 342, y: 370 },
+  { name: 'AMAZONAS', short: 'Amazonas', x: 300, y: 475 },
+  { name: 'GUAINÍA', short: 'Guainía', x: 396, y: 348 },
+  { name: 'VAUPÉS', short: 'Vaupés', x: 372, y: 425 },
+  { name: 'SAN ANDRÉS', short: 'S.Andrés', x: 70, y: 128 },
 ]
 
 // ─── Estado ──────────────────────────────────────────────────────────────────
 
-const toast        = useToast()
-const route        = useRoute()
-const router       = useRouter()
-const loading      = ref(false)
-const reloading    = ref(false)
+const toast = useToast()
+const route = useRoute()
+const router = useRouter()
+const loading = ref(false)
+const reloading = ref(false)
 const initialLoaded = ref(false)
 
-const proyectos    = ref([])   // metadatos del Excel
-const genData      = ref([])   // generación filtrada actual
-const filtros      = ref({ municipios: [], departamentos: [], estados: [] })
-const rankingData  = ref([])   // top N del API
-const internosOpts = ref([])   // proyectos internos BD
+const proyectos = ref([]) // metadatos del Excel
+const genData = ref([]) // generación filtrada actual
+const filtros = ref({ municipios: [], departamentos: [], estados: [] })
+const rankingData = ref([]) // top N del API
+const internosOpts = ref([]) // proyectos internos BD
 
 // Sincronizados con la URL (mismos nombres que buildParams()) para que se
 // sostengan al volver con "atras" o al refrescar.
 const filters = reactive({
-  fechaIni:     route.query.fechaIni || '',
-  fechaFin:     route.query.fechaFin || '',
-  municipios:   route.query.municipio ? route.query.municipio.split(',') : [],
+  fechaIni: route.query.fechaIni || '',
+  fechaFin: route.query.fechaFin || '',
+  municipios: route.query.municipio ? route.query.municipio.split(',') : [],
   departamentos: route.query.departamento ? route.query.departamento.split(',') : [],
-  estados:      route.query.estado ? route.query.estado.split(',') : [],
+  estados: route.query.estado ? route.query.estado.split(',') : [],
 })
 
-const activeTab    = ref('lineas')
+const activeTab = ref('lineas')
 const selectedSics = ref([])
 
 const cmp = reactive({
   nacionales: [],
-  internos:   [],
-  loading:    false,
-  raw:        { nacionales: [], internos: [] },
+  internos: [],
+  loading: false,
+  raw: { nacionales: [], internos: [] },
 })
 
 // ─── Carga inicial ────────────────────────────────────────────────────────────
@@ -669,22 +765,28 @@ async function loadFiltros() {
     if (!route.query.estado) {
       filters.estados = [...data.estados]
     }
-  } catch { /* silencioso */ }
+  } catch {
+    /* silencioso */
+  }
 }
 
 async function loadProyectos() {
   try {
     const { data } = await api.get('/solar/proyectos')
     proyectos.value = data
-  } catch { /* silencioso */ }
+  } catch {
+    /* silencioso */
+  }
 }
 
 async function loadInternos() {
   try {
     const { data } = await api.get('/proyectos', { params: { size: 500, page: 1 } })
     const items = data.items ?? data
-    internosOpts.value = items.map(p => ({ label: p.nombre_comercial, value: p.id }))
-  } catch { /* silencioso */ }
+    internosOpts.value = items.map((p) => ({ label: p.nombre_comercial, value: p.id }))
+  } catch {
+    /* silencioso */
+  }
 }
 
 async function loadGeneracion() {
@@ -694,7 +796,12 @@ async function loadGeneracion() {
     const { data } = await api.get('/solar/generacion', { params })
     genData.value = data
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la generación solar', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo cargar la generación solar',
+      life: 4000,
+    })
   } finally {
     loading.value = false
   }
@@ -705,7 +812,9 @@ async function loadRanking() {
     const params = { ...buildParams(), top: 20 }
     const { data } = await api.get('/solar/ranking', { params })
     rankingData.value = data
-  } catch { /* silencioso */ }
+  } catch {
+    /* silencioso */
+  }
 }
 
 async function loadComparacion() {
@@ -715,12 +824,17 @@ async function loadComparacion() {
     const params = {
       ...buildParams(),
       sicNacionales: cmp.nacionales.join(',') || undefined,
-      idsInternos:   cmp.internos.join(',') || undefined,
+      idsInternos: cmp.internos.join(',') || undefined,
     }
     const { data } = await api.get('/solar/comparacion', { params })
     cmp.raw = data
   } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo generar la comparación', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo generar la comparación',
+      life: 4000,
+    })
   } finally {
     cmp.loading = false
   }
@@ -741,7 +855,12 @@ async function reloadCache() {
     await loadGeneracion()
     await loadRanking()
   } catch {
-    toast.add({ severity: 'error', summary: 'Error', detail: 'No se pudo recargar el caché', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: 'No se pudo recargar el caché',
+      life: 4000,
+    })
   } finally {
     reloading.value = false
   }
@@ -749,11 +868,11 @@ async function reloadCache() {
 
 function buildParams() {
   const p = {}
-  if (filters.fechaIni)           p.fechaIni     = filters.fechaIni
-  if (filters.fechaFin)           p.fechaFin     = filters.fechaFin
-  if (filters.municipios.length)  p.municipio    = filters.municipios.join(',')
+  if (filters.fechaIni) p.fechaIni = filters.fechaIni
+  if (filters.fechaFin) p.fechaFin = filters.fechaFin
+  if (filters.municipios.length) p.municipio = filters.municipios.join(',')
   if (filters.departamentos.length) p.departamento = filters.departamentos.join(',')
-  if (filters.estados.length)     p.estado       = filters.estados.join(',')
+  if (filters.estados.length) p.estado = filters.estados.join(',')
   return p
 }
 
@@ -763,28 +882,28 @@ async function applyFilters() {
 }
 
 function clearFilters() {
-  filters.fechaIni      = ''
-  filters.fechaFin      = ''
-  filters.municipios    = []
+  filters.fechaIni = ''
+  filters.fechaFin = ''
+  filters.municipios = []
   filters.departamentos = []
-  filters.estados       = [...filtros.value.estados]
+  filters.estados = [...filtros.value.estados]
   applyFilters()
 }
 
 // ─── Opciones de proyectos para MultiSelect ───────────────────────────────────
 
 const proyectoOpts = computed(() =>
-  proyectos.value.map(p => ({ label: `${p.nombre} (${p.sic})`, value: p.sic }))
+  proyectos.value.map((p) => ({ label: `${p.nombre} (${p.sic})`, value: p.sic })),
 )
 
 // ─── KPI Cards ────────────────────────────────────────────────────────────────
 
 const kpis = computed(() => {
-  const sics      = new Set(genData.value.map(r => r.sic))
-  const kwhTotal  = genData.value.reduce((s, r) => s + r.kwh, 0)
-  const fechas    = new Set(genData.value.map(r => r.fecha))
+  const sics = new Set(genData.value.map((r) => r.sic))
+  const kwhTotal = genData.value.reduce((s, r) => s + r.kwh, 0)
+  const fechas = new Set(genData.value.map((r) => r.fecha))
   const promDiario = fechas.size > 0 ? kwhTotal / fechas.size : 0
-  const caps      = proyectos.value.filter(p => sics.has(p.sic))
+  const caps = proyectos.value.filter((p) => sics.has(p.sic))
   const capacidadMW = caps.reduce((s, p) => s + p.capacidad_mw, 0)
   return { proyectos: sics.size, kwhTotal, promDiario, capacidadMW }
 })
@@ -797,13 +916,15 @@ const barMunicipio = computed(() => {
     if (!r.municipio) continue
     agg[r.municipio] = (agg[r.municipio] || 0) + r.kwh
   }
-  const entries = Object.entries(agg).sort((a, b) => b[1] - a[1]).slice(0, 25)
+  const entries = Object.entries(agg)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 25)
   const max = entries[0]?.[1] || 1
   return entries.map(([label, val]) => ({ label, val, pct: (val / max) * 100 }))
 })
 
 const barDepto = computed(() => {
-  const agg  = {}
+  const agg = {}
   const sicc = {}
   for (const r of genData.value) {
     if (!r.departamento) continue
@@ -814,7 +935,8 @@ const barDepto = computed(() => {
   const entries = Object.entries(agg).sort((a, b) => b[1] - a[1])
   const max = entries[0]?.[1] || 1
   return entries.map(([label, val]) => ({
-    label, val,
+    label,
+    val,
     pct: (val / max) * 100,
     proyectos: sicc[label]?.size || 0,
   }))
@@ -822,7 +944,7 @@ const barDepto = computed(() => {
 
 const rankingWithPct = computed(() => {
   const max = rankingData.value[0]?.kwh_total || 1
-  return rankingData.value.map(r => ({ ...r, pct: (r.kwh_total / max) * 100 }))
+  return rankingData.value.map((r) => ({ ...r, pct: (r.kwh_total / max) * 100 }))
 })
 
 // ─── Tabla de proyectos (agrega genData por SIC) ──────────────────────────────
@@ -832,21 +954,28 @@ const tableRows = computed(() => {
   for (const r of genData.value) {
     if (!agg[r.sic]) {
       agg[r.sic] = {
-        sic: r.sic, nombre: r.nombre, municipio: r.municipio,
-        departamento: r.departamento, agente: r.agente,
-        estado: r.estado, capacidad_mw: r.capacidad_mw,
-        kwh_total: 0, _dias: new Set(),
+        sic: r.sic,
+        nombre: r.nombre,
+        municipio: r.municipio,
+        departamento: r.departamento,
+        agente: r.agente,
+        estado: r.estado,
+        capacidad_mw: r.capacidad_mw,
+        kwh_total: 0,
+        _dias: new Set(),
       }
     }
     agg[r.sic].kwh_total += r.kwh
     agg[r.sic]._dias.add(r.fecha)
   }
-  return Object.values(agg).map(r => ({
-    ...r,
-    dias:         r._dias.size,
-    kwh_dia_prom: r._dias.size > 0 ? r.kwh_total / r._dias.size : 0,
-    _dias:        undefined,
-  })).sort((a, b) => b.kwh_total - a.kwh_total)
+  return Object.values(agg)
+    .map((r) => ({
+      ...r,
+      dias: r._dias.size,
+      kwh_dia_prom: r._dias.size > 0 ? r.kwh_total / r._dias.size : 0,
+      _dias: undefined,
+    }))
+    .sort((a, b) => b.kwh_total - a.kwh_total)
 })
 
 // ─── Mapa Colombia ────────────────────────────────────────────────────────────
@@ -864,29 +993,40 @@ const maxDeptKwh = computed(() => Math.max(...Object.values(deptKwhMap.value), 1
 
 function lerpColor(t) {
   // 0 → #2C2039  |  0.5 → #915BD8  |  1 → #F6FF72
-  const stops = [[44, 32, 57], [145, 91, 216], [246, 255, 114]]
+  const stops = [
+    [44, 32, 57],
+    [145, 91, 216],
+    [246, 255, 114],
+  ]
   let c1, c2, tt
-  if (t <= 0.5) { c1 = stops[0]; c2 = stops[1]; tt = t * 2 }
-  else          { c1 = stops[1]; c2 = stops[2]; tt = (t - 0.5) * 2 }
+  if (t <= 0.5) {
+    c1 = stops[0]
+    c2 = stops[1]
+    tt = t * 2
+  } else {
+    c1 = stops[1]
+    c2 = stops[2]
+    tt = (t - 0.5) * 2
+  }
   const ch = c1.map((v, i) => Math.round(v + (c2[i] - v) * tt))
   return `rgb(${ch[0]},${ch[1]},${ch[2]})`
 }
 
 const mapData = computed(() =>
-  DEPT_POSITIONS.map(d => {
+  DEPT_POSITIONS.map((d) => {
     const kwh = deptKwhMap.value[d.name] || 0
-    const t   = kwh / maxDeptKwh.value
+    const t = kwh / maxDeptKwh.value
     return { ...d, kwh, r: 5 + t * 16, color: kwh > 0 ? lerpColor(t) : '#e5e7eb' }
-  })
+  }),
 )
 
 const deptSummary = computed(() => {
-  const kwh  = deptKwhMap.value
-  const mwM  = {}
-  const pM   = {}
+  const kwh = deptKwhMap.value
+  const mwM = {}
+  const pM = {}
   for (const p of proyectos.value) {
     const d = (p.departamento || '').toUpperCase()
-    mwM[d]  = (mwM[d]  || 0) + p.capacidad_mw
+    mwM[d] = (mwM[d] || 0) + p.capacidad_mw
   }
   for (const r of genData.value) {
     const d = (r.departamento || '').toUpperCase()
@@ -896,10 +1036,10 @@ const deptSummary = computed(() => {
   return Object.entries(kwh)
     .sort((a, b) => b[1] - a[1])
     .map(([depto, kw]) => ({
-      depto:     depto.charAt(0) + depto.slice(1).toLowerCase(),
-      kwh:       kw,
+      depto: depto.charAt(0) + depto.slice(1).toLowerCase(),
+      kwh: kw,
       proyectos: pM[depto]?.size || 0,
-      mw:        mwM[depto] || 0,
+      mw: mwM[depto] || 0,
     }))
 })
 
@@ -907,36 +1047,35 @@ const deptSummary = computed(() => {
 
 function niceScale(maxVal, n = 5) {
   if (!maxVal) return Array.from({ length: n }, (_, i) => i)
-  const raw  = maxVal / (n - 1)
-  const mag  = Math.pow(10, Math.floor(Math.log10(raw)))
+  const raw = maxVal / (n - 1)
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)))
   const step = Math.ceil(raw / mag) * mag
   return Array.from({ length: n }, (_, i) => Math.round(i * step))
 }
 
 function buildLineChart(bySic, allDates, selectedList, namesMap) {
-  if (!allDates.length || !selectedList.length) return { series: [], xLabels: [], yGrid: [], yTicks: [] }
+  if (!allDates.length || !selectedList.length)
+    return { series: [], xLabels: [], yGrid: [], yTicks: [] }
 
   const n = allDates.length
   let maxVal = 0
   for (const sic of selectedList)
-    for (const d of allDates)
-      maxVal = Math.max(maxVal, bySic[sic]?.[d] || 0)
+    for (const d of allDates) maxVal = Math.max(maxVal, bySic[sic]?.[d] || 0)
 
   const ticks = niceScale(maxVal)
   const topTick = ticks[ticks.length - 1] || 1
   const innerW = C.W - C.ML - C.MR
   const innerH = C.H - C.MT - C.MB
 
-  const xOf = i  => C.ML + (n > 1 ? i / (n - 1) : 0.5) * innerW
-  const yOf = v  => C.H - C.MB - (v / topTick) * innerH
+  const xOf = (i) => C.ML + (n > 1 ? i / (n - 1) : 0.5) * innerW
+  const yOf = (v) => C.H - C.MB - (v / topTick) * innerH
 
-  const yGrid = ticks.map(t => C.H - C.MB - (t / topTick) * innerH)
+  const yGrid = ticks.map((t) => C.H - C.MB - (t / topTick) * innerH)
 
-  const series = selectedList.map(sic => {
+  const series = selectedList.map((sic) => {
     const pts = allDates.map((d, i) => ({ x: xOf(i), y: yOf(bySic[sic]?.[d] || 0) }))
-    const path = pts.length > 1
-      ? 'M ' + pts.map(p => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L ')
-      : ''
+    const path =
+      pts.length > 1 ? 'M ' + pts.map((p) => `${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' L ') : ''
     const dots = n <= 40 ? pts : []
     return { sic, nombre: namesMap[sic] || sic, path, dots }
   })
@@ -964,25 +1103,25 @@ const lineChart = computed(() => {
     bySic[r.sic][r.fecha] = (bySic[r.sic][r.fecha] || 0) + r.kwh
   }
 
-  const namesMap = Object.fromEntries(proyectos.value.map(p => [p.sic, p.nombre]))
+  const namesMap = Object.fromEntries(proyectos.value.map((p) => [p.sic, p.nombre]))
   return buildLineChart(bySic, [...dates].sort(), selectedSics.value, namesMap)
 })
 
 // Chart de comparación nacional vs interno
 const cmpChart = computed(() => {
   const nacRaw = cmp.raw?.nacionales || []
-  const intRaw = cmp.raw?.internos   || []
+  const intRaw = cmp.raw?.internos || []
   if (!nacRaw.length && !intRaw.length) return { series: [], xLabels: [], yGrid: [], yTicks: [] }
 
   const allDates = new Set()
-  const bySic    = {}
+  const bySic = {}
   const namesMap = {}
-  const typeMap  = {}
+  const typeMap = {}
 
   for (const s of nacRaw) {
-    bySic[s.sic]    = {}
+    bySic[s.sic] = {}
     namesMap[s.sic] = s.nombre
-    typeMap[s.sic]  = 'nacional'
+    typeMap[s.sic] = 'nacional'
     for (const pt of s.daily) {
       allDates.add(pt.fecha)
       bySic[s.sic][pt.fecha] = pt.kwh
@@ -990,9 +1129,9 @@ const cmpChart = computed(() => {
   }
   for (const s of intRaw) {
     const k = `int_${s.id}`
-    bySic[k]    = {}
+    bySic[k] = {}
     namesMap[k] = s.nombre
-    typeMap[k]  = 'interno'
+    typeMap[k] = 'interno'
     for (const pt of s.daily) {
       allDates.add(pt.fecha)
       bySic[k][pt.fecha] = pt.kwh
@@ -1004,7 +1143,7 @@ const cmpChart = computed(() => {
 
   return {
     ...base,
-    series: base.series.map(s => ({ ...s, tipo: typeMap[s.sic] || 'nacional' })),
+    series: base.series.map((s) => ({ ...s, tipo: typeMap[s.sic] || 'nacional' })),
   }
 })
 
@@ -1013,22 +1152,42 @@ const cmpChart = computed(() => {
 function exportCSV() {
   const rows = tableRows.value
   if (!rows.length) {
-    toast.add({ severity: 'warn', summary: 'Sin datos', detail: 'No hay datos para exportar', life: 3000 })
+    toast.add({
+      severity: 'warn',
+      summary: 'Sin datos',
+      detail: 'No hay datos para exportar',
+      life: 3000,
+    })
     return
   }
-  const cols = ['sic','nombre','municipio','departamento','agente','estado','capacidad_mw','kwh_total','kwh_dia_prom','dias']
-  const hdr  = cols.join(',')
-  const body = rows.map(r =>
-    cols.map(c => {
-      const v = r[c] ?? ''
-      return typeof v === 'string' && v.includes(',') ? `"${v}"` : v
-    }).join(',')
-  ).join('\n')
+  const cols = [
+    'sic',
+    'nombre',
+    'municipio',
+    'departamento',
+    'agente',
+    'estado',
+    'capacidad_mw',
+    'kwh_total',
+    'kwh_dia_prom',
+    'dias',
+  ]
+  const hdr = cols.join(',')
+  const body = rows
+    .map((r) =>
+      cols
+        .map((c) => {
+          const v = r[c] ?? ''
+          return typeof v === 'string' && v.includes(',') ? `"${v}"` : v
+        })
+        .join(','),
+    )
+    .join('\n')
   const blob = new Blob([`﻿${hdr}\n${body}`], { type: 'text/csv;charset=utf-8;' })
-  const url  = URL.createObjectURL(blob)
-  const a    = document.createElement('a')
-  a.href     = url
-  a.download = `solar_${new Date().toISOString().slice(0,10)}.csv`
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `solar_${new Date().toISOString().slice(0, 10)}.csv`
   a.click()
   URL.revokeObjectURL(url)
   toast.add({ severity: 'success', summary: 'CSV exportado', life: 2500 })
@@ -1041,7 +1200,7 @@ function fmtShort(n) {
   if (n == null || isNaN(n)) return '—'
   const v = Math.round(n)
   if (v >= 1_000_000) return (v / 1_000_000).toFixed(2) + ' M'
-  if (v >= 1_000)     return (v / 1_000).toFixed(1) + ' k'
+  if (v >= 1_000) return (v / 1_000).toFixed(1) + ' k'
   return v.toLocaleString('es-CO')
 }
 
@@ -1049,7 +1208,7 @@ function fmtShort(n) {
 const fmtK = fmtShort
 
 function estadoSev(e) {
-  return { 'OPERACIÓN': 'success', 'PRUEBAS': 'warn', 'INACTIVO': 'secondary' }[e] ?? 'secondary'
+  return { OPERACIÓN: 'success', PRUEBAS: 'warn', INACTIVO: 'secondary' }[e] ?? 'secondary'
 }
 </script>
 
@@ -1084,10 +1243,10 @@ function estadoSev(e) {
   gap: 8px;
   font-size: 13px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
   margin-bottom: 16px;
   padding-bottom: 10px;
-  border-bottom: 2px solid #F6FF72;
+  border-bottom: 2px solid #f6ff72;
 }
 
 .filter-group {
@@ -1115,9 +1274,14 @@ function estadoSev(e) {
   outline: none;
   transition: border-color 0.15s;
 }
-.finput:focus { border-color: #915BD8; background: #fff; }
+.finput:focus {
+  border-color: #915bd8;
+  background: #fff;
+}
 
-:deep(.filter-ms .p-multiselect) { font-size: 12px; }
+:deep(.filter-ms .p-multiselect) {
+  font-size: 12px;
+}
 
 .filter-actions {
   margin-top: auto;
@@ -1137,7 +1301,7 @@ function estadoSev(e) {
 .page-title {
   font-size: 22px;
   font-weight: 800;
-  color: #2C2039;
+  color: #2c2039;
   line-height: 1.2;
 }
 .page-sub {
@@ -1166,7 +1330,9 @@ function estadoSev(e) {
   margin-bottom: 20px;
 }
 @media (min-width: 900px) {
-  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .kpi-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 .kpi-card {
   background: #ffffff;
@@ -1175,22 +1341,29 @@ function estadoSev(e) {
   display: flex;
   align-items: center;
   gap: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 1px 2px rgba(0,0,0,0.04);
-  border: 1px solid rgba(145,91,216,0.08);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(145, 91, 216, 0.08);
   transition: box-shadow 0.2s;
 }
-.kpi-card:hover { box-shadow: 0 4px 12px rgba(145,91,216,0.12); }
+.kpi-card:hover {
+  box-shadow: 0 4px 12px rgba(145, 91, 216, 0.12);
+}
 .kpi-icon {
-  width: 42px; height: 42px;
+  width: 42px;
+  height: 42px;
   border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 18px;
   flex-shrink: 0;
 }
 .kpi-val {
   font-size: 22px;
   font-weight: 800;
-  color: #2C2039;
+  color: #2c2039;
   line-height: 1;
 }
 .kpi-lbl {
@@ -1205,14 +1378,14 @@ function estadoSev(e) {
   background: #ffffff;
   border-radius: 14px;
   padding: 20px 22px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-  border: 1px solid rgba(145,91,216,0.07);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(145, 91, 216, 0.07);
 }
 
 .section-title {
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
   display: flex;
   align-items: center;
 }
@@ -1237,15 +1410,24 @@ function estadoSev(e) {
   cursor: pointer;
   transition: all 0.15s;
 }
-.ctab:hover { background: rgba(145,91,216,0.07); color: #915BD8; }
+.ctab:hover {
+  background: rgba(145, 91, 216, 0.07);
+  color: #915bd8;
+}
 .ctab-active {
-  background: rgba(145,91,216,0.12) !important;
-  color: #915BD8 !important;
+  background: rgba(145, 91, 216, 0.12) !important;
+  color: #915bd8 !important;
   font-weight: 700;
 }
 
 /* ─── Bar charts CSS ────────────────────────────────────────────────────────── */
-.bar-list { display: flex; flex-direction: column; gap: 8px; max-height: 420px; overflow-y: auto; }
+.bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+}
 .bar-row {
   display: grid;
   grid-template-columns: 160px 1fr 90px;
@@ -1253,16 +1435,40 @@ function estadoSev(e) {
   gap: 10px;
   font-size: 12px;
 }
-.bar-lbl { color: #374151; truncate: ellipsis; white-space: nowrap; overflow: hidden; display: flex; align-items: center; gap: 6px; }
-.bar-track { height: 10px; background: #f3f4f6; border-radius: 999px; overflow: hidden; }
-.bar-fill  { height: 100%; border-radius: 999px; transition: width 0.5s cubic-bezier(.4,0,.2,1); min-width: 2px; }
-.bar-val   { text-align: right; font-family: monospace; color: #6b7280; font-size: 11px; }
+.bar-lbl {
+  color: #374151;
+  truncate: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bar-track {
+  height: 10px;
+  background: #f3f4f6;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 2px;
+}
+.bar-val {
+  text-align: right;
+  font-family: monospace;
+  color: #6b7280;
+  font-size: 11px;
+}
 
 .rank-num {
-  width: 18px; height: 18px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
-  background: rgba(145,91,216,0.12);
-  color: #915BD8;
+  background: rgba(145, 91, 216, 0.12);
+  color: #915bd8;
   font-size: 10px;
   font-weight: 700;
   display: inline-flex;
@@ -1272,24 +1478,48 @@ function estadoSev(e) {
 }
 
 /* ─── SVG Chart ─────────────────────────────────────────────────────────────── */
-.svg-wrap    { width: 100%; overflow-x: auto; }
-.svg-chart   { width: 100%; height: auto; display: block; }
+.svg-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.svg-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
 .chart-empty {
   min-height: 140px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #d1d5db;
   font-size: 13px;
   border: 2px dashed #f3f4f6;
   border-radius: 10px;
 }
-:deep(.chart-label) { font-size: 10px; fill: #9ca3af; }
+:deep(.chart-label) {
+  font-size: 10px;
+  fill: #9ca3af;
+}
 
 /* ─── Mapa Colombia ─────────────────────────────────────────────────────────── */
-.dept-circle { transition: r 0.4s ease, fill 0.4s ease; cursor: default; }
-.dept-circle:hover { opacity: 1 !important; filter: brightness(1.15); }
+.dept-circle {
+  transition:
+    r 0.4s ease,
+    fill 0.4s ease;
+  cursor: default;
+}
+.dept-circle:hover {
+  opacity: 1 !important;
+  filter: brightness(1.15);
+}
 
 /* ─── Tabla resumen ─────────────────────────────────────────────────────────── */
-.sum-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.sum-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
 .sum-table th {
   text-align: left;
   padding: 6px 10px;
@@ -1299,8 +1529,14 @@ function estadoSev(e) {
   color: #9ca3af;
   border-bottom: 2px solid #f3f4f6;
 }
-.sum-table td { padding: 7px 10px; border-bottom: 1px solid #f9fafb; color: #374151; }
-.sum-table tr:hover td { background: rgba(145,91,216,0.03); }
+.sum-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid #f9fafb;
+  color: #374151;
+}
+.sum-table tr:hover td {
+  background: rgba(145, 91, 216, 0.03);
+}
 
 /* ─── Badges comparación ───────────────────────────────────────────────────── */
 .cmp-badge {
@@ -1310,6 +1546,12 @@ function estadoSev(e) {
   border-radius: 4px;
   text-transform: uppercase;
 }
-.badge-nac { background: rgba(145,91,216,0.12); color: #7c3aed; }
-.badge-int { background: rgba(22,163,74,0.12);  color: #15803d; }
+.badge-nac {
+  background: rgba(145, 91, 216, 0.12);
+  color: #7c3aed;
+}
+.badge-int {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+}
 </style>

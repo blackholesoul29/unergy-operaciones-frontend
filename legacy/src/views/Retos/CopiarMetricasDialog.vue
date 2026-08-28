@@ -33,18 +33,25 @@
           :key="m.id"
           class="rq-chip-metrica"
           :class="{ 'rq-chip-repetida': yaExiste(m.nombre) }"
-        >{{ m.nombre }}</span>
+          >{{ m.nombre }}</span
+        >
       </div>
       <p v-if="origen && hayRepetidas" class="rq-leyenda">Ya existe en este trimestre</p>
 
       <p class="rq-nota">
-        Se copian solo las métricas activas, sin los valores semanales.
-        Las métricas con un nombre que ya existe aquí no se duplican.
+        Se copian solo las métricas activas, sin los valores semanales. Las métricas con un nombre
+        que ya existe aquí no se duplican.
       </p>
     </div>
 
     <template #footer>
-      <Button label="Cancelar" severity="secondary" text size="small" @click="emit('update:visible', false)" />
+      <Button
+        label="Cancelar"
+        severity="secondary"
+        text
+        size="small"
+        @click="emit('update:visible', false)"
+      />
       <Button
         label="Copiar métricas"
         icon="pi pi-copy"
@@ -78,7 +85,9 @@ const origenId = ref(null)
 
 watch(
   () => props.visible,
-  (abierto) => { if (abierto) origenId.value = null },
+  (abierto) => {
+    if (abierto) origenId.value = null
+  },
 )
 
 const opciones = computed(() =>
@@ -92,25 +101,36 @@ const opciones = computed(() =>
   }),
 )
 
-const origen = computed(() => props.retos.find(r => r.id === origenId.value) || null)
+const origen = computed(() => props.retos.find((r) => r.id === origenId.value) || null)
 
 const metricasOrigen = computed(() =>
   (origen.value?.metricas || [])
-    .filter(m => m.activa !== false)
+    .filter((m) => m.activa !== false)
     .slice()
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)),
 )
 
 /** Comparación laxa: el backend deduplica por nombre, aquí solo se anticipa. */
 const setDestino = computed(
-  () => new Set(props.nombresDestino.map(n => String(n || '').trim().toLowerCase())),
+  () =>
+    new Set(
+      props.nombresDestino.map((n) =>
+        String(n || '')
+          .trim()
+          .toLowerCase(),
+      ),
+    ),
 )
 
 function yaExiste(nombre) {
-  return setDestino.value.has(String(nombre || '').trim().toLowerCase())
+  return setDestino.value.has(
+    String(nombre || '')
+      .trim()
+      .toLowerCase(),
+  )
 }
 
-const hayRepetidas = computed(() => metricasOrigen.value.some(m => yaExiste(m.nombre)))
+const hayRepetidas = computed(() => metricasOrigen.value.some((m) => yaExiste(m.nombre)))
 </script>
 
 <style scoped>
@@ -122,20 +142,35 @@ const hayRepetidas = computed(() => metricasOrigen.value.some(m => yaExiste(m.no
   color: #6b5a8a;
 }
 
-.rq-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.rq-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
 
 .rq-chip-metrica {
-  font-size: 10px; font-weight: 600;
-  background: #f0ebfd; color: #915BD8;
-  padding: 1px 7px; border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+  background: #f0ebfd;
+  color: #915bd8;
+  padding: 1px 7px;
+  border-radius: 999px;
 }
 .rq-chip-repetida {
   color: #c7bdd8;
-  background: rgba(44, 32, 57, .04);
+  background: rgba(44, 32, 57, 0.04);
   text-decoration: line-through;
 }
 
-.rq-leyenda { font-size: 10px; color: #c7bdd8; margin-top: -4px; }
+.rq-leyenda {
+  font-size: 10px;
+  color: #c7bdd8;
+  margin-top: -4px;
+}
 
-.rq-nota { font-size: 11px; color: #6b5a8a; line-height: 1.5; }
+.rq-nota {
+  font-size: 11px;
+  color: #6b5a8a;
+  line-height: 1.5;
+}
 </style>

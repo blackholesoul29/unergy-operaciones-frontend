@@ -29,9 +29,7 @@ export default defineConfig(({ mode }) => {
           target: env.EVO_API_URL || 'http://localhost:18800',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api\/v1\/evo/, ''),
-          headers: env.EVO_API_TOKEN
-            ? { 'X-EVO-Token': env.EVO_API_TOKEN }
-            : {},
+          headers: env.EVO_API_TOKEN ? { 'X-EVO-Token': env.EVO_API_TOKEN } : {},
         },
         '/api': {
           target: env.VITE_API_URL || 'http://localhost:8000',

@@ -52,7 +52,10 @@ export function inverterSeries(detail) {
   if (!curve.length) return null
   const data = mapMinutes(
     curve,
-    (pt) => { const t = pt.time || ''; return t.includes(' ') ? t.split(' ')[1] : t },
+    (pt) => {
+      const t = pt.time || ''
+      return t.includes(' ') ? t.split(' ')[1] : t
+    },
     (pt) => (pt.kw != null ? +pt.kw : null),
   )
   return data.every((v) => v == null) ? null : data
@@ -63,7 +66,11 @@ export function meterSeries(detail) {
   const snap = bestMedidorSnap(detail)
   const rows = (snap?.time_series?.power ?? []).filter((r) => r.kw != null)
   if (!rows.length) return null
-  const data = mapMinutes(rows, (r) => gaiaTime(r.time), (r) => +Math.abs(r.kw))
+  const data = mapMinutes(
+    rows,
+    (r) => gaiaTime(r.time),
+    (r) => +Math.abs(r.kw),
+  )
   return data.every((v) => v == null) ? null : data
 }
 

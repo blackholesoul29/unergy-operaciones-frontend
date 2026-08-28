@@ -1,11 +1,23 @@
 <template>
-  <Dialog :visible="visible" @update:visible="$emit('update:visible', $event)" modal
-    header="Nuevo cliente" :style="{ width: '520px' }" :closable="true">
+  <Dialog
+    :visible="visible"
+    @update:visible="$emit('update:visible', $event)"
+    modal
+    header="Nuevo cliente"
+    :style="{ width: '520px' }"
+    :closable="true"
+  >
     <div class="space-y-4 py-2">
       <div class="grid grid-cols-2 gap-4">
         <div class="col-span-2 flex flex-col gap-1">
-          <label class="field-label">Nombre / Razón social <span class="text-red-400">*</span></label>
-          <InputText v-model="form.razon_social_nombre" class="w-full" placeholder="Ej: Terpel Energía S.A.S." />
+          <label class="field-label"
+            >Nombre / Razón social <span class="text-red-400">*</span></label
+          >
+          <InputText
+            v-model="form.razon_social_nombre"
+            class="w-full"
+            placeholder="Ej: Terpel Energía S.A.S."
+          />
           <p v-if="errores.nombre" class="text-xs text-red-400">{{ errores.nombre }}</p>
         </div>
         <div class="flex flex-col gap-1">
@@ -15,20 +27,33 @@
         </div>
         <div class="flex flex-col gap-1">
           <label class="field-label">Tipo persona</label>
-          <Select v-model="form.tipo_persona"
-            :options="[{ label: 'Jurídica', value: 'juridica' }, { label: 'Natural', value: 'natural' }]"
-            optionLabel="label" optionValue="value" placeholder="Seleccionar" showClear class="w-full" />
+          <Select
+            v-model="form.tipo_persona"
+            :options="[
+              { label: 'Jurídica', value: 'juridica' },
+              { label: 'Natural', value: 'natural' },
+            ]"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Seleccionar"
+            showClear
+            class="w-full"
+          />
         </div>
       </div>
 
       <div class="border-t border-gray-100 pt-3">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-          Documentos <span class="normal-case font-normal">(links de Google Drive)</span>
+        <p class="mb-3 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+          Documentos <span class="font-normal normal-case">(links de Google Drive)</span>
         </p>
         <div class="space-y-3">
           <div class="flex flex-col gap-1">
             <label class="field-label">RUT</label>
-            <InputText v-model="form.rut_url" class="w-full" placeholder="https://drive.google.com/…" />
+            <InputText
+              v-model="form.rut_url"
+              class="w-full"
+              placeholder="https://drive.google.com/…"
+            />
           </div>
           <div class="flex flex-col gap-1">
             <label class="field-label">Cámara de comercio</label>
@@ -88,8 +113,12 @@ async function guardar() {
 
     const docs = [
       { tipo: 'camara_comercio', url: cc_url.value.trim(), nombre: 'Cámara de comercio' },
-      { tipo: 'certificado_bancario', url: cert_url.value.trim(), nombre: 'Certificación bancaria' },
-    ].filter(d => d.url)
+      {
+        tipo: 'certificado_bancario',
+        url: cert_url.value.trim(),
+        nombre: 'Certificación bancaria',
+      },
+    ].filter((d) => d.url)
 
     for (const d of docs) {
       await api.post(`/clientes/${cliente.id}/documentos`, {
@@ -111,5 +140,7 @@ async function guardar() {
 </script>
 
 <style scoped>
-.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+.field-label {
+  @apply mb-1 block text-xs font-medium text-gray-600;
+}
 </style>

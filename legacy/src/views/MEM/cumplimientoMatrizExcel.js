@@ -9,7 +9,20 @@
 //   15 = Estado
 //   16 = Bolsa (MWh)
 
-const MES_ABBR = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+const MES_ABBR = [
+  'Ene',
+  'Feb',
+  'Mar',
+  'Abr',
+  'May',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dic',
+]
 const COL = { primera: 0, mes1: 1, total: 13, min: 14, estado: 15, bolsa: 16 }
 const N_COLS = 17
 
@@ -46,8 +59,8 @@ function colLetter(idx) {
  */
 export function construirMatrizAOA(data, year) {
   const aoa = []
-  const rowLevels = []     // outline level per row
-  const formulaCells = []  // { r, c, f, kind }
+  const rowLevels = [] // outline level per row
+  const formulaCells = [] // { r, c, f, kind }
   const contractRowIndices = [] // 0-based row indices of contract rows (for grand-total formula)
 
   // ── Rows 0-2: title, blank, header ──────────────────────────────────────
@@ -62,30 +75,33 @@ export function construirMatrizAOA(data, year) {
 
   // ── Contract + project rows ──────────────────────────────────────────────
   for (const contrato of data.contratos) {
-    const contratoRowIdx = aoa.length   // 0-based; Excel row = contratoRowIdx + 1
+    const contratoRowIdx = aoa.length // 0-based; Excel row = contratoRowIdx + 1
     contractRowIndices.push(contratoRowIdx)
 
     // Contract row — months will be filled with formula cells; other values set here
     const contratoAoaRow = new Array(N_COLS).fill('')
-    contratoAoaRow[COL.primera] = `${contrato.nombre_interno || contrato.numero_codigo_contrato} (${contrato.n_plantas} pl.)`
-    contratoAoaRow[COL.min]     = contrato.total_min_anual_mwh ?? ''
-    contratoAoaRow[COL.estado]  = contrato.estado_cumplimiento === 'cumple' ? '✓ Cumple' : '✗ No cumple'
-    contratoAoaRow[COL.bolsa]   = contrato.bolsa_anual_mwh ?? ''
+    contratoAoaRow[COL.primera] =
+      `${contrato.nombre_interno || contrato.numero_codigo_contrato} (${contrato.n_plantas} pl.)`
+    contratoAoaRow[COL.min] = contrato.total_min_anual_mwh ?? ''
+    contratoAoaRow[COL.estado] =
+      contrato.estado_cumplimiento === 'cumple' ? '✓ Cumple' : '✗ No cumple'
+    contratoAoaRow[COL.bolsa] = contrato.bolsa_anual_mwh ?? ''
     aoa.push(contratoAoaRow)
     rowLevels.push(0)
 
     // Project rows (level 1) — must be added BEFORE we build formulas so we know the range
-    const projStartIdx = aoa.length   // 0-based index of first project row
+    const projStartIdx = aoa.length // 0-based index of first project row
     for (const proj of contrato.proyectos) {
       const projRow = new Array(N_COLS).fill('')
-      projRow[COL.primera] = `    ${proj.nombre} (${Math.round((proj.pct_despacho_rep ?? 0) * 100)}% part.)`
+      projRow[COL.primera] =
+        `    ${proj.nombre} (${Math.round((proj.pct_despacho_rep ?? 0) * 100)}% part.)`
       for (let m = 0; m < 12; m++) {
         projRow[COL.mes1 + m] = proj.meses[m]?.valor_mwh ?? 0
       }
       aoa.push(projRow)
       rowLevels.push(1)
     }
-    const projEndIdx = aoa.length - 1   // 0-based index of last project row
+    const projEndIdx = aoa.length - 1 // 0-based index of last project row
 
     // Formula: contract month = SUM of project rows for that month
     for (let m = 0; m < 12; m++) {
@@ -106,8 +122,8 @@ export function construirMatrizAOA(data, year) {
 
     // Formula: contract annual total = SUM(Ene..Dic) on its own row
     const firstMesCol = colLetter(COL.mes1)
-    const lastMesCol  = colLetter(COL.mes1 + 11)
-    const excelRow    = contratoRowIdx + 1   // 1-based
+    const lastMesCol = colLetter(COL.mes1 + 11)
+    const excelRow = contratoRowIdx + 1 // 1-based
     formulaCells.push({
       r: contratoRowIdx,
       c: COL.total,
@@ -117,7 +133,7 @@ export function construirMatrizAOA(data, year) {
   }
 
   // ── Grand-total row ──────────────────────────────────────────────────────
-  const totalRow = aoa.length   // 0-based index
+  const totalRow = aoa.length // 0-based index
   const totalAoaRow = new Array(N_COLS).fill('')
   totalAoaRow[COL.primera] = `TOTAL (${data.contratos.length} contratos)`
   aoa.push(totalAoaRow)
@@ -129,7 +145,7 @@ export function construirMatrizAOA(data, year) {
     const col = colLetter(COL.mes1 + m)
     if (contractRowIndices.length > 0) {
       // Each reference: col + (1-based Excel row)
-      const refs = contractRowIndices.map(r => `${col}${r + 1}`).join(',')
+      const refs = contractRowIndices.map((r) => `${col}${r + 1}`).join(',')
       formulaCells.push({
         r: totalRow,
         c: COL.mes1 + m,

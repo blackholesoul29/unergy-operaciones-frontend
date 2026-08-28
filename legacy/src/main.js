@@ -7,7 +7,7 @@ import { definePreset } from '@primevue/themes'
 const UnergPreset = definePreset(Aura, {
   semantic: {
     primary: {
-      50:  '{violet.50}',
+      50: '{violet.50}',
       100: '{violet.100}',
       200: '{violet.200}',
       300: '{violet.300}',

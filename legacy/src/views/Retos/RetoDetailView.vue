@@ -14,7 +14,13 @@
 
         <template #actions>
           <template v-if="hayMetricas">
-            <Button label="Métrica" icon="pi pi-plus" size="small" outlined @click="abrirNuevaMetrica" />
+            <Button
+              label="Métrica"
+              icon="pi pi-plus"
+              size="small"
+              outlined
+              @click="abrirNuevaMetrica"
+            />
             <button type="button" class="rq-cta" @click="abrirSemanaNumero(semanaCta)">
               <i class="pi pi-flag-fill" />
               <span>Registrar semana {{ semanaCta }}</span>
@@ -22,16 +28,28 @@
           </template>
 
           <!-- Sin métricas la acción útil del header es traerlas de otro Q -->
-          <span v-else v-tooltip.bottom="hayOrigenCopiable ? '' : 'No hay otros trimestres con métricas'">
+          <span
+            v-else
+            v-tooltip.bottom="hayOrigenCopiable ? '' : 'No hay otros trimestres con métricas'"
+          >
             <Button
-              label="Copiar de otro Q" icon="pi pi-copy" size="small" outlined severity="secondary"
-              :disabled="!hayOrigenCopiable" @click="copiarVisible = true"
+              label="Copiar de otro Q"
+              icon="pi pi-copy"
+              size="small"
+              outlined
+              severity="secondary"
+              :disabled="!hayOrigenCopiable"
+              @click="copiarVisible = true"
             />
           </span>
 
           <Button
-            icon="pi pi-ellipsis-h" text rounded size="small"
-            aria-label="Más acciones del trimestre" @click="menuHeader.toggle($event)"
+            icon="pi pi-ellipsis-h"
+            text
+            rounded
+            size="small"
+            aria-label="Más acciones del trimestre"
+            @click="menuHeader.toggle($event)"
           />
           <Menu ref="menuHeader" :model="itemsHeader" :popup="true" />
         </template>
@@ -39,7 +57,7 @@
 
       <div v-else-if="!errorCarga" class="rq-header-skeleton">
         <Skeleton width="40px" height="40px" borderRadius="12px" />
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0 flex-1">
           <Skeleton width="220px" height="18px" />
           <Skeleton width="320px" height="12px" class="mt-2" />
         </div>
@@ -48,7 +66,7 @@
 
     <!-- Error de carga ───────────────────────────────────────────────── -->
     <Message v-if="errorCarga" severity="error" :closable="false">
-      <div class="flex items-center gap-3 flex-wrap">
+      <div class="flex flex-wrap items-center gap-3">
         <span>{{ errorCarga }}</span>
         <Button label="Reintentar" size="small" text @click="cargar()" />
       </div>
@@ -56,7 +74,7 @@
 
     <!-- Cargando: el layout es conocido, así que esqueleto y no spinner ─ -->
     <template v-else-if="!reto">
-      <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <Skeleton v-for="i in 3" :key="i" height="150px" borderRadius="12px" />
       </div>
       <Skeleton height="260px" borderRadius="12px" />
@@ -67,16 +85,26 @@
       <div class="rq-vacio-tile"><i class="pi pi-flag" /></div>
       <h2 class="rq-vacio-titulo">Este trimestre todavía no tiene métricas</h2>
       <p class="rq-vacio-parrafo">
-        Define qué vas a medir entre el {{ fechaLarga(reto.fecha_inicio) }}
-        y el {{ fechaLarga(reto.fecha_fin) }}.
-        Cada métrica se llena una vez por semana y el tablero calcula el consolidado.
+        Define qué vas a medir entre el {{ fechaLarga(reto.fecha_inicio) }} y el
+        {{ fechaLarga(reto.fecha_fin) }}. Cada métrica se llena una vez por semana y el tablero
+        calcula el consolidado.
       </p>
       <div class="rq-vacio-botones">
-        <Button label="Definir la primera métrica" icon="pi pi-plus" size="small" @click="abrirNuevaMetrica" />
+        <Button
+          label="Definir la primera métrica"
+          icon="pi pi-plus"
+          size="small"
+          @click="abrirNuevaMetrica"
+        />
         <span v-tooltip.bottom="hayOrigenCopiable ? '' : 'No hay otros trimestres con métricas'">
           <Button
-            label="Copiar de otro trimestre" icon="pi pi-copy" size="small" outlined severity="secondary"
-            :disabled="!hayOrigenCopiable" @click="copiarVisible = true"
+            label="Copiar de otro trimestre"
+            icon="pi pi-copy"
+            size="small"
+            outlined
+            severity="secondary"
+            :disabled="!hayOrigenCopiable"
+            @click="copiarVisible = true"
           />
         </span>
       </div>
@@ -92,7 +120,7 @@
 
     <!-- Con métricas ─────────────────────────────────────────────────── -->
     <template v-else>
-      <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+      <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         <MetricaKpiCard
           v-for="m in metricasActivas"
           :key="m.id"
@@ -233,17 +261,17 @@ const hayMetricas = computed(() => metricas.value.length > 0)
 
 const metricasActivas = computed(() =>
   metricas.value
-    .filter(m => m.activa !== false)
+    .filter((m) => m.activa !== false)
     .slice()
     .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0)),
 )
 
-const nombresDestino = computed(() => metricas.value.map(m => m.nombre))
+const nombresDestino = computed(() => metricas.value.map((m) => m.nombre))
 
-const otrosRetos = computed(() => retosAnio.value.filter(r => r.id !== reto.value?.id))
+const otrosRetos = computed(() => retosAnio.value.filter((r) => r.id !== reto.value?.id))
 
 const hayOrigenCopiable = computed(() =>
-  otrosRetos.value.some(r => (r.total_metricas ?? (r.metricas || []).length) > 0),
+  otrosRetos.value.some((r) => (r.total_metricas ?? (r.metricas || []).length) > 0),
 )
 
 const subtitulo = computed(() => {
@@ -270,19 +298,43 @@ const semanaCta = computed(() => {
 })
 
 const semanaActivaObj = computed(
-  () => (reto.value?.semanas || []).find(s => s.numero === semanaActivaNumero.value) || null,
+  () => (reto.value?.semanas || []).find((s) => s.numero === semanaActivaNumero.value) || null,
 )
 
 const itemsHeader = computed(() => [
-  { label: 'Editar trimestre', icon: 'pi pi-pencil', command: () => { editarVisible.value = true } },
-  { label: 'Copiar métricas de otro Q', icon: 'pi pi-copy', command: () => { copiarVisible.value = true } },
+  {
+    label: 'Editar trimestre',
+    icon: 'pi pi-pencil',
+    command: () => {
+      editarVisible.value = true
+    },
+  },
+  {
+    label: 'Copiar métricas de otro Q',
+    icon: 'pi pi-copy',
+    command: () => {
+      copiarVisible.value = true
+    },
+  },
   { separator: true },
   { label: 'Exportar a Excel', icon: 'pi pi-file-excel', command: exportarExcel },
 ])
 
 // ── Utilidades ──────────────────────────────────────────────────────────
-const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
+const MESES_LARGOS = [
+  'enero',
+  'febrero',
+  'marzo',
+  'abril',
+  'mayo',
+  'junio',
+  'julio',
+  'agosto',
+  'septiembre',
+  'octubre',
+  'noviembre',
+  'diciembre',
+]
 
 function fechaLarga(iso) {
   if (!iso) return '—'
@@ -296,7 +348,10 @@ function mensajeError(err, fallback = 'Ocurrió un error inesperado') {
   const det = err?.response?.data?.detail
   if (typeof det === 'string' && det.trim()) return det
   if (Array.isArray(det)) {
-    const msg = det.map(e => e?.msg).filter(Boolean).join('; ')
+    const msg = det
+      .map((e) => e?.msg)
+      .filter(Boolean)
+      .join('; ')
     if (msg) return msg
   }
   if (det && typeof det === 'object') {
@@ -337,14 +392,19 @@ async function cargarRetosAnio(anio) {
 }
 
 onMounted(cargar)
-watch(retoId, () => { reto.value = null; cargar() })
-watch(editarVisible, (v) => { if (v) errorTrimestre.value = '' })
+watch(retoId, () => {
+  reto.value = null
+  cargar()
+})
+watch(editarVisible, (v) => {
+  if (v) errorTrimestre.value = ''
+})
 
 // ── Estado local de valores ─────────────────────────────────────────────
 function aplicarMetrica(m) {
   if (!reto.value || !m) return
   const arr = reto.value.metricas || (reto.value.metricas = [])
-  const i = arr.findIndex(x => x.id === m.id)
+  const i = arr.findIndex((x) => x.id === m.id)
   if (i >= 0) arr.splice(i, 1, m)
   else arr.push(m)
   reto.value.total_metricas = arr.length
@@ -458,8 +518,10 @@ async function alternarActiva(m) {
     toast.add({ severity: 'success', summary: 'Métrica actualizada', life: 2500 })
   } catch (e) {
     toast.add({
-      severity: 'error', summary: 'No se pudo actualizar la métrica',
-      detail: mensajeError(e), life: 5000,
+      severity: 'error',
+      summary: 'No se pudo actualizar la métrica',
+      detail: mensajeError(e),
+      life: 5000,
     })
   }
 }
@@ -483,7 +545,7 @@ async function eliminarMetrica(m) {
   try {
     await api.delete(`/retos/metricas/${m.id}`)
     const arr = reto.value?.metricas || []
-    const i = arr.findIndex(x => x.id === m.id)
+    const i = arr.findIndex((x) => x.id === m.id)
     if (i >= 0) arr.splice(i, 1)
     if (reto.value) {
       reto.value.total_metricas = arr.length
@@ -493,8 +555,10 @@ async function eliminarMetrica(m) {
     toast.add({ severity: 'success', summary: 'Métrica eliminada', life: 2500 })
   } catch (e) {
     toast.add({
-      severity: 'error', summary: 'No se pudo eliminar la métrica',
-      detail: mensajeError(e), life: 5000,
+      severity: 'error',
+      summary: 'No se pudo eliminar la métrica',
+      detail: mensajeError(e),
+      life: 5000,
     })
   }
 }
@@ -503,8 +567,9 @@ async function eliminarMetrica(m) {
 function enfocarMetrica(m) {
   if (!m) return
   nextTick(() => {
-    const destino = document.querySelector(`[data-metrica-id="${m.id}"]`)
-      || document.getElementById(`rq-fila-${m.id}`)
+    const destino =
+      document.querySelector(`[data-metrica-id="${m.id}"]`) ||
+      document.getElementById(`rq-fila-${m.id}`)
     if (!destino) return
     destino.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' })
     destino.classList.add('rq-flash')
@@ -518,17 +583,18 @@ async function submitCopiar(origenId) {
   copiando.value = true
   // El contrato no fija si la respuesta trae solo las nuevas o todas: el delta
   // de ids contra el estado previo da el conteo correcto en ambos casos.
-  const antes = new Set((reto.value.metricas || []).map(m => m.id))
-  const origen = otrosRetos.value.find(r => r.id === origenId)
+  const antes = new Set((reto.value.metricas || []).map((m) => m.id))
+  const origen = otrosRetos.value.find((r) => r.id === origenId)
   try {
     await api.post(`/retos/${reto.value.id}/metricas/copiar-desde/${origenId}`)
     await cargar()
     copiarVisible.value = false
-    const nuevas = (reto.value?.metricas || []).filter(m => !antes.has(m.id)).length
+    const nuevas = (reto.value?.metricas || []).filter((m) => !antes.has(m.id)).length
     if (!nuevas) {
       toast.add({ severity: 'info', summary: 'No había métricas nuevas por copiar', life: 3500 })
     } else {
-      const nombre = origen?.nombre || `Retos Q${origen?.trimestre ?? ''} ${origen?.anio ?? ''}`.trim()
+      const nombre =
+        origen?.nombre || `Retos Q${origen?.trimestre ?? ''} ${origen?.anio ?? ''}`.trim()
       toast.add({
         severity: 'success',
         summary: 'Métricas copiadas',
@@ -538,8 +604,10 @@ async function submitCopiar(origenId) {
     }
   } catch (e) {
     toast.add({
-      severity: 'error', summary: 'No se pudieron copiar las métricas',
-      detail: mensajeError(e), life: 5000,
+      severity: 'error',
+      summary: 'No se pudieron copiar las métricas',
+      detail: mensajeError(e),
+      life: 5000,
     })
   } finally {
     copiando.value = false
@@ -549,8 +617,8 @@ async function submitCopiar(origenId) {
 // ── Editar trimestre ────────────────────────────────────────────────────
 async function submitTrimestre(payload) {
   if (!reto.value) return
-  const cambianFechas = payload.fecha_inicio !== reto.value.fecha_inicio
-    || payload.fecha_fin !== reto.value.fecha_fin
+  const cambianFechas =
+    payload.fecha_inicio !== reto.value.fecha_inicio || payload.fecha_fin !== reto.value.fecha_fin
   guardandoTrimestre.value = true
   errorTrimestre.value = ''
   if (cambianFechas) recargando.value = true
@@ -565,8 +633,10 @@ async function submitTrimestre(payload) {
     // Los 400 del contrato ya se ven bajo el campo de fecha; el resto sí sorprende.
     if (e?.response?.status !== 400) {
       toast.add({
-        severity: 'error', summary: 'No se pudo actualizar el trimestre',
-        detail: msg, life: 5000,
+        severity: 'error',
+        summary: 'No se pudo actualizar el trimestre',
+        detail: msg,
+        life: 5000,
       })
     }
   } finally {
@@ -584,7 +654,7 @@ function abrirDrawerSemana(semana) {
 
 function abrirSemanaNumero(numero) {
   const semanas = reto.value?.semanas || []
-  abrirDrawerSemana(semanas.find(s => s.numero === numero) || semanas[0])
+  abrirDrawerSemana(semanas.find((s) => s.numero === numero) || semanas[0])
 }
 
 function navegarSemana(delta) {
@@ -592,7 +662,7 @@ function navegarSemana(delta) {
   if (!semanas.length) return
   const actual = semanaActivaNumero.value ?? semanas[0].numero
   const destino = Math.min(Math.max(actual + Number(delta || 0), 1), semanas.length)
-  const s = semanas.find(x => x.numero === destino)
+  const s = semanas.find((x) => x.numero === destino)
   if (s) semanaActivaNumero.value = s.numero
 }
 
@@ -602,18 +672,30 @@ async function exportarExcel() {
   if (!r) return
   try {
     const XLSX = await import('xlsx-js-style')
-    const C = { morado: '915BD8', oscuro: '2C2039', lila: 'F7F4FC', blanco: 'FFFFFF', gris: '6B5A8A', borde: 'ECE4F5' }
+    const C = {
+      morado: '915BD8',
+      oscuro: '2C2039',
+      lila: 'F7F4FC',
+      blanco: 'FFFFFF',
+      gris: '6B5A8A',
+      borde: 'ECE4F5',
+    }
 
     const semanas = r.semanas || []
     const filas = (r.metricas || []).slice().sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
     const encabezado = [
-      'Métrica', 'Unidad', 'Agregación', 'Responsable',
-      ...semanas.map(s => `${s.etiqueta} · ${s.rango_label}`),
-      'Consolidado', 'Meta', 'Cumplimiento %',
+      'Métrica',
+      'Unidad',
+      'Agregación',
+      'Responsable',
+      ...semanas.map((s) => `${s.etiqueta} · ${s.rango_label}`),
+      'Consolidado',
+      'Meta',
+      'Cumplimiento %',
     ]
     const nCols = encabezado.length
 
-    const num = v => (v === null || v === undefined || v === '' ? null : Number(v))
+    const num = (v) => (v === null || v === undefined || v === '' ? null : Number(v))
 
     const aoa = [
       [r.nombre || `Retos Q${r.trimestre} ${r.anio}`],
@@ -625,10 +707,14 @@ async function exportarExcel() {
         return [
           m.activa === false ? `${m.nombre} (inactiva)` : m.nombre,
           m.unidad || '',
-          TIPOS_AGREGACION.find(t => t.value === m.tipo_agregacion)?.label || m.tipo_agregacion || '',
+          TIPOS_AGREGACION.find((t) => t.value === m.tipo_agregacion)?.label ||
+            m.tipo_agregacion ||
+            '',
           m.responsable || '',
-          ...semanas.map(s => num(mapa[s.inicio]?.valor)),
-          num(m.consolidado), num(m.meta), num(m.cumplimiento_pct),
+          ...semanas.map((s) => num(mapa[s.inicio]?.valor)),
+          num(m.consolidado),
+          num(m.meta),
+          num(m.cumplimiento_pct),
         ]
       }),
     ]
@@ -637,9 +723,14 @@ async function exportarExcel() {
     const celda = (fila, col) => ws[XLSX.utils.encode_cell({ r: fila, c: col })]
 
     ws['!cols'] = [
-      { wch: 32 }, { wch: 9 }, { wch: 14 }, { wch: 16 },
+      { wch: 32 },
+      { wch: 9 },
+      { wch: 14 },
+      { wch: 16 },
       ...semanas.map(() => ({ wch: 14 })),
-      { wch: 14 }, { wch: 12 }, { wch: 15 },
+      { wch: 14 },
+      { wch: 12 },
+      { wch: 15 },
     ]
     ws['!merges'] = [
       { s: { r: 0, c: 0 }, e: { r: 0, c: Math.max(nCols - 1, 0) } },
@@ -684,8 +775,10 @@ async function exportarExcel() {
     XLSX.writeFile(wb, `Retos_Q${r.trimestre}_${r.anio}.xlsx`)
   } catch (e) {
     toast.add({
-      severity: 'error', summary: 'No se pudo exportar',
-      detail: mensajeError(e, 'No se pudo generar el archivo de Excel'), life: 5000,
+      severity: 'error',
+      summary: 'No se pudo exportar',
+      detail: mensajeError(e, 'No se pudo generar el archivo de Excel'),
+      life: 5000,
     })
   }
 }
@@ -696,7 +789,7 @@ async function exportarExcel() {
   background: #fff;
   border: 1px solid #e8e0f0;
   border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(44, 32, 57, .04);
+  box-shadow: 0 1px 2px rgba(44, 32, 57, 0.04);
 }
 
 /* ── Miga y cabecera ─────────────────────────────────────────────────── */
@@ -707,39 +800,71 @@ async function exportarExcel() {
   padding: 4px 2px;
   font-size: 11px;
   font-weight: 700;
-  color: #915BD8;
+  color: #915bd8;
   margin-bottom: 4px;
 }
-.rq-miga:hover { text-decoration: underline; }
-.rq-miga .pi { font-size: 9px; }
-
-.rq-tile {
-  width: 40px; height: 40px; flex: none;
-  border-radius: 12px;
-  background: rgba(145, 91, 216, 0.12);
-  color: #915BD8;
-  font-size: 14px; font-weight: 800;
-  display: grid; place-items: center;
+.rq-miga:hover {
+  text-decoration: underline;
+}
+.rq-miga .pi {
+  font-size: 9px;
 }
 
-.rq-header-skeleton { display: flex; align-items: center; gap: 10px; }
+.rq-tile {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 12px;
+  background: rgba(145, 91, 216, 0.12);
+  color: #915bd8;
+  font-size: 14px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.rq-header-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 
 /* Único CTA amarillo de la vista */
 .rq-cta {
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 32px; padding: 0 14px;
-  border: 0; border-radius: 9px;
-  background: #F6FF72; color: #2C2039;
-  font-size: 12.5px; font-weight: 800; cursor: pointer;
-  box-shadow: 0 1px 0 rgba(44, 32, 57, .05);
-  transition: filter .12s, box-shadow .12s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: #f6ff72;
+  color: #2c2039;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(44, 32, 57, 0.05);
+  transition:
+    filter 0.12s,
+    box-shadow 0.12s;
 }
-.rq-cta:hover { filter: brightness(.97); box-shadow: 0 3px 12px rgba(246, 255, 114, .55); }
-.rq-cta:focus-visible { outline: 2px solid #2C2039; outline-offset: 2px; }
-.rq-cta .pi { font-size: 12px; }
+.rq-cta:hover {
+  filter: brightness(0.97);
+  box-shadow: 0 3px 12px rgba(246, 255, 114, 0.55);
+}
+.rq-cta:focus-visible {
+  outline: 2px solid #2c2039;
+  outline-offset: 2px;
+}
+.rq-cta .pi {
+  font-size: 12px;
+}
 
 @media (max-width: 640px) {
-  .rq-cta { flex: 1; justify-content: center; }
+  .rq-cta {
+    flex: 1;
+    justify-content: center;
+  }
 }
 
 /* ── Estado vacío ────────────────────────────────────────────────────── */
@@ -750,53 +875,100 @@ async function exportarExcel() {
   margin: 0 auto;
 }
 .rq-vacio-tile {
-  width: 56px; height: 56px;
+  width: 56px;
+  height: 56px;
   border-radius: 16px;
-  background: rgba(145, 91, 216, 0.10);
-  display: grid; place-items: center;
+  background: rgba(145, 91, 216, 0.1);
+  display: grid;
+  place-items: center;
   margin: 0 auto 16px;
 }
-.rq-vacio-tile .pi { font-size: 24px; color: #915BD8; }
+.rq-vacio-tile .pi {
+  font-size: 24px;
+  color: #915bd8;
+}
 
-.rq-vacio-titulo { font-size: 15px; font-weight: 800; color: #2C2039; }
+.rq-vacio-titulo {
+  font-size: 15px;
+  font-weight: 800;
+  color: #2c2039;
+}
 
 .rq-vacio-parrafo {
-  font-size: 12.5px; font-weight: 400; color: #6b5a8a;
-  line-height: 1.55; max-width: 440px; margin: 8px auto 0;
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #6b5a8a;
+  line-height: 1.55;
+  max-width: 440px;
+  margin: 8px auto 0;
 }
 
 .rq-vacio-botones {
   margin-top: 20px;
-  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.rq-vacio-sep { height: 1px; background: #ECE7F2; margin: 24px 0 12px; }
+.rq-vacio-sep {
+  height: 1px;
+  background: #ece7f2;
+  margin: 24px 0 12px;
+}
 
-.rq-vacio-ejemplos { font-size: 11px; font-weight: 400; color: #9b8fb0; line-height: 1.6; }
-.rq-ejemplo { color: #6b5a8a; }
+.rq-vacio-ejemplos {
+  font-size: 11px;
+  font-weight: 400;
+  color: #9b8fb0;
+  line-height: 1.6;
+}
+.rq-ejemplo {
+  color: #6b5a8a;
+}
 
 /* ── Zona de la matriz ───────────────────────────────────────────────── */
-.rq-matriz-zona { position: relative; }
+.rq-matriz-zona {
+  position: relative;
+}
 
-.rq-atenuado { opacity: .45; pointer-events: none; }
+.rq-atenuado {
+  opacity: 0.45;
+  pointer-events: none;
+}
 
 .rq-barra-indeterminada {
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  z-index: 5; border-radius: 2px; overflow: hidden;
-  background: linear-gradient(90deg, transparent 0%, #915BD8 45%, #915BD8 55%, transparent 100%);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 5;
+  border-radius: 2px;
+  overflow: hidden;
+  background: linear-gradient(90deg, transparent 0%, #915bd8 45%, #915bd8 55%, transparent 100%);
   background-size: 40% 100%;
   background-repeat: no-repeat;
   animation: rq-indeterminate 1s linear infinite;
 }
 
 @keyframes rq-indeterminate {
-  0%   { background-position: -40% 0; }
-  100% { background-position: 140% 0; }
+  0% {
+    background-position: -40% 0;
+  }
+  100% {
+    background-position: 140% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rq-barra-indeterminada { animation: none; background-position: 50% 0; }
-  .rq-cta { transition: none; }
+  .rq-barra-indeterminada {
+    animation: none;
+    background-position: 50% 0;
+  }
+  .rq-cta {
+    transition: none;
+  }
 }
 </style>
 
@@ -806,16 +978,26 @@ async function exportarExcel() {
 .rq-menu-danger .p-menu-item-link,
 .rq-menu-danger .p-menu-item-content,
 .rq-menu-danger .p-menu-item-icon,
-.rq-menu-danger .p-menu-item-label { color: #B0364A; }
+.rq-menu-danger .p-menu-item-label {
+  color: #b0364a;
+}
 
-.rq-flash { animation: rq-flash-fila 1.2s ease-out; }
+.rq-flash {
+  animation: rq-flash-fila 1.2s ease-out;
+}
 
 @keyframes rq-flash-fila {
-  0%   { background-color: rgba(145, 91, 216, .12); }
-  100% { background-color: transparent; }
+  0% {
+    background-color: rgba(145, 91, 216, 0.12);
+  }
+  100% {
+    background-color: transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rq-flash { animation: none; }
+  .rq-flash {
+    animation: none;
+  }
 }
 </style>

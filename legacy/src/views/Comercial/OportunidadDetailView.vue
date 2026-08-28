@@ -15,66 +15,113 @@
 <template>
   <div class="p-4 md:p-6" v-if="op">
     <!-- Encabezado -->
-    <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+    <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
       <div class="flex items-start gap-3">
-        <Button icon="pi pi-arrow-left" text rounded @click="$router.push('/comercial')"
-                v-tooltip.bottom="'Volver al tablero'" />
+        <Button
+          icon="pi pi-arrow-left"
+          text
+          rounded
+          @click="$router.push('/comercial')"
+          v-tooltip.bottom="'Volver al tablero'"
+        />
         <div>
-          <h1 class="text-xl font-semibold" style="color:#2C2039">{{ op.nombre }}</h1>
+          <h1 class="text-xl font-semibold" style="color: #2c2039">{{ op.nombre }}</h1>
           <div class="flex items-center gap-2 text-sm">
-            <router-link :to="`/clientes/${op.cliente_id}`" class="underline" style="color:#915BD8">
+            <router-link
+              :to="`/clientes/${op.cliente_id}`"
+              class="underline"
+              style="color: #915bd8"
+            >
               {{ op.cliente_razon_social }}
             </router-link>
-            <span v-if="op.cliente_nit" style="color:#9b89b5">NIT {{ op.cliente_nit }}</span>
+            <span v-if="op.cliente_nit" style="color: #9b89b5">NIT {{ op.cliente_nit }}</span>
           </div>
         </div>
-        <Tag v-if="op.alerta" severity="danger" :value="`⚠ ${op.dias_sin_respuesta} días sin movimiento`" />
+        <Tag
+          v-if="op.alerta"
+          severity="danger"
+          :value="`⚠ ${op.dias_sin_respuesta} días sin movimiento`"
+        />
       </div>
     </div>
 
     <!-- En qué etapa está cada oferta del cliente -->
-    <div class="flex items-center gap-2 mb-5 flex-wrap">
-      <span class="text-sm" style="color:#7a6e8a">{{ totalOfertas }} oferta(s):</span>
-      <Tag v-for="e in etapasPresentes" :key="e.value" :value="`${e.n} ${e.label.toLowerCase()}`"
-           :severity="severidadEtapa(e.value)" />
-      <span v-if="!totalOfertas" class="text-sm" style="color:#9b89b5">
+    <div class="mb-5 flex flex-wrap items-center gap-2">
+      <span class="text-sm" style="color: #7a6e8a">{{ totalOfertas }} oferta(s):</span>
+      <Tag
+        v-for="e in etapasPresentes"
+        :key="e.value"
+        :value="`${e.n} ${e.label.toLowerCase()}`"
+        :severity="severidadEtapa(e.value)"
+      />
+      <span v-if="!totalOfertas" class="text-sm" style="color: #9b89b5">
         todavía sin ofertas — se agregan en la pestaña Ofertas
       </span>
     </div>
 
     <!-- Datos del negocio: pocos y de identificación, no merecen pestaña -->
-    <details class="mb-5 rounded-lg" style="background:#FAF8FC;border:1px solid #e8e0f0">
-      <summary class="px-3 py-2 text-xs font-semibold cursor-pointer select-none" style="color:#7a6e8a">
+    <details class="mb-5 rounded-lg" style="background: #faf8fc; border: 1px solid #e8e0f0">
+      <summary
+        class="cursor-pointer px-3 py-2 text-xs font-semibold select-none"
+        style="color: #7a6e8a"
+      >
         DATOS DEL NEGOCIO
-        <span class="font-normal" style="color:#9b89b5">— {{ estadoGuardado || 'nombre, consecutivo, fechas tentativas, notas' }}</span>
+        <span class="font-normal" style="color: #9b89b5"
+          >— {{ estadoGuardado || 'nombre, consecutivo, fechas tentativas, notas' }}</span
+        >
       </summary>
-      <div class="px-3 pb-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div class="grid grid-cols-1 gap-3 px-3 pb-3 md:grid-cols-3">
         <div>
           <label class="etiqueta">Nombre del negocio</label>
           <InputText v-model.trim="seg.nombre" class="w-full" @update:modelValue="autosave" />
         </div>
         <div>
           <label class="etiqueta">Nº de oferta (consecutivo manual)</label>
-          <InputText v-model.trim="seg.numero_oferta" class="w-full" @update:modelValue="autosave" />
+          <InputText
+            v-model.trim="seg.numero_oferta"
+            class="w-full"
+            @update:modelValue="autosave"
+          />
         </div>
         <div>
           <label class="etiqueta">Fecha estimada de firma</label>
-          <DatePicker v-model="seg.fecha_estimada_firma" dateFormat="yy-mm-dd" showIcon class="w-full"
-                      @update:modelValue="autosave" />
+          <DatePicker
+            v-model="seg.fecha_estimada_firma"
+            dateFormat="yy-mm-dd"
+            showIcon
+            class="w-full"
+            @update:modelValue="autosave"
+          />
         </div>
         <div>
           <label class="etiqueta">Inicio tentativo — representación</label>
-          <DatePicker v-model="seg.fecha_tentativa_inicio_representacion" dateFormat="yy-mm-dd" showIcon
-                      class="w-full" @update:modelValue="autosave" />
+          <DatePicker
+            v-model="seg.fecha_tentativa_inicio_representacion"
+            dateFormat="yy-mm-dd"
+            showIcon
+            class="w-full"
+            @update:modelValue="autosave"
+          />
         </div>
         <div>
           <label class="etiqueta">Inicio tentativo — compra de energía</label>
-          <DatePicker v-model="seg.fecha_tentativa_inicio_compra_energia" dateFormat="yy-mm-dd" showIcon
-                      class="w-full" @update:modelValue="autosave" />
+          <DatePicker
+            v-model="seg.fecha_tentativa_inicio_compra_energia"
+            dateFormat="yy-mm-dd"
+            showIcon
+            class="w-full"
+            @update:modelValue="autosave"
+          />
         </div>
         <div class="md:col-span-3">
           <label class="etiqueta">Notas</label>
-          <Textarea v-model="seg.notas" rows="2" autoResize class="w-full" @update:modelValue="autosave" />
+          <Textarea
+            v-model="seg.notas"
+            rows="2"
+            autoResize
+            class="w-full"
+            @update:modelValue="autosave"
+          />
         </div>
       </div>
     </details>
@@ -86,22 +133,31 @@
       </TabPanel>
 
       <TabPanel header="Cliente y contactos">
-        <div class="max-w-4xl flex flex-col gap-6">
+        <div class="flex max-w-4xl flex-col gap-6">
           <ClienteForm :initial="clienteFull" @save="patchCliente" @cancel="() => {}" />
           <ContactosPanel :cliente-id="op.cliente_id" />
         </div>
       </TabPanel>
 
       <TabPanel header="Proyectos y contratos">
-        <div class="flex items-center justify-between mb-2">
-          <h3 class="text-sm font-semibold" style="color:#2C2039">
+        <div class="mb-2 flex items-center justify-between">
+          <h3 class="text-sm font-semibold" style="color: #2c2039">
             {{ op.proyectos.length }} proyecto(s) vinculados
           </h3>
-          <Button label="Agregar proyecto" icon="pi pi-plus" size="small"
-                  @click="showAgregarProyecto = true" />
+          <Button
+            label="Agregar proyecto"
+            icon="pi pi-plus"
+            size="small"
+            @click="showAgregarProyecto = true"
+          />
         </div>
-        <DataTable :value="proyectosFilas" class="text-sm mb-6" dataKey="id" selectionMode="single"
-                   @row-click="$router.push(`/proyectos/${$event.data.id}`)">
+        <DataTable
+          :value="proyectosFilas"
+          class="mb-6 text-sm"
+          dataKey="id"
+          selectionMode="single"
+          @row-click="$router.push(`/proyectos/${$event.data.id}`)"
+        >
           <Column field="nombre_comercial" header="Nombre" />
           <Column header="Potencia AC">
             <template #body="{ data }">
@@ -115,79 +171,131 @@
           </Column>
           <Column field="fecha_estimada_energizacion" header="Operación estimada" />
           <Column field="fecha_inicio_comercializacion" header="Inicio compra energía" />
-          <template #empty><span style="color:#9b89b5">Sin proyectos vinculados.</span></template>
+          <template #empty><span style="color: #9b89b5">Sin proyectos vinculados.</span></template>
         </DataTable>
 
-        <h3 class="text-sm font-semibold mb-1" style="color:#2C2039">Contratos PPA del cliente</h3>
-        <p class="text-xs mb-2" style="color:#9b89b5">
+        <h3 class="mb-1 text-sm font-semibold" style="color: #2c2039">Contratos PPA del cliente</h3>
+        <p class="mb-2 text-xs" style="color: #9b89b5">
           Los que salen de una oferta se crean con <strong>Firmar → crear PPA</strong> desde el
           tablero, para que queden enlazados a ella.
         </p>
-        <DataTable :value="contratosPpaFilas" class="text-sm mb-6" dataKey="id" selectionMode="single"
-                   @row-click="$router.push(`/contratos/${$event.data.id}`)">
+        <DataTable
+          :value="contratosPpaFilas"
+          class="mb-6 text-sm"
+          dataKey="id"
+          selectionMode="single"
+          @row-click="$router.push(`/contratos/${$event.data.id}`)"
+        >
           <Column field="numero_codigo_contrato" header="Código" />
           <Column field="nombre_interno" header="Nombre interno" />
           <Column field="fecha_inicio" header="Inicio" />
           <Column field="fecha_fin" header="Fin" />
-          <template #empty><span style="color:#9b89b5">Sin contratos PPA.</span></template>
+          <template #empty><span style="color: #9b89b5">Sin contratos PPA.</span></template>
         </DataTable>
 
-        <div class="flex items-center justify-between mb-1">
-          <h3 class="text-sm font-semibold" style="color:#2C2039">Contratos de representación</h3>
-          <Button label="Nuevo contrato de representación" icon="pi pi-plus" size="small"
-                  severity="secondary" outlined @click="showRepWizard = true" />
+        <div class="mb-1 flex items-center justify-between">
+          <h3 class="text-sm font-semibold" style="color: #2c2039">Contratos de representación</h3>
+          <Button
+            label="Nuevo contrato de representación"
+            icon="pi pi-plus"
+            size="small"
+            severity="secondary"
+            outlined
+            @click="showRepWizard = true"
+          />
         </div>
-        <DataTable :value="contratosRepFilas" class="text-sm" dataKey="id" selectionMode="single"
-                   @row-click="$router.push(`/contratos/${$event.data.id}`)">
+        <DataTable
+          :value="contratosRepFilas"
+          class="text-sm"
+          dataKey="id"
+          selectionMode="single"
+          @row-click="$router.push(`/contratos/${$event.data.id}`)"
+        >
           <Column field="numero_contrato" header="Número" />
           <Column field="contratante_nombre" header="Contratante" />
           <Column field="fecha_inicio" header="Inicio" />
           <Column field="fecha_fin" header="Fin" />
-          <template #empty><span style="color:#9b89b5">Sin contratos de representación.</span></template>
+          <template #empty
+            ><span style="color: #9b89b5">Sin contratos de representación.</span></template
+          >
         </DataTable>
 
-        <ProyectoDesdeCRMDialog v-model:visible="showAgregarProyecto" :oportunidad-id="op.id"
-                                @creado="recargar" />
+        <ProyectoDesdeCRMDialog
+          v-model:visible="showAgregarProyecto"
+          :oportunidad-id="op.id"
+          @creado="recargar"
+        />
         <!-- ContratoServicioWizard no expone prop de cliente (solo `tipo` y
              `proyectoIdDefault`): el cliente se selecciona dentro del wizard. -->
-        <ContratoServicioWizard v-model:visible="showRepWizard" tipo="representacion"
-                                @creado="recargarContratos" @cerrar="showRepWizard = false" />
+        <ContratoServicioWizard
+          v-model:visible="showRepWizard"
+          tipo="representacion"
+          @creado="recargarContratos"
+          @cerrar="showRepWizard = false"
+        />
       </TabPanel>
 
       <TabPanel header="Documentos y bitácora">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div>
-            <h3 class="text-sm font-semibold mb-1" style="color:#2C2039">Documentos comerciales</h3>
-            <p class="text-xs mb-3" style="color:#9b89b5">
-              Se guardan como documentos del cliente, vinculados a este negocio. La subida
-              del archivo y el cambio de estado se hacen en la ficha del cliente.
+            <h3 class="mb-1 text-sm font-semibold" style="color: #2c2039">
+              Documentos comerciales
+            </h3>
+            <p class="mb-3 text-xs" style="color: #9b89b5">
+              Se guardan como documentos del cliente, vinculados a este negocio. La subida del
+              archivo y el cambio de estado se hacen en la ficha del cliente.
             </p>
             <div class="flex flex-col gap-2">
-              <div v-for="t in TIPOS_DOC" :key="t.value" class="rounded-md p-3"
-                   style="border:1px solid #e8e0f0">
-                <div class="flex items-center justify-between flex-wrap gap-2">
+              <div
+                v-for="t in TIPOS_DOC"
+                :key="t.value"
+                class="rounded-md p-3"
+                style="border: 1px solid #e8e0f0"
+              >
+                <div class="flex flex-wrap items-center justify-between gap-2">
                   <div class="flex items-center gap-2">
-                    <span class="font-medium text-sm">{{ t.label }}</span>
+                    <span class="text-sm font-medium">{{ t.label }}</span>
                     <template v-if="docPorTipo(t.value)">
                       <Tag :value="docPorTipo(t.value).estado" />
-                      <span v-if="docPorTipo(t.value).numero" class="text-xs" style="color:#9b89b5">
+                      <span
+                        v-if="docPorTipo(t.value).numero"
+                        class="text-xs"
+                        style="color: #9b89b5"
+                      >
                         Nº {{ docPorTipo(t.value).numero }}
                       </span>
-                      <a v-if="docPorTipo(t.value).archivo_url" :href="docPorTipo(t.value).archivo_url"
-                         target="_blank" rel="noopener" class="text-xs underline" style="color:#915BD8">
+                      <a
+                        v-if="docPorTipo(t.value).archivo_url"
+                        :href="docPorTipo(t.value).archivo_url"
+                        target="_blank"
+                        rel="noopener"
+                        class="text-xs underline"
+                        style="color: #915bd8"
+                      >
                         {{ docPorTipo(t.value).archivo_nombre || 'archivo' }}
                       </a>
                     </template>
-                    <span v-else class="text-xs" style="color:#c4b8d4">sin registrar</span>
+                    <span v-else class="text-xs" style="color: #c4b8d4">sin registrar</span>
                   </div>
-                  <Button v-if="!docPorTipo(t.value)" label="Registrar" size="small" text icon="pi pi-plus"
-                          @click="crearDoc(t.value, t.label)" />
+                  <Button
+                    v-if="!docPorTipo(t.value)"
+                    label="Registrar"
+                    size="small"
+                    text
+                    icon="pi pi-plus"
+                    @click="crearDoc(t.value, t.label)"
+                  />
                 </div>
               </div>
             </div>
           </div>
-          <BitacoraPanel :oportunidad-id="op.id" :gestiones="op.gestiones" :historial="op.historial"
-                         :ofertas="op.ofertas || []" @registrada="recargar" />
+          <BitacoraPanel
+            :oportunidad-id="op.id"
+            :gestiones="op.gestiones"
+            :historial="op.historial"
+            :ofertas="op.ofertas || []"
+            @registrada="recargar"
+          />
         </div>
       </TabPanel>
     </TabView>
@@ -236,16 +344,24 @@ const showRepWizard = ref(false)
 const estadoGuardado = ref('')
 let saveTimer = null
 
-watch(op, (v) => { proyectosFilas.value = v?.proyectos ?? [] })
+watch(op, (v) => {
+  proyectosFilas.value = v?.proyectos ?? []
+})
 
 // `etapas` viene del backend como {etapa: n}; se ordena según el pipeline.
 const totalOfertas = computed(() =>
-  Object.values(op.value?.etapas ?? {}).reduce((a, b) => a + b, 0))
-const etapasPresentes = computed(() => ETAPAS
-  .filter((e) => (op.value?.etapas ?? {})[e.value])
-  .map((e) => ({ ...e, n: op.value.etapas[e.value] })))
+  Object.values(op.value?.etapas ?? {}).reduce((a, b) => a + b, 0),
+)
+const etapasPresentes = computed(() =>
+  ETAPAS.filter((e) => (op.value?.etapas ?? {})[e.value]).map((e) => ({
+    ...e,
+    n: op.value.etapas[e.value],
+  })),
+)
 
-function docPorTipo(tipo) { return (op.value?.documentos ?? []).find((d) => d.tipo === tipo) }
+function docPorTipo(tipo) {
+  return (op.value?.documentos ?? []).find((d) => d.tipo === tipo)
+}
 
 async function recargar() {
   const { data } = await api.get(`/comercial/oportunidades/${route.params.id}`)
@@ -288,8 +404,12 @@ function autosave() {
         nombre: seg.value.nombre || null,
         numero_oferta: seg.value.numero_oferta || null,
         fecha_estimada_firma: aFechaStr(seg.value.fecha_estimada_firma),
-        fecha_tentativa_inicio_representacion: aFechaStr(seg.value.fecha_tentativa_inicio_representacion),
-        fecha_tentativa_inicio_compra_energia: aFechaStr(seg.value.fecha_tentativa_inicio_compra_energia),
+        fecha_tentativa_inicio_representacion: aFechaStr(
+          seg.value.fecha_tentativa_inicio_representacion,
+        ),
+        fecha_tentativa_inicio_compra_energia: aFechaStr(
+          seg.value.fecha_tentativa_inicio_compra_energia,
+        ),
         notas: seg.value.notas || null,
       })
       estadoGuardado.value = 'Guardado ✓'
@@ -305,8 +425,12 @@ async function patchCliente(payload) {
     toast.add({ severity: 'success', summary: 'Cliente actualizado', life: 2500 })
     await cargarCliente()
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al guardar cliente',
-                detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al guardar cliente',
+      detail: err.response?.data?.detail ?? '',
+      life: 5000,
+    })
   }
 }
 
@@ -315,13 +439,17 @@ async function crearDoc(tipo, label) {
     await api.post(`/clientes/${op.value.cliente_id}/documentos`, {
       tipo,
       nombre: label,
-      numero: tipo === 'oferta' ? (seg.value.numero_oferta || op.value.numero_oferta || null) : null,
+      numero: tipo === 'oferta' ? seg.value.numero_oferta || op.value.numero_oferta || null : null,
       oportunidad_id: op.value.id,
     })
     await recargar()
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo registrar el documento',
-                detail: err.response?.data?.detail ?? '', life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo registrar el documento',
+      detail: err.response?.data?.detail ?? '',
+      life: 5000,
+    })
   }
 }
 

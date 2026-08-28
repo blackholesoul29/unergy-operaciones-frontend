@@ -3,7 +3,20 @@
 // Separado del componente para poder testear en Node y reusar entre el
 // exportador de Excel y el de PDF.
 
-export const MESES_ABBR = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+export const MESES_ABBR = [
+  'Ene',
+  'Feb',
+  'Mar',
+  'Abr',
+  'May',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dic',
+]
 
 export const ESTADO_LABELS = {
   ok: 'Cumple',
@@ -21,10 +34,15 @@ export function estadoLabelExport(estado) {
 
 export function fmtNumExport(v, decimales = 1) {
   if (v === null || v === undefined) return '—'
-  return Number(v).toLocaleString('es-CO', { minimumFractionDigits: decimales, maximumFractionDigits: decimales })
+  return Number(v).toLocaleString('es-CO', {
+    minimumFractionDigits: decimales,
+    maximumFractionDigits: decimales,
+  })
 }
 
-function genVal(mes) { return mes.gen_proyectada_cierre ?? mes.gen_proyectada_mwh ?? mes.gen_mwh ?? 0 }
+function genVal(mes) {
+  return mes.gen_proyectada_cierre ?? mes.gen_proyectada_mwh ?? mes.gen_mwh ?? 0
+}
 
 /**
  * Convierte los 12 `meses` de un contrato (respuesta de /cumplimiento/ppa/{id}/anual
@@ -64,11 +82,17 @@ export function totalizarFilasMensuales(filas) {
  */
 export function agregarPlantasAnuales(meses, { incluirContrato = false } = {}) {
   const acc = new Map()
-  for (const mes of (meses || [])) {
-    for (const p of (mes.plantas || [])) {
+  for (const mes of meses || []) {
+    for (const p of mes.plantas || []) {
       const key = incluirContrato ? `${p.nombre}__${p.contrato || ''}` : p.nombre
       if (!acc.has(key)) {
-        acc.set(key, { nombre: p.nombre, contrato: p.contrato || '', pctDespacho: p.pct_despacho ?? null, genAportadaMwh: 0, esDuplicado: false })
+        acc.set(key, {
+          nombre: p.nombre,
+          contrato: p.contrato || '',
+          pctDespacho: p.pct_despacho ?? null,
+          genAportadaMwh: 0,
+          esDuplicado: false,
+        })
       }
       const row = acc.get(key)
       if (p.pct_despacho !== null && p.pct_despacho !== undefined) row.pctDespacho = p.pct_despacho
@@ -77,7 +101,7 @@ export function agregarPlantasAnuales(meses, { incluirContrato = false } = {}) {
     }
   }
   return [...acc.values()]
-    .map(r => ({ ...r, genAportadaMwh: Math.round(r.genAportadaMwh * 1000) / 1000 }))
+    .map((r) => ({ ...r, genAportadaMwh: Math.round(r.genAportadaMwh * 1000) / 1000 }))
     .sort((a, b) => b.genAportadaMwh - a.genAportadaMwh)
 }
 
@@ -101,19 +125,47 @@ export function construirContratoAnualAOA({ contrato, year, meses, consolidado =
 
   const aoa = []
   aoa.push([`UNERGY — Matriz anual de cumplimiento ${year}`])
-  aoa.push([contrato.nombre_interno || contrato.numero_codigo_contrato || `Contrato ${contrato.id}`])
-  aoa.push([`Contrato ${contrato.numero_codigo_contrato || '—'} · ${contrato.comprador_nombre || '—'} · ${year}`])
+  aoa.push([
+    contrato.nombre_interno || contrato.numero_codigo_contrato || `Contrato ${contrato.id}`,
+  ])
+  aoa.push([
+    `Contrato ${contrato.numero_codigo_contrato || '—'} · ${contrato.comprador_nombre || '—'} · ${year}`,
+  ])
   aoa.push([])
 
   const headerRow = aoa.length
-  aoa.push(['Mes', 'Generación (MWh)', 'Mínimo (MWh)', 'Máximo (MWh)', 'Estado', 'Compras bolsa (MWh)', 'Excedentes (MWh)'])
+  aoa.push([
+    'Mes',
+    'Generación (MWh)',
+    'Mínimo (MWh)',
+    'Máximo (MWh)',
+    'Estado',
+    'Compras bolsa (MWh)',
+    'Excedentes (MWh)',
+  ])
 
   for (const f of filas) {
-    aoa.push([f.mes, f.genMwh, f.minMwh, f.maxMwh, f.estadoLabel, f.comprasBolsaMwh, f.excedentesMwh])
+    aoa.push([
+      f.mes,
+      f.genMwh,
+      f.minMwh,
+      f.maxMwh,
+      f.estadoLabel,
+      f.comprasBolsaMwh,
+      f.excedentesMwh,
+    ])
   }
 
   const totalRow = aoa.length
-  aoa.push(['TOTAL', totales.genMwh, totales.minMwh, totales.maxMwh, '', totales.comprasBolsaMwh, totales.excedentesMwh])
+  aoa.push([
+    'TOTAL',
+    totales.genMwh,
+    totales.minMwh,
+    totales.maxMwh,
+    '',
+    totales.comprasBolsaMwh,
+    totales.excedentesMwh,
+  ])
 
   aoa.push([])
   aoa.push([])
@@ -127,21 +179,49 @@ export function construirContratoAnualAOA({ contrato, year, meses, consolidado =
 
   for (const p of plantas) {
     const pct = p.pctDespacho != null ? Math.round(p.pctDespacho * 100) : null
-    aoa.push(consolidado
-      ? [p.nombre, p.contrato, pct, p.genAportadaMwh]
-      : [p.nombre, pct, p.genAportadaMwh])
+    aoa.push(
+      consolidado
+        ? [p.nombre, p.contrato, pct, p.genAportadaMwh]
+        : [p.nombre, pct, p.genAportadaMwh],
+    )
   }
 
   const plantTotalRow = aoa.length
-  const totalGenPlantas = Math.round(plantas.reduce((a, p) => a + p.genAportadaMwh, 0) * 1000) / 1000
-  aoa.push(consolidado
-    ? [`TOTAL (${plantas.length} plantas)`, '', '', totalGenPlantas]
-    : [`TOTAL (${plantas.length} plantas)`, '', totalGenPlantas])
+  const totalGenPlantas =
+    Math.round(plantas.reduce((a, p) => a + p.genAportadaMwh, 0) * 1000) / 1000
+  aoa.push(
+    consolidado
+      ? [`TOTAL (${plantas.length} plantas)`, '', '', totalGenPlantas]
+      : [`TOTAL (${plantas.length} plantas)`, '', totalGenPlantas],
+  )
 
-  return { aoa, headerRow, totalRow, plantHeaderRow: plantHeaderRow + 1, plantTotalRow, nCols: N_COLS, plantCols: plantCols.length }
+  return {
+    aoa,
+    headerRow,
+    totalRow,
+    plantHeaderRow: plantHeaderRow + 1,
+    plantTotalRow,
+    nCols: N_COLS,
+    plantCols: plantCols.length,
+  }
 }
 
-const ACENTOS = { á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u', ñ: 'n', ü: 'u', Á: 'A', É: 'E', Í: 'I', Ó: 'O', Ú: 'U', Ñ: 'N', Ü: 'U' }
+const ACENTOS = {
+  á: 'a',
+  é: 'e',
+  í: 'i',
+  ó: 'o',
+  ú: 'u',
+  ñ: 'n',
+  ü: 'u',
+  Á: 'A',
+  É: 'E',
+  Í: 'I',
+  Ó: 'O',
+  Ú: 'U',
+  Ñ: 'N',
+  Ü: 'U',
+}
 
 /** Nombre corto para archivo: minúsculas, sin tildes/espacios/símbolos. */
 export function slugify(s) {
@@ -156,5 +236,10 @@ export function slugify(s) {
 
 /** Nombre de hoja válido para Excel: sin caracteres prohibidos, máx. 31 caracteres. */
 export function sheetNameSafe(name) {
-  return (name || 'Hoja').replace(/[:\\/?*[\]]/g, ' ').trim().slice(0, 31) || 'Hoja'
+  return (
+    (name || 'Hoja')
+      .replace(/[:\\/?*[\]]/g, ' ')
+      .trim()
+      .slice(0, 31) || 'Hoja'
+  )
 }

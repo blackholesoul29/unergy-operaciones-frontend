@@ -31,7 +31,9 @@ export function estadoVigenciaPPA(contrato) {
   const sinFechas = {
     clave: 'sin_fechas',
     label: 'Sin fechas',
-    color: '#6b7280', bg: '#f9fafb', borde: '#e5e7eb',
+    color: '#6b7280',
+    bg: '#f9fafb',
+    borde: '#e5e7eb',
     detalle: 'vigencia no registrada',
     // Ordena de lo más urgente a lo menos, para que la columna Estado ponga
     // arriba lo que hay que mirar.
@@ -44,16 +46,23 @@ export function estadoVigenciaPPA(contrato) {
   const fin = soloFecha(contrato.fecha_fin)
   if (!ini && !fin) return sinFechas
 
-  const dias = contrato.dias_restantes ?? (fin
-    ? Math.round((new Date(`${fin}T00:00:00`) - new Date(`${hoy}T00:00:00`)) / MS_POR_DIA)
-    : null)
+  const dias =
+    contrato.dias_restantes ??
+    (fin
+      ? Math.round((new Date(`${fin}T00:00:00`) - new Date(`${hoy}T00:00:00`)) / MS_POR_DIA)
+      : null)
 
   if (fin && fin < hoy) {
     return {
       clave: 'vencido',
       label: 'Vencido',
-      color: '#dc2626', bg: '#fef2f2', borde: '#fecaca',
-      detalle: dias != null ? `venció hace ${Math.abs(dias).toLocaleString('es-CO')} días` : `venció el ${fin}`,
+      color: '#dc2626',
+      bg: '#fef2f2',
+      borde: '#fecaca',
+      detalle:
+        dias != null
+          ? `venció hace ${Math.abs(dias).toLocaleString('es-CO')} días`
+          : `venció el ${fin}`,
       orden: 0,
     }
   }
@@ -62,7 +71,9 @@ export function estadoVigenciaPPA(contrato) {
     return {
       clave: 'por_iniciar',
       label: 'Por iniciar',
-      color: '#4f46e5', bg: '#eef2ff', borde: '#c7d2fe',
+      color: '#4f46e5',
+      bg: '#eef2ff',
+      borde: '#c7d2fe',
       detalle: `inicia el ${ini}`,
       orden: 3,
     }
@@ -72,7 +83,9 @@ export function estadoVigenciaPPA(contrato) {
     return {
       clave: 'por_vencer',
       label: 'Por vencer',
-      color: '#d97706', bg: '#fffbeb', borde: '#fde68a',
+      color: '#d97706',
+      bg: '#fffbeb',
+      borde: '#fde68a',
       detalle: `quedan ${dias.toLocaleString('es-CO')} días`,
       orden: 1,
     }
@@ -81,7 +94,9 @@ export function estadoVigenciaPPA(contrato) {
   return {
     clave: 'vigente',
     label: 'Vigente',
-    color: '#059669', bg: '#ecfdf5', borde: '#a7f3d0',
+    color: '#059669',
+    bg: '#ecfdf5',
+    borde: '#a7f3d0',
     detalle: dias != null ? `quedan ${dias.toLocaleString('es-CO')} días` : 'sin fecha de fin',
     orden: 2,
   }

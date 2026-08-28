@@ -5,19 +5,26 @@
   negocio.
 -->
 <template>
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
-    <div v-for="k in tarjetas" :key="k.label"
-         class="rounded-lg px-3 py-2.5 sm:px-4 sm:py-3 border transition-colors"
-         :class="k.accionable ? 'cursor-pointer hover:border-unergy-purple' : ''"
-         :style="{ background: k.fondo, borderColor: k.borde }"
-         @click="k.accionable && $emit('filtrar', k.filtro)">
-      <div class="text-xl sm:text-2xl font-semibold leading-none" :style="{ color: k.color }">{{ k.valor }}</div>
-      <div class="text-xs mt-1.5" style="color:#7a6e8a">{{ k.label }}</div>
+  <div class="mb-3 grid grid-cols-2 gap-2 sm:mb-4 sm:gap-3 lg:grid-cols-4">
+    <div
+      v-for="k in tarjetas"
+      :key="k.label"
+      class="rounded-lg border px-3 py-2.5 transition-colors sm:px-4 sm:py-3"
+      :class="k.accionable ? 'cursor-pointer hover:border-unergy-purple' : ''"
+      :style="{ background: k.fondo, borderColor: k.borde }"
+      @click="k.accionable && $emit('filtrar', k.filtro)"
+    >
+      <div class="text-xl leading-none font-semibold sm:text-2xl" :style="{ color: k.color }">
+        {{ k.valor }}
+      </div>
+      <div class="mt-1.5 text-xs" style="color: #7a6e8a">{{ k.label }}</div>
       <!-- El detalle se oculta cuando la tarjeta mide media pantalla: ahí un
            texto como "MWh/mes estimados de las ofertas abiertas" envuelve a
            cuatro líneas, descuadra la fila y empuja el contenido real fuera de
            la primera pantalla. La cifra y su etiqueta se sostienen solas. -->
-      <div v-if="k.detalle" class="hidden sm:block text-[11px] mt-0.5" style="color:#9b89b5">{{ k.detalle }}</div>
+      <div v-if="k.detalle" class="mt-0.5 hidden text-[11px] sm:block" style="color: #9b89b5">
+        {{ k.detalle }}
+      </div>
     </div>
   </div>
 </template>
@@ -39,13 +46,17 @@ const tarjetas = computed(() => {
       label: 'Ofertas activas',
       valor: b.activas,
       detalle: b.total > b.activas ? `${b.total - b.activas} cerradas` : null,
-      color: '#2C2039', fondo: '#fff', borde: '#e8e0f0',
+      color: '#2C2039',
+      fondo: '#fff',
+      borde: '#e8e0f0',
     },
     {
       label: 'Energía en juego',
       valor: fmtMwh(b.energiaMwhMes).replace(' MWh/mes', ''),
       detalle: 'MWh/mes estimados de las ofertas abiertas',
-      color: '#915BD8', fondo: '#fff', borde: '#e8e0f0',
+      color: '#915BD8',
+      fondo: '#fff',
+      borde: '#e8e0f0',
     },
     {
       label: 'Requieren atención',
@@ -54,15 +65,18 @@ const tarjetas = computed(() => {
       color: b.alertas ? '#D64455' : '#7a6e8a',
       fondo: b.alertas ? '#FEF2F2' : '#fff',
       borde: b.alertas ? 'rgba(214,68,85,0.25)' : '#e8e0f0',
-      accionable: b.alertas > 0, filtro: 'alerta',
+      accionable: b.alertas > 0,
+      filtro: 'alerta',
     },
     {
       label: 'Enviadas sin respuesta',
       valor: b.sinRespuesta,
       detalle: 'el cliente nunca contestó',
       color: b.sinRespuesta ? '#F0C040' : '#7a6e8a',
-      fondo: '#fff', borde: '#e8e0f0',
-      accionable: b.sinRespuesta > 0, filtro: 'sinRespuesta',
+      fondo: '#fff',
+      borde: '#e8e0f0',
+      accionable: b.sinRespuesta > 0,
+      filtro: 'sinRespuesta',
     },
   ]
 })

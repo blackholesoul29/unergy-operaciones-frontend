@@ -76,7 +76,9 @@ export function calculateCompliancePct(realMWh, contractedMWh) {
 }
 
 const _cop = new Intl.NumberFormat('es-CO', {
-  style: 'currency', currency: 'COP', maximumFractionDigits: 0,
+  style: 'currency',
+  currency: 'COP',
+  maximumFractionDigits: 0,
 })
 
 /**

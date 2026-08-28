@@ -1,93 +1,195 @@
 <template>
   <div class="space-y-4">
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915bd8" />
     </div>
 
     <template v-else>
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="text-xs" style="color: #9b89b5;">
-          {{ envios.length }} envío{{ envios.length === 1 ? '' : 's' }} registrado{{ envios.length === 1 ? '' : 's' }}
-          <template v-if="ultimoEnvio"> · último: {{ fmtFechaHora(ultimoEnvio.enviadoEn) }}</template>
+        <p class="text-xs" style="color: #9b89b5">
+          {{ envios.length }} envío{{ envios.length === 1 ? '' : 's' }} registrado{{
+            envios.length === 1 ? '' : 's'
+          }}
+          <template v-if="ultimoEnvio">
+            · último: {{ fmtFechaHora(ultimoEnvio.enviadoEn) }}</template
+          >
         </p>
       </div>
 
       <!-- Aviso: destinatarios que faltaron en el envio mas reciente -->
-      <div v-if="faltantesUltimoEnvio.length" class="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
-        style="background: rgba(199,119,0,0.08); border: 1.5px solid rgba(199,119,0,0.3);">
-        <span class="text-sm font-medium" style="color: #A8590B;">
-          <i class="pi pi-exclamation-triangle text-xs mr-1.5" />
-          {{ faltantesUltimoEnvio.length }} destinatario{{ faltantesUltimoEnvio.length === 1 ? '' : 's' }}
+      <div
+        v-if="faltantesUltimoEnvio.length"
+        class="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
+        style="background: rgba(199, 119, 0, 0.08); border: 1.5px solid rgba(199, 119, 0, 0.3)"
+      >
+        <span class="text-sm font-medium" style="color: #a8590b">
+          <i class="pi pi-exclamation-triangle mr-1.5 text-xs" />
+          {{ faltantesUltimoEnvio.length }} destinatario{{
+            faltantesUltimoEnvio.length === 1 ? '' : 's'
+          }}
           no recibi{{ faltantesUltimoEnvio.length === 1 ? 'ó' : 'eron' }} su reporte más reciente
         </span>
-        <button type="button" class="text-xs font-semibold underline" style="color: #A8590B;"
-          @click="subvista = 'destinatario'">Ver quiénes →</button>
+        <button
+          type="button"
+          class="text-xs font-semibold underline"
+          style="color: #a8590b"
+          @click="subvista = 'destinatario'"
+        >
+          Ver quiénes →
+        </button>
       </div>
 
       <!-- Sub-pestanas: Por envio / Por destinatario -->
-      <div class="flex gap-1 border-b" style="border-color: #e8e0f0;">
-        <button type="button" class="text-xs font-bold px-1 pb-2 mr-4"
-          :style="subvista === 'envio' ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
-          @click="subvista = 'envio'">Por envío</button>
-        <button type="button" class="text-xs font-bold px-1 pb-2"
-          :style="subvista === 'destinatario' ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;' : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'"
-          @click="subvista = 'destinatario'">Por destinatario</button>
+      <div class="flex gap-1 border-b" style="border-color: #e8e0f0">
+        <button
+          type="button"
+          class="mr-4 px-1 pb-2 text-xs font-bold"
+          :style="
+            subvista === 'envio'
+              ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;'
+              : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'
+          "
+          @click="subvista = 'envio'"
+        >
+          Por envío
+        </button>
+        <button
+          type="button"
+          class="px-1 pb-2 text-xs font-bold"
+          :style="
+            subvista === 'destinatario'
+              ? 'color:#6E3FB8; border-bottom: 2.5px solid #915BD8;'
+              : 'color:#9b89b5; border-bottom: 2.5px solid transparent;'
+          "
+          @click="subvista = 'destinatario'"
+        >
+          Por destinatario
+        </button>
       </div>
 
       <!-- Por envio -->
       <template v-if="subvista === 'envio'">
         <div class="flex flex-wrap items-center gap-3">
           <div class="flex items-center gap-1.5">
-            <label class="text-xs font-medium" style="color: #6b5a8a;">Desde</label>
-            <DatePicker v-model="filtroDesde" dateFormat="dd/mm/yy" showIcon iconDisplay="input" style="width: 140px;" showClear />
+            <label class="text-xs font-medium" style="color: #6b5a8a">Desde</label>
+            <DatePicker
+              v-model="filtroDesde"
+              dateFormat="dd/mm/yy"
+              showIcon
+              iconDisplay="input"
+              style="width: 140px"
+              showClear
+            />
           </div>
           <div class="flex items-center gap-1.5">
-            <label class="text-xs font-medium" style="color: #6b5a8a;">Hasta</label>
-            <DatePicker v-model="filtroHasta" dateFormat="dd/mm/yy" showIcon iconDisplay="input" style="width: 140px;" showClear />
+            <label class="text-xs font-medium" style="color: #6b5a8a">Hasta</label>
+            <DatePicker
+              v-model="filtroHasta"
+              dateFormat="dd/mm/yy"
+              showIcon
+              iconDisplay="input"
+              style="width: 140px"
+              showClear
+            />
           </div>
         </div>
 
-        <div v-if="!batchesFiltrados.length" class="bg-white rounded-xl shadow-sm p-8 text-center text-sm"
-          style="border: 1px solid #e8e0f0; color: #9b89b5;">
+        <div
+          v-if="!batchesFiltrados.length"
+          class="rounded-xl bg-white p-8 text-center text-sm shadow-sm"
+          style="border: 1px solid #e8e0f0; color: #9b89b5"
+        >
           Ningún envío en este rango de fechas.
         </div>
 
-        <div v-for="(batch, i) in batchesFiltrados" :key="batch.enviadoEn"
-          class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
-          <button type="button" class="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
-            @click="toggleBatch(batch.enviadoEn)">
+        <div
+          v-for="(batch, i) in batchesFiltrados"
+          :key="batch.enviadoEn"
+          class="overflow-hidden rounded-xl bg-white shadow-sm"
+          style="border: 1px solid #e8e0f0"
+        >
+          <button
+            type="button"
+            class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+            @click="toggleBatch(batch.enviadoEn)"
+          >
             <span class="flex flex-col gap-0.5">
-              <span class="text-sm font-bold" style="color: #2C2039;">{{ fmtFechaHora(batch.enviadoEn) }}</span>
-              <span class="text-xs" style="color: #9b89b5;">Reporte del {{ batch.periodo }}</span>
+              <span class="text-sm font-bold" style="color: #2c2039">{{
+                fmtFechaHora(batch.enviadoEn)
+              }}</span>
+              <span class="text-xs" style="color: #9b89b5">Reporte del {{ batch.periodo }}</span>
             </span>
             <span class="flex items-center gap-3 text-xs">
-              <span class="font-bold" style="color: #10B981;">{{ batch.ok }} enviados</span>
-              <span v-if="batch.err" class="font-bold" style="color: #D64455;">{{ batch.err }} con error</span>
-              <i class="pi text-[10px]" :class="batchesAbiertos.has(batch.enviadoEn) ? 'pi-chevron-down' : 'pi-chevron-right'" style="color:#9b89b5;" />
+              <span class="font-bold" style="color: #10b981">{{ batch.ok }} enviados</span>
+              <span v-if="batch.err" class="font-bold" style="color: #d64455"
+                >{{ batch.err }} con error</span
+              >
+              <i
+                class="pi text-[10px]"
+                :class="
+                  batchesAbiertos.has(batch.enviadoEn) ? 'pi-chevron-down' : 'pi-chevron-right'
+                "
+                style="color: #9b89b5"
+              />
             </span>
           </button>
-          <div v-if="batchesAbiertos.has(batch.enviadoEn)" class="border-t" style="border-color: #e8e0f0;">
-            <div v-for="item in batch.items" :key="item.id" class="flex items-start justify-between gap-3 px-4 py-2.5 border-t first:border-t-0"
-              style="border-color: #f0ecf6;">
+          <div
+            v-if="batchesAbiertos.has(batch.enviadoEn)"
+            class="border-t"
+            style="border-color: #e8e0f0"
+          >
+            <div
+              v-for="item in batch.items"
+              :key="item.id"
+              class="flex items-start justify-between gap-3 border-t px-4 py-2.5 first:border-t-0"
+              style="border-color: #f0ecf6"
+            >
               <div class="min-w-0">
-                <span class="text-sm font-medium block" style="color: #2C2039;">{{ item.nombre }}</span>
-                <span v-if="item.proyectosTotal != null && item.proyectos.length && !esParcial(item)" class="text-xs" style="color: #9b89b5;">
+                <span class="block text-sm font-medium" style="color: #2c2039">{{
+                  item.nombre
+                }}</span>
+                <span
+                  v-if="item.proyectosTotal != null && item.proyectos.length && !esParcial(item)"
+                  class="text-xs"
+                  style="color: #9b89b5"
+                >
                   {{ item.proyectosTotal }} proyecto{{ item.proyectosTotal === 1 ? '' : 's' }}
                 </span>
-                <div v-else-if="esParcial(item)" class="flex flex-wrap items-center gap-1 mt-0.5">
-                  <span v-for="p in item.proyectos" :key="p" class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                    style="background: rgba(145,91,216,0.08); color: #6E3FB8;">{{ p }}</span>
+                <div v-else-if="esParcial(item)" class="mt-0.5 flex flex-wrap items-center gap-1">
+                  <span
+                    v-for="p in item.proyectos"
+                    :key="p"
+                    class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                    style="background: rgba(145, 91, 216, 0.08); color: #6e3fb8"
+                    >{{ p }}</span
+                  >
                 </div>
               </div>
-              <div class="text-right flex-shrink-0">
+              <div class="flex-shrink-0 text-right">
                 <div class="flex flex-col items-end gap-1">
-                  <span v-if="item.exitoso" class="text-xs font-bold px-2 py-0.5 rounded-full" style="background: rgba(16,185,129,0.1); color: #10B981;">Enviado</span>
-                  <span v-else class="text-xs font-bold px-2 py-0.5 rounded-full" style="background: rgba(214,68,85,0.1); color: #D64455;">Error</span>
-                  <span v-if="esParcial(item)" class="text-[10px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap" style="background: rgba(199,119,0,0.1); color: #A8590B;">
+                  <span
+                    v-if="item.exitoso"
+                    class="rounded-full px-2 py-0.5 text-xs font-bold"
+                    style="background: rgba(16, 185, 129, 0.1); color: #10b981"
+                    >Enviado</span
+                  >
+                  <span
+                    v-else
+                    class="rounded-full px-2 py-0.5 text-xs font-bold"
+                    style="background: rgba(214, 68, 85, 0.1); color: #d64455"
+                    >Error</span
+                  >
+                  <span
+                    v-if="esParcial(item)"
+                    class="rounded-full px-2 py-0.5 text-[10px] font-bold whitespace-nowrap"
+                    style="background: rgba(199, 119, 0, 0.1); color: #a8590b"
+                  >
                     Parcial · {{ item.proyectos.length }} de {{ item.proyectosTotal }}
                   </span>
                 </div>
-                <span v-if="!item.exitoso" class="block text-xs mt-1" style="color: #D64455;">{{ item.error }}</span>
+                <span v-if="!item.exitoso" class="mt-1 block text-xs" style="color: #d64455">{{
+                  item.error
+                }}</span>
               </div>
             </div>
           </div>
@@ -96,32 +198,51 @@
 
       <!-- Por destinatario -->
       <template v-else>
-        <IconField style="max-width: 280px;">
+        <IconField style="max-width: 280px">
           <InputIcon class="pi pi-search" />
           <InputText v-model="busquedaDest" placeholder="Buscar destinatario…" class="w-full" />
         </IconField>
 
-        <div v-if="!destinatariosFiltrados.length" class="bg-white rounded-xl shadow-sm p-8 text-center text-sm"
-          style="border: 1px solid #e8e0f0; color: #9b89b5;">
+        <div
+          v-if="!destinatariosFiltrados.length"
+          class="rounded-xl bg-white p-8 text-center text-sm shadow-sm"
+          style="border: 1px solid #e8e0f0; color: #9b89b5"
+        >
           Ningún destinatario coincide con la búsqueda.
         </div>
 
-        <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
-          <div v-for="d in destinatariosFiltrados" :key="d.nombre"
-            class="flex items-center justify-between gap-3 px-4 py-3 border-t first:border-t-0"
-            :style="`border-color: #f0ecf6; ${d.faltoUltimoEnvio ? 'background: rgba(199,119,0,0.06);' : ''}`">
+        <div
+          v-else
+          class="overflow-hidden rounded-xl bg-white shadow-sm"
+          style="border: 1px solid #e8e0f0"
+        >
+          <div
+            v-for="d in destinatariosFiltrados"
+            :key="d.nombre"
+            class="flex items-center justify-between gap-3 border-t px-4 py-3 first:border-t-0"
+            :style="`border-color: #f0ecf6; ${d.faltoUltimoEnvio ? 'background: rgba(199,119,0,0.06);' : ''}`"
+          >
             <div class="min-w-0">
-              <p class="text-sm font-semibold" style="color: #2C2039;">{{ d.nombre }}</p>
-              <p v-if="!d.ultima.exitoso" class="text-xs mt-0.5" style="color: #D64455;">
+              <p class="text-sm font-semibold" style="color: #2c2039">{{ d.nombre }}</p>
+              <p v-if="!d.ultima.exitoso" class="mt-0.5 text-xs" style="color: #d64455">
                 Último intento falló — {{ d.ultima.error }}
               </p>
-              <p v-if="d.faltoUltimoEnvio" class="text-xs font-semibold mt-0.5" style="color: #A8590B;">
-                <i class="pi pi-exclamation-triangle text-[10px] mr-1" />No recibió el reporte del {{ d.periodoEsperado }}
+              <p
+                v-if="d.faltoUltimoEnvio"
+                class="mt-0.5 text-xs font-semibold"
+                style="color: #a8590b"
+              >
+                <i class="pi pi-exclamation-triangle mr-1 text-[10px]" />No recibió el reporte del
+                {{ d.periodoEsperado }}
               </p>
             </div>
-            <div class="text-right flex-shrink-0">
-              <p class="text-xs font-medium" style="color: #6b5a8a;">{{ fmtFecha(d.ultima.enviadoEn) }}</p>
-              <p class="text-xs" style="color: #9b89b5;">{{ d.total }} envío{{ d.total === 1 ? '' : 's' }} en total</p>
+            <div class="flex-shrink-0 text-right">
+              <p class="text-xs font-medium" style="color: #6b5a8a">
+                {{ fmtFecha(d.ultima.enviadoEn) }}
+              </p>
+              <p class="text-xs" style="color: #9b89b5">
+                {{ d.total }} envío{{ d.total === 1 ? '' : 's' }} en total
+              </p>
             </div>
           </div>
         </div>
@@ -167,7 +288,9 @@ function normalizarNombre(s) {
 
 async function cargarNombresVigentes() {
   try {
-    const { data } = await api.get('/fronteras', { params: { limit: 500, incluir_clientes_cgm: true } })
+    const { data } = await api.get('/fronteras', {
+      params: { limit: 500, incluir_clientes_cgm: true },
+    })
     const set = new Set()
     for (const f of data) {
       if (f.operador_comercial) set.add(normalizarNombre(f.operador_comercial))
@@ -186,10 +309,20 @@ function toggleBatch(key) {
 }
 
 function fmtFecha(iso) {
-  return new Date(iso).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('es-CO', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 function fmtFechaHora(iso) {
-  return new Date(iso).toLocaleString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })
+  return new Date(iso).toLocaleString('es-CO', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
 // El asunto siempre tiene la forma "Reporte CGM — {periodo} — {nombre}"
@@ -209,15 +342,21 @@ function parsearAsunto(asunto) {
 // proyectosTotal es null para envios de antes de esta migracion o de otros
 // tipos de correo, asi que no se muestra nada en esos casos.
 function esParcial(item) {
-  return item.proyectosTotal != null && item.proyectos.length > 0 && item.proyectos.length !== item.proyectosTotal
+  return (
+    item.proyectosTotal != null &&
+    item.proyectos.length > 0 &&
+    item.proyectos.length !== item.proyectosTotal
+  )
 }
 
 async function cargar() {
   loading.value = true
   try {
-    const { data } = await api.get('/informes/envios', { params: { tipo: 'reporte_cgm', limit: 500 } })
+    const { data } = await api.get('/informes/envios', {
+      params: { tipo: 'reporte_cgm', limit: 500 },
+    })
     envios.value = data
-      .map(row => {
+      .map((row) => {
         const { periodo, nombre } = parsearAsunto(row.asunto)
         return {
           id: row.id,
@@ -247,19 +386,23 @@ const batches = computed(() => {
   for (const item of ordenAsc) {
     const ultimo = grupos[grupos.length - 1]
     const t = new Date(item.enviadoEn).getTime()
-    if (ultimo && (t - new Date(ultimo.items[ultimo.items.length - 1].enviadoEn).getTime()) <= VENTANA_BATCH_MIN * 60000) {
+    if (
+      ultimo &&
+      t - new Date(ultimo.items[ultimo.items.length - 1].enviadoEn).getTime() <=
+        VENTANA_BATCH_MIN * 60000
+    ) {
       ultimo.items.push(item)
     } else {
       grupos.push({ items: [item] })
     }
   }
   return grupos
-    .map(g => ({
+    .map((g) => ({
       enviadoEn: g.items[0].enviadoEn,
       periodo: g.items[0].periodo || '—',
       items: g.items,
-      ok: g.items.filter(i => i.exitoso).length,
-      err: g.items.filter(i => !i.exitoso).length,
+      ok: g.items.filter((i) => i.exitoso).length,
+      err: g.items.filter((i) => !i.exitoso).length,
     }))
     .sort((a, b) => new Date(b.enviadoEn) - new Date(a.enviadoEn))
 })
@@ -269,7 +412,7 @@ const ultimoEnvio = computed(() => batches.value[0]?.items[0] || null)
 const batchesFiltrados = computed(() => {
   const desde = filtroDesde.value ? new Date(filtroDesde.value) : null
   const hasta = filtroHasta.value ? new Date(filtroHasta.value) : null
-  return batches.value.filter(b => {
+  return batches.value.filter((b) => {
     const f = new Date(b.enviadoEn)
     if (desde && f < desde) return false
     if (hasta && f > new Date(hasta.getTime() + 86399999)) return false
@@ -279,7 +422,8 @@ const batchesFiltrados = computed(() => {
 
 // Abrir el batch mas reciente por defecto cuando cambian los datos/filtros.
 function abrirMasReciente() {
-  if (batchesFiltrados.value.length) batchesAbiertos.value = new Set([batchesFiltrados.value[0].enviadoEn])
+  if (batchesFiltrados.value.length)
+    batchesAbiertos.value = new Set([batchesFiltrados.value[0].enviadoEn])
 }
 
 // El "envio mas reciente" para efectos de la alerta es el PERIODO (fecha del
@@ -317,13 +461,14 @@ const ultimoPeriodoPorForma = computed(() => {
 const porDestinatario = computed(() => {
   const mapa = new Map()
   for (const item of envios.value) {
-    if (!mapa.has(item.nombre)) mapa.set(item.nombre, { nombre: item.nombre, total: 0, ultima: item, periodos: new Set() })
+    if (!mapa.has(item.nombre))
+      mapa.set(item.nombre, { nombre: item.nombre, total: 0, ultima: item, periodos: new Set() })
     const d = mapa.get(item.nombre)
     d.total += 1
     if (new Date(item.enviadoEn) > new Date(d.ultima.enviadoEn)) d.ultima = item
     if (item.periodo) d.periodos.add(item.periodo)
   }
-  return [...mapa.values()].map(d => {
+  return [...mapa.values()].map((d) => {
     const existe = nombresVigentes.value.has(normalizarNombre(d.nombre))
     const forma = formaPeriodo(d.ultima.periodo)
     const periodoEsperado = ultimoPeriodoPorForma.value[forma]?.periodo || null
@@ -335,14 +480,16 @@ const porDestinatario = computed(() => {
   })
 })
 
-const faltantesUltimoEnvio = computed(() => porDestinatario.value.filter(d => d.faltoUltimoEnvio))
+const faltantesUltimoEnvio = computed(() => porDestinatario.value.filter((d) => d.faltoUltimoEnvio))
 
 const destinatariosFiltrados = computed(() => {
   const texto = busquedaDest.value.trim().toLowerCase()
-  const lista = porDestinatario.value.filter(d => !texto || d.nombre.toLowerCase().includes(texto))
+  const lista = porDestinatario.value.filter(
+    (d) => !texto || d.nombre.toLowerCase().includes(texto),
+  )
   return lista.sort((a, b) => {
-    const aFlag = (a.faltoUltimoEnvio || !a.ultima.exitoso) ? 0 : 1
-    const bFlag = (b.faltoUltimoEnvio || !b.ultima.exitoso) ? 0 : 1
+    const aFlag = a.faltoUltimoEnvio || !a.ultima.exitoso ? 0 : 1
+    const bFlag = b.faltoUltimoEnvio || !b.ultima.exitoso ? 0 : 1
     if (aFlag !== bFlag) return aFlag - bFlag
     return new Date(b.ultima.enviadoEn) - new Date(a.ultima.enviadoEn)
   })

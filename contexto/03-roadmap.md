@@ -12,11 +12,11 @@ El error clásico de una migración de este tamaño es intentar trasladar y redi
 cuando algo se rompe, ya no se puede distinguir un bug nuevo de una diferencia intencional. Por
 eso las tres fases son **secuenciales y de naturaleza distinta**:
 
-| Fase | Qué cambia | Qué **no** cambia | Riesgo |
-| --- | --- | --- | --- |
-| **1 · Traslado** | Dónde vive el código y quién lo arranca | El código en sí | Alto pero acotado: falla o funciona, de forma visible |
-| **2 · Reorganización** | La estructura de carpetas y los imports | El comportamiento, línea por línea | Bajo: mecánico y verificable por build |
-| **3 · Migración** | El código: tipos, patrones, UI, permisos | El producto que ve el usuario | Alto y difuso: es donde se pierden funciones en silencio |
+| Fase                   | Qué cambia                               | Qué **no** cambia                  | Riesgo                                                   |
+| ---------------------- | ---------------------------------------- | ---------------------------------- | -------------------------------------------------------- |
+| **1 · Traslado**       | Dónde vive el código y quién lo arranca  | El código en sí                    | Alto pero acotado: falla o funciona, de forma visible    |
+| **2 · Reorganización** | La estructura de carpetas y los imports  | El comportamiento, línea por línea | Bajo: mecánico y verificable por build                   |
+| **3 · Migración**      | El código: tipos, patrones, UI, permisos | El producto que ve el usuario      | Alto y difuso: es donde se pierden funciones en silencio |
 
 Tres invariantes que no se negocian:
 
@@ -46,11 +46,11 @@ No se toca código de producto.
 Están enumeradas en `02-specs.md §20`. Las tres que bloquean el arranque, **decididas el
 2026-08-24**:
 
-| Decisión | ✅ Resuelto | Por qué |
-| --- | --- | --- |
+| Decisión           | ✅ Resuelto                                                           | Por qué                                                                                                                                                                                                                                                                                        |
+| ------------------ | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Modo de render** | **`ssr: false` (SPA)** en fases 1–2; evaluar SSR por página en fase 3 | Hoy la app es una SPA. Activar SSR de entrada convierte 70 archivos que tocan `window`/`document`/`localStorage` en 70 fallos simultáneos de una fase que debía ser un traslado. Nuxt sigue aportando file-based routing, auto-imports, Nitro y el ecosistema aunque el render sea de cliente. |
-| **Auth** | **Migrar a cookies `httpOnly` en la fase 3, ola 1** — no en la 1 | Exige coordinación con backend. Hasta entonces, el store legacy funciona sin cambios. |
-| **App móvil** | **Entra en el alcance, al final (ola 7)** | Es un producto aparte con su propio layout y ciclo; migrarla pronto no desbloquea nada. |
+| **Auth**           | **Migrar a cookies `httpOnly` en la fase 3, ola 1** — no en la 1      | Exige coordinación con backend. Hasta entonces, el store legacy funciona sin cambios.                                                                                                                                                                                                          |
+| **App móvil**      | **Entra en el alcance, al final (ola 7)**                             | Es un producto aparte con su propio layout y ciclo; migrarla pronto no desbloquea nada.                                                                                                                                                                                                        |
 
 Las demás (rol `admin`, restricción por email, Chart.js vs. Unovis, placeholders,
 `OperacionView.vue`) pueden decidirse durante la fase 2 sin bloquear.
@@ -83,11 +83,11 @@ Ambos inventarios se generaron con un script sobre el código, no a mano: son re
 
 Verificado el 2026-08-24, todo en verde:
 
-| Comprobación | Resultado |
-| --- | --- |
-| `bun run lint` | sin errores |
-| `bun run typecheck` | 0 errores |
-| `bun run test` (v2) | 10 archivos, 79 pruebas |
+| Comprobación          | Resultado               |
+| --------------------- | ----------------------- |
+| `bun run lint`        | sin errores             |
+| `bun run typecheck`   | 0 errores               |
+| `bun run test` (v2)   | 10 archivos, 79 pruebas |
 | `bun run test:legacy` | 6 archivos, 135 pruebas |
 
 **Un arreglo necesario para llegar ahí:** `GAccordionTrigger.vue` y `GSwitch.vue` importaban de
@@ -135,17 +135,17 @@ cuarentena los habría roto todos.
 **Lo que se hizo en su lugar:** el código del legacy aterriza **directamente en la estructura de
 `app/`**, cada carpeta en su sitio:
 
-| Origen (`legacy/src/`) | Destino (`v2/app/`) |
-| --- | --- |
-| `components/` | `components/` (junto a `ui/`, `gandalf/`, `blocks/`, `layout/`) |
-| `composables/` | `composables/` |
-| `utils/` | `utils/` |
-| `stores/` | `stores/` |
-| `assets/`, `constants/`, `data/`, `api/`, `mobile/`, `router/`, `views/` | mismo nombre en `app/` |
-| `main.js`, `App.vue` | `legacy/` — sustituidos por un plugin y dos layouts, se borran en la fase 2 |
+| Origen (`legacy/src/`)                                                   | Destino (`v2/app/`)                                                         |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `components/`                                                            | `components/` (junto a `ui/`, `gandalf/`, `blocks/`, `layout/`)             |
+| `composables/`                                                           | `composables/`                                                              |
+| `utils/`                                                                 | `utils/`                                                                    |
+| `stores/`                                                                | `stores/`                                                                   |
+| `assets/`, `constants/`, `data/`, `api/`, `mobile/`, `router/`, `views/` | mismo nombre en `app/`                                                      |
+| `main.js`, `App.vue`                                                     | `legacy/` — sustituidos por un plugin y dos layouts, se borran en la fase 2 |
 
 Y entonces el problema del alias **desaparece solo**: el `@` del legacy significaba `src/`, y el
-contenido de `src/` ahora *es* `app/`, que es exactamente a donde Nuxt apunta `@` y `~`. Los dos
+contenido de `src/` ahora _es_ `app/`, que es exactamente a donde Nuxt apunta `@` y `~`. Los dos
 resuelven a `app/*`; `tsconfig.json` no se tocó. Los 338 imports se reescribieron a `~/…`, que es
 la convención que pide `AGENTS.md`.
 
@@ -157,7 +157,7 @@ cambio, la fase 2 se reduce a repartir `views/` y `mobile/` en slices.
 TypeScript, así que `app/utils/*.js`, `app/composables/*.js` y `app/components/*.vue` los
 separan limpiamente. Esa es la lista de exclusión de `eslint.config.mjs` y `.prettierignore`, y
 **se vacía sola**: cuando la fase 3 convierte un archivo a `.ts`, deja de estar excluido y el
-linter empieza a exigirle. La lista encogiendo *es* la métrica de avance.
+linter empieza a exigirle. La lista encogiendo _es_ la métrica de avance.
 
 #### Colisiones de auto-import resueltas
 
@@ -185,9 +185,9 @@ Los exports de `app/utils/` **no** chocaron con los del template (`date.ts`, `st
    `vuedraggable`. Todas quedan marcadas como **temporales**: PrimeVue, PrimeIcons, axios,
    Chart.js y vuedraggable salen en la fase 3.
    - Verificar `pinia` (v2 tiene 4, el legacy usa 2) y `vue-router` (v2 tiene 5, el legacy 4).
-     El legacy usa la API de *setup stores* y `useRoute`/`useRouter`, compatibles en ambas.
+     El legacy usa la API de _setup stores_ y `useRoute`/`useRouter`, compatibles en ambas.
      Nuxt aporta el router; `createRouter` deja de usarse.
-3. **Routing: una página delgada por ruta.** Nuxt es *file-based*; el `router/index.js` no se
+3. **Routing: una página delgada por ruta.** Nuxt es _file-based_; el `router/index.js` no se
    puede usar tal cual. Se **genera con un script** un archivo por ruta:
 
    ```vue
@@ -202,6 +202,7 @@ Los exports de `app/utils/` **no** chocaron con los del template (`date.ts`, `st
    67 archivos de 5 líneas, generados desde el inventario de la fase 0. Cada uno desaparece
    solo cuando su página real se escribe en la fase 3. Las redirecciones del router se
    convierten en `routeRules` de Nuxt.
+
 4. **Guard.** `router.beforeEach` → `app/middleware/legacy-auth.global.ts`, con la misma lógica
    (público, móvil, roles, `requireEmail`) leyendo el mismo store. Copia fiel, no rediseño.
 5. **Layouts.** `App.vue` → `app/layouts/legacy.vue` (sidebar + `<slot/>` + `Toast` +
@@ -255,19 +256,19 @@ También se retiraron las directivas `@tailwind base/components/utilities` de `a
 
 ### 1.2c Estado de la fase 1 — ✅ completa (salvo revisión visual)
 
-| Paso | Estado |
-| --- | --- |
-| Árbol del legacy repartido en `app/` (237 archivos) | ✅ |
-| Dependencias del legacy (15 paquetes, marcadas como temporales) | ✅ |
-| `ssr: false`, `runtimeCompiler: true`, CSS y `@theme` de Tailwind 4 | ✅ |
-| Plugin de PrimeVue y layouts `legacy` / `legacy-blank` | ✅ |
-| Las 75 rutas como páginas en `app/pages/` (67 vistas + 8 redirecciones) | ✅ |
-| Guard del legacy como middleware global | ✅ |
-| `app/legacy/` y `app/router/` eliminados | ✅ |
-| Navegación del sidebar en `app/config/navigation.ts` | ✅ |
-| Proxies de Nitro (`/api/v1`, `/monitoreo`, `/api/v1/evo` con token server-side) | ✅ |
-| `app:chunkError` en lugar de `vite:preloadError` | ✅ |
-| Revisión visual de las 67 rutas contra el legacy | ☐ (necesita backend) |
+| Paso                                                                            | Estado               |
+| ------------------------------------------------------------------------------- | -------------------- |
+| Árbol del legacy repartido en `app/` (237 archivos)                             | ✅                   |
+| Dependencias del legacy (15 paquetes, marcadas como temporales)                 | ✅                   |
+| `ssr: false`, `runtimeCompiler: true`, CSS y `@theme` de Tailwind 4             | ✅                   |
+| Plugin de PrimeVue y layouts `legacy` / `legacy-blank`                          | ✅                   |
+| Las 75 rutas como páginas en `app/pages/` (67 vistas + 8 redirecciones)         | ✅                   |
+| Guard del legacy como middleware global                                         | ✅                   |
+| `app/legacy/` y `app/router/` eliminados                                        | ✅                   |
+| Navegación del sidebar en `app/config/navigation.ts`                            | ✅                   |
+| Proxies de Nitro (`/api/v1`, `/monitoreo`, `/api/v1/evo` con token server-side) | ✅                   |
+| `app:chunkError` en lugar de `vite:preloadError`                                | ✅                   |
+| Revisión visual de las 67 rutas contra el legacy                                | ☐ (necesita backend) |
 
 **Verificado de punta a punta**, no solo compilado:
 
@@ -305,13 +306,13 @@ dos presentes. Vale la pena repetirla al final de cada ola:
 
 ### 1.3 Riesgos de la fase
 
-| Riesgo | Mitigación |
-| --- | --- |
-| Tailwind 4 rompe estilos de forma difusa (no falla, se ve mal) | Revisión visual ruta por ruta contra el legacy corriendo en paralelo en otro puerto |
-| PrimeVue 4 bajo Nuxt: CSS layers, `cssLayer: false`, orden de estilos | Probar temprano con una vista rica (`ProyectosListView`) antes de mover todo |
-| `import.meta.env.VITE_*` disperso por el código | Nuxt usa Vite: sigue funcionando. Se documenta como deuda de fase 3 (pasa a `runtimeConfig`) |
-| Componentes con `template:` string | `runtimeCompiler: true` |
-| Colisiones de nombres al auto-importar | La cuarentena `app/legacy/` no se auto-importa; todo entra por ruta explícita |
+| Riesgo                                                                | Mitigación                                                                                   |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Tailwind 4 rompe estilos de forma difusa (no falla, se ve mal)        | Revisión visual ruta por ruta contra el legacy corriendo en paralelo en otro puerto          |
+| PrimeVue 4 bajo Nuxt: CSS layers, `cssLayer: false`, orden de estilos | Probar temprano con una vista rica (`ProyectosListView`) antes de mover todo                 |
+| `import.meta.env.VITE_*` disperso por el código                       | Nuxt usa Vite: sigue funcionando. Se documenta como deuda de fase 3 (pasa a `runtimeConfig`) |
+| Componentes con `template:` string                                    | `runtimeCompiler: true`                                                                      |
+| Colisiones de nombres al auto-importar                                | La cuarentena `app/legacy/` no se auto-importa; todo entra por ruta explícita                |
 
 ### 1.4 Criterios de aceptación
 
@@ -333,17 +334,17 @@ dos presentes. Vale la pena repetirla al final de cada ola:
 **Ejecutada dentro de la fase 1.** Al no poder usarse la carpeta de cuarentena (ver §1.1), el
 código aterrizó directamente en su sitio, así que las dos fases se solaparon.
 
-| Origen | Destino | Estado |
-| --- | --- | --- |
-| `api/client.js` | `core/client.ts` | ✅ |
-| `api/{liquidacionesApi,garantiasProyecciones,xm}.js` | services en `features/<slice>/services/` | ✅ |
-| `stores/auth.js` | `stores/auth.ts` + `features/auth/services/legacy-auth.ts` | ✅ |
-| `utils/security.js` | `utils/security.ts` | ✅ |
-| `composables/*.js` | `composables/*.ts` + services + `useState` | ✅ |
-| `constants/liquidaciones.js` | `features/liquidaciones/constants.ts` | ✅ |
-| `views/**` (150 archivos) | `features/<slice>/components/` en 21 slices | ✅ |
-| `mobile/**` | `features/mobile/components/` | ✅ |
-| `components/`, `assets/`, `data/` | sus carpetas en `app/` | ✅ |
+| Origen                                               | Destino                                                    | Estado |
+| ---------------------------------------------------- | ---------------------------------------------------------- | ------ |
+| `api/client.js`                                      | `core/client.ts`                                           | ✅     |
+| `api/{liquidacionesApi,garantiasProyecciones,xm}.js` | services en `features/<slice>/services/`                   | ✅     |
+| `stores/auth.js`                                     | `stores/auth.ts` + `features/auth/services/legacy-auth.ts` | ✅     |
+| `utils/security.js`                                  | `utils/security.ts`                                        | ✅     |
+| `composables/*.js`                                   | `composables/*.ts` + services + `useState`                 | ✅     |
+| `constants/liquidaciones.js`                         | `features/liquidaciones/constants.ts`                      | ✅     |
+| `views/**` (150 archivos)                            | `features/<slice>/components/` en 21 slices                | ✅     |
+| `mobile/**`                                          | `features/mobile/components/`                              | ✅     |
+| `components/`, `assets/`, `data/`                    | sus carpetas en `app/`                                     | ✅     |
 
 `app/views/` y `app/mobile/` ya no existen. 178 archivos movidos con `git mv` (la historia se
 conserva) y 88 archivos con imports reescritos.
@@ -357,22 +358,22 @@ conserva) y 88 archivos con imports reescritos.
 
 ### 2.1 Mapa de destino
 
-| Origen (`app/legacy/`) | Destino | Nota |
-| --- | --- | --- |
-| `views/<Modulo>/*.vue` | `app/features/<slice>/components/` | Las páginas delgadas de la fase 1 apuntan aquí |
-| `components/*.vue` (compartidos) | `app/components/blocks/` o el slice que corresponda | `PageHeader` ya existe en `blocks/`: se unifica |
-| `components/reports/*` | El slice que los use, o se borran | Verificar consumidores antes |
-| `composables/*.js` | `app/composables/` | `useSidebar` conserva su `ref` de módulo por ahora, anotado |
-| `utils/*.js` | `app/utils/` | Funciones puras; las pruebas viajan con ellas |
-| `constants/*.js` | `app/config/` | |
-| `api/client.js` | `app/core/legacy-client.js` | Muere en la fase 3 |
-| `api/{liquidacionesApi,garantiasProyecciones,xm}.js` | `app/features/<slice>/services/` | Ya son casi services: son la semilla del patrón |
-| `stores/auth.js` | `app/features/auth/` | Se sustituye en la fase 3, ola 1 |
-| `assets/main.css` | `app/assets/css/` | |
-| `assets/*.js` (datasets) | `app/features/<slice>/` o se borran | Verificar si siguen en uso |
-| `data/*.json` | `app/features/<slice>/` o `public/` | Verificar si es dato de producción |
-| `mobile/**` | `app/features/mobile/` | Slice propio, se mantiene aislado |
-| `router/index.js`, `main.js`, `App.vue` | — | Ya absorbidos en la fase 1: se borran |
+| Origen (`app/legacy/`)                               | Destino                                             | Nota                                                        |
+| ---------------------------------------------------- | --------------------------------------------------- | ----------------------------------------------------------- |
+| `views/<Modulo>/*.vue`                               | `app/features/<slice>/components/`                  | Las páginas delgadas de la fase 1 apuntan aquí              |
+| `components/*.vue` (compartidos)                     | `app/components/blocks/` o el slice que corresponda | `PageHeader` ya existe en `blocks/`: se unifica             |
+| `components/reports/*`                               | El slice que los use, o se borran                   | Verificar consumidores antes                                |
+| `composables/*.js`                                   | `app/composables/`                                  | `useSidebar` conserva su `ref` de módulo por ahora, anotado |
+| `utils/*.js`                                         | `app/utils/`                                        | Funciones puras; las pruebas viajan con ellas               |
+| `constants/*.js`                                     | `app/config/`                                       |                                                             |
+| `api/client.js`                                      | `app/core/legacy-client.js`                         | Muere en la fase 3                                          |
+| `api/{liquidacionesApi,garantiasProyecciones,xm}.js` | `app/features/<slice>/services/`                    | Ya son casi services: son la semilla del patrón             |
+| `stores/auth.js`                                     | `app/features/auth/`                                | Se sustituye en la fase 3, ola 1                            |
+| `assets/main.css`                                    | `app/assets/css/`                                   |                                                             |
+| `assets/*.js` (datasets)                             | `app/features/<slice>/` o se borran                 | Verificar si siguen en uso                                  |
+| `data/*.json`                                        | `app/features/<slice>/` o `public/`                 | Verificar si es dato de producción                          |
+| `mobile/**`                                          | `app/features/mobile/`                              | Slice propio, se mantiene aislado                           |
+| `router/index.js`, `main.js`, `App.vue`              | —                                                   | Ya absorbidos en la fase 1: se borran                       |
 
 ### 2.2 Definición de los slices
 
@@ -466,27 +467,27 @@ Sin esto, cada slice reinventa lo mismo. No cambia nada visible para el usuario.
   tokens en `@theme`. A partir de aquí, escribir un hex en un `style=` es un error de revisión.
 - **Tabla de equivalencias PrimeVue → Gandalf/shadcn**, ordenada por frecuencia real:
 
-  | PrimeVue | Usos | Destino |
-  | --- | --- | --- |
-  | `Button` | 88 | `ui/button` |
-  | `useToast` | 75 | `vue-sonner` — ✅ **hecho** (§3.2.2) |
-  | `InputText` | 58 | `ui/input` |
-  | `Select` / `Dropdown` | 60 | `ui/select` |
-  | `Dialog` | 48 | `ui/dialog` |
-  | `Tag` | 40 | `GBadge` |
-  | `InputNumber` | 37 | `ui/number-field` |
-  | **`DataTable` + `Column`** | **68** | **no existe equivalente — ver abajo** |
-  | `Textarea` | 29 | `ui/textarea` |
-  | `DatePicker` / `Calendar` | 30 | `ui/calendar` + `ui/popover` |
-  | `ProgressSpinner` | 25 | `ui/spinner` / `AsyncView` |
-  | `IconField` + `InputIcon` | 50 | `ui/input-group` |
-  | `MultiSelect` | 14 | `ui/combobox` |
-  | `useConfirm` + `ConfirmDialog` | 17 | `ui/alert-dialog` — ✅ **hecho** (§3.2.3) |
-  | `Checkbox`, `ToggleSwitch`, `SelectButton` | 29 | `ui/checkbox`, `ui/switch`, `ui/toggle-group` |
-  | `TabView` + `TabPanel` | 10 | `GTabs` |
-  | `Message` | 8 | `ui/alert` |
-  | `AutoComplete` | 5 | `ui/combobox` |
-  | `Menu`, `Popover`, `Drawer`, `Divider`, `Skeleton`, `Password` | 14 | `ui/dropdown-menu`, `ui/popover`, `ui/sheet`, `ui/separator`, `ui/skeleton`, `ui/input` |
+  | PrimeVue                                                       | Usos   | Destino                                                                                 |
+  | -------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------- |
+  | `Button`                                                       | 88     | `ui/button`                                                                             |
+  | `useToast`                                                     | 75     | `vue-sonner` — ✅ **hecho** (§3.2.2)                                                    |
+  | `InputText`                                                    | 58     | `ui/input`                                                                              |
+  | `Select` / `Dropdown`                                          | 60     | `ui/select`                                                                             |
+  | `Dialog`                                                       | 48     | `ui/dialog`                                                                             |
+  | `Tag`                                                          | 40     | `GBadge`                                                                                |
+  | `InputNumber`                                                  | 37     | `ui/number-field`                                                                       |
+  | **`DataTable` + `Column`**                                     | **68** | **no existe equivalente — ver abajo**                                                   |
+  | `Textarea`                                                     | 29     | `ui/textarea`                                                                           |
+  | `DatePicker` / `Calendar`                                      | 30     | `ui/calendar` + `ui/popover`                                                            |
+  | `ProgressSpinner`                                              | 25     | `ui/spinner` / `AsyncView`                                                              |
+  | `IconField` + `InputIcon`                                      | 50     | `ui/input-group`                                                                        |
+  | `MultiSelect`                                                  | 14     | `ui/combobox`                                                                           |
+  | `useConfirm` + `ConfirmDialog`                                 | 17     | `ui/alert-dialog` — ✅ **hecho** (§3.2.3)                                               |
+  | `Checkbox`, `ToggleSwitch`, `SelectButton`                     | 29     | `ui/checkbox`, `ui/switch`, `ui/toggle-group`                                           |
+  | `TabView` + `TabPanel`                                         | 10     | `GTabs`                                                                                 |
+  | `Message`                                                      | 8      | `ui/alert`                                                                              |
+  | `AutoComplete`                                                 | 5      | `ui/combobox`                                                                           |
+  | `Menu`, `Popover`, `Drawer`, `Divider`, `Skeleton`, `Password` | 14     | `ui/dropdown-menu`, `ui/popover`, `ui/sheet`, `ui/separator`, `ui/skeleton`, `ui/input` |
 
 - **⚠️ La tabla de datos es el mayor riesgo de la fase.** `DataTable`/`Column` aparecen 68
   veces con paginación perezosa, ordenamiento, filtros, columnas congeladas y plantillas por
@@ -515,15 +516,15 @@ habría arrastrado los 156 iconos al bundle.
 
 **Formas convertidas**, por patrón:
 
-| Patrón de origen | Destino | Nº |
-| --- | --- | --- |
-| `<i class="pi pi-x …">` | `<XIcon class="…" />` | 1.032 |
-| `<i :class="c ? 'pi pi-a' : 'pi pi-b'">` | `<AIcon v-if="c" /><BIcon v-else />` | 53 |
-| `<i class="pi" :class="c ? 'pi-a' : 'pi-b'">` | igual que el anterior | 33 |
-| `<Button icon="pi pi-x" />` | `<Button><template #icon><XIcon /></template></Button>` | 417 |
-| `<InputIcon class="pi pi-x" />` | `<InputIcon><XIcon /></InputIcon>` | 27 |
-| `icon: 'pi pi-x'` en arrays de datos | `icon: XIcon` (un `Component`) | 163 |
-| `<i :class="tab.icon">` | `<component :is="tab.icon" />` | 37 |
+| Patrón de origen                              | Destino                                                 | Nº    |
+| --------------------------------------------- | ------------------------------------------------------- | ----- |
+| `<i class="pi pi-x …">`                       | `<XIcon class="…" />`                                   | 1.032 |
+| `<i :class="c ? 'pi pi-a' : 'pi pi-b'">`      | `<AIcon v-if="c" /><BIcon v-else />`                    | 53    |
+| `<i class="pi" :class="c ? 'pi-a' : 'pi-b'">` | igual que el anterior                                   | 33    |
+| `<Button icon="pi pi-x" />`                   | `<Button><template #icon><XIcon /></template></Button>` | 417   |
+| `<InputIcon class="pi pi-x" />`               | `<InputIcon><XIcon /></InputIcon>`                      | 27    |
+| `icon: 'pi pi-x'` en arrays de datos          | `icon: XIcon` (un `Component`)                          | 163   |
+| `<i :class="tab.icon">`                       | `<component :is="tab.icon" />`                          | 37    |
 
 **Decisiones que hay que conocer antes de tocar un icono:**
 
@@ -583,12 +584,12 @@ El inventario ayudó: las 531 llamadas a `toast.add` eran **cuatro severidades y
 toast pegajoso. Eso permitió un codemod con lectura real del objeto literal —comas de primer
 nivel, plantillas y propiedades abreviadas incluidas— en vez de un `sed`.
 
-| PrimeVue | vue-sonner |
-| --- | --- |
+| PrimeVue                                             | vue-sonner                                        |
+| ---------------------------------------------------- | ------------------------------------------------- |
 | `severity: 'success' \| 'error' \| 'warn' \| 'info'` | `toast.success` / `.error` / `.warning` / `.info` |
-| `summary` | primer argumento (título) |
-| `detail` | `description` |
-| `life` | `duration` |
+| `summary`                                            | primer argumento (título)                         |
+| `detail`                                             | `description`                                     |
+| `life`                                               | `duration`                                        |
 
 **Lo que se cae de paso — y era deuda escrita:**
 
@@ -644,8 +645,8 @@ reacciona a "Cancelar") ni un `group` (nunca dos confirmaciones compitiendo en l
 - **`app/composables/useConfirm.ts`** — estado compartido en `useState('confirm-dialog', …)`,
   con la misma forma que `useAuthState`/`useAuth` en `useAuth.ts`: `useConfirmState()` expone el
   estado crudo, `useConfirm()` expone la función que lo abre. `confirm({ title, description,
-  confirmLabel, cancelLabel, variant, onConfirm })` reemplaza el `confirm.require({ header,
-  message, acceptLabel, rejectLabel, acceptSeverity/acceptClass/acceptProps.severity, accept })`
+confirmLabel, cancelLabel, variant, onConfirm })` reemplaza el `confirm.require({ header,
+message, acceptLabel, rejectLabel, acceptSeverity/acceptClass/acceptProps.severity, accept })`
   de PrimeVue — API propia, no un adaptador con su forma.
 - **`app/components/blocks/ConfirmDialog.vue`** — el único componente de toda la app que renderiza
   `<AlertDialog>`, montado una vez en `app.vue` (antes eran cuatro montajes: uno global en
@@ -715,28 +716,28 @@ cambiaban icono y color de fondo).
 Orden por dependencia y riesgo creciente. Cada ola termina con humo y despliegue de vista
 previa.
 
-| Ola | Slices | Por qué aquí | Tamaño |
-| --- | --- | --- | --- |
-| **2** | `clientes`, `proyectos`, `contratos`, `operadores-red`, `retos`, `admin` | CRUD clásico: es donde se afina la receta y se estrena la tabla de datos con riesgo bajo | Medio |
-| **3** | `fallas`, `operaciones`, `solar`, `alertas` | Alto tráfico diario; introduce mapas, gráficas y tiempo real | Grande |
-| **4** | `fronteras`, `registros-cnd`, `mem` (gescon, precio bolsa, clima, descubrimientos, balance), `garantias` | Dominio pesado, exportes con fórmulas, parsers | Grande |
-| **5** | `liquidaciones`, `panel-contable`, `finanzas` | El núcleo financiero: máximo impacto si algo sale mal, se migra cuando la receta está probada | Muy grande |
-| **6** | `comercial` | Aislado y ya con pruebas; puede adelantarse si conviene por prioridad de negocio | Medio |
-| **7** | `mobile` | Producto aparte, layout propio, sin dependencias de los demás | Medio |
+| Ola   | Slices                                                                                                   | Por qué aquí                                                                                  | Tamaño     |
+| ----- | -------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------- |
+| **2** | `clientes`, `proyectos`, `contratos`, `operadores-red`, `retos`, `admin`                                 | CRUD clásico: es donde se afina la receta y se estrena la tabla de datos con riesgo bajo      | Medio      |
+| **3** | `fallas`, `operaciones`, `solar`, `alertas`                                                              | Alto tráfico diario; introduce mapas, gráficas y tiempo real                                  | Grande     |
+| **4** | `fronteras`, `registros-cnd`, `mem` (gescon, precio bolsa, clima, descubrimientos, balance), `garantias` | Dominio pesado, exportes con fórmulas, parsers                                                | Grande     |
+| **5** | `liquidaciones`, `panel-contable`, `finanzas`                                                            | El núcleo financiero: máximo impacto si algo sale mal, se migra cuando la receta está probada | Muy grande |
+| **6** | `comercial`                                                                                              | Aislado y ya con pruebas; puede adelantarse si conviene por prioridad de negocio              | Medio      |
+| **7** | `mobile`                                                                                                 | Producto aparte, layout propio, sin dependencias de los demás                                 | Medio      |
 
 **Fuera de este orden, como sub-proyectos con plan propio** (son demasiado grandes para una
 rebanada normal):
 
-| Archivo | Líneas | Cuándo |
-| --- | --- | --- |
-| `MEM/CumplimientoV2View.vue` | 5.425 | Ola 4, con su propio desglose en 7 pestañas |
-| `Fallas/MonitoreoView.vue` | 2.992 | Ola 3 |
-| `GeneracionSolarView.vue` | 2.885 | Ola 3 |
-| `Servicios/OperacionView.vue` | 2.422 | Ola 2 — y aquí se retira `runtimeCompiler` |
-| `Operaciones/InformesMensualesPanel.vue` | 1.969 | Ola 3 |
-| `Operaciones/GestionFallasView.vue` | 1.941 | Ola 3 |
-| `Servicios/ServiciosUnificadoView.vue` | 1.757 | Ola 2 — es la pantalla de entrada real del producto |
-| `PanelContable/PanelContableView.vue` | 1.644 | Ola 5 |
+| Archivo                                  | Líneas | Cuándo                                              |
+| ---------------------------------------- | ------ | --------------------------------------------------- |
+| `MEM/CumplimientoV2View.vue`             | 5.425  | Ola 4, con su propio desglose en 7 pestañas         |
+| `Fallas/MonitoreoView.vue`               | 2.992  | Ola 3                                               |
+| `GeneracionSolarView.vue`                | 2.885  | Ola 3                                               |
+| `Servicios/OperacionView.vue`            | 2.422  | Ola 2 — y aquí se retira `runtimeCompiler`          |
+| `Operaciones/InformesMensualesPanel.vue` | 1.969  | Ola 3                                               |
+| `Operaciones/GestionFallasView.vue`      | 1.941  | Ola 3                                               |
+| `Servicios/ServiciosUnificadoView.vue`   | 1.757  | Ola 2 — es la pantalla de entrada real del producto |
+| `PanelContable/PanelContableView.vue`    | 1.644  | Ola 5                                               |
 
 ### 3.5 Ola 8 · Retirada
 
@@ -758,18 +759,18 @@ Lo que solo se puede hacer cuando ya no queda nadie usándolo:
 
 Métricas objetivas, verificables con un comando:
 
-| Métrica | Inicio | Hoy | Meta |
-| --- | --- | --- | --- |
-| Archivos en `app/legacy/` | 237 | 0 | 0 (al terminar la fase 2) |
-| Archivos que importan `primevue` | 120 | 113 | 0 |
-| **Apariciones de `pi pi-*`** | **1.822** | **0** | **0** |
-| **Llamadas a `toast.add` de PrimeVue** | **557** | **0** | **0** |
-| **Llamadas a `confirm.require` de PrimeVue** | **20** | **0** | **0** |
-| Archivos `.js`/`.vue` sin `lang="ts"` | 237 | 237 | 0 |
-| Llamadas a la API fuera de un service | 341 | 341 | 0 |
-| Literales hex de la paleta | ~2.528 | ~2.528 | 0 |
-| Rutas declaradas en `AUTH_ROUTE_PERMISSIONS` | 1 | 1 | 67 |
-| Slices que cumplen la receta completa | 0 | 0 | 21 |
+| Métrica                                      | Inicio    | Hoy    | Meta                      |
+| -------------------------------------------- | --------- | ------ | ------------------------- |
+| Archivos en `app/legacy/`                    | 237       | 0      | 0 (al terminar la fase 2) |
+| Archivos que importan `primevue`             | 120       | 113    | 0                         |
+| **Apariciones de `pi pi-*`**                 | **1.822** | **0**  | **0**                     |
+| **Llamadas a `toast.add` de PrimeVue**       | **557**   | **0**  | **0**                     |
+| **Llamadas a `confirm.require` de PrimeVue** | **20**    | **0**  | **0**                     |
+| Archivos `.js`/`.vue` sin `lang="ts"`        | 237       | 237    | 0                         |
+| Llamadas a la API fuera de un service        | 341       | 341    | 0                         |
+| Literales hex de la paleta                   | ~2.528    | ~2.528 | 0                         |
+| Rutas declaradas en `AUTH_ROUTE_PERMISSIONS` | 1         | 1      | 67                        |
+| Slices que cumplen la receta completa        | 0         | 0      | 21                        |
 
 Los comandos, desde `v2/`:
 
@@ -798,15 +799,15 @@ grep -ro "confirm\.require(" app | wc -l        # confirmaciones aún en la API 
 
 ## Riesgos transversales
 
-| Riesgo | Impacto | Mitigación |
-| --- | --- | --- |
-| **La tabla de datos** no tiene equivalente en shadcn | Bloquea 68 usos y contamina 3 olas | Resolverlo en la ola 0, antes de tocar ningún slice |
-| **Pérdida silenciosa de funciones** en vistas de 2.000+ líneas | Alto: nadie lo nota hasta el cierre contable | Inventario de capacidades por vista antes de tocarla; humo por slice |
-| **El equipo sigue trabajando en el legacy** durante la migración | Divergencia de ramas | Congelar funcionalidad nueva en `legacy/` durante las fases 1–2; después, toda función nueva se escribe en `v2/` |
-| **Los exportes de Excel/PDF** son lógica de negocio disfrazada de formato (fórmulas vivas, outline, estilo de marca) | Alto: son entregables que salen de la empresa | Migrar tal cual, comparar el archivo generado byte a byte contra el del legacy |
-| **Auth**: la migración a cookies depende del backend | Puede bloquear la ola 1 | Decidirlo en la fase 0; si el backend no está listo, la ola 1 se reordena |
-| Tailwind 4 rompe estilos sin fallar | Difuso, se acumula | Revisión visual lado a lado en la fase 1, no al final |
-| Fatiga: 21 slices es largo | Se afloja la receta y se degrada la calidad | Una ola por vez, con despliegue de vista previa y métricas visibles |
+| Riesgo                                                                                                               | Impacto                                       | Mitigación                                                                                                       |
+| -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **La tabla de datos** no tiene equivalente en shadcn                                                                 | Bloquea 68 usos y contamina 3 olas            | Resolverlo en la ola 0, antes de tocar ningún slice                                                              |
+| **Pérdida silenciosa de funciones** en vistas de 2.000+ líneas                                                       | Alto: nadie lo nota hasta el cierre contable  | Inventario de capacidades por vista antes de tocarla; humo por slice                                             |
+| **El equipo sigue trabajando en el legacy** durante la migración                                                     | Divergencia de ramas                          | Congelar funcionalidad nueva en `legacy/` durante las fases 1–2; después, toda función nueva se escribe en `v2/` |
+| **Los exportes de Excel/PDF** son lógica de negocio disfrazada de formato (fórmulas vivas, outline, estilo de marca) | Alto: son entregables que salen de la empresa | Migrar tal cual, comparar el archivo generado byte a byte contra el del legacy                                   |
+| **Auth**: la migración a cookies depende del backend                                                                 | Puede bloquear la ola 1                       | Decidirlo en la fase 0; si el backend no está listo, la ola 1 se reordena                                        |
+| Tailwind 4 rompe estilos sin fallar                                                                                  | Difuso, se acumula                            | Revisión visual lado a lado en la fase 1, no al final                                                            |
+| Fatiga: 21 slices es largo                                                                                           | Se afloja la receta y se degrada la calidad   | Una ola por vez, con despliegue de vista previa y métricas visibles                                              |
 
 ---
 
@@ -826,10 +827,10 @@ grep -ro "confirm\.require(" app | wc -l        # confirmaciones aún en la API 
 
 ## Resumen ejecutable
 
-| Fase | Entregable | Señal de que terminó |
-| --- | --- | --- |
-| **0 · Preparar** | Decisiones firmadas, pruebas en Vitest, inventarios, guion de humo | Las 3 decisiones bloqueantes están cerradas |
-| **1 · Trasladar** | Una app Nuxt que hace todo lo del legacy | Las 67 rutas cargan; hay despliegue de vista previa |
-| **2 · Reorganizar** | El código en la estructura del template | `app/legacy/` no existe; el alias `@` está eliminado |
-| **3 · Migrar** | Código que cumple `AGENTS.md` | 0 imports de PrimeVue, 0 archivos sin TypeScript, 0 llamadas fuera de un service |
-| **4 · Cerrar** | Un solo repositorio, un solo producto | `legacy/` borrado, documentación reescrita |
+| Fase                | Entregable                                                         | Señal de que terminó                                                             |
+| ------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| **0 · Preparar**    | Decisiones firmadas, pruebas en Vitest, inventarios, guion de humo | Las 3 decisiones bloqueantes están cerradas                                      |
+| **1 · Trasladar**   | Una app Nuxt que hace todo lo del legacy                           | Las 67 rutas cargan; hay despliegue de vista previa                              |
+| **2 · Reorganizar** | El código en la estructura del template                            | `app/legacy/` no existe; el alias `@` está eliminado                             |
+| **3 · Migrar**      | Código que cumple `AGENTS.md`                                      | 0 imports de PrimeVue, 0 archivos sin TypeScript, 0 llamadas fuera de un service |
+| **4 · Cerrar**      | Un solo repositorio, un solo producto                              | `legacy/` borrado, documentación reescrita                                       |

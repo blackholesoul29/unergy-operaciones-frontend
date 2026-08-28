@@ -40,7 +40,7 @@ defineProps({
   font-size: 18px;
   font-weight: 800;
   line-height: 1.15;
-  color: #2C2039;
+  color: #2c2039;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -58,7 +58,12 @@ defineProps({
 }
 /* En pantallas chicas, las acciones ocupan todo el ancho y se alinean a la izquierda */
 @media (max-width: 640px) {
-  .ph-title { font-size: 16px; white-space: normal; }
-  .ph-actions { width: 100%; }
+  .ph-title {
+    font-size: 16px;
+    white-space: normal;
+  }
+  .ph-actions {
+    width: 100%;
+  }
 }
 </style>

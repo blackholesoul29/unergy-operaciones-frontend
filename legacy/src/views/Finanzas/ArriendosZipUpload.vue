@@ -2,120 +2,180 @@
   <!-- Botón trigger -->
   <div class="inline-block">
     <input ref="zipInputRef" type="file" accept=".zip" class="hidden" @change="onZipSelected" />
-    <Button label="Cargar ZIP" icon="pi pi-upload" size="small" outlined
+    <Button
+      label="Cargar ZIP"
+      icon="pi pi-upload"
+      size="small"
+      outlined
       :loading="procesando"
       @click="zipInputRef.click()"
-      style="border-color:#915BD8;color:#915BD8" />
+      style="border-color: #915bd8; color: #915bd8"
+    />
   </div>
 
   <!-- ── Dialog preview ──────────────────────────────────────────────────── -->
-  <Dialog v-model:visible="showDialog" modal
+  <Dialog
+    v-model:visible="showDialog"
+    modal
     header="Vista previa — Predios por documento"
     :style="{ width: '1120px', maxWidth: '98vw' }"
-    :closable="!guardando">
-
+    :closable="!guardando"
+  >
     <div class="space-y-4 pt-1">
-
       <!-- Período detectado del ZIP -->
-      <div v-if="periodoZip && periodoZip !== periodo"
-        class="rounded-xl border p-3 flex items-center gap-3"
-        style="background:#eff6ff;border-color:#bfdbfe">
-        <i class="pi pi-info-circle text-sm flex-shrink-0" style="color:#2563eb"/>
-        <p class="text-xs" style="color:#1e40af">
-          El ZIP corresponde al período <strong>{{ periodoZip }}</strong>.
-          Los documentos se guardarán en ese período.
+      <div
+        v-if="periodoZip && periodoZip !== periodo"
+        class="flex items-center gap-3 rounded-xl border p-3"
+        style="background: #eff6ff; border-color: #bfdbfe"
+      >
+        <i class="pi pi-info-circle flex-shrink-0 text-sm" style="color: #2563eb" />
+        <p class="text-xs" style="color: #1e40af">
+          El ZIP corresponde al período <strong>{{ periodoZip }}</strong
+          >. Los documentos se guardarán en ese período.
         </p>
       </div>
 
       <!-- Advertencia de documentos ya existentes -->
-      <div v-if="hayDuplicados"
-        class="rounded-xl border p-3 flex items-start gap-3"
-        style="background:#fef3c7;border-color:#f59e0b40">
-        <i class="pi pi-exclamation-triangle text-sm flex-shrink-0 mt-0.5" style="color:#d97706"/>
-        <div class="flex-1 text-xs" style="color:#92400e">
-          <p class="font-semibold mb-1">
+      <div
+        v-if="hayDuplicados"
+        class="flex items-start gap-3 rounded-xl border p-3"
+        style="background: #fef3c7; border-color: #f59e0b40"
+      >
+        <i class="pi pi-exclamation-triangle mt-0.5 flex-shrink-0 text-sm" style="color: #d97706" />
+        <div class="flex-1 text-xs" style="color: #92400e">
+          <p class="mb-1 font-semibold">
             Ya existe documento para {{ predioscDuplicados.length }} predio(s) en este período
           </p>
-          <p>Si confirmas, se <strong>reemplazarán</strong> los documentos existentes de esos predios.</p>
+          <p>
+            Si confirmas, se <strong>reemplazarán</strong> los documentos existentes de esos
+            predios.
+          </p>
         </div>
       </div>
 
       <!-- Predios sin match -->
-      <div v-if="prediosSinMatch.length"
-        class="rounded-xl border p-3 flex items-start gap-3"
-        style="background:#fef2f2;border-color:#fca5a540">
-        <i class="pi pi-exclamation-circle text-sm flex-shrink-0 mt-0.5" style="color:#dc2626"/>
-        <div class="flex-1 text-xs" style="color:#991b1b">
-          <p class="font-semibold mb-1">{{ prediosSinMatch.length }} predio(s) sin proyecto en BD</p>
-          <p class="font-mono text-[11px]">{{ prediosSinMatch.map(p => p.codigoPredio).join(', ') }}</p>
-          <p class="mt-0.5">Se guardarán como <span class="font-mono">…_SIN-MATCH.pdf</span> para revisión manual.</p>
+      <div
+        v-if="prediosSinMatch.length"
+        class="flex items-start gap-3 rounded-xl border p-3"
+        style="background: #fef2f2; border-color: #fca5a540"
+      >
+        <i class="pi pi-exclamation-circle mt-0.5 flex-shrink-0 text-sm" style="color: #dc2626" />
+        <div class="flex-1 text-xs" style="color: #991b1b">
+          <p class="mb-1 font-semibold">
+            {{ prediosSinMatch.length }} predio(s) sin proyecto en BD
+          </p>
+          <p class="font-mono text-[11px]">
+            {{ prediosSinMatch.map((p) => p.codigoPredio).join(', ') }}
+          </p>
+          <p class="mt-0.5">
+            Se guardarán como <span class="font-mono">…_SIN-MATCH.pdf</span> para revisión manual.
+          </p>
         </div>
       </div>
 
       <!-- Tabla de preview agrupada por carpeta/documento -->
-      <div class="rounded-xl border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto" style="max-height:58vh">
-          <table class="w-full text-sm border-collapse" style="min-width:1000px">
+      <div class="overflow-hidden rounded-xl border border-gray-100">
+        <div class="overflow-x-auto" style="max-height: 58vh">
+          <table class="w-full border-collapse text-sm" style="min-width: 1000px">
             <thead>
-              <tr class="bg-gray-50 border-b border-gray-100">
-                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500">Código predio</th>
-                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500">Proyecto identificado</th>
-                <th class="px-3 py-2.5 text-right text-xs font-semibold text-gray-500 w-32">Valor (COP)</th>
-                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500">Archivo resultante</th>
-                <th class="px-3 py-2.5 text-center text-xs font-semibold text-gray-500 w-20">Match</th>
+              <tr class="border-b border-gray-100 bg-gray-50">
+                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500">
+                  Código predio
+                </th>
+                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500">
+                  Proyecto identificado
+                </th>
+                <th class="w-32 px-3 py-2.5 text-right text-xs font-semibold text-gray-500">
+                  Valor (COP)
+                </th>
+                <th class="px-3 py-2.5 text-left text-xs font-semibold text-gray-500">
+                  Archivo resultante
+                </th>
+                <th class="w-20 px-3 py-2.5 text-center text-xs font-semibold text-gray-500">
+                  Match
+                </th>
               </tr>
             </thead>
             <tbody>
               <template v-for="grupo in gruposPreview" :key="grupo.uid">
                 <!-- Encabezado de grupo -->
-                <tr class="bg-purple-50/40 border-b border-purple-100">
+                <tr class="border-b border-purple-100 bg-purple-50/40">
                   <td colspan="5" class="px-3 py-2">
-                    <div class="flex items-center gap-2 flex-wrap text-[11px]">
+                    <div class="flex flex-wrap items-center gap-2 text-[11px]">
                       <span class="font-mono text-gray-500">{{ grupo.carpeta }}</span>
                       <span class="text-gray-300">·</span>
-                      <span class="text-[10px] px-1.5 py-0.5 rounded font-semibold"
-                        :style="formatoStyle(grupo.formato)">Formato {{ grupo.formato }}</span>
+                      <span
+                        class="rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                        :style="formatoStyle(grupo.formato)"
+                        >Formato {{ grupo.formato }}</span
+                      >
                       <span v-if="grupo.numeroCuentaCobro" class="text-gray-300">·</span>
-                      <span v-if="grupo.numeroCuentaCobro" class="font-semibold" style="color:#6d28d9">
+                      <span
+                        v-if="grupo.numeroCuentaCobro"
+                        class="font-semibold"
+                        style="color: #6d28d9"
+                      >
                         {{ grupo.numeroCuentaCobro }}
                       </span>
                       <span class="text-gray-300">·</span>
                       <span class="text-gray-500">Arrendatario:</span>
-                      <input v-model="grupo.nombreArrendatario" type="text"
+                      <input
+                        v-model="grupo.nombreArrendatario"
+                        type="text"
                         placeholder="(vacío)"
-                        class="text-[11px] border border-gray-200 rounded px-1.5 py-0.5 bg-white focus:outline-none focus:ring-1 focus:ring-purple-300"
-                        style="min-width:200px" />
-                      <span class="ml-auto text-gray-400">{{ grupo.predios.length }} predio(s)</span>
+                        class="rounded border border-gray-200 bg-white px-1.5 py-0.5 text-[11px] focus:ring-1 focus:ring-purple-300 focus:outline-none"
+                        style="min-width: 200px"
+                      />
+                      <span class="ml-auto text-gray-400"
+                        >{{ grupo.predios.length }} predio(s)</span
+                      >
                     </div>
                   </td>
                 </tr>
                 <!-- Filas de predios -->
-                <tr v-for="predio in grupo.predios" :key="predio.uid"
+                <tr
+                  v-for="predio in grupo.predios"
+                  :key="predio.uid"
                   class="border-b border-gray-50 hover:bg-gray-50/50"
-                  :class="!predio.proyectoId ? 'bg-red-50/40' : (predio.yaExiste ? 'bg-amber-50/40' : '')">
+                  :class="
+                    !predio.proyectoId ? 'bg-red-50/40' : predio.yaExiste ? 'bg-amber-50/40' : ''
+                  "
+                >
                   <td class="px-3 py-2 font-mono text-xs text-gray-600">
                     {{ predio.codigoPredio }}
-                    <i v-if="predio.yaExiste" class="pi pi-refresh text-[9px] ml-1" style="color:#d97706"
-                      title="Ya existe — se reemplazará" />
+                    <i
+                      v-if="predio.yaExiste"
+                      class="pi pi-refresh ml-1 text-[9px]"
+                      style="color: #d97706"
+                      title="Ya existe — se reemplazará"
+                    />
                   </td>
                   <td class="px-3 py-2">
-                    <div v-if="predio.proyectoId" class="text-xs font-medium" style="color:#2C2039">
+                    <div
+                      v-if="predio.proyectoId"
+                      class="text-xs font-medium"
+                      style="color: #2c2039"
+                    >
                       {{ predio.proyectoNombre }}
                     </div>
-                    <select v-else
+                    <select
+                      v-else
                       v-model="predio.proyectoId"
-                      class="text-xs border border-red-300 rounded px-2 py-1 w-full bg-white"
-                      @change="onProyectoSeleccionado(predio)">
+                      class="w-full rounded border border-red-300 bg-white px-2 py-1 text-xs"
+                      @change="onProyectoSeleccionado(predio)"
+                    >
                       <option :value="null">— Sin match (SIN-MATCH) —</option>
                       <option v-for="p in props.proyectos" :key="p.id" :value="p.id">
                         {{ p.proyecto }}{{ p.codigo ? ` (${p.codigo})` : '' }}
                       </option>
                     </select>
                     <!-- Selector de arrendador: solo cuando el proyecto tiene MÁS DE UNO -->
-                    <select v-if="predio.arrendadorOpciones && predio.arrendadorOpciones.length > 1"
+                    <select
+                      v-if="predio.arrendadorOpciones && predio.arrendadorOpciones.length > 1"
                       v-model="predio.arrArrendadorId"
-                      class="text-[11px] border border-purple-200 rounded px-1.5 py-0.5 mt-1 w-full bg-white"
-                      title="Este proyecto tiene varios arrendadores: elige a cuál corresponde esta cuenta de cobro">
+                      class="mt-1 w-full rounded border border-purple-200 bg-white px-1.5 py-0.5 text-[11px]"
+                      title="Este proyecto tiene varios arrendadores: elige a cuál corresponde esta cuenta de cobro"
+                    >
                       <option v-for="a in predio.arrendadorOpciones" :key="a.id" :value="a.id">
                         {{ a.nombre }}
                       </option>
@@ -124,20 +184,27 @@
                   <td class="px-3 py-2 text-right font-mono text-xs text-gray-600">
                     {{ predio.valor != null ? formatCOP(predio.valor) : '—' }}
                   </td>
-                  <td class="px-3 py-2 text-[11px] font-mono" style="color:#7c3aed;max-width:320px">
-                    <span class="truncate block" :title="nombrePredio(grupo, predio)">
+                  <td
+                    class="px-3 py-2 font-mono text-[11px]"
+                    style="color: #7c3aed; max-width: 320px"
+                  >
+                    <span class="block truncate" :title="nombrePredio(grupo, predio)">
                       {{ nombrePredio(grupo, predio) }}
                     </span>
                   </td>
                   <td class="px-3 py-2 text-center">
-                    <span v-if="predio.proyectoId"
-                      class="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
-                      style="background:#dcfce7;color:#166534">
+                    <span
+                      v-if="predio.proyectoId"
+                      class="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium"
+                      style="background: #dcfce7; color: #166534"
+                    >
                       <i class="pi pi-check text-[10px]" />OK
                     </span>
-                    <span v-else
-                      class="inline-flex items-center gap-1 text-xs px-1.5 py-0.5 rounded-full font-medium"
-                      style="background:#fee2e2;color:#991b1b">
+                    <span
+                      v-else
+                      class="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-xs font-medium"
+                      style="background: #fee2e2; color: #991b1b"
+                    >
                       <i class="pi pi-times text-[10px]" />Sin match
                     </span>
                   </td>
@@ -155,45 +222,72 @@
           {{ prediosListos }} con match
         </span>
         <div class="flex gap-2">
-          <Button label="Cancelar" size="small" outlined severity="secondary"
-            :disabled="guardando" @click="showDialog = false" />
-          <Button :label="hayDuplicados ? 'Reemplazar y guardar' : 'Confirmar y guardar'"
-            icon="pi pi-check" size="small"
-            :loading="guardando" :disabled="totalPredios === 0"
+          <Button
+            label="Cancelar"
+            size="small"
+            outlined
+            severity="secondary"
+            :disabled="guardando"
+            @click="showDialog = false"
+          />
+          <Button
+            :label="hayDuplicados ? 'Reemplazar y guardar' : 'Confirmar y guardar'"
+            icon="pi pi-check"
+            size="small"
+            :loading="guardando"
+            :disabled="totalPredios === 0"
             @click="confirmar"
-            style="background:#915BD8;border-color:#915BD8" />
+            style="background: #915bd8; border-color: #915bd8"
+          />
         </div>
       </div>
-
     </div>
   </Dialog>
 
   <!-- ── Dialog resumen post-guardado ────────────────────────────────────── -->
-  <Dialog v-model:visible="showResumen" modal header="Resultado del procesamiento" :style="{ width: '580px' }">
+  <Dialog
+    v-model:visible="showResumen"
+    modal
+    header="Resultado del procesamiento"
+    :style="{ width: '580px' }"
+  >
     <div class="space-y-3 pt-1 text-sm">
       <!-- Asociados -->
-      <div class="rounded-lg border p-3 space-y-1.5" style="background:#f0fdf4;border-color:#bbf7d0">
-        <p class="text-xs font-semibold" style="color:#166534">
-          <i class="pi pi-check-circle mr-1"/>
+      <div
+        class="space-y-1.5 rounded-lg border p-3"
+        style="background: #f0fdf4; border-color: #bbf7d0"
+      >
+        <p class="text-xs font-semibold" style="color: #166534">
+          <i class="pi pi-check-circle mr-1" />
           {{ resumen.asociados.length }} predio(s) asociados correctamente
         </p>
-        <div v-for="(item, idx) in resumen.asociados" :key="idx"
-          class="flex items-center gap-2 text-[11px] text-gray-600 pl-3">
-          <i class="pi pi-file-pdf text-[9px]" style="color:#16a34a"/>
+        <div
+          v-for="(item, idx) in resumen.asociados"
+          :key="idx"
+          class="flex items-center gap-2 pl-3 text-[11px] text-gray-600"
+        >
+          <i class="pi pi-file-pdf text-[9px]" style="color: #16a34a" />
           <span class="font-mono text-gray-400">{{ item.codigo }}</span>
-          <i class="pi pi-arrow-right text-[9px] text-gray-300"/>
+          <i class="pi pi-arrow-right text-[9px] text-gray-300" />
           <span>{{ item.proyecto }}</span>
         </div>
       </div>
 
       <!-- Sin match -->
-      <div v-if="resumen.sinMatch.length" class="rounded-lg border p-3 space-y-1.5" style="background:#fffbeb;border-color:#fcd34d40">
-        <p class="text-xs font-semibold" style="color:#92400e">
-          <i class="pi pi-exclamation-triangle mr-1"/>
+      <div
+        v-if="resumen.sinMatch.length"
+        class="space-y-1.5 rounded-lg border p-3"
+        style="background: #fffbeb; border-color: #fcd34d40"
+      >
+        <p class="text-xs font-semibold" style="color: #92400e">
+          <i class="pi pi-exclamation-triangle mr-1" />
           {{ resumen.sinMatch.length }} predio(s) sin match — revisión manual
         </p>
-        <div v-for="(item, idx) in resumen.sinMatch" :key="idx"
-          class="flex items-center gap-2 text-[11px] pl-3">
+        <div
+          v-for="(item, idx) in resumen.sinMatch"
+          :key="idx"
+          class="flex items-center gap-2 pl-3 text-[11px]"
+        >
           <span class="font-mono font-semibold text-amber-700">{{ item.codigo }}</span>
           <span class="text-gray-400">—</span>
           <span class="text-gray-500">{{ item.carpeta }}</span>
@@ -201,9 +295,11 @@
       </div>
 
       <!-- Totales -->
-      <div class="flex items-center gap-4 text-xs text-gray-500 pt-1 border-t">
-        <span><i class="pi pi-copy mr-1"/>{{ resumen.copiasGeneradas }} copias generadas</span>
-        <span><i class="pi pi-folder mr-1"/>{{ resumen.carpetasProcesadas }} carpetas procesadas</span>
+      <div class="flex items-center gap-4 border-t pt-1 text-xs text-gray-500">
+        <span><i class="pi pi-copy mr-1" />{{ resumen.copiasGeneradas }} copias generadas</span>
+        <span
+          ><i class="pi pi-folder mr-1" />{{ resumen.carpetasProcesadas }} carpetas procesadas</span
+        >
       </div>
     </div>
     <template #footer>
@@ -235,31 +331,31 @@ const toast = useToast()
 const props = defineProps({
   // [{ id (arr_arrendador_id, o sintético -proyecto_id si no tiene contrato),
   //   proyectoId (id real de Proyecto), proyecto, codigo, nombreArrendador, estadoContrato }]
-  proyectos:    { type: Array,  required: true },
-  periodo:      { type: String, required: true },   // 'YYYY-MM'
+  proyectos: { type: Array, required: true },
+  periodo: { type: String, required: true }, // 'YYYY-MM'
   periodoLabel: { type: String, required: true },
 })
 const emit = defineEmits(['docs-actualizados'])
 
-const zipInputRef   = ref(null)
-const procesando    = ref(false)
-const guardando     = ref(false)
-const showDialog    = ref(false)
-const showResumen   = ref(false)
+const zipInputRef = ref(null)
+const procesando = ref(false)
+const guardando = ref(false)
+const showDialog = ref(false)
+const showResumen = ref(false)
 const gruposPreview = ref([])
-const periodoZip    = ref(null)
+const periodoZip = ref(null)
 
 const resumen = ref({ asociados: [], sinMatch: [], copiasGeneradas: 0, carpetasProcesadas: 0 })
 
 let uidCounter = 0
 const uid = () => `n_${++uidCounter}`
 
-const todosPredios    = computed(() => gruposPreview.value.flatMap(g => g.predios))
-const totalPredios    = computed(() => todosPredios.value.length)
-const prediosListos   = computed(() => todosPredios.value.filter(p => p.proyectoId).length)
-const prediosSinMatch = computed(() => todosPredios.value.filter(p => !p.proyectoId))
-const predioscDuplicados = computed(() => todosPredios.value.filter(p => p.yaExiste))
-const hayDuplicados   = computed(() => predioscDuplicados.value.length > 0)
+const todosPredios = computed(() => gruposPreview.value.flatMap((g) => g.predios))
+const totalPredios = computed(() => todosPredios.value.length)
+const prediosListos = computed(() => todosPredios.value.filter((p) => p.proyectoId).length)
+const prediosSinMatch = computed(() => todosPredios.value.filter((p) => !p.proyectoId))
+const predioscDuplicados = computed(() => todosPredios.value.filter((p) => p.yaExiste))
+const hayDuplicados = computed(() => predioscDuplicados.value.length > 0)
 
 // ── Formato COP ────────────────────────────────────────────────────────────────
 function formatCOP(v) {
@@ -268,12 +364,14 @@ function formatCOP(v) {
 }
 
 function formatoStyle(f) {
-  return {
-    A: 'background:#dcfce7;color:#166534',
-    B: 'background:#dbeafe;color:#1e40af',
-    C: 'background:#fef3c7;color:#92400e',
-    D: 'background:#f3f4f6;color:#6b7280',
-  }[f] ?? 'background:#f3f4f6;color:#6b7280'
+  return (
+    {
+      A: 'background:#dcfce7;color:#166534',
+      B: 'background:#dbeafe;color:#1e40af',
+      C: 'background:#fef3c7;color:#92400e',
+      D: 'background:#f3f4f6;color:#6b7280',
+    }[f] ?? 'background:#f3f4f6;color:#6b7280'
+  )
 }
 
 // ── Período del nombre del ZIP ──────────────────────────────────────────────────
@@ -281,15 +379,19 @@ function extraerPeriodoDeZip(filename) {
   const m = filename.match(/(\d{4}-\d{2})/)
   if (!m) return null
   const mm = parseInt(m[1].split('-')[1])
-  return (mm >= 1 && mm <= 12) ? m[1] : null
+  return mm >= 1 && mm <= 12 ? m[1] : null
 }
 
 // ── Nombre de archivo por predio ────────────────────────────────────────────────
 // [CODIGO_PREDIO]_[YYYY-MM]_[Arrendatario]_[Nombre Proyecto].pdf  (+ _pagoN si aplica)
 function nombrePredio(grupo, predio) {
-  const sani = s => (s || '').replace(/[/\\:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim()
+  const sani = (s) =>
+    (s || '')
+      .replace(/[/\\:*?"<>|]/g, '_')
+      .replace(/\s+/g, ' ')
+      .trim()
   const periodo = periodoZip.value || props.periodo
-  const arr  = sani(grupo.nombreArrendatario)
+  const arr = sani(grupo.nombreArrendatario)
   const proy = predio.proyectoId ? sani(predio.proyectoNombre) : 'SIN-MATCH'
   const partes = [predio.codigoPredio, periodo]
   if (arr) partes.push(arr)
@@ -310,32 +412,45 @@ function nombreSeguro(rawPath, fallback) {
 
 // ── Selección del archivo principal según prioridad ───────────────────────────
 function seleccionarPrincipal(archivos) {
-  const cc = archivos.filter(a =>
-    a.nombre.toLowerCase().includes('cuenta_cobro') &&
-    !a.nombre.toLowerCase().includes('enviada') &&
-    !a.nombre.toLowerCase().includes('_env'))
+  const cc = archivos.filter(
+    (a) =>
+      a.nombre.toLowerCase().includes('cuenta_cobro') &&
+      !a.nombre.toLowerCase().includes('enviada') &&
+      !a.nombre.toLowerCase().includes('_env'),
+  )
   if (cc.length) return { principal: cc[0], tipoArchivo: 'cuenta_cobro' }
 
-  const factPdf = archivos.filter(a =>
-    a.nombre.toLowerCase().includes('factura_electronica') && a.nombre.toLowerCase().endsWith('.pdf'))
+  const factPdf = archivos.filter(
+    (a) =>
+      a.nombre.toLowerCase().includes('factura_electronica') &&
+      a.nombre.toLowerCase().endsWith('.pdf'),
+  )
   if (factPdf.length) return { principal: factPdf[0], tipoArchivo: 'factura_electronica' }
 
-  const factJpg = archivos.filter(a =>
-    a.nombre.toLowerCase().includes('factura_electronica') &&
-    (a.nombre.toLowerCase().endsWith('.jpg') || a.nombre.toLowerCase().endsWith('.jpeg')))
+  const factJpg = archivos.filter(
+    (a) =>
+      a.nombre.toLowerCase().includes('factura_electronica') &&
+      (a.nombre.toLowerCase().endsWith('.jpg') || a.nombre.toLowerCase().endsWith('.jpeg')),
+  )
   if (factJpg.length) return { principal: factJpg[0], tipoArchivo: 'factura_electronica_jpg' }
 
-  const otroPdf = archivos.filter(a => a.nombre.toLowerCase().endsWith('.pdf') && !a.nombre.toLowerCase().includes('enviada'))
+  const otroPdf = archivos.filter(
+    (a) => a.nombre.toLowerCase().endsWith('.pdf') && !a.nombre.toLowerCase().includes('enviada'),
+  )
   if (otroPdf.length) return { principal: otroPdf[0], tipoArchivo: 'pdf' }
 
   return { principal: archivos[0] || null, tipoArchivo: 'desconocido' }
 }
 
 function seleccionarSecundario(archivos, principal) {
-  return archivos.find(a =>
-    a !== principal &&
-    a.nombre.toLowerCase().includes('enviada') &&
-    a.nombre.toLowerCase().endsWith('.pdf')) ?? null
+  return (
+    archivos.find(
+      (a) =>
+        a !== principal &&
+        a.nombre.toLowerCase().includes('enviada') &&
+        a.nombre.toLowerCase().endsWith('.pdf'),
+    ) ?? null
+  )
 }
 
 // ── Extracción de texto del PDF → líneas ──────────────────────────────────────
@@ -344,7 +459,7 @@ async function extraerLineas(arrayBuffer) {
     const pdf = await getDocument({ data: new Uint8Array(arrayBuffer) }).promise
     const lineas = []
     for (let p = 1; p <= pdf.numPages; p++) {
-      const page    = await pdf.getPage(p)
+      const page = await pdf.getPage(p)
       const content = await page.getTextContent()
       const byY = {}
       for (const item of content.items) {
@@ -353,13 +468,22 @@ async function extraerLineas(arrayBuffer) {
         if (!byY[y]) byY[y] = []
         byY[y].push({ x: item.transform[4], str: item.str })
       }
-      Object.keys(byY).map(Number).sort((a, b) => b - a).forEach(y => {
-        const linea = byY[y].sort((a, b) => a.x - b.x).map(i => i.str).join(' ').trim()
-        if (linea) lineas.push(linea)
-      })
+      Object.keys(byY)
+        .map(Number)
+        .sort((a, b) => b - a)
+        .forEach((y) => {
+          const linea = byY[y]
+            .sort((a, b) => a.x - b.x)
+            .map((i) => i.str)
+            .join(' ')
+            .trim()
+          if (linea) lineas.push(linea)
+        })
     }
     return lineas
-  } catch { return [] }
+  } catch {
+    return []
+  }
 }
 
 // ── Parseo de números (US "1,646,075.85" o CO "1.646.075,85") ─────────────────
@@ -368,9 +492,9 @@ function parseValor(s) {
   let t = String(s).replace(/[^\d.,]/g, '')
   if (!t) return null
   const lastComma = t.lastIndexOf(',')
-  const lastDot   = t.lastIndexOf('.')
+  const lastDot = t.lastIndexOf('.')
   if (lastComma > lastDot) t = t.replace(/\./g, '').replace(',', '.')
-  else                     t = t.replace(/,/g, '')
+  else t = t.replace(/,/g, '')
   const v = parseFloat(t)
   return isNaN(v) ? null : v
 }
@@ -383,19 +507,23 @@ function predioShort(codigo) {
 }
 
 function prediosDeNombre(nombre) {
-  const out = [], seen = new Set()
+  const out = [],
+    seen = new Set()
   const re = /COL[A-Z0-9]+P\d+/gi
   let m
   while ((m = re.exec(nombre)) !== null) {
     const s = m[0].toUpperCase()
-    if (!seen.has(s)) { seen.add(s); out.push(s) }
+    if (!seen.has(s)) {
+      seen.add(s)
+      out.push(s)
+    }
   }
   return out
 }
 
 function matchPredio(short) {
   if (!short) return null
-  return props.proyectos.find(p => predioShort(p.codigo) === short) ?? null
+  return props.proyectos.find((p) => predioShort(p.codigo) === short) ?? null
 }
 
 // Todas las filas de props.proyectos que corresponden al mismo código de predio.
@@ -404,7 +532,7 @@ function matchPredio(short) {
 // así que esto puede devolver más de un resultado.
 function matchesPredio(short) {
   if (!short) return []
-  return props.proyectos.filter(p => predioShort(p.codigo) === short)
+  return props.proyectos.filter((p) => predioShort(p.codigo) === short)
 }
 
 // Arrendador por defecto para un conjunto de filas ya matcheadas:
@@ -422,17 +550,25 @@ function arrendadorIdDefault(matches) {
 // ── Encabezado: N° de cuenta + arrendatario (DEBE A) ───────────────────────────
 function extraerEncabezado(lineas) {
   const texto = lineas.join('\n')
-  let numero = null, arrendatario = null
+  let numero = null,
+    arrendatario = null
 
   const mNum = texto.match(/CUENTA\s+DE\s+COBRO[^A-Z0-9]*([A-Z]+-[\d-]+)/i)
   if (mNum) numero = mNum[1].trim()
 
   for (let i = 0; i < lineas.length; i++) {
     const m = lineas[i].match(/DEBE\s+A\s*:?\s*(.+)/i)
-    if (m && m[1].trim()) { arrendatario = m[1].trim(); break }
-    if (/DEBE\s+A\s*:?\s*$/i.test(lineas[i]) && lineas[i + 1]) { arrendatario = lineas[i + 1].trim(); break }
+    if (m && m[1].trim()) {
+      arrendatario = m[1].trim()
+      break
+    }
+    if (/DEBE\s+A\s*:?\s*$/i.test(lineas[i]) && lineas[i + 1]) {
+      arrendatario = lineas[i + 1].trim()
+      break
+    }
   }
-  if (arrendatario) arrendatario = arrendatario.replace(/\s*(C\.?C\.?|NIT)\.?\s*[\d.\-]+.*$/i, '').trim()
+  if (arrendatario)
+    arrendatario = arrendatario.replace(/\s*(C\.?C\.?|NIT)\.?\s*[\d.\-]+.*$/i, '').trim()
   return { numero, arrendatario }
 }
 
@@ -444,7 +580,10 @@ function extraerEmisora(lineas) {
   }
   for (const l of lineas) {
     if (/\b(S\.?A\.?S|LTDA|E\.?U|S\.?A)\b/i.test(l) && /[A-Za-z]{4,}/.test(l)) {
-      return l.replace(/\s*(NIT|C\.?C)\.?.*$/i, '').trim().slice(0, 80)
+      return l
+        .replace(/\s*(NIT|C\.?C)\.?.*$/i, '')
+        .trim()
+        .slice(0, 80)
     }
   }
   return null
@@ -460,7 +599,7 @@ function extraerPrediosTabla(lineas) {
     if (!mFull) continue
     const short = predioShort(mFull[0])
     if (!short || seen.has(short)) continue
-    const nums  = l.match(/\d[\d.,]*\d/g) || []
+    const nums = l.match(/\d[\d.,]*\d/g) || []
     const valor = nums.length ? parseValor(nums[nums.length - 1]) : null
     seen.add(short)
     predios.push({ codigoPredio: short, valor })
@@ -473,12 +612,15 @@ function extraerTotal(lineas) {
   for (const l of lineas) {
     if (/total/i.test(l)) {
       const nums = l.match(/\d[\d.,]*\d/g)
-      if (nums?.length) { const v = parseValor(nums[nums.length - 1]); if (v) return v }
+      if (nums?.length) {
+        const v = parseValor(nums[nums.length - 1])
+        if (v) return v
+      }
     }
   }
   let best = null
   for (const l of lineas) {
-    for (const n of (l.match(/\d[\d.,]*\d/g) || [])) {
+    for (const n of l.match(/\d[\d.,]*\d/g) || []) {
       const v = parseValor(n)
       if (v && (best === null || v > best)) best = v
     }
@@ -492,9 +634,9 @@ async function onZipSelected(e) {
   if (!file) return
   e.target.value = ''
 
-  procesando.value    = true
+  procesando.value = true
   gruposPreview.value = []
-  periodoZip.value    = extraerPeriodoDeZip(file.name)
+  periodoZip.value = extraerPeriodoDeZip(file.name)
 
   try {
     const zip = await JSZip.loadAsync(file)
@@ -502,7 +644,10 @@ async function onZipSelected(e) {
     // ── Validación de seguridad (Zip Slip + allowlist de extensiones) ──────────
     const { valid, errors } = validateZipEntries(zip, { allowedExtensions: EXTENSIONES_PERMITIDAS })
     if (!valid) {
-      const primeros = errors.slice(0, 4).map(e => e.message).join(' · ')
+      const primeros = errors
+        .slice(0, 4)
+        .map((e) => e.message)
+        .join(' · ')
       const extra = errors.length > 4 ? ` (+${errors.length - 4} más)` : ''
       toast.add({
         severity: 'error',
@@ -527,8 +672,8 @@ async function onZipSelected(e) {
     const grupos = []
 
     for (const carpeta of [...carpetas].sort()) {
-      const partes         = carpeta.split('_')
-      const pagoId         = parseInt(partes[1]) || 0
+      const partes = carpeta.split('_')
+      const pagoId = parseInt(partes[1]) || 0
       const codigoExtraido = partes.slice(2).join('_')
 
       const archivos = []
@@ -543,24 +688,29 @@ async function onZipSelected(e) {
       const secundario = seleccionarSecundario(archivos, principal)
       if (!principal) continue
 
-      const esPdf     = principal.nombre.toLowerCase().endsWith('.pdf')
-      const esJpg     = !esPdf
+      const esPdf = principal.nombre.toLowerCase().endsWith('.pdf')
+      const esJpg = !esPdf
       const pdfBuffer = await principal.entry.async('arraybuffer')
-      const pdfBlob   = new Blob([pdfBuffer], { type: esPdf ? 'application/pdf' : 'image/jpeg' })
+      const pdfBlob = new Blob([pdfBuffer], { type: esPdf ? 'application/pdf' : 'image/jpeg' })
 
-      let pdfSecBlob = null, pdfSecNombre = null
+      let pdfSecBlob = null,
+        pdfSecNombre = null
       if (secundario) {
-        pdfSecBlob   = new Blob([await secundario.entry.async('arraybuffer')], { type: 'application/pdf' })
+        pdfSecBlob = new Blob([await secundario.entry.async('arraybuffer')], {
+          type: 'application/pdf',
+        })
         pdfSecNombre = secundario.nombre
       }
 
-      let numeroCuentaCobro = null, nombreArrendatario = null, total = null
+      let numeroCuentaCobro = null,
+        nombreArrendatario = null,
+        total = null
       let prediosTabla = []
       let lineas = []
       if (esPdf) {
         lineas = await extraerLineas(pdfBuffer)
         const enc = extraerEncabezado(lineas)
-        numeroCuentaCobro  = enc.numero
+        numeroCuentaCobro = enc.numero
         nombreArrendatario = enc.arrendatario
         prediosTabla = extraerPrediosTabla(lineas)
         total = extraerTotal(lineas)
@@ -572,12 +722,12 @@ async function onZipSelected(e) {
       let formato, codigosPredio
       if (prediosTabla.length) {
         formato = 'A'
-        codigosPredio = prediosTabla.map(p => p.codigoPredio)
+        codigosPredio = prediosTabla.map((p) => p.codigoPredio)
       } else {
         codigosPredio = prediosDeNombre(principal.nombre)
-        if (esJpg)              formato = 'D'
+        if (esJpg) formato = 'D'
         else if (esCuentaCobro) formato = 'B'
-        else                    formato = 'C'
+        else formato = 'C'
       }
 
       // Arrendatario según formato
@@ -585,7 +735,7 @@ async function onZipSelected(e) {
       if (formato === 'D') nombreArrendatario = nombreArrendatario || ''
 
       // Valor por predio
-      const valoresTabla = Object.fromEntries(prediosTabla.map(p => [p.codigoPredio, p.valor]))
+      const valoresTabla = Object.fromEntries(prediosTabla.map((p) => [p.codigoPredio, p.valor]))
       const nPredios = codigosPredio.length || 1
       function valorDe(codigo) {
         if (formato === 'A') return valoresTabla[codigo] ?? null
@@ -593,69 +743,98 @@ async function onZipSelected(e) {
         return null
       }
 
-      const predios = (codigosPredio.length ? codigosPredio : [codigoExtraido]).map(codigo => {
+      const predios = (codigosPredio.length ? codigosPredio : [codigoExtraido]).map((codigo) => {
         const short = predioShort(codigo) || codigo
         const matches = matchesPredio(short)
         const m = matches[0] ?? null
         return {
           uid: uid(),
-          codigoPredio:   short,
-          valor:          valorDe(short),
-          proyectoId:     m?.id ?? null,
+          codigoPredio: short,
+          valor: valorDe(short),
+          proyectoId: m?.id ?? null,
           // Id real de Proyecto (para documentos, indexados por proyecto_id, no por
           // arr_arrendador_id). Todos los matches del mismo predio comparten proyecto.
           proyectoRealId: m?.proyectoId ?? null,
           proyectoNombre: m?.proyecto ?? null,
-          conPago:        false,   // se calcula luego (predio repetido entre pagos)
-          yaExiste:       false,
+          conPago: false, // se calcula luego (predio repetido entre pagos)
+          yaExiste: false,
           // Varios arrendadores para el mismo proyecto → selector; si no, null/valor único.
-          arrendadorOpciones: matches.map(p => ({ id: p.id, nombre: p.nombreArrendador || p.proyecto })),
+          arrendadorOpciones: matches.map((p) => ({
+            id: p.id,
+            nombre: p.nombreArrendador || p.proyecto,
+          })),
           arrArrendadorId: arrendadorIdDefault(matches),
         }
       })
 
       grupos.push({
-        uid: uid(), carpeta, pagoId, codigoExtraido,
-        numeroCuentaCobro, nombreArrendatario, tipoArchivo, formato,
-        pdfBlob, pdfSecBlob, pdfSecNombre, originalName: principal.nombre, predios,
+        uid: uid(),
+        carpeta,
+        pagoId,
+        codigoExtraido,
+        numeroCuentaCobro,
+        nombreArrendatario,
+        tipoArchivo,
+        formato,
+        pdfBlob,
+        pdfSecBlob,
+        pdfSecNombre,
+        originalName: principal.nombre,
+        predios,
       })
     }
 
     if (!grupos.length) {
-      toast.add({ severity: 'warn', summary: 'No se encontraron documentos procesables', life: 4000 })
+      toast.add({
+        severity: 'warn',
+        summary: 'No se encontraron documentos procesables',
+        life: 4000,
+      })
       return
     }
 
     // Marcar predios repetidos entre pagos (para el sufijo _pagoN)
     const conteo = {}
-    for (const g of grupos) for (const p of g.predios) conteo[p.codigoPredio] = (conteo[p.codigoPredio] || 0) + 1
+    for (const g of grupos)
+      for (const p of g.predios) conteo[p.codigoPredio] = (conteo[p.codigoPredio] || 0) + 1
     for (const g of grupos) for (const p of g.predios) p.conPago = conteo[p.codigoPredio] > 1
 
     // Advertencia: documentos ya existentes en el período (mismo proyecto + pago)
     try {
       const existentes = await fetchDocsPeriodo(periodoZip.value || props.periodo)
-      const clave = new Set(existentes.map(d => `${d.proyecto_id}|${d.pago_id}`))
-      for (const g of grupos) for (const p of g.predios) {
-        if (p.proyectoRealId && clave.has(`${p.proyectoRealId}|${g.pagoId}`)) p.yaExiste = true
-      }
-    } catch { /* no bloquea */ }
+      const clave = new Set(existentes.map((d) => `${d.proyecto_id}|${d.pago_id}`))
+      for (const g of grupos)
+        for (const p of g.predios) {
+          if (p.proyectoRealId && clave.has(`${p.proyectoRealId}|${g.pagoId}`)) p.yaExiste = true
+        }
+    } catch {
+      /* no bloquea */
+    }
 
     gruposPreview.value = grupos
     showDialog.value = true
   } catch (err) {
     console.error(err)
-    toast.add({ severity: 'error', summary: 'Error al procesar el ZIP', detail: err.message, life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al procesar el ZIP',
+      detail: err.message,
+      life: 5000,
+    })
   } finally {
     procesando.value = false
   }
 }
 
 function onProyectoSeleccionado(predio) {
-  const p = props.proyectos.find(p => p.id === predio.proyectoId)
+  const p = props.proyectos.find((p) => p.id === predio.proyectoId)
   predio.proyectoNombre = p?.proyecto ?? null
   predio.proyectoRealId = p?.proyectoId ?? null
-  const matches = p ? props.proyectos.filter(x => x.codigo === p.codigo) : []
-  predio.arrendadorOpciones = matches.map(x => ({ id: x.id, nombre: x.nombreArrendador || x.proyecto }))
+  const matches = p ? props.proyectos.filter((x) => x.codigo === p.codigo) : []
+  predio.arrendadorOpciones = matches.map((x) => ({
+    id: x.id,
+    nombre: x.nombreArrendador || x.proyecto,
+  }))
   predio.arrArrendadorId = arrendadorIdDefault(matches)
 }
 
@@ -664,28 +843,30 @@ async function confirmar() {
   guardando.value = true
   const periodoParse = periodoZip.value || props.periodo
   const asociados = []
-  const sinMatch  = []
-  let copiasGeneradas    = 0
+  const sinMatch = []
+  let copiasGeneradas = 0
   let carpetasProcesadas = 0
 
   try {
     for (const grupo of gruposPreview.value) {
       carpetasProcesadas++
-      const filename = `documento_pago${grupo.pagoId}.pdf`   // nombre del archivo original enviado
+      const filename = `documento_pago${grupo.pagoId}.pdf` // nombre del archivo original enviado
       try {
         await uploadCuentaCobro({
-          file:           new File([grupo.pdfBlob], nombreSeguro(grupo.originalName, filename)),
-          fileSecundario: grupo.pdfSecBlob ? new File([grupo.pdfSecBlob], nombreSeguro(grupo.pdfSecNombre, 'enviada.pdf')) : null,
-          periodo:        periodoParse,
-          pagoId:         grupo.pagoId,
+          file: new File([grupo.pdfBlob], nombreSeguro(grupo.originalName, filename)),
+          fileSecundario: grupo.pdfSecBlob
+            ? new File([grupo.pdfSecBlob], nombreSeguro(grupo.pdfSecNombre, 'enviada.pdf'))
+            : null,
+          periodo: periodoParse,
+          pagoId: grupo.pagoId,
           codigoContrato: grupo.codigoExtraido,
-          tipoDocumento:  grupo.tipoArchivo,
-          numeroCuentaCobro:  grupo.numeroCuentaCobro,
+          tipoDocumento: grupo.tipoArchivo,
+          numeroCuentaCobro: grupo.numeroCuentaCobro,
           nombreArrendatario: grupo.nombreArrendatario,
-          predios: grupo.predios.map(p => ({
-            arr_proyecto_id:  p.proyectoId,
-            proyecto_id:      p.proyectoRealId,
-            codigo_predio:    p.codigoPredio,
+          predios: grupo.predios.map((p) => ({
+            arr_proyecto_id: p.proyectoId,
+            proyecto_id: p.proyectoRealId,
+            codigo_predio: p.codigoPredio,
             valor_individual: p.valor,
             nombre_resultante: nombrePredio(grupo, p),
             // Solo se envía cuando es un arr_arrendador_id real conocido (ver arrendadorIdDefault).
@@ -695,7 +876,7 @@ async function confirmar() {
         for (const p of grupo.predios) {
           copiasGeneradas++
           if (p.proyectoId) asociados.push({ codigo: p.codigoPredio, proyecto: p.proyectoNombre })
-          else              sinMatch.push({ codigo: p.codigoPredio, carpeta: grupo.carpeta })
+          else sinMatch.push({ codigo: p.codigoPredio, carpeta: grupo.carpeta })
         }
       } catch (uploadErr) {
         console.error('Error subiendo', grupo.carpeta, uploadErr)
@@ -704,7 +885,7 @@ async function confirmar() {
     }
 
     resumen.value = { asociados, sinMatch, copiasGeneradas, carpetasProcesadas }
-    showDialog.value  = false
+    showDialog.value = false
     showResumen.value = true
     emit('docs-actualizados', periodoParse)
   } catch (err) {

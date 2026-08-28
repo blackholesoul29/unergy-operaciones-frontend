@@ -1,10 +1,15 @@
 <template>
   <div class="space-y-4">
-    <PageHeader title="IDs proyectos"
-                subtitle="Códigos SIC de liquidaciones e IDs de Quoia · GD y minigranjas en operación" />
+    <PageHeader
+      title="IDs proyectos"
+      subtitle="Códigos SIC de liquidaciones e IDs de Quoia · GD y minigranjas en operación"
+    />
 
     <!-- Filtro de búsqueda -->
-    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
+    <div
+      class="flex flex-wrap items-end gap-3 rounded-xl border bg-white p-3 shadow-sm"
+      style="border-color: #ece7f2"
+    >
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
@@ -13,87 +18,162 @@
         </IconField>
       </div>
       <div class="flex-1" />
-      <Button icon="pi pi-refresh" size="small" text rounded :loading="loading"
-              v-tooltip.left="'Recargar'" @click="cargar" />
-      <div class="text-xs text-gray-400 self-center">
+      <Button
+        icon="pi pi-refresh"
+        size="small"
+        text
+        rounded
+        :loading="loading"
+        v-tooltip.left="'Recargar'"
+        @click="cargar"
+      />
+      <div class="self-center text-xs text-gray-400">
         {{ filtrados.length }} proyecto{{ filtrados.length === 1 ? '' : 's' }}
-        <span v-if="resumen.completos" style="color:#10B981">· {{ resumen.completos }} completos</span>
-        <span v-if="resumen.pendientes" style="color:#B45309">· {{ resumen.pendientes }} pendientes</span>
+        <span v-if="resumen.completos" style="color: #10b981"
+          >· {{ resumen.completos }} completos</span
+        >
+        <span v-if="resumen.pendientes" style="color: #b45309"
+          >· {{ resumen.pendientes }} pendientes</span
+        >
         <span v-if="resumen.sinTopico">· {{ resumen.sinTopico }} sin tópico</span>
       </div>
     </div>
 
-    <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center">
+    <div v-if="loading" class="flex justify-center rounded-xl bg-white p-10 shadow-sm">
       <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
     </div>
 
-    <div v-else-if="errorApi" class="bg-white rounded-xl shadow-sm border p-6 text-center" style="border-color:#ECE7F2">
-      <i class="pi pi-exclamation-triangle text-2xl mb-2 block" style="color:#D97706" />
+    <div
+      v-else-if="errorApi"
+      class="rounded-xl border bg-white p-6 text-center shadow-sm"
+      style="border-color: #ece7f2"
+    >
+      <i class="pi pi-exclamation-triangle mb-2 block text-2xl" style="color: #d97706" />
       <p class="text-sm text-gray-600">{{ errorApi }}</p>
-      <Button label="Reintentar" icon="pi pi-refresh" size="small" outlined class="mt-3" @click="cargar" />
+      <Button
+        label="Reintentar"
+        icon="pi pi-refresh"
+        size="small"
+        outlined
+        class="mt-3"
+        @click="cargar"
+      />
     </div>
 
     <template v-else>
-      <div v-if="!filtrados.length"
-           class="bg-white rounded-xl shadow-sm p-10 text-center text-sm text-gray-400">
+      <div
+        v-if="!filtrados.length"
+        class="rounded-xl bg-white p-10 text-center text-sm text-gray-400 shadow-sm"
+      >
         No se encontraron proyectos GD/minigranja en operación.
       </div>
 
-      <div v-else class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
+      <div
+        v-else
+        class="overflow-hidden rounded-xl border bg-white shadow-sm"
+        style="border-color: #ece7f2"
+      >
         <div class="overflow-x-auto">
-          <table class="w-full text-sm border-collapse">
+          <table class="w-full border-collapse text-sm">
             <thead>
-              <tr class="bg-gray-50 border-b border-gray-100">
-                <th rowspan="2" class="sticky-col text-left px-4 py-2.5 font-medium text-gray-500 text-xs
-                                        uppercase tracking-wide align-bottom" style="min-width:240px">Proyecto</th>
-                <th colspan="2" class="text-center px-3 py-2 font-semibold text-[11px] uppercase tracking-wide"
-                    style="color:#2C2039; border-left:1px solid #EEE;">ID liquidaciones</th>
-                <th colspan="3" class="text-center px-3 py-2 font-semibold text-[11px] uppercase tracking-wide"
-                    style="color:#915BD8; border-left:1px solid #EEE;">ID Quoia</th>
-                <th rowspan="2" class="px-3 py-2.5" style="width:56px"></th>
+              <tr class="border-b border-gray-100 bg-gray-50">
+                <th
+                  rowspan="2"
+                  class="sticky-col px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide text-gray-500 uppercase"
+                  style="min-width: 240px"
+                >
+                  Proyecto
+                </th>
+                <th
+                  colspan="2"
+                  class="px-3 py-2 text-center text-[11px] font-semibold tracking-wide uppercase"
+                  style="color: #2c2039; border-left: 1px solid #eee"
+                >
+                  ID liquidaciones
+                </th>
+                <th
+                  colspan="3"
+                  class="px-3 py-2 text-center text-[11px] font-semibold tracking-wide uppercase"
+                  style="color: #915bd8; border-left: 1px solid #eee"
+                >
+                  ID Quoia
+                </th>
+                <th rowspan="2" class="px-3 py-2.5" style="width: 56px"></th>
               </tr>
-              <tr class="bg-gray-50 border-b border-gray-100">
-                <th v-for="col in COLUMNAS" :key="col.key"
-                    class="text-center px-3 py-2 font-medium text-gray-500 text-[11px] whitespace-nowrap"
-                    :style="col.groupStart ? 'border-left:1px solid #EEE;' : ''">
+              <tr class="border-b border-gray-100 bg-gray-50">
+                <th
+                  v-for="col in COLUMNAS"
+                  :key="col.key"
+                  class="px-3 py-2 text-center text-[11px] font-medium whitespace-nowrap text-gray-500"
+                  :style="col.groupStart ? 'border-left:1px solid #EEE;' : ''"
+                >
                   {{ col.short }}
                 </th>
               </tr>
             </thead>
             <tbody>
               <template v-for="(row, i) in filtrados" :key="row.proyecto_id">
-              <tr v-if="abreGrupo(row, i)" class="border-t border-gray-200">
-                <td :colspan="COLUMNAS.length + 2"
-                    class="sticky-col-full px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wide"
-                    style="background:#F9FAFB; color:#6B7280">
-                  {{ etiquetaGrupo(row) }}
-                </td>
-              </tr>
-              <tr class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 row-hover">
-                <td class="sticky-col px-4 py-2" style="min-width:240px">
-                  <span class="text-sm text-gray-800 font-medium">{{ row.nombre_comercial }}</span>
-                  <span v-if="!row.nombre_topico" class="ml-2 text-[10px] px-1.5 py-0.5 rounded"
-                        style="background:#FEF3C7; color:#92400E"
-                        title="Sin código base (API ID Unergy): no se puede identificar en la API de Liquidaciones">
-                    sin tópico
-                  </span>
-                </td>
-                <td v-for="col in COLUMNAS" :key="col.key"
-                    class="px-3 py-2 text-center id-cell cursor-pointer"
+                <tr v-if="abreGrupo(row, i)" class="border-t border-gray-200">
+                  <td
+                    :colspan="COLUMNAS.length + 2"
+                    class="sticky-col-full px-4 py-1.5 text-[11px] font-semibold tracking-wide uppercase"
+                    style="background: #f9fafb; color: #6b7280"
+                  >
+                    {{ etiquetaGrupo(row) }}
+                  </td>
+                </tr>
+                <tr
+                  class="row-hover border-t border-gray-100 transition-colors duration-100 hover:bg-gray-50/70"
+                >
+                  <td class="sticky-col px-4 py-2" style="min-width: 240px">
+                    <span class="text-sm font-medium text-gray-800">{{
+                      row.nombre_comercial
+                    }}</span>
+                    <span
+                      v-if="!row.nombre_topico"
+                      class="ml-2 rounded px-1.5 py-0.5 text-[10px]"
+                      style="background: #fef3c7; color: #92400e"
+                      title="Sin código base (API ID Unergy): no se puede identificar en la API de Liquidaciones"
+                    >
+                      sin tópico
+                    </span>
+                  </td>
+                  <td
+                    v-for="col in COLUMNAS"
+                    :key="col.key"
+                    class="id-cell cursor-pointer px-3 py-2 text-center"
                     :style="col.groupStart ? 'border-left:1px solid #F1F1F1;' : ''"
                     @click="irAlDetalle(row.proyecto_id, col.tab)"
-                    v-tooltip.bottom="tieneValor(row[col.key]) ? String(row[col.key]) : 'Sin registrar · clic para abrir el proyecto'">
-                  <i v-if="tieneValor(row[col.key])" class="pi pi-check-circle"
-                     style="color:#10B981; font-size:1rem;" />
-                  <span v-else class="text-gray-300">—</span>
-                </td>
-                <td class="px-3 py-2">
-                  <Button icon="pi pi-pencil" text rounded size="small" severity="info"
-                          :disabled="!row.nombre_topico"
-                          v-tooltip.left="row.nombre_topico ? 'Editar códigos SIC' : 'Falta el código base del proyecto'"
-                          @click="abrirEditar(row)" />
-                </td>
-              </tr>
+                    v-tooltip.bottom="
+                      tieneValor(row[col.key])
+                        ? String(row[col.key])
+                        : 'Sin registrar · clic para abrir el proyecto'
+                    "
+                  >
+                    <i
+                      v-if="tieneValor(row[col.key])"
+                      class="pi pi-check-circle"
+                      style="color: #10b981; font-size: 1rem"
+                    />
+                    <span v-else class="text-gray-300">—</span>
+                  </td>
+                  <td class="px-3 py-2">
+                    <Button
+                      icon="pi pi-pencil"
+                      text
+                      rounded
+                      size="small"
+                      severity="info"
+                      :disabled="!row.nombre_topico"
+                      v-tooltip.left="
+                        row.nombre_topico
+                          ? 'Editar códigos SIC'
+                          : 'Falta el código base del proyecto'
+                      "
+                      @click="abrirEditar(row)"
+                    />
+                  </td>
+                </tr>
               </template>
             </tbody>
           </table>
@@ -105,8 +185,9 @@
     <Dialog v-model:visible="formVisible" header="Editar códigos SIC" modal class="w-full max-w-md">
       <form @submit.prevent="guardar" class="space-y-4 pt-1">
         <div class="text-sm font-medium text-gray-700">{{ f.nombre_comercial }}</div>
-        <p class="text-[11px] text-gray-400 -mt-2">
-          Se guardan en la API de Liquidaciones (tópico <b>{{ f.nombre_topico }}</b>).
+        <p class="-mt-2 text-[11px] text-gray-400">
+          Se guardan en la API de Liquidaciones (tópico <b>{{ f.nombre_topico }}</b
+          >).
         </p>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -119,7 +200,12 @@
           </div>
         </div>
         <div class="flex justify-end gap-2 pt-1">
-          <Button type="button" label="Cancelar" severity="secondary" @click="formVisible = false" />
+          <Button
+            type="button"
+            label="Cancelar"
+            severity="secondary"
+            @click="formVisible = false"
+          />
           <Button type="submit" label="Guardar" icon="pi pi-check" :loading="guardando" />
         </div>
       </form>
@@ -148,11 +234,11 @@ const ESTADO_OPERATIVA = 'en_operacion'
 
 // Los códigos SIC viven en la API de Liquidaciones; los IDs de Quoia en esta base.
 const COLUMNAS = [
-  { key: 'sic_gen', short: 'SIC gen.', groupStart: true,  tab: 'id-liquidaciones' },
+  { key: 'sic_gen', short: 'SIC gen.', groupStart: true, tab: 'id-liquidaciones' },
   { key: 'sic_con', short: 'SIC con.', groupStart: false, tab: 'id-liquidaciones' },
-  { key: 'quoia_reporte_generacion_id', short: 'Rep. Gen.',    groupStart: true,  tab: 'id-quoia' },
-  { key: 'quoia_reporte_consumo_id',    short: 'Rep. Consumo', groupStart: false, tab: 'id-quoia' },
-  { key: 'quoia_nodo_id',               short: 'Nodo',         groupStart: false, tab: 'id-quoia' },
+  { key: 'quoia_reporte_generacion_id', short: 'Rep. Gen.', groupStart: true, tab: 'id-quoia' },
+  { key: 'quoia_reporte_consumo_id', short: 'Rep. Consumo', groupStart: false, tab: 'id-quoia' },
+  { key: 'quoia_nodo_id', short: 'Nodo', groupStart: false, tab: 'id-quoia' },
 ]
 
 const loading = ref(true)
@@ -180,7 +266,7 @@ const Completitud = Object.freeze({
 
 function completitud(fila) {
   if (!fila.nombre_topico) return Completitud.SIN_TOPICO
-  const puestos = COLUMNAS.filter(c => tieneValor(fila[c.key])).length
+  const puestos = COLUMNAS.filter((c) => tieneValor(fila[c.key])).length
   if (puestos === COLUMNAS.length) return Completitud.COMPLETO
   return puestos ? Completitud.PARCIAL : Completitud.SIN_IDS
 }
@@ -188,19 +274,22 @@ function completitud(fila) {
 const filtrados = computed(() => {
   const term = q.value.trim().toLowerCase()
   return filas.value
-    .filter(f => !term || f.nombre_comercial.toLowerCase().includes(term))
-    .sort((a, b) =>
-      completitud(a) - completitud(b) ||
-      a.nombre_comercial.localeCompare(b.nombre_comercial))
+    .filter((f) => !term || f.nombre_comercial.toLowerCase().includes(term))
+    .sort(
+      (a, b) =>
+        completitud(a) - completitud(b) || a.nombre_comercial.localeCompare(b.nombre_comercial),
+    )
 })
 
 // Cuántas quedaron en cada grupo, para no tener que contarlas a ojo en la tabla.
 const resumen = computed(() => {
   const filas = filtrados.value
   return {
-    completos: filas.filter(f => completitud(f) === Completitud.COMPLETO).length,
-    pendientes: filas.filter(f => [Completitud.PARCIAL, Completitud.SIN_IDS].includes(completitud(f))).length,
-    sinTopico: filas.filter(f => completitud(f) === Completitud.SIN_TOPICO).length,
+    completos: filas.filter((f) => completitud(f) === Completitud.COMPLETO).length,
+    pendientes: filas.filter((f) =>
+      [Completitud.PARCIAL, Completitud.SIN_IDS].includes(completitud(f)),
+    ).length,
+    sinTopico: filas.filter((f) => completitud(f) === Completitud.SIN_TOPICO).length,
   }
 })
 
@@ -224,7 +313,13 @@ function etiquetaGrupo(fila) {
 // ── Edición (va a la API de Liquidaciones vía nuestro backend) ────────────────
 const formVisible = ref(false)
 const guardando = ref(false)
-const f = reactive({ proyecto_id: null, nombre_comercial: '', nombre_topico: '', sic_gen: '', sic_con: '' })
+const f = reactive({
+  proyecto_id: null,
+  nombre_comercial: '',
+  nombre_topico: '',
+  sic_gen: '',
+  sic_con: '',
+})
 
 function abrirEditar(row) {
   Object.assign(f, {
@@ -248,7 +343,12 @@ async function guardar() {
     await cargar()
     toast.add({ severity: 'success', summary: 'Códigos guardados', life: 2000 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail || 'No se pudo guardar', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: e.response?.data?.detail || 'No se pudo guardar',
+      life: 4000,
+    })
   } finally {
     guardando.value = false
   }
@@ -263,18 +363,17 @@ async function cargar() {
       api.get('/liquidaciones-api/proyectos'),
       api.get('/proyectos', { params: { page: 1, size: 500 } }),
     ])
-    const quoiaPorId = new Map(
-      (proyRes.data.items ?? proyRes.data).map(p => [p.id, p])
-    )
+    const quoiaPorId = new Map((proyRes.data.items ?? proyRes.data).map((p) => [p.id, p]))
     filas.value = (liqRes.data || [])
-      .filter(r => TIPOS_INCLUIDOS.includes(r.tipo_proyecto) && r.estado === ESTADO_OPERATIVA)
-      .map(r => {
+      .filter((r) => TIPOS_INCLUIDOS.includes(r.tipo_proyecto) && r.estado === ESTADO_OPERATIVA)
+      .map((r) => {
         const p = quoiaPorId.get(r.proyecto_id) || {}
         // Los ids de Quoia son de los subproyectos, no del proyecto. Manda lo
         // que diga la API — es la misma que los consume — y solo si allá no hay
         // nada se muestra lo que quedó tecleado en esta base.
-        const sub = (r.subproyectos || [])
-        const deLaApi = campo => sub.map(s => s[campo]).find(v => v !== null && v !== '') ?? null
+        const sub = r.subproyectos || []
+        const deLaApi = (campo) =>
+          sub.map((s) => s[campo]).find((v) => v !== null && v !== '') ?? null
         return {
           ...r,
           nombre_comercial: formatearNombreProyecto(r.nombre_comercial),
@@ -290,7 +389,8 @@ async function cargar() {
       })
       .sort((a, b) => a.nombre_comercial.localeCompare(b.nombre_comercial))
   } catch (e) {
-    errorApi.value = e.response?.data?.detail || 'No se pudo cargar la configuración de liquidaciones.'
+    errorApi.value =
+      e.response?.data?.detail || 'No se pudo cargar la configuración de liquidaciones.'
     filas.value = []
   } finally {
     loading.value = false
@@ -301,18 +401,30 @@ onMounted(cargar)
 </script>
 
 <style scoped>
-.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+.field-label {
+  @apply mb-1 block text-xs font-medium text-gray-600;
+}
 
 .sticky-col {
   position: sticky;
   left: 0;
   z-index: 2;
   background: #ffffff;
-  border-right: 1px solid #E5E7EB;
+  border-right: 1px solid #e5e7eb;
 }
-thead .sticky-col { background: #F9FAFB; z-index: 3; }
+thead .sticky-col {
+  background: #f9fafb;
+  z-index: 3;
+}
 /* La fila de grupo abarca toda la tabla, así que no se congela. */
-.sticky-col-full { position: sticky; left: 0; }
-.row-hover:hover .sticky-col { background: #F8FAFC; }
-.id-cell:hover { background: #F3EEFB; }
+.sticky-col-full {
+  position: sticky;
+  left: 0;
+}
+.row-hover:hover .sticky-col {
+  background: #f8fafc;
+}
+.id-cell:hover {
+  background: #f3eefb;
+}
 </style>

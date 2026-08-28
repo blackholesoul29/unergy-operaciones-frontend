@@ -1,36 +1,53 @@
 <template>
-  <Dialog :visible="visible" @update:visible="$emit('update:visible', $event)" modal
-    :style="{ width: '800px' }" :breakpoints="{ '860px': '95vw' }"
-    :header="null" :closable="true" @hide="$emit('cerrar')">
-
+  <Dialog
+    :visible="visible"
+    @update:visible="$emit('update:visible', $event)"
+    modal
+    :style="{ width: '800px' }"
+    :breakpoints="{ '860px': '95vw' }"
+    :header="null"
+    :closable="true"
+    @hide="$emit('cerrar')"
+  >
     <!-- Step indicator -->
-    <div class="px-6 pt-5 pb-4 border-b border-gray-100">
-      <p class="text-sm font-bold mb-4" :style="`color:${tipoColor}`">
+    <div class="border-b border-gray-100 px-6 pt-5 pb-4">
+      <p class="mb-4 text-sm font-bold" :style="`color:${tipoColor}`">
         Nuevo contrato · {{ tipoLabel }}
       </p>
       <div class="flex items-start">
         <template v-for="(s, i) in STEPS" :key="i">
-          <div class="flex flex-col items-center gap-1.5" style="flex:1">
-            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all"
-              :style="step >= i ? `background:${tipoColor}; color:white` : 'background:#f3f4f6; color:#9ca3af'">
+          <div class="flex flex-col items-center gap-1.5" style="flex: 1">
+            <div
+              class="flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold transition-all"
+              :style="
+                step >= i
+                  ? `background:${tipoColor}; color:white`
+                  : 'background:#f3f4f6; color:#9ca3af'
+              "
+            >
               <i v-if="step > i" class="pi pi-check text-xs" />
               <span v-else>{{ i + 1 }}</span>
             </div>
-            <span class="text-[10px] text-center leading-tight px-0.5 font-medium"
+            <span
+              class="px-0.5 text-center text-[10px] leading-tight font-medium"
               :style="step === i ? `color:${tipoColor}` : ''"
-              :class="step < i ? 'text-gray-300' : step > i ? 'text-gray-500' : ''">
+              :class="step < i ? 'text-gray-300' : step > i ? 'text-gray-500' : ''"
+            >
               {{ s.label }}
             </span>
           </div>
-          <div v-if="i < STEPS.length - 1" class="h-0.5 mt-3.5 mx-0.5 transition-all" style="flex:1"
-            :style="step > i ? `background:${tipoColor}60` : 'background:#f3f4f6'" />
+          <div
+            v-if="i < STEPS.length - 1"
+            class="mx-0.5 mt-3.5 h-0.5 transition-all"
+            style="flex: 1"
+            :style="step > i ? `background:${tipoColor}60` : 'background:#f3f4f6'"
+          />
         </template>
       </div>
     </div>
 
     <!-- Content -->
-    <div class="px-6 py-5 min-h-72">
-
+    <div class="min-h-72 px-6 py-5">
       <!-- PASO 0 (internet): solo los datos técnicos del servicio -->
       <template v-if="step === 0 && tipo === 'internet'">
         <p class="step-title">Datos del servicio</p>
@@ -38,18 +55,38 @@
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Plan de datos</label>
-              <InputText v-model="form.plan_datos_gb" class="w-full" placeholder="50 GB / Ilimitado" />
+              <InputText
+                v-model="form.plan_datos_gb"
+                class="w-full"
+                placeholder="50 GB / Ilimitado"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Velocidad contratada</label>
-              <InputNumber v-model="form.velocidad_mbps" suffix=" Mbps" :useGrouping="false" class="w-full" />
+              <InputNumber
+                v-model="form.velocidad_mbps"
+                suffix=" Mbps"
+                :useGrouping="false"
+                class="w-full"
+              />
             </div>
           </div>
           <div class="flex flex-col gap-1">
             <label class="field-label">Tipo de conexión</label>
-            <Select v-model="form.tipo_conexion"
-              :options="[{label:'Starlink',value:'Starlink'},{label:'Fibra',value:'Fibra'},{label:'4G',value:'4G'},{label:'Otro',value:'Otro'}]"
-              optionLabel="label" optionValue="value" editable placeholder="Selecciona…" class="w-full" />
+            <Select
+              v-model="form.tipo_conexion"
+              :options="[
+                { label: 'Starlink', value: 'Starlink' },
+                { label: 'Fibra', value: 'Fibra' },
+                { label: '4G', value: '4G' },
+                { label: 'Otro', value: 'Otro' },
+              ]"
+              optionLabel="label"
+              optionValue="value"
+              editable
+              placeholder="Selecciona…"
+              class="w-full"
+            />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
@@ -68,14 +105,26 @@
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Latencia</label>
-              <InputNumber v-model="form.latencia_ms" suffix=" ms" :useGrouping="false" class="w-full" />
+              <InputNumber
+                v-model="form.latencia_ms"
+                suffix=" ms"
+                :useGrouping="false"
+                class="w-full"
+              />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Seguridad del wifi</label>
-              <Select v-model="form.wifi_seguridad" :options="WIFI_SEGURIDAD_OPTS"
-                optionLabel="label" optionValue="value" showClear placeholder="Selecciona…" class="w-full" />
+              <Select
+                v-model="form.wifi_seguridad"
+                :options="WIFI_SEGURIDAD_OPTS"
+                optionLabel="label"
+                optionValue="value"
+                showClear
+                placeholder="Selecciona…"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Contraseña wifi</label>
@@ -85,28 +134,47 @@
 
           <!-- Ubicación del servicio -->
           <div class="rounded-lg border border-gray-200 p-3">
-            <div class="flex items-center justify-between mb-2">
+            <div class="mb-2 flex items-center justify-between">
               <div>
                 <p class="text-xs font-semibold text-gray-500">Ubicación del servicio</p>
                 <p class="text-sm text-gray-700">Ubicación: {{ ubicacionLabel }}</p>
               </div>
-              <Button type="button" :label="editandoUbicacion ? 'Listo' : 'Editar'" text size="small"
-                @click="editandoUbicacion = !editandoUbicacion" />
+              <Button
+                type="button"
+                :label="editandoUbicacion ? 'Listo' : 'Editar'"
+                text
+                size="small"
+                @click="editandoUbicacion = !editandoUbicacion"
+              />
             </div>
-            <div v-if="editandoUbicacion" class="grid grid-cols-2 gap-4 mb-2">
+            <div v-if="editandoUbicacion" class="mb-2 grid grid-cols-2 gap-4">
               <div class="flex flex-col gap-1">
                 <label class="field-label">Latitud</label>
-                <InputNumber v-model="form.ubicacion_lat" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
+                <InputNumber
+                  v-model="form.ubicacion_lat"
+                  :minFractionDigits="4"
+                  :maxFractionDigits="6"
+                  class="w-full"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="field-label">Longitud</label>
-                <InputNumber v-model="form.ubicacion_lng" :minFractionDigits="4" :maxFractionDigits="6" class="w-full" />
+                <InputNumber
+                  v-model="form.ubicacion_lng"
+                  :minFractionDigits="4"
+                  :maxFractionDigits="6"
+                  class="w-full"
+                />
               </div>
             </div>
-            <p v-if="editandoUbicacion" class="text-xs text-gray-400 mb-2">
+            <p v-if="editandoUbicacion" class="mb-2 text-xs text-gray-400">
               Haz clic en el mapa para ubicar el servicio.
             </p>
-            <div ref="ubicacionMapEl" class="rounded-md overflow-hidden" style="height:220px; background:#e5e3df"></div>
+            <div
+              ref="ubicacionMapEl"
+              class="overflow-hidden rounded-md"
+              style="height: 220px; background: #e5e3df"
+            ></div>
           </div>
         </div>
       </template>
@@ -116,7 +184,9 @@
         <p class="step-title">Identificación del contrato</p>
         <div class="space-y-4">
           <div class="flex flex-col gap-1">
-            <label class="field-label">Proyecto asociado <span class="text-gray-400">(opcional)</span></label>
+            <label class="field-label"
+              >Proyecto asociado <span class="text-gray-400">(opcional)</span></label
+            >
             <Select
               v-model="form.proyecto_id"
               :options="todosProyectos"
@@ -130,7 +200,9 @@
             />
           </div>
           <div class="flex flex-col gap-1">
-            <label class="field-label">Fronteras cubiertas <span class="text-gray-400">(opcional)</span></label>
+            <label class="field-label"
+              >Fronteras cubiertas <span class="text-gray-400">(opcional)</span></label
+            >
             <MultiSelect
               v-model="form.frontera_ids"
               :options="fronterasDelProyecto"
@@ -142,32 +214,70 @@
               display="chip"
               class="w-full"
             />
-            <span v-if="!form.proyecto_id" class="text-xs text-gray-400">Elige un proyecto para poder seleccionar sus fronteras.</span>
+            <span v-if="!form.proyecto_id" class="text-xs text-gray-400"
+              >Elige un proyecto para poder seleccionar sus fronteras.</span
+            >
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Número de contrato</label>
-              <InputText v-model="form.numero_contrato" placeholder="Ej: REP-001-2024" class="w-full" />
+              <InputText
+                v-model="form.numero_contrato"
+                placeholder="Ej: REP-001-2024"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Estado</label>
-              <Select v-model="form.estado" :options="ESTADOS" optionLabel="label" optionValue="value" class="w-full" />
+              <Select
+                v-model="form.estado"
+                :options="ESTADOS"
+                optionLabel="label"
+                optionValue="value"
+                class="w-full"
+              />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
-              <label class="field-label">Fecha firma <span class="text-gray-400">(opcional)</span></label>
-              <DatePicker v-model="form.fecha_firma_contrato" dateFormat="yy-mm-dd" class="w-full" showClear />
+              <label class="field-label"
+                >Fecha firma <span class="text-gray-400">(opcional)</span></label
+              >
+              <DatePicker
+                v-model="form.fecha_firma_contrato"
+                dateFormat="yy-mm-dd"
+                class="w-full"
+                showClear
+              />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="field-label">Estado del pago <span class="text-gray-400">(opcional)</span></label>
-              <Select v-model="form.estado_pago" :options="[{label:'Pendiente',value:'pendiente'},{label:'Revisado',value:'revisado'},{label:'Aprobado',value:'aprobado'}]"
-                optionLabel="label" optionValue="value" placeholder="Seleccionar" showClear class="w-full" />
+              <label class="field-label"
+                >Estado del pago <span class="text-gray-400">(opcional)</span></label
+              >
+              <Select
+                v-model="form.estado_pago"
+                :options="[
+                  { label: 'Pendiente', value: 'pendiente' },
+                  { label: 'Revisado', value: 'revisado' },
+                  { label: 'Aprobado', value: 'aprobado' },
+                ]"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Seleccionar"
+                showClear
+                class="w-full"
+              />
             </div>
           </div>
           <div class="flex flex-col gap-1">
-            <label class="field-label">Enlace contrato en Drive <span class="text-gray-400">(opcional)</span></label>
-            <InputText v-model="form.enlace_drive" placeholder="https://drive.google.com/…" class="w-full" />
+            <label class="field-label"
+              >Enlace contrato en Drive <span class="text-gray-400">(opcional)</span></label
+            >
+            <InputText
+              v-model="form.enlace_drive"
+              placeholder="https://drive.google.com/…"
+              class="w-full"
+            />
           </div>
         </div>
       </template>
@@ -175,11 +285,13 @@
       <!-- PASO 1: Partes -->
       <template v-if="step === 1 && tipo !== 'internet'">
         <p class="step-title">Partes del contrato</p>
-        <div class="grid grid-cols-2 gap-1 mb-1 px-1">
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Contratante</span>
-          <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">Prestador</span>
+        <div class="mb-1 grid grid-cols-2 gap-1 px-1">
+          <span class="text-xs font-semibold tracking-wide text-gray-400 uppercase"
+            >Contratante</span
+          >
+          <span class="text-xs font-semibold tracking-wide text-gray-400 uppercase">Prestador</span>
         </div>
-        <div class="grid grid-cols-2 gap-4 p-4 rounded-lg bg-gray-50">
+        <div class="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4">
           <!-- Contratante -->
           <div class="space-y-3">
             <div class="flex flex-col gap-1">
@@ -195,16 +307,29 @@
                   class="flex-1"
                   inputClass="w-full"
                 />
-                <Button icon="pi pi-plus" severity="secondary" outlined size="small"
-                  v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('contratante')" />
+                <Button
+                  icon="pi pi-plus"
+                  severity="secondary"
+                  outlined
+                  size="small"
+                  v-tooltip="'Crear nuevo cliente'"
+                  @click="abrirNuevoCliente('contratante')"
+                />
               </div>
-              <div v-if="form.contratante_id" class="flex items-center gap-1 text-xs text-green-600">
+              <div
+                v-if="form.contratante_id"
+                class="flex items-center gap-1 text-xs text-green-600"
+              >
                 <i class="pi pi-link text-xs" /> Cliente vinculado (id {{ form.contratante_id }})
               </div>
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">NIT</label>
-              <InputText v-model="form.contratante_nit" class="w-full" placeholder="Autocompletado" />
+              <InputText
+                v-model="form.contratante_nit"
+                class="w-full"
+                placeholder="Autocompletado"
+              />
             </div>
           </div>
           <!-- Prestador -->
@@ -222,8 +347,14 @@
                   class="flex-1"
                   inputClass="w-full"
                 />
-                <Button icon="pi pi-plus" severity="secondary" outlined size="small"
-                  v-tooltip="'Crear nuevo cliente'" @click="abrirNuevoCliente('prestador')" />
+                <Button
+                  icon="pi pi-plus"
+                  severity="secondary"
+                  outlined
+                  size="small"
+                  v-tooltip="'Crear nuevo cliente'"
+                  @click="abrirNuevoCliente('prestador')"
+                />
               </div>
               <div v-if="form.prestador_id" class="flex items-center gap-1 text-xs text-green-600">
                 <i class="pi pi-link text-xs" /> Cliente vinculado (id {{ form.prestador_id }})
@@ -237,10 +368,7 @@
         </div>
 
         <!-- Dialog nuevo cliente (dentro del mismo dialog) -->
-        <NuevoClienteDialog
-          v-model:visible="showNuevoCliente"
-          @creado="onClienteCreado"
-        />
+        <NuevoClienteDialog v-model:visible="showNuevoCliente" @creado="onClienteCreado" />
       </template>
 
       <!-- PASO 2: Términos económicos -->
@@ -250,7 +378,12 @@
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Fecha inicio</label>
-              <DatePicker v-model="form.fecha_inicio" dateFormat="yy-mm-dd" showIcon class="w-full" />
+              <DatePicker
+                v-model="form.fecha_inicio"
+                dateFormat="yy-mm-dd"
+                showIcon
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Fecha fin</label>
@@ -260,52 +393,95 @@
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Tarifa base (COP/kWh)</label>
-              <InputNumber v-model="form.tarifa_base" :minFractionDigits="2" :maxFractionDigits="4" class="w-full" />
+              <InputNumber
+                v-model="form.tarifa_base"
+                :minFractionDigits="2"
+                :maxFractionDigits="4"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Periodicidad de pago</label>
-              <Select v-model="form.periodicidad_pago" :options="PERIODICIDADES"
-                optionLabel="label" optionValue="value" showClear class="w-full" />
+              <Select
+                v-model="form.periodicidad_pago"
+                :options="PERIODICIDADES"
+                optionLabel="label"
+                optionValue="value"
+                showClear
+                class="w-full"
+              />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div class="flex flex-col gap-1">
               <label class="field-label">Índice de indexación</label>
-              <InputText v-model="form.indice_indexacion" placeholder="Ej: IPC, IPP" class="w-full" />
+              <InputText
+                v-model="form.indice_indexacion"
+                placeholder="Ej: IPC, IPP"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Cánones / otros (COP)</label>
-              <InputNumber v-model="form.canones_otros" :minFractionDigits="2" :maxFractionDigits="4" class="w-full" />
+              <InputNumber
+                v-model="form.canones_otros"
+                :minFractionDigits="2"
+                :maxFractionDigits="4"
+                class="w-full"
+              />
             </div>
           </div>
 
           <!-- Detalles operacionales y contractuales -->
           <div class="border-t border-gray-100 pt-3">
-            <p class="text-xs font-semibold uppercase tracking-wide mb-3" :style="`color:${tipoColor}`">
+            <p
+              class="mb-3 text-xs font-semibold tracking-wide uppercase"
+              :style="`color:${tipoColor}`"
+            >
               Detalles operacionales y contractuales
-              <span class="normal-case font-normal text-gray-400">(opcional)</span>
+              <span class="font-normal text-gray-400 normal-case">(opcional)</span>
             </p>
             <div class="space-y-4">
               <div class="flex flex-col gap-1">
                 <label class="field-label">Alcance del servicio</label>
-                <Textarea v-model="form.service_scope" rows="3" autoResize class="w-full"
-                  placeholder="Describe el alcance del servicio…" />
+                <Textarea
+                  v-model="form.service_scope"
+                  rows="3"
+                  autoResize
+                  class="w-full"
+                  placeholder="Describe el alcance del servicio…"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="field-label">Términos específicos del servicio</label>
-                <Textarea v-model="form.specific_service_terms" rows="3" autoResize class="w-full"
-                  placeholder="Términos específicos aplicables al servicio…" />
+                <Textarea
+                  v-model="form.specific_service_terms"
+                  rows="3"
+                  autoResize
+                  class="w-full"
+                  placeholder="Términos específicos aplicables al servicio…"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="field-label">SLAs (Acuerdos de nivel de servicio)</label>
-                <Textarea v-model="form.slas" rows="3" autoResize class="w-full"
-                  placeholder="Acuerdos de nivel de servicio, tiempos de respuesta…" />
+                <Textarea
+                  v-model="form.slas"
+                  rows="3"
+                  autoResize
+                  class="w-full"
+                  placeholder="Acuerdos de nivel de servicio, tiempos de respuesta…"
+                />
               </div>
               <div class="flex flex-col gap-1">
                 <label class="field-label">Responsabilidades</label>
-                <Textarea v-model="form.responsibilities" rows="3" autoResize class="w-full"
-                  placeholder="Responsabilidades de las partes…" />
+                <Textarea
+                  v-model="form.responsibilities"
+                  rows="3"
+                  autoResize
+                  class="w-full"
+                  placeholder="Responsabilidades de las partes…"
+                />
               </div>
             </div>
           </div>
@@ -313,17 +489,31 @@
           <!-- REC extra fields at bottom of Términos -->
           <template v-if="tipo === 'rec'">
             <div class="border-t border-gray-100 pt-3">
-              <p class="text-xs font-semibold uppercase tracking-wide mb-3" :style="`color:${tipoColor}`">
+              <p
+                class="mb-3 text-xs font-semibold tracking-wide uppercase"
+                :style="`color:${tipoColor}`"
+              >
                 Certificados REC
               </p>
               <div class="grid grid-cols-3 gap-4">
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Cantidad (kWh)</label>
-                  <InputNumber v-model="form.rec_cantidad" :minFractionDigits="0" :maxFractionDigits="3" locale="en-US" class="w-full" />
+                  <InputNumber
+                    v-model="form.rec_cantidad"
+                    :minFractionDigits="0"
+                    :maxFractionDigits="3"
+                    locale="en-US"
+                    class="w-full"
+                  />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Precio unitario (COP/kWh)</label>
-                  <InputNumber v-model="form.rec_precio_unitario" :minFractionDigits="2" :maxFractionDigits="4" class="w-full" />
+                  <InputNumber
+                    v-model="form.rec_precio_unitario"
+                    :minFractionDigits="2"
+                    :maxFractionDigits="4"
+                    class="w-full"
+                  />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Vintage</label>
@@ -338,66 +528,126 @@
       <!-- PASO 3: Arrendadores (solo ARRIENDO) -->
       <template v-if="tipo === 'arriendo' && step === STEPS.length - 1">
         <p class="step-title">Arrendadores</p>
-        <p class="text-xs text-gray-400 mb-3">
-          El contrato ya se creó. Agrega al menos un arrendador (persona/entidad que recibe el pago) antes de finalizar.
+        <p class="mb-3 text-xs text-gray-400">
+          El contrato ya se creó. Agrega al menos un arrendador (persona/entidad que recibe el pago)
+          antes de finalizar.
         </p>
-        <div class="rounded-xl border" style="border-color:#ddd6fe">
-          <div class="flex items-center justify-between px-4 py-2.5" style="background:#f5f3ff">
-            <span class="text-xs font-semibold flex items-center gap-1.5" style="color:#5b21b6">
-              <i class="pi pi-users text-xs" style="color:#8b5cf6" />Arrendadores
+        <div class="rounded-xl border" style="border-color: #ddd6fe">
+          <div class="flex items-center justify-between px-4 py-2.5" style="background: #f5f3ff">
+            <span class="flex items-center gap-1.5 text-xs font-semibold" style="color: #5b21b6">
+              <i class="pi pi-users text-xs" style="color: #8b5cf6" />Arrendadores
             </span>
-            <Button icon="pi pi-plus" label="Agregar arrendador" size="small" text
-              style="color:#8b5cf6" @click="openArrendadorDialog('crear')" />
+            <Button
+              icon="pi pi-plus"
+              label="Agregar arrendador"
+              size="small"
+              text
+              style="color: #8b5cf6"
+              @click="openArrendadorDialog('crear')"
+            />
           </div>
           <div v-if="!arrendadores.length" class="px-4 py-6 text-center text-xs text-gray-400">
             Sin arrendadores registrados.
           </div>
           <div v-else class="divide-y divide-gray-100">
-            <div v-for="a in arrendadores" :key="a.id"
-              class="flex items-center justify-between gap-3 px-4 py-3 flex-wrap">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-sm font-semibold" style="color:#1c1917">{{ a.nombre }}</span>
-                <span class="text-sm font-mono tabular-nums" style="color:#7c3aed">{{ formatCOP(a.valor_base) }}</span>
-                <span v-if="a.responsable_iva" class="text-xs px-1.5 py-0.5 rounded font-bold leading-none"
-                  style="background:#ede9fe;color:#7c3aed">Responsable IVA</span>
+            <div
+              v-for="a in arrendadores"
+              :key="a.id"
+              class="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+            >
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-sm font-semibold" style="color: #1c1917">{{ a.nombre }}</span>
+                <span class="font-mono text-sm tabular-nums" style="color: #7c3aed">{{
+                  formatCOP(a.valor_base)
+                }}</span>
+                <span
+                  v-if="a.responsable_iva"
+                  class="rounded px-1.5 py-0.5 text-xs leading-none font-bold"
+                  style="background: #ede9fe; color: #7c3aed"
+                  >Responsable IVA</span
+                >
               </div>
-              <div class="flex items-center gap-1 flex-shrink-0">
-                <Button icon="pi pi-pencil" size="small" text severity="secondary"
-                  @click="openArrendadorDialog('editar', a)" />
-                <Button icon="pi pi-trash" size="small" text severity="danger"
-                  @click="eliminarArrendadorWizard(a)" />
+              <div class="flex flex-shrink-0 items-center gap-1">
+                <Button
+                  icon="pi pi-pencil"
+                  size="small"
+                  text
+                  severity="secondary"
+                  @click="openArrendadorDialog('editar', a)"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  size="small"
+                  text
+                  severity="danger"
+                  @click="eliminarArrendadorWizard(a)"
+                />
               </div>
             </div>
           </div>
         </div>
 
         <!-- Dialog Arrendador (crear/editar) -->
-        <Dialog v-model:visible="arrendadorDialog.visible" modal
+        <Dialog
+          v-model:visible="arrendadorDialog.visible"
+          modal
           :header="arrendadorDialog.modo === 'editar' ? 'Editar arrendador' : 'Agregar arrendador'"
-          style="width: 26rem">
+          style="width: 26rem"
+        >
           <div class="flex flex-col gap-3 pt-2">
             <div>
-              <label class="text-xs font-medium text-gray-600">Nombre <span class="text-red-400">*</span></label>
-              <InputText v-model="arrendadorDialog.form.nombre" class="w-full" placeholder="Nombre o razón social" />
+              <label class="text-xs font-medium text-gray-600"
+                >Nombre <span class="text-red-400">*</span></label
+              >
+              <InputText
+                v-model="arrendadorDialog.form.nombre"
+                class="w-full"
+                placeholder="Nombre o razón social"
+              />
             </div>
             <div>
               <label class="text-xs font-medium text-gray-600">Valor base</label>
-              <InputNumber v-model="arrendadorDialog.form.valor_base" class="w-full" mode="currency"
-                currency="COP" locale="es-CO" :maxFractionDigits="0" />
+              <InputNumber
+                v-model="arrendadorDialog.form.valor_base"
+                class="w-full"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                :maxFractionDigits="0"
+              />
             </div>
             <div>
               <label class="text-xs font-medium text-gray-600">Responsable IVA</label>
-              <Select v-model="arrendadorDialog.form.responsable_iva"
-                :options="[{label:'Sí',value:true},{label:'No',value:false}]"
-                optionLabel="label" optionValue="value" class="w-full" />
+              <Select
+                v-model="arrendadorDialog.form.responsable_iva"
+                :options="[
+                  { label: 'Sí', value: true },
+                  { label: 'No', value: false },
+                ]"
+                optionLabel="label"
+                optionValue="value"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-600">Anticipo pagado desde</label>
-              <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_desde" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+              <DatePicker
+                v-model="arrendadorDialog.form.anticipo_pagado_desde"
+                dateFormat="yy-mm-dd"
+                class="w-full"
+                showClear
+                placeholder="aaaa-mm-dd"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-600">Anticipo pagado hasta</label>
-              <DatePicker v-model="arrendadorDialog.form.anticipo_pagado_hasta" dateFormat="yy-mm-dd" class="w-full" showClear placeholder="aaaa-mm-dd" />
+              <DatePicker
+                v-model="arrendadorDialog.form.anticipo_pagado_hasta"
+                dateFormat="yy-mm-dd"
+                class="w-full"
+                showClear
+                placeholder="aaaa-mm-dd"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-600">Observaciones</label>
@@ -405,18 +655,29 @@
             </div>
           </div>
           <template #footer>
-            <Button label="Cancelar" text severity="secondary" @click="arrendadorDialog.visible = false" />
-            <Button label="Guardar" :loading="arrendadorDialog.guardando" @click="guardarArrendadorWizard" />
+            <Button
+              label="Cancelar"
+              text
+              severity="secondary"
+              @click="arrendadorDialog.visible = false"
+            />
+            <Button
+              label="Guardar"
+              :loading="arrendadorDialog.guardando"
+              @click="guardarArrendadorWizard"
+            />
           </template>
         </Dialog>
       </template>
 
       <!-- PASO 3: CGM y Promotor (solo REPRESENTACIÓN) -->
       <template v-if="step === 3 && tipo === 'representacion'">
-        <p class="step-title">CGM y Promotor <span class="normal-case font-normal text-gray-400">(opcional)</span></p>
+        <p class="step-title">
+          CGM y Promotor <span class="font-normal text-gray-400 normal-case">(opcional)</span>
+        </p>
         <div class="space-y-4">
           <!-- CGM -->
-          <div class="rounded-lg border border-gray-200 p-4 space-y-3">
+          <div class="space-y-3 rounded-lg border border-gray-200 p-4">
             <div class="flex items-center gap-3">
               <ToggleSwitch v-model="form.tiene_cgm" />
               <span class="text-sm font-semibold text-gray-700">Incluye CGM</span>
@@ -426,22 +687,37 @@
               <div class="grid grid-cols-3 gap-4 pt-1">
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Código SIC</label>
-                  <InputText v-model="form.cgm_codigo_sic" placeholder="Ej: CGM-001" class="w-full" />
+                  <InputText
+                    v-model="form.cgm_codigo_sic"
+                    placeholder="Ej: CGM-001"
+                    class="w-full"
+                  />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">% FNCER</label>
-                  <InputNumber v-model="form.cgm_porcentaje_fncer" suffix="%" :minFractionDigits="1" :maxFractionDigits="2" locale="en-US" class="w-full" />
+                  <InputNumber
+                    v-model="form.cgm_porcentaje_fncer"
+                    suffix="%"
+                    :minFractionDigits="1"
+                    :maxFractionDigits="2"
+                    locale="en-US"
+                    class="w-full"
+                  />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Tipo de asignación</label>
-                  <InputText v-model="form.cgm_tipo_asignacion" placeholder="Ej: Proporcional" class="w-full" />
+                  <InputText
+                    v-model="form.cgm_tipo_asignacion"
+                    placeholder="Ej: Proporcional"
+                    class="w-full"
+                  />
                 </div>
               </div>
             </template>
           </div>
 
           <!-- Promotor -->
-          <div class="rounded-lg border border-gray-200 p-4 space-y-3">
+          <div class="space-y-3 rounded-lg border border-gray-200 p-4">
             <div class="flex items-center gap-3">
               <ToggleSwitch v-model="form.tiene_promotor" />
               <span class="text-sm font-semibold text-gray-700">Incluye Promotor</span>
@@ -450,43 +726,77 @@
               <div class="grid grid-cols-2 gap-4 pt-1">
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Tarifa promotor (COP/kWh)</label>
-                  <InputNumber v-model="form.promotor_tarifa" :minFractionDigits="2" :maxFractionDigits="4" class="w-full" />
+                  <InputNumber
+                    v-model="form.promotor_tarifa"
+                    :minFractionDigits="2"
+                    :maxFractionDigits="4"
+                    class="w-full"
+                  />
                 </div>
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Condiciones</label>
-                  <Textarea v-model="form.promotor_condiciones" rows="3" autoResize class="w-full"
-                    placeholder="Describe las condiciones del promotor…" />
+                  <Textarea
+                    v-model="form.promotor_condiciones"
+                    rows="3"
+                    autoResize
+                    class="w-full"
+                    placeholder="Describe las condiciones del promotor…"
+                  />
                 </div>
               </div>
             </template>
           </div>
         </div>
       </template>
-
     </div>
 
     <!-- Footer -->
-    <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center">
-      <Button v-if="step > 0 && !contratoIdCreado" label="Anterior" icon="pi pi-arrow-left" severity="secondary" outlined @click="step--" />
+    <div class="flex items-center justify-between border-t border-gray-100 px-6 py-4">
+      <Button
+        v-if="step > 0 && !contratoIdCreado"
+        label="Anterior"
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        outlined
+        @click="step--"
+      />
       <span v-else />
       <div class="flex gap-2">
         <Button label="Cancelar" severity="secondary" text @click="$emit('cerrar')" />
-        <Button v-if="tipo === 'arriendo' && step === STEPS.length - 2" label="Crear y continuar" icon="pi pi-arrow-right" iconPos="right"
+        <Button
+          v-if="tipo === 'arriendo' && step === STEPS.length - 2"
+          label="Crear y continuar"
+          icon="pi pi-arrow-right"
+          iconPos="right"
           :loading="guardando"
           :style="`background:${tipoColor}; border-color:${tipoColor}`"
-          @click="crearYContinuarArriendo" />
-        <Button v-else-if="tipo === 'arriendo' && step === STEPS.length - 1" label="Finalizar" icon="pi pi-check"
+          @click="crearYContinuarArriendo"
+        />
+        <Button
+          v-else-if="tipo === 'arriendo' && step === STEPS.length - 1"
+          label="Finalizar"
+          icon="pi pi-check"
           :style="`background:${tipoColor}; border-color:${tipoColor}`"
-          @click="finalizarArriendo" />
-        <Button v-else-if="step < STEPS.length - 1" label="Siguiente" icon="pi pi-arrow-right" iconPos="right"
+          @click="finalizarArriendo"
+        />
+        <Button
+          v-else-if="step < STEPS.length - 1"
+          label="Siguiente"
+          icon="pi pi-arrow-right"
+          iconPos="right"
           :style="`background:${tipoColor}; border-color:${tipoColor}`"
-          @click="step++" />
-        <Button v-else label="Crear contrato" icon="pi pi-check" :loading="guardando"
+          @click="step++"
+        />
+        <Button
+          v-else
+          label="Crear contrato"
+          icon="pi pi-check"
+          :loading="guardando"
           :style="`background:${tipoColor}; border-color:${tipoColor}`"
-          @click="guardar" />
+          @click="guardar"
+        />
       </div>
     </div>
-
   </Dialog>
 </template>
 
@@ -526,11 +836,11 @@ const nuevoClienteRol = ref('contratante')
 
 const TIPO_CONFIG = {
   representacion: { label: 'Representación', color: '#3b82f6' },
-  operacion:      { label: 'Operación',       color: '#10b981' },
-  rec:            { label: 'REC',             color: '#14b8a6' },
-  mantenimiento:  { label: 'Mantenimiento',   color: '#f59e0b' },
-  arriendo:       { label: 'Arriendo',        color: '#8b5cf6' },
-  internet:       { label: 'Internet',        color: '#06b6d4' },
+  operacion: { label: 'Operación', color: '#10b981' },
+  rec: { label: 'REC', color: '#14b8a6' },
+  mantenimiento: { label: 'Mantenimiento', color: '#f59e0b' },
+  arriendo: { label: 'Arriendo', color: '#8b5cf6' },
+  internet: { label: 'Internet', color: '#06b6d4' },
 }
 
 const tipoColor = computed(() => TIPO_CONFIG[props.tipo]?.color ?? '#6b7280')
@@ -538,28 +848,24 @@ const tipoLabel = computed(() => TIPO_CONFIG[props.tipo]?.label ?? props.tipo)
 
 const STEPS = computed(() => {
   if (props.tipo === 'internet') return [{ label: 'Datos del servicio' }]
-  const base = [
-    { label: 'Identificación' },
-    { label: 'Partes' },
-    { label: 'Términos' },
-  ]
+  const base = [{ label: 'Identificación' }, { label: 'Partes' }, { label: 'Términos' }]
   if (props.tipo === 'representacion') return [...base, { label: 'CGM y Promotor' }]
   if (props.tipo === 'arriendo') return [...base, { label: 'Arrendadores' }]
   return base
 })
 
 const ESTADOS = [
-  { label: 'Vigente',       value: 'vigente' },
-  { label: 'Vencido',       value: 'vencido' },
-  { label: 'Terminado',     value: 'terminado' },
+  { label: 'Vigente', value: 'vigente' },
+  { label: 'Vencido', value: 'vencido' },
+  { label: 'Terminado', value: 'terminado' },
   { label: 'En renovación', value: 'en_renovacion' },
 ]
 
 const PERIODICIDADES = [
-  { label: 'Mensual',    value: 'mensual' },
-  { label: 'Bimestral',  value: 'bimestral' },
+  { label: 'Mensual', value: 'mensual' },
+  { label: 'Bimestral', value: 'bimestral' },
   { label: 'Trimestral', value: 'trimestral' },
-  { label: 'Anual',      value: 'anual' },
+  { label: 'Anual', value: 'anual' },
 ]
 
 const form = reactive({
@@ -610,13 +916,13 @@ const form = reactive({
 })
 
 const WIFI_SEGURIDAD_OPTS = [
-  { label: 'WPA2',            value: 'WPA2' },
-  { label: 'WPA3',            value: 'WPA3' },
-  { label: 'WPA2/WPA3',       value: 'WPA2/WPA3' },
-  { label: 'WPA3-OWE',        value: 'WPA3-OWE' },
-  { label: 'Remoto RADIUS',   value: 'Remoto RADIUS' },
-  { label: 'A bordo RADIUS',  value: 'A bordo RADIUS' },
-  { label: 'Abierta',         value: 'Abierta' },
+  { label: 'WPA2', value: 'WPA2' },
+  { label: 'WPA3', value: 'WPA3' },
+  { label: 'WPA2/WPA3', value: 'WPA2/WPA3' },
+  { label: 'WPA3-OWE', value: 'WPA3-OWE' },
+  { label: 'Remoto RADIUS', value: 'Remoto RADIUS' },
+  { label: 'A bordo RADIUS', value: 'A bordo RADIUS' },
+  { label: 'Abierta', value: 'Abierta' },
 ]
 
 // ── Mapa de ubicación (solo servicio de internet) ─────────────────────────────
@@ -635,11 +941,12 @@ async function initUbicacionMap() {
   if (!ubicacionMapEl.value || ubicacionMap) return
   const { default: maplibregl } = await import('maplibre-gl')
   await import('maplibre-gl/dist/maplibre-gl.css')
-  if (!ubicacionMapEl.value || ubicacionMap) return   // pudo cerrarse el diálogo mientras cargaba
+  if (!ubicacionMapEl.value || ubicacionMap) return // pudo cerrarse el diálogo mientras cargaba
 
-  const centro = (form.ubicacion_lat != null && form.ubicacion_lng != null)
-    ? [form.ubicacion_lng, form.ubicacion_lat]
-    : [-74.297, 4.571]   // centro de Colombia por defecto
+  const centro =
+    form.ubicacion_lat != null && form.ubicacion_lng != null
+      ? [form.ubicacion_lng, form.ubicacion_lat]
+      : [-74.297, 4.571] // centro de Colombia por defecto
 
   ubicacionMap = new maplibregl.Map({
     container: ubicacionMapEl.value,
@@ -656,7 +963,7 @@ async function initUbicacionMap() {
       layers: [{ id: 'osm', type: 'raster', source: 'osm' }],
     },
     center: centro,
-    zoom: (form.ubicacion_lat != null && form.ubicacion_lng != null) ? 12 : 5,
+    zoom: form.ubicacion_lat != null && form.ubicacion_lng != null ? 12 : 5,
     attributionControl: false,
   })
 
@@ -674,7 +981,9 @@ async function initUbicacionMap() {
     if (ubicacionMarker) {
       ubicacionMarker.setLngLat([lng, lat])
     } else {
-      ubicacionMarker = new maplibregl.Marker({ color: '#06b6d4' }).setLngLat([lng, lat]).addTo(ubicacionMap)
+      ubicacionMarker = new maplibregl.Marker({ color: '#06b6d4' })
+        .setLngLat([lng, lat])
+        .addTo(ubicacionMap)
     }
   })
 
@@ -689,17 +998,20 @@ watch(step, async (s) => {
   }
 })
 
-watch(() => form.proyecto_id, async (proyectoId) => {
-  form.frontera_ids = []
-  fronterasDelProyecto.value = []
-  if (!proyectoId) return
-  try {
-    const { data } = await api.get('/fronteras', { params: { proyecto_id: proyectoId } })
-    fronterasDelProyecto.value = data
-  } catch {
+watch(
+  () => form.proyecto_id,
+  async (proyectoId) => {
+    form.frontera_ids = []
     fronterasDelProyecto.value = []
-  }
-})
+    if (!proyectoId) return
+    try {
+      const { data } = await api.get('/fronteras', { params: { proyecto_id: proyectoId } })
+      fronterasDelProyecto.value = data
+    } catch {
+      fronterasDelProyecto.value = []
+    }
+  },
+)
 
 onBeforeUnmount(() => {
   ubicacionMapRO?.disconnect()
@@ -710,14 +1022,14 @@ onBeforeUnmount(() => {
 function buscarCliente(event, rol) {
   const q = (event.query ?? '').toLowerCase()
   const resultado = todosClientes.value
-    .filter(c => c.razon_social_nombre?.toLowerCase().includes(q))
-    .map(c => c.razon_social_nombre)
+    .filter((c) => c.razon_social_nombre?.toLowerCase().includes(q))
+    .map((c) => c.razon_social_nombre)
   if (rol === 'contratante') contratantesFiltrados.value = resultado
   else prestadoresFiltrados.value = resultado
 }
 
 function seleccionarCliente(event, rol) {
-  const found = todosClientes.value.find(c => c.razon_social_nombre === event.value)
+  const found = todosClientes.value.find((c) => c.razon_social_nombre === event.value)
   if (!found) return
   if (rol === 'contratante') {
     form.contratante_id = found.id
@@ -731,8 +1043,13 @@ function seleccionarCliente(event, rol) {
 }
 
 function limpiarParte(rol) {
-  if (rol === 'contratante') { form.contratante_id = null; form.contratante_nit = '' }
-  else { form.prestador_id = null; form.prestador_nit = '' }
+  if (rol === 'contratante') {
+    form.contratante_id = null
+    form.contratante_nit = ''
+  } else {
+    form.prestador_id = null
+    form.prestador_nit = ''
+  }
 }
 
 function abrirNuevoCliente(rol) {
@@ -760,18 +1077,30 @@ const arrendadorDialog = reactive({
   editId: null,
   guardando: false,
   form: {
-    nombre: '', valor_base: null, responsable_iva: false, activo: true,
-    anticipo_pagado_desde: null, anticipo_pagado_hasta: null, observaciones: '',
+    nombre: '',
+    valor_base: null,
+    responsable_iva: false,
+    activo: true,
+    anticipo_pagado_desde: null,
+    anticipo_pagado_hasta: null,
+    observaciones: '',
   },
 })
 
 function formatCOP(v) {
   if (v == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  }).format(v)
 }
 
 async function cargarArrendadoresWizard() {
-  if (!contratoIdCreado.value) { arrendadores.value = []; return }
+  if (!contratoIdCreado.value) {
+    arrendadores.value = []
+    return
+  }
   try {
     const { data } = await api.get(`/arriendos/contratos/${contratoIdCreado.value}/arrendadores`)
     arrendadores.value = data || []
@@ -787,8 +1116,12 @@ function openArrendadorDialog(modo, arrendador = null) {
   arrendadorDialog.form.valor_base = arrendador?.valor_base ?? null
   arrendadorDialog.form.responsable_iva = arrendador?.responsable_iva ?? false
   arrendadorDialog.form.activo = arrendador?.activo ?? true
-  arrendadorDialog.form.anticipo_pagado_desde = arrendador?.anticipo_pagado_desde ? new Date(arrendador.anticipo_pagado_desde) : null
-  arrendadorDialog.form.anticipo_pagado_hasta = arrendador?.anticipo_pagado_hasta ? new Date(arrendador.anticipo_pagado_hasta) : null
+  arrendadorDialog.form.anticipo_pagado_desde = arrendador?.anticipo_pagado_desde
+    ? new Date(arrendador.anticipo_pagado_desde)
+    : null
+  arrendadorDialog.form.anticipo_pagado_hasta = arrendador?.anticipo_pagado_hasta
+    ? new Date(arrendador.anticipo_pagado_hasta)
+    : null
   arrendadorDialog.form.observaciones = arrendador?.observaciones || ''
   arrendadorDialog.visible = true
 }
@@ -801,7 +1134,7 @@ async function guardarArrendadorWizard() {
   }
   arrendadorDialog.guardando = true
   try {
-    const toISO = d => d instanceof Date ? d.toISOString().slice(0, 10) : (d || null)
+    const toISO = (d) => (d instanceof Date ? d.toISOString().slice(0, 10) : d || null)
     const payload = {
       nombre: arrendadorDialog.form.nombre.trim(),
       valor_base: arrendadorDialog.form.valor_base,
@@ -820,7 +1153,12 @@ async function guardarArrendadorWizard() {
     await cargarArrendadoresWizard()
     toast.add({ severity: 'success', summary: 'Arrendador guardado', life: 2500 })
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al guardar arrendador', detail: e.response?.data?.detail, life: 3500 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al guardar arrendador',
+      detail: e.response?.data?.detail,
+      life: 3500,
+    })
   } finally {
     arrendadorDialog.guardando = false
   }
@@ -832,58 +1170,63 @@ async function eliminarArrendadorWizard(arrendador) {
     await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
     await cargarArrendadoresWizard()
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error al eliminar', detail: e.response?.data?.detail, life: 3500 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al eliminar',
+      detail: e.response?.data?.detail,
+      life: 3500,
+    })
   }
 }
 
 async function crearContrato() {
   const payload = {
-      servicio_aplica: props.tipo,
-      proyecto_id: form.proyecto_id ?? null,
-      frontera_ids: form.frontera_ids ?? [],
-      numero_contrato: form.numero_contrato?.trim() || null,
-      estado: form.estado ?? 'vigente',
-      contratante_id: form.contratante_id ?? null,
-      contratante_nombre: form.contratante_nombre || null,
-      contratante_nit: form.contratante_nit?.trim() || null,
-      prestador_id: form.prestador_id ?? null,
-      prestador_nombre: form.prestador_nombre || null,
-      prestador_nit: form.prestador_nit?.trim() || null,
-      fecha_firma_contrato: formatFecha(form.fecha_firma_contrato),
-      enlace_drive: form.enlace_drive?.trim() || null,
-      estado_pago: form.estado_pago ?? null,
-      fecha_inicio: formatFecha(form.fecha_inicio),
-      fecha_fin: formatFecha(form.fecha_fin),
-      tarifa_base: form.tarifa_base ?? null,
-      periodicidad_pago: form.periodicidad_pago ?? null,
-      indice_indexacion: form.indice_indexacion?.trim() || null,
-      canones_otros: form.canones_otros ?? null,
-      tiene_cgm: form.tiene_cgm,
-      cgm_codigo_sic: form.tiene_cgm ? (form.cgm_codigo_sic?.trim() || null) : null,
-      cgm_porcentaje_fncer: form.tiene_cgm ? (form.cgm_porcentaje_fncer ?? null) : null,
-      cgm_tipo_asignacion: form.tiene_cgm ? (form.cgm_tipo_asignacion?.trim() || null) : null,
-      tiene_promotor: form.tiene_promotor,
-      promotor_tarifa: form.tiene_promotor ? (form.promotor_tarifa ?? null) : null,
-      promotor_condiciones: form.tiene_promotor ? (form.promotor_condiciones?.trim() || null) : null,
-      rec_cantidad: form.rec_cantidad ?? null,
-      rec_precio_unitario: form.rec_precio_unitario ?? null,
-      rec_vintage: form.rec_vintage?.trim() || null,
-      service_scope: form.service_scope?.trim() || null,
-      specific_service_terms: form.specific_service_terms?.trim() || null,
-      slas: form.slas?.trim() || null,
-      responsibilities: form.responsibilities?.trim() || null,
-      plan_datos_gb: props.tipo === 'internet' ? (form.plan_datos_gb?.trim() || null) : null,
-      velocidad_mbps: props.tipo === 'internet' ? (form.velocidad_mbps ?? null) : null,
-      tipo_conexion: props.tipo === 'internet' ? (form.tipo_conexion || null) : null,
-      linea_servicio: props.tipo === 'internet' ? (form.linea_servicio?.trim() || null) : null,
-      id_router: props.tipo === 'internet' ? (form.id_router?.trim() || null) : null,
-      numero_kit: props.tipo === 'internet' ? (form.numero_kit?.trim() || null) : null,
-      latencia_ms: props.tipo === 'internet' ? (form.latencia_ms ?? null) : null,
-      wifi_seguridad: props.tipo === 'internet' ? (form.wifi_seguridad || null) : null,
-      wifi_password: props.tipo === 'internet' ? (form.wifi_password?.trim() || null) : null,
-      ubicacion_lat: props.tipo === 'internet' ? (form.ubicacion_lat ?? null) : null,
-      ubicacion_lng: props.tipo === 'internet' ? (form.ubicacion_lng ?? null) : null,
-    }
+    servicio_aplica: props.tipo,
+    proyecto_id: form.proyecto_id ?? null,
+    frontera_ids: form.frontera_ids ?? [],
+    numero_contrato: form.numero_contrato?.trim() || null,
+    estado: form.estado ?? 'vigente',
+    contratante_id: form.contratante_id ?? null,
+    contratante_nombre: form.contratante_nombre || null,
+    contratante_nit: form.contratante_nit?.trim() || null,
+    prestador_id: form.prestador_id ?? null,
+    prestador_nombre: form.prestador_nombre || null,
+    prestador_nit: form.prestador_nit?.trim() || null,
+    fecha_firma_contrato: formatFecha(form.fecha_firma_contrato),
+    enlace_drive: form.enlace_drive?.trim() || null,
+    estado_pago: form.estado_pago ?? null,
+    fecha_inicio: formatFecha(form.fecha_inicio),
+    fecha_fin: formatFecha(form.fecha_fin),
+    tarifa_base: form.tarifa_base ?? null,
+    periodicidad_pago: form.periodicidad_pago ?? null,
+    indice_indexacion: form.indice_indexacion?.trim() || null,
+    canones_otros: form.canones_otros ?? null,
+    tiene_cgm: form.tiene_cgm,
+    cgm_codigo_sic: form.tiene_cgm ? form.cgm_codigo_sic?.trim() || null : null,
+    cgm_porcentaje_fncer: form.tiene_cgm ? (form.cgm_porcentaje_fncer ?? null) : null,
+    cgm_tipo_asignacion: form.tiene_cgm ? form.cgm_tipo_asignacion?.trim() || null : null,
+    tiene_promotor: form.tiene_promotor,
+    promotor_tarifa: form.tiene_promotor ? (form.promotor_tarifa ?? null) : null,
+    promotor_condiciones: form.tiene_promotor ? form.promotor_condiciones?.trim() || null : null,
+    rec_cantidad: form.rec_cantidad ?? null,
+    rec_precio_unitario: form.rec_precio_unitario ?? null,
+    rec_vintage: form.rec_vintage?.trim() || null,
+    service_scope: form.service_scope?.trim() || null,
+    specific_service_terms: form.specific_service_terms?.trim() || null,
+    slas: form.slas?.trim() || null,
+    responsibilities: form.responsibilities?.trim() || null,
+    plan_datos_gb: props.tipo === 'internet' ? form.plan_datos_gb?.trim() || null : null,
+    velocidad_mbps: props.tipo === 'internet' ? (form.velocidad_mbps ?? null) : null,
+    tipo_conexion: props.tipo === 'internet' ? form.tipo_conexion || null : null,
+    linea_servicio: props.tipo === 'internet' ? form.linea_servicio?.trim() || null : null,
+    id_router: props.tipo === 'internet' ? form.id_router?.trim() || null : null,
+    numero_kit: props.tipo === 'internet' ? form.numero_kit?.trim() || null : null,
+    latencia_ms: props.tipo === 'internet' ? (form.latencia_ms ?? null) : null,
+    wifi_seguridad: props.tipo === 'internet' ? form.wifi_seguridad || null : null,
+    wifi_password: props.tipo === 'internet' ? form.wifi_password?.trim() || null : null,
+    ubicacion_lat: props.tipo === 'internet' ? (form.ubicacion_lat ?? null) : null,
+    ubicacion_lng: props.tipo === 'internet' ? (form.ubicacion_lng ?? null) : null,
+  }
   const { data } = await api.post('/contratos-servicio', payload)
   return data
 }
@@ -896,7 +1239,12 @@ async function guardar() {
     emit('creado')
     emit('cerrar')
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail ?? e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: e.response?.data?.detail ?? e.message,
+      life: 4000,
+    })
   } finally {
     guardando.value = false
   }
@@ -907,10 +1255,19 @@ async function crearYContinuarArriendo() {
   try {
     const data = await crearContrato()
     contratoIdCreado.value = data.id
-    toast.add({ severity: 'success', summary: 'Contrato creado — agrega los arrendadores', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: 'Contrato creado — agrega los arrendadores',
+      life: 3000,
+    })
     step.value++
   } catch (e) {
-    toast.add({ severity: 'error', summary: 'Error', detail: e.response?.data?.detail ?? e.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: e.response?.data?.detail ?? e.message,
+      life: 4000,
+    })
   } finally {
     guardando.value = false
   }
@@ -937,6 +1294,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.step-title { @apply text-sm font-semibold text-gray-700 mb-4; }
-.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+.step-title {
+  @apply mb-4 text-sm font-semibold text-gray-700;
+}
+.field-label {
+  @apply mb-1 block text-xs font-medium text-gray-600;
+}
 </style>

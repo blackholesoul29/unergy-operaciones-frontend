@@ -89,10 +89,8 @@ export function checkDateOverlap(startDate, endDate, existingContracts = []) {
 export function findReplacementContract(newContract = {}, existingContracts = []) {
   const sic = newContract.codigo_sic_contrato || null
   if (!sic) return []
-  const candidatos = (existingContracts || []).filter((c) =>
-    c.id !== newContract.id &&
-    contratoActivo(c) &&
-    c.codigo_sic_contrato === sic,
+  const candidatos = (existingContracts || []).filter(
+    (c) => c.id !== newContract.id && contratoActivo(c) && c.codigo_sic_contrato === sic,
   )
   return checkDateOverlap(newContract.fecha_inicio, newContract.fecha_fin, candidatos)
 }
@@ -106,13 +104,14 @@ export function validateContractUniqueness(contract = {}, existingContracts = []
   const proyecto = contract.proyecto_id ?? null
   const ini = toIsoDate(contract.fecha_inicio)
   const fin = toIsoDate(contract.fecha_fin)
-  return (existingContracts || []).filter((c) =>
-    c.id !== contract.id &&
-    (c.codigo_sic_contrato || null) === sic &&
-    (c.proyecto_id ?? null) === proyecto &&
-    toIsoDate(c.fecha_inicio) === ini &&
-    toIsoDate(c.fecha_fin) === fin &&
-    (c.tipo_solicitud ?? null) === (contract.tipo_solicitud ?? null),
+  return (existingContracts || []).filter(
+    (c) =>
+      c.id !== contract.id &&
+      (c.codigo_sic_contrato || null) === sic &&
+      (c.proyecto_id ?? null) === proyecto &&
+      toIsoDate(c.fecha_inicio) === ini &&
+      toIsoDate(c.fecha_fin) === fin &&
+      (c.tipo_solicitud ?? null) === (contract.tipo_solicitud ?? null),
   )
 }
 
@@ -139,12 +138,13 @@ export function conflictosAtribucion(contract = {}, existingContracts = []) {
   const proyecto = contract.proyecto_id ?? null
   if (proyecto == null) return []
   if (!contract.fecha_inicio) return []
-  const mismaPlanta = (existingContracts || []).filter((c) =>
-    c.id !== contract.id &&
-    contratoActivo(c) &&
-    c.tipo_solicitud !== 'terminacion' &&
-    !c.es_duplicado &&
-    (c.proyecto_id ?? null) === proyecto,
+  const mismaPlanta = (existingContracts || []).filter(
+    (c) =>
+      c.id !== contract.id &&
+      contratoActivo(c) &&
+      c.tipo_solicitud !== 'terminacion' &&
+      !c.es_duplicado &&
+      (c.proyecto_id ?? null) === proyecto,
   )
 
   // Corte que el servidor ya le impuso a ESTA fila (relevo posterior en su SIC):

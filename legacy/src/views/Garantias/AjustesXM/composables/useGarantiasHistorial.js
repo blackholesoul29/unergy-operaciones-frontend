@@ -59,7 +59,6 @@ const loading = ref(false)
 const errorMsg = ref('')
 
 export function useGarantiasHistorial() {
-
   async function cargar() {
     loading.value = true
     errorMsg.value = ''
@@ -69,7 +68,11 @@ export function useGarantiasHistorial() {
       historial.value = Array.isArray(data) ? data.map(toFrontend) : []
       console.log('[hist] cargar: OK, registros =', historial.value.length)
     } catch (e) {
-      console.error('[hist] cargar: ERROR', e?.response?.status, e?.response?.data || e?.message || e)
+      console.error(
+        '[hist] cargar: ERROR',
+        e?.response?.status,
+        e?.response?.data || e?.message || e,
+      )
       errorMsg.value = e?.response?.data?.detail || e?.message || 'No se pudo cargar el historial'
       historial.value = []
     } finally {
@@ -84,13 +87,13 @@ export function useGarantiasHistorial() {
 
   async function actualizar(id, campos) {
     const { data } = await api.patch(`/garantias-ajustes/${id}`, toBackend(campos))
-    const idx = historial.value.findIndex(r => r.id === id)
+    const idx = historial.value.findIndex((r) => r.id === id)
     if (idx !== -1) historial.value[idx] = toFrontend(data)
   }
 
   async function eliminar(id) {
     await api.delete(`/garantias-ajustes/${id}`)
-    historial.value = historial.value.filter(r => r.id !== id)
+    historial.value = historial.value.filter((r) => r.id !== id)
   }
 
   function getPbAnterior() {
@@ -110,5 +113,17 @@ export function useGarantiasHistorial() {
     localStorage.setItem(MENCIONES_KEY, v)
   }
 
-  return { historial, loading, errorMsg, cargar, guardar, actualizar, eliminar, getPbAnterior, setPbAnterior, getMenciones, setMenciones }
+  return {
+    historial,
+    loading,
+    errorMsg,
+    cargar,
+    guardar,
+    actualizar,
+    eliminar,
+    getPbAnterior,
+    setPbAnterior,
+    getMenciones,
+    setMenciones,
+  }
 }

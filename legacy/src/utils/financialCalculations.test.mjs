@@ -14,12 +14,15 @@ import { dirname, join } from 'path'
 const here = dirname(fileURLToPath(import.meta.url))
 let src = fs.readFileSync(join(here, 'financialCalculations.js'), 'utf8')
 src = src.replace(/export const /g, 'const ').replace(/export function /g, 'function ')
-const api = new Function(src + `
+const api = new Function(
+  src +
+    `
 return {
   calculatePPARevenue, calculateSpotDifference, calculateSLAFine,
   calculateUnderGeneration, calculateCompliancePct,
   formatCurrency, formatCurrencyCompact, formatMWh,
-};`)()
+};`,
+)()
 
 test('calculatePPARevenue: energía × precio', () => {
   assert.equal(api.calculatePPARevenue(100, 250000), 25000000)
@@ -33,21 +36,21 @@ test('calculatePPARevenue: nulos / cero / negativos → 0', () => {
 })
 
 test('calculateSpotDifference: favorable y desfavorable', () => {
-  assert.equal(api.calculateSpotDifference(10, 300000, 250000), 500000)   // spot > ppa
-  assert.equal(api.calculateSpotDifference(10, 200000, 250000), -500000)  // spot < ppa
+  assert.equal(api.calculateSpotDifference(10, 300000, 250000), 500000) // spot > ppa
+  assert.equal(api.calculateSpotDifference(10, 200000, 250000), -500000) // spot < ppa
   assert.equal(api.calculateSpotDifference(0, 300000, 250000), 0)
 })
 
 test('calculateSLAFine: solo penaliza déficit real', () => {
   assert.equal(api.calculateSLAFine(20, 150000), 3000000)
   assert.equal(api.calculateSLAFine(0, 150000), 0)
-  assert.equal(api.calculateSLAFine(-3, 150000), 0)   // excedente no multa
+  assert.equal(api.calculateSLAFine(-3, 150000), 0) // excedente no multa
   assert.equal(api.calculateSLAFine(20, null), 0)
 })
 
 test('calculateUnderGeneration: gap positivo o cero', () => {
   assert.equal(api.calculateUnderGeneration(80, 100), 20)
-  assert.equal(api.calculateUnderGeneration(120, 100), 0)  // superó la meta
+  assert.equal(api.calculateUnderGeneration(120, 100), 0) // superó la meta
   assert.equal(api.calculateUnderGeneration(null, 100), 100)
 })
 

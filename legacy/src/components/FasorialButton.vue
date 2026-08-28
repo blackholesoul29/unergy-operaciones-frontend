@@ -1,12 +1,17 @@
 <template>
   <!-- ══ Botón flotante ═══════════════════════════════════════════════════ -->
-  <button
-    class="fz-fab"
-    type="button"
-    v-tooltip.left="'Generar diagrama fasorial'"
-    @click="abrir">
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor"
-         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <button class="fz-fab" type="button" v-tooltip.left="'Generar diagrama fasorial'" @click="abrir">
+    <svg
+      viewBox="0 0 24 24"
+      width="22"
+      height="22"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="9" opacity="0.35" />
       <line x1="12" y1="12" x2="12" y2="4" />
       <line x1="12" y1="12" x2="19" y2="15" />
@@ -15,10 +20,15 @@
   </button>
 
   <!-- ══ Modal ════════════════════════════════════════════════════════════ -->
-  <Dialog v-model:visible="visible" modal :dismissableMask="!loading" :closable="!loading"
-    class="fz-dialog" :style="{ width: '840px', maxWidth: '96vw' }"
-    header="Diagrama fasorial">
-
+  <Dialog
+    v-model:visible="visible"
+    modal
+    :dismissableMask="!loading"
+    :closable="!loading"
+    class="fz-dialog"
+    :style="{ width: '840px', maxWidth: '96vw' }"
+    header="Diagrama fasorial"
+  >
     <!-- ── Formulario de generación ──────────────────────────────────────── -->
     <div class="fz-form">
       <div class="fz-field">
@@ -33,14 +43,20 @@
           :filterPlaceholder="'Buscar proyecto…'"
           placeholder="Selecciona un proyecto"
           class="w-full"
-          @change="onProyectoChange" />
+          @change="onProyectoChange"
+        />
       </div>
 
       <div class="fz-field fz-field--medidor">
         <label class="fz-label">Medidor</label>
-        <SelectButton v-model="medidorSel" :options="MEDIDOR_OPCIONES"
-          optionLabel="label" optionValue="value" :allowEmpty="false"
-          @change="onMedidorChange" />
+        <SelectButton
+          v-model="medidorSel"
+          :options="MEDIDOR_OPCIONES"
+          optionLabel="label"
+          optionValue="value"
+          :allowEmpty="false"
+          @change="onMedidorChange"
+        />
       </div>
 
       <div class="fz-field">
@@ -49,8 +65,13 @@
       </div>
 
       <div class="fz-actions">
-        <Button label="Generar" icon="pi pi-bolt" :disabled="!proyectoSel || loading"
-          :loading="loading" @click="generar" />
+        <Button
+          label="Generar"
+          icon="pi pi-bolt"
+          :disabled="!proyectoSel || loading"
+          :loading="loading"
+          @click="generar"
+        />
       </div>
     </div>
 
@@ -66,12 +87,19 @@
     <div v-if="errorMsg" class="fz-note fz-note--error">
       <i class="pi pi-exclamation-triangle" />
       <span>{{ errorMsg }}</span>
-      <Button v-if="lastProyId" label="Reintentar" text size="small" class="ml-auto" @click="generar" />
+      <Button
+        v-if="lastProyId"
+        label="Reintentar"
+        text
+        size="small"
+        class="ml-auto"
+        @click="generar"
+      />
     </div>
 
     <!-- ── Loading ───────────────────────────────────────────────────────── -->
     <div v-if="loading" class="fz-loading">
-      <ProgressSpinner style="width:42px;height:42px" strokeWidth="4" />
+      <ProgressSpinner style="width: 42px; height: 42px" strokeWidth="4" />
       <span>Consultando la última lectura del medidor…</span>
     </div>
 
@@ -80,12 +108,29 @@
       <div ref="diagramRef" class="fz-diagram" />
 
       <div class="fz-downloads">
-        <Button label="Descargar SVG" icon="pi pi-download" outlined size="small"
-          @click="descargarSVG" />
-        <Button label="Descargar PNG" icon="pi pi-image" outlined size="small"
-          @click="descargarPNG" />
-        <Button label="Actualizar lectura" icon="pi pi-refresh" text size="small"
-          class="ml-auto" :loading="loading" @click="generar" />
+        <Button
+          label="Descargar SVG"
+          icon="pi pi-download"
+          outlined
+          size="small"
+          @click="descargarSVG"
+        />
+        <Button
+          label="Descargar PNG"
+          icon="pi pi-image"
+          outlined
+          size="small"
+          @click="descargarPNG"
+        />
+        <Button
+          label="Actualizar lectura"
+          icon="pi pi-refresh"
+          text
+          size="small"
+          class="ml-auto"
+          :loading="loading"
+          @click="generar"
+        />
       </div>
     </div>
   </Dialog>
@@ -123,10 +168,10 @@ const titulo = ref('')
 const loading = ref(false)
 const rendered = ref(false)
 const errorMsg = ref('')
-const stale = ref(null)          // min de antigüedad si supera STALE_MIN, si no null
-const sinCarga = ref(false)      // diagnóstico "en vacío"
-const lastProyId = ref(null)     // último proyecto consultado (para reintentar)
-const lastDetail = ref(null)     // último detalle del backend (para re-dibujar sin reconsultar)
+const stale = ref(null) // min de antigüedad si supera STALE_MIN, si no null
+const sinCarga = ref(false) // diagnóstico "en vacío"
+const lastProyId = ref(null) // último proyecto consultado (para reintentar)
+const lastDetail = ref(null) // último detalle del backend (para re-dibujar sin reconsultar)
 
 const diagramRef = ref(null)
 
@@ -180,10 +225,18 @@ function onMedidorChange() {
 // Selecciona el snapshot y el nodo según el medidor elegido
 function pickSnapshot(data) {
   if (medidorSel.value === 'principal') {
-    return { snapshot: data?.gaia_snapshot_principal, node: data?.gaia_node_principal, etiqueta: 'principal' }
+    return {
+      snapshot: data?.gaia_snapshot_principal,
+      node: data?.gaia_node_principal,
+      etiqueta: 'principal',
+    }
   }
   if (medidorSel.value === 'respaldo') {
-    return { snapshot: data?.gaia_snapshot_respaldo, node: data?.gaia_node_respaldo, etiqueta: 'respaldo' }
+    return {
+      snapshot: data?.gaia_snapshot_respaldo,
+      node: data?.gaia_node_respaldo,
+      etiqueta: 'respaldo',
+    }
   }
   return { snapshot: data?.gaia_snapshot, node: data?.gaia_node_id, etiqueta: 'auto' }
 }
@@ -197,8 +250,12 @@ function renderFromDetail(data) {
   const { snapshot, node } = pickSnapshot(data)
   const val = validarSnapshot(snapshot)
   if (!val.ok) {
-    const cual = medidorSel.value === 'respaldo' ? 'de respaldo'
-      : medidorSel.value === 'principal' ? 'principal' : ''
+    const cual =
+      medidorSel.value === 'respaldo'
+        ? 'de respaldo'
+        : medidorSel.value === 'principal'
+          ? 'principal'
+          : ''
     errorMsg.value = snapshot
       ? val.error
       : `El medidor ${cual} no reporta datos para este proyecto.`
@@ -249,12 +306,18 @@ async function generar() {
 // ── Descargas ───────────────────────────────────────────────────────────────
 function nombreArchivo(ext) {
   const serial = (proyectoSel.value?.nombre || 'fasorial')
-    .toUpperCase().replace(/[^A-Z0-9]+/g, '_').replace(/^_+|_+$/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
   const d = new Date()
   const fecha = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
   // Sufijo del medidor para que principal/respaldo no se pisen al descargar
-  const suf = medidorSel.value === 'principal' ? '_principal'
-    : medidorSel.value === 'respaldo' ? '_respaldo' : ''
+  const suf =
+    medidorSel.value === 'principal'
+      ? '_principal'
+      : medidorSel.value === 'respaldo'
+        ? '_respaldo'
+        : ''
   return `fasorial_${serial}_${fecha}${suf}.${ext}`
 }
 
@@ -279,8 +342,8 @@ function descargarPNG() {
   const svg = getSvgEl()
   if (!svg) return
   const vb = svg.viewBox?.baseVal
-  const w = (vb?.width || svg.clientWidth || 720)
-  const h = (vb?.height || svg.clientHeight || 780)
+  const w = vb?.width || svg.clientWidth || 720
+  const h = vb?.height || svg.clientHeight || 780
   const scale = 2
   const data = serializarSVG(svg)
   const url = URL.createObjectURL(new Blob([data], { type: 'image/svg+xml;charset=utf-8' }))
@@ -321,26 +384,31 @@ function disparaDescarga(href, filename, revoke) {
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 900;                 /* sobre la tabla, bajo los modales de PrimeVue */
+  z-index: 900; /* sobre la tabla, bajo los modales de PrimeVue */
   width: 52px;
   height: 52px;
   border-radius: 50%;
   border: none;
-  background: #915BD8;
+  background: #915bd8;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(145, 91, 216, 0.4);
-  transition: transform 0.12s, box-shadow 0.12s, background 0.12s;
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s,
+    background 0.12s;
 }
 .fz-fab:hover {
   background: #7d47c4;
   transform: translateY(-2px);
   box-shadow: 0 10px 26px rgba(145, 91, 216, 0.5);
 }
-.fz-fab:active { transform: translateY(0); }
+.fz-fab:active {
+  transform: translateY(0);
+}
 
 /* ── Formulario ───────────────────────────────────────────────────────── */
 .fz-form {
@@ -361,10 +429,18 @@ function disparaDescarga(href, filename, revoke) {
   font-weight: 600;
   color: #6b5a8a;
 }
-.fz-actions { flex-shrink: 0; }
-.fz-field--medidor { flex: 0 0 auto; }
-.fz-field--medidor :deep(.p-selectbutton) { display: flex; }
-.fz-field--medidor :deep(.p-togglebutton) { font-size: 12px; }
+.fz-actions {
+  flex-shrink: 0;
+}
+.fz-field--medidor {
+  flex: 0 0 auto;
+}
+.fz-field--medidor :deep(.p-selectbutton) {
+  display: flex;
+}
+.fz-field--medidor :deep(.p-togglebutton) {
+  font-size: 12px;
+}
 
 /* ── Avisos ───────────────────────────────────────────────────────────── */
 .fz-note {
@@ -376,9 +452,21 @@ function disparaDescarga(href, filename, revoke) {
   border-radius: 8px;
   font-size: 13px;
 }
-.fz-note--warn  { background: #fff7ed; color: #b45309; border: 1px solid #fed7aa; }
-.fz-note--info  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.fz-note--error { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.fz-note--warn {
+  background: #fff7ed;
+  color: #b45309;
+  border: 1px solid #fed7aa;
+}
+.fz-note--info {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.fz-note--error {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
 
 /* ── Loading ──────────────────────────────────────────────────────────── */
 .fz-loading {
@@ -392,9 +480,16 @@ function disparaDescarga(href, filename, revoke) {
 }
 
 /* ── Resultado ────────────────────────────────────────────────────────── */
-.fz-result { margin-top: 16px; }
-.fz-diagram { width: 100%; }
-.fz-diagram :deep(svg) { width: 100%; height: auto; }
+.fz-result {
+  margin-top: 16px;
+}
+.fz-diagram {
+  width: 100%;
+}
+.fz-diagram :deep(svg) {
+  width: 100%;
+  height: auto;
+}
 .fz-downloads {
   display: flex;
   align-items: center;

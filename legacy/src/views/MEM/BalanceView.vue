@@ -2,40 +2,60 @@
   <div class="space-y-5">
     <PageHeader title="Balance Energético" subtitle="Generación, consumo y precios del mercado">
       <template #actions>
-        <Dropdown v-model="days" :options="dayOptions" optionLabel="label" optionValue="value" class="w-40" />
+        <Dropdown
+          v-model="days"
+          :options="dayOptions"
+          optionLabel="label"
+          optionValue="value"
+          class="w-40"
+        />
       </template>
     </PageHeader>
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-12">
-      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915BD8;" />
+      <i class="pi pi-spin pi-spinner text-3xl" style="color: #915bd8" />
     </div>
 
     <template v-else-if="!history.length && !loading">
-      <div class="flex flex-col items-center py-16 gap-3" style="color: #6b5a8a;">
-        <i class="pi pi-cloud-download text-4xl" style="color: #c4b8d4;" />
+      <div class="flex flex-col items-center gap-3 py-16" style="color: #6b5a8a">
+        <i class="pi pi-cloud-download text-4xl" style="color: #c4b8d4" />
         <p class="text-sm font-medium">Servicio de balance no disponible</p>
-        <p class="text-xs">EVO API no configurada — los datos se mostrarán cuando DailySpot esté activo.</p>
+        <p class="text-xs">
+          EVO API no configurada — los datos se mostrarán cuando DailySpot esté activo.
+        </p>
       </div>
     </template>
     <template v-else>
       <!-- KPI row -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div v-for="kpi in kpis" :key="kpi.label"
-             class="bg-white rounded-xl shadow-sm p-4" style="border: 1px solid #e8e0f0;">
-          <p class="text-xs uppercase tracking-wide font-semibold" style="color: #6b5a8a;">{{ kpi.label }}</p>
-          <p class="text-2xl font-bold mt-1" :style="{ color: kpi.color }">{{ kpi.value }}</p>
-          <p v-if="kpi.sub" class="text-xs mt-0.5" style="color: #6b5a8a;">{{ kpi.sub }}</p>
+      <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div
+          v-for="kpi in kpis"
+          :key="kpi.label"
+          class="rounded-xl bg-white p-4 shadow-sm"
+          style="border: 1px solid #e8e0f0"
+        >
+          <p class="text-xs font-semibold tracking-wide uppercase" style="color: #6b5a8a">
+            {{ kpi.label }}
+          </p>
+          <p class="mt-1 text-2xl font-bold" :style="{ color: kpi.color }">{{ kpi.value }}</p>
+          <p v-if="kpi.sub" class="mt-0.5 text-xs" style="color: #6b5a8a">{{ kpi.sub }}</p>
         </div>
       </div>
 
       <!-- Price history table -->
-      <div class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
-        <div class="px-5 py-3 border-b" style="border-color: #e8e0f0;">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Historial Precios de Bolsa</h3>
+      <div class="overflow-hidden rounded-xl bg-white shadow-sm" style="border: 1px solid #e8e0f0">
+        <div class="border-b px-5 py-3" style="border-color: #e8e0f0">
+          <h3 class="text-sm font-semibold" style="color: #2c2039">Historial Precios de Bolsa</h3>
         </div>
-        <DataTable :value="history" :paginator="history.length > 15" :rows="15"
-                   responsiveLayout="scroll" stripedRows class="p-datatable-sm">
+        <DataTable
+          :value="history"
+          :paginator="history.length > 15"
+          :rows="15"
+          responsiveLayout="scroll"
+          stripedRows
+          class="p-datatable-sm"
+        >
           <Column field="fecha" header="Fecha" sortable style="min-width: 120px">
             <template #body="{ data }">
               <span class="font-mono text-sm">{{ data.fecha }}</span>
@@ -48,12 +68,12 @@
           </Column>
           <Column field="precio_min" header="Mín" sortable style="min-width: 100px">
             <template #body="{ data }">
-              <span style="color: #10B981;">${{ fmt(data.precio_min) }}</span>
+              <span style="color: #10b981">${{ fmt(data.precio_min) }}</span>
             </template>
           </Column>
           <Column field="precio_max" header="Máx" sortable style="min-width: 100px">
             <template #body="{ data }">
-              <span style="color: #D64455;">${{ fmt(data.precio_max) }}</span>
+              <span style="color: #d64455">${{ fmt(data.precio_max) }}</span>
             </template>
           </Column>
           <Column field="demanda_gwh" header="Demanda GWh" sortable style="min-width: 120px">
@@ -77,15 +97,25 @@
       </div>
 
       <!-- Clima ONI context -->
-      <div v-if="climaHistory.length" class="bg-white rounded-xl shadow-sm overflow-hidden" style="border: 1px solid #e8e0f0;">
-        <div class="px-5 py-3 border-b" style="border-color: #e8e0f0;">
-          <h3 class="text-sm font-semibold" style="color: #2C2039;">Contexto Climático (ONI reciente)</h3>
+      <div
+        v-if="climaHistory.length"
+        class="overflow-hidden rounded-xl bg-white shadow-sm"
+        style="border: 1px solid #e8e0f0"
+      >
+        <div class="border-b px-5 py-3" style="border-color: #e8e0f0">
+          <h3 class="text-sm font-semibold" style="color: #2c2039">
+            Contexto Climático (ONI reciente)
+          </h3>
         </div>
-        <div class="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div v-for="f in climaHistory.slice(0, 3)" :key="f.id"
-               class="p-3 rounded-lg" style="background: #f8f5fd;">
-            <p class="text-xs font-semibold" style="color: #6b5a8a;">{{ f.forecast_date }}</p>
-            <p class="text-sm mt-1" style="color: #2C2039;">{{ f.model_version }}</p>
+        <div class="grid grid-cols-1 gap-4 p-5 sm:grid-cols-3">
+          <div
+            v-for="f in climaHistory.slice(0, 3)"
+            :key="f.id"
+            class="rounded-lg p-3"
+            style="background: #f8f5fd"
+          >
+            <p class="text-xs font-semibold" style="color: #6b5a8a">{{ f.forecast_date }}</p>
+            <p class="mt-1 text-sm" style="color: #2c2039">{{ f.model_version }}</p>
           </div>
         </div>
       </div>
@@ -115,11 +145,18 @@ const loading = ref(true)
 const kpis = computed(() => {
   if (!history.value.length) return []
   const latest = history.value[0]
-  const avg = history.value.reduce((s, r) => s + (Number(r.precio_promedio) || 0), 0) / history.value.length
-  const maxPrice = Math.max(...history.value.map(r => Number(r.precio_max) || 0))
-  const avgDemand = history.value.reduce((s, r) => s + (Number(r.demanda_gwh) || 0), 0) / history.value.length
+  const avg =
+    history.value.reduce((s, r) => s + (Number(r.precio_promedio) || 0), 0) / history.value.length
+  const maxPrice = Math.max(...history.value.map((r) => Number(r.precio_max) || 0))
+  const avgDemand =
+    history.value.reduce((s, r) => s + (Number(r.demanda_gwh) || 0), 0) / history.value.length
   return [
-    { label: 'Precio hoy', value: '$' + fmt(latest?.precio_promedio), color: '#2C2039', sub: 'COP/kWh' },
+    {
+      label: 'Precio hoy',
+      value: '$' + fmt(latest?.precio_promedio),
+      color: '#2C2039',
+      sub: 'COP/kWh',
+    },
     { label: `Promedio ${days.value}d`, value: '$' + fmt(avg), color: '#915BD8', sub: 'COP/kWh' },
     { label: 'Máximo período', value: '$' + fmt(maxPrice), color: '#D64455', sub: 'COP/kWh' },
     { label: 'Demanda prom.', value: avgDemand.toFixed(1), color: '#10B981', sub: 'GWh/día' },

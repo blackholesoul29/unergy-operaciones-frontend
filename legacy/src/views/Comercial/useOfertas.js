@@ -1,8 +1,6 @@
 import { ref, reactive, computed } from 'vue'
 import api from '@/api/client'
-import {
-  filtrar, ordenar, agruparPorColumna, kpis, TIPOS_ENERGIA,
-} from './comercial.js'
+import { filtrar, ordenar, agruparPorColumna, kpis, TIPOS_ENERGIA } from './comercial.js'
 
 /**
  * Estado compartido del módulo comercial: una sola carga de `/comercial/ofertas`
@@ -47,10 +45,16 @@ export function useOfertas() {
     return [...vistos.values()].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || '', 'es'))
   })
 
-  const hayFiltros = computed(() =>
-    !!filtros.texto || filtros.tipos.length > 0 || filtros.etapas.length > 0
-    || !!filtros.resultado || filtros.clientes.length > 0
-    || filtros.soloAlerta || filtros.soloSinRespuesta)
+  const hayFiltros = computed(
+    () =>
+      !!filtros.texto ||
+      filtros.tipos.length > 0 ||
+      filtros.etapas.length > 0 ||
+      !!filtros.resultado ||
+      filtros.clientes.length > 0 ||
+      filtros.soloAlerta ||
+      filtros.soloSinRespuesta,
+  )
 
   function limpiarFiltros() {
     filtros.texto = ''
@@ -65,7 +69,13 @@ export function useOfertas() {
   function mensaje(err, porDefecto) {
     const det = err?.response?.data?.detail
     if (typeof det === 'string') return det
-    if (Array.isArray(det)) return det.map((e) => e.msg).filter(Boolean).join('; ') || porDefecto
+    if (Array.isArray(det))
+      return (
+        det
+          .map((e) => e.msg)
+          .filter(Boolean)
+          .join('; ') || porDefecto
+      )
     if (det && typeof det === 'object') return det.mensaje ?? det.msg ?? porDefecto
     return err?.message || porDefecto
   }
@@ -145,7 +155,9 @@ export function useOfertas() {
   async function registrarGestion(oportunidadId, { tipo, descripcion, ofertaId = null }) {
     try {
       await api.post(`/comercial/oportunidades/${oportunidadId}/gestiones`, {
-        tipo, descripcion, oferta_id: ofertaId,
+        tipo,
+        descripcion,
+        oferta_id: ofertaId,
       })
       return { ok: true }
     } catch (err) {
@@ -193,9 +205,26 @@ export function useOfertas() {
   const esDeEnergia = (oferta) => TIPOS_ENERGIA.includes(oferta?.tipo)
 
   return {
-    ofertas, cargando, errorCarga, alertaDias,
-    filtros, orden, filtradas, porColumna, banda, clientesDisponibles, hayFiltros, limpiarFiltros,
-    cargar, moverEtapa, guardarOferta, registrarSeguimiento, registrarGestion,
-    eliminarOferta, firmar, registrar, esDeEnergia,
+    ofertas,
+    cargando,
+    errorCarga,
+    alertaDias,
+    filtros,
+    orden,
+    filtradas,
+    porColumna,
+    banda,
+    clientesDisponibles,
+    hayFiltros,
+    limpiarFiltros,
+    cargar,
+    moverEtapa,
+    guardarOferta,
+    registrarSeguimiento,
+    registrarGestion,
+    eliminarOferta,
+    firmar,
+    registrar,
+    esDeEnergia,
   }
 }

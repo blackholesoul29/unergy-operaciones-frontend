@@ -3,24 +3,36 @@
     <!-- Header -->
     <PageHeader title="Proyectos" subtitle="Portafolio de plantas y servicios">
       <template #actions>
-        <Button label="Descargar Excel" icon="pi pi-file-excel" size="small" severity="secondary" outlined
-                @click="descargarExcel" />
+        <Button
+          label="Descargar Excel"
+          icon="pi pi-file-excel"
+          size="small"
+          severity="secondary"
+          outlined
+          @click="descargarExcel"
+        />
         <Button label="Nuevo proyecto" icon="pi pi-plus" size="small" @click="openNew" />
       </template>
     </PageHeader>
 
     <!-- Aviso: proyectos pendientes de Sun Factory / Quoia -->
-    <div v-if="pendientes.length" class="rounded-xl px-4 py-3 flex items-center justify-between gap-3"
-         style="background: rgba(214,68,85,0.06); border: 1.5px solid rgba(214,68,85,0.25);">
-      <span class="text-sm font-medium" style="color: #D64455;">
-        <i class="pi pi-exclamation-triangle text-xs mr-1.5" />
+    <div
+      v-if="pendientes.length"
+      class="flex items-center justify-between gap-3 rounded-xl px-4 py-3"
+      style="background: rgba(214, 68, 85, 0.06); border: 1.5px solid rgba(214, 68, 85, 0.25)"
+    >
+      <span class="text-sm font-medium" style="color: #d64455">
+        <i class="pi pi-exclamation-triangle mr-1.5 text-xs" />
         Proyectos pendientes ({{ pendientes.length }})
       </span>
-      <Button label="Revisar" size="small" text style="color: #D64455;" @click="abrirPendientes" />
+      <Button label="Revisar" size="small" text style="color: #d64455" @click="abrirPendientes" />
     </div>
 
     <!-- Filtros -->
-    <div class="bg-white rounded-xl shadow-sm p-3 flex flex-wrap gap-3 items-end border" style="border-color:#ECE7F2">
+    <div
+      class="flex flex-wrap items-end gap-3 rounded-xl border bg-white p-3 shadow-sm"
+      style="border-color: #ece7f2"
+    >
       <div>
         <label class="field-label">Buscar</label>
         <IconField>
@@ -30,132 +42,213 @@
       </div>
       <div>
         <label class="field-label">Estado</label>
-        <Select v-model="filters.estado" :options="ESTADO_OPTIONS" optionLabel="label" optionValue="value"
-                class="w-40" placeholder="Todos" showClear />
+        <Select
+          v-model="filters.estado"
+          :options="ESTADO_OPTIONS"
+          optionLabel="label"
+          optionValue="value"
+          class="w-40"
+          placeholder="Todos"
+          showClear
+        />
       </div>
       <div>
         <label class="field-label">Tipo</label>
-        <Select v-model="filters.tipo_proyecto" :options="TIPO_OPTIONS" optionLabel="label" optionValue="value"
-                class="w-44" placeholder="Todos" showClear />
+        <Select
+          v-model="filters.tipo_proyecto"
+          :options="TIPO_OPTIONS"
+          optionLabel="label"
+          optionValue="value"
+          class="w-44"
+          placeholder="Todos"
+          showClear
+        />
       </div>
       <div>
         <label class="field-label">Departamento</label>
-        <Select v-model="filters.departamento" :options="departamentoOptions" filter
-                class="w-48" placeholder="Todos" showClear />
+        <Select
+          v-model="filters.departamento"
+          :options="departamentoOptions"
+          filter
+          class="w-48"
+          placeholder="Todos"
+          showClear
+        />
       </div>
       <div>
         <label class="field-label">PPA</label>
-        <MultiSelect v-model="filters.ppa" :options="ppaOptions" optionLabel="label" optionValue="value"
-                     filter display="chip" class="w-64" placeholder="Todos"
-                     :maxSelectedLabels="1" selectedItemsLabel="{0} PPAs" showClear />
+        <MultiSelect
+          v-model="filters.ppa"
+          :options="ppaOptions"
+          optionLabel="label"
+          optionValue="value"
+          filter
+          display="chip"
+          class="w-64"
+          placeholder="Todos"
+          :maxSelectedLabels="1"
+          selectedItemsLabel="{0} PPAs"
+          showClear
+        />
       </div>
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="bg-white rounded-xl shadow-sm p-10 flex justify-center">
+    <div v-if="loading" class="flex justify-center rounded-xl bg-white p-10 shadow-sm">
       <i class="pi pi-spin pi-spinner text-2xl text-gray-400" />
     </div>
 
     <!-- Sections by tipo -->
     <template v-else>
-      <div v-if="!sectionList.length"
-           class="bg-white rounded-xl shadow-sm p-10 text-center text-sm text-gray-400">
+      <div
+        v-if="!sectionList.length"
+        class="rounded-xl bg-white p-10 text-center text-sm text-gray-400 shadow-sm"
+      >
         No se encontraron proyectos con los filtros aplicados.
       </div>
 
-      <div v-for="section in sectionList" :key="section.tipo"
-           class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
-
+      <div
+        v-for="section in sectionList"
+        :key="section.tipo"
+        class="overflow-hidden rounded-xl border bg-white shadow-sm"
+        style="border-color: #ece7f2"
+      >
         <!-- Section header (toggle) -->
         <button
-          class="w-full flex items-center gap-3 px-4 py-2.5 text-left select-none
-                 hover:bg-gray-50 transition-colors duration-150"
-          @click="toggleSection(section.tipo)">
+          class="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150 select-none hover:bg-gray-50"
+          @click="toggleSection(section.tipo)"
+        >
           <!-- color dot -->
-          <span class="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                :style="{ background: TIPO_DOT[section.tipo] || '#9CA3AF' }" />
+          <span
+            class="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+            :style="{ background: TIPO_DOT[section.tipo] || '#9CA3AF' }"
+          />
           <!-- label -->
-          <span class="font-semibold text-gray-800 text-sm flex-1">
+          <span class="flex-1 text-sm font-semibold text-gray-800">
             {{ TIPO_LABELS[section.tipo] || section.tipo }}
           </span>
           <!-- count -->
-          <span class="text-xs text-gray-400 font-medium">
-            ({{ section.items.length }})
-          </span>
+          <span class="text-xs font-medium text-gray-400"> ({{ section.items.length }}) </span>
           <!-- chevron -->
-          <i class="pi pi-chevron-down text-gray-400 text-xs ml-2 chevron-icon transition-transform duration-200"
-             :class="{ 'rotate-180': openSections.has(section.tipo) }" />
+          <i
+            class="pi pi-chevron-down chevron-icon ml-2 text-xs text-gray-400 transition-transform duration-200"
+            :class="{ 'rotate-180': openSections.has(section.tipo) }"
+          />
         </button>
 
         <!-- Collapsible table -->
         <div class="section-collapse" :class="{ open: openSections.has(section.tipo) }">
           <div class="overflow-x-auto">
-            <table class="w-full text-sm border-collapse">
+            <table class="w-full border-collapse text-sm">
               <thead>
-                <tr class="bg-gray-50 border-t border-gray-100">
+                <tr class="border-t border-gray-100 bg-gray-50">
                   <!-- Sticky: Nombre + TSF -->
-                  <th class="sticky-col text-left px-4 py-2.5 font-medium text-gray-500 text-xs
-                              uppercase tracking-wide align-bottom" style="min-width:250px">
-                    <span class="block text-[10px] text-gray-400 font-normal normal-case tracking-normal">
+                  <th
+                    class="sticky-col px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide text-gray-500 uppercase"
+                    style="min-width: 250px"
+                  >
+                    <span
+                      class="block text-[10px] font-normal tracking-normal text-gray-400 normal-case"
+                    >
                       Cód. TSF
                     </span>
                     <span>Nombre comercial</span>
                   </th>
-                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom">Estado</th>
-                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom">Tipo</th>
-                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom">Ubicación</th>
-                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom" style="min-width:130px">
-                    <span class="block text-[10px] text-gray-400 font-normal normal-case tracking-normal">
+                  <th
+                    class="px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                  >
+                    Estado
+                  </th>
+                  <th
+                    class="px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                  >
+                    Tipo
+                  </th>
+                  <th
+                    class="px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                  >
+                    Ubicación
+                  </th>
+                  <th
+                    class="px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                    style="min-width: 130px"
+                  >
+                    <span
+                      class="block text-[10px] font-normal tracking-normal text-gray-400 normal-case"
+                    >
                       1er día con generación
                     </span>
                     <span>Inicio comercialización</span>
                   </th>
-                  <th class="text-right px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom">
-                    <span class="block text-[10px] text-gray-400 font-normal normal-case tracking-normal">kWp</span>
+                  <th
+                    class="px-4 py-2.5 text-right align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                  >
+                    <span
+                      class="block text-[10px] font-normal tracking-normal text-gray-400 normal-case"
+                      >kWp</span
+                    >
                     <span>Cap. instalada</span>
                   </th>
-                  <th class="text-right px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom">
-                    <span class="block text-[10px] text-gray-400 font-normal normal-case tracking-normal">kW</span>
+                  <th
+                    class="px-4 py-2.5 text-right align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                  >
+                    <span
+                      class="block text-[10px] font-normal tracking-normal text-gray-400 normal-case"
+                      >kW</span
+                    >
                     <span>Potencia AC</span>
                   </th>
-                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom" style="min-width:140px">Servicios</th>
-                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom" style="min-width:150px">PPA</th>
-                  <th class="text-left px-4 py-2.5 font-medium text-gray-500 text-xs uppercase tracking-wide
-                              whitespace-nowrap align-bottom" style="min-width:110px">Inversionistas</th>
-                  <th class="px-4 py-2.5 align-bottom" style="width:116px"></th>
+                  <th
+                    class="px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                    style="min-width: 140px"
+                  >
+                    Servicios
+                  </th>
+                  <th
+                    class="px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                    style="min-width: 150px"
+                  >
+                    PPA
+                  </th>
+                  <th
+                    class="px-4 py-2.5 text-left align-bottom text-xs font-medium tracking-wide whitespace-nowrap text-gray-500 uppercase"
+                    style="min-width: 110px"
+                  >
+                    Inversionistas
+                  </th>
+                  <th class="px-4 py-2.5 align-bottom" style="width: 116px"></th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in section.items" :key="row.id"
-                    class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100 row-hover">
-
+                <tr
+                  v-for="row in section.items"
+                  :key="row.id"
+                  class="row-hover border-t border-gray-100 transition-colors duration-100 hover:bg-gray-50/70"
+                >
                   <!-- Nombre + TSF (sticky) -->
-                  <td class="sticky-col px-4 py-2" style="min-width:250px">
-                    <span class="block text-[11px] leading-tight"
-                          :class="row.codigo_tsf ? 'text-gray-400' : 'text-gray-300'">
+                  <td class="sticky-col px-4 py-2" style="min-width: 250px">
+                    <span
+                      class="block text-[11px] leading-tight"
+                      :class="row.codigo_tsf ? 'text-gray-400' : 'text-gray-300'"
+                    >
                       {{ row.codigo_tsf || '—' }}
                     </span>
-                    <button type="button"
-                            class="block text-left text-sm text-gray-800 font-medium leading-snug mt-0.5
-                                   proyecto-nombre-link"
-                            @click="goDetail(row)"
-                            v-tooltip.bottom="'Ver detalle'">
+                    <button
+                      type="button"
+                      class="proyecto-nombre-link mt-0.5 block text-left text-sm leading-snug font-medium text-gray-800"
+                      @click="goDetail(row)"
+                      v-tooltip.bottom="'Ver detalle'"
+                    >
                       {{ formatearNombreProyecto(row.nombre_comercial) }}
                     </button>
                   </td>
 
                   <!-- Estado -->
                   <td class="px-4 py-2 whitespace-nowrap">
-                    <span class="estado-badge inline-flex items-center gap-1.5"
-                          :class="ESTADO_CLASS[row.estado] || 'estado-default'">
+                    <span
+                      class="estado-badge inline-flex items-center gap-1.5"
+                      :class="ESTADO_CLASS[row.estado] || 'estado-default'"
+                    >
                       <span v-if="row.estado === 'en_operacion'" class="pulse-dot" />
                       {{ ESTADO_LABELS[row.estado] || row.estado || '—' }}
                     </span>
@@ -163,29 +256,37 @@
 
                   <!-- Tipo -->
                   <td class="px-4 py-2 whitespace-nowrap">
-                    <span class="tipo-badge"
-                          :class="TIPO_BADGE_CLASS[row.tipo_proyecto] || 'badge-otro'">
+                    <span
+                      class="tipo-badge"
+                      :class="TIPO_BADGE_CLASS[row.tipo_proyecto] || 'badge-otro'"
+                    >
                       {{ TIPO_LABELS[row.tipo_proyecto] || row.tipo_proyecto || '—' }}
                     </span>
                   </td>
 
                   <!-- Ubicación -->
-                  <td class="px-4 py-2 text-xs text-gray-500 whitespace-nowrap">
+                  <td class="px-4 py-2 text-xs whitespace-nowrap text-gray-500">
                     <span v-if="row.municipio || row.departamento">
-                      {{ row.municipio || '—' }}<span v-if="row.departamento">, {{ row.departamento }}</span>
+                      {{ row.municipio || '—'
+                      }}<span v-if="row.departamento">, {{ row.departamento }}</span>
                     </span>
                     <span v-else class="text-gray-300">—</span>
                   </td>
 
                   <!-- Inicio de comercialización (autoderivada del 1er día con generación) -->
                   <td class="px-4 py-2 whitespace-nowrap">
-                    <span v-if="row.fecha_inicio_comercializacion"
-                          class="font-mono text-xs text-gray-600">
+                    <span
+                      v-if="row.fecha_inicio_comercializacion"
+                      class="font-mono text-xs text-gray-600"
+                    >
                       {{ fmtFecha(row.fecha_inicio_comercializacion) }}
-                      <span v-if="row.fecha_comercializacion_editada_manual"
-                            class="ml-1 text-[10px] text-gray-400 font-sans">manual</span>
+                      <span
+                        v-if="row.fecha_comercializacion_editada_manual"
+                        class="ml-1 font-sans text-[10px] text-gray-400"
+                        >manual</span
+                      >
                     </span>
-                    <span v-else class="text-gray-300 text-xs">—</span>
+                    <span v-else class="text-xs text-gray-300">—</span>
                   </td>
 
                   <!-- Capacidad instalada (pestaña Técnico) -->
@@ -200,12 +301,14 @@
 
                   <!-- Servicios -->
                   <td class="px-4 py-2">
-                    <div class="flex gap-1 flex-wrap">
+                    <div class="flex flex-wrap gap-1">
                       <template v-for="srv in SERVICIOS_BADGES" :key="srv.key">
-                        <span v-if="row[srv.key]"
-                              class="srv-badge"
-                              :class="{ 'tip': srv.tooltip }"
-                              :data-tip="srv.tooltip || undefined">
+                        <span
+                          v-if="row[srv.key]"
+                          class="srv-badge"
+                          :class="{ tip: srv.tooltip }"
+                          :data-tip="srv.tooltip || undefined"
+                        >
                           {{ srv.badge }}
                         </span>
                       </template>
@@ -214,47 +317,78 @@
 
                   <!-- PPA asociado (un proyecto puede estar en varios contratos) -->
                   <td class="px-4 py-2">
-                    <div v-if="row.ppa_contratos?.length" class="flex gap-1 flex-wrap">
-                      <button v-for="c in row.ppa_contratos" :key="c.id"
-                              type="button"
-                              class="ppa-chip"
-                              v-tooltip.bottom="ppaTooltip(c)"
-                              @click="goPPA(row)">
+                    <div v-if="row.ppa_contratos?.length" class="flex flex-wrap gap-1">
+                      <button
+                        v-for="c in row.ppa_contratos"
+                        :key="c.id"
+                        type="button"
+                        class="ppa-chip"
+                        v-tooltip.bottom="ppaTooltip(c)"
+                        @click="goPPA(row)"
+                      >
                         {{ ppaLabel(c) }}
                       </button>
                     </div>
-                    <span v-else class="text-gray-300 text-xs">—</span>
+                    <span v-else class="text-xs text-gray-300">—</span>
                   </td>
 
                   <!-- Inversionistas (avatares) -->
                   <td class="px-4 py-2">
-                    <div v-if="row.inversionistas?.length"
-                         class="avatar-stack"
-                         :style="{ width: avatarStackWidth(Math.min(row.inversionistas.length, 4)) }">
-                      <span v-for="(inv, idx) in row.inversionistas.slice(0, 3)" :key="inv.id"
-                            class="avatar-circle tip"
-                            :style="{ ...avatarColor(inv.cliente_nombre), left: (idx * 20) + 'px', zIndex: 10 - idx }"
-                            :data-tip="inv.cliente_nombre">
+                    <div
+                      v-if="row.inversionistas?.length"
+                      class="avatar-stack"
+                      :style="{ width: avatarStackWidth(Math.min(row.inversionistas.length, 4)) }"
+                    >
+                      <span
+                        v-for="(inv, idx) in row.inversionistas.slice(0, 3)"
+                        :key="inv.id"
+                        class="avatar-circle tip"
+                        :style="{
+                          ...avatarColor(inv.cliente_nombre),
+                          left: idx * 20 + 'px',
+                          zIndex: 10 - idx,
+                        }"
+                        :data-tip="inv.cliente_nombre"
+                      >
                         {{ getInitials(inv.cliente_nombre) }}
                       </span>
-                      <span v-if="row.inversionistas.length > 3"
-                            class="avatar-circle avatar-more"
-                            :style="{ left: '60px', zIndex: 7 }">
+                      <span
+                        v-if="row.inversionistas.length > 3"
+                        class="avatar-circle avatar-more"
+                        :style="{ left: '60px', zIndex: 7 }"
+                      >
                         +{{ row.inversionistas.length - 3 }}
                       </span>
                     </div>
-                    <span v-else class="text-gray-300 text-xs">—</span>
+                    <span v-else class="text-xs text-gray-300">—</span>
                   </td>
 
                   <!-- Acciones -->
                   <td class="px-4 py-2">
-                    <div class="flex gap-0.5 justify-end">
-                      <Button icon="pi pi-eye" text size="small"
-                              @click="goDetail(row)" v-tooltip="'Ver detalle'" />
-                      <Button icon="pi pi-pencil" text size="small" severity="info"
-                              @click="goEdit(row)" v-tooltip="'Editar'" />
-                      <Button icon="pi pi-trash" text size="small" severity="danger"
-                              @click="confirmDelete(row)" v-tooltip="'Eliminar'" />
+                    <div class="flex justify-end gap-0.5">
+                      <Button
+                        icon="pi pi-eye"
+                        text
+                        size="small"
+                        @click="goDetail(row)"
+                        v-tooltip="'Ver detalle'"
+                      />
+                      <Button
+                        icon="pi pi-pencil"
+                        text
+                        size="small"
+                        severity="info"
+                        @click="goEdit(row)"
+                        v-tooltip="'Editar'"
+                      />
+                      <Button
+                        icon="pi pi-trash"
+                        text
+                        size="small"
+                        severity="danger"
+                        @click="confirmDelete(row)"
+                        v-tooltip="'Eliminar'"
+                      />
                     </div>
                   </td>
                 </tr>
@@ -271,11 +405,16 @@
     </Dialog>
 
     <!-- Dialog: Confirmar eliminación -->
-    <Dialog v-model:visible="deleteVisible" header="Eliminar proyecto" modal class="w-full max-w-sm">
-      <p class="text-sm text-gray-700 mb-4">
+    <Dialog
+      v-model:visible="deleteVisible"
+      header="Eliminar proyecto"
+      modal
+      class="w-full max-w-sm"
+    >
+      <p class="mb-4 text-sm text-gray-700">
         ¿Estás seguro de que deseas eliminar
-        <strong>{{ formatearNombreProyecto(deleteProyecto?.nombre_comercial) }}</strong>?
-        Esta acción no se puede deshacer.
+        <strong>{{ formatearNombreProyecto(deleteProyecto?.nombre_comercial) }}</strong
+        >? Esta acción no se puede deshacer.
       </p>
       <div class="flex justify-end gap-2">
         <Button label="Cancelar" severity="secondary" @click="deleteVisible = false" />
@@ -284,67 +423,116 @@
     </Dialog>
 
     <!-- Dialog: Nombre parecido a uno existente -->
-    <Dialog v-model:visible="duplicadoVisible" header="Proyecto parecido ya existe" modal class="w-full max-w-sm">
-      <p class="text-sm text-gray-700 mb-4">
+    <Dialog
+      v-model:visible="duplicadoVisible"
+      header="Proyecto parecido ya existe"
+      modal
+      class="w-full max-w-sm"
+    >
+      <p class="mb-4 text-sm text-gray-700">
         Ya existe un proyecto con un nombre muy parecido:
         <strong>{{ duplicadoInfo?.candidato_nombre }}</strong>
-        (ID {{ duplicadoInfo?.candidato_id }}).
-        Si de verdad es un proyecto distinto, puedes crearlo igual.
+        (ID {{ duplicadoInfo?.candidato_id }}). Si de verdad es un proyecto distinto, puedes crearlo
+        igual.
       </p>
       <div class="flex justify-end gap-2">
         <Button label="Cancelar" severity="secondary" @click="duplicadoVisible = false" />
-        <Button label="Crear de todos modos" :loading="forzando" @click="duplicadoConfirmAction()" />
+        <Button
+          label="Crear de todos modos"
+          :loading="forzando"
+          @click="duplicadoConfirmAction()"
+        />
       </div>
     </Dialog>
 
     <!-- Dialog: Proyectos pendientes (Sun Factory / Quoia) -->
-    <Dialog v-model:visible="pendientesVisible" header="Proyectos pendientes" modal class="w-full max-w-3xl">
-      <p class="text-sm mb-4" style="color: #6b5a8a;">
-        Sun Factory y Quoia reportan estos proyectos. Confirma para crearlos o
-        actualizar el registro existente, o ignóralos si no aplican.
+    <Dialog
+      v-model:visible="pendientesVisible"
+      header="Proyectos pendientes"
+      modal
+      class="w-full max-w-3xl"
+    >
+      <p class="mb-4 text-sm" style="color: #6b5a8a">
+        Sun Factory y Quoia reportan estos proyectos. Confirma para crearlos o actualizar el
+        registro existente, o ignóralos si no aplican.
       </p>
       <div v-if="loadingPendientes" class="flex items-center justify-center py-8">
-        <i class="pi pi-spin pi-spinner text-2xl" style="color: #915BD8;" />
+        <i class="pi pi-spin pi-spinner text-2xl" style="color: #915bd8" />
       </div>
-      <div v-else-if="!pendientes.length" class="text-center py-8 text-sm" style="color: #9b89b5;">
+      <div v-else-if="!pendientes.length" class="py-8 text-center text-sm" style="color: #9b89b5">
         No hay proyectos pendientes por revisar.
       </div>
-      <div v-else class="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
-        <div v-for="p in pendientes" :key="p.clave" class="rounded-xl p-3" style="border: 1.5px solid #e8e0f0;">
-          <div class="flex items-start justify-between gap-3 mb-2">
+      <div v-else class="max-h-[65vh] space-y-3 overflow-y-auto pr-1">
+        <div
+          v-for="p in pendientes"
+          :key="p.clave"
+          class="rounded-xl p-3"
+          style="border: 1.5px solid #e8e0f0"
+        >
+          <div class="mb-2 flex items-start justify-between gap-3">
             <div class="min-w-0">
-              <div class="flex items-center gap-2 mb-0.5">
-                <span class="chip" :class="p.tipo_sugerencia === 'crear' ? 'chip-new' : 'chip-update'">
+              <div class="mb-0.5 flex items-center gap-2">
+                <span
+                  class="chip"
+                  :class="p.tipo_sugerencia === 'crear' ? 'chip-new' : 'chip-update'"
+                >
                   {{ p.tipo_sugerencia === 'crear' ? 'Nuevo' : 'Actualizar' }}
                 </span>
-                <span class="text-xs" style="color:#9b89b5;">{{ p.fuentes.join(' + ') }}</span>
+                <span class="text-xs" style="color: #9b89b5">{{ p.fuentes.join(' + ') }}</span>
               </div>
-              <p class="text-sm font-semibold truncate" style="color:#2C2039;">
+              <p class="truncate text-sm font-semibold" style="color: #2c2039">
                 {{ p.proyecto_nombre_actual || p.nombre_sugerido }}
               </p>
-              <p v-if="p.tipo_sugerencia === 'actualizar' && p.proyecto_nombre_actual" class="text-xs" style="color:#9b89b5;">
+              <p
+                v-if="p.tipo_sugerencia === 'actualizar' && p.proyecto_nombre_actual"
+                class="text-xs"
+                style="color: #9b89b5"
+              >
                 Sugerido: {{ p.nombre_sugerido }}
               </p>
             </div>
-            <Button icon="pi pi-times" text severity="secondary" size="small"
-              :loading="p._loading === 'ignorar'" @click="ignorarPendiente(p)" v-tooltip="'Ignorar'" />
+            <Button
+              icon="pi pi-times"
+              text
+              severity="secondary"
+              size="small"
+              :loading="p._loading === 'ignorar'"
+              @click="ignorarPendiente(p)"
+              v-tooltip="'Ignorar'"
+            />
           </div>
 
           <!-- Cambios sugeridos -->
-          <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs mb-3" style="color:#6b5a8a;">
+          <div class="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs" style="color: #6b5a8a">
             <span v-if="p.estado_sugerido && p.estado_sugerido !== p.estado_actual">
-              Estado: <b>{{ p.estado_actual ? `${ESTADO_LABELS[p.estado_actual] || p.estado_actual} → ` : '' }}{{ ESTADO_LABELS[p.estado_sugerido] || p.estado_sugerido }}</b>
+              Estado:
+              <b
+                >{{
+                  p.estado_actual ? `${ESTADO_LABELS[p.estado_actual] || p.estado_actual} → ` : ''
+                }}{{ ESTADO_LABELS[p.estado_sugerido] || p.estado_sugerido }}</b
+              >
             </span>
-            <span v-if="p.fase_construccion_sugerida && p.fase_construccion_sugerida !== p.fase_construccion_actual">
+            <span
+              v-if="
+                p.fase_construccion_sugerida &&
+                p.fase_construccion_sugerida !== p.fase_construccion_actual
+              "
+            >
               Fase: <b>{{ p.fase_construccion_sugerida }}</b>
             </span>
-            <span v-if="p.potencia_ac_kw">Potencia AC: <b>{{ p.potencia_ac_kw.toFixed(1) }} kW</b></span>
-            <span v-if="p.capacidad_instalada_kwp">Capacidad instalada: <b>{{ p.capacidad_instalada_kwp.toFixed(1) }} kWp</b></span>
-            <span v-if="p.municipio">{{ p.municipio }}<span v-if="p.departamento">, {{ p.departamento }}</span></span>
+            <span v-if="p.potencia_ac_kw"
+              >Potencia AC: <b>{{ p.potencia_ac_kw.toFixed(1) }} kW</b></span
+            >
+            <span v-if="p.capacidad_instalada_kwp"
+              >Capacidad instalada: <b>{{ p.capacidad_instalada_kwp.toFixed(1) }} kWp</b></span
+            >
+            <span v-if="p.municipio"
+              >{{ p.municipio }}<span v-if="p.departamento">, {{ p.departamento }}</span></span
+            >
           </div>
 
           <!-- Overrides editables (solo aplican al crear) -->
-          <div v-if="p.tipo_sugerencia === 'crear'" class="flex flex-wrap gap-2 items-end">
+          <div v-if="p.tipo_sugerencia === 'crear'" class="flex flex-wrap items-end gap-2">
             <div>
               <label class="field-label">Nombre comercial</label>
               <InputText v-model="p._nombre" class="w-56" />
@@ -353,14 +541,25 @@
               <label class="field-label">Tipo</label>
               <Select v-model="p._tipo" :options="TIPOS_PROYECTO" class="w-40" placeholder="Tipo" />
             </div>
-            <Button icon="pi pi-check" label="Crear" size="small"
-              :loading="p._loading === 'confirmar'" :disabled="!p._nombre"
-              style="background:#915BD8; border-color:#915BD8;" @click="confirmarPendiente(p)" />
+            <Button
+              icon="pi pi-check"
+              label="Crear"
+              size="small"
+              :loading="p._loading === 'confirmar'"
+              :disabled="!p._nombre"
+              style="background: #915bd8; border-color: #915bd8"
+              @click="confirmarPendiente(p)"
+            />
           </div>
           <div v-else class="flex justify-end">
-            <Button icon="pi pi-check" label="Actualizar" size="small"
+            <Button
+              icon="pi pi-check"
+              label="Actualizar"
+              size="small"
               :loading="p._loading === 'confirmar'"
-              style="background:#915BD8; border-color:#915BD8;" @click="confirmarPendiente(p)" />
+              style="background: #915bd8; border-color: #915bd8"
+              @click="confirmarPendiente(p)"
+            />
           </div>
         </div>
       </div>
@@ -385,68 +584,68 @@ import { formatearNombreProyecto } from './proyectosUi'
 import { exportarExcel } from '@/utils/exportarExcel'
 
 const router = useRouter()
-const route  = useRoute()
-const toast  = useToast()
+const route = useRoute()
+const toast = useToast()
 
 // ── Catálogos ──────────────────────────────────────────────────────────────────
-const ESTADOS       = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
+const ESTADOS = ['en_desarrollo', 'en_operacion', 'suspendido', 'cancelado']
 const TIPOS_PROYECTO = ['minigranja', 'autoconsumo', 'gd', 'otro']
 
 const SERVICIOS_BADGES = [
-  { key: 'srv_operacion',    badge: 'OP',   tooltip: null },
+  { key: 'srv_operacion', badge: 'OP', tooltip: null },
   { key: 'srv_representacion', badge: 'REP', tooltip: 'Reporte de energía producida' },
-  { key: 'srv_cgm',          badge: 'CGM',  tooltip: 'Control y gestión de medición' },
-  { key: 'srv_ppa',          badge: 'PPA',  tooltip: null },
-  { key: 'srv_promotor',     badge: 'PROM', tooltip: null },
-  { key: 'srv_rec',          badge: 'REC',  tooltip: null },
+  { key: 'srv_cgm', badge: 'CGM', tooltip: 'Control y gestión de medición' },
+  { key: 'srv_ppa', badge: 'PPA', tooltip: null },
+  { key: 'srv_promotor', badge: 'PROM', tooltip: null },
+  { key: 'srv_rec', badge: 'REC', tooltip: null },
 ]
 
 const TIPO_LABELS = {
-  minigranja:        'Minigranja',
-  autoconsumo:       'Autoconsumo',
-  gd:                'GD',
+  minigranja: 'Minigranja',
+  autoconsumo: 'Autoconsumo',
+  gd: 'GD',
   movilidad_electrica: 'Movilidad',
-  otro:              'Otro',
+  otro: 'Otro',
 }
 
 // Dot color for section header
 const TIPO_DOT = {
-  minigranja:        '#10B981',
-  autoconsumo:       '#6366F1',
-  gd:                '#3B82F6',
+  minigranja: '#10B981',
+  autoconsumo: '#6366F1',
+  gd: '#3B82F6',
   movilidad_electrica: '#8B5CF6',
-  otro:              '#9CA3AF',
+  otro: '#9CA3AF',
 }
 
 // CSS class for tipo pill
 const TIPO_BADGE_CLASS = {
-  minigranja:        'badge-minigranja',
-  autoconsumo:       'badge-autoconsumo',
-  gd:                'badge-gd',
+  minigranja: 'badge-minigranja',
+  autoconsumo: 'badge-autoconsumo',
+  gd: 'badge-gd',
   movilidad_electrica: 'badge-movilidad',
-  otro:              'badge-otro',
+  otro: 'badge-otro',
 }
 
 // CSS class for estado pill
 const ESTADO_CLASS = {
-  en_operacion:   'estado-operacion',
-  suspendido:     'estado-suspendido',
-  en_construccion:'estado-construccion',
-  en_desarrollo:  'estado-default',
-  cancelado:      'estado-default',
+  en_operacion: 'estado-operacion',
+  suspendido: 'estado-suspendido',
+  en_construccion: 'estado-construccion',
+  en_desarrollo: 'estado-default',
+  cancelado: 'estado-default',
 }
 
 const ESTADO_LABELS = {
-  en_operacion:    'En operación',
-  en_desarrollo:   'En desarrollo',
-  suspendido:      'Suspendido',
-  cancelado:       'Cancelado',
+  en_operacion: 'En operación',
+  en_desarrollo: 'En desarrollo',
+  suspendido: 'Suspendido',
+  cancelado: 'Cancelado',
   en_construccion: 'En construcción',
 }
 
 // Opciones legibles para los filtros de Estado/Tipo (v-model sigue guardando el valor crudo)
-const ESTADO_OPTIONS = ESTADOS.map(v => ({ value: v, label: ESTADO_LABELS[v] || v }))
-const TIPO_OPTIONS   = TIPOS_PROYECTO.map(v => ({ value: v, label: TIPO_LABELS[v] || v }))
+const ESTADO_OPTIONS = ESTADOS.map((v) => ({ value: v, label: ESTADO_LABELS[v] || v }))
+const TIPO_OPTIONS = TIPOS_PROYECTO.map((v) => ({ value: v, label: TIPO_LABELS[v] || v }))
 
 // ── Avatar helpers ─────────────────────────────────────────────────────────────
 const AVATAR_PALETTE = [
@@ -478,25 +677,25 @@ function getInitials(name) {
 
 // Container width for N avatars (28px diameter, 20px step, 2px border overlap)
 function avatarStackWidth(n) {
-  return (28 + Math.max(0, n - 1) * 20) + 'px'
+  return 28 + Math.max(0, n - 1) * 20 + 'px'
 }
 
 // ── Estado ─────────────────────────────────────────────────────────────────────
-const allItems    = ref([])
-const loading     = ref(false)
+const allItems = ref([])
+const loading = ref(false)
 const dialogVisible = ref(false)
 const deleteVisible = ref(false)
 const deleteProyecto = ref(null)
-const deleting    = ref(false)
+const deleting = ref(false)
 const duplicadoVisible = ref(false)
-const duplicadoInfo = ref(null)   // { mensaje, candidato_id, candidato_nombre }
-const pendingPayload = ref(null)  // payload a reintentar con forzar=true
-const pendingInfoTecnica = ref(null)  // potencia_ac_kw/capacidad_instalada_kwp a reintentar junto con pendingPayload
+const duplicadoInfo = ref(null) // { mensaje, candidato_id, candidato_nombre }
+const pendingPayload = ref(null) // payload a reintentar con forzar=true
+const pendingInfoTecnica = ref(null) // potencia_ac_kw/capacidad_instalada_kwp a reintentar junto con pendingPayload
 // Qué reintentar con forzar=true al confirmar el diálogo -- crearForzado() para
 // el alta manual, o un cierre sobre confirmarPendiente(p, true) para Pendientes.
 const duplicadoConfirmAction = ref(null)
 const forzando = ref(false)
-const openSections = ref(new Set())    // reactive Set via full replacement
+const openSections = ref(new Set()) // reactive Set via full replacement
 
 // Valor centinela del filtro de PPA: "proyectos sin ningún PPA asociado".
 // Ningún contrato real tiene id negativo, así que puede convivir con los ids
@@ -519,8 +718,8 @@ function parsePpaQuery(raw) {
   if (!raw) return []
   return String(raw)
     .split(',')
-    .map(v => Number(v))
-    .filter(v => Number.isInteger(v))
+    .map((v) => Number(v))
+    .filter((v) => Number.isInteger(v))
 }
 
 watch(filters, (f) => {
@@ -535,7 +734,7 @@ watch(filters, (f) => {
 
 // Departamentos presentes en los proyectos cargados, para el filtro (orden alfabético)
 const departamentoOptions = computed(() => {
-  const set = new Set(allItems.value.map(p => p.departamento).filter(Boolean))
+  const set = new Set(allItems.value.map((p) => p.departamento).filter(Boolean))
   return [...set].sort((a, b) => a.localeCompare(b))
 })
 
@@ -562,19 +761,24 @@ const ppaOptions = computed(() => {
   const porId = new Map()
   let sinPpa = 0
   for (const p of allItems.value) {
-    if (!p.ppa_contratos?.length) { sinPpa++; continue }
+    if (!p.ppa_contratos?.length) {
+      sinPpa++
+      continue
+    }
     for (const c of p.ppa_contratos) {
       if (!porId.has(c.id)) porId.set(c.id, c)
     }
   }
   const opciones = [...porId.values()]
-    .map(c => ({ value: c.id, label: ppaLabel(c) }))
+    .map((c) => ({ value: c.id, label: ppaLabel(c) }))
     .sort((a, b) => a.label.localeCompare(b.label))
   if (sinPpa) opciones.unshift({ value: PPA_SIN, label: `Sin PPA (${sinPpa})` })
   return opciones
 })
 
-function goPPA(row) { router.push(`/proyectos/${row.id}/ppa`) }
+function goPPA(row) {
+  router.push(`/proyectos/${row.id}/ppa`)
+}
 
 // ── Fechas ─────────────────────────────────────────────────────────────────────
 function fmtFecha(v) {
@@ -586,17 +790,17 @@ const filteredItems = computed(() => {
   let list = allItems.value
   if (filters.q) {
     const q = filters.q.toLowerCase()
-    list = list.filter(p => p.nombre_comercial?.toLowerCase().includes(q))
+    list = list.filter((p) => p.nombre_comercial?.toLowerCase().includes(q))
   }
-  if (filters.estado)        list = list.filter(p => p.estado === filters.estado)
-  if (filters.tipo_proyecto) list = list.filter(p => p.tipo_proyecto === filters.tipo_proyecto)
-  if (filters.departamento)  list = list.filter(p => p.departamento === filters.departamento)
+  if (filters.estado) list = list.filter((p) => p.estado === filters.estado)
+  if (filters.tipo_proyecto) list = list.filter((p) => p.tipo_proyecto === filters.tipo_proyecto)
+  if (filters.departamento) list = list.filter((p) => p.departamento === filters.departamento)
   if (filters.ppa?.length) {
     const sel = new Set(filters.ppa)
-    list = list.filter(p => {
+    list = list.filter((p) => {
       const suyos = p.ppa_contratos || []
       if (!suyos.length) return sel.has(PPA_SIN)
-      return suyos.some(c => sel.has(c.id))
+      return suyos.some((c) => sel.has(c.id))
     })
   }
   return list
@@ -611,9 +815,7 @@ const sectionList = computed(() => {
     if (!groups[t]) groups[t] = []
     groups[t].push(item)
   }
-  return TIPO_ORDER
-    .filter(t => groups[t]?.length)
-    .map(t => ({ tipo: t, items: groups[t] }))
+  return TIPO_ORDER.filter((t) => groups[t]?.length).map((t) => ({ tipo: t, items: groups[t] }))
 })
 
 // ── Secciones colapsables ──────────────────────────────────────────────────────
@@ -645,37 +847,69 @@ onMounted(() => {
   loadPendientes()
 })
 
-function goDetail(row) { router.push(`/proyectos/${row.id}`) }
-function goEdit(row)   { router.push(`/proyectos/${row.id}?edit=true`) }
-function openNew()     { dialogVisible.value = true }
+function goDetail(row) {
+  router.push(`/proyectos/${row.id}`)
+}
+function goEdit(row) {
+  router.push(`/proyectos/${row.id}?edit=true`)
+}
+function openNew() {
+  dialogVisible.value = true
+}
 
 async function descargarExcel() {
-  await exportarExcel(filteredItems.value, [
-    { header: 'Cód. TSF', value: p => p.codigo_tsf || '' },
-    { header: 'Nombre comercial', value: p => formatearNombreProyecto(p.nombre_comercial) },
-    { header: 'Estado', value: p => ESTADO_LABELS[p.estado] || p.estado || '' },
-    { header: 'Tipo', value: p => TIPO_LABELS[p.tipo_proyecto] || p.tipo_proyecto || '' },
-    { header: 'Municipio', value: p => p.municipio || '' },
-    { header: 'Departamento', value: p => p.departamento || '' },
-    { header: 'Inicio comercialización', value: p => p.fecha_inicio_comercializacion ? fmtFecha(p.fecha_inicio_comercializacion) : '' },
-    { header: 'Capacidad instalada (kWp)', value: p => p.info_tecnica?.capacidad_instalada_kwp ?? '' },
-    { header: 'Potencia AC (kW)', value: p => p.info_tecnica?.potencia_ac_kw ?? '' },
-    { header: 'PPA', value: p => (p.ppa_contratos || []).map(ppaLabel).join(', ') },
-    { header: 'Inversionistas', value: p => (p.inversionistas || []).map(i => i.cliente_nombre).join(', ') },
-  ], `proyectos_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Proyectos')
+  await exportarExcel(
+    filteredItems.value,
+    [
+      { header: 'Cód. TSF', value: (p) => p.codigo_tsf || '' },
+      { header: 'Nombre comercial', value: (p) => formatearNombreProyecto(p.nombre_comercial) },
+      { header: 'Estado', value: (p) => ESTADO_LABELS[p.estado] || p.estado || '' },
+      { header: 'Tipo', value: (p) => TIPO_LABELS[p.tipo_proyecto] || p.tipo_proyecto || '' },
+      { header: 'Municipio', value: (p) => p.municipio || '' },
+      { header: 'Departamento', value: (p) => p.departamento || '' },
+      {
+        header: 'Inicio comercialización',
+        value: (p) =>
+          p.fecha_inicio_comercializacion ? fmtFecha(p.fecha_inicio_comercializacion) : '',
+      },
+      {
+        header: 'Capacidad instalada (kWp)',
+        value: (p) => p.info_tecnica?.capacidad_instalada_kwp ?? '',
+      },
+      { header: 'Potencia AC (kW)', value: (p) => p.info_tecnica?.potencia_ac_kw ?? '' },
+      { header: 'PPA', value: (p) => (p.ppa_contratos || []).map(ppaLabel).join(', ') },
+      {
+        header: 'Inversionistas',
+        value: (p) => (p.inversionistas || []).map((i) => i.cliente_nombre).join(', '),
+      },
+    ],
+    `proyectos_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    'Proyectos',
+  )
 }
 
 function confirmDelete(row) {
   deleteProyecto.value = row
-  deleteVisible.value  = true
+  deleteVisible.value = true
 }
 
 async function guardarInfoTecnicaSiAplica(proyectoId, infoTecnica) {
-  if (!infoTecnica || (infoTecnica.potencia_ac_kw == null && infoTecnica.capacidad_instalada_kwp == null && infoTecnica.cantidad_total_paneles == null)) return
+  if (
+    !infoTecnica ||
+    (infoTecnica.potencia_ac_kw == null &&
+      infoTecnica.capacidad_instalada_kwp == null &&
+      infoTecnica.cantidad_total_paneles == null)
+  )
+    return
   try {
     await api.put(`/proyectos/${proyectoId}/info-tecnica`, infoTecnica)
   } catch (e) {
-    toast.add({ severity: 'warn', summary: 'Proyecto creado, pero la ficha técnica no se pudo guardar', detail: e.response?.data?.detail, life: 5000 })
+    toast.add({
+      severity: 'warn',
+      summary: 'Proyecto creado, pero la ficha técnica no se pudo guardar',
+      detail: e.response?.data?.detail,
+      life: 5000,
+    })
   }
 }
 
@@ -698,14 +932,21 @@ async function onCreate(payload, infoTecnica) {
       duplicadoVisible.value = true
       return
     }
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'Error al guardar', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: typeof detail === 'string' ? detail : 'Error al guardar',
+      life: 4000,
+    })
   }
 }
 
 async function crearForzado() {
   forzando.value = true
   try {
-    const { data } = await api.post('/proyectos', pendingPayload.value, { params: { forzar: true } })
+    const { data } = await api.post('/proyectos', pendingPayload.value, {
+      params: { forzar: true },
+    })
     await guardarInfoTecnicaSiAplica(data.id, pendingInfoTecnica.value)
     toast.add({ severity: 'success', summary: 'Proyecto creado', life: 3000 })
     duplicadoVisible.value = false
@@ -713,7 +954,12 @@ async function crearForzado() {
     load()
   } catch (e) {
     const detail = e.response?.data?.detail
-    toast.add({ severity: 'error', summary: 'Error', detail: typeof detail === 'string' ? detail : 'Error al guardar', life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: typeof detail === 'string' ? detail : 'Error al guardar',
+      life: 4000,
+    })
   } finally {
     forzando.value = false
   }
@@ -742,7 +988,7 @@ const pendientesVisible = ref(false)
 async function loadPendientes() {
   try {
     const { data } = await api.get('/proyectos/pendientes')
-    pendientes.value = data.map(p => ({
+    pendientes.value = data.map((p) => ({
       ...p,
       _nombre: p.nombre_sugerido,
       _tipo: p.tipo_proyecto_sugerido || null,
@@ -757,19 +1003,29 @@ async function loadPendientes() {
 function abrirPendientes() {
   pendientesVisible.value = true
   loadingPendientes.value = true
-  loadPendientes().finally(() => { loadingPendientes.value = false })
+  loadPendientes().finally(() => {
+    loadingPendientes.value = false
+  })
 }
 
 async function confirmarPendiente(p, forzar = false) {
   p._loading = 'confirmar'
   try {
-    await api.post(`/proyectos/pendientes/${p.clave}/confirmar`, {
-      nombre_comercial: p.tipo_sugerencia === 'crear' ? p._nombre : undefined,
-      tipo_proyecto: p.tipo_sugerencia === 'crear' ? p._tipo : undefined,
-    }, forzar ? { params: { forzar: true } } : undefined)
-    pendientes.value = pendientes.value.filter(x => x.clave !== p.clave)
+    await api.post(
+      `/proyectos/pendientes/${p.clave}/confirmar`,
+      {
+        nombre_comercial: p.tipo_sugerencia === 'crear' ? p._nombre : undefined,
+        tipo_proyecto: p.tipo_sugerencia === 'crear' ? p._tipo : undefined,
+      },
+      forzar ? { params: { forzar: true } } : undefined,
+    )
+    pendientes.value = pendientes.value.filter((x) => x.clave !== p.clave)
     duplicadoVisible.value = false
-    toast.add({ severity: 'success', summary: p.tipo_sugerencia === 'crear' ? 'Proyecto creado' : 'Proyecto actualizado', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: p.tipo_sugerencia === 'crear' ? 'Proyecto creado' : 'Proyecto actualizado',
+      life: 3000,
+    })
     load()
   } catch (e) {
     const detail = e.response?.data?.detail
@@ -789,8 +1045,12 @@ async function confirmarPendiente(p, forzar = false) {
       duplicadoVisible.value = true
       return
     }
-    toast.add({ severity: 'error', summary: 'No se pudo confirmar',
-      detail: typeof detail === 'string' ? detail : (detail?.mensaje || e.message), life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo confirmar',
+      detail: typeof detail === 'string' ? detail : detail?.mensaje || e.message,
+      life: 5000,
+    })
   } finally {
     p._loading = null
   }
@@ -798,21 +1058,30 @@ async function confirmarPendiente(p, forzar = false) {
 
 function ignorarPendiente(p) {
   p._loading = 'ignorar'
-  api.post(`/proyectos/pendientes/${p.clave}/ignorar`)
+  api
+    .post(`/proyectos/pendientes/${p.clave}/ignorar`)
     .then(() => {
-      pendientes.value = pendientes.value.filter(x => x.clave !== p.clave)
+      pendientes.value = pendientes.value.filter((x) => x.clave !== p.clave)
     })
-    .catch(e => {
-      toast.add({ severity: 'error', summary: 'No se pudo ignorar',
-        detail: e.response?.data?.detail || e.message, life: 5000 })
+    .catch((e) => {
+      toast.add({
+        severity: 'error',
+        summary: 'No se pudo ignorar',
+        detail: e.response?.data?.detail || e.message,
+        life: 5000,
+      })
     })
-    .finally(() => { p._loading = null })
+    .finally(() => {
+      p._loading = null
+    })
 }
 </script>
 
 <style scoped>
 /* ── Misc ────────────────────────────────────────────────────────────────────── */
-.field-label { @apply block text-xs font-medium text-gray-600 mb-1; }
+.field-label {
+  @apply mb-1 block text-xs font-medium text-gray-600;
+}
 
 /* Nombre del proyecto: clickeable -> abre el detalle */
 .proyecto-nombre-link {
@@ -820,7 +1089,7 @@ function ignorarPendiente(p) {
   transition: color 0.12s;
 }
 .proyecto-nombre-link:hover {
-  color: #915BD8;
+  color: #915bd8;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -831,15 +1100,15 @@ function ignorarPendiente(p) {
   left: 0;
   z-index: 2;
   background: #ffffff;
-  border-right: 1px solid #E5E7EB;
+  border-right: 1px solid #e5e7eb;
   transition: background 0.1s;
 }
 thead .sticky-col {
-  background: #F9FAFB;
+  background: #f9fafb;
   z-index: 3;
 }
 .row-hover:hover .sticky-col {
-  background: #F8FAFC;
+  background: #f8fafc;
 }
 
 /* ── Collapsible sections ────────────────────────────────────────────────────── */
@@ -871,8 +1140,14 @@ thead .sticky-col {
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
-.chip-new    { background: #D1FAE5; color: #065F46; }
-.chip-update { background: #EEEDFE; color: #3C3489; }
+.chip-new {
+  background: #d1fae5;
+  color: #065f46;
+}
+.chip-update {
+  background: #eeedfe;
+  color: #3c3489;
+}
 
 /* ── Estado badges ───────────────────────────────────────────────────────────── */
 .estado-badge {
@@ -882,10 +1157,22 @@ thead .sticky-col {
   border-radius: 999px;
   white-space: nowrap;
 }
-.estado-operacion   { background: #D1FAE5; color: #065F46; }
-.estado-suspendido  { background: #FEF3C7; color: #92400E; }
-.estado-construccion{ background: #DBEAFE; color: #1E40AF; }
-.estado-default     { background: #F3F4F6; color: #374151; }
+.estado-operacion {
+  background: #d1fae5;
+  color: #065f46;
+}
+.estado-suspendido {
+  background: #fef3c7;
+  color: #92400e;
+}
+.estado-construccion {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.estado-default {
+  background: #f3f4f6;
+  color: #374151;
+}
 
 /* ── Pulse dot (en_operacion) ────────────────────────────────────────────────── */
 .pulse-dot {
@@ -893,13 +1180,20 @@ thead .sticky-col {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #10B981;
+  background: #10b981;
   flex-shrink: 0;
   animation: pulse-dot 1.5s ease-in-out infinite;
 }
 @keyframes pulse-dot {
-  0%, 100% { transform: scale(1);   opacity: 1;   }
-  50%       { transform: scale(1.4); opacity: 0.65; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.65;
+  }
 }
 
 /* ── Tipo badges ─────────────────────────────────────────────────────────────── */
@@ -910,15 +1204,30 @@ thead .sticky-col {
   border-radius: 999px;
   white-space: nowrap;
 }
-.badge-minigranja  { background: #D1FAE5; color: #065F46; }
-.badge-gd          { background: #DBEAFE; color: #1E40AF; }
-.badge-autoconsumo { background: #E1F5EE; color: #085041; }
-.badge-movilidad   { background: #EEEDFE; color: #3C3489; }
-.badge-otro        { background: #F3F4F6; color: #374151; }
+.badge-minigranja {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge-gd {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.badge-autoconsumo {
+  background: #e1f5ee;
+  color: #085041;
+}
+.badge-movilidad {
+  background: #eeedfe;
+  color: #3c3489;
+}
+.badge-otro {
+  background: #f3f4f6;
+  color: #374151;
+}
 
 /* ── Service badges ──────────────────────────────────────────────────────────── */
 .srv-badge {
-  @apply bg-green-100 text-green-800 text-[10px] font-semibold px-1.5 py-0.5 rounded cursor-default;
+  @apply cursor-default rounded bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-800;
 }
 
 /* ── PPA chips (abren la pestaña PPA del proyecto) ───────────────────────────── */
@@ -927,17 +1236,19 @@ thead .sticky-col {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: #EEEDFE;
-  color: #3C3489;
+  background: #eeedfe;
+  color: #3c3489;
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 999px;
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
 .ppa-chip:hover {
-  background: #915BD8;
+  background: #915bd8;
   color: #ffffff;
 }
 
@@ -961,16 +1272,18 @@ thead .sticky-col {
   font-weight: 600;
   cursor: default;
   user-select: none;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 .avatar-circle:hover {
   transform: translateY(-2px) scale(1.1);
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
   z-index: 30 !important;
 }
 .avatar-more {
-  background: #F3F4F6;
-  color: #6B7280;
+  background: #f3f4f6;
+  color: #6b7280;
   font-size: 9px;
 }
 
@@ -995,7 +1308,9 @@ thead .sticky-col {
   white-space: nowrap;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
   z-index: 200;
 }
 /* flecha */
@@ -1009,7 +1324,9 @@ thead .sticky-col {
   border-top-color: #1a1a1a;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.15s ease, transform 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
   z-index: 200;
 }
 .tip:hover::after,

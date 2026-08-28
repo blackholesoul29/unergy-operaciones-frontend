@@ -39,7 +39,12 @@ export const COLUMNAS = [
   { value: 'contrato', label: 'Contrato', estados: ['contrato'] },
   { value: 'firmado', label: 'Firmado', estados: ['firmado'] },
   { value: 'operando', label: 'Operando', estados: ['operando'] },
-  { value: 'cerradas', label: 'Cerradas', estados: ['terminado', 'declinado'], alSoltar: 'declinado' },
+  {
+    value: 'cerradas',
+    label: 'Cerradas',
+    estados: ['terminado', 'declinado'],
+    alSoltar: 'declinado',
+  },
 ]
 
 // ── Tipos de oferta (TipoOfertaComercialEnum) ────────────────────────────────
@@ -93,14 +98,30 @@ export const FUENTES = {
 // ── Etiquetas ────────────────────────────────────────────────────────────────
 const buscar = (lista, v) => lista.find((x) => x.value === v)
 
-export function labelEtapa(v) { return buscar(ETAPAS, v)?.label ?? v ?? '—' }
-export function severidadEtapa(v) { return buscar(ETAPAS, v)?.severidad ?? 'info' }
-export function colorEtapa(v) { return buscar(ETAPAS, v)?.color ?? '#7a6e8a' }
-export function labelTipo(v) { return buscar(TIPOS_OFERTA, v)?.label ?? v ?? '—' }
-export function segmentoTipo(v) { return buscar(TIPOS_OFERTA, v)?.segmento ?? '—' }
-export function labelResultado(v) { return buscar(RESULTADOS, v)?.label ?? v ?? '—' }
-export function severidadResultado(v) { return buscar(RESULTADOS, v)?.severidad ?? 'secondary' }
-export function labelGestion(v) { return buscar(TIPOS_GESTION, v)?.label ?? v ?? '—' }
+export function labelEtapa(v) {
+  return buscar(ETAPAS, v)?.label ?? v ?? '—'
+}
+export function severidadEtapa(v) {
+  return buscar(ETAPAS, v)?.severidad ?? 'info'
+}
+export function colorEtapa(v) {
+  return buscar(ETAPAS, v)?.color ?? '#7a6e8a'
+}
+export function labelTipo(v) {
+  return buscar(TIPOS_OFERTA, v)?.label ?? v ?? '—'
+}
+export function segmentoTipo(v) {
+  return buscar(TIPOS_OFERTA, v)?.segmento ?? '—'
+}
+export function labelResultado(v) {
+  return buscar(RESULTADOS, v)?.label ?? v ?? '—'
+}
+export function severidadResultado(v) {
+  return buscar(RESULTADOS, v)?.severidad ?? 'secondary'
+}
+export function labelGestion(v) {
+  return buscar(TIPOS_GESTION, v)?.label ?? v ?? '—'
+}
 
 export function puedeFirmarPPA(oferta) {
   return !!oferta && TIPOS_ENERGIA.includes(oferta.tipo) && !oferta.ppa_contrato_id
@@ -211,7 +232,9 @@ export function kpis(ofertas) {
     total: (ofertas || []).length,
     energiaMwhMes: abiertas.reduce((a, o) => a + mwhMes(o), 0),
     alertas: (ofertas || []).filter((o) => o.alerta).length,
-    sinRespuesta: (ofertas || []).filter((o) => ETAPAS_ABIERTAS.includes(o.estado) && sinRespuesta(o)).length,
+    sinRespuesta: (ofertas || []).filter(
+      (o) => ETAPAS_ABIERTAS.includes(o.estado) && sinRespuesta(o),
+    ).length,
   }
 }
 
@@ -240,9 +263,17 @@ export function filtrar(ofertas, f = {}) {
   const q = (f.texto || '').trim().toLowerCase()
   return (ofertas || []).filter((o) => {
     if (q) {
-      const heno = [o.codigo_seguimiento, o.numero_oferta, o.cliente_razon_social,
-        o.planta_nombre, o.oportunidad_nombre, o.ficha?.municipio]
-        .filter(Boolean).join(' ').toLowerCase()
+      const heno = [
+        o.codigo_seguimiento,
+        o.numero_oferta,
+        o.cliente_razon_social,
+        o.planta_nombre,
+        o.oportunidad_nombre,
+        o.ficha?.municipio,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
       if (!heno.includes(q)) return false
     }
     if (f.tipos?.length && !f.tipos.includes(o.tipo)) return false
@@ -264,7 +295,8 @@ export function ordenar(ofertas, criterio = 'reciente') {
     // Lo más rezagado primero: es el orden con el que se trabaja la lista.
     rezagadas: (a, b) => (b.dias_sin_respuesta || 0) - (a.dias_sin_respuesta || 0),
     energia: (a, b) => mwhMes(b) - mwhMes(a),
-    cliente: (a, b) => (a.cliente_razon_social || '').localeCompare(b.cliente_razon_social || '', 'es'),
+    cliente: (a, b) =>
+      (a.cliente_razon_social || '').localeCompare(b.cliente_razon_social || '', 'es'),
   }
   return copia.sort(comparadores[criterio] || comparadores.reciente)
 }
@@ -286,12 +318,16 @@ export function validarFirma(form) {
   if (form?.modo_precio === 'tabla') {
     if (!filas.length) errores.push('La tabla de precios está vacía.')
     const anios = filas.map((p) => p.anio)
-    if (new Set(anios).size !== anios.length) errores.push('La tabla de precios tiene años repetidos.')
+    if (new Set(anios).size !== anios.length)
+      errores.push('La tabla de precios tiene años repetidos.')
   } else if (!(form?.tarifa_base > 0)) {
     errores.push('Falta la tarifa ($/kWh).')
   }
 
-  if (form?.periodo_indexacion_base && !/^\d{4}-(0[1-9]|1[0-2])$/.test(form.periodo_indexacion_base)) {
+  if (
+    form?.periodo_indexacion_base &&
+    !/^\d{4}-(0[1-9]|1[0-2])$/.test(form.periodo_indexacion_base)
+  ) {
     errores.push('El mes base de indexación debe ser YYYY-MM (por ejemplo 2025-10).')
   }
   return errores

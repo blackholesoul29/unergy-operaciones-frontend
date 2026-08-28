@@ -4,9 +4,9 @@ export function usePwa() {
   function register() {
     if (!import.meta.env.PROD) return
     if (!('serviceWorker' in navigator)) return
-    navigator.serviceWorker
-      .register('/sw-mobile.js', { scope: '/m/' })
-      .catch(() => { /* silencioso — la app funciona igual sin SW */ })
+    navigator.serviceWorker.register('/sw-mobile.js', { scope: '/m/' }).catch(() => {
+      /* silencioso — la app funciona igual sin SW */
+    })
   }
   return { register }
 }

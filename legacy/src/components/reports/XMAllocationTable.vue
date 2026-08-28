@@ -1,48 +1,78 @@
 <template>
   <div class="xat-card">
     <div class="xat-head">
-      <i class="pi pi-sitemap text-sm" style="color:#915BD8" />
+      <i class="pi pi-sitemap text-sm" style="color: #915bd8" />
       <h3 class="xat-title">Asignaciones XM</h3>
-      <span class="xat-sub">{{ modoBolsa ? 'Compras / excedentes de bolsa' : 'Exposición al mercado spot' }} · {{ rows.length }} registro{{ rows.length !== 1 ? 's' : '' }}</span>
+      <span class="xat-sub"
+        >{{ modoBolsa ? 'Compras / excedentes de bolsa' : 'Exposición al mercado spot' }} ·
+        {{ rows.length }} registro{{ rows.length !== 1 ? 's' : '' }}</span
+      >
     </div>
 
     <DataTable
       :value="rows"
       :rowClass="rowClass"
-      :sortField="modoBolsa ? 'concepto' : 'fecha'" :sortOrder="1"
+      :sortField="modoBolsa ? 'concepto' : 'fecha'"
+      :sortOrder="1"
       removableSort
-      paginator :rows="10" :rowsPerPageOptions="[10, 20, 50]"
+      paginator
+      :rows="10"
+      :rowsPerPageOptions="[10, 20, 50]"
       :dataKey="modoBolsa ? 'concepto' : 'fecha'"
-      class="xat-table" size="small" stripedRows
+      class="xat-table"
+      size="small"
+      stripedRows
     >
       <template #empty>
         <div class="xat-empty">Sin asignaciones XM para este período.</div>
       </template>
 
-      <Column :field="modoBolsa ? 'concepto' : 'fecha'" :header="modoBolsa ? 'Concepto' : 'Fecha'"
-              sortable style="min-width:8rem" />
+      <Column
+        :field="modoBolsa ? 'concepto' : 'fecha'"
+        :header="modoBolsa ? 'Concepto' : 'Fecha'"
+        sortable
+        style="min-width: 8rem"
+      />
 
-      <Column field="mwhAsignados" :header="modoBolsa ? 'MWh' : 'MWh Asignados'" sortable style="min-width:8rem">
+      <Column
+        field="mwhAsignados"
+        :header="modoBolsa ? 'MWh' : 'MWh Asignados'"
+        sortable
+        style="min-width: 8rem"
+      >
         <template #body="{ data }">{{ fmtMWhNum(data.mwhAsignados) }}</template>
       </Column>
 
-      <Column field="precioSpot" :header="modoBolsa ? 'Precio bolsa Prom.' : 'Precio Spot Prom.'" sortable style="min-width:9rem">
+      <Column
+        field="precioSpot"
+        :header="modoBolsa ? 'Precio bolsa Prom.' : 'Precio Spot Prom.'"
+        sortable
+        style="min-width: 9rem"
+      >
         <template #body="{ data }">
           <span :class="deviates(data) ? 'xat-warn-text' : ''">{{ fmt(data.precioSpot) }}</span>
-          <i v-if="deviates(data)" class="pi pi-exclamation-triangle xat-warn-ico"
-             v-tooltip.top="`Desvío ${devPct(data)}% frente al PPA (${fmt(data.precioPpa)})`" />
+          <i
+            v-if="deviates(data)"
+            class="pi pi-exclamation-triangle xat-warn-ico"
+            v-tooltip.top="`Desvío ${devPct(data)}% frente al PPA (${fmt(data.precioPpa)})`"
+          />
         </template>
       </Column>
 
-      <Column field="impacto" header="Impacto Financiero" sortable style="min-width:9rem">
+      <Column field="impacto" header="Impacto Financiero" sortable style="min-width: 9rem">
         <template #body="{ data }">
-          <span :class="Number(data.impacto) < 0 ? 'xat-neg' : 'xat-pos'">{{ fmt(data.impacto) }}</span>
+          <span :class="Number(data.impacto) < 0 ? 'xat-neg' : 'xat-pos'">{{
+            fmt(data.impacto)
+          }}</span>
         </template>
       </Column>
 
-      <Column field="estado" header="Estado" sortable style="min-width:8rem">
+      <Column field="estado" header="Estado" sortable style="min-width: 8rem">
         <template #body="{ data }">
-          <span class="xat-badge" :class="data.estado === 'Favorable' ? 'xat-badge--ok' : 'xat-badge--bad'">
+          <span
+            class="xat-badge"
+            :class="data.estado === 'Favorable' ? 'xat-badge--ok' : 'xat-badge--bad'"
+          >
             {{ data.estado }}
           </span>
         </template>
@@ -67,10 +97,11 @@ const props = defineProps({
 
 // En modo real las filas traen `concepto` (Compras / Excedentes de bolsa) en vez
 // de una fecha diaria. Ajusta encabezados y clave de fila en consecuencia.
-const modoBolsa = computed(() => props.rows.some(r => r?.concepto))
+const modoBolsa = computed(() => props.rows.some((r) => r?.concepto))
 
 const fmt = (v) => formatCurrency(v)
-const fmtMWhNum = (v) => (v == null ? '—' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 1 }))
+const fmtMWhNum = (v) =>
+  v == null ? '—' : Number(v).toLocaleString('es-CO', { maximumFractionDigits: 1 })
 
 function devFraction(row) {
   const ppa = Number(row?.precioPpa) || 0
@@ -98,25 +129,75 @@ function rowClass(row) {
   overflow: hidden;
 }
 .xat-head {
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px 14px; border-bottom: 1px solid #f0ebf6;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #f0ebf6;
 }
-.xat-title { font-size: 13px; font-weight: 700; color: #2C2039; margin: 0; }
-.xat-sub { font-size: 10.5px; color: #9b8fb0; margin-left: auto; }
+.xat-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #2c2039;
+  margin: 0;
+}
+.xat-sub {
+  font-size: 10.5px;
+  color: #9b8fb0;
+  margin-left: auto;
+}
 
-.xat-table { font-size: 12px; }
-.xat-empty { text-align: center; padding: 24px 0; color: #9b8fb0; font-size: 12px; }
+.xat-table {
+  font-size: 12px;
+}
+.xat-empty {
+  text-align: center;
+  padding: 24px 0;
+  color: #9b8fb0;
+  font-size: 12px;
+}
 
-.xat-pos { color: #15803D; font-weight: 700; font-variant-numeric: tabular-nums; }
-.xat-neg { color: #DC2626; font-weight: 700; font-variant-numeric: tabular-nums; }
-.xat-warn-text { color: #B45309; font-weight: 700; }
-.xat-warn-ico { color: #D97706; font-size: 11px; margin-left: 5px; cursor: help; }
+.xat-pos {
+  color: #15803d;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.xat-neg {
+  color: #dc2626;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.xat-warn-text {
+  color: #b45309;
+  font-weight: 700;
+}
+.xat-warn-ico {
+  color: #d97706;
+  font-size: 11px;
+  margin-left: 5px;
+  cursor: help;
+}
 
-.xat-badge { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
-.xat-badge--ok { background: #DCFCE7; color: #15803D; }
-.xat-badge--bad { background: #FEE2E2; color: #B91C1C; }
+.xat-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+.xat-badge--ok {
+  background: #dcfce7;
+  color: #15803d;
+}
+.xat-badge--bad {
+  background: #fee2e2;
+  color: #b91c1c;
+}
 
 /* Fila con desvío significativo del spot vs PPA */
-:deep(.xat-row-warn) { background: #FEF9F0 !important; }
-:deep(.xat-row-warn:hover) { background: #FDF3E0 !important; }
+:deep(.xat-row-warn) {
+  background: #fef9f0 !important;
+}
+:deep(.xat-row-warn:hover) {
+  background: #fdf3e0 !important;
+}
 </style>

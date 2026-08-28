@@ -21,7 +21,5 @@ export function getHistorial() {
 }
 
 export function setPagado({ anio, mes, valor }) {
-  return api
-    .put(`${BASE}/pagado`, null, { params: { anio, mes, valor } })
-    .then((r) => r.data)
+  return api.put(`${BASE}/pagado`, null, { params: { anio, mes, valor } }).then((r) => r.data)
 }

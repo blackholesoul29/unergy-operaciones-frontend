@@ -265,12 +265,18 @@ function enviar() {
 }
 
 .rq-invalido :deep(input),
-.rq-invalido { border-color: #D64455 !important; }
+.rq-invalido {
+  border-color: #d64455 !important;
+}
 
-.rq-error-campo { font-size: 10px; color: #B0364A; margin-top: 3px; }
+.rq-error-campo {
+  font-size: 10px;
+  color: #b0364a;
+  margin-top: 3px;
+}
 
 .rq-preview {
-  background: rgba(145, 91, 216, .06);
+  background: rgba(145, 91, 216, 0.06);
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 11px;
@@ -278,5 +284,7 @@ function enviar() {
   line-height: 1.5;
 }
 
-.rq-dir :deep(.p-togglebutton) { font-size: 11.5px; }
+.rq-dir :deep(.p-togglebutton) {
+  font-size: 11.5px;
+}
 </style>

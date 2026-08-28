@@ -1,6 +1,5 @@
 <template>
   <div class="inf-page">
-
     <!-- ══ Hero Header ══════════════════════════════════════════════ -->
     <div class="inf-hero">
       <div class="inf-hero-left">
@@ -74,7 +73,11 @@
           <option value="aprobado">Aprobado</option>
         </select>
       </div>
-      <button v-if="filtroAnio || filtroMes || filtroEstado" class="inf-clear-btn" @click="limpiarFiltros">
+      <button
+        v-if="filtroAnio || filtroMes || filtroEstado"
+        class="inf-clear-btn"
+        @click="limpiarFiltros"
+      >
         ✕ Limpiar filtros
       </button>
 
@@ -104,12 +107,25 @@
     <div v-else-if="!informesFiltrados.length" class="inf-empty">
       <div class="inf-empty-icon">📄</div>
       <div class="inf-empty-title">
-        {{ (filtroAnio || filtroMes || filtroEstado) ? 'Sin resultados para los filtros aplicados' : 'No hay informes guardados' }}
+        {{
+          filtroAnio || filtroMes || filtroEstado
+            ? 'Sin resultados para los filtros aplicados'
+            : 'No hay informes guardados'
+        }}
       </div>
       <div class="inf-empty-sub">
-        {{ (filtroAnio || filtroMes || filtroEstado) ? 'Prueba con otros filtros' : 'Genera un informe desde Monitoreo Fallas' }}
+        {{
+          filtroAnio || filtroMes || filtroEstado
+            ? 'Prueba con otros filtros'
+            : 'Genera un informe desde Monitoreo Fallas'
+        }}
       </div>
-      <button v-if="filtroAnio || filtroMes || filtroEstado" class="inf-clear-btn" style="margin-top:12px" @click="limpiarFiltros">
+      <button
+        v-if="filtroAnio || filtroMes || filtroEstado"
+        class="inf-clear-btn"
+        style="margin-top: 12px"
+        @click="limpiarFiltros"
+      >
         ✕ Limpiar filtros
       </button>
     </div>
@@ -142,7 +158,12 @@
             </td>
             <td class="td-proyecto">
               <div class="td-nombre">{{ inf.proyecto_nombre || inf.sub_project }}</div>
-              <div class="td-sub" v-if="inf.proyecto_nombre && inf.sub_project !== inf.proyecto_nombre">{{ inf.sub_project }}</div>
+              <div
+                class="td-sub"
+                v-if="inf.proyecto_nombre && inf.sub_project !== inf.proyecto_nombre"
+              >
+                {{ inf.sub_project }}
+              </div>
             </td>
             <td>
               <span class="tipo-tag">{{ tipoLabel(inf.tipo) }}</span>
@@ -156,11 +177,17 @@
               <div class="td-autor" v-if="inf.editado_por_nombre">{{ inf.editado_por_nombre }}</div>
             </td>
             <td class="td-fecha">
-              <div v-if="inf.aprobado_por_nombre" class="td-autor">{{ inf.aprobado_por_nombre }}</div>
+              <div v-if="inf.aprobado_por_nombre" class="td-autor">
+                {{ inf.aprobado_por_nombre }}
+              </div>
               <div v-else class="td-empty">—</div>
             </td>
             <td class="td-acciones" @click.stop>
-              <button class="action-btn action-open" @click="abrirInforme(inf.id)" title="Abrir informe">
+              <button
+                class="action-btn action-open"
+                @click="abrirInforme(inf.id)"
+                title="Abrir informe"
+              >
                 →
               </button>
               <button
@@ -176,7 +203,6 @@
         </tbody>
       </table>
     </div>
-
   </div>
 </template>
 
@@ -187,41 +213,51 @@ import api from '@/api/client'
 
 const router = useRouter()
 
-const todosLoaded  = ref([])
-const loading      = ref(false)
-const error        = ref(null)
+const todosLoaded = ref([])
+const loading = ref(false)
+const error = ref(null)
 const filtroEstado = ref('')
-const filtroAnio   = ref('')
-const filtroMes    = ref('')
+const filtroAnio = ref('')
+const filtroMes = ref('')
 
 const meses = [
-  { v: '01', label: 'Enero' },   { v: '02', label: 'Febrero' },
-  { v: '03', label: 'Marzo' },   { v: '04', label: 'Abril' },
-  { v: '05', label: 'Mayo' },    { v: '06', label: 'Junio' },
-  { v: '07', label: 'Julio' },   { v: '08', label: 'Agosto' },
-  { v: '09', label: 'Septiembre' }, { v: '10', label: 'Octubre' },
-  { v: '11', label: 'Noviembre' }, { v: '12', label: 'Diciembre' },
+  { v: '01', label: 'Enero' },
+  { v: '02', label: 'Febrero' },
+  { v: '03', label: 'Marzo' },
+  { v: '04', label: 'Abril' },
+  { v: '05', label: 'Mayo' },
+  { v: '06', label: 'Junio' },
+  { v: '07', label: 'Julio' },
+  { v: '08', label: 'Agosto' },
+  { v: '09', label: 'Septiembre' },
+  { v: '10', label: 'Octubre' },
+  { v: '11', label: 'Noviembre' },
+  { v: '12', label: 'Diciembre' },
 ]
 
 const kpis = computed(() => ({
-  borrador: todosLoaded.value.filter(i => i.estado === 'borrador').length,
-  revisado: todosLoaded.value.filter(i => i.estado === 'revisado').length,
-  aprobado: todosLoaded.value.filter(i => i.estado === 'aprobado').length,
+  borrador: todosLoaded.value.filter((i) => i.estado === 'borrador').length,
+  revisado: todosLoaded.value.filter((i) => i.estado === 'revisado').length,
+  aprobado: todosLoaded.value.filter((i) => i.estado === 'aprobado').length,
 }))
 
 const aniosDisponibles = computed(() => {
   const set = new Set()
-  todosLoaded.value.forEach(i => { if (i.periodo_desde) set.add(i.periodo_desde.slice(0, 4)) })
+  todosLoaded.value.forEach((i) => {
+    if (i.periodo_desde) set.add(i.periodo_desde.slice(0, 4))
+  })
   return [...set].sort((a, b) => b - a)
 })
 
 const informesFiltrados = computed(() =>
-  todosLoaded.value.filter(i => {
+  todosLoaded.value.filter((i) => {
     if (filtroEstado.value && i.estado !== filtroEstado.value) return false
-    if (filtroAnio.value && (!i.periodo_desde || !i.periodo_desde.startsWith(filtroAnio.value))) return false
-    if (filtroMes.value && (!i.periodo_desde || i.periodo_desde.slice(5, 7) !== filtroMes.value)) return false
+    if (filtroAnio.value && (!i.periodo_desde || !i.periodo_desde.startsWith(filtroAnio.value)))
+      return false
+    if (filtroMes.value && (!i.periodo_desde || i.periodo_desde.slice(5, 7) !== filtroMes.value))
+      return false
     return true
-  })
+  }),
 )
 
 function setFiltroEstado(val) {
@@ -243,18 +279,25 @@ async function cargar() {
 }
 
 function limpiarFiltros() {
-  filtroEstado.value = ''; filtroAnio.value = ''; filtroMes.value = ''
+  filtroEstado.value = ''
+  filtroAnio.value = ''
+  filtroMes.value = ''
 }
 
-function abrirInforme(id) { router.push(`/informes/${id}`) }
+function abrirInforme(id) {
+  router.push(`/informes/${id}`)
+}
 
 async function eliminarInforme(inf) {
   const nombre = inf.proyecto_nombre || inf.sub_project
   const periodo = inf.periodo_display || inf.periodo_desde || ''
-  if (!confirm(`¿Eliminar el informe "${nombre} · ${periodo}"?\n\nEsta acción no se puede deshacer.`)) return
+  if (
+    !confirm(`¿Eliminar el informe "${nombre} · ${periodo}"?\n\nEsta acción no se puede deshacer.`)
+  )
+    return
   try {
     await api.delete(`/informes/${inf.id}`)
-    todosLoaded.value = todosLoaded.value.filter(i => i.id !== inf.id)
+    todosLoaded.value = todosLoaded.value.filter((i) => i.id !== inf.id)
   } catch (e) {
     alert('⚠️ ' + (e.response?.data?.detail || e.message))
   }
@@ -267,12 +310,18 @@ function tipoLabel(t) {
   return { op: 'Operacional', fmo: 'FMO', port: 'Portafolio' }[t] || (t || '—').toUpperCase()
 }
 function formatFecha(iso) {
-  return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(iso).toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 function formatPeriodo(iso) {
   if (!iso) return '—'
   const [y, m] = iso.split('-')
-  const mes = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][+m] || m
+  const mes =
+    ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'][+m] ||
+    m
   return `${mes} ${y}`
 }
 
@@ -290,25 +339,25 @@ onMounted(cargar)
 
 /* ── Hero ───────────────────────────────────────────────────────── */
 .inf-hero {
-  background: linear-gradient(135deg, #2C2039 0%, #3d2b52 60%, #4a2d6e 100%);
+  background: linear-gradient(135deg, #2c2039 0%, #3d2b52 60%, #4a2d6e 100%);
   padding: 28px 32px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
-  border-bottom: 1px solid rgba(145,91,216,.2);
+  border-bottom: 1px solid rgba(145, 91, 216, 0.2);
 }
 .inf-hero-title {
   font-size: 24px;
   font-weight: 900;
-  color: #FDFAF7;
+  color: #fdfaf7;
   margin: 0 0 4px;
   letter-spacing: -0.3px;
 }
 .inf-hero-sub {
   font-size: 13px;
-  color: rgba(253,250,247,.55);
+  color: rgba(253, 250, 247, 0.55);
   margin: 0;
 }
 
@@ -319,7 +368,11 @@ onMounted(cargar)
   gap: 0;
   border-bottom: 1px solid #e5e2ec;
 }
-@media (max-width: 640px) { .inf-kpis { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) {
+  .inf-kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
 .kpi-card {
   display: flex;
@@ -329,30 +382,48 @@ onMounted(cargar)
   border: none;
   background: #fff;
   cursor: pointer;
-  transition: background .15s;
+  transition: background 0.15s;
   border-right: 1px solid #e5e2ec;
   position: relative;
   font-family: inherit;
 }
-.kpi-card:last-child { border-right: none; }
-.kpi-card:hover { background: #f4f1fa; }
+.kpi-card:last-child {
+  border-right: none;
+}
+.kpi-card:hover {
+  background: #f4f1fa;
+}
 
 .kpi-card::after {
   content: '';
   position: absolute;
-  bottom: 0; left: 0; right: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
   height: 3px;
   border-radius: 3px 3px 0 0;
   opacity: 0;
-  transition: opacity .15s;
+  transition: opacity 0.15s;
 }
-.kpi-card.kpi-active::after { opacity: 1; }
-.kpi-card.kpi-active { background: #f9f7ff; }
+.kpi-card.kpi-active::after {
+  opacity: 1;
+}
+.kpi-card.kpi-active {
+  background: #f9f7ff;
+}
 
-.kpi-total::after    { background: #915BD8; }
-.kpi-borrador::after { background: #d4a017; }
-.kpi-revisado::after { background: #2563EB; }
-.kpi-aprobado::after { background: #16a34a; }
+.kpi-total::after {
+  background: #915bd8;
+}
+.kpi-borrador::after {
+  background: #d4a017;
+}
+.kpi-revisado::after {
+  background: #2563eb;
+}
+.kpi-aprobado::after {
+  background: #16a34a;
+}
 
 .kpi-num {
   font-size: 32px;
@@ -360,19 +431,29 @@ onMounted(cargar)
   line-height: 1;
   margin-bottom: 5px;
 }
-.kpi-total    .kpi-num { color: #6d28d9; }
-.kpi-borrador .kpi-num { color: #d4a017; }
-.kpi-revisado .kpi-num { color: #2563EB; }
-.kpi-aprobado .kpi-num { color: #16a34a; }
+.kpi-total .kpi-num {
+  color: #6d28d9;
+}
+.kpi-borrador .kpi-num {
+  color: #d4a017;
+}
+.kpi-revisado .kpi-num {
+  color: #2563eb;
+}
+.kpi-aprobado .kpi-num {
+  color: #16a34a;
+}
 
 .kpi-label {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .6px;
+  letter-spacing: 0.6px;
   color: #9ca3af;
 }
-.kpi-card.kpi-active .kpi-label { color: #6b7280; }
+.kpi-card.kpi-active .kpi-label {
+  color: #6b7280;
+}
 
 /* ── Filtros ────────────────────────────────────────────────────── */
 .inf-filtros-bar {
@@ -393,7 +474,7 @@ onMounted(cargar)
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   color: #9ca3af;
 }
 .inf-select {
@@ -401,15 +482,17 @@ onMounted(cargar)
   border: 1.5px solid #e5e2ec;
   border-radius: 8px;
   padding: 7px 12px;
-  color: #2C2039;
+  color: #2c2039;
   font-size: 13px;
   font-family: inherit;
   outline: none;
   cursor: pointer;
   min-width: 130px;
-  transition: border-color .15s;
+  transition: border-color 0.15s;
 }
-.inf-select:focus { border-color: #915BD8; }
+.inf-select:focus {
+  border-color: #915bd8;
+}
 
 .inf-clear-btn {
   background: transparent;
@@ -421,10 +504,13 @@ onMounted(cargar)
   color: #6b7280;
   cursor: pointer;
   font-family: inherit;
-  transition: all .15s;
+  transition: all 0.15s;
   align-self: flex-end;
 }
-.inf-clear-btn:hover { border-color: #915BD8; color: #6d28d9; }
+.inf-clear-btn:hover {
+  border-color: #915bd8;
+  color: #6d28d9;
+}
 
 .inf-count-label {
   margin-left: auto;
@@ -439,19 +525,24 @@ onMounted(cargar)
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.25);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 8px;
   padding: 8px 16px;
-  color: #FDFAF7;
+  color: #fdfaf7;
   font-size: 13px;
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  transition: background .15s;
+  transition: background 0.15s;
 }
-.inf-refresh-btn:hover:not(:disabled) { background: rgba(255,255,255,.2); }
-.inf-refresh-btn:disabled { opacity: .5; cursor: not-allowed; }
+.inf-refresh-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+}
+.inf-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* ── Loading ─────────────────────────────────────────────────────── */
 .inf-loading {
@@ -464,14 +555,22 @@ onMounted(cargar)
   font-size: 13px;
 }
 .spin-ring {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border: 3px solid #e5e2ec;
-  border-top-color: #915BD8;
+  border-top-color: #915bd8;
   border-radius: 50%;
-  animation: spin .8s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.spin-icon { display: inline-block; animation: spin .8s linear infinite; }
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-icon {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
 
 /* ── Error ───────────────────────────────────────────────────────── */
 .inf-error-box {
@@ -484,18 +583,41 @@ onMounted(cargar)
   border-radius: 10px;
   padding: 16px 20px;
 }
-.inf-error-icon { font-size: 22px; flex-shrink: 0; }
-.inf-error-title { font-size: 13px; font-weight: 700; color: #dc2626; margin-bottom: 2px; }
-.inf-error-msg { font-size: 12px; color: #ef4444; }
+.inf-error-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.inf-error-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #dc2626;
+  margin-bottom: 2px;
+}
+.inf-error-msg {
+  font-size: 12px;
+  color: #ef4444;
+}
 
 /* ── Empty ───────────────────────────────────────────────────────── */
 .inf-empty {
   text-align: center;
   padding: 80px 32px;
 }
-.inf-empty-icon { font-size: 48px; margin-bottom: 14px; opacity: .3; }
-.inf-empty-title { font-size: 16px; font-weight: 700; color: #6b7280; margin-bottom: 6px; }
-.inf-empty-sub { font-size: 13px; color: #9ca3af; }
+.inf-empty-icon {
+  font-size: 48px;
+  margin-bottom: 14px;
+  opacity: 0.3;
+}
+.inf-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+.inf-empty-sub {
+  font-size: 13px;
+  color: #9ca3af;
+}
 
 /* ── Tabla ───────────────────────────────────────────────────────── */
 .inf-table-wrapper {
@@ -508,7 +630,9 @@ onMounted(cargar)
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.07),
+    0 1px 2px rgba(0, 0, 0, 0.04);
 }
 .inf-table thead tr {
   background: #f8f7fa;
@@ -520,23 +644,29 @@ onMounted(cargar)
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .5px;
+  letter-spacing: 0.5px;
   color: #9ca3af;
   white-space: nowrap;
 }
 .inf-row {
   border-bottom: 1px solid #f0edf7;
   cursor: pointer;
-  transition: background .12s;
+  transition: background 0.12s;
 }
-.inf-row:last-child { border-bottom: none; }
-.inf-row:hover { background: #f9f7ff; }
+.inf-row:last-child {
+  border-bottom: none;
+}
+.inf-row:hover {
+  background: #f9f7ff;
+}
 .inf-row td {
   padding: 13px 16px;
   vertical-align: middle;
 }
 
-.td-proyecto { min-width: 180px; }
+.td-proyecto {
+  min-width: 180px;
+}
 .td-nombre {
   font-size: 13px;
   font-weight: 700;
@@ -552,10 +682,22 @@ onMounted(cargar)
   color: #374151;
   white-space: nowrap;
 }
-.td-fecha { min-width: 120px; }
-.td-fecha > div:first-child { font-size: 12px; color: #374151; }
-.td-autor { font-size: 11px; color: #9ca3af; margin-top: 2px; }
-.td-empty { color: #d1d5db; font-size: 13px; }
+.td-fecha {
+  min-width: 120px;
+}
+.td-fecha > div:first-child {
+  font-size: 12px;
+  color: #374151;
+}
+.td-autor {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+.td-empty {
+  color: #d1d5db;
+  font-size: 13px;
+}
 
 /* Estado pills */
 .estado-pill {
@@ -564,13 +706,25 @@ onMounted(cargar)
   font-weight: 800;
   padding: 3px 10px;
   border-radius: 20px;
-  letter-spacing: .4px;
+  letter-spacing: 0.4px;
   white-space: nowrap;
   text-transform: uppercase;
 }
-.pill-borrador { background: #fef9c3; color: #854d0e; border: 1px solid #fde68a; }
-.pill-revisado { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
-.pill-aprobado { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.pill-borrador {
+  background: #fef9c3;
+  color: #854d0e;
+  border: 1px solid #fde68a;
+}
+.pill-revisado {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+.pill-aprobado {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
 
 /* Tipo tag */
 .tipo-tag {
@@ -583,7 +737,10 @@ onMounted(cargar)
   padding: 2px 7px;
 }
 
-.enviado-dot { margin-left: 5px; font-size: 12px; }
+.enviado-dot {
+  margin-left: 5px;
+  font-size: 12px;
+}
 
 /* Acciones */
 .td-acciones {
@@ -597,11 +754,23 @@ onMounted(cargar)
   padding: 4px 9px;
   cursor: pointer;
   font-size: 13px;
-  transition: all .14s;
+  transition: all 0.14s;
   font-family: inherit;
 }
-.action-open { color: #6d28d9; margin-right: 4px; font-weight: 800; }
-.action-open:hover { background: #f3f0ff; border-color: #7c3aed; }
-.action-del { color: #ef4444; }
-.action-del:hover { background: #fff5f5; border-color: #ef4444; }
+.action-open {
+  color: #6d28d9;
+  margin-right: 4px;
+  font-weight: 800;
+}
+.action-open:hover {
+  background: #f3f0ff;
+  border-color: #7c3aed;
+}
+.action-del {
+  color: #ef4444;
+}
+.action-del:hover {
+  background: #fff5f5;
+  border-color: #ef4444;
+}
 </style>

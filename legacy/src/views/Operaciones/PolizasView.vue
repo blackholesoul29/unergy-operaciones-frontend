@@ -1,21 +1,32 @@
 <!-- unergy-operaciones-frontend-master/src/views/Operaciones/PolizasView.vue -->
 <template>
   <div class="pz-page">
-
     <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
     <div class="pz-header">
       <div class="flex items-center gap-2">
-        <i class="pi pi-shield" style="color:#0F9D8C;font-size:16px" />
+        <i class="pi pi-shield" style="color: #0f9d8c; font-size: 16px" />
         <h2 class="pz-title">Pólizas</h2>
         <span class="pz-badge">{{ filas.length }}</span>
       </div>
-      <Button icon="pi pi-refresh" outlined size="small" :loading="loading" @click="cargar" class="pz-btn-refresh" />
+      <Button
+        icon="pi pi-refresh"
+        outlined
+        size="small"
+        :loading="loading"
+        @click="cargar"
+        class="pz-btn-refresh"
+      />
     </div>
 
     <!-- ══ BANNER 30 DÍAS ═══════════════════════════════════════════════════ -->
-    <button v-if="venceEn30.length && filtroEstado !== 'proxima'" class="pz-banner" @click="filtroEstado = 'proxima'">
+    <button
+      v-if="venceEn30.length && filtroEstado !== 'proxima'"
+      class="pz-banner"
+      @click="filtroEstado = 'proxima'"
+    >
       <i class="pi pi-exclamation-triangle" />
-      {{ venceEn30.length }} {{ venceEn30.length === 1 ? 'póliza vence' : 'pólizas vencen' }} en los próximos 30 días
+      {{ venceEn30.length }} {{ venceEn30.length === 1 ? 'póliza vence' : 'pólizas vencen' }} en los
+      próximos 30 días
     </button>
 
     <!-- ══ STATS BAR ════════════════════════════════════════════════════════ -->
@@ -27,17 +38,19 @@
       <div class="pz-stat-div" />
       <div class="pz-stat">
         <span class="pz-stat-label">Próximas a vencer</span>
-        <span class="pz-stat-value" style="color:#B45309">{{ contarPorEstado('proxima') }}</span>
+        <span class="pz-stat-value" style="color: #b45309">{{ contarPorEstado('proxima') }}</span>
       </div>
       <div class="pz-stat-div" />
       <div class="pz-stat">
         <span class="pz-stat-label">Vencidas</span>
-        <span class="pz-stat-value" style="color:#B91C1C">{{ contarPorEstado('vencida') }}</span>
+        <span class="pz-stat-value" style="color: #b91c1c">{{ contarPorEstado('vencida') }}</span>
       </div>
       <div class="pz-stat-div" />
       <div class="pz-stat">
         <span class="pz-stat-label">Valor asegurado total</span>
-        <span class="pz-stat-value" style="color:#0F9D8C">{{ formatCurrency(totalAsegurado) }}</span>
+        <span class="pz-stat-value" style="color: #0f9d8c">{{
+          formatCurrency(totalAsegurado)
+        }}</span>
       </div>
     </div>
 
@@ -47,13 +60,42 @@
         <i class="pi pi-search pz-search-ico" />
         <input v-model="busqueda" placeholder="Buscar por proyecto o ciudad…" class="pz-search" />
       </div>
-      <Select v-model="filtroTipo" :options="OPCIONES_TIPO" optionLabel="label" optionValue="value"
-        placeholder="Tipo" showClear class="pz-sel" size="small" />
-      <Select v-model="filtroEstado" :options="OPCIONES_ESTADO" optionLabel="label" optionValue="value"
-        placeholder="Estado" showClear class="pz-sel" size="small" />
-      <Select v-model="filtroOm" :options="OPCIONES_OM" optionLabel="label" optionValue="value"
-        placeholder="Póliza O&M" showClear class="pz-sel" size="small" />
-      <button v-if="hayFiltros" class="pz-clear-btn" @click="limpiarFiltros" title="Limpiar filtros">
+      <Select
+        v-model="filtroTipo"
+        :options="OPCIONES_TIPO"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Tipo"
+        showClear
+        class="pz-sel"
+        size="small"
+      />
+      <Select
+        v-model="filtroEstado"
+        :options="OPCIONES_ESTADO"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Estado"
+        showClear
+        class="pz-sel"
+        size="small"
+      />
+      <Select
+        v-model="filtroOm"
+        :options="OPCIONES_OM"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Póliza O&M"
+        showClear
+        class="pz-sel"
+        size="small"
+      />
+      <button
+        v-if="hayFiltros"
+        class="pz-clear-btn"
+        @click="limpiarFiltros"
+        title="Limpiar filtros"
+      >
         <i class="pi pi-times text-[10px]" /> Limpiar
       </button>
     </div>
@@ -78,13 +120,21 @@
           <template v-for="fila in ordenadas" :key="fila.proyecto_id">
             <tr class="pz-row" @click="toggleExpandir(fila.proyecto_id)">
               <td>{{ fila.nombre_comercial }}</td>
-              <td><span class="pz-badge-tipo" :style="estiloTipo(fila.tipo_proyecto)">{{ TIPO_LABELS[fila.tipo_proyecto] || '—' }}</span></td>
+              <td>
+                <span class="pz-badge-tipo" :style="estiloTipo(fila.tipo_proyecto)">{{
+                  TIPO_LABELS[fila.tipo_proyecto] || '—'
+                }}</span>
+              </td>
               <td>{{ ciudad(fila) }}</td>
               <td>{{ fila.numero_poliza || '—' }}</td>
               <td>{{ fila.numero_poliza ? (fila.poliza_om ? 'Sí' : 'No') : '—' }}</td>
               <td>{{ fila.fecha_vencimiento ? formatFecha(fila.fecha_vencimiento) : '—' }}</td>
               <td>{{ formatCurrency(fila.valor_poliza) }}</td>
-              <td><span class="pz-badge-estado" :style="estiloEstado(estadoDe(fila))">{{ ESTADO_LABELS[estadoDe(fila)] }}</span></td>
+              <td>
+                <span class="pz-badge-estado" :style="estiloEstado(estadoDe(fila))">{{
+                  ESTADO_LABELS[estadoDe(fila)]
+                }}</span>
+              </td>
               <td>
                 <button class="pz-btn-editar" @click.stop="abrirEdicion(fila)" title="Editar">
                   <i class="pi pi-pencil" />
@@ -98,21 +148,49 @@
                     <h4>Datos generales</h4>
                     <p><strong>Ciudad:</strong> {{ ciudad(fila) }}</p>
                     <p><strong>Dirección:</strong> {{ fila.direccion_vereda || '—' }}</p>
-                    <p><strong>Estudio de suelos:</strong>
-                      <a v-if="fila.link_estudio_suelos" :href="fila.link_estudio_suelos" target="_blank" rel="noopener">Ver enlace</a>
+                    <p>
+                      <strong>Estudio de suelos:</strong>
+                      <a
+                        v-if="fila.link_estudio_suelos"
+                        :href="fila.link_estudio_suelos"
+                        target="_blank"
+                        rel="noopener"
+                        >Ver enlace</a
+                      >
                       <span v-else>—</span>
                     </p>
                   </div>
                   <div class="pz-card">
                     <h4>Detalles del sistema</h4>
-                    <p><strong>Paneles:</strong> {{ fila.marca_paneles || '—' }} ({{ fila.cantidad_total_paneles ?? '—' }})</p>
-                    <p><strong>Inversores:</strong> {{ fila.marca_inversores || '—' }} ({{ fila.cantidad_inversores ?? '—' }})</p>
-                    <p><strong>Capacidad:</strong> {{ fila.capacidad_instalada_kwp != null ? fila.capacidad_instalada_kwp + ' kWp' : '—' }}</p>
+                    <p>
+                      <strong>Paneles:</strong> {{ fila.marca_paneles || '—' }} ({{
+                        fila.cantidad_total_paneles ?? '—'
+                      }})
+                    </p>
+                    <p>
+                      <strong>Inversores:</strong> {{ fila.marca_inversores || '—' }} ({{
+                        fila.cantidad_inversores ?? '—'
+                      }})
+                    </p>
+                    <p>
+                      <strong>Capacidad:</strong>
+                      {{
+                        fila.capacidad_instalada_kwp != null
+                          ? fila.capacidad_instalada_kwp + ' kWp'
+                          : '—'
+                      }}
+                    </p>
                     <p><strong>Operador de red:</strong> {{ fila.operador_red || '—' }}</p>
                     <p><strong>Voltaje de red:</strong> {{ fila.voltaje_red || '—' }}</p>
                     <p><strong>Potencia panel:</strong> {{ fila.potencia_panel_kwp || '—' }}</p>
-                    <p><strong>Potencia inversores:</strong> {{ fila.potencia_inversores_kwp || '—' }}</p>
-                    <p><strong>Potencia AC:</strong> {{ fila.potencia_ac_kw != null ? fila.potencia_ac_kw + ' kW' : '—' }}</p>
+                    <p>
+                      <strong>Potencia inversores:</strong>
+                      {{ fila.potencia_inversores_kwp || '—' }}
+                    </p>
+                    <p>
+                      <strong>Potencia AC:</strong>
+                      {{ fila.potencia_ac_kw != null ? fila.potencia_ac_kw + ' kW' : '—' }}
+                    </p>
                   </div>
                   <div class="pz-card">
                     <h4>Presupuesto</h4>
@@ -121,24 +199,68 @@
                     <p><strong>Paneles:</strong> {{ formatCurrency(fila.paneles) }}</p>
                     <p><strong>Inversores:</strong> {{ formatCurrency(fila.inversores) }}</p>
                     <p><strong>Otros:</strong> {{ formatCurrency(fila.otros) }}</p>
-                    <p><strong>Valor total del proyecto:</strong> {{ formatCurrency(fila.valor_total_proyecto) }}</p>
-                    <p><strong>Valor lucro cesante:</strong> {{ formatCurrency(fila.valor_lucro_cesante) }}</p>
+                    <p>
+                      <strong>Valor total del proyecto:</strong>
+                      {{ formatCurrency(fila.valor_total_proyecto) }}
+                    </p>
+                    <p>
+                      <strong>Valor lucro cesante:</strong>
+                      {{ formatCurrency(fila.valor_lucro_cesante) }}
+                    </p>
                   </div>
                   <div class="pz-card">
                     <h4>Póliza</h4>
                     <p><strong>N° póliza:</strong> {{ fila.numero_poliza || '—' }}</p>
-                    <p><strong>Póliza O&M:</strong> {{ fila.numero_poliza ? (fila.poliza_om ? 'Sí' : 'No') : '—' }}</p>
-                    <p><strong>Vencimiento:</strong> {{ fila.fecha_vencimiento ? formatFecha(fila.fecha_vencimiento) : '—' }}</p>
+                    <p>
+                      <strong>Póliza O&M:</strong>
+                      {{ fila.numero_poliza ? (fila.poliza_om ? 'Sí' : 'No') : '—' }}
+                    </p>
+                    <p>
+                      <strong>Vencimiento:</strong>
+                      {{ fila.fecha_vencimiento ? formatFecha(fila.fecha_vencimiento) : '—' }}
+                    </p>
                     <p><strong>Valor:</strong> {{ formatCurrency(fila.valor_poliza) }}</p>
                   </div>
                   <div class="pz-card pz-card-ipp">
                     <h4>Cálculo de lucro cesante (indexación IPP)</h4>
-                    <p><strong>IPP base:</strong> {{ fila.ipp_base ?? '—' }} <span v-if="fila.ipp_base_fecha">({{ formatFecha(fila.ipp_base_fecha) }})</span></p>
-                    <p><strong>IPP provisional:</strong> {{ fila.ipp_provisional ?? '—' }} <span v-if="fila.ipp_provisional_fecha">({{ formatFecha(fila.ipp_provisional_fecha) }})</span></p>
-                    <p><strong>% de indexación:</strong> {{ pctIndexacion(fila) != null ? (pctIndexacion(fila) * 100).toFixed(2) + '%' : '—' }}</p>
-                    <p><strong>Tarifa base:</strong> {{ fila.tarifa_base != null ? formatCurrency(fila.tarifa_base) : '—' }}</p>
-                    <p><strong>Tarifa indexada:</strong> {{ tarifaIndexada(fila) != null ? formatCurrency(tarifaIndexada(fila)) : '—' }}</p>
-                    <p><strong>Generación anual P90:</strong> {{ fila.generacion_anual_p90_kwh != null ? fila.generacion_anual_p90_kwh.toLocaleString('es-CO') + ' kWh' : '—' }}</p>
+                    <p>
+                      <strong>IPP base:</strong> {{ fila.ipp_base ?? '—' }}
+                      <span v-if="fila.ipp_base_fecha"
+                        >({{ formatFecha(fila.ipp_base_fecha) }})</span
+                      >
+                    </p>
+                    <p>
+                      <strong>IPP provisional:</strong> {{ fila.ipp_provisional ?? '—' }}
+                      <span v-if="fila.ipp_provisional_fecha"
+                        >({{ formatFecha(fila.ipp_provisional_fecha) }})</span
+                      >
+                    </p>
+                    <p>
+                      <strong>% de indexación:</strong>
+                      {{
+                        pctIndexacion(fila) != null
+                          ? (pctIndexacion(fila) * 100).toFixed(2) + '%'
+                          : '—'
+                      }}
+                    </p>
+                    <p>
+                      <strong>Tarifa base:</strong>
+                      {{ fila.tarifa_base != null ? formatCurrency(fila.tarifa_base) : '—' }}
+                    </p>
+                    <p>
+                      <strong>Tarifa indexada:</strong>
+                      {{
+                        tarifaIndexada(fila) != null ? formatCurrency(tarifaIndexada(fila)) : '—'
+                      }}
+                    </p>
+                    <p>
+                      <strong>Generación anual P90:</strong>
+                      {{
+                        fila.generacion_anual_p90_kwh != null
+                          ? fila.generacion_anual_p90_kwh.toLocaleString('es-CO') + ' kWh'
+                          : '—'
+                      }}
+                    </p>
                     <p class="pz-resultado">
                       <strong>Ingresos (= valor lucro cesante):</strong>
                       <span>{{ formatCurrency(fila.valor_lucro_cesante) }}</span>
@@ -150,7 +272,7 @@
           </template>
           <tr v-if="!ordenadas.length">
             <td colspan="9" class="pz-empty">
-              <i class="pi pi-inbox text-2xl mb-1" style="color:#9CA3AF" />
+              <i class="pi pi-inbox mb-1 text-2xl" style="color: #9ca3af" />
               <p>Sin resultados</p>
             </td>
           </tr>
@@ -172,25 +294,68 @@
               <h4>Póliza</h4>
               <label>N° póliza</label>
               <input v-model="form.numero_poliza" class="pz-input" />
-              <label class="pz-switch-row"><ToggleSwitch v-model="form.poliza_om" /> Póliza O&M</label>
+              <label class="pz-switch-row"
+                ><ToggleSwitch v-model="form.poliza_om" /> Póliza O&M</label
+              >
               <label>Fecha de vencimiento</label>
-              <DatePicker v-model="form.fecha_vencimiento" dateFormat="yy-mm-dd" showIcon class="pz-input" />
+              <DatePicker
+                v-model="form.fecha_vencimiento"
+                dateFormat="yy-mm-dd"
+                showIcon
+                class="pz-input"
+              />
               <label>Valor de la póliza (COP)</label>
-              <InputNumber v-model="form.valor_poliza" mode="currency" currency="COP" locale="es-CO" class="pz-input" />
+              <InputNumber
+                v-model="form.valor_poliza"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                class="pz-input"
+              />
             </section>
 
             <section class="pz-section">
               <h4>Presupuesto</h4>
               <label>Mano de obra</label>
-              <InputNumber v-model="form.mano_obra" mode="currency" currency="COP" locale="es-CO" class="pz-input" />
+              <InputNumber
+                v-model="form.mano_obra"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                class="pz-input"
+              />
               <label>Estructura</label>
-              <InputNumber v-model="form.estructura" mode="currency" currency="COP" locale="es-CO" class="pz-input" />
+              <InputNumber
+                v-model="form.estructura"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                class="pz-input"
+              />
               <label>Paneles</label>
-              <InputNumber v-model="form.paneles" mode="currency" currency="COP" locale="es-CO" class="pz-input" />
+              <InputNumber
+                v-model="form.paneles"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                class="pz-input"
+              />
               <label>Inversores</label>
-              <InputNumber v-model="form.inversores" mode="currency" currency="COP" locale="es-CO" class="pz-input" />
+              <InputNumber
+                v-model="form.inversores"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                class="pz-input"
+              />
               <label>Otros</label>
-              <InputNumber v-model="form.otros" mode="currency" currency="COP" locale="es-CO" class="pz-input" />
+              <InputNumber
+                v-model="form.otros"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                class="pz-input"
+              />
               <p class="pz-total-vivo">Total: {{ formatCurrency(totalPresupuestoForm) }}</p>
             </section>
 
@@ -203,27 +368,63 @@
             <section class="pz-section">
               <h4>Cálculo IPP</h4>
               <label>IPP base</label>
-              <InputNumber v-model="form.ipp_base" class="pz-input" :minFractionDigits="0" :maxFractionDigits="4" />
+              <InputNumber
+                v-model="form.ipp_base"
+                class="pz-input"
+                :minFractionDigits="0"
+                :maxFractionDigits="4"
+              />
               <label>Fecha IPP base</label>
-              <DatePicker v-model="form.ipp_base_fecha" dateFormat="yy-mm-dd" showIcon class="pz-input" />
+              <DatePicker
+                v-model="form.ipp_base_fecha"
+                dateFormat="yy-mm-dd"
+                showIcon
+                class="pz-input"
+              />
               <label>IPP provisional</label>
-              <InputNumber v-model="form.ipp_provisional" class="pz-input" :minFractionDigits="0" :maxFractionDigits="4" />
+              <InputNumber
+                v-model="form.ipp_provisional"
+                class="pz-input"
+                :minFractionDigits="0"
+                :maxFractionDigits="4"
+              />
               <label>Fecha IPP provisional</label>
-              <DatePicker v-model="form.ipp_provisional_fecha" dateFormat="yy-mm-dd" showIcon class="pz-input" />
+              <DatePicker
+                v-model="form.ipp_provisional_fecha"
+                dateFormat="yy-mm-dd"
+                showIcon
+                class="pz-input"
+              />
               <label>Tarifa base</label>
-              <InputNumber v-model="form.tarifa_base" mode="currency" currency="COP" locale="es-CO" class="pz-input" />
+              <InputNumber
+                v-model="form.tarifa_base"
+                mode="currency"
+                currency="COP"
+                locale="es-CO"
+                class="pz-input"
+              />
               <label>Generación anual P90 (kWh)</label>
               <InputNumber v-model="form.generacion_anual_p90_kwh" class="pz-input" />
               <p class="pz-total-vivo">
-                % indexación: {{ pctIndexacionForm != null ? (pctIndexacionForm * 100).toFixed(2) + '%' : '—' }}<br>
-                Lucro cesante estimado: {{ lucroCesanteForm != null ? formatCurrency(lucroCesanteForm) : '—' }}
+                % indexación:
+                {{ pctIndexacionForm != null ? (pctIndexacionForm * 100).toFixed(2) + '%' : '—'
+                }}<br />
+                Lucro cesante estimado:
+                {{ lucroCesanteForm != null ? formatCurrency(lucroCesanteForm) : '—' }}
               </p>
             </section>
           </div>
 
           <div class="pz-panel-footer">
             <Button label="Cancelar" outlined size="small" @click="cerrarEdicion" />
-            <Button label="Guardar" icon="pi pi-check" size="small" :loading="guardando" @click="guardar" class="pz-btn-primary" />
+            <Button
+              label="Guardar"
+              icon="pi pi-check"
+              size="small"
+              :loading="guardando"
+              @click="guardar"
+              class="pz-btn-primary"
+            />
           </div>
         </div>
       </div>
@@ -269,7 +470,10 @@ const ESTADO_COLOR = {
 }
 const OPCIONES_TIPO = Object.entries(TIPO_LABELS).map(([value, label]) => ({ value, label }))
 const OPCIONES_ESTADO = Object.entries(ESTADO_LABELS).map(([value, label]) => ({ value, label }))
-const OPCIONES_OM = [{ value: true, label: 'Sí' }, { value: false, label: 'No' }]
+const OPCIONES_OM = [
+  { value: true, label: 'Sí' },
+  { value: false, label: 'No' },
+]
 
 const filas = ref([])
 const loading = ref(false)
@@ -286,7 +490,12 @@ async function cargar() {
     filas.value = data
   } catch {
     if (typeof window.__primeToast === 'function') {
-      window.__primeToast({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las pólizas', life: 4000 })
+      window.__primeToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se pudieron cargar las pólizas',
+        life: 4000,
+      })
     }
   } finally {
     loading.value = false
@@ -324,21 +533,34 @@ function estiloEstado(estado) {
 }
 
 function formatFecha(f) {
-  return new Date(f + 'T00:00:00').toLocaleDateString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  return new Date(f + 'T00:00:00').toLocaleDateString('es-CO', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
 }
 
-const conDatos = computed(() => filas.value.filter(f => f.fecha_vencimiento))
-const totalAsegurado = computed(() => filas.value.reduce((acc, f) => acc + (f.valor_poliza || 0), 0))
+const conDatos = computed(() => filas.value.filter((f) => f.fecha_vencimiento))
+const totalAsegurado = computed(() =>
+  filas.value.reduce((acc, f) => acc + (f.valor_poliza || 0), 0),
+)
 
 function contarPorEstado(estado) {
-  return filas.value.filter(f => estadoDe(f) === estado).length
+  return filas.value.filter((f) => estadoDe(f) === estado).length
 }
 
 const venceEn30 = computed(() =>
-  filas.value.filter(f => f.fecha_vencimiento && diasHastaVencimiento(f.fecha_vencimiento) >= 0 && diasHastaVencimiento(f.fecha_vencimiento) <= 30)
+  filas.value.filter(
+    (f) =>
+      f.fecha_vencimiento &&
+      diasHastaVencimiento(f.fecha_vencimiento) >= 0 &&
+      diasHastaVencimiento(f.fecha_vencimiento) <= 30,
+  ),
 )
 
-const hayFiltros = computed(() => !!(busqueda.value || filtroTipo.value || filtroEstado.value || filtroOm.value !== null))
+const hayFiltros = computed(
+  () => !!(busqueda.value || filtroTipo.value || filtroEstado.value || filtroOm.value !== null),
+)
 function limpiarFiltros() {
   busqueda.value = ''
   filtroTipo.value = null
@@ -347,7 +569,7 @@ function limpiarFiltros() {
 }
 
 const filtradas = computed(() => {
-  return filas.value.filter(f => {
+  return filas.value.filter((f) => {
     if (busqueda.value) {
       const q = busqueda.value.toLowerCase()
       const texto = `${f.nombre_comercial} ${ciudad(f)}`.toLowerCase()
@@ -414,8 +636,14 @@ function cerrarEdicion() {
 }
 
 const totalPresupuestoForm = computed(() => {
-  const c = [form.value.mano_obra, form.value.estructura, form.value.paneles, form.value.inversores, form.value.otros]
-  const presentes = c.filter(v => v != null)
+  const c = [
+    form.value.mano_obra,
+    form.value.estructura,
+    form.value.paneles,
+    form.value.inversores,
+    form.value.otros,
+  ]
+  const presentes = c.filter((v) => v != null)
   return presentes.length ? presentes.reduce((a, b) => a + b, 0) : null
 })
 const pctIndexacionForm = computed(() => {
@@ -424,7 +652,8 @@ const pctIndexacionForm = computed(() => {
 })
 const lucroCesanteForm = computed(() => {
   const pct = pctIndexacionForm.value
-  if (pct == null || form.value.tarifa_base == null || form.value.generacion_anual_p90_kwh == null) return null
+  if (pct == null || form.value.tarifa_base == null || form.value.generacion_anual_p90_kwh == null)
+    return null
   return form.value.tarifa_base * pct * form.value.generacion_anual_p90_kwh
 })
 
@@ -449,7 +678,12 @@ async function guardar() {
     cerrarEdicion()
   } catch {
     if (typeof window.__primeToast === 'function') {
-      window.__primeToast({ severity: 'error', summary: 'Error', detail: 'No se pudo guardar la póliza', life: 4000 })
+      window.__primeToast({
+        severity: 'error',
+        summary: 'Error',
+        detail: 'No se pudo guardar la póliza',
+        life: 4000,
+      })
     }
   } finally {
     guardando.value = false
@@ -458,53 +692,285 @@ async function guardar() {
 </script>
 
 <style scoped>
-.pz-page { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
-.pz-header { display: flex; align-items: center; justify-content: space-between; }
-.pz-title { font-size: 15px; font-weight: 600; color: #111827; margin: 0; }
-.pz-badge { background: #0F9D8C1A; color: #0F9D8C; font-size: 11px; font-weight: 600; border-radius: 999px; padding: 2px 8px; }
-.pz-banner { display: flex; align-items: center; gap: 8px; background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; font-size: 13px; padding: 8px 12px; border-radius: 8px; cursor: pointer; text-align: left; }
-.pz-stats { display: flex; align-items: center; gap: 16px; background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; padding: 12px 16px; }
-.pz-stat { display: flex; flex-direction: column; gap: 2px; }
-.pz-stat-label { font-size: 11px; color: #6B7280; }
-.pz-stat-value { font-size: 15px; font-weight: 600; color: #111827; }
-.pz-stat-div { width: 1px; height: 28px; background: #E5E7EB; }
-.pz-filters { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.pz-search-wrap { position: relative; flex: 1; min-width: 220px; }
-.pz-search-ico { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #9CA3AF; font-size: 12px; }
-.pz-search { width: 100%; padding: 6px 10px 6px 28px; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 13px; }
-.pz-sel { min-width: 160px; }
-.pz-clear-btn { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6B7280; background: none; border: 1px solid #D1D5DB; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
-.pz-table-wrap { overflow-x: auto; background: #fff; border: 1px solid #E5E7EB; border-radius: 10px; }
-.pz-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.pz-table th { text-align: left; padding: 10px 12px; color: #6B7280; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid #E5E7EB; }
-.pz-table td { padding: 10px 12px; border-bottom: 1px solid #F3F4F6; }
-.pz-row { cursor: pointer; }
-.pz-row:hover { background: #F9FAFB; }
-.pz-badge-tipo, .pz-badge-estado { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-.pz-btn-editar { background: none; border: none; color: #6B7280; cursor: pointer; padding: 4px; }
-.pz-btn-editar:hover { color: #0F9D8C; }
-.pz-empty { text-align: center; padding: 32px; color: #9CA3AF; }
-.pz-row-detalle td { background: #FAFAFA; }
-.pz-detalle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; padding: 8px 0; }
-.pz-card { background: #fff; border: 1px solid #E5E7EB; border-radius: 8px; padding: 12px; font-size: 12px; }
-.pz-card h4 { margin: 0 0 8px; font-size: 12px; font-weight: 600; color: #374151; }
-.pz-card p { margin: 4px 0; color: #4B5563; }
-.pz-card-ipp { border-color: #0F9D8C; }
-.pz-resultado { margin-top: 8px; padding-top: 8px; border-top: 1px solid #E5E7EB; font-size: 13px; }
-.pz-resultado span { color: #0F9D8C; font-weight: 700; }
-.pz-panel-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); display: flex; justify-content: flex-end; z-index: 50; }
-.pz-panel { width: 420px; max-width: 100%; background: #fff; height: 100%; display: flex; flex-direction: column; }
-.pz-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #E5E7EB; }
-.pz-panel-close { background: none; border: none; cursor: pointer; color: #6B7280; }
-.pz-panel-body { flex: 1; overflow-y: auto; padding: 16px; }
-.pz-section { margin-bottom: 20px; }
-.pz-section h4 { font-size: 12px; font-weight: 600; color: #374151; margin: 0 0 8px; }
-.pz-section label { display: block; font-size: 11px; color: #6B7280; margin-top: 8px; margin-bottom: 2px; }
-.pz-input { width: 100%; }
-.pz-switch-row { display: flex; align-items: center; gap: 8px; }
-.pz-total-vivo { font-size: 12px; color: #374151; margin-top: 8px; }
-.pz-panel-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 16px; border-top: 1px solid #E5E7EB; }
-.pz-btn-primary { background: #0F9D8C; border-color: #0F9D8C; }
-.pz-slide-enter-active, .pz-slide-leave-active { transition: opacity 0.2s; }
-.pz-slide-enter-from, .pz-slide-leave-to { opacity: 0; }
+.pz-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.pz-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.pz-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+.pz-badge {
+  background: #0f9d8c1a;
+  color: #0f9d8c;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.pz-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+}
+.pz-stats {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 12px 16px;
+}
+.pz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pz-stat-label {
+  font-size: 11px;
+  color: #6b7280;
+}
+.pz-stat-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+.pz-stat-div {
+  width: 1px;
+  height: 28px;
+  background: #e5e7eb;
+}
+.pz-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pz-search-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 220px;
+}
+.pz-search-ico {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  font-size: 12px;
+}
+.pz-search {
+  width: 100%;
+  padding: 6px 10px 6px 28px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+}
+.pz-sel {
+  min-width: 160px;
+}
+.pz-clear-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.pz-table-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+}
+.pz-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.pz-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  border-bottom: 1px solid #e5e7eb;
+}
+.pz-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+.pz-row {
+  cursor: pointer;
+}
+.pz-row:hover {
+  background: #f9fafb;
+}
+.pz-badge-tipo,
+.pz-badge-estado {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.pz-btn-editar {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px;
+}
+.pz-btn-editar:hover {
+  color: #0f9d8c;
+}
+.pz-empty {
+  text-align: center;
+  padding: 32px;
+  color: #9ca3af;
+}
+.pz-row-detalle td {
+  background: #fafafa;
+}
+.pz-detalle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 8px 0;
+}
+.pz-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+}
+.pz-card h4 {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
+.pz-card p {
+  margin: 4px 0;
+  color: #4b5563;
+}
+.pz-card-ipp {
+  border-color: #0f9d8c;
+}
+.pz-resultado {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 13px;
+}
+.pz-resultado span {
+  color: #0f9d8c;
+  font-weight: 700;
+}
+.pz-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: flex-end;
+  z-index: 50;
+}
+.pz-panel {
+  width: 420px;
+  max-width: 100%;
+  background: #fff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.pz-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+.pz-panel-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+}
+.pz-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.pz-section {
+  margin-bottom: 20px;
+}
+.pz-section h4 {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 8px;
+}
+.pz-section label {
+  display: block;
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 8px;
+  margin-bottom: 2px;
+}
+.pz-input {
+  width: 100%;
+}
+.pz-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pz-total-vivo {
+  font-size: 12px;
+  color: #374151;
+  margin-top: 8px;
+}
+.pz-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+}
+.pz-btn-primary {
+  background: #0f9d8c;
+  border-color: #0f9d8c;
+}
+.pz-slide-enter-active,
+.pz-slide-leave-active {
+  transition: opacity 0.2s;
+}
+.pz-slide-enter-from,
+.pz-slide-leave-to {
+  opacity: 0;
+}
 </style>

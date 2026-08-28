@@ -22,7 +22,7 @@ watch(
   (val) => {
     if (val) local.value = { ...val }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 const TIPO_LABEL = { semanal: 'Semanal', txr: 'TXR', mensual: 'Mensual' }
@@ -30,7 +30,12 @@ const TIPO_LABEL = { semanal: 'Semanal', txr: 'TXR', mensual: 'Mensual' }
 async function guardar() {
   try {
     await store.actualizar(props.ajuste.id, local.value)
-    toast.add({ severity: 'success', summary: 'Guardado', detail: 'Registro actualizado', life: 3000 })
+    toast.add({
+      severity: 'success',
+      summary: 'Guardado',
+      detail: 'Registro actualizado',
+      life: 3000,
+    })
     emit('saved')
     emit('update:visible', false)
   } catch (e) {
@@ -54,15 +59,15 @@ function cancelar() {
     <div class="flex flex-col gap-4">
       <!-- Tipo (read-only) -->
       <div class="flex items-center gap-2">
-        <span class="text-sm text-muted-color">Tipo:</span>
+        <span class="text-muted-color text-sm">Tipo:</span>
         <span class="font-semibold">{{ TIPO_LABEL[ajuste?.tipo] ?? ajuste?.tipo }}</span>
-        <span class="text-sm text-muted-color ml-4">Fecha:</span>
+        <span class="text-muted-color ml-4 text-sm">Fecha:</span>
         <span class="font-semibold">{{ ajuste?.fecha }}</span>
       </div>
 
       <!-- Precios -->
-      <fieldset class="border border-surface rounded p-3">
-        <legend class="text-sm font-semibold px-1">Precios</legend>
+      <fieldset class="border-surface rounded border p-3">
+        <legend class="px-1 text-sm font-semibold">Precios</legend>
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col gap-1">
             <label class="text-xs">PB</label>
@@ -70,7 +75,11 @@ function cancelar() {
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-xs">Restricciones</label>
-            <InputNumber v-model="local.restricciones" :min-fraction-digits="2" :max-fraction-digits="2" />
+            <InputNumber
+              v-model="local.restricciones"
+              :min-fraction-digits="2"
+              :max-fraction-digits="2"
+            />
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-xs">STN</label>
@@ -88,37 +97,57 @@ function cancelar() {
       </fieldset>
 
       <!-- Totales UNGC / UNGG -->
-      <fieldset class="border border-surface rounded p-3">
-        <legend class="text-sm font-semibold px-1">Totales</legend>
+      <fieldset class="border-surface rounded border p-3">
+        <legend class="px-1 text-sm font-semibold">Totales</legend>
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col gap-1">
             <label class="text-xs">Total UNGC</label>
-            <InputNumber v-model="local.totalUNGC" :min-fraction-digits="2" :max-fraction-digits="2" />
+            <InputNumber
+              v-model="local.totalUNGC"
+              :min-fraction-digits="2"
+              :max-fraction-digits="2"
+            />
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-xs">Total UNGG</label>
-            <InputNumber v-model="local.totalUNGG" :min-fraction-digits="2" :max-fraction-digits="2" />
+            <InputNumber
+              v-model="local.totalUNGG"
+              :min-fraction-digits="2"
+              :max-fraction-digits="2"
+            />
           </div>
-          <div class="flex flex-col gap-1 col-span-2">
+          <div class="col-span-2 flex flex-col gap-1">
             <label class="text-xs">Total a consignar</label>
-            <InputNumber v-model="local.totalConsignar" :min-fraction-digits="2" :max-fraction-digits="2" />
+            <InputNumber
+              v-model="local.totalConsignar"
+              :min-fraction-digits="2"
+              :max-fraction-digits="2"
+            />
           </div>
         </div>
       </fieldset>
 
       <!-- Custodia -->
-      <fieldset class="border border-surface rounded p-3">
-        <legend class="text-sm font-semibold px-1">Custodia</legend>
+      <fieldset class="border-surface rounded border p-3">
+        <legend class="px-1 text-sm font-semibold">Custodia</legend>
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col gap-1">
             <label class="text-xs">Disponible custodia</label>
-            <InputNumber v-model="local.disponibleCustodia" :min-fraction-digits="2" :max-fraction-digits="2" />
+            <InputNumber
+              v-model="local.disponibleCustodia"
+              :min-fraction-digits="2"
+              :max-fraction-digits="2"
+            />
           </div>
           <div class="flex flex-col gap-1">
             <label class="text-xs">Congelado</label>
-            <InputNumber v-model="local.congelado" :min-fraction-digits="2" :max-fraction-digits="2" />
+            <InputNumber
+              v-model="local.congelado"
+              :min-fraction-digits="2"
+              :max-fraction-digits="2"
+            />
           </div>
-          <div class="flex flex-col gap-1 col-span-2">
+          <div class="col-span-2 flex flex-col gap-1">
             <label class="text-xs">Saldo</label>
             <InputNumber v-model="local.saldo" :min-fraction-digits="2" :max-fraction-digits="2" />
           </div>
@@ -128,7 +157,11 @@ function cancelar() {
       <!-- TXR -->
       <div class="flex flex-col gap-1">
         <label class="text-xs font-semibold">Total ajuste TXR</label>
-        <InputNumber v-model="local.totalAjusteTXR" :min-fraction-digits="2" :max-fraction-digits="2" />
+        <InputNumber
+          v-model="local.totalAjusteTXR"
+          :min-fraction-digits="2"
+          :max-fraction-digits="2"
+        />
       </div>
     </div>
 

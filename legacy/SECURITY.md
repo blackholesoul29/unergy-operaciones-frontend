@@ -29,6 +29,7 @@ resolverse solo desde el cliente.
 3. Exponer un endpoint de logout que invalide el refresh token en servidor.
 
 Cuando esto exista, en el frontend basta:
+
 - En `src/api/client.js`, habilitar `withCredentials: true` (ya documentado en
   el archivo) para que el navegador envíe la cookie.
 - En `src/utils/security.js`, cambiar `STORAGE` para mantener el access token
@@ -48,6 +49,7 @@ Cuando esto exista, en el frontend basta:
 ## 3. API Keys (`src/views/Admin/ApiKeysDialog.vue`)
 
 Ya cumple las buenas prácticas y se mantienen:
+
 - La generación es **backend-only**; el frontend solo llama a `/api-keys`.
 - La key en claro se muestra **una sola vez** tras crearla y no es recuperable.
 - Las keys existentes se listan **enmascaradas** (`key_prefix` + `...`).
@@ -78,8 +80,8 @@ patrón de proxy para cualquier nueva integración externa.
       reportes imprimibles (`src/utils/rptStyles.js`, `LiquidacionPdfView.vue`).
     - `https://cdnjs.cloudflare.com` (`script-src`): pdf.js cargado por
       `src/views/Finanzas/ValidadorMandatosView.vue`.
-    Idealmente self-hostear estos recursos y luego retirarlos del CSP. Las teselas
-    de OpenStreetMap (`FallasMapView.vue`) ya quedan cubiertas por `img-src https:`.
+      Idealmente self-hostear estos recursos y luego retirarlos del CSP. Las teselas
+      de OpenStreetMap (`FallasMapView.vue`) ya quedan cubiertas por `img-src https:`.
 - **CORS:** en desarrollo el proxy de Vite hace que frontend y API compartan
   origen (no hay CORS). En producción, configurar en el servidor una política
   CORS estricta (orígenes permitidos explícitos, `Allow-Credentials` solo si se

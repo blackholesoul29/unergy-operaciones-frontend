@@ -1,10 +1,9 @@
 <template>
   <div class="gf-page">
-
     <!-- ══ TAB BAR ══════════════════════════════════════════════════════════ -->
     <div class="mon-tab-bar">
-      <i class="pi pi-credit-card text-sm" style="color:#915BD8" />
-      <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Costos</span>
+      <i class="pi pi-credit-card text-sm" style="color: #915bd8" />
+      <span class="mr-2 text-base font-bold whitespace-nowrap text-gray-800">Costos</span>
       <div class="mon-tab-group">
         <button
           v-for="(tab, i) in TABS"
@@ -13,31 +12,38 @@
           :class="{ 'mon-tab--active': activeTab === i }"
           @click="activeTab = i"
         >
-          <i :class="tab.icon" style="font-size:12px" />
+          <i :class="tab.icon" style="font-size: 12px" />
           {{ tab.label }}
         </button>
       </div>
 
       <!-- Exportar Excel mensual consolidado (visible desde cualquier pestaña) -->
-      <div class="flex items-center gap-2 ml-auto">
-        <input type="month" v-model="exportPeriodo"
-          class="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple-200" />
-        <Button label="Descargar Excel" icon="pi pi-file-excel" size="small"
-          :loading="exportando" @click="onExportExcel"
-          style="background:#915BD8;border-color:#915BD8" />
+      <div class="ml-auto flex items-center gap-2">
+        <input
+          type="month"
+          v-model="exportPeriodo"
+          class="rounded-lg border border-gray-200 px-2 py-1 text-xs focus:ring-2 focus:ring-purple-200 focus:outline-none"
+        />
+        <Button
+          label="Descargar Excel"
+          icon="pi pi-file-excel"
+          size="small"
+          :loading="exportando"
+          @click="onExportExcel"
+          style="background: #915bd8; border-color: #915bd8"
+        />
       </div>
     </div>
 
     <!-- ══ TAB 0 — MANTENIMIENTO ══════════════════════════════════════════ -->
     <div v-if="activeTab === 0" class="mon-tab-view">
-
       <!-- ── 1. Panel O&M Mensual — contenedor con borde propio ──────────── -->
       <div class="om-panel-card">
         <!-- Header del panel — NO sticky, no hereda mon-tab-bar -->
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <i class="pi pi-calculator text-sm" style="color:#915BD8" />
-            <span class="text-sm font-semibold" style="color:#2C2039">Panel O&amp;M Mensual</span>
+            <i class="pi pi-calculator text-sm" style="color: #915bd8" />
+            <span class="text-sm font-semibold" style="color: #2c2039">Panel O&amp;M Mensual</span>
           </div>
           <div class="mon-tab-group">
             <button
@@ -47,7 +53,7 @@
               :class="{ 'mon-tab--active': activeSubTabOM === i }"
               @click="activeSubTabOM = i"
             >
-              <i :class="tab.icon" style="font-size:12px" />
+              <i :class="tab.icon" style="font-size: 12px" />
               {{ tab.label }}
             </button>
           </div>
@@ -56,24 +62,26 @@
         <!-- Contenido del panel — tabla queda dentro del card -->
         <div class="om-panel-body">
           <OMAOperaciones v-if="activeSubTabOM === 0" />
-          <OMAProveedor   v-if="activeSubTabOM === 1" />
+          <OMAProveedor v-if="activeSubTabOM === 1" />
         </div>
       </div>
 
       <!-- ── 2. Separador ─────────────────────────────────────────────── -->
-      <div class="flex items-center gap-3 my-5">
-        <div class="h-px flex-1" style="background:#ECE7F2" />
-        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full"
-          style="background:#F1EAF9;color:#6D28D9">
+      <div class="my-5 flex items-center gap-3">
+        <div class="h-px flex-1" style="background: #ece7f2" />
+        <span
+          class="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+          style="background: #f1eaf9; color: #6d28d9"
+        >
           Comparación facturas emitidas vs cobrado a inversionistas
         </span>
-        <div class="h-px flex-1" style="background:#ECE7F2" />
+        <div class="h-px flex-1" style="background: #ece7f2" />
       </div>
 
       <!-- ── 3. Selector de proyecto ────────────────────────────────────── -->
       <div class="costos-selector-bar">
-        <i class="pi pi-bolt text-sm flex-shrink-0" style="color:#915BD8" />
-        <span class="text-sm font-semibold whitespace-nowrap" style="color:#2C2039">Proyecto</span>
+        <i class="pi pi-bolt flex-shrink-0 text-sm" style="color: #915bd8" />
+        <span class="text-sm font-semibold whitespace-nowrap" style="color: #2c2039">Proyecto</span>
         <Select
           v-model="proyectoSeleccionado"
           :options="proyectos"
@@ -86,20 +94,21 @@
           class="costos-selector-select"
           @change="onProyectoChange"
         />
-        <span v-if="proyectoSeleccionado && proyectoNombre"
-          class="text-xs font-medium px-2.5 py-1 rounded-full whitespace-nowrap"
-          style="background:#F1EAF9; color:#6D28D9">
+        <span
+          v-if="proyectoSeleccionado && proyectoNombre"
+          class="rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap"
+          style="background: #f1eaf9; color: #6d28d9"
+        >
           {{ proyectoNombre }}
         </span>
       </div>
 
       <!-- ── 4. Contenido del proyecto ─────────────────────────────────── -->
       <div v-if="loadingContrato" class="flex justify-center py-10">
-        <i class="pi pi-spin pi-spinner" style="font-size:1.5rem; color:#915BD8;" />
+        <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem; color: #915bd8" />
       </div>
 
-      <div v-else-if="proyectoSeleccionado" class="space-y-4 mt-3">
-
+      <div v-else-if="proyectoSeleccionado" class="mt-3 space-y-4">
         <!-- Facturas históricas -->
         <FacturasMantenimiento
           :contrato-id="contratoMantenimientoId"
@@ -107,41 +116,66 @@
         />
 
         <!-- Cargar factura -->
-        <div class="rounded-xl border bg-white overflow-hidden" style="border-color:#ECE7F2">
-          <div class="flex items-center justify-between px-4 py-2.5 border-b" style="border-color:#F3F0FA">
+        <div class="overflow-hidden rounded-xl border bg-white" style="border-color: #ece7f2">
+          <div
+            class="flex items-center justify-between border-b px-4 py-2.5"
+            style="border-color: #f3f0fa"
+          >
             <div class="flex items-center gap-2">
-              <i class="pi pi-upload text-xs" style="color:#915BD8" />
-              <span class="text-sm font-semibold" style="color:#2C2039">Cargar factura</span>
+              <i class="pi pi-upload text-xs" style="color: #915bd8" />
+              <span class="text-sm font-semibold" style="color: #2c2039">Cargar factura</span>
             </div>
-            <button type="button"
-              class="text-xs flex items-center gap-1 text-gray-400 hover:text-purple-600 transition-colors"
-              @click="showCargarFactura = !showCargarFactura">
-              <i class="pi pi-chevron-down text-[10px] transition-transform duration-200"
-                :style="showCargarFactura ? 'transform:rotate(180deg)' : ''" />
+            <button
+              type="button"
+              class="flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-purple-600"
+              @click="showCargarFactura = !showCargarFactura"
+            >
+              <i
+                class="pi pi-chevron-down text-[10px] transition-transform duration-200"
+                :style="showCargarFactura ? 'transform:rotate(180deg)' : ''"
+              />
               {{ showCargarFactura ? 'Ocultar' : 'Mostrar' }}
             </button>
           </div>
 
           <div v-show="showCargarFactura" class="px-4 py-3">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div class="grid grid-cols-2 gap-3 md:grid-cols-5">
               <!-- Tipo (siempre visible, primer campo) -->
               <div class="flex flex-col gap-1 md:col-span-2">
-                <label class="text-xs font-medium text-gray-500">Tipo <span class="text-red-400">*</span></label>
+                <label class="text-xs font-medium text-gray-500"
+                  >Tipo <span class="text-red-400">*</span></label
+                >
                 <div class="flex gap-2">
                   <label
-                    class="flex-1 flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg border cursor-pointer transition-colors"
-                    :class="facturaForm.tipo === 'solenium'
-                      ? 'border-purple-400 bg-purple-50 text-purple-700 font-semibold'
-                      : 'border-gray-200 text-gray-500 hover:border-gray-300'">
-                    <input type="radio" v-model="facturaForm.tipo" value="solenium" class="accent-purple-600" />
+                    class="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors"
+                    :class="
+                      facturaForm.tipo === 'solenium'
+                        ? 'border-purple-400 bg-purple-50 font-semibold text-purple-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    "
+                  >
+                    <input
+                      type="radio"
+                      v-model="facturaForm.tipo"
+                      value="solenium"
+                      class="accent-purple-600"
+                    />
                     Proveedor O&amp;M (Solenium)
                   </label>
                   <label
-                    class="flex-1 flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-lg border cursor-pointer transition-colors"
-                    :class="facturaForm.tipo === 'inversionistas'
-                      ? 'border-blue-400 bg-blue-50 text-blue-700 font-semibold'
-                      : 'border-gray-200 text-gray-500 hover:border-gray-300'">
-                    <input type="radio" v-model="facturaForm.tipo" value="inversionistas" class="accent-blue-600" />
+                    class="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 text-xs transition-colors"
+                    :class="
+                      facturaForm.tipo === 'inversionistas'
+                        ? 'border-blue-400 bg-blue-50 font-semibold text-blue-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    "
+                  >
+                    <input
+                      type="radio"
+                      v-model="facturaForm.tipo"
+                      value="inversionistas"
+                      class="accent-blue-600"
+                    />
                     Cobros a clientes (Inversionistas)
                   </label>
                 </div>
@@ -152,7 +186,7 @@
                 <input
                   type="month"
                   v-model="facturaForm.periodo"
-                  class="text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                  class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-purple-200 focus:outline-none"
                 />
               </div>
               <!-- N° Factura -->
@@ -162,7 +196,7 @@
                   type="text"
                   v-model="facturaForm.numero"
                   placeholder="Ej: SOFV001"
-                  class="text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                  class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-purple-200 focus:outline-none"
                 />
               </div>
               <!-- Monto -->
@@ -172,17 +206,19 @@
                   type="number"
                   v-model.number="facturaForm.monto"
                   placeholder="0"
-                  class="text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-purple-200"
+                  class="rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-purple-200 focus:outline-none"
                 />
               </div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+            <div class="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
               <!-- Archivo -->
               <div class="flex flex-col gap-1">
                 <label class="text-xs font-medium text-gray-500">Archivo (PDF / imagen)</label>
-                <label class="flex items-center gap-2 text-sm border border-dashed border-gray-300 rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-purple-400 transition-colors">
+                <label
+                  class="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-gray-300 px-2.5 py-1.5 text-sm transition-colors hover:border-purple-400"
+                >
                   <i class="pi pi-paperclip text-xs text-gray-400" />
-                  <span class="text-xs text-gray-400 truncate">
+                  <span class="truncate text-xs text-gray-400">
                     {{ facturaForm.archivo ? facturaForm.archivo.name : 'Seleccionar archivo…' }}
                   </span>
                   <input
@@ -196,7 +232,7 @@
             </div>
 
             <!-- Link Drive (alternativa al archivo) -->
-            <div class="flex flex-col gap-1 mt-2.5">
+            <div class="mt-2.5 flex flex-col gap-1">
               <label class="text-xs font-medium text-gray-500">
                 O pega el link de Google Drive / soporte digital
               </label>
@@ -204,30 +240,35 @@
                 type="url"
                 v-model="facturaForm.enlace"
                 placeholder="https://drive.google.com/…"
-                class="text-sm border border-gray-200 rounded-lg px-2.5 py-1.5 w-full focus:outline-none focus:ring-2 focus:ring-purple-200"
+                class="w-full rounded-lg border border-gray-200 px-2.5 py-1.5 text-sm focus:ring-2 focus:ring-purple-200 focus:outline-none"
               />
             </div>
 
             <!-- Botón -->
-            <div class="flex items-center gap-3 mt-3">
-              <button type="button"
+            <div class="mt-3 flex items-center gap-3">
+              <button
+                type="button"
                 :disabled="!puedeGuardarFactura || guardandoFactura"
-                class="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all disabled:opacity-40"
-                style="background:#915BD8;color:#fff;border:none;cursor:pointer"
-                :style="!puedeGuardarFactura || guardandoFactura ? 'cursor:not-allowed' : 'cursor:pointer'"
-                @click="guardarFactura">
-                <i :class="guardandoFactura ? 'pi pi-spin pi-spinner' : 'pi pi-check'" class="text-xs" />
+                class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all disabled:opacity-40"
+                style="background: #915bd8; color: #fff; border: none; cursor: pointer"
+                :style="
+                  !puedeGuardarFactura || guardandoFactura ? 'cursor:not-allowed' : 'cursor:pointer'
+                "
+                @click="guardarFactura"
+              >
+                <i
+                  :class="guardandoFactura ? 'pi pi-spin pi-spinner' : 'pi pi-check'"
+                  class="text-xs"
+                />
                 {{ guardandoFactura ? 'Guardando…' : 'Guardar factura' }}
               </button>
-              <span v-if="facturaOk" class="text-xs text-green-600 flex items-center gap-1">
+              <span v-if="facturaOk" class="flex items-center gap-1 text-xs text-green-600">
                 <i class="pi pi-check-circle text-xs" />Factura registrada
               </span>
             </div>
           </div>
         </div>
-
       </div>
-
     </div>
 
     <!-- ══ TAB 1 — ARRIENDOS ══════════════════════════════════════════════ -->
@@ -235,8 +276,10 @@
       <div class="om-panel-card">
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <i class="pi pi-building text-sm" style="color:#915BD8" />
-            <span class="text-sm font-semibold" style="color:#2C2039">Panel Arriendos Mensual</span>
+            <i class="pi pi-building text-sm" style="color: #915bd8" />
+            <span class="text-sm font-semibold" style="color: #2c2039"
+              >Panel Arriendos Mensual</span
+            >
           </div>
           <div class="mon-tab-group">
             <button
@@ -246,14 +289,14 @@
               :class="{ 'mon-tab--active': activeSubTabArr === i }"
               @click="activeSubTabArr = i"
             >
-              <i :class="tab.icon" style="font-size:12px" />
+              <i :class="tab.icon" style="font-size: 12px" />
               {{ tab.label }}
             </button>
           </div>
         </div>
         <div class="om-panel-body">
           <ArriendosOperaciones v-if="activeSubTabArr === 0" />
-          <ArriendosInfo        v-if="activeSubTabArr === 1" />
+          <ArriendosInfo v-if="activeSubTabArr === 1" />
         </div>
       </div>
     </div>
@@ -263,8 +306,10 @@
       <div class="om-panel-card">
         <div class="om-panel-header">
           <div class="flex items-center gap-2">
-            <i class="pi pi-wifi text-sm" style="color:#915BD8" />
-            <span class="text-sm font-semibold" style="color:#2C2039">Starlink — Procesador de facturas PDF</span>
+            <i class="pi pi-wifi text-sm" style="color: #915bd8" />
+            <span class="text-sm font-semibold" style="color: #2c2039"
+              >Starlink — Procesador de facturas PDF</span
+            >
           </div>
         </div>
         <div class="om-panel-body">
@@ -277,7 +322,6 @@
     <div v-if="activeTab === 3" class="mon-tab-view">
       <MandatosOperaciones />
     </div>
-
   </div>
 </template>
 
@@ -289,33 +333,32 @@ import { useToast } from 'primevue/usetoast'
 import api from '@/api/client'
 import { generarExcelCostos } from './costosExcelExport.js'
 import FacturasMantenimiento from '@/views/Servicios/FacturasMantenimiento.vue'
-import OMAOperaciones       from './OMAOperaciones.vue'
-import OMAProveedor          from './OMAProveedor.vue'
-import ArriendosOperaciones  from './ArriendosOperaciones.vue'
-import ArriendosInfo          from './ArriendosInfo.vue'
-import StarlinkPDF            from './StarlinkPDF.vue'
-import MandatosOperaciones    from './MandatosOperaciones.vue'
+import OMAOperaciones from './OMAOperaciones.vue'
+import OMAProveedor from './OMAProveedor.vue'
+import ArriendosOperaciones from './ArriendosOperaciones.vue'
+import ArriendosInfo from './ArriendosInfo.vue'
+import StarlinkPDF from './StarlinkPDF.vue'
+import MandatosOperaciones from './MandatosOperaciones.vue'
 
 const toast = useToast()
 
 const SUBTABS_OM = [
   { label: 'Operaciones', icon: 'pi pi-users' },
-  { label: 'Proveedor',   icon: 'pi pi-truck' },
+  { label: 'Proveedor', icon: 'pi pi-truck' },
 ]
 const activeSubTabOM = ref(0)
 
 const SUBTABS_ARR = [
-  { label: 'Panel',       icon: 'pi pi-table' },
+  { label: 'Panel', icon: 'pi pi-table' },
   { label: 'Información', icon: 'pi pi-info-circle' },
 ]
 const activeSubTabArr = ref(0)
 
-
 const TABS = [
-  { label: 'Mantenimiento',         icon: 'pi pi-wrench' },
-  { label: 'Arriendos',             icon: 'pi pi-building' },
+  { label: 'Mantenimiento', icon: 'pi pi-wrench' },
+  { label: 'Arriendos', icon: 'pi pi-building' },
   { label: 'Servicios de Internet', icon: 'pi pi-wifi' },
-  { label: 'Mandatos',              icon: 'pi pi-file-check' },
+  { label: 'Mandatos', icon: 'pi pi-file-check' },
 ]
 const activeTab = ref(0)
 
@@ -335,12 +378,15 @@ async function onExportExcel() {
       if (err?.response?.status !== 404) throw err
       // 404 = sin factura ese mes, estado normal — no bloquea el export
     }
-    const sinAsignar = (starlinkData?.lineas ?? []).filter(l => l.proyecto_id == null && !l.excluido)
+    const sinAsignar = (starlinkData?.lineas ?? []).filter(
+      (l) => l.proyecto_id == null && !l.excluido,
+    )
     if (sinAsignar.length) {
-      const nombres = sinAsignar.map(l => l.descripcion)
-      const detalle = nombres.length > 5
-        ? `${nombres.slice(0, 5).join(', ')} y ${nombres.length - 5} más`
-        : nombres.join(', ')
+      const nombres = sinAsignar.map((l) => l.descripcion)
+      const detalle =
+        nombres.length > 5
+          ? `${nombres.slice(0, 5).join(', ')} y ${nombres.length - 5} más`
+          : nombres.join(', ')
       toast.add({
         severity: 'error',
         summary: 'Hay sitios de Internet sin asignar',
@@ -352,45 +398,57 @@ async function onExportExcel() {
 
     const res = await generarExcelCostos(exportPeriodo.value)
     if (!res.filas) {
-      toast.add({ severity: 'warn', summary: 'Sin datos para exportar',
-        detail: 'Ningún proyecto seleccionado en Mantenimiento o Arriendos para ese mes.', life: 4000 })
+      toast.add({
+        severity: 'warn',
+        summary: 'Sin datos para exportar',
+        detail: 'Ningún proyecto seleccionado en Mantenimiento o Arriendos para ese mes.',
+        life: 4000,
+      })
     } else {
-      toast.add({ severity: 'success', summary: 'Excel generado',
-        detail: `${res.proyectos} proyectos · ${res.filas} filas`, life: 3000 })
+      toast.add({
+        severity: 'success',
+        summary: 'Excel generado',
+        detail: `${res.proyectos} proyectos · ${res.filas} filas`,
+        life: 3000,
+      })
     }
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al generar el Excel',
-      detail: err?.message ?? 'Revisa la consola', life: 5000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al generar el Excel',
+      detail: err?.message ?? 'Revisa la consola',
+      life: 5000,
+    })
   } finally {
     exportando.value = false
   }
 }
 
 // ── Proyectos ──────────────────────────────────────────────────────────────────
-const proyectos            = ref([])
-const loadingProyectos     = ref(false)
+const proyectos = ref([])
+const loadingProyectos = ref(false)
 const proyectoSeleccionado = ref(null)
-const proyectoNombre       = ref('')
+const proyectoNombre = ref('')
 
 // ── Contrato de mantenimiento del proyecto seleccionado ────────────────────────
 const contratoMantenimientoId = ref(null)
-const loadingContrato         = ref(false)
+const loadingContrato = ref(false)
 
 // ── Cargar factura ─────────────────────────────────────────────────────────────
 const showCargarFactura = ref(false)
-const guardandoFactura  = ref(false)
-const facturaOk         = ref(false)
+const guardandoFactura = ref(false)
+const facturaOk = ref(false)
 const facturaForm = ref({
-  tipo:    'solenium',                             // 'solenium' | 'inversionistas'
-  periodo: new Date().toISOString().slice(0, 7),  // "2026-06"
-  numero:  '',
-  monto:   null,
+  tipo: 'solenium', // 'solenium' | 'inversionistas'
+  periodo: new Date().toISOString().slice(0, 7), // "2026-06"
+  numero: '',
+  monto: null,
   archivo: null,
-  enlace:  '',
+  enlace: '',
 })
 
-const puedeGuardarFactura = computed(() =>
-  !!(facturaForm.value.periodo && facturaForm.value.numero)
+const puedeGuardarFactura = computed(
+  () => !!(facturaForm.value.periodo && facturaForm.value.numero),
 )
 
 function onArchivoChange(e) {
@@ -403,40 +461,40 @@ async function guardarFactura() {
   facturaOk.value = false
   try {
     const esInversionistas = facturaForm.value.tipo === 'inversionistas'
-    const campoActual      = esInversionistas ? 'facturas_inversionistas' : 'facturas_solenium'
-    const endpoint         = esInversionistas ? 'facturas-inversionistas' : 'facturas-solenium'
+    const campoActual = esInversionistas ? 'facturas_inversionistas' : 'facturas_solenium'
+    const endpoint = esInversionistas ? 'facturas-inversionistas' : 'facturas-solenium'
 
     // Obtener lista actual de facturas del tipo seleccionado
     const { data: contrato } = await api.get(`/contratos-servicio/${contratoMantenimientoId.value}`)
-    const facturasActuales = Array.isArray(contrato[campoActual])
-      ? contrato[campoActual]
-      : []
+    const facturasActuales = Array.isArray(contrato[campoActual]) ? contrato[campoActual] : []
 
     const nueva = {
-      id:             String(Date.now()),
-      fecha:          facturaForm.value.periodo,
+      id: String(Date.now()),
+      fecha: facturaForm.value.periodo,
       numero_factura: facturaForm.value.numero || null,
-      monto:          facturaForm.value.monto  || null,
+      monto: facturaForm.value.monto || null,
       enlace_soporte: facturaForm.value.enlace || null,
     }
 
-    await api.patch(
-      `/contratos-servicio/${contratoMantenimientoId.value}/${endpoint}`,
-      [...facturasActuales, nueva],
-    )
+    await api.patch(`/contratos-servicio/${contratoMantenimientoId.value}/${endpoint}`, [
+      ...facturasActuales,
+      nueva,
+    ])
 
     facturaOk.value = true
     // Resetear formulario (conservar tipo seleccionado)
     const tipoActual = facturaForm.value.tipo
     facturaForm.value = {
-      tipo:    tipoActual,
+      tipo: tipoActual,
       periodo: new Date().toISOString().slice(0, 7),
-      numero:  '',
-      monto:   null,
+      numero: '',
+      monto: null,
       archivo: null,
-      enlace:  '',
+      enlace: '',
     }
-    setTimeout(() => { facturaOk.value = false }, 4000)
+    setTimeout(() => {
+      facturaOk.value = false
+    }, 4000)
   } catch {
     toast.add({ severity: 'error', summary: 'Error al guardar la factura', life: 3000 })
   } finally {
@@ -452,10 +510,20 @@ onMounted(async () => {
       api.get('/proyectos', { params: { size: 500 } }),
       api.get('/proyectos', { params: { size: 500, tipo_proyecto: 'minigranja' } }),
     ])
-    const lista1 = r1.status === 'fulfilled' ? (Array.isArray(r1.value.data) ? r1.value.data : (r1.value.data.items ?? [])) : []
-    const lista2 = r2.status === 'fulfilled' ? (Array.isArray(r2.value.data) ? r2.value.data : (r2.value.data.items ?? [])) : []
+    const lista1 =
+      r1.status === 'fulfilled'
+        ? Array.isArray(r1.value.data)
+          ? r1.value.data
+          : (r1.value.data.items ?? [])
+        : []
+    const lista2 =
+      r2.status === 'fulfilled'
+        ? Array.isArray(r2.value.data)
+          ? r2.value.data
+          : (r2.value.data.items ?? [])
+        : []
     const ids = new Set()
-    const todos = [...lista1, ...lista2].filter(p => {
+    const todos = [...lista1, ...lista2].filter((p) => {
       if (ids.has(p.id)) return false
       ids.add(p.id)
       return true
@@ -475,7 +543,7 @@ async function onProyectoChange() {
 
   if (!proyectoSeleccionado.value) return
 
-  const proy = proyectos.value.find(p => p.id === proyectoSeleccionado.value)
+  const proy = proyectos.value.find((p) => p.id === proyectoSeleccionado.value)
   proyectoNombre.value = proy?.nombre_comercial ?? ''
 
   loadingContrato.value = true
@@ -507,7 +575,7 @@ async function onProyectoChange() {
   gap: 8px;
   padding: 6px 14px;
   background: #fff;
-  border-bottom: 1px solid #ECE7F2;
+  border-bottom: 1px solid #ece7f2;
   box-shadow: 0 1px 3px rgba(28, 18, 50, 0.04);
   flex-shrink: 0;
   position: sticky;
@@ -516,8 +584,8 @@ async function onProyectoChange() {
 }
 .mon-tab-group {
   display: inline-flex;
-  background: #F4F1FA;
-  border: 1px solid #E5E2EC;
+  background: #f4f1fa;
+  border: 1px solid #e5e2ec;
   border-radius: 8px;
   padding: 2px;
   gap: 0;
@@ -533,20 +601,27 @@ async function onProyectoChange() {
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-  color: #6B5A8A;
+  color: #6b5a8a;
   border-radius: 6px;
   cursor: pointer;
-  transition: all .15s;
+  transition: all 0.15s;
   white-space: nowrap;
 }
-.mon-tab i { font-size: 12px; }
-.mon-tab:hover:not(.mon-tab--active) { color: #2C2039; background: rgba(145,91,216,.08); }
-.mon-tab--active {
-  background: #915BD8;
-  color: #FDFAF7;
-  box-shadow: 0 1px 4px rgba(145,91,216,.3);
+.mon-tab i {
+  font-size: 12px;
 }
-.mon-tab--active:hover { color: #FDFAF7; }
+.mon-tab:hover:not(.mon-tab--active) {
+  color: #2c2039;
+  background: rgba(145, 91, 216, 0.08);
+}
+.mon-tab--active {
+  background: #915bd8;
+  color: #fdfaf7;
+  box-shadow: 0 1px 4px rgba(145, 91, 216, 0.3);
+}
+.mon-tab--active:hover {
+  color: #fdfaf7;
+}
 
 /* ── Selector de proyecto ── */
 .costos-selector-bar {
@@ -555,7 +630,7 @@ async function onProyectoChange() {
   gap: 10px;
   padding: 8px 12px;
   background: #fff;
-  border: 1px solid #ECE7F2;
+  border: 1px solid #ece7f2;
   border-radius: 10px;
   flex-wrap: wrap;
   margin-bottom: 12px;
@@ -568,9 +643,9 @@ async function onProyectoChange() {
 /* ── Panel O&M — contenedor aislado, sin sticky ── */
 .om-panel-card {
   background: #ffffff;
-  border: 1px solid #E5E2EC;
+  border: 1px solid #e5e2ec;
   border-radius: 12px;
-  overflow: hidden;          /* tabla no se desborda fuera del card */
+  overflow: hidden; /* tabla no se desborda fuera del card */
   margin-bottom: 0;
 }
 .om-panel-header {
@@ -579,12 +654,12 @@ async function onProyectoChange() {
   justify-content: space-between;
   gap: 10px;
   padding: 8px 14px;
-  background: #FDFCFF;
-  border-bottom: 1px solid #ECE7F2;
+  background: #fdfcff;
+  border-bottom: 1px solid #ece7f2;
   /* sin position:sticky — el header queda fijo dentro del card, no de la página */
 }
 .om-panel-body {
-  padding: 0;               /* OMAOperaciones y OMAProveedor manejan su propio padding */
+  padding: 0; /* OMAOperaciones y OMAProveedor manejan su propio padding */
   background: #f9f8fc;
 }
 
@@ -597,10 +672,16 @@ async function onProyectoChange() {
   text-align: center;
   padding: 80px 20px;
 }
-.space-y-4 > * + * { margin-top: 1rem; }
+.space-y-4 > * + * {
+  margin-top: 1rem;
+}
 
 @media (max-width: 640px) {
-  .mon-tab-view { padding: 12px; }
-  .costos-selector-select { min-width: 200px; }
+  .mon-tab-view {
+    padding: 12px;
+  }
+  .costos-selector-select {
+    min-width: 200px;
+  }
 }
 </style>

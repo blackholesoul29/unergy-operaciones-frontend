@@ -1,14 +1,16 @@
 <template>
   <div class="space-y-4">
-    <div class="flex gap-0 border-b" style="border-color: rgba(44,32,57,0.10);">
+    <div class="flex gap-0 border-b" style="border-color: rgba(44, 32, 57, 0.1)">
       <button
         v-for="tab in tabs"
         :key="tab.key"
         @click="activeTab = tab.key"
-        class="px-4 py-2 text-sm font-medium transition-colors relative"
-        :style="activeTab === tab.key
-          ? 'color:#915BD8; border-bottom:2px solid #915BD8; margin-bottom:-1px'
-          : 'color:#6b5a8a'"
+        class="relative px-4 py-2 text-sm font-medium transition-colors"
+        :style="
+          activeTab === tab.key
+            ? 'color:#915BD8; border-bottom:2px solid #915BD8; margin-bottom:-1px'
+            : 'color:#6b5a8a'
+        "
       >
         {{ tab.label }}
       </button>

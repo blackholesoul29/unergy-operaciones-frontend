@@ -28,17 +28,23 @@ api.interceptors.response.use(
       if (isPreviewToken(getAccessToken())) return Promise.reject(err)
       clearTokens()
       // En la app móvil (rutas /m/...) volvemos a su propio login, no al de la plataforma.
-      const enMovil = window.location.pathname.startsWith('/m/') || window.location.pathname === '/m'
+      const enMovil =
+        window.location.pathname.startsWith('/m/') || window.location.pathname === '/m'
       window.location.href = enMovil ? '/m/login' : '/login'
     }
     if (status === 403) {
       const msg = err.response.data?.detail || 'No tienes permisos para esta acción'
       if (typeof window.__primeToast === 'function') {
-        window.__primeToast({ severity: 'error', summary: 'Acceso denegado', detail: msg, life: 4000 })
+        window.__primeToast({
+          severity: 'error',
+          summary: 'Acceso denegado',
+          detail: msg,
+          life: 4000,
+        })
       }
     }
     return Promise.reject(err)
-  }
+  },
 )
 
 export default api

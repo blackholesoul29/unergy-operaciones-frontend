@@ -34,14 +34,23 @@ export async function loadDocs(periodo) {
  * Sube un documento (principal + opcional secundario) al backend.
  * Retorna el id del documento creado/actualizado.
  */
-export async function uploadDoc({ file, fileSecundario, arrProyectoId, periodo, pagoId, codigoContrato, tipoDocumento, nombreResultante }) {
+export async function uploadDoc({
+  file,
+  fileSecundario,
+  arrProyectoId,
+  periodo,
+  pagoId,
+  codigoContrato,
+  tipoDocumento,
+  nombreResultante,
+}) {
   const form = new FormData()
-  form.append('arr_proyecto_id',  arrProyectoId)
-  form.append('periodo',          periodo)
-  form.append('pago_id',          pagoId)
-  form.append('codigo_contrato',  codigoContrato)
-  form.append('tipo_documento',   tipoDocumento)
-  form.append('nombre_resultante',nombreResultante)
+  form.append('arr_proyecto_id', arrProyectoId)
+  form.append('periodo', periodo)
+  form.append('pago_id', pagoId)
+  form.append('codigo_contrato', codigoContrato)
+  form.append('tipo_documento', tipoDocumento)
+  form.append('nombre_resultante', nombreResultante)
   form.append('file', file, nombreResultante)
   if (fileSecundario) {
     form.append('file_secundario', fileSecundario, fileSecundario.name)
@@ -82,16 +91,23 @@ export async function fetchDocsPeriodo(periodo) {
  * @param {Array<{arr_proyecto_id:number|null, codigo_predio:string, valor_individual:number|null, nombre_resultante:string}>} p.predios
  */
 export async function uploadCuentaCobro({
-  file, fileSecundario, periodo, pagoId, codigoContrato, tipoDocumento,
-  numeroCuentaCobro, nombreArrendatario, predios,
+  file,
+  fileSecundario,
+  periodo,
+  pagoId,
+  codigoContrato,
+  tipoDocumento,
+  numeroCuentaCobro,
+  nombreArrendatario,
+  predios,
 }) {
   const form = new FormData()
-  form.append('periodo',         periodo)
-  form.append('pago_id',         pagoId)
+  form.append('periodo', periodo)
+  form.append('pago_id', pagoId)
   form.append('codigo_contrato', codigoContrato)
-  form.append('tipo_documento',  tipoDocumento)
-  form.append('predios',         JSON.stringify(predios))
-  if (numeroCuentaCobro)  form.append('numero_cuenta_cobro', numeroCuentaCobro)
+  form.append('tipo_documento', tipoDocumento)
+  form.append('predios', JSON.stringify(predios))
+  if (numeroCuentaCobro) form.append('numero_cuenta_cobro', numeroCuentaCobro)
   if (nombreArrendatario) form.append('nombre_arrendatario', nombreArrendatario)
   form.append('file', file, file.name)
   if (fileSecundario) {
@@ -108,9 +124,9 @@ export async function uploadCuentaCobro({
  */
 export async function downloadDoc(docId, nombreArchivo) {
   const resp = await api.get(`/arriendos/documentos/file/${docId}`, { responseType: 'blob' })
-  const url  = URL.createObjectURL(resp.data)
-  const a    = document.createElement('a')
-  a.href     = url
+  const url = URL.createObjectURL(resp.data)
+  const a = document.createElement('a')
+  a.href = url
   a.download = nombreArchivo
   a.click()
   setTimeout(() => URL.revokeObjectURL(url), 100)
@@ -123,7 +139,9 @@ export async function deleteDoc(docId) {
   await api.delete(`/arriendos/documentos/${docId}`)
   // Limpiar de estado reactivo
   for (const proyectoId of Object.keys(docsPorProyecto.value)) {
-    docsPorProyecto.value[proyectoId] = docsPorProyecto.value[proyectoId].filter(d => d.id !== docId)
+    docsPorProyecto.value[proyectoId] = docsPorProyecto.value[proyectoId].filter(
+      (d) => d.id !== docId,
+    )
     if (!docsPorProyecto.value[proyectoId].length) delete docsPorProyecto.value[proyectoId]
   }
 }

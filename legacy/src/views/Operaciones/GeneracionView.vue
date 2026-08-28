@@ -1,23 +1,39 @@
 <template>
   <div class="gen-page">
-
     <!-- ══ STICKY HEADER ═══════════════════════════════════════════════ -->
     <div class="gen-sticky-header">
-
       <!-- Title row -->
       <div class="gen-titlebar">
         <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: rgba(145,91,216,0.12)">
-            <i class="pi pi-chart-line text-sm" style="color:#915BD8" />
+          <div
+            class="flex h-8 w-8 items-center justify-center rounded-full"
+            style="background: rgba(145, 91, 216, 0.12)"
+          >
+            <i class="pi pi-chart-line text-sm" style="color: #915bd8" />
           </div>
           <h2 class="text-base font-bold text-gray-800">Generación</h2>
-          <span class="text-xs text-gray-500 hidden sm:inline">· Compara la energía generada por proyecto</span>
+          <span class="hidden text-xs text-gray-500 sm:inline"
+            >· Compara la energía generada por proyecto</span
+          >
         </div>
-        <div class="flex items-center gap-2 ml-auto">
-          <Button label="Excel" icon="pi pi-file-excel" size="small" severity="success" outlined
-            :disabled="!datasets.length" @click="exportarExcel" />
-          <Button icon="pi pi-refresh" size="small" outlined :loading="loading" @click="cargar"
-            v-tooltip.bottom="'Actualizar'" />
+        <div class="ml-auto flex items-center gap-2">
+          <Button
+            label="Excel"
+            icon="pi pi-file-excel"
+            size="small"
+            severity="success"
+            outlined
+            :disabled="!datasets.length"
+            @click="exportarExcel"
+          />
+          <Button
+            icon="pi pi-refresh"
+            size="small"
+            outlined
+            :loading="loading"
+            @click="cargar"
+            v-tooltip.bottom="'Actualizar'"
+          />
         </div>
       </div>
 
@@ -25,10 +41,13 @@
       <div class="gen-filterbar">
         <!-- 1) Granularidad -->
         <div class="gen-segmented">
-          <button v-for="g in GRANULARIDADES" :key="g.key"
+          <button
+            v-for="g in GRANULARIDADES"
+            :key="g.key"
             class="gen-seg-btn"
             :class="{ 'gen-seg-btn--active': granularidad === g.key }"
-            @click="onGranularidadChange(g.key)">
+            @click="onGranularidadChange(g.key)"
+          >
             <i :class="g.icon" />
             <span>{{ g.label }}</span>
           </button>
@@ -36,44 +55,101 @@
 
         <!-- 2) Modo (cambia según granularidad: presets + intervalo) -->
         <div class="gen-segmented gen-segmented--modo">
-          <button v-for="m in modosActuales" :key="m.key"
+          <button
+            v-for="m in modosActuales"
+            :key="m.key"
             class="gen-seg-btn"
             :class="{ 'gen-seg-btn--active': modo === m.key }"
-            @click="onModoChange(m.key)">
+            @click="onModoChange(m.key)"
+          >
             {{ m.label }}
           </button>
         </div>
 
         <!-- 3) Selector contextual según granularidad + modo -->
         <!-- Mensual · Año específico -->
-        <Select v-if="granularidad === 'mensual' && modo === 'anio'"
-          v-model="anioSel" :options="aniosDisponibles" optionLabel="label" optionValue="value"
-          class="w-28" size="small" @update:modelValue="aplicarModo" />
+        <Select
+          v-if="granularidad === 'mensual' && modo === 'anio'"
+          v-model="anioSel"
+          :options="aniosDisponibles"
+          optionLabel="label"
+          optionValue="value"
+          class="w-28"
+          size="small"
+          @update:modelValue="aplicarModo"
+        />
         <!-- Mensual · Intervalo de meses (un solo picker de rango) -->
-        <DatePicker v-else-if="granularidad === 'mensual' && modo === 'intervalo'"
-          v-model="rango" selectionMode="range" view="month" dateFormat="mm/yy" :manualInput="false"
-          :showIcon="true" size="small" class="w-56" :maxDate="hoy"
-          placeholder="Mes inicial → final" @update:modelValue="aplicarModo" />
+        <DatePicker
+          v-else-if="granularidad === 'mensual' && modo === 'intervalo'"
+          v-model="rango"
+          selectionMode="range"
+          view="month"
+          dateFormat="mm/yy"
+          :manualInput="false"
+          :showIcon="true"
+          size="small"
+          class="w-56"
+          :maxDate="hoy"
+          placeholder="Mes inicial → final"
+          @update:modelValue="aplicarModo"
+        />
         <!-- Diaria · Mes específico -->
-        <DatePicker v-else-if="granularidad === 'diaria' && modo === 'mes'"
-          v-model="mesSel" view="month" dateFormat="MM yy" :manualInput="false"
-          :showIcon="true" size="small" class="w-44" :maxDate="hoy"
-          placeholder="Elige un mes" @update:modelValue="aplicarModo" />
+        <DatePicker
+          v-else-if="granularidad === 'diaria' && modo === 'mes'"
+          v-model="mesSel"
+          view="month"
+          dateFormat="MM yy"
+          :manualInput="false"
+          :showIcon="true"
+          size="small"
+          class="w-44"
+          :maxDate="hoy"
+          placeholder="Elige un mes"
+          @update:modelValue="aplicarModo"
+        />
         <!-- Diaria · Intervalo de días (UN solo picker de rango) -->
-        <DatePicker v-else-if="granularidad === 'diaria' && modo === 'intervalo'"
-          v-model="rango" selectionMode="range" :numberOfMonths="2" dateFormat="dd/mm/yy" :manualInput="false"
-          :showIcon="true" size="small" class="w-64" :maxDate="hoy"
-          placeholder="Día inicial → final" @update:modelValue="aplicarModo" />
+        <DatePicker
+          v-else-if="granularidad === 'diaria' && modo === 'intervalo'"
+          v-model="rango"
+          selectionMode="range"
+          :numberOfMonths="2"
+          dateFormat="dd/mm/yy"
+          :manualInput="false"
+          :showIcon="true"
+          size="small"
+          class="w-64"
+          :maxDate="hoy"
+          placeholder="Día inicial → final"
+          @update:modelValue="aplicarModo"
+        />
         <!-- Horaria · Día específico -->
-        <DatePicker v-else-if="granularidad === 'horaria' && modo === 'dia'"
-          v-model="diaSel" dateFormat="dd/mm/yy" :manualInput="false"
-          :showIcon="true" size="small" class="w-44" :maxDate="hoy"
-          placeholder="Elige un día" @update:modelValue="aplicarModo" />
+        <DatePicker
+          v-else-if="granularidad === 'horaria' && modo === 'dia'"
+          v-model="diaSel"
+          dateFormat="dd/mm/yy"
+          :manualInput="false"
+          :showIcon="true"
+          size="small"
+          class="w-44"
+          :maxDate="hoy"
+          placeholder="Elige un día"
+          @update:modelValue="aplicarModo"
+        />
         <!-- Horaria · Intervalo de días (UN solo picker de rango) -->
-        <DatePicker v-else-if="granularidad === 'horaria' && modo === 'intervalo'"
-          v-model="rango" selectionMode="range" :numberOfMonths="2" dateFormat="dd/mm/yy" :manualInput="false"
-          :showIcon="true" size="small" class="w-64" :maxDate="hoy"
-          placeholder="Día inicial → final" @update:modelValue="aplicarModo" />
+        <DatePicker
+          v-else-if="granularidad === 'horaria' && modo === 'intervalo'"
+          v-model="rango"
+          selectionMode="range"
+          :numberOfMonths="2"
+          dateFormat="dd/mm/yy"
+          :manualInput="false"
+          :showIcon="true"
+          size="small"
+          class="w-64"
+          :maxDate="hoy"
+          placeholder="Día inicial → final"
+          @update:modelValue="aplicarModo"
+        />
 
         <!-- Etiqueta del rango resuelto -->
         <span class="gen-range-label"><i class="pi pi-calendar-clock" /> {{ rangoLabel }}</span>
@@ -88,47 +164,78 @@
 
         <!-- Project multi-select (valor = sub_project = ID de API Unergy) -->
         <div class="gen-project-picker">
-          <MultiSelect v-model="proyectosSel" :options="proyectos" optionLabel="nombre_comercial"
-            optionValue="sub_project" :filter="true" :showToggleAll="false"
-            display="chip" placeholder="Selecciona proyectos…"
-            :maxSelectedLabels="3" :selectedItemsLabel="`{0} proyectos seleccionados`"
-            class="w-full" size="small" @change="onProyectosChange">
+          <MultiSelect
+            v-model="proyectosSel"
+            :options="proyectos"
+            optionLabel="nombre_comercial"
+            optionValue="sub_project"
+            :filter="true"
+            :showToggleAll="false"
+            display="chip"
+            placeholder="Selecciona proyectos…"
+            :maxSelectedLabels="3"
+            :selectedItemsLabel="`{0} proyectos seleccionados`"
+            class="w-full"
+            size="small"
+            @change="onProyectosChange"
+          >
             <template #option="{ option }">
-              <div class="flex items-center justify-between gap-2 w-full">
+              <div class="flex w-full items-center justify-between gap-2">
                 <span>{{ option.nombre_comercial }}</span>
-                <span class="text-[10px] text-gray-400 whitespace-nowrap">{{ option.municipio }}</span>
+                <span class="text-[10px] whitespace-nowrap text-gray-400">{{
+                  option.municipio
+                }}</span>
               </div>
             </template>
           </MultiSelect>
         </div>
 
         <!-- Consultar (dispara la query del intervalo seleccionado) -->
-        <Button label="Consultar" icon="pi pi-search" size="small"
-          class="gen-consultar" :class="{ 'gen-consultar--pendiente': pendiente && proyectosSel.length && !rangoError }"
-          :disabled="!proyectosSel.length || !!rangoError" :loading="loading"
+        <Button
+          label="Consultar"
+          icon="pi pi-search"
+          size="small"
+          class="gen-consultar"
+          :class="{ 'gen-consultar--pendiente': pendiente && proyectosSel.length && !rangoError }"
+          :disabled="!proyectosSel.length || !!rangoError"
+          :loading="loading"
           @click="cargar"
-          v-tooltip.bottom="!proyectosSel.length ? 'Selecciona al menos un proyecto' : (rangoError ? 'Corrige el rango de fechas' : 'Consultar generación')" />
+          v-tooltip.bottom="
+            !proyectosSel.length
+              ? 'Selecciona al menos un proyecto'
+              : rangoError
+                ? 'Corrige el rango de fechas'
+                : 'Consultar generación'
+          "
+        />
       </div>
 
       <!-- Fuente de datos -->
       <div v-if="proyectos.length" class="gen-datahint">
         <i class="pi pi-bolt" />
-        <span>{{ proyectos.length }} proyectos disponibles · generación en vivo desde la API de Unergy</span>
+        <span
+          >{{ proyectos.length }} proyectos disponibles · generación en vivo desde la API de
+          Unergy</span
+        >
       </div>
-
-    </div><!-- /sticky-header -->
+    </div>
+    <!-- /sticky-header -->
 
     <!-- ══ EMPTY STATE / GUIDE ════════════════════════════════════════ -->
     <div v-if="!proyectosSel.length" class="gen-empty">
-      <i class="pi pi-info-circle text-3xl mb-3" style="color:#915BD8" />
-      <p class="text-base font-semibold text-gray-700">Selecciona uno o más proyectos para comenzar</p>
-      <p class="text-sm text-gray-500 mt-1">Elige proyectos y un rango, luego presiona <strong>Consultar</strong>.</p>
+      <i class="pi pi-info-circle mb-3 text-3xl" style="color: #915bd8" />
+      <p class="text-base font-semibold text-gray-700">
+        Selecciona uno o más proyectos para comenzar
+      </p>
+      <p class="mt-1 text-sm text-gray-500">
+        Elige proyectos y un rango, luego presiona <strong>Consultar</strong>.
+      </p>
     </div>
 
     <!-- ══ LOADING ════════════════════════════════════════════════════ -->
     <div v-else-if="loading" class="gen-loading">
-      <ProgressSpinner style="width:40px;height:40px" />
-      <p class="text-sm text-gray-500 mt-3">Cargando datos de generación…</p>
+      <ProgressSpinner style="width: 40px; height: 40px" />
+      <p class="mt-3 text-sm text-gray-500">Cargando datos de generación…</p>
     </div>
 
     <!-- ══ ERROR ═════════════════════════════════════════════════════ -->
@@ -136,56 +243,86 @@
       <i class="pi pi-exclamation-circle text-2xl text-red-500" />
       <div class="flex-1">
         <p class="font-semibold text-red-700">No se pudo consultar la generación</p>
-        <p class="text-sm text-gray-600 mt-0.5">{{ error }}</p>
+        <p class="mt-0.5 text-sm text-gray-600">{{ error }}</p>
       </div>
       <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="cargar" />
     </div>
 
     <!-- ══ READY TO QUERY (proyectos elegidos, aún sin consultar) ═════ -->
     <div v-else-if="!hasQueried" class="gen-empty">
-      <i class="pi pi-search text-3xl mb-3" style="color:#915BD8" />
+      <i class="pi pi-search mb-3 text-3xl" style="color: #915bd8" />
       <p class="text-base font-semibold text-gray-700">Listo para consultar</p>
-      <p class="text-sm text-gray-500 mt-1">Ajusta el rango y la granularidad, luego presiona Consultar.</p>
-      <Button label="Consultar" icon="pi pi-search" size="small" class="mt-3"
-        :disabled="!!rangoError" :loading="loading" @click="cargar" />
+      <p class="mt-1 text-sm text-gray-500">
+        Ajusta el rango y la granularidad, luego presiona Consultar.
+      </p>
+      <Button
+        label="Consultar"
+        icon="pi pi-search"
+        size="small"
+        class="mt-3"
+        :disabled="!!rangoError"
+        :loading="loading"
+        @click="cargar"
+      />
     </div>
 
     <!-- ══ NO DATA ═══════════════════════════════════════════════════ -->
-    <div v-else-if="!datasets.length || datasets.every(d => !d.points.length)" class="gen-empty">
-      <i class="pi pi-database text-3xl mb-3 text-gray-300" />
+    <div v-else-if="!datasets.length || datasets.every((d) => !d.points.length)" class="gen-empty">
+      <i class="pi pi-database mb-3 text-3xl text-gray-300" />
       <p class="text-base font-semibold text-gray-700">Sin datos para el rango seleccionado</p>
-      <p class="text-sm text-gray-500 mt-1">Los proyectos seleccionados no tienen generación registrada en este intervalo. Prueba con un rango más amplio o fechas anteriores.</p>
-      <Button label="Ver el año en curso (mensual)" icon="pi pi-calendar" outlined size="small" class="mt-3" @click="verEsteAnioMensual" />
+      <p class="mt-1 text-sm text-gray-500">
+        Los proyectos seleccionados no tienen generación registrada en este intervalo. Prueba con un
+        rango más amplio o fechas anteriores.
+      </p>
+      <Button
+        label="Ver el año en curso (mensual)"
+        icon="pi pi-calendar"
+        outlined
+        size="small"
+        class="mt-3"
+        @click="verEsteAnioMensual"
+      />
     </div>
 
     <!-- ══ MAIN CONTENT ══════════════════════════════════════════════ -->
     <template v-else>
-
       <!-- KPI cards -->
       <div class="gen-kpis">
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(212,160,23,0.12); color:#D4A017"><i class="pi pi-bolt" /></div>
+          <div class="gen-kpi-icon" style="background: rgba(212, 160, 23, 0.12); color: #d4a017">
+            <i class="pi pi-bolt" />
+          </div>
           <div>
             <div class="gen-kpi-val">{{ fmtNum(totalKwh) }}</div>
             <div class="gen-kpi-lbl">kWh totales</div>
           </div>
         </div>
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(145,91,216,0.12); color:#915BD8"><i class="pi pi-chart-bar" /></div>
+          <div class="gen-kpi-icon" style="background: rgba(145, 91, 216, 0.12); color: #915bd8">
+            <i class="pi pi-chart-bar" />
+          </div>
           <div>
-            <div class="gen-kpi-val">{{ fmtNum(totalKwh / Math.max(1, datasets.length) / Math.max(1, periodos.length), 1) }}</div>
+            <div class="gen-kpi-val">
+              {{
+                fmtNum(totalKwh / Math.max(1, datasets.length) / Math.max(1, periodos.length), 1)
+              }}
+            </div>
             <div class="gen-kpi-lbl">Promedio kWh / {{ unidadPeriodo }}</div>
           </div>
         </div>
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(16,185,129,0.12); color:#10b981"><i class="pi pi-trophy" /></div>
+          <div class="gen-kpi-icon" style="background: rgba(16, 185, 129, 0.12); color: #10b981">
+            <i class="pi pi-trophy" />
+          </div>
           <div>
             <div class="gen-kpi-val text-sm">{{ topProyecto?.nombre || '—' }}</div>
             <div class="gen-kpi-lbl">Mayor generación</div>
           </div>
         </div>
         <div class="gen-kpi">
-          <div class="gen-kpi-icon" style="background:rgba(59,130,246,0.12); color:#3b82f6"><i class="pi pi-calendar" /></div>
+          <div class="gen-kpi-icon" style="background: rgba(59, 130, 246, 0.12); color: #3b82f6">
+            <i class="pi pi-calendar" />
+          </div>
           <div>
             <div class="gen-kpi-val text-sm">{{ periodos.length }} {{ unidadPeriodoPlural }}</div>
             <div class="gen-kpi-lbl">Período cubierto</div>
@@ -196,12 +333,16 @@
       <!-- Chart card -->
       <section class="gen-card">
         <header class="gen-card-head">
-          <i class="pi pi-chart-line text-sm" style="color:#915BD8" />
+          <i class="pi pi-chart-line text-sm" style="color: #915bd8" />
           <h3 class="gen-card-title">{{ tituloGrafico }}</h3>
-          <div class="flex items-center gap-2 ml-auto">
-            <button v-for="t in ['line', 'bar']" :key="t"
-              class="gen-toggle-btn" :class="{ 'gen-toggle-btn--active': tipoGrafico === t }"
-              @click="tipoGrafico = t">
+          <div class="ml-auto flex items-center gap-2">
+            <button
+              v-for="t in ['line', 'bar']"
+              :key="t"
+              class="gen-toggle-btn"
+              :class="{ 'gen-toggle-btn--active': tipoGrafico === t }"
+              @click="tipoGrafico = t"
+            >
               <i :class="t === 'line' ? 'pi pi-chart-line' : 'pi pi-chart-bar'" />
             </button>
           </div>
@@ -209,9 +350,13 @@
 
         <!-- Legend -->
         <div class="gen-legend">
-          <button v-for="(ds, idx) in datasets" :key="ds.proyectoId"
-            class="gen-legend-item" :class="{ 'gen-legend-item--off': ds.hidden }"
-            @click="ds.hidden = !ds.hidden">
+          <button
+            v-for="(ds, idx) in datasets"
+            :key="ds.proyectoId"
+            class="gen-legend-item"
+            :class="{ 'gen-legend-item--off': ds.hidden }"
+            @click="ds.hidden = !ds.hidden"
+          >
             <span class="gen-legend-dot" :style="{ background: ds.color }" />
             <span class="gen-legend-name">{{ ds.nombre }}</span>
             <span class="gen-legend-total">{{ fmtNum(ds.total) }} kWh</span>
@@ -220,8 +365,14 @@
 
         <!-- SVG chart -->
         <div class="gen-chart-wrap" ref="chartWrapRef">
-          <svg ref="chartSvgRef" :viewBox="`0 0 ${chartW} ${chartH}`" preserveAspectRatio="none" class="gen-chart-svg"
-            @mousemove="onChartMove" @mouseleave="onChartLeave">
+          <svg
+            ref="chartSvgRef"
+            :viewBox="`0 0 ${chartW} ${chartH}`"
+            preserveAspectRatio="none"
+            class="gen-chart-svg"
+            @mousemove="onChartMove"
+            @mouseleave="onChartLeave"
+          >
             <!-- Y grid lines + labels -->
             <g class="gen-grid">
               <template v-for="(y, i) in yTicks" :key="'y' + i">
@@ -231,58 +382,103 @@
             </g>
             <!-- X labels -->
             <g class="gen-xlabels">
-              <text v-for="(p, i) in xLabels" :key="'x' + i"
-                :x="xToPx(p.idx)" :y="chartH - paddingB / 2 + 4"
-                :text-anchor="i === 0 ? 'start' : i === xLabels.length - 1 ? 'end' : 'middle'">
+              <text
+                v-for="(p, i) in xLabels"
+                :key="'x' + i"
+                :x="xToPx(p.idx)"
+                :y="chartH - paddingB / 2 + 4"
+                :text-anchor="i === 0 ? 'start' : i === xLabels.length - 1 ? 'end' : 'middle'"
+              >
                 {{ p.label }}
               </text>
             </g>
             <!-- Line series -->
             <template v-if="tipoGrafico === 'line'">
-              <g v-for="ds in datasets.filter(d => !d.hidden)" :key="ds.proyectoId">
+              <g v-for="ds in datasets.filter((d) => !d.hidden)" :key="ds.proyectoId">
                 <polyline
-                  :points="lineaPoints(ds)" fill="none"
-                  :stroke="ds.color" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />
-                <circle v-for="(pt, i) in ds.points" :key="i"
-                  :cx="xToPx(i)" :cy="yToPx(pt.kwh)" r="2.5" :fill="ds.color" />
+                  :points="lineaPoints(ds)"
+                  fill="none"
+                  :stroke="ds.color"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                  stroke-linecap="round"
+                />
+                <circle
+                  v-for="(pt, i) in ds.points"
+                  :key="i"
+                  :cx="xToPx(i)"
+                  :cy="yToPx(pt.kwh)"
+                  r="2.5"
+                  :fill="ds.color"
+                />
               </g>
             </template>
             <!-- Bar series -->
             <template v-else>
               <g v-for="(p, i) in periodos" :key="'b' + i">
-                <rect v-for="(ds, j) in datasets.filter(d => !d.hidden)" :key="ds.proyectoId"
-                  :x="barX(i, j, datasets.filter(d => !d.hidden).length)"
+                <rect
+                  v-for="(ds, j) in datasets.filter((d) => !d.hidden)"
+                  :key="ds.proyectoId"
+                  :x="barX(i, j, datasets.filter((d) => !d.hidden).length)"
                   :y="yToPx(ds.points[i]?.kwh ?? 0)"
-                  :width="barW(datasets.filter(d => !d.hidden).length)"
+                  :width="barW(datasets.filter((d) => !d.hidden).length)"
                   :height="Math.max(0, chartH - paddingB - yToPx(ds.points[i]?.kwh ?? 0))"
                   :fill="ds.color"
-                  rx="1.5" />
+                  rx="1.5"
+                />
               </g>
             </template>
 
             <!-- Fallas con impacto en generación: subrayado rojo del día/período -->
             <g v-if="periodosFlagged.length" class="gen-faults" pointer-events="none">
               <template v-for="i in periodosFlagged" :key="'fl' + i">
-                <line :x1="xToPx(i)" :x2="xToPx(i)" :y1="paddingT" :y2="chartH - paddingB"
-                  class="gen-fault-vline" />
-                <line :x1="xToPx(i) - marcadorHalfW" :x2="xToPx(i) + marcadorHalfW"
-                  :y1="chartH - paddingB + 2.5" :y2="chartH - paddingB + 2.5"
-                  class="gen-fault-underline" />
+                <line
+                  :x1="xToPx(i)"
+                  :x2="xToPx(i)"
+                  :y1="paddingT"
+                  :y2="chartH - paddingB"
+                  class="gen-fault-vline"
+                />
+                <line
+                  :x1="xToPx(i) - marcadorHalfW"
+                  :x2="xToPx(i) + marcadorHalfW"
+                  :y1="chartH - paddingB + 2.5"
+                  :y2="chartH - paddingB + 2.5"
+                  class="gen-fault-underline"
+                />
                 <circle :cx="xToPx(i)" :cy="paddingT + 2" r="2.6" class="gen-fault-dot" />
               </template>
             </g>
 
             <!-- Hover: línea guía vertical + puntos resaltados -->
             <g v-if="hover" class="gen-hover" pointer-events="none">
-              <line :x1="hover.gx" :x2="hover.gx" :y1="paddingT" :y2="chartH - paddingB" class="gen-hover-line" />
-              <circle v-for="s in hoverSeries" :key="'h' + s.proyectoId"
-                :cx="hover.gx" :cy="yToPx(s.kwh)" r="4" :fill="s.color" stroke="#fff" stroke-width="1.5" />
+              <line
+                :x1="hover.gx"
+                :x2="hover.gx"
+                :y1="paddingT"
+                :y2="chartH - paddingB"
+                class="gen-hover-line"
+              />
+              <circle
+                v-for="s in hoverSeries"
+                :key="'h' + s.proyectoId"
+                :cx="hover.gx"
+                :cy="yToPx(s.kwh)"
+                r="4"
+                :fill="s.color"
+                stroke="#fff"
+                stroke-width="1.5"
+              />
             </g>
           </svg>
 
           <!-- Tooltip: valor de X (período) y de Y (kWh) bajo el cursor -->
-          <div v-if="hover" class="gen-tooltip" :class="{ 'gen-tooltip--flip': hover.flip }"
-            :style="{ left: hover.tipLeft + 'px', top: hover.tipTop + 'px' }">
+          <div
+            v-if="hover"
+            class="gen-tooltip"
+            :class="{ 'gen-tooltip--flip': hover.flip }"
+            :style="{ left: hover.tipLeft + 'px', top: hover.tipTop + 'px' }"
+          >
             <div class="gen-tooltip-x">{{ hover.label }}</div>
             <div v-for="s in hoverSeries" :key="'t' + s.proyectoId" class="gen-tooltip-row">
               <span class="gen-tooltip-dot" :style="{ background: s.color }" />
@@ -295,7 +491,8 @@
             </div>
             <div v-if="hoverFalla" class="gen-tooltip-fault">
               <i class="pi pi-exclamation-triangle" />
-              {{ hoverFalla.count }} falla{{ hoverFalla.count !== 1 ? 's' : '' }} de generación · {{ fmtNum(hoverFalla.kwh) }} kWh perdidos
+              {{ hoverFalla.count }} falla{{ hoverFalla.count !== 1 ? 's' : '' }} de generación ·
+              {{ fmtNum(hoverFalla.kwh) }} kWh perdidos
             </div>
           </div>
         </div>
@@ -304,11 +501,13 @@
       <!-- Fallas reportadas en el período (cruce con generación) -->
       <section class="gen-card">
         <header class="gen-card-head">
-          <i class="pi pi-exclamation-triangle text-sm" style="color:#dc2626" />
+          <i class="pi pi-exclamation-triangle text-sm" style="color: #dc2626" />
           <h3 class="gen-card-title">Fallas reportadas en el período</h3>
-          <div class="ml-auto flex items-center gap-1.5 flex-wrap">
+          <div class="ml-auto flex flex-wrap items-center gap-1.5">
             <span class="gen-fchip">{{ fallasDelPeriodo.length }} en total</span>
-            <span v-if="fallasGenCount" class="gen-fchip gen-fchip--red">{{ fallasGenCount }} afectan generación</span>
+            <span v-if="fallasGenCount" class="gen-fchip gen-fchip--red"
+              >{{ fallasGenCount }} afectan generación</span
+            >
             <span v-if="kwhPerdidoTotal > 0" class="gen-fchip gen-fchip--red">
               {{ fmtNum(kwhPerdidoTotal) }} kWh perdidos
             </span>
@@ -316,48 +515,75 @@
         </header>
 
         <div v-if="fallasCargando && !allFallas.length" class="gen-fallas-empty">
-          <ProgressSpinner style="width:28px;height:28px" />
+          <ProgressSpinner style="width: 28px; height: 28px" />
           <p>Cargando fallas…</p>
         </div>
         <div v-else-if="!fallasDelPeriodo.length" class="gen-fallas-empty">
-          <i class="pi pi-check-circle text-2xl" style="color:#16a34a" />
+          <i class="pi pi-check-circle text-2xl" style="color: #16a34a" />
           <p>Sin fallas reportadas en este intervalo para los proyectos seleccionados.</p>
         </div>
         <div v-else class="overflow-x-auto">
-          <DataTable :value="fallasDelPeriodo" stripedRows rowHover class="text-sm gen-table"
-            :rows="10" paginator :rowsPerPageOptions="[10, 20, 50]" :alwaysShowPaginator="fallasDelPeriodo.length > 10"
-            :rowClass="fallaRowClass" selectionMode="single"
-            @row-click="(e) => router.push('/fallas/' + e.data.id)">
-            <Column header="" style="width:6px;padding:0" :pt="{ headerCell: { style: 'padding:0; border:none' } }">
+          <DataTable
+            :value="fallasDelPeriodo"
+            stripedRows
+            rowHover
+            class="gen-table text-sm"
+            :rows="10"
+            paginator
+            :rowsPerPageOptions="[10, 20, 50]"
+            :alwaysShowPaginator="fallasDelPeriodo.length > 10"
+            :rowClass="fallaRowClass"
+            selectionMode="single"
+            @row-click="(e) => router.push('/fallas/' + e.data.id)"
+          >
+            <Column
+              header=""
+              style="width: 6px; padding: 0"
+              :pt="{ headerCell: { style: 'padding:0; border:none' } }"
+            >
               <template #body="{ data }">
-                <div class="gen-falla-stripe" :class="{ 'gen-falla-stripe--gen': involucraGeneracion(data) }" />
+                <div
+                  class="gen-falla-stripe"
+                  :class="{ 'gen-falla-stripe--gen': involucraGeneracion(data) }"
+                />
               </template>
             </Column>
-            <Column header="Fecha" field="fecha_identificacion" sortable style="width:96px">
+            <Column header="Fecha" field="fecha_identificacion" sortable style="width: 96px">
               <template #body="{ data }">
-                <span class="font-medium text-gray-800">{{ fmtFechaCorta(data.fecha_identificacion) }}</span>
+                <span class="font-medium text-gray-800">{{
+                  fmtFechaCorta(data.fecha_identificacion)
+                }}</span>
               </template>
             </Column>
-            <Column header="Proyecto" style="min-width:130px">
-              <template #body="{ data }"><span class="text-gray-700">{{ data.proyecto?.nombre_comercial || '—' }}</span></template>
+            <Column header="Proyecto" style="min-width: 130px">
+              <template #body="{ data }"
+                ><span class="text-gray-700">{{
+                  data.proyecto?.nombre_comercial || '—'
+                }}</span></template
+              >
             </Column>
-            <Column header="Falla" style="min-width:240px">
+            <Column header="Falla" style="min-width: 240px">
               <template #body="{ data }">
                 <div class="font-medium text-gray-800">{{ data.tipo?.etiqueta || 'Sin tipo' }}</div>
-                <div class="text-xs text-gray-500 gen-falla-desc">{{ data.descripcion }}</div>
+                <div class="gen-falla-desc text-xs text-gray-500">{{ data.descripcion }}</div>
               </template>
             </Column>
-            <Column header="Prioridad" style="width:96px">
+            <Column header="Prioridad" style="width: 96px">
               <template #body="{ data }">
-                <span class="gen-prio-pill" :style="prioPillStyle(data.prioridad?.codigo)">{{ data.prioridad?.etiqueta || '—' }}</span>
+                <span class="gen-prio-pill" :style="prioPillStyle(data.prioridad?.codigo)">{{
+                  data.prioridad?.etiqueta || '—'
+                }}</span>
               </template>
             </Column>
-            <Column header="Estado" style="width:120px">
+            <Column header="Estado" style="width: 120px">
               <template #body="{ data }">
-                <Tag :value="data.estado?.etiqueta || '—'" :style="estadoPillStyle(data.estado?.color_hex)" />
+                <Tag
+                  :value="data.estado?.etiqueta || '—'"
+                  :style="estadoPillStyle(data.estado?.color_hex)"
+                />
               </template>
             </Column>
-            <Column header="Energía perdida" style="width:140px">
+            <Column header="Energía perdida" style="width: 140px">
               <template #body="{ data }">
                 <span v-if="involucraGeneracion(data)" class="gen-energy-badge">
                   <i class="pi pi-bolt" /> {{ fmtNum(energiaPerdida(data)) }} kWh
@@ -368,7 +594,6 @@
           </DataTable>
         </div>
       </section>
-
     </template>
   </div>
 </template>
@@ -392,12 +617,36 @@ const toast = useToast()
 const router = useRouter()
 
 // ── Constantes ────────────────────────────────────────────────────────
-const MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
-const PALETTE = ['#915BD8', '#2563eb', '#10b981', '#D4A017', '#dc2626', '#0891b2', '#7c3aed', '#db2777', '#65a30d', '#0d9488']
+const MESES_ES = [
+  'Ene',
+  'Feb',
+  'Mar',
+  'Abr',
+  'May',
+  'Jun',
+  'Jul',
+  'Ago',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dic',
+]
+const PALETTE = [
+  '#915BD8',
+  '#2563eb',
+  '#10b981',
+  '#D4A017',
+  '#dc2626',
+  '#0891b2',
+  '#7c3aed',
+  '#db2777',
+  '#65a30d',
+  '#0d9488',
+]
 
 const GRANULARIDADES = [
   { key: 'mensual', label: 'Mensual', icon: 'pi pi-calendar' },
-  { key: 'diaria',  label: 'Diaria',  icon: 'pi pi-list' },
+  { key: 'diaria', label: 'Diaria', icon: 'pi pi-list' },
   { key: 'horaria', label: 'Horaria', icon: 'pi pi-clock' },
 ]
 
@@ -405,25 +654,26 @@ const GRANULARIDADES = [
 // La unidad natural de cada granularidad: año (mensual), mes (diaria), día (horaria).
 const MODOS = {
   mensual: [
-    { key: 'actual',    label: 'Este año' },
-    { key: 'pasado',    label: 'Año pasado' },
-    { key: 'anio',      label: 'Año…' },
+    { key: 'actual', label: 'Este año' },
+    { key: 'pasado', label: 'Año pasado' },
+    { key: 'anio', label: 'Año…' },
     { key: 'intervalo', label: 'Intervalo' },
   ],
   diaria: [
-    { key: 'actual',    label: 'Este mes' },
-    { key: 'mes',       label: 'Mes…' },
+    { key: 'actual', label: 'Este mes' },
+    { key: 'mes', label: 'Mes…' },
     { key: 'intervalo', label: 'Intervalo' },
   ],
   horaria: [
-    { key: 'ayer',      label: 'Ayer' },
-    { key: 'dia',       label: 'Día…' },
+    { key: 'ayer', label: 'Ayer' },
+    { key: 'dia', label: 'Día…' },
     { key: 'intervalo', label: 'Intervalo' },
   ],
 }
 const MODO_DEFAULT = { mensual: 'actual', diaria: 'actual', horaria: 'ayer' }
 
-const hoy = new Date(); hoy.setHours(0, 0, 0, 0)
+const hoy = new Date()
+hoy.setHours(0, 0, 0, 0)
 
 // ── Estado ───────────────────────────────────────────────────────────
 const loading = ref(false)
@@ -436,10 +686,10 @@ const modo = ref('actual')
 const fechaDesde = ref(new Date())
 const fechaHasta = ref(new Date())
 // Selectores específicos por modo:
-const anioSel = ref(new Date().getFullYear())  // mensual · "Año…"
-const mesSel = ref(new Date())                  // diaria  · "Mes…"  (cualquier día del mes)
-const diaSel = ref(new Date())                  // horaria · "Día…"
-const rango = ref(null)                         // modo intervalo: UN solo picker de rango [desde, hasta]
+const anioSel = ref(new Date().getFullYear()) // mensual · "Año…"
+const mesSel = ref(new Date()) // diaria  · "Mes…"  (cualquier día del mes)
+const diaSel = ref(new Date()) // horaria · "Día…"
+const rango = ref(null) // modo intervalo: UN solo picker de rango [desde, hasta]
 
 const datasets = ref([])
 const tipoGrafico = ref('line')
@@ -448,7 +698,7 @@ const chartSvgRef = ref(null)
 const chartContainerWidth = ref(900)
 
 // Hover sobre la gráfica: período (X) + valor kWh (Y) de cada serie bajo el cursor.
-const hover = ref(null)  // { idx, gx, tipLeft, tipTop, flip, label } | null
+const hover = ref(null) // { idx, gx, tipLeft, tipTop, flip, label } | null
 
 // Consulta manual: hasQueried distingue "aún no consultado" de "sin datos";
 // pendiente resalta el botón Consultar cuando hay cambios sin aplicar.
@@ -469,7 +719,7 @@ const fallasCargando = ref(false)
 // con lo que MUESTRA la gráfica (no con filtros aún sin aplicar).
 const qDesde = ref(null)
 const qHasta = ref(null)
-const qNombres = ref([])  // nombres_comerciales consultados
+const qNombres = ref([]) // nombres_comerciales consultados
 
 // ── Modo de selección + cálculo de fechas ─────────────────────────────
 const modosActuales = computed(() => MODOS[granularidad.value] || [])
@@ -482,12 +732,15 @@ const aniosDisponibles = computed(() => {
 })
 
 function finDeAnioOHoy(y) {
-  const t = new Date(); t.setHours(0, 0, 0, 0)
+  const t = new Date()
+  t.setHours(0, 0, 0, 0)
   const last = new Date(y, 11, 31)
   return last > t ? t : last
 }
-function finDeMesOHoy(y, m) { // m 0-based
-  const t = new Date(); t.setHours(0, 0, 0, 0)
+function finDeMesOHoy(y, m) {
+  // m 0-based
+  const t = new Date()
+  t.setHours(0, 0, 0, 0)
   const last = new Date(y, m + 1, 0)
   return last > t ? t : last
 }
@@ -497,7 +750,8 @@ function rangoDiasSel() {
   const r = rango.value || []
   const a = r[0] ? new Date(r[0]) : new Date(fechaDesde.value)
   const b = r[1] ? new Date(r[1]) : new Date(r[0] || fechaHasta.value)
-  a.setHours(0, 0, 0, 0); b.setHours(0, 0, 0, 0)
+  a.setHours(0, 0, 0, 0)
+  b.setHours(0, 0, 0, 0)
   return b < a ? [b, a] : [a, b]
 }
 // Rango del picker único (modo intervalo mensual) → límites de mes.
@@ -507,33 +761,67 @@ function rangoMesesSel() {
   const b0 = r[1] ? new Date(r[1]) : new Date(r[0] || fechaHasta.value)
   let a = new Date(a0.getFullYear(), a0.getMonth(), 1)
   let b = finDeMesOHoy(b0.getFullYear(), b0.getMonth())
-  return b < a ? [new Date(b0.getFullYear(), b0.getMonth(), 1), finDeMesOHoy(a0.getFullYear(), a0.getMonth())] : [a, b]
+  return b < a
+    ? [new Date(b0.getFullYear(), b0.getMonth(), 1), finDeMesOHoy(a0.getFullYear(), a0.getMonth())]
+    : [a, b]
 }
 
 // Calcula fechaDesde/fechaHasta a partir de {granularidad, modo, selectores}.
 function recomputarFechas() {
-  const t = new Date(); t.setHours(0, 0, 0, 0)
+  const t = new Date()
+  t.setHours(0, 0, 0, 0)
   const y = t.getFullYear()
-  let d = null, h = null
+  let d = null,
+    h = null
   if (granularidad.value === 'mensual') {
-    if (modo.value === 'actual') { d = new Date(y, 0, 1); h = finDeAnioOHoy(y) }
-    else if (modo.value === 'pasado') { d = new Date(y - 1, 0, 1); h = new Date(y - 1, 11, 31) }
-    else if (modo.value === 'anio') { const yy = anioSel.value || y; d = new Date(yy, 0, 1); h = finDeAnioOHoy(yy) }
-    else { [d, h] = rangoMesesSel() }
+    if (modo.value === 'actual') {
+      d = new Date(y, 0, 1)
+      h = finDeAnioOHoy(y)
+    } else if (modo.value === 'pasado') {
+      d = new Date(y - 1, 0, 1)
+      h = new Date(y - 1, 11, 31)
+    } else if (modo.value === 'anio') {
+      const yy = anioSel.value || y
+      d = new Date(yy, 0, 1)
+      h = finDeAnioOHoy(yy)
+    } else {
+      ;[d, h] = rangoMesesSel()
+    }
   } else if (granularidad.value === 'diaria') {
-    if (modo.value === 'actual') { d = new Date(y, t.getMonth(), 1); h = new Date(t) }
-    else if (modo.value === 'mes') { const m = mesSel.value || t; d = new Date(m.getFullYear(), m.getMonth(), 1); h = finDeMesOHoy(m.getFullYear(), m.getMonth()) }
-    else { [d, h] = rangoDiasSel() }
-  } else { // horaria
-    if (modo.value === 'ayer') { const ay = new Date(t); ay.setDate(ay.getDate() - 1); d = ay; h = new Date(ay) }
-    else if (modo.value === 'dia') { const dd = new Date(diaSel.value || t); dd.setHours(0, 0, 0, 0); d = dd; h = new Date(dd) }
-    else { [d, h] = rangoDiasSel() }
+    if (modo.value === 'actual') {
+      d = new Date(y, t.getMonth(), 1)
+      h = new Date(t)
+    } else if (modo.value === 'mes') {
+      const m = mesSel.value || t
+      d = new Date(m.getFullYear(), m.getMonth(), 1)
+      h = finDeMesOHoy(m.getFullYear(), m.getMonth())
+    } else {
+      ;[d, h] = rangoDiasSel()
+    }
+  } else {
+    // horaria
+    if (modo.value === 'ayer') {
+      const ay = new Date(t)
+      ay.setDate(ay.getDate() - 1)
+      d = ay
+      h = new Date(ay)
+    } else if (modo.value === 'dia') {
+      const dd = new Date(diaSel.value || t)
+      dd.setHours(0, 0, 0, 0)
+      d = dd
+      h = new Date(dd)
+    } else {
+      ;[d, h] = rangoDiasSel()
+    }
   }
   if (d) fechaDesde.value = d
   if (h) fechaHasta.value = h
 }
 
-function aplicarModo() { recomputarFechas(); marcarPendiente() }
+function aplicarModo() {
+  recomputarFechas()
+  marcarPendiente()
+}
 
 function onGranularidadChange(g) {
   if (g === granularidad.value) return
@@ -561,7 +849,9 @@ function verEsteAnioMensual() {
 }
 
 // Marca que hay filtros sin aplicar (resalta el botón Consultar).
-function marcarPendiente() { pendiente.value = true }
+function marcarPendiente() {
+  pendiente.value = true
+}
 
 // Cambio en la selección de proyectos: si se vacía, limpia resultados.
 function onProyectosChange() {
@@ -580,30 +870,37 @@ const rangoDias = computed(() => {
 })
 const rangoError = computed(() => {
   if (!fechaDesde.value || !fechaHasta.value) return 'Selecciona un rango'
-  if (fechaHasta.value < fechaDesde.value) return 'La fecha final debe ser igual o posterior a la inicial'
+  if (fechaHasta.value < fechaDesde.value)
+    return 'La fecha final debe ser igual o posterior a la inicial'
   return null
 })
 // Aviso NO bloqueante (rango horario muy amplio puede truncarse en la API).
 const avisoRango = computed(() =>
   granularidad.value === 'horaria' && rangoDias.value > 31
     ? 'Rango horario amplio: la API puede truncar lecturas muy extensas.'
-    : null
+    : null,
 )
 
 // Etiqueta legible del rango resuelto (feedback claro de qué se va a consultar).
 const rangoLabel = computed(() => {
-  const d = fechaDesde.value, h = fechaHasta.value
+  const d = fechaDesde.value,
+    h = fechaHasta.value
   if (!d || !h) return ''
   if (granularidad.value === 'mensual')
     return `${MESES_ES[d.getMonth()]} ${d.getFullYear()} → ${MESES_ES[h.getMonth()]} ${h.getFullYear()}`
-  const f = x => `${String(x.getDate()).padStart(2, '0')} ${MESES_ES[x.getMonth()].toLowerCase()} ${x.getFullYear()}`
+  const f = (x) =>
+    `${String(x.getDate()).padStart(2, '0')} ${MESES_ES[x.getMonth()].toLowerCase()} ${x.getFullYear()}`
   if (d.getTime() === h.getTime()) return f(d)
   return `${f(d)} → ${f(h)}`
 })
 
 // ── Período label helper ─────────────────────────────────────────────
-const unidadPeriodo = computed(() => ({ mensual: 'mes', diaria: 'día', horaria: 'hora' }[granularidad.value]))
-const unidadPeriodoPlural = computed(() => ({ mensual: 'meses', diaria: 'días', horaria: 'horas' }[granularidad.value]))
+const unidadPeriodo = computed(
+  () => ({ mensual: 'mes', diaria: 'día', horaria: 'hora' })[granularidad.value],
+)
+const unidadPeriodoPlural = computed(
+  () => ({ mensual: 'meses', diaria: 'días', horaria: 'horas' })[granularidad.value],
+)
 
 // ── Carga (datos EN VIVO de la API de Unergy vía /monitoreo/_legacy) ──────
 // La generación NO vive en la tabla local; se consulta a api.unergy.io con el
@@ -617,7 +914,7 @@ async function cargar() {
   // Snapshot del query → el panel de fallas se alinea con lo que muestra la gráfica.
   qDesde.value = new Date(fechaDesde.value)
   qHasta.value = new Date(fechaHasta.value)
-  qNombres.value = proyectosSel.value.map(sub => nombrePorSub.value[sub]).filter(Boolean)
+  qNombres.value = proyectosSel.value.map((sub) => nombrePorSub.value[sub]).filter(Boolean)
   try {
     const fInicio = isoDate(fechaDesde.value)
     const fFin = isoDate(fechaHasta.value)
@@ -625,11 +922,18 @@ async function cargar() {
     // Una llamada por proyecto: getGeneration trae lecturas en vivo de Unergy.
     // Endpoint real: /api/v1/monitoreo/_legacy (baseURL del cliente ya es /api/v1).
     const results = await Promise.allSettled(
-      proyectosSel.value.map(sub =>
-        api.get('/monitoreo/_legacy', {
-          params: { action: 'getGeneration', sub_project: sub, date_from: fInicio, date_to: fFin },
-        }).then(r => ({ sub, body: r.data }))
-      )
+      proyectosSel.value.map((sub) =>
+        api
+          .get('/monitoreo/_legacy', {
+            params: {
+              action: 'getGeneration',
+              sub_project: sub,
+              date_from: fInicio,
+              date_to: fFin,
+            },
+          })
+          .then((r) => ({ sub, body: r.data })),
+      ),
     )
 
     const parsed = []
@@ -654,22 +958,33 @@ async function cargar() {
 
     // Si TODAS fallaron, es un fallo real: mostrarlo (no "sin datos").
     if (!parsed.length && errores.length) {
-      error.value = errores.length === 1
-        ? errores[0]
-        : `No se pudo consultar ningún proyecto. ${errores[0]}`
+      error.value =
+        errores.length === 1 ? errores[0] : `No se pudo consultar ningún proyecto. ${errores[0]}`
       datasets.value = []
       return
     }
     if (errores.length) {
-      toast.add({ severity: 'warn', summary: 'Algunos proyectos no cargaron', detail: errores.join(' · '), life: 6000 })
+      toast.add({
+        severity: 'warn',
+        summary: 'Algunos proyectos no cargaron',
+        detail: errores.join(' · '),
+        life: 6000,
+      })
     }
 
     // Eje común continuo → todas las series quedan alineadas en chart y tabla.
     const keys = construirEjeKeys()
     const ds = parsed.map((p, idx) => {
-      const points = keys.map(k => ({ key: k, kwh: p.map.get(k) ?? 0, label: labelDeClave(k) }))
+      const points = keys.map((k) => ({ key: k, kwh: p.map.get(k) ?? 0, label: labelDeClave(k) }))
       const total = points.reduce((s, pt) => s + pt.kwh, 0)
-      return { proyectoId: p.sub, nombre: p.nombre, color: PALETTE[idx % PALETTE.length], points, total, hidden: false }
+      return {
+        proyectoId: p.sub,
+        nombre: p.nombre,
+        color: PALETTE[idx % PALETTE.length],
+        points,
+        total,
+        hidden: false,
+      }
     })
     ds.sort((a, b) => b.total - a.total)
     datasets.value = ds
@@ -692,7 +1007,12 @@ function sumarPorGranularidad(raw) {
     else {
       // horaria: agrupa por hora real usando el timestamp de la lectura
       const t = it.time || ''
-      k = t.length >= 13 ? `${t.slice(0, 10)} ${t.slice(11, 13)}:00` : (it.date ? `${it.date} 00:00` : null)
+      k =
+        t.length >= 13
+          ? `${t.slice(0, 10)} ${t.slice(11, 13)}:00`
+          : it.date
+            ? `${it.date} 00:00`
+            : null
     }
     if (!k) continue
     map.set(k, (map.get(k) || 0) + Number(it.kwh))
@@ -704,18 +1024,27 @@ function sumarPorGranularidad(raw) {
 function construirEjeKeys() {
   const keys = []
   if (!fechaDesde.value || !fechaHasta.value) return keys
-  const start = new Date(fechaDesde.value); start.setHours(0, 0, 0, 0)
-  const end = new Date(fechaHasta.value); end.setHours(0, 0, 0, 0)
+  const start = new Date(fechaDesde.value)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(fechaHasta.value)
+  end.setHours(0, 0, 0, 0)
   if (granularidad.value === 'diaria') {
     const cur = new Date(start)
-    while (cur <= end) { keys.push(isoDate(cur)); cur.setDate(cur.getDate() + 1) }
+    while (cur <= end) {
+      keys.push(isoDate(cur))
+      cur.setDate(cur.getDate() + 1)
+    }
   } else if (granularidad.value === 'mensual') {
     const cur = new Date(start.getFullYear(), start.getMonth(), 1)
     const last = new Date(end.getFullYear(), end.getMonth(), 1)
-    while (cur <= last) { keys.push(isoDate(cur).slice(0, 7)); cur.setMonth(cur.getMonth() + 1) }
+    while (cur <= last) {
+      keys.push(isoDate(cur).slice(0, 7))
+      cur.setMonth(cur.getMonth() + 1)
+    }
   } else {
     const cur = new Date(start)
-    const endH = new Date(end); endH.setHours(23, 0, 0, 0)
+    const endH = new Date(end)
+    endH.setHours(23, 0, 0, 0)
     while (cur <= endH) {
       keys.push(`${isoDate(cur)} ${String(cur.getHours()).padStart(2, '0')}:00`)
       cur.setHours(cur.getHours() + 1)
@@ -750,12 +1079,10 @@ function isoDate(d) {
 // ── Período + chart data ─────────────────────────────────────────────
 const periodos = computed(() => datasets.value[0]?.points || [])
 
-const totalKwh = computed(() =>
-  datasets.value.reduce((s, d) => s + (d.hidden ? 0 : d.total), 0)
-)
+const totalKwh = computed(() => datasets.value.reduce((s, d) => s + (d.hidden ? 0 : d.total), 0))
 
 const topProyecto = computed(() => {
-  const sorted = [...datasets.value].filter(d => !d.hidden).sort((a, b) => b.total - a.total)
+  const sorted = [...datasets.value].filter((d) => !d.hidden).sort((a, b) => b.total - a.total)
   return sorted[0] || null
 })
 
@@ -776,9 +1103,11 @@ const chartW = computed(() => chartContainerWidth.value)
 
 const maxY = computed(() => {
   let max = 0
-  datasets.value.forEach(d => {
+  datasets.value.forEach((d) => {
     if (d.hidden) return
-    d.points.forEach(p => { if (p.kwh > max) max = p.kwh })
+    d.points.forEach((p) => {
+      if (p.kwh > max) max = p.kwh
+    })
   })
   return max > 0 ? max * 1.08 : 10
 })
@@ -850,18 +1179,26 @@ const hoverSeries = computed(() => {
   if (!hover.value) return []
   const i = hover.value.idx
   return datasets.value
-    .filter(d => !d.hidden)
-    .map(d => ({ proyectoId: d.proyectoId, color: d.color, nombre: d.nombre, kwh: d.points[i]?.kwh ?? 0 }))
+    .filter((d) => !d.hidden)
+    .map((d) => ({
+      proyectoId: d.proyectoId,
+      color: d.color,
+      nombre: d.nombre,
+      kwh: d.points[i]?.kwh ?? 0,
+    }))
 })
 const hoverTotal = computed(() => hoverSeries.value.reduce((s, d) => s + d.kwh, 0))
 
 function onChartMove(e) {
   const n = periodos.value.length
-  if (!n || !chartSvgRef.value) { hover.value = null; return }
+  if (!n || !chartSvgRef.value) {
+    hover.value = null
+    return
+  }
   const rect = chartSvgRef.value.getBoundingClientRect()
   if (!rect.width) return
   // mapea pixel del cursor → coordenada X del viewBox (preserveAspectRatio=none ⇒ lineal)
-  const userX = (e.clientX - rect.left) / rect.width * chartW.value
+  const userX = ((e.clientX - rect.left) / rect.width) * chartW.value
   const span = chartW.value - paddingL - paddingR
   let idx = n <= 1 ? 0 : Math.round(((userX - paddingL) / span) * (n - 1))
   idx = Math.max(0, Math.min(n - 1, idx))
@@ -869,9 +1206,18 @@ function onChartMove(e) {
   const tipLeft = wrapRect ? e.clientX - wrapRect.left : 0
   const tipTop = wrapRect ? e.clientY - wrapRect.top : 0
   const flip = wrapRect ? tipLeft > wrapRect.width * 0.6 : false
-  hover.value = { idx, gx: xToPx(idx), tipLeft, tipTop, flip, label: periodos.value[idx]?.label || '' }
+  hover.value = {
+    idx,
+    gx: xToPx(idx),
+    tipLeft,
+    tipTop,
+    flip,
+    label: periodos.value[idx]?.label || '',
+  }
 }
-function onChartLeave() { hover.value = null }
+function onChartLeave() {
+  hover.value = null
+}
 
 // ── Fallas del período + correlación con la gráfica ───────────────────
 function energiaPerdida(f) {
@@ -889,7 +1235,7 @@ const fallasDelPeriodo = computed(() => {
   const desde = isoDate(qDesde.value)
   const hasta = isoDate(qHasta.value)
   return allFallas.value
-    .filter(f => {
+    .filter((f) => {
       const fi = (f.fecha_identificacion || '').slice(0, 10)
       if (!fi || fi < desde || fi > hasta) return false
       return nombres.has(f.proyecto?.nombre_comercial)
@@ -898,17 +1244,20 @@ const fallasDelPeriodo = computed(() => {
 })
 
 const fallasGenCount = computed(() => fallasDelPeriodo.value.filter(involucraGeneracion).length)
-const kwhPerdidoTotal = computed(() => fallasDelPeriodo.value.reduce((s, f) => s + energiaPerdida(f), 0))
+const kwhPerdidoTotal = computed(() =>
+  fallasDelPeriodo.value.reduce((s, f) => s + energiaPerdida(f), 0),
+)
 
 // Días con fallas que impactan generación → para subrayar en rojo.
 const faultsByDay = computed(() => {
-  const m = {}  // 'YYYY-MM-DD' → { count, kwh }
+  const m = {} // 'YYYY-MM-DD' → { count, kwh }
   for (const f of fallasDelPeriodo.value) {
     if (!involucraGeneracion(f)) continue
     const d = (f.fecha_identificacion || '').slice(0, 10)
     if (!d) continue
     if (!m[d]) m[d] = { count: 0, kwh: 0 }
-    m[d].count++; m[d].kwh += energiaPerdida(f)
+    m[d].count++
+    m[d].kwh += energiaPerdida(f)
   }
   return m
 })
@@ -928,12 +1277,12 @@ function infoFallaPeriodo(key) {
   if (!key) return null
   if (granularidad.value === 'mensual') return flaggedMonths.value[key] || null
   if (granularidad.value === 'horaria') return faultsByDay.value[key.slice(0, 10)] || null
-  return faultsByDay.value[key] || null  // diaria
+  return faultsByDay.value[key] || null // diaria
 }
 
 // Índices de períodos marcados (para los subrayados rojos).
 const periodosFlagged = computed(() =>
-  periodos.value.map((p, i) => (infoFallaPeriodo(p.key) ? i : -1)).filter(i => i >= 0)
+  periodos.value.map((p, i) => (infoFallaPeriodo(p.key) ? i : -1)).filter((i) => i >= 0),
 )
 // Medio ancho del marcador rojo en coordenadas SVG.
 const marcadorHalfW = computed(() => {
@@ -960,7 +1309,10 @@ function estadoPillStyle(hex) {
 }
 function fmtFechaCorta(d) {
   if (!d) return '—'
-  return new Date(String(d).slice(0, 10) + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
+  return new Date(String(d).slice(0, 10) + 'T00:00:00').toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+  })
 }
 function fallaRowClass(data) {
   return involucraGeneracion(data) ? 'gen-falla-row--gen' : ''
@@ -970,7 +1322,7 @@ function fallaRowClass(data) {
 const tablaFilas = computed(() => {
   return periodos.value.map((p, i) => {
     const row = { periodo: p.label, total: 0 }
-    datasets.value.forEach(ds => {
+    datasets.value.forEach((ds) => {
       const v = ds.points[i]?.kwh
       if (v != null) {
         row[ds.proyectoId] = v
@@ -992,10 +1344,10 @@ function exportarExcel() {
       [`Generado: ${new Date().toLocaleString('es-CO')}`],
       [`Granularidad: ${unidadPeriodo.value}`],
       [`Período: ${isoDate(fechaDesde.value)} → ${isoDate(fechaHasta.value)}`],
-      [`Proyectos: ${datasets.value.map(d => d.nombre).join(', ')}`],
+      [`Proyectos: ${datasets.value.map((d) => d.nombre).join(', ')}`],
       [],
       ['Proyecto', 'Total kWh', `Promedio kWh/${unidadPeriodo.value}`],
-      ...datasets.value.map(d => [
+      ...datasets.value.map((d) => [
         d.nombre,
         Number(d.total.toFixed(2)),
         Number((d.total / Math.max(1, d.points.length)).toFixed(2)),
@@ -1006,10 +1358,12 @@ function exportarExcel() {
     XLSX.utils.book_append_sheet(wb, ws1, 'Resumen')
 
     // Hoja 2: Detalle
-    const headers = [unidadPeriodo.value, ...datasets.value.map(d => d.nombre), 'Total']
-    const rows = tablaFilas.value.map(r => {
+    const headers = [unidadPeriodo.value, ...datasets.value.map((d) => d.nombre), 'Total']
+    const rows = tablaFilas.value.map((r) => {
       const arr = [r.periodo]
-      datasets.value.forEach(ds => arr.push(r[ds.proyectoId] != null ? Number(r[ds.proyectoId].toFixed(2)) : null))
+      datasets.value.forEach((ds) =>
+        arr.push(r[ds.proyectoId] != null ? Number(r[ds.proyectoId].toFixed(2)) : null),
+      )
       arr.push(Number(r.total.toFixed(2)))
       return arr
     })
@@ -1033,7 +1387,7 @@ async function cargarProyectos() {
     const { data } = await api.get('/monitoreo/_legacy', { params: { action: 'getProjects' } })
     const seen = new Set()
     proyectos.value = (data?.projects ?? [])
-      .filter(p => {
+      .filter((p) => {
         if (!p.sub_project || seen.has(p.sub_project)) return false
         seen.add(p.sub_project)
         return true
@@ -1055,8 +1409,8 @@ async function cargarFallas() {
       const totalPages = Math.ceil(total / 200)
       const rest = await Promise.allSettled(
         Array.from({ length: totalPages - 1 }, (_, i) =>
-          api.get('/fallas', { params: { page: i + 2, size: 200 } })
-        )
+          api.get('/fallas', { params: { page: i + 2, size: 200 } }),
+        ),
       )
       for (const r of rest) if (r.status === 'fulfilled') items.push(...(r.value.data.items ?? []))
     }
@@ -1071,12 +1425,14 @@ async function cargarFallas() {
 // ── ResizeObserver para chart responsive ─────────────────────────────
 let resizeObserver
 onMounted(async () => {
-  recomputarFechas()   // fija el rango inicial según granularidad/modo por defecto
+  recomputarFechas() // fija el rango inicial según granularidad/modo por defecto
   await cargarProyectos()
   cargarFallas()
   await nextTick()
   if (chartWrapRef.value) {
-    const upd = () => { chartContainerWidth.value = chartWrapRef.value?.clientWidth || 900 }
+    const upd = () => {
+      chartContainerWidth.value = chartWrapRef.value?.clientWidth || 900
+    }
     upd()
     resizeObserver = new ResizeObserver(upd)
     resizeObserver.observe(chartWrapRef.value)
@@ -1110,7 +1466,7 @@ watch(chartWrapRef, (el) => {
 /* Tapa la franja superior (padding 24px del <main>) por la que el contenido
    se asomaría al hacer scroll. Mismo patrón que Gestión de Fallas. */
 .gen-sticky-header::before {
-  content: "";
+  content: '';
   position: absolute;
   left: -24px;
   right: -24px;
@@ -1167,17 +1523,26 @@ watch(chartWrapRef, (el) => {
   transition: all 0.12s;
   font-family: inherit;
 }
-.gen-seg-btn:hover:not(:disabled) { color: #2C2039; }
+.gen-seg-btn:hover:not(:disabled) {
+  color: #2c2039;
+}
 .gen-seg-btn--active {
   background: #fff;
-  color: #915BD8;
+  color: #915bd8;
   box-shadow: 0 1px 3px rgba(28, 18, 50, 0.1);
 }
-.gen-seg-btn--disabled { opacity: 0.5; cursor: not-allowed; }
+.gen-seg-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 
 /* Segmento de "modo" — tono distinto para diferenciarlo de la granularidad */
-.gen-segmented--modo { background: #eef4ff; }
-.gen-segmented--modo .gen-seg-btn--active { color: #2563eb; }
+.gen-segmented--modo {
+  background: #eef4ff;
+}
+.gen-segmented--modo .gen-seg-btn--active {
+  color: #2563eb;
+}
 
 /* Etiqueta del rango resuelto */
 .gen-range-label {
@@ -1193,7 +1558,10 @@ watch(chartWrapRef, (el) => {
   padding: 3px 10px;
   white-space: nowrap;
 }
-.gen-range-label i { font-size: 11px; color: #915BD8; }
+.gen-range-label i {
+  font-size: 11px;
+  color: #915bd8;
+}
 
 /* Aviso no bloqueante */
 .gen-aviso {
@@ -1216,8 +1584,13 @@ watch(chartWrapRef, (el) => {
 }
 
 /* Project picker */
-.gen-project-picker { flex: 1; min-width: 240px; }
-.gen-project-picker :deep(.p-multiselect) { width: 100%; }
+.gen-project-picker {
+  flex: 1;
+  min-width: 240px;
+}
+.gen-project-picker :deep(.p-multiselect) {
+  width: 100%;
+}
 
 /* Línea de disponibilidad de datos */
 .gen-datahint {
@@ -1229,7 +1602,9 @@ watch(chartWrapRef, (el) => {
   font-size: 11.5px;
   color: #6b5a8a;
 }
-.gen-datahint > i { font-size: 11px; }
+.gen-datahint > i {
+  font-size: 11px;
+}
 .gen-datahint-btn {
   border: 1px solid #e9ddff;
   background: #faf5ff;
@@ -1241,22 +1616,33 @@ watch(chartWrapRef, (el) => {
   cursor: pointer;
   font-family: inherit;
 }
-.gen-datahint-btn:hover { background: #f1e8ff; }
+.gen-datahint-btn:hover {
+  background: #f1e8ff;
+}
 
 /* Botón Consultar */
-.gen-consultar { flex-shrink: 0; }
+.gen-consultar {
+  flex-shrink: 0;
+}
 /* Resalta cuando hay filtros sin aplicar (pendiente de consultar) */
 .gen-consultar--pendiente :deep(.p-button),
 .gen-consultar--pendiente.p-button {
   animation: gen-pulse 1.6s ease-in-out infinite;
 }
 @keyframes gen-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(145, 91, 216, 0.45); }
-  50%      { box-shadow: 0 0 0 4px rgba(145, 91, 216, 0.18); }
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(145, 91, 216, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(145, 91, 216, 0.18);
+  }
 }
 
 /* Empty / loading / error states */
-.gen-empty, .gen-loading, .gen-error {
+.gen-empty,
+.gen-loading,
+.gen-error {
   background: #fff;
   border: 1px solid #ece8f4;
   border-radius: 12px;
@@ -1281,7 +1667,9 @@ watch(chartWrapRef, (el) => {
   gap: 12px;
 }
 @media (min-width: 768px) {
-  .gen-kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .gen-kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 .gen-kpi {
   display: flex;
@@ -1294,14 +1682,29 @@ watch(chartWrapRef, (el) => {
   box-shadow: 0 1px 3px rgba(28, 18, 50, 0.04);
 }
 .gen-kpi-icon {
-  width: 36px; height: 36px;
+  width: 36px;
+  height: 36px;
   border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 15px;
   flex-shrink: 0;
 }
-.gen-kpi-val { font-size: 20px; font-weight: 800; line-height: 1.1; color: #2C2039; }
-.gen-kpi-lbl { font-size: 11.5px; font-weight: 600; color: #6b5a8a; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
+.gen-kpi-val {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #2c2039;
+}
+.gen-kpi-lbl {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6b5a8a;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
 
 /* Card */
 .gen-card {
@@ -1322,13 +1725,14 @@ watch(chartWrapRef, (el) => {
 .gen-card-title {
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
   margin: 0;
 }
 
 /* Chart toggle */
 .gen-toggle-btn {
-  width: 30px; height: 30px;
+  width: 30px;
+  height: 30px;
   border: 1px solid #ece8f4;
   background: #fff;
   border-radius: 6px;
@@ -1338,8 +1742,14 @@ watch(chartWrapRef, (el) => {
   align-items: center;
   justify-content: center;
 }
-.gen-toggle-btn--active { background: #915BD8; color: #fff; border-color: #915BD8; }
-.gen-toggle-btn i { font-size: 12px; }
+.gen-toggle-btn--active {
+  background: #915bd8;
+  color: #fff;
+  border-color: #915bd8;
+}
+.gen-toggle-btn i {
+  font-size: 12px;
+}
 
 /* Legend */
 .gen-legend {
@@ -1362,17 +1772,31 @@ watch(chartWrapRef, (el) => {
   cursor: pointer;
   transition: all 0.12s;
 }
-.gen-legend-item:hover { background: #f3f1f8; }
-.gen-legend-item--off { opacity: 0.4; }
-.gen-legend-dot { width: 9px; height: 9px; border-radius: 50%; }
-.gen-legend-name { font-weight: 600; color: #2C2039; }
-.gen-legend-total { color: #6b5a8a; font-weight: 500; }
+.gen-legend-item:hover {
+  background: #f3f1f8;
+}
+.gen-legend-item--off {
+  opacity: 0.4;
+}
+.gen-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.gen-legend-name {
+  font-weight: 600;
+  color: #2c2039;
+}
+.gen-legend-total {
+  color: #6b5a8a;
+  font-weight: 500;
+}
 
 /* Chart SVG */
 .gen-chart-wrap {
   width: 100%;
   padding: 12px 16px 4px;
-  position: relative;   /* ancla del tooltip de hover */
+  position: relative; /* ancla del tooltip de hover */
 }
 .gen-chart-svg {
   width: 100%;
@@ -1382,7 +1806,7 @@ watch(chartWrapRef, (el) => {
 
 /* Hover: línea guía + tooltip de valores X/Y */
 .gen-hover-line {
-  stroke: #915BD8;
+  stroke: #915bd8;
   stroke-width: 1;
   stroke-dasharray: 4 3;
   opacity: 0.75;
@@ -1401,10 +1825,12 @@ watch(chartWrapRef, (el) => {
   font-size: 11.5px;
   transform: translate(12px, -50%);
 }
-.gen-tooltip--flip { transform: translate(calc(-100% - 12px), -50%); }
+.gen-tooltip--flip {
+  transform: translate(calc(-100% - 12px), -50%);
+}
 .gen-tooltip-x {
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
   margin-bottom: 5px;
   white-space: nowrap;
 }
@@ -1414,7 +1840,12 @@ watch(chartWrapRef, (el) => {
   gap: 6px;
   padding: 1px 0;
 }
-.gen-tooltip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.gen-tooltip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 .gen-tooltip-name {
   color: #6b5a8a;
   flex: 1;
@@ -1422,8 +1853,16 @@ watch(chartWrapRef, (el) => {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.gen-tooltip-val { font-weight: 700; color: #2C2039; font-variant-numeric: tabular-nums; }
-.gen-tooltip-total { border-top: 1px solid #f0ebf7; margin-top: 4px; padding-top: 4px; }
+.gen-tooltip-val {
+  font-weight: 700;
+  color: #2c2039;
+  font-variant-numeric: tabular-nums;
+}
+.gen-tooltip-total {
+  border-top: 1px solid #f0ebf7;
+  margin-top: 4px;
+  padding-top: 4px;
+}
 .gen-tooltip-fault {
   border-top: 1px solid #fde2e2;
   margin-top: 5px;
@@ -1434,12 +1873,25 @@ watch(chartWrapRef, (el) => {
   align-items: center;
   gap: 5px;
 }
-.gen-tooltip-fault i { font-size: 11px; }
+.gen-tooltip-fault i {
+  font-size: 11px;
+}
 
 /* Marcadores de falla en la gráfica (subrayado rojo del día/período) */
-.gen-fault-underline { stroke: #dc2626; stroke-width: 3; stroke-linecap: round; }
-.gen-fault-vline { stroke: #dc2626; stroke-width: 1; stroke-dasharray: 2 3; opacity: 0.35; }
-.gen-fault-dot { fill: #dc2626; }
+.gen-fault-underline {
+  stroke: #dc2626;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.gen-fault-vline {
+  stroke: #dc2626;
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.35;
+}
+.gen-fault-dot {
+  fill: #dc2626;
+}
 
 .gen-chart-svg .gen-grid line {
   stroke: #ece8f4;
@@ -1471,7 +1923,9 @@ watch(chartWrapRef, (el) => {
   padding: 8px 12px;
   vertical-align: middle;
 }
-.gen-table :deep(.p-datatable-tbody > tr) { cursor: pointer; }
+.gen-table :deep(.p-datatable-tbody > tr) {
+  cursor: pointer;
+}
 
 /* ── Panel de fallas del período ─────────────────────────────────────── */
 .gen-fchip {
@@ -1484,7 +1938,11 @@ watch(chartWrapRef, (el) => {
   padding: 2px 9px;
   white-space: nowrap;
 }
-.gen-fchip--red { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+.gen-fchip--red {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
 
 .gen-fallas-empty {
   display: flex;
@@ -1497,10 +1955,22 @@ watch(chartWrapRef, (el) => {
   text-align: center;
 }
 
-.gen-falla-stripe { width: 4px; height: 30px; border-radius: 2px; background: #d1d5db; margin: 0 auto; }
-.gen-falla-stripe--gen { background: #dc2626; }
-.gen-falla-row--gen :deep(td) { background: #fff7f7; }
-:deep(.gen-falla-row--gen:hover td) { background: #fdeaea !important; }
+.gen-falla-stripe {
+  width: 4px;
+  height: 30px;
+  border-radius: 2px;
+  background: #d1d5db;
+  margin: 0 auto;
+}
+.gen-falla-stripe--gen {
+  background: #dc2626;
+}
+.gen-falla-row--gen :deep(td) {
+  background: #fff7f7;
+}
+:deep(.gen-falla-row--gen:hover td) {
+  background: #fdeaea !important;
+}
 
 .gen-falla-desc {
   overflow: hidden;
@@ -1530,5 +2000,7 @@ watch(chartWrapRef, (el) => {
   border-radius: 6px;
   padding: 2px 8px;
 }
-.gen-energy-badge i { font-size: 10px; }
+.gen-energy-badge i {
+  font-size: 10px;
+}
 </style>

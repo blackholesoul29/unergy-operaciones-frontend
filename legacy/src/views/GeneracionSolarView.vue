@@ -1,14 +1,11 @@
 <template>
   <div class="gs-page">
-
     <!-- ══ HEADER BAR ══════════════════════════════════════════════════════ -->
     <div class="gs-header">
       <div class="gs-header-left">
         <h1 class="gs-title">Generación Solar</h1>
         <p class="gs-subtitle">
-          <span v-if="monitoringData">
-            {{ monitoringData.fleet.total }} proyectos conectados
-          </span>
+          <span v-if="monitoringData"> {{ monitoringData.fleet.total }} proyectos conectados </span>
           <span v-else>Cargando flota...</span>
           <span v-if="lastUpdated" class="gs-last-updated">
             &nbsp;· Actualizado {{ lastUpdated }}
@@ -18,7 +15,7 @@
       <div class="gs-header-right">
         <!-- Auto-refresh countdown chip -->
         <div class="gs-countdown-chip" :class="{ 'gs-countdown-chip--urgent': countdown <= 30 }">
-          <i class="pi pi-clock" style="font-size:11px" />
+          <i class="pi pi-clock" style="font-size: 11px" />
           {{ countdownDisplay }}
         </div>
         <!-- Refresh button -->
@@ -34,10 +31,10 @@
       <!-- Online -->
       <div class="gs-kpi gs-kpi--online">
         <div class="gs-kpi-icon">
-          <span class="gs-status-dot" style="background:#16a34a;width:10px;height:10px;" />
+          <span class="gs-status-dot" style="background: #16a34a; width: 10px; height: 10px" />
         </div>
         <div class="gs-kpi-body">
-          <span class="gs-kpi-value" style="color:#16a34a">{{ monitoringData.fleet.online }}</span>
+          <span class="gs-kpi-value" style="color: #16a34a">{{ monitoringData.fleet.online }}</span>
           <span class="gs-kpi-label">Online</span>
         </div>
       </div>
@@ -45,10 +42,10 @@
       <!-- Caídos (hidden if 0) -->
       <div v-if="monitoringData.fleet.caido > 0" class="gs-kpi gs-kpi--caido">
         <div class="gs-kpi-icon">
-          <span class="gs-status-dot" style="background:#dc2626;width:10px;height:10px;" />
+          <span class="gs-status-dot" style="background: #dc2626; width: 10px; height: 10px" />
         </div>
         <div class="gs-kpi-body">
-          <span class="gs-kpi-value" style="color:#dc2626">{{ monitoringData.fleet.caido }}</span>
+          <span class="gs-kpi-value" style="color: #dc2626">{{ monitoringData.fleet.caido }}</span>
           <span class="gs-kpi-label">Caídos</span>
         </div>
       </div>
@@ -56,10 +53,12 @@
       <!-- Sin comunicación (hidden if 0) -->
       <div v-if="monitoringData.fleet.sin_comunicacion > 0" class="gs-kpi gs-kpi--sincom">
         <div class="gs-kpi-icon">
-          <span class="gs-status-dot" style="background:#9ca3af;width:10px;height:10px;" />
+          <span class="gs-status-dot" style="background: #9ca3af; width: 10px; height: 10px" />
         </div>
         <div class="gs-kpi-body">
-          <span class="gs-kpi-value" style="color:#6b7280">{{ monitoringData.fleet.sin_comunicacion }}</span>
+          <span class="gs-kpi-value" style="color: #6b7280">{{
+            monitoringData.fleet.sin_comunicacion
+          }}</span>
           <span class="gs-kpi-label">Sin comunicación</span>
         </div>
       </div>
@@ -67,10 +66,12 @@
       <!-- Degradados (hidden if 0) -->
       <div v-if="monitoringData.fleet.degradado > 0" class="gs-kpi gs-kpi--degradado">
         <div class="gs-kpi-icon">
-          <span class="gs-status-dot" style="background:#d97706;width:10px;height:10px;" />
+          <span class="gs-status-dot" style="background: #d97706; width: 10px; height: 10px" />
         </div>
         <div class="gs-kpi-body">
-          <span class="gs-kpi-value" style="color:#d97706">{{ monitoringData.fleet.degradado }}</span>
+          <span class="gs-kpi-value" style="color: #d97706">{{
+            monitoringData.fleet.degradado
+          }}</span>
           <span class="gs-kpi-label">Degradados</span>
         </div>
       </div>
@@ -78,10 +79,12 @@
       <!-- Potencia total -->
       <div class="gs-kpi">
         <div class="gs-kpi-icon">
-          <i class="pi pi-bolt" style="color:#915BD8;font-size:14px;" />
+          <i class="pi pi-bolt" style="color: #915bd8; font-size: 14px" />
         </div>
         <div class="gs-kpi-body">
-          <span class="gs-kpi-value" style="color:#915BD8">{{ formatPower(monitoringData.fleet.total_power_kw) }}</span>
+          <span class="gs-kpi-value" style="color: #915bd8">{{
+            formatPower(monitoringData.fleet.total_power_kw)
+          }}</span>
           <span class="gs-kpi-label">Potencia total</span>
         </div>
       </div>
@@ -89,18 +92,28 @@
       <!-- Utilización -->
       <div class="gs-kpi">
         <div class="gs-kpi-icon">
-          <i class="pi pi-chart-bar" style="color:#2C2039;font-size:14px;" />
+          <i class="pi pi-chart-bar" style="color: #2c2039; font-size: 14px" />
         </div>
         <div class="gs-kpi-body">
           <div class="gs-kpi-util-row">
-            <span class="gs-kpi-value" style="color:#2C2039">{{ monitoringData.fleet.utilization_pct }}%</span>
+            <span class="gs-kpi-value" style="color: #2c2039"
+              >{{ monitoringData.fleet.utilization_pct }}%</span
+            >
             <span class="gs-kpi-label">Utilización</span>
           </div>
           <div class="gs-util-bar">
-            <div class="gs-util-bar-fill"
-              :style="{ width: Math.min(monitoringData.fleet.utilization_pct, 100) + '%',
-                        backgroundColor: monitoringData.fleet.utilization_pct >= 50 ? '#16a34a'
-                          : monitoringData.fleet.utilization_pct >= 20 ? '#d97706' : '#dc2626' }" />
+            <div
+              class="gs-util-bar-fill"
+              :style="{
+                width: Math.min(monitoringData.fleet.utilization_pct, 100) + '%',
+                backgroundColor:
+                  monitoringData.fleet.utilization_pct >= 50
+                    ? '#16a34a'
+                    : monitoringData.fleet.utilization_pct >= 20
+                      ? '#d97706'
+                      : '#dc2626',
+              }"
+            />
           </div>
         </div>
       </div>
@@ -114,10 +127,18 @@
     <!-- ══ FILTER BAR ═══════════════════════════════════════════════════════ -->
     <div class="gs-filter-bar">
       <div class="gs-status-pills">
-        <button v-for="pill in STATUS_PILLS" :key="pill.key"
-          class="gs-pill" :class="{ 'gs-pill--active': activeFilter === pill.key }"
-          :style="activeFilter === pill.key ? { backgroundColor: pill.color, borderColor: pill.color, color: '#fff' } : {}"
-          @click="activeFilter = pill.key">
+        <button
+          v-for="pill in STATUS_PILLS"
+          :key="pill.key"
+          class="gs-pill"
+          :class="{ 'gs-pill--active': activeFilter === pill.key }"
+          :style="
+            activeFilter === pill.key
+              ? { backgroundColor: pill.color, borderColor: pill.color, color: '#fff' }
+              : {}
+          "
+          @click="activeFilter = pill.key"
+        >
           {{ pill.label }}
         </button>
       </div>
@@ -132,7 +153,8 @@
           scrollHeight="280px"
           placeholder="Buscar o seleccionar proyecto..."
           class="gs-search-ac"
-          inputClass="gs-search-input" />
+          inputClass="gs-search-input"
+        />
       </div>
     </div>
 
@@ -147,8 +169,8 @@
 
           <!-- Loading inicial -->
           <div v-if="!detailData && loadingDetail" class="gs-overlay-loading">
-            <i class="pi pi-spin pi-spinner" style="font-size:32px;color:#915BD8" />
-            <span style="color:#6b5a8a;font-size:14px">Cargando datos del proyecto...</span>
+            <i class="pi pi-spin pi-spinner" style="font-size: 32px; color: #915bd8" />
+            <span style="color: #6b5a8a; font-size: 14px">Cargando datos del proyecto...</span>
           </div>
 
           <template v-else-if="detailData">
@@ -159,12 +181,17 @@
                 <div class="gs-detail-meta">
                   <span class="gs-sol-badge">SOL #{{ detailData.sol_id }}</span>
                   <span class="gs-detail-cap">{{ detailData.capacity_kwp }} kWp instalados</span>
-                  <span class="gs-detail-total">{{ detailData.total_30d_kwh?.toLocaleString('es-CO') }} kWh últimos 30d</span>
+                  <span class="gs-detail-total"
+                    >{{ detailData.total_30d_kwh?.toLocaleString('es-CO') }} kWh últimos 30d</span
+                  >
                 </div>
               </div>
               <div class="gs-detail-header-right">
-                <button class="gs-card-falla-btn gs-card-falla-btn--lg" @click="openFallaDialog(null)">
-                  <i class="pi pi-bolt" style="font-size:11px" />
+                <button
+                  class="gs-card-falla-btn gs-card-falla-btn--lg"
+                  @click="openFallaDialog(null)"
+                >
+                  <i class="pi pi-bolt" style="font-size: 11px" />
                   Crear falla
                 </button>
                 <button class="gs-close-btn" @click="closeDetail">
@@ -176,12 +203,11 @@
             <!-- Body scrollable -->
             <div class="gs-overlay-body">
               <div v-if="loadingDetail" class="gs-detail-loading">
-                <i class="pi pi-spin pi-spinner" style="font-size:22px;color:#915BD8" />
-                <span style="color:#6b5a8a">Actualizando...</span>
+                <i class="pi pi-spin pi-spinner" style="font-size: 22px; color: #915bd8" />
+                <span style="color: #6b5a8a">Actualizando...</span>
               </div>
 
               <template v-else>
-
                 <!-- ── Inversores ── -->
                 <div v-if="detailData.inverters?.length" class="gs-inverters-section">
                   <h3 class="gs-section-title">
@@ -189,24 +215,39 @@
                     <span class="gs-inv-hint">· click en un inversor para ver su detalle</span>
                   </h3>
                   <div class="gs-inverters-grid">
-                    <div v-for="inv in detailData.inverters" :key="inv.id"
+                    <div
+                      v-for="inv in detailData.inverters"
+                      :key="inv.id"
                       class="gs-inv-card gs-inv-card--clickable"
                       :class="{ 'gs-inv-card--active': expandedInv === inv.name }"
                       :style="{ borderLeftColor: STATUS_CFG[inv.inv_status]?.border || '#e5e7eb' }"
-                      @click="toggleInverter(inv)">
+                      @click="toggleInverter(inv)"
+                    >
                       <div class="gs-inv-top">
                         <span class="gs-inv-name">{{ inv.name }}</span>
-                        <span class="gs-status-dot" :style="{ background: STATUS_CFG[inv.inv_status]?.dot || '#9ca3af' }" />
+                        <span
+                          class="gs-status-dot"
+                          :style="{ background: STATUS_CFG[inv.inv_status]?.dot || '#9ca3af' }"
+                        />
                       </div>
-                      <div class="gs-inv-state" :style="{ color: STATUS_CFG[inv.inv_status]?.color || '#6b7280' }">
+                      <div
+                        class="gs-inv-state"
+                        :style="{ color: STATUS_CFG[inv.inv_status]?.color || '#6b7280' }"
+                      >
                         {{ inv.state }}
                       </div>
                       <div class="gs-inv-power">
-                        <span class="gs-inv-power-val" :style="{ color: inv.power_kw > 0 ? '#16a34a' : '#9ca3af' }">
+                        <span
+                          class="gs-inv-power-val"
+                          :style="{ color: inv.power_kw > 0 ? '#16a34a' : '#9ca3af' }"
+                        >
                           {{ inv.power_kw != null ? inv.power_kw.toFixed(2) : '—' }}
                         </span>
                         <span class="gs-inv-power-unit">kW</span>
-                        <i class="pi gs-inv-chevron" :class="expandedInv === inv.name ? 'pi-chevron-up' : 'pi-chevron-down'" />
+                        <i
+                          class="pi gs-inv-chevron"
+                          :class="expandedInv === inv.name ? 'pi-chevron-up' : 'pi-chevron-down'"
+                        />
                       </div>
                     </div>
                   </div>
@@ -216,9 +257,20 @@
                     <div v-if="expandedInvDetail" class="gs-inv-expanded">
                       <div class="gs-inv-expanded-head">
                         <h4 class="gs-inv-expanded-title">
-                          <span class="gs-status-dot" :style="{ background: STATUS_CFG[expandedInvDetail.inv_status]?.dot || '#9ca3af' }" />
+                          <span
+                            class="gs-status-dot"
+                            :style="{
+                              background:
+                                STATUS_CFG[expandedInvDetail.inv_status]?.dot || '#9ca3af',
+                            }"
+                          />
                           {{ expandedInvDetail.name }}
-                          <span class="gs-inv-expanded-state" :style="{ color: STATUS_CFG[expandedInvDetail.inv_status]?.color || '#6b7280' }">
+                          <span
+                            class="gs-inv-expanded-state"
+                            :style="{
+                              color: STATUS_CFG[expandedInvDetail.inv_status]?.color || '#6b7280',
+                            }"
+                          >
                             {{ expandedInvDetail.state }}
                           </span>
                         </h4>
@@ -231,37 +283,68 @@
                       <div class="gs-gaia-kpis">
                         <div class="gs-gaia-kpi">
                           <div class="gs-gaia-kpi-label">Potencia AC</div>
-                          <div class="gs-gaia-kpi-val" style="color:#16a34a">{{ fmtAC(expandedInvDetail.ac_metrics?.pac_kw ?? expandedInvDetail.power_kw) }}</div>
+                          <div class="gs-gaia-kpi-val" style="color: #16a34a">
+                            {{
+                              fmtAC(
+                                expandedInvDetail.ac_metrics?.pac_kw ?? expandedInvDetail.power_kw,
+                              )
+                            }}
+                          </div>
                           <div class="gs-gaia-kpi-sub">kW</div>
                         </div>
                         <div class="gs-gaia-kpi">
                           <div class="gs-gaia-kpi-label">Energía hoy</div>
-                          <div class="gs-gaia-kpi-val" style="color:#7c3aed">{{ fmtAC(expandedInvDetail.ac_metrics?.e_day_kwh) }}</div>
+                          <div class="gs-gaia-kpi-val" style="color: #7c3aed">
+                            {{ fmtAC(expandedInvDetail.ac_metrics?.e_day_kwh) }}
+                          </div>
                           <div class="gs-gaia-kpi-sub">kWh</div>
                         </div>
                         <div class="gs-gaia-kpi">
                           <div class="gs-gaia-kpi-label">Temperatura</div>
-                          <div class="gs-gaia-kpi-val" style="color:#d97706">{{ fmtAC(expandedInvDetail.ac_metrics?.temperature_c) }}</div>
+                          <div class="gs-gaia-kpi-val" style="color: #d97706">
+                            {{ fmtAC(expandedInvDetail.ac_metrics?.temperature_c) }}
+                          </div>
                           <div class="gs-gaia-kpi-sub">°C</div>
                         </div>
                         <div class="gs-gaia-kpi">
                           <div class="gs-gaia-kpi-label">Eficiencia</div>
-                          <div class="gs-gaia-kpi-val" :class="effClass(expandedInvDetail.ac_metrics?.efficiency_pct)">{{ fmtAC(expandedInvDetail.ac_metrics?.efficiency_pct) }}</div>
+                          <div
+                            class="gs-gaia-kpi-val"
+                            :class="effClass(expandedInvDetail.ac_metrics?.efficiency_pct)"
+                          >
+                            {{ fmtAC(expandedInvDetail.ac_metrics?.efficiency_pct) }}
+                          </div>
                           <div class="gs-gaia-kpi-sub">%</div>
                         </div>
                         <div class="gs-gaia-kpi">
                           <div class="gs-gaia-kpi-label">Factor de potencia</div>
-                          <div class="gs-gaia-kpi-val" :class="fpClass(expandedInvDetail.ac_metrics?.power_factor)">{{ fmtPF(expandedInvDetail.ac_metrics?.power_factor) }}</div>
+                          <div
+                            class="gs-gaia-kpi-val"
+                            :class="fpClass(expandedInvDetail.ac_metrics?.power_factor)"
+                          >
+                            {{ fmtPF(expandedInvDetail.ac_metrics?.power_factor) }}
+                          </div>
                           <div class="gs-gaia-kpi-sub">promedio</div>
                         </div>
                       </div>
 
                       <!-- Métricas AC por fase -->
-                      <div v-if="expandedInvDetail.ac_metrics && (expandedInvDetail.ac_metrics.vac_a != null || expandedInvDetail.ac_metrics.iac_a != null)"
-                        class="gs-metrics-table-wrap">
+                      <div
+                        v-if="
+                          expandedInvDetail.ac_metrics &&
+                          (expandedInvDetail.ac_metrics.vac_a != null ||
+                            expandedInvDetail.ac_metrics.iac_a != null)
+                        "
+                        class="gs-metrics-table-wrap"
+                      >
                         <table class="gs-metrics-table">
                           <thead>
-                            <tr><th class="gs-mt-inv" style="text-align:left">Variable</th><th>Fase A</th><th>Fase B</th><th>Fase C</th></tr>
+                            <tr>
+                              <th class="gs-mt-inv" style="text-align: left">Variable</th>
+                              <th>Fase A</th>
+                              <th>Fase B</th>
+                              <th>Fase C</th>
+                            </tr>
                           </thead>
                           <tbody>
                             <tr>
@@ -281,16 +364,21 @@
                       </div>
 
                       <!-- Gráfica individual de potencia del inversor -->
-                      <div class="gs-chart-card" style="margin-top:12px">
-                        <h4 class="gs-section-title">Potencia del inversor — {{ invRangeLabel }}</h4>
+                      <div class="gs-chart-card" style="margin-top: 12px">
+                        <h4 class="gs-section-title">
+                          Potencia del inversor — {{ invRangeLabel }}
+                        </h4>
                         <div v-if="invPowerLoading" class="gs-chart-empty">
-                          <i class="pi pi-spin pi-spinner" style="font-size:22px;color:#915BD8" />
+                          <i
+                            class="pi pi-spin pi-spinner"
+                            style="font-size: 22px; color: #915bd8"
+                          />
                         </div>
                         <div v-else-if="invIndividualData.labels.length" class="gs-chart-container">
                           <Line :data="invIndividualData" :options="invPowerOptions" />
                         </div>
                         <div v-else class="gs-chart-empty">
-                          <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
+                          <i class="pi pi-chart-line" style="font-size: 28px; color: #d1d5db" />
                           <p>Sin datos de potencia para este inversor en el rango</p>
                         </div>
                       </div>
@@ -299,14 +387,34 @@
                 </div>
 
                 <!-- ── Comparativa de inversores (todas las líneas) ── -->
-                <div v-if="detailData.inverters?.length" class="gs-chart-card" style="margin-bottom:16px">
+                <div
+                  v-if="detailData.inverters?.length"
+                  class="gs-chart-card"
+                  style="margin-bottom: 16px"
+                >
                   <div class="gs-inv-cmp-head">
-                    <h3 class="gs-section-title" style="margin:0">Comparativa de inversores — Potencia</h3>
+                    <h3 class="gs-section-title" style="margin: 0">
+                      Comparativa de inversores — Potencia
+                    </h3>
                     <div class="gs-inv-date-ctrls">
-                      <input v-model="invDateFrom" type="date" class="gs-date-input" :max="todayStr" />
+                      <input
+                        v-model="invDateFrom"
+                        type="date"
+                        class="gs-date-input"
+                        :max="todayStr"
+                      />
                       <span class="gs-date-sep">→</span>
-                      <input v-model="invDateTo" type="date" class="gs-date-input" :max="todayStr" />
-                      <button class="gs-refresh-btn gs-refresh-btn--sm" @click="reloadInverterPower" :disabled="invPowerLoading">
+                      <input
+                        v-model="invDateTo"
+                        type="date"
+                        class="gs-date-input"
+                        :max="todayStr"
+                      />
+                      <button
+                        class="gs-refresh-btn gs-refresh-btn--sm"
+                        @click="reloadInverterPower"
+                        :disabled="invPowerLoading"
+                      >
                         <i :class="invPowerLoading ? 'pi pi-spin pi-spinner' : 'pi pi-refresh'" />
                         Aplicar
                       </button>
@@ -316,7 +424,7 @@
                     <Line :data="invComparativeData" :options="invComparativeOptions" />
                   </div>
                   <div v-else class="gs-chart-empty">
-                    <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
+                    <i class="pi pi-chart-line" style="font-size: 28px; color: #d1d5db" />
                     <p>Sin datos de potencia por inversor en el rango</p>
                   </div>
                 </div>
@@ -325,27 +433,23 @@
                 <div class="gs-charts-row">
                   <div class="gs-chart-card gs-chart-card--dark">
                     <h3 class="gs-section-title gs-section-title--light">
-                      <span class="gs-chart-legend-dot" style="background:#915BD8" />
+                      <span class="gs-chart-legend-dot" style="background: #915bd8" />
                       Inversores — Potencia hoy (W)
                     </h3>
                     <div v-if="inversorPowerChartData.labels.length" class="gs-chart-container">
                       <Line :data="inversorPowerChartData" :options="inversorPowerOptions" />
                     </div>
-                    <div v-else class="gs-chart-empty gs-chart-empty--dark">
-                      Sin datos
-                    </div>
+                    <div v-else class="gs-chart-empty gs-chart-empty--dark">Sin datos</div>
                   </div>
                   <div class="gs-chart-card gs-chart-card--dark">
                     <h3 class="gs-section-title gs-section-title--light">
-                      <span class="gs-chart-legend-dot" style="background:#F6FF72" />
+                      <span class="gs-chart-legend-dot" style="background: #f6ff72" />
                       Medidores — Potencia hoy (W)
                     </h3>
                     <div v-if="medidorPowerChartData.labels.length" class="gs-chart-container">
                       <Line :data="medidorPowerChartData" :options="medidorPowerOptions" />
                     </div>
-                    <div v-else class="gs-chart-empty gs-chart-empty--dark">
-                      Sin datos
-                    </div>
+                    <div v-else class="gs-chart-empty gs-chart-empty--dark">Sin datos</div>
                   </div>
                 </div>
 
@@ -357,7 +461,7 @@
                       <Line :data="powerCurveData" :options="powerCurveOptions" />
                     </div>
                     <div v-else class="gs-chart-empty">
-                      <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
+                      <i class="pi pi-chart-line" style="font-size: 28px; color: #d1d5db" />
                       <p>Sin datos de potencia para hoy</p>
                     </div>
                   </div>
@@ -367,7 +471,7 @@
                       <Bar :data="generation30dData" :options="generation30dOptions" />
                     </div>
                     <div v-else class="gs-chart-empty">
-                      <i class="pi pi-chart-bar" style="font-size:28px;color:#d1d5db" />
+                      <i class="pi pi-chart-bar" style="font-size: 28px; color: #d1d5db" />
                       <p>Sin datos de generación</p>
                     </div>
                   </div>
@@ -381,8 +485,10 @@
                       <Line :data="gaiaPowerChartData" :options="gaiaPowerOptions" />
                     </div>
                     <div v-else class="gs-chart-empty">
-                      <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
-                      <p v-if="detailData.gaia_node_id === null">Medidor no registrado en Gaia para este proyecto</p>
+                      <i class="pi pi-chart-line" style="font-size: 28px; color: #d1d5db" />
+                      <p v-if="detailData.gaia_node_id === null">
+                        Medidor no registrado en Gaia para este proyecto
+                      </p>
                       <p v-else>Sin datos de potencia del medidor para hoy</p>
                     </div>
                   </div>
@@ -392,24 +498,47 @@
                       <Line :data="gaiaEnergyChartData" :options="gaiaEnergyOptions" />
                     </div>
                     <div v-else class="gs-chart-empty">
-                      <i class="pi pi-chart-line" style="font-size:28px;color:#d1d5db" />
-                      <p v-if="detailData.gaia_node_id === null">Medidor no registrado en Gaia para este proyecto</p>
+                      <i class="pi pi-chart-line" style="font-size: 28px; color: #d1d5db" />
+                      <p v-if="detailData.gaia_node_id === null">
+                        Medidor no registrado en Gaia para este proyecto
+                      </p>
                       <p v-else>Sin datos de energía del medidor para hoy</p>
                     </div>
                   </div>
                 </div>
 
                 <!-- ── Strings DC ── -->
-                <div v-if="detailData.has_strings && stringsChartData.labels.length" class="gs-strings-section">
+                <div
+                  v-if="detailData.has_strings && stringsChartData.labels.length"
+                  class="gs-strings-section"
+                >
                   <div class="gs-section-header">
                     <h3 class="gs-section-title">Comportamiento de strings (DC)</h3>
                     <div class="gs-toggle-pills">
-                      <button class="gs-toggle-pill" :class="{ active: stringMetric === 'voltage' }" @click="stringMetric = 'voltage'">Tensión (V)</button>
-                      <button class="gs-toggle-pill" :class="{ active: stringMetric === 'current' }" @click="stringMetric = 'current'">Corriente (A)</button>
-                      <button class="gs-toggle-pill" :class="{ active: stringMetric === 'power' }" @click="stringMetric = 'power'">Potencia (kW)</button>
+                      <button
+                        class="gs-toggle-pill"
+                        :class="{ active: stringMetric === 'voltage' }"
+                        @click="stringMetric = 'voltage'"
+                      >
+                        Tensión (V)
+                      </button>
+                      <button
+                        class="gs-toggle-pill"
+                        :class="{ active: stringMetric === 'current' }"
+                        @click="stringMetric = 'current'"
+                      >
+                        Corriente (A)
+                      </button>
+                      <button
+                        class="gs-toggle-pill"
+                        :class="{ active: stringMetric === 'power' }"
+                        @click="stringMetric = 'power'"
+                      >
+                        Potencia (kW)
+                      </button>
                     </div>
                   </div>
-                  <div class="gs-chart-card" style="padding:14px">
+                  <div class="gs-chart-card" style="padding: 14px">
                     <div class="gs-chart-container gs-chart-container--strings">
                       <Bar :data="stringsChartData" :options="stringsChartOptions" />
                     </div>
@@ -421,39 +550,59 @@
                   <div class="gs-section-header">
                     <h3 class="gs-section-title">Medidor eléctrico — Datos en tiempo real</h3>
                     <span v-if="detailData.gaia_snapshot.last_time" class="gs-gaia-ts">
-                      <i class="pi pi-clock" style="font-size:10px" />
+                      <i class="pi pi-clock" style="font-size: 10px" />
                       {{ fmtGaiaTime(detailData.gaia_snapshot.last_time) }}
                     </span>
                   </div>
                   <div class="gs-gaia-kpis">
                     <div class="gs-gaia-kpi">
                       <div class="gs-gaia-kpi-label">Potencia activa</div>
-                      <div class="gs-gaia-kpi-val" style="color:#7c3aed">{{ fmtW(detailData.gaia_snapshot.ap_total) }}</div>
+                      <div class="gs-gaia-kpi-val" style="color: #7c3aed">
+                        {{ fmtW(detailData.gaia_snapshot.ap_total) }}
+                      </div>
                       <div class="gs-gaia-kpi-sub">kW inyectados</div>
                     </div>
                     <div class="gs-gaia-kpi">
                       <div class="gs-gaia-kpi-label">Potencia reactiva</div>
-                      <div class="gs-gaia-kpi-val" style="color:#0891b2">{{ fmtVAR(detailData.gaia_snapshot.rp_total) }}</div>
+                      <div class="gs-gaia-kpi-val" style="color: #0891b2">
+                        {{ fmtVAR(detailData.gaia_snapshot.rp_total) }}
+                      </div>
                       <div class="gs-gaia-kpi-sub">kVAr</div>
                     </div>
                     <div class="gs-gaia-kpi">
                       <div class="gs-gaia-kpi-label">Potencia aparente</div>
-                      <div class="gs-gaia-kpi-val" style="color:#6366f1">{{ fmtVA(detailData.gaia_snapshot.ap_total, detailData.gaia_snapshot.rp_total) }}</div>
+                      <div class="gs-gaia-kpi-val" style="color: #6366f1">
+                        {{
+                          fmtVA(
+                            detailData.gaia_snapshot.ap_total,
+                            detailData.gaia_snapshot.rp_total,
+                          )
+                        }}
+                      </div>
                       <div class="gs-gaia-kpi-sub">kVA</div>
                     </div>
                     <div class="gs-gaia-kpi">
                       <div class="gs-gaia-kpi-label">Factor de potencia</div>
-                      <div class="gs-gaia-kpi-val" :style="{ color: fpColor(detailData.gaia_snapshot.pf_avg) }">{{ fmtPF(detailData.gaia_snapshot.pf_avg) }}</div>
+                      <div
+                        class="gs-gaia-kpi-val"
+                        :style="{ color: fpColor(detailData.gaia_snapshot.pf_avg) }"
+                      >
+                        {{ fmtPF(detailData.gaia_snapshot.pf_avg) }}
+                      </div>
                       <div class="gs-gaia-kpi-sub">promedio</div>
                     </div>
                     <div class="gs-gaia-kpi">
                       <div class="gs-gaia-kpi-label">Energía exportada hoy</div>
-                      <div class="gs-gaia-kpi-val" style="color:#059669">{{ fmtWh(detailData.gaia_snapshot.eae_wh) }}</div>
+                      <div class="gs-gaia-kpi-val" style="color: #059669">
+                        {{ fmtWh(detailData.gaia_snapshot.eae_wh) }}
+                      </div>
                       <div class="gs-gaia-kpi-sub">kWh medidor</div>
                     </div>
                     <div v-if="lossPct != null" class="gs-gaia-kpi">
                       <div class="gs-gaia-kpi-label">Pérdida sistema</div>
-                      <div class="gs-gaia-kpi-val" :style="{ color: lossColor(lossPct) }">{{ lossPct }}%</div>
+                      <div class="gs-gaia-kpi-val" :style="{ color: lossColor(lossPct) }">
+                        {{ lossPct }}%
+                      </div>
                       <div class="gs-gaia-kpi-sub">inv. → medidor</div>
                     </div>
                   </div>
@@ -461,8 +610,11 @@
                     <table class="gs-metrics-table">
                       <thead>
                         <tr>
-                          <th class="gs-mt-inv" style="text-align:left">Variable</th>
-                          <th>Fase 1</th><th>Fase 2</th><th>Fase 3</th><th>Total / Prom</th>
+                          <th class="gs-mt-inv" style="text-align: left">Variable</th>
+                          <th>Fase 1</th>
+                          <th>Fase 2</th>
+                          <th>Fase 3</th>
+                          <th>Total / Prom</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -471,14 +623,18 @@
                           <td>{{ fmtV(detailData.gaia_snapshot.vp1) }}</td>
                           <td>{{ fmtV(detailData.gaia_snapshot.vp2) }}</td>
                           <td>{{ fmtV(detailData.gaia_snapshot.vp3) }}</td>
-                          <td class="gs-mt-total">{{ fmtV(avgPhases(detailData.gaia_snapshot, 'vp')) }}</td>
+                          <td class="gs-mt-total">
+                            {{ fmtV(avgPhases(detailData.gaia_snapshot, 'vp')) }}
+                          </td>
                         </tr>
                         <tr>
                           <td class="gs-mt-inv">Corriente (A)</td>
                           <td>{{ fmtA(detailData.gaia_snapshot.cp1) }}</td>
                           <td>{{ fmtA(detailData.gaia_snapshot.cp2) }}</td>
                           <td>{{ fmtA(detailData.gaia_snapshot.cp3) }}</td>
-                          <td class="gs-mt-total">{{ fmtA(avgPhases(detailData.gaia_snapshot, 'cp')) }}</td>
+                          <td class="gs-mt-total">
+                            {{ fmtA(avgPhases(detailData.gaia_snapshot, 'cp')) }}
+                          </td>
                         </tr>
                         <tr>
                           <td class="gs-mt-inv">Potencia activa (kW)</td>
@@ -492,26 +648,42 @@
                           <td>{{ fmtVAR(detailData.gaia_snapshot.rp1) }}</td>
                           <td>{{ fmtVAR(detailData.gaia_snapshot.rp2) }}</td>
                           <td>{{ fmtVAR(detailData.gaia_snapshot.rp3) }}</td>
-                          <td class="gs-mt-total">{{ fmtVAR(detailData.gaia_snapshot.rp_total) }}</td>
+                          <td class="gs-mt-total">
+                            {{ fmtVAR(detailData.gaia_snapshot.rp_total) }}
+                          </td>
                         </tr>
                         <tr>
                           <td class="gs-mt-inv">Factor de potencia</td>
-                          <td :class="fpClass(detailData.gaia_snapshot.pf1)">{{ fmtPF(detailData.gaia_snapshot.pf1) }}</td>
-                          <td :class="fpClass(detailData.gaia_snapshot.pf2)">{{ fmtPF(detailData.gaia_snapshot.pf2) }}</td>
-                          <td :class="fpClass(detailData.gaia_snapshot.pf3)">{{ fmtPF(detailData.gaia_snapshot.pf3) }}</td>
-                          <td class="gs-mt-total" :class="fpClass(detailData.gaia_snapshot.pf_avg)">{{ fmtPF(detailData.gaia_snapshot.pf_avg) }}</td>
+                          <td :class="fpClass(detailData.gaia_snapshot.pf1)">
+                            {{ fmtPF(detailData.gaia_snapshot.pf1) }}
+                          </td>
+                          <td :class="fpClass(detailData.gaia_snapshot.pf2)">
+                            {{ fmtPF(detailData.gaia_snapshot.pf2) }}
+                          </td>
+                          <td :class="fpClass(detailData.gaia_snapshot.pf3)">
+                            {{ fmtPF(detailData.gaia_snapshot.pf3) }}
+                          </td>
+                          <td class="gs-mt-total" :class="fpClass(detailData.gaia_snapshot.pf_avg)">
+                            {{ fmtPF(detailData.gaia_snapshot.pf_avg) }}
+                          </td>
                         </tr>
                         <tr>
                           <td class="gs-mt-inv">Desequilibrio de tensión (%)</td>
-                          <td colspan="3" style="text-align:center;color:#6b7280">—</td>
-                          <td class="gs-mt-total">{{ fmtDesequilibrio(detailData.gaia_snapshot) }}</td>
+                          <td colspan="3" style="text-align: center; color: #6b7280">—</td>
+                          <td class="gs-mt-total">
+                            {{ fmtDesequilibrio(detailData.gaia_snapshot) }}
+                          </td>
                         </tr>
-                        <tr style="background:#f0fdf4">
-                          <td class="gs-mt-inv" style="color:#059669;font-weight:700">Energía exportada (kWh)</td>
+                        <tr style="background: #f0fdf4">
+                          <td class="gs-mt-inv" style="color: #059669; font-weight: 700">
+                            Energía exportada (kWh)
+                          </td>
                           <td>{{ fmtWh(detailData.gaia_snapshot.eae1_wh) }}</td>
                           <td>{{ fmtWh(detailData.gaia_snapshot.eae2_wh) }}</td>
                           <td>{{ fmtWh(detailData.gaia_snapshot.eae3_wh) }}</td>
-                          <td class="gs-mt-total" style="color:#059669;font-weight:700">{{ fmtWh(detailData.gaia_snapshot.eae_wh) }}</td>
+                          <td class="gs-mt-total" style="color: #059669; font-weight: 700">
+                            {{ fmtWh(detailData.gaia_snapshot.eae_wh) }}
+                          </td>
                         </tr>
                         <tr>
                           <td class="gs-mt-inv">Energía importada (kWh)</td>
@@ -534,35 +706,43 @@
 
                 <!-- Sin nodo Gaia -->
                 <div v-else-if="detailData.gaia_node_id === null" class="gs-gaia-empty">
-                  <i class="pi pi-info-circle" style="font-size:16px;color:#9ca3af" />
+                  <i class="pi pi-info-circle" style="font-size: 16px; color: #9ca3af" />
                   <span>Medidor eléctrico no registrado en Gaia para este proyecto</span>
                 </div>
-
               </template>
-            </div><!-- /gs-overlay-body -->
+            </div>
+            <!-- /gs-overlay-body -->
           </template>
-        </div><!-- /gs-overlay-sheet -->
+        </div>
+        <!-- /gs-overlay-sheet -->
       </Transition>
     </Teleport>
 
     <!-- ══ PROJECT CARDS GRID ════════════════════════════════════════════════ -->
     <div v-if="monitoringData" class="gs-cards-grid">
       <div v-if="!filteredProjects.length" class="gs-empty">
-        <i class="pi pi-search text-3xl mb-2" style="color:#9ca3af" />
-        <p style="color:#6b5a8a">Sin proyectos que coincidan con el filtro</p>
+        <i class="pi pi-search mb-2 text-3xl" style="color: #9ca3af" />
+        <p style="color: #6b5a8a">Sin proyectos que coincidan con el filtro</p>
       </div>
 
-      <div v-for="proj in filteredProjects" :key="proj.proyecto_id"
+      <div
+        v-for="proj in filteredProjects"
+        :key="proj.proyecto_id"
         class="gs-card"
         :class="{ 'gs-card--selected': selectedProyId === proj.proyecto_id }"
         :style="{
           borderLeftColor: STATUS_CFG[proj.status]?.border || '#e5e7eb',
           backgroundColor: selectedProyId === proj.proyecto_id ? '#faf7ff' : '#fff',
         }"
-        @click="selectProject(proj)">
-
-        <div class="gs-card-badge"
-          :style="{ background: STATUS_CFG[proj.status]?.bg, color: STATUS_CFG[proj.status]?.color }">
+        @click="selectProject(proj)"
+      >
+        <div
+          class="gs-card-badge"
+          :style="{
+            background: STATUS_CFG[proj.status]?.bg,
+            color: STATUS_CFG[proj.status]?.color,
+          }"
+        >
           <span class="gs-status-dot" :style="{ background: STATUS_CFG[proj.status]?.dot }" />
           {{ STATUS_CFG[proj.status]?.label || proj.status }}
         </div>
@@ -570,26 +750,38 @@
         <div class="gs-card-name">{{ proj.nombre }}</div>
 
         <div class="gs-card-power">
-          <span class="gs-card-power-val">{{ proj.power_kw != null ? proj.power_kw.toLocaleString('es-CO', { maximumFractionDigits: 1 }) : '—' }}</span>
+          <span class="gs-card-power-val">{{
+            proj.power_kw != null
+              ? proj.power_kw.toLocaleString('es-CO', { maximumFractionDigits: 1 })
+              : '—'
+          }}</span>
           <span class="gs-card-power-unit">kW</span>
         </div>
 
         <div class="gs-card-util">
           <div class="gs-util-bar gs-util-bar--card">
-            <div class="gs-util-bar-fill"
+            <div
+              class="gs-util-bar-fill"
               :style="{
                 width: Math.min(proj.utilization_pct || 0, 100) + '%',
                 backgroundColor: STATUS_CFG[proj.status]?.dot || '#9ca3af',
-              }" />
+              }"
+            />
           </div>
-          <span class="gs-card-util-pct">{{ proj.utilization_pct != null ? proj.utilization_pct + '%' : '—' }}</span>
+          <span class="gs-card-util-pct">{{
+            proj.utilization_pct != null ? proj.utilization_pct + '%' : '—'
+          }}</span>
         </div>
 
         <div class="gs-card-stats">
           <div class="gs-card-stat">
             <span class="gs-card-stat-label">kWh hoy</span>
             <span class="gs-card-stat-val">
-              {{ proj.energy_today_kwh != null ? proj.energy_today_kwh.toLocaleString('es-CO', { maximumFractionDigits: 1 }) : '—' }}
+              {{
+                proj.energy_today_kwh != null
+                  ? proj.energy_today_kwh.toLocaleString('es-CO', { maximumFractionDigits: 1 })
+                  : '—'
+              }}
             </span>
           </div>
           <div class="gs-card-stat">
@@ -601,7 +793,7 @@
         </div>
 
         <button class="gs-card-falla-btn" @click.stop="openFallaDialog(proj)">
-          <i class="pi pi-bolt" style="font-size:10px" />
+          <i class="pi pi-bolt" style="font-size: 10px" />
           Crear falla
         </button>
       </div>
@@ -616,17 +808,30 @@
     <div class="gs-genhoy-card">
       <div class="gs-genhoy-head">
         <div class="gs-genhoy-title">
-          <i class="pi pi-sun" style="color:#f59e0b;font-size:13px" />
+          <i class="pi pi-sun" style="color: #f59e0b; font-size: 13px" />
           <span>Generación de hoy</span>
           <span class="gs-genhoy-sub">· Real vs P90 por proyecto · {{ hoyLabel }}</span>
         </div>
         <div v-if="!genHoyLoading && genHoyRows.length" class="gs-genhoy-legend">
-          <span class="gs-genhoy-leg-item"><span class="gs-genhoy-dot" style="background:#16a34a"></span> Real</span>
-          <span class="gs-genhoy-leg-item"><span class="gs-genhoy-dot" style="background:#f59e0b"></span> P90</span>
+          <span class="gs-genhoy-leg-item"
+            ><span class="gs-genhoy-dot" style="background: #16a34a"></span> Real</span
+          >
+          <span class="gs-genhoy-leg-item"
+            ><span class="gs-genhoy-dot" style="background: #f59e0b"></span> P90</span
+          >
           <span class="gs-genhoy-fuente" v-tooltip.top="'Datos de inversores'">INV</span>
-          <span class="gs-genhoy-fuente gs-genhoy-fuente--med" v-tooltip.top="'Datos de medidor de frontera'">MED</span>
-          <span class="gs-genhoy-kpi"
-            :style="{ color: genHoyKpi.ratio >= 100 ? '#16a34a' : genHoyKpi.ratio >= 80 ? '#d97706' : '#dc2626' }">
+          <span
+            class="gs-genhoy-fuente gs-genhoy-fuente--med"
+            v-tooltip.top="'Datos de medidor de frontera'"
+            >MED</span
+          >
+          <span
+            class="gs-genhoy-kpi"
+            :style="{
+              color:
+                genHoyKpi.ratio >= 100 ? '#16a34a' : genHoyKpi.ratio >= 80 ? '#d97706' : '#dc2626',
+            }"
+          >
             {{ genHoyKpi.ratio }}% vs P90
           </span>
         </div>
@@ -636,64 +841,104 @@
       </div>
 
       <div v-if="genHoyLoading" class="gs-genhoy-state">
-        <i class="pi pi-spin pi-spinner" style="color:#915BD8;font-size:22px" />
+        <i class="pi pi-spin pi-spinner" style="color: #915bd8; font-size: 22px" />
       </div>
       <div v-else-if="!genHoyRows.length" class="gs-genhoy-state">
-        <i class="pi pi-sun" style="color:#f59e0b;font-size:24px" />
+        <i class="pi pi-sun" style="color: #f59e0b; font-size: 24px" />
         <span>Sin proyectos en operación configurados.</span>
       </div>
       <div v-else>
         <div v-if="genHoyError" class="gs-genhoy-warn">
-          <i class="pi pi-exclamation-triangle" style="color:#d97706" />
+          <i class="pi pi-exclamation-triangle" style="color: #d97706" />
           {{ genHoyError }}
         </div>
         <div class="gs-genhoy-rows">
-        <div v-for="r in genHoyRows" :key="r.nombre" class="gs-genhoy-item">
-          <div class="gs-genhoy-item-header">
-            <span class="gs-genhoy-item-name">{{ r.nombre }}</span>
-            <div class="gs-genhoy-item-vals">
-              <span :style="{ color: r.p90 > 0 && r.real >= r.p90 ? '#16a34a' : r.real > 0 ? '#d97706' : '#9ca3af', fontWeight: 600 }">
-                {{ r.real.toLocaleString('es-CO') }} kWh
-              </span>
-              <span v-if="r.fuente === 'inversor'" class="gs-genhoy-fuente" v-tooltip.top="'Dato de inversores'">INV</span>
-              <span v-else-if="r.fuente === 'medidor'" class="gs-genhoy-fuente gs-genhoy-fuente--med" v-tooltip.top="'Dato de medidor de frontera'">MED</span>
-              <span v-else-if="r.fuente === 'sin_dato'" class="gs-genhoy-fuente gs-genhoy-fuente--nd" v-tooltip.top="'Sin dato disponible en Solenium'">S/D</span>
-              <span style="color:#d1d5db;margin:0 4px">/</span>
-              <span style="color:#f59e0b">{{ r.p90.toLocaleString('es-CO') }} kWh P90</span>
-              <span class="gs-genhoy-pct"
-                :style="{ color: r.p90 > 0 && r.real >= r.p90 ? '#16a34a' : r.real >= r.p90 * 0.75 ? '#d97706' : '#dc2626' }">
-                {{ r.p90 > 0 ? Math.round(r.real / r.p90 * 100) + '%' : '—' }}
-              </span>
+          <div v-for="r in genHoyRows" :key="r.nombre" class="gs-genhoy-item">
+            <div class="gs-genhoy-item-header">
+              <span class="gs-genhoy-item-name">{{ r.nombre }}</span>
+              <div class="gs-genhoy-item-vals">
+                <span
+                  :style="{
+                    color:
+                      r.p90 > 0 && r.real >= r.p90 ? '#16a34a' : r.real > 0 ? '#d97706' : '#9ca3af',
+                    fontWeight: 600,
+                  }"
+                >
+                  {{ r.real.toLocaleString('es-CO') }} kWh
+                </span>
+                <span
+                  v-if="r.fuente === 'inversor'"
+                  class="gs-genhoy-fuente"
+                  v-tooltip.top="'Dato de inversores'"
+                  >INV</span
+                >
+                <span
+                  v-else-if="r.fuente === 'medidor'"
+                  class="gs-genhoy-fuente gs-genhoy-fuente--med"
+                  v-tooltip.top="'Dato de medidor de frontera'"
+                  >MED</span
+                >
+                <span
+                  v-else-if="r.fuente === 'sin_dato'"
+                  class="gs-genhoy-fuente gs-genhoy-fuente--nd"
+                  v-tooltip.top="'Sin dato disponible en Solenium'"
+                  >S/D</span
+                >
+                <span style="color: #d1d5db; margin: 0 4px">/</span>
+                <span style="color: #f59e0b">{{ r.p90.toLocaleString('es-CO') }} kWh P90</span>
+                <span
+                  class="gs-genhoy-pct"
+                  :style="{
+                    color:
+                      r.p90 > 0 && r.real >= r.p90
+                        ? '#16a34a'
+                        : r.real >= r.p90 * 0.75
+                          ? '#d97706'
+                          : '#dc2626',
+                  }"
+                >
+                  {{ r.p90 > 0 ? Math.round((r.real / r.p90) * 100) + '%' : '—' }}
+                </span>
+              </div>
+            </div>
+            <div class="gs-genhoy-track">
+              <div
+                class="gs-genhoy-fill"
+                :style="{
+                  width: r.p90 > 0 ? Math.min(100, (r.real / r.p90) * 100) + '%' : '0%',
+                  background:
+                    r.p90 > 0 && r.real >= r.p90
+                      ? '#16a34a'
+                      : r.real >= r.p90 * 0.75
+                        ? '#d97706'
+                        : r.real > 0
+                          ? '#dc2626'
+                          : '#e5e7eb',
+                }"
+              />
             </div>
           </div>
-          <div class="gs-genhoy-track">
-            <div class="gs-genhoy-fill" :style="{
-              width: r.p90 > 0 ? Math.min(100, r.real / r.p90 * 100) + '%' : '0%',
-              background: r.p90 > 0 && r.real >= r.p90 ? '#16a34a'
-                : r.real >= r.p90 * 0.75 ? '#d97706'
-                : r.real > 0 ? '#dc2626'
-                : '#e5e7eb'
-            }" />
-          </div>
-        </div>
         </div>
       </div>
     </div>
 
     <!-- ══ FALLA DIALOG ══════════════════════════════════════════════════════ -->
-    <Dialog v-model:visible="fallaDialogVisible" modal
+    <Dialog
+      v-model:visible="fallaDialogVisible"
+      modal
       header="Nueva falla"
       class="w-full max-w-2xl"
-      :closable="!savingFalla">
+      :closable="!savingFalla"
+    >
       <FallaForm
         :key="fallaFormKey"
         :initial="null"
         :catalogos="catalogos"
         :prefillProyectoIds="fallaProyectoIds"
         @save="onSaveFalla"
-        @cancel="fallaDialogVisible = false" />
+        @cancel="fallaDialogVisible = false"
+      />
     </Dialog>
-
   </div>
 </template>
 
@@ -736,44 +981,56 @@ const toast = useToast()
 
 // ── Status config ────────────────────────────────────────────────────────────
 const STATUS_CFG = {
-  online:           { label: 'Online',           color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', dot: '#16a34a' },
-  degradado:        { label: 'Degradado',         color: '#d97706', bg: '#fffbeb', border: '#fde68a', dot: '#d97706' },
-  caido:            { label: 'Caído',             color: '#dc2626', bg: '#fef2f2', border: '#fecaca', dot: '#dc2626' },
-  sin_comunicacion: { label: 'Sin comunicación',  color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb', dot: '#9ca3af' },
-  offline:          { label: 'Offline',           color: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', dot: '#d1d5db' },
+  online: { label: 'Online', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', dot: '#16a34a' },
+  degradado: {
+    label: 'Degradado',
+    color: '#d97706',
+    bg: '#fffbeb',
+    border: '#fde68a',
+    dot: '#d97706',
+  },
+  caido: { label: 'Caído', color: '#dc2626', bg: '#fef2f2', border: '#fecaca', dot: '#dc2626' },
+  sin_comunicacion: {
+    label: 'Sin comunicación',
+    color: '#6b7280',
+    bg: '#f9fafb',
+    border: '#e5e7eb',
+    dot: '#9ca3af',
+  },
+  offline: { label: 'Offline', color: '#9ca3af', bg: '#f9fafb', border: '#e5e7eb', dot: '#d1d5db' },
 }
 
 const STATUS_PILLS = [
-  { key: 'all',     label: 'Todos',       color: '#915BD8' },
-  { key: 'alertas', label: '⚠️ Alertas',  color: '#dc2626' },
-  { key: 'online',  label: '✅ Online',   color: '#16a34a' },
-  { key: 'sincom',  label: '📡 Sin com.', color: '#6b7280' },
+  { key: 'all', label: 'Todos', color: '#915BD8' },
+  { key: 'alertas', label: '⚠️ Alertas', color: '#dc2626' },
+  { key: 'online', label: '✅ Online', color: '#16a34a' },
+  { key: 'sincom', label: '📡 Sin com.', color: '#6b7280' },
 ]
 
 // ── State ────────────────────────────────────────────────────────────────────
-const loading        = ref(false)
-const loadingDetail  = ref(false)
+const loading = ref(false)
+const loadingDetail = ref(false)
 const monitoringData = ref(null)
 const selectedProyId = ref(null)
-const detailData     = ref(null)
-const activeFilter   = ref('all')
-const searchText     = ref('')
-const lastUpdated    = ref('')
-const detailRef      = ref(null)
+const detailData = ref(null)
+const activeFilter = ref('all')
+const searchText = ref('')
+const lastUpdated = ref('')
+const detailRef = ref(null)
 
 // ── Detalle por inversor (expand + comparativa) ──────────────────────────────
-const todayStr        = new Date().toISOString().split('T')[0]
-const expandedInv     = ref(null)   // dev_name del inversor expandido (o null)
-const invPowerData    = ref(null)   // { inverters: [{dev_name, points, peak_kw}], ... }
+const todayStr = new Date().toISOString().split('T')[0]
+const expandedInv = ref(null) // dev_name del inversor expandido (o null)
+const invPowerData = ref(null) // { inverters: [{dev_name, points, peak_kw}], ... }
 const invPowerLoading = ref(false)
-const invDateFrom     = ref(todayStr)
-const invDateTo       = ref(todayStr)
+const invDateFrom = ref(todayStr)
+const invDateTo = ref(todayStr)
 
 // Auto-refresh countdown (300s)
 const REFRESH_INTERVAL = 300
-const countdown        = ref(REFRESH_INTERVAL)
-let   countdownTimer   = null
-let   refreshTimer     = null
+const countdown = ref(REFRESH_INTERVAL)
+let countdownTimer = null
+let refreshTimer = null
 
 const countdownDisplay = computed(() => {
   const m = Math.floor(countdown.value / 60)
@@ -783,10 +1040,10 @@ const countdownDisplay = computed(() => {
 
 // ── Falla dialog ─────────────────────────────────────────────────────────────
 const fallaDialogVisible = ref(false)
-const fallaProyectoIds   = ref([])
-const fallaFormKey       = ref(0)
-const savingFalla        = ref(false)
-const catalogos          = ref({ estados: [], prioridades: [], tipos: [] })
+const fallaProyectoIds = ref([])
+const fallaFormKey = ref(0)
+const savingFalla = ref(false)
+const catalogos = ref({ estados: [], prioridades: [], tipos: [] })
 
 // ── Computed ─────────────────────────────────────────────────────────────────
 const filteredProjects = computed(() => {
@@ -794,16 +1051,18 @@ const filteredProjects = computed(() => {
   let list = monitoringData.value.projects
 
   if (activeFilter.value === 'alertas') {
-    list = list.filter(p => p.status === 'caido' || p.status === 'sin_comunicacion' || p.status === 'degradado')
+    list = list.filter(
+      (p) => p.status === 'caido' || p.status === 'sin_comunicacion' || p.status === 'degradado',
+    )
   } else if (activeFilter.value === 'online') {
-    list = list.filter(p => p.status === 'online')
+    list = list.filter((p) => p.status === 'online')
   } else if (activeFilter.value === 'sincom') {
-    list = list.filter(p => p.status === 'sin_comunicacion')
+    list = list.filter((p) => p.status === 'sin_comunicacion')
   }
 
   if (searchText.value.trim()) {
     const q = searchText.value.toLowerCase()
-    list = list.filter(p => p.nombre?.toLowerCase().includes(q))
+    list = list.filter((p) => p.nombre?.toLowerCase().includes(q))
   }
 
   return list
@@ -816,39 +1075,41 @@ const filteredProjects = computed(() => {
 const projectSuggestions = ref([])
 
 function onSearchComplete(e) {
-  const nombres = [...new Set(
-    (monitoringData.value?.projects || []).map(p => p.nombre).filter(Boolean)
-  )].sort((a, b) => a.localeCompare(b))
+  const nombres = [
+    ...new Set((monitoringData.value?.projects || []).map((p) => p.nombre).filter(Boolean)),
+  ].sort((a, b) => a.localeCompare(b))
   const q = (e.query || '').toLowerCase().trim()
-  projectSuggestions.value = q ? nombres.filter(n => n.toLowerCase().includes(q)) : nombres
+  projectSuggestions.value = q ? nombres.filter((n) => n.toLowerCase().includes(q)) : nombres
 }
 
 // ── Chart data ────────────────────────────────────────────────────────────────
-const BRAND_PURPLE      = '#915BD8'
+const BRAND_PURPLE = '#915BD8'
 const BRAND_PURPLE_DARK = '#6b3aab'
 
 const powerCurveData = computed(() => {
   if (!detailData.value?.power_curve?.length) return { labels: [], datasets: [] }
   const curve = detailData.value.power_curve
-  const labels = curve.map(pt => {
+  const labels = curve.map((pt) => {
     // "2026-05-22 08:00" → "08:00"
     const ts = pt.time || ''
     return ts.includes(' ') ? ts.split(' ')[1].slice(0, 5) : ts.slice(0, 5)
   })
-  const values = curve.map(pt => pt.kw)
+  const values = curve.map((pt) => pt.kw)
   return {
     labels,
-    datasets: [{
-      label: 'Potencia (kW)',
-      data: values,
-      borderColor: BRAND_PURPLE,
-      backgroundColor: 'rgba(145, 91, 216, 0.15)',
-      fill: true,
-      tension: 0.3,
-      pointRadius: labels.length > 50 ? 0 : 2,
-      pointHoverRadius: 4,
-      borderWidth: 2,
-    }],
+    datasets: [
+      {
+        label: 'Potencia (kW)',
+        data: values,
+        borderColor: BRAND_PURPLE,
+        backgroundColor: 'rgba(145, 91, 216, 0.15)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: labels.length > 50 ? 0 : 2,
+        pointHoverRadius: 4,
+        borderWidth: 2,
+      },
+    ],
   }
 })
 
@@ -859,7 +1120,7 @@ const powerCurveOptions = {
     legend: { display: false },
     tooltip: {
       callbacks: {
-        label: ctx => `${ctx.parsed.y?.toFixed(2)} kW`,
+        label: (ctx) => `${ctx.parsed.y?.toFixed(2)} kW`,
       },
     },
   },
@@ -884,21 +1145,23 @@ const generation30dData = computed(() => {
   if (!detailData.value?.generation_30d?.length) return { labels: [], datasets: [] }
   const gen30 = detailData.value.generation_30d
   const today = new Date().toISOString().split('T')[0]
-  const labels = gen30.map(d => {
+  const labels = gen30.map((d) => {
     const dt = new Date(d.date + 'T12:00:00')
     return dt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
   })
-  const values = gen30.map(d => d.kwh)
-  const colors = gen30.map(d => d.date === today ? BRAND_PURPLE : 'rgba(145, 91, 216, 0.65)')
+  const values = gen30.map((d) => d.kwh)
+  const colors = gen30.map((d) => (d.date === today ? BRAND_PURPLE : 'rgba(145, 91, 216, 0.65)'))
   return {
     labels,
-    datasets: [{
-      label: 'Generación (kWh)',
-      data: values,
-      backgroundColor: colors,
-      borderRadius: 3,
-      borderSkipped: false,
-    }],
+    datasets: [
+      {
+        label: 'Generación (kWh)',
+        data: values,
+        backgroundColor: colors,
+        borderRadius: 3,
+        borderSkipped: false,
+      },
+    ],
   }
 })
 
@@ -909,7 +1172,8 @@ const generation30dOptions = {
     legend: { display: false },
     tooltip: {
       callbacks: {
-        label: ctx => `${ctx.parsed.y?.toLocaleString('es-CO', { maximumFractionDigits: 1 })} kWh`,
+        label: (ctx) =>
+          `${ctx.parsed.y?.toLocaleString('es-CO', { maximumFractionDigits: 1 })} kWh`,
       },
     },
   },
@@ -942,15 +1206,15 @@ const gaiaPowerChartData = computed(() => {
   const ts = detailData.value?.gaia_snapshot?.time_series
   const curve = detailData.value?.power_curve ?? []
 
-  const gaiaRows = (ts?.power ?? []).filter(r => r.kw != null)
-  const solRows  = curve.filter(pt => pt.kw != null)
+  const gaiaRows = (ts?.power ?? []).filter((r) => r.kw != null)
+  const solRows = curve.filter((pt) => pt.kw != null)
 
   if (!gaiaRows.length && !solRows.length) return { labels: [], datasets: [] }
 
   // Build label union (use Gaia as master, Solenium as overlay)
   const labels = gaiaRows.length
-    ? gaiaRows.map(r => gaiaTimeLabel(r.time))
-    : solRows.map(pt => {
+    ? gaiaRows.map((r) => gaiaTimeLabel(r.time))
+    : solRows.map((pt) => {
         const t = pt.time || ''
         return t.includes(' ') ? t.split(' ')[1].slice(0, 5) : t.slice(0, 5)
       })
@@ -959,26 +1223,32 @@ const gaiaPowerChartData = computed(() => {
   if (gaiaRows.length) {
     datasets.push({
       label: 'Medidor (kW)',
-      data: gaiaRows.map(r => r.kw),
+      data: gaiaRows.map((r) => r.kw),
       borderColor: '#059669',
       backgroundColor: 'rgba(5,150,105,0.12)',
-      fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2,
+      fill: true,
+      tension: 0.35,
+      pointRadius: 0,
+      borderWidth: 2,
     })
   }
   if (solRows.length) {
     // Map Solenium by time label for alignment
     const solMap = {}
-    solRows.forEach(pt => {
+    solRows.forEach((pt) => {
       const t = pt.time || ''
       const lbl = t.includes(' ') ? t.split(' ')[1].slice(0, 5) : t.slice(0, 5)
       solMap[lbl] = (solMap[lbl] ?? 0) + pt.kw
     })
     datasets.push({
       label: 'Inversores (kW)',
-      data: labels.map(l => solMap[l] ?? null),
+      data: labels.map((l) => solMap[l] ?? null),
       borderColor: BRAND_PURPLE,
       backgroundColor: 'rgba(145,91,216,0.08)',
-      fill: false, tension: 0.35, pointRadius: 0, borderWidth: 1.5,
+      fill: false,
+      tension: 0.35,
+      pointRadius: 0,
+      borderWidth: 1.5,
       borderDash: [5, 3],
     })
   }
@@ -986,68 +1256,116 @@ const gaiaPowerChartData = computed(() => {
 })
 
 const gaiaPowerOptions = {
-  responsive: true, maintainAspectRatio: false,
+  responsive: true,
+  maintainAspectRatio: false,
   interaction: { mode: 'index', intersect: false },
   plugins: {
-    legend: { display: true, position: 'top', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } },
-    tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} kW` } },
+    legend: {
+      display: true,
+      position: 'top',
+      labels: { font: { size: 10 }, boxWidth: 12, padding: 8 },
+    },
+    tooltip: {
+      callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} kW` },
+    },
   },
   scales: {
-    x: { ticks: { maxTicksLimit: 12, font: { size: 10 }, color: '#9ca3af' }, grid: { display: false } },
-    y: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { color: 'rgba(0,0,0,0.05)' },
-         title: { display: true, text: 'kW', font: { size: 10 }, color: '#9ca3af' }, beginAtZero: true },
+    x: {
+      ticks: { maxTicksLimit: 12, font: { size: 10 }, color: '#9ca3af' },
+      grid: { display: false },
+    },
+    y: {
+      ticks: { font: { size: 10 }, color: '#9ca3af' },
+      grid: { color: 'rgba(0,0,0,0.05)' },
+      title: { display: true, text: 'kW', font: { size: 10 }, color: '#9ca3af' },
+      beginAtZero: true,
+    },
   },
 }
 
 const gaiaEnergyChartData = computed(() => {
   const ts = detailData.value?.gaia_snapshot?.time_series
-  const expRows = (ts?.energy_exp ?? []).filter(r => r.kwh != null)
-  const impRows = (ts?.energy_imp ?? []).filter(r => r.kwh != null)
+  const expRows = (ts?.energy_exp ?? []).filter((r) => r.kwh != null)
+  const impRows = (ts?.energy_imp ?? []).filter((r) => r.kwh != null)
   if (!expRows.length) return { labels: [], datasets: [] }
 
-  const labels = expRows.map(r => gaiaTimeLabel(r.time))
+  const labels = expRows.map((r) => gaiaTimeLabel(r.time))
   const impMap = {}
-  impRows.forEach(r => { impMap[gaiaTimeLabel(r.time)] = r.kwh })
+  impRows.forEach((r) => {
+    impMap[gaiaTimeLabel(r.time)] = r.kwh
+  })
 
   return {
     labels,
     datasets: [
       {
         label: 'Energía exportada (kWh)',
-        data: expRows.map(r => r.kwh),
+        data: expRows.map((r) => r.kwh),
         borderColor: '#059669',
         backgroundColor: 'rgba(5,150,105,0.15)',
-        fill: true, tension: 0.35, pointRadius: 0, borderWidth: 2,
+        fill: true,
+        tension: 0.35,
+        pointRadius: 0,
+        borderWidth: 2,
       },
-      ...(impRows.length ? [{
-        label: 'Energía importada (kWh)',
-        data: labels.map(l => impMap[l] ?? null),
-        borderColor: '#dc2626',
-        backgroundColor: 'rgba(220,38,38,0.08)',
-        fill: true, tension: 0.35, pointRadius: 0, borderWidth: 1.5,
-      }] : []),
+      ...(impRows.length
+        ? [
+            {
+              label: 'Energía importada (kWh)',
+              data: labels.map((l) => impMap[l] ?? null),
+              borderColor: '#dc2626',
+              backgroundColor: 'rgba(220,38,38,0.08)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 0,
+              borderWidth: 1.5,
+            },
+          ]
+        : []),
     ],
   }
 })
 
 const gaiaEnergyOptions = {
-  responsive: true, maintainAspectRatio: false,
+  responsive: true,
+  maintainAspectRatio: false,
   interaction: { mode: 'index', intersect: false },
   plugins: {
-    legend: { display: true, position: 'top', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } },
-    tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} kWh` } },
+    legend: {
+      display: true,
+      position: 'top',
+      labels: { font: { size: 10 }, boxWidth: 12, padding: 8 },
+    },
+    tooltip: {
+      callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} kWh` },
+    },
   },
   scales: {
-    x: { ticks: { maxTicksLimit: 12, font: { size: 10 }, color: '#9ca3af' }, grid: { display: false } },
-    y: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { color: 'rgba(0,0,0,0.05)' },
-         title: { display: true, text: 'kWh', font: { size: 10 }, color: '#9ca3af' }, beginAtZero: true },
+    x: {
+      ticks: { maxTicksLimit: 12, font: { size: 10 }, color: '#9ca3af' },
+      grid: { display: false },
+    },
+    y: {
+      ticks: { font: { size: 10 }, color: '#9ca3af' },
+      grid: { color: 'rgba(0,0,0,0.05)' },
+      title: { display: true, text: 'kWh', font: { size: 10 }, color: '#9ca3af' },
+      beginAtZero: true,
+    },
   },
 }
 
 // ── Detalle por inversor: comparativa + individual ───────────────────────────
 const INV_PALETTE = [
-  '#915BD8', '#16a34a', '#d97706', '#0ea5e9', '#dc2626',
-  '#14b8a6', '#a855f7', '#f59e0b', '#2563eb', '#65a30d',
+  '#915BD8',
+  '#16a34a',
+  '#d97706',
+  '#0ea5e9',
+  '#dc2626',
+  '#14b8a6',
+  '#a855f7',
+  '#f59e0b',
+  '#2563eb',
+  '#65a30d',
 ]
 
 function fmtInvTime(t) {
@@ -1063,20 +1381,22 @@ function fmtInvTime(t) {
 }
 
 const invRangeLabel = computed(() =>
-  invDateFrom.value === invDateTo.value ? invDateFrom.value : `${invDateFrom.value} → ${invDateTo.value}`
+  invDateFrom.value === invDateTo.value
+    ? invDateFrom.value
+    : `${invDateFrom.value} → ${invDateTo.value}`,
 )
 
 // El inversor expandido, tomado del detalle ya cargado (ac_metrics, strings, estado)
 const expandedInvDetail = computed(() => {
   if (!expandedInv.value) return null
-  return (detailData.value?.inverters || []).find(i => i.name === expandedInv.value) || null
+  return (detailData.value?.inverters || []).find((i) => i.name === expandedInv.value) || null
 })
 
 // Etiquetas de tiempo unión de todos los inversores, ordenadas
 const invTimeLabels = computed(() => {
   const invs = invPowerData.value?.inverters || []
   const set = new Set()
-  invs.forEach(i => (i.points || []).forEach(p => set.add(p.time)))
+  invs.forEach((i) => (i.points || []).forEach((p) => set.add(p.time)))
   return Array.from(set).sort()
 })
 
@@ -1086,14 +1406,20 @@ const invComparativeData = computed(() => {
   const labels = invTimeLabels.value
   const datasets = invs.map((inv, idx) => {
     const map = {}
-    ;(inv.points || []).forEach(p => { map[p.time] = p.kw })
+    ;(inv.points || []).forEach((p) => {
+      map[p.time] = p.kw
+    })
     const color = INV_PALETTE[idx % INV_PALETTE.length]
     return {
       label: inv.dev_name,
-      data: labels.map(l => (l in map ? map[l] : null)),
+      data: labels.map((l) => (l in map ? map[l] : null)),
       borderColor: color,
       backgroundColor: 'transparent',
-      fill: false, tension: 0.3, pointRadius: 0, borderWidth: 1.6, spanGaps: true,
+      fill: false,
+      tension: 0.3,
+      pointRadius: 0,
+      borderWidth: 1.6,
+      spanGaps: true,
     }
   })
   return { labels: labels.map(fmtInvTime), datasets }
@@ -1101,56 +1427,85 @@ const invComparativeData = computed(() => {
 
 const invIndividualData = computed(() => {
   const invs = invPowerData.value?.inverters || []
-  const inv = invs.find(i => i.dev_name === expandedInv.value)
+  const inv = invs.find((i) => i.dev_name === expandedInv.value)
   if (!inv || !inv.points?.length) return { labels: [], datasets: [] }
   return {
-    labels: inv.points.map(p => fmtInvTime(p.time)),
-    datasets: [{
-      label: `${inv.dev_name} (kW)`,
-      data: inv.points.map(p => p.kw),
-      borderColor: BRAND_PURPLE,
-      backgroundColor: 'rgba(145,91,216,0.15)',
-      fill: true, tension: 0.3, pointRadius: 0, borderWidth: 2,
-    }],
+    labels: inv.points.map((p) => fmtInvTime(p.time)),
+    datasets: [
+      {
+        label: `${inv.dev_name} (kW)`,
+        data: inv.points.map((p) => p.kw),
+        borderColor: BRAND_PURPLE,
+        backgroundColor: 'rgba(145,91,216,0.15)',
+        fill: true,
+        tension: 0.3,
+        pointRadius: 0,
+        borderWidth: 2,
+      },
+    ],
   }
 })
 
 const invComparativeOptions = {
-  responsive: true, maintainAspectRatio: false,
+  responsive: true,
+  maintainAspectRatio: false,
   interaction: { mode: 'index', intersect: false },
   plugins: {
-    legend: { display: true, position: 'top', labels: { font: { size: 10 }, boxWidth: 12, padding: 8 } },
-    tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} kW` } },
+    legend: {
+      display: true,
+      position: 'top',
+      labels: { font: { size: 10 }, boxWidth: 12, padding: 8 },
+    },
+    tooltip: {
+      callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y?.toFixed(2)} kW` },
+    },
   },
   scales: {
-    x: { ticks: { maxTicksLimit: 12, font: { size: 9 }, color: '#9ca3af' }, grid: { display: false } },
-    y: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { color: 'rgba(0,0,0,0.05)' },
-         title: { display: true, text: 'kW', font: { size: 10 }, color: '#9ca3af' }, beginAtZero: true },
+    x: {
+      ticks: { maxTicksLimit: 12, font: { size: 9 }, color: '#9ca3af' },
+      grid: { display: false },
+    },
+    y: {
+      ticks: { font: { size: 10 }, color: '#9ca3af' },
+      grid: { color: 'rgba(0,0,0,0.05)' },
+      title: { display: true, text: 'kW', font: { size: 10 }, color: '#9ca3af' },
+      beginAtZero: true,
+    },
   },
 }
 
 const invPowerOptions = {
-  responsive: true, maintainAspectRatio: false,
+  responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: { display: false },
-    tooltip: { callbacks: { label: ctx => `${ctx.parsed.y?.toFixed(2)} kW` } },
+    tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y?.toFixed(2)} kW` } },
   },
   scales: {
-    x: { ticks: { maxTicksLimit: 12, font: { size: 9 }, color: '#9ca3af' }, grid: { display: false } },
-    y: { ticks: { font: { size: 10 }, color: '#9ca3af' }, grid: { color: 'rgba(0,0,0,0.05)' },
-         title: { display: true, text: 'kW', font: { size: 10 }, color: '#9ca3af' }, beginAtZero: true },
+    x: {
+      ticks: { maxTicksLimit: 12, font: { size: 9 }, color: '#9ca3af' },
+      grid: { display: false },
+    },
+    y: {
+      ticks: { font: { size: 10 }, color: '#9ca3af' },
+      grid: { color: 'rgba(0,0,0,0.05)' },
+      title: { display: true, text: 'kW', font: { size: 10 }, color: '#9ca3af' },
+      beginAtZero: true,
+    },
   },
 }
 
 // ── Inversores / Medidores dark charts ───────────────────────────────────────
-const DARK_BG      = '#2C2039'
-const DARK_TICK    = '#a89fc0'
-const DARK_GRID    = 'rgba(255,255,255,0.07)'
+const DARK_BG = '#2C2039'
+const DARK_TICK = '#a89fc0'
+const DARK_GRID = 'rgba(255,255,255,0.07)'
 
 // Generate 0h–24h hourly label array
 const HOUR_LABELS = Array.from({ length: 25 }, (_, i) => `${i}h`)
 
-function toPowerW(kw) { return kw != null ? +(kw * 1000).toFixed(1) : null }
+function toPowerW(kw) {
+  return kw != null ? +(kw * 1000).toFixed(1) : null
+}
 
 function mapToHourBuckets(points, timeExtractor, valueExtractor) {
   // Bucket values by hour, average per bucket
@@ -1177,51 +1532,58 @@ const inversorPowerChartData = computed(() => {
   if (!curve.length) return { labels: [], datasets: [] }
   const data = mapToHourBuckets(
     curve,
-    pt => { const t = pt.time || ''; return t.includes(' ') ? t.split(' ')[1] : t },
-    pt => toPowerW(pt.kw),
+    (pt) => {
+      const t = pt.time || ''
+      return t.includes(' ') ? t.split(' ')[1] : t
+    },
+    (pt) => toPowerW(pt.kw),
   )
-  if (data.every(v => v == null)) return { labels: [], datasets: [] }
+  if (data.every((v) => v == null)) return { labels: [], datasets: [] }
   return {
     labels: HOUR_LABELS,
-    datasets: [{
-      label: 'Inversores (W)',
-      data,
-      borderColor: '#915BD8',
-      backgroundColor: 'rgba(145,91,216,0.18)',
-      fill: true,
-      tension: 0.35,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-      borderWidth: 2,
-      spanGaps: true,
-    }],
+    datasets: [
+      {
+        label: 'Inversores (W)',
+        data,
+        borderColor: '#915BD8',
+        backgroundColor: 'rgba(145,91,216,0.18)',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        borderWidth: 2,
+        spanGaps: true,
+      },
+    ],
   }
 })
 
 const medidorPowerChartData = computed(() => {
   const ts = detailData.value?.gaia_snapshot?.time_series
-  const rows = (ts?.power ?? []).filter(r => r.kw != null)
+  const rows = (ts?.power ?? []).filter((r) => r.kw != null)
   if (!rows.length) return { labels: [], datasets: [] }
   const data = mapToHourBuckets(
     rows,
-    r => gaiaTimeLabel(r.time),
-    r => toPowerW(r.kw),
+    (r) => gaiaTimeLabel(r.time),
+    (r) => toPowerW(r.kw),
   )
-  if (data.every(v => v == null)) return { labels: [], datasets: [] }
+  if (data.every((v) => v == null)) return { labels: [], datasets: [] }
   return {
     labels: HOUR_LABELS,
-    datasets: [{
-      label: 'Medidores (W)',
-      data,
-      borderColor: '#F6FF72',
-      backgroundColor: 'rgba(246,255,114,0.12)',
-      fill: true,
-      tension: 0.35,
-      pointRadius: 0,
-      pointHoverRadius: 4,
-      borderWidth: 2,
-      spanGaps: false,
-    }],
+    datasets: [
+      {
+        label: 'Medidores (W)',
+        data,
+        borderColor: '#F6FF72',
+        backgroundColor: 'rgba(246,255,114,0.12)',
+        fill: true,
+        tension: 0.35,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        borderWidth: 2,
+        spanGaps: false,
+      },
+    ],
   }
 })
 
@@ -1235,7 +1597,7 @@ function darkChartOptions(unitLabel) {
         backgroundColor: '#1a1128',
         titleColor: '#FDFAF7',
         bodyColor: '#FDFAF7',
-        callbacks: { label: ctx => `${ctx.parsed.y?.toLocaleString('es-CO')} ${unitLabel}` },
+        callbacks: { label: (ctx) => `${ctx.parsed.y?.toLocaleString('es-CO')} ${unitLabel}` },
       },
     },
     scales: {
@@ -1254,29 +1616,29 @@ function darkChartOptions(unitLabel) {
 }
 
 const inversorPowerOptions = darkChartOptions('W')
-const medidorPowerOptions  = darkChartOptions('W')
+const medidorPowerOptions = darkChartOptions('W')
 
 // ── String chart ─────────────────────────────────────────────────────────────
-const stringMetric = ref('voltage')   // 'voltage' | 'current' | 'power'
+const stringMetric = ref('voltage') // 'voltage' | 'current' | 'power'
 
 const stringsChartData = computed(() => {
   const inverters = detailData.value?.inverters || []
-  if (!inverters.some(inv => inv.strings?.length)) return { labels: [], datasets: [] }
+  if (!inverters.some((inv) => inv.strings?.length)) return { labels: [], datasets: [] }
 
-  const labels  = []
-  const values  = []
+  const labels = []
+  const values = []
   const bgColors = []
 
   // Distinct colors per inverter (cycle through a palette)
   const PALETTE = [
-    'rgba(145, 91, 216, 0.8)',   // purple
-    'rgba(22, 163, 74, 0.8)',    // green
-    'rgba(217, 119, 6, 0.8)',    // amber
-    'rgba(14, 165, 233, 0.8)',   // sky
-    'rgba(220, 38, 38, 0.8)',    // red
-    'rgba(20, 184, 166, 0.8)',   // teal
-    'rgba(168, 85, 247, 0.8)',   // violet
-    'rgba(245, 158, 11, 0.8)',   // yellow
+    'rgba(145, 91, 216, 0.8)', // purple
+    'rgba(22, 163, 74, 0.8)', // green
+    'rgba(217, 119, 6, 0.8)', // amber
+    'rgba(14, 165, 233, 0.8)', // sky
+    'rgba(220, 38, 38, 0.8)', // red
+    'rgba(20, 184, 166, 0.8)', // teal
+    'rgba(168, 85, 247, 0.8)', // violet
+    'rgba(245, 158, 11, 0.8)', // yellow
   ]
 
   let invIdx = 0
@@ -1309,24 +1671,30 @@ const stringsChartData = computed(() => {
     invIdx++
   }
 
-  const metricLabel = stringMetric.value === 'voltage' ? 'Tensión (V)'
-    : stringMetric.value === 'current' ? 'Corriente (A)' : 'Potencia (kW)'
+  const metricLabel =
+    stringMetric.value === 'voltage'
+      ? 'Tensión (V)'
+      : stringMetric.value === 'current'
+        ? 'Corriente (A)'
+        : 'Potencia (kW)'
 
   return {
     labels,
-    datasets: [{
-      label: metricLabel,
-      data: values,
-      backgroundColor: bgColors,
-      borderRadius: 3,
-      borderSkipped: false,
-    }],
+    datasets: [
+      {
+        label: metricLabel,
+        data: values,
+        backgroundColor: bgColors,
+        borderRadius: 3,
+        borderSkipped: false,
+      },
+    ],
   }
 })
 
 const stringsChartOptions = computed(() => {
-  const yLabel = stringMetric.value === 'voltage' ? 'V'
-    : stringMetric.value === 'current' ? 'A' : 'kW'
+  const yLabel =
+    stringMetric.value === 'voltage' ? 'V' : stringMetric.value === 'current' ? 'A' : 'kW'
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -1334,8 +1702,8 @@ const stringsChartOptions = computed(() => {
       legend: { display: false },
       tooltip: {
         callbacks: {
-          label: ctx => `${ctx.parsed.y?.toFixed(1)} ${yLabel}`,
-          title: ctx => ctx[0]?.label || '',
+          label: (ctx) => `${ctx.parsed.y?.toFixed(1)} ${yLabel}`,
+          title: (ctx) => ctx[0]?.label || '',
         },
       },
     },
@@ -1374,12 +1742,27 @@ function effClass(v) {
 }
 
 // ── Gaia electrical helpers ──────────────────────────────────────────────────
-function fmtV(v)   { return v == null ? '—' : v.toFixed(1) + ' V' }
-function fmtA(v)   { return v == null ? '—' : v.toFixed(1) + ' A' }
-function fmtW(v)   { if (v == null) return '—'; return (v / 1000).toFixed(2) + ' kW' }
-function fmtVAR(v) { if (v == null) return '—'; return (v / 1000).toFixed(2) + ' kVAr' }
-function fmtPF(v)  { return v == null ? '—' : (Math.abs(v) > 1 ? v.toFixed(0) : v.toFixed(3)) }
-function fmtWh(v)  { if (v == null) return '—'; return (v / 1000).toFixed(2) + ' kWh' }
+function fmtV(v) {
+  return v == null ? '—' : v.toFixed(1) + ' V'
+}
+function fmtA(v) {
+  return v == null ? '—' : v.toFixed(1) + ' A'
+}
+function fmtW(v) {
+  if (v == null) return '—'
+  return (v / 1000).toFixed(2) + ' kW'
+}
+function fmtVAR(v) {
+  if (v == null) return '—'
+  return (v / 1000).toFixed(2) + ' kVAr'
+}
+function fmtPF(v) {
+  return v == null ? '—' : Math.abs(v) > 1 ? v.toFixed(0) : v.toFixed(3)
+}
+function fmtWh(v) {
+  if (v == null) return '—'
+  return (v / 1000).toFixed(2) + ' kWh'
+}
 function fmtGaiaTime(iso) {
   if (!iso) return ''
   const d = new Date(iso)
@@ -1391,15 +1774,15 @@ function fmtVA(p, q) {
   return (s / 1000).toFixed(2) + ' kVA'
 }
 function fmtDesequilibrio(snap) {
-  const vs = [snap.vp1, snap.vp2, snap.vp3].filter(v => v != null)
+  const vs = [snap.vp1, snap.vp2, snap.vp3].filter((v) => v != null)
   if (vs.length < 3) return '—'
   const avg = vs.reduce((s, v) => s + v, 0) / 3
   if (!avg) return '—'
-  const dev = Math.max(...vs.map(v => Math.abs(v - avg)))
-  return (dev / avg * 100).toFixed(2) + ' %'
+  const dev = Math.max(...vs.map((v) => Math.abs(v - avg)))
+  return ((dev / avg) * 100).toFixed(2) + ' %'
 }
 function avgPhases(snap, prefix) {
-  const vals = [snap[prefix + '1'], snap[prefix + '2'], snap[prefix + '3']].filter(v => v != null)
+  const vals = [snap[prefix + '1'], snap[prefix + '2'], snap[prefix + '3']].filter((v) => v != null)
   return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : null
 }
 function fpColor(v) {
@@ -1422,7 +1805,7 @@ const lossPct = computed(() => {
   if (!curve.length) return null
   const invKwh = curve.reduce((s, pt) => s + (pt.kw ?? 0) * (5 / 60), 0)
   if (invKwh <= 0) return null
-  return +((invKwh - meterKwh) / invKwh * 100).toFixed(1)
+  return +(((invKwh - meterKwh) / invKwh) * 100).toFixed(1)
 })
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -1448,7 +1831,12 @@ async function cargar() {
     const now = new Date()
     lastUpdated.value = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al cargar monitoreo', detail: err?.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al cargar monitoreo',
+      detail: err?.message,
+      life: 4000,
+    })
   } finally {
     loading.value = false
   }
@@ -1468,9 +1856,14 @@ async function loadDetail(proyectoId) {
   try {
     const res = await api.get(`/generacion-solar/monitoring/${proyectoId}`)
     detailData.value = res.data
-    loadInverterPower(proyectoId)   // potencia por inversor (no bloquea el render)
+    loadInverterPower(proyectoId) // potencia por inversor (no bloquea el render)
   } catch (err) {
-    toast.add({ severity: 'warn', summary: 'Sin detalle', detail: 'No se pudo cargar el detalle del proyecto', life: 3000 })
+    toast.add({
+      severity: 'warn',
+      summary: 'Sin detalle',
+      detail: 'No se pudo cargar el detalle del proyecto',
+      life: 3000,
+    })
     detailData.value = null
   } finally {
     loadingDetail.value = false
@@ -1503,7 +1896,9 @@ async function loadCatalogos() {
   try {
     const res = await api.get('/fallas/catalogos')
     catalogos.value = res.data
-  } catch { /* no crítico */ }
+  } catch {
+    /* no crítico */
+  }
 }
 
 // ── Project selection ─────────────────────────────────────────────────────────
@@ -1532,7 +1927,7 @@ function openFallaDialog(proj) {
   } else {
     fallaProyectoIds.value = []
   }
-  fallaFormKey.value++     // reset form
+  fallaFormKey.value++ // reset form
   fallaDialogVisible.value = true
 }
 
@@ -1544,32 +1939,37 @@ async function onSaveFalla(payload) {
     const archivos = _archivos ?? []
 
     if (!ids.length) {
-      toast.add({ severity: 'warn', summary: 'Sin proyecto', detail: 'Selecciona un proyecto para la falla', life: 3000 })
+      toast.add({
+        severity: 'warn',
+        summary: 'Sin proyecto',
+        detail: 'Selecciona un proyecto para la falla',
+        life: 3000,
+      })
       return
     }
 
     // Create one falla per project in parallel
     const nuevas = await Promise.all(
-      ids.map(pid => api.post('/fallas', { ...base, proyecto_id: pid }).then(r => r.data))
+      ids.map((pid) => api.post('/fallas', { ...base, proyecto_id: pid }).then((r) => r.data)),
     )
 
     // Nota inicial
     if (nota_inicial) {
       await Promise.all(
-        nuevas.map(f => api.post(`/fallas/${f.id}/seguimientos`, { nota: nota_inicial }))
+        nuevas.map((f) => api.post(`/fallas/${f.id}/seguimientos`, { nota: nota_inicial })),
       )
     }
 
     // File attachments
     if (archivos.length) {
       await Promise.all(
-        nuevas.flatMap(f =>
-          archivos.map(file => {
+        nuevas.flatMap((f) =>
+          archivos.map((file) => {
             const fd = new FormData()
             fd.append('archivo', file)
             return api.post(`/fallas/${f.id}/archivos`, fd)
-          })
-        )
+          }),
+        ),
       )
     }
 
@@ -1583,7 +1983,12 @@ async function onSaveFalla(payload) {
     // Reload monitoring data to reflect any status changes
     cargar()
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error al guardar', detail: err?.response?.data?.detail || err?.message, life: 4000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error al guardar',
+      detail: err?.response?.data?.detail || err?.message,
+      life: 4000,
+    })
   } finally {
     savingFalla.value = false
   }
@@ -1610,18 +2015,22 @@ function startTimers() {
 
 function stopTimers() {
   if (countdownTimer) clearInterval(countdownTimer)
-  if (refreshTimer)   clearInterval(refreshTimer)
+  if (refreshTimer) clearInterval(refreshTimer)
 }
 
 // ── Generación de hoy ─────────────────────────────────────────────────────────
 const genHoyLoading = ref(false)
-const genHoyRows    = ref([])
-const genHoyError   = ref(null)
-const hoyLabel      = new Date().toLocaleDateString('es-CO', { weekday: 'long', day: '2-digit', month: 'long' })
-const proyectosP90  = ref([])   // proyectos con p90_mensual_kwh
+const genHoyRows = ref([])
+const genHoyError = ref(null)
+const hoyLabel = new Date().toLocaleDateString('es-CO', {
+  weekday: 'long',
+  day: '2-digit',
+  month: 'long',
+})
+const proyectosP90 = ref([]) // proyectos con p90_mensual_kwh
 
 function dailyP90Gs(proyectoId, fecha) {
-  const p   = proyectosP90.value.find(x => x.id === proyectoId)
+  const p = proyectosP90.value.find((x) => x.id === proyectoId)
   const arr = p?.p90_mensual_kwh
   if (!arr || !arr.length) return 0
   const dt = new Date(fecha + 'T00:00:00')
@@ -1631,18 +2040,18 @@ function dailyP90Gs(proyectoId, fecha) {
 
 const genHoyKpi = computed(() => {
   const totalReal = genHoyRows.value.reduce((s, r) => s + r.real, 0)
-  const totalP90  = genHoyRows.value.reduce((s, r) => s + r.p90,  0)
+  const totalP90 = genHoyRows.value.reduce((s, r) => s + r.p90, 0)
   return {
     totalReal: +totalReal.toFixed(1),
-    totalP90:  +totalP90.toFixed(1),
-    ratio: totalP90 > 0 ? Math.round(totalReal / totalP90 * 100) : 0,
+    totalP90: +totalP90.toFixed(1),
+    ratio: totalP90 > 0 ? Math.round((totalReal / totalP90) * 100) : 0,
   }
 })
 
 async function cargarGenHoy() {
   genHoyLoading.value = true
-  genHoyRows.value    = []
-  genHoyError.value   = null
+  genHoyRows.value = []
+  genHoyError.value = null
   try {
     // Fetch proyectos if not yet loaded
     if (!proyectosP90.value.length) {
@@ -1650,7 +2059,7 @@ async function cargarGenHoy() {
       proyectosP90.value = data.items ?? []
     }
 
-    const hoy    = new Date().toISOString().split('T')[0]
+    const hoy = new Date().toISOString().split('T')[0]
     const byProy = {}
 
     // Seed all projects in operation
@@ -1668,7 +2077,7 @@ async function cargarGenHoy() {
       const { data } = await api.get('/generacion-solar/generacion-hoy')
       for (const row of data.proyectos ?? []) {
         if (byProy[row.proyecto_id] !== undefined) {
-          byProy[row.proyecto_id].real   = +Number(row.kwh_real || 0).toFixed(1)
+          byProy[row.proyecto_id].real = +Number(row.kwh_real || 0).toFixed(1)
           byProy[row.proyecto_id].fuente = row.fuente || 'sin_dato'
         }
       }
@@ -1677,8 +2086,7 @@ async function cargarGenHoy() {
     }
 
     // Show all projects (with or without data)
-    genHoyRows.value = Object.values(byProy)
-      .sort((a, b) => b.p90 - a.p90 || b.real - a.real)
+    genHoyRows.value = Object.values(byProy).sort((a, b) => b.p90 - a.p90 || b.real - a.real)
   } finally {
     genHoyLoading.value = false
   }
@@ -1717,7 +2125,7 @@ onUnmounted(() => {
 .gs-title {
   font-size: 20px;
   font-weight: 800;
-  color: #2C2039;
+  color: #2c2039;
   margin: 0;
 }
 
@@ -1764,7 +2172,7 @@ onUnmounted(() => {
   gap: 6px;
   padding: 7px 16px;
   border-radius: 8px;
-  background: #915BD8;
+  background: #915bd8;
   color: white;
   border: none;
   cursor: pointer;
@@ -1799,7 +2207,7 @@ onUnmounted(() => {
   padding: 12px 16px;
   flex: 1;
   min-width: 130px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .gs-kpi--skeleton {
@@ -1810,8 +2218,12 @@ onUnmounted(() => {
 }
 
 @keyframes gs-shimmer {
-  0%   { background-position: 200% 0 }
-  100% { background-position: -200% 0 }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .gs-kpi-icon {
@@ -1833,7 +2245,7 @@ onUnmounted(() => {
   font-size: 22px;
   font-weight: 800;
   line-height: 1.1;
-  color: #2C2039;
+  color: #2c2039;
 }
 
 .gs-kpi-label {
@@ -1906,8 +2318,8 @@ onUnmounted(() => {
 }
 
 .gs-pill:hover {
-  border-color: #915BD8;
-  color: #915BD8;
+  border-color: #915bd8;
+  color: #915bd8;
 }
 
 .gs-pill--active {
@@ -1937,7 +2349,7 @@ onUnmounted(() => {
   border: 1px solid #e8e0f0;
   border-radius: 8px;
   font-size: 13px;
-  color: #2C2039;
+  color: #2c2039;
   background: white;
   outline: none;
   transition: border-color 0.15s;
@@ -1945,7 +2357,7 @@ onUnmounted(() => {
 }
 
 .gs-search-input:focus {
-  border-color: #915BD8;
+  border-color: #915bd8;
 }
 
 .gs-search-input::placeholder {
@@ -1964,7 +2376,7 @@ onUnmounted(() => {
   border: 1px solid #e8e0f0;
   border-radius: 8px;
   font-size: 13px;
-  color: #2C2039;
+  color: #2c2039;
   background: white;
   outline: none;
   transition: border-color 0.15s;
@@ -1972,7 +2384,7 @@ onUnmounted(() => {
 }
 
 .gs-search-ac :deep(input:focus) {
-  border-color: #915BD8;
+  border-color: #915bd8;
 }
 
 .gs-search-ac :deep(input::placeholder) {
@@ -2010,20 +2422,22 @@ onUnmounted(() => {
   border-radius: 12px;
   padding: 14px;
   cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.15s;
+  transition:
+    box-shadow 0.15s,
+    transform 0.15s;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .gs-card:hover {
-  box-shadow: 0 4px 12px rgba(145,91,216,0.15);
+  box-shadow: 0 4px 12px rgba(145, 91, 216, 0.15);
   transform: translateY(-1px);
 }
 
 .gs-card--selected {
-  outline: 2px solid #915BD8;
+  outline: 2px solid #915bd8;
   outline-offset: 1px;
 }
 
@@ -2051,7 +2465,7 @@ onUnmounted(() => {
 .gs-card-name {
   font-size: 13px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
   padding-right: 80px;
   line-height: 1.3;
 }
@@ -2065,7 +2479,7 @@ onUnmounted(() => {
 .gs-card-power-val {
   font-size: 26px;
   font-weight: 800;
-  color: #2C2039;
+  color: #2c2039;
   line-height: 1;
 }
 
@@ -2113,7 +2527,7 @@ onUnmounted(() => {
 .gs-card-stat-val {
   font-size: 13px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
 }
 
 .gs-card-falla-btn {
@@ -2125,7 +2539,7 @@ onUnmounted(() => {
   border-radius: 6px;
   border: 1px solid #e8e0f0;
   background: white;
-  color: #915BD8;
+  color: #915bd8;
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
@@ -2134,8 +2548,8 @@ onUnmounted(() => {
 }
 
 .gs-card-falla-btn:hover {
-  background: rgba(145,91,216,0.08);
-  border-color: #915BD8;
+  background: rgba(145, 91, 216, 0.08);
+  border-color: #915bd8;
 }
 
 .gs-card-falla-btn--lg {
@@ -2149,7 +2563,7 @@ onUnmounted(() => {
   border: 1px solid #e8e0f0;
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 20px rgba(145,91,216,0.1);
+  box-shadow: 0 4px 20px rgba(145, 91, 216, 0.1);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -2157,7 +2571,9 @@ onUnmounted(() => {
 
 .gs-panel-slide-enter-active,
 .gs-panel-slide-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
 }
 
 .gs-panel-slide-enter-from,
@@ -2193,7 +2609,7 @@ onUnmounted(() => {
 .gs-detail-title {
   font-size: 18px;
   font-weight: 800;
-  color: #2C2039;
+  color: #2c2039;
   margin: 0;
 }
 
@@ -2205,8 +2621,8 @@ onUnmounted(() => {
 }
 
 .gs-sol-badge {
-  background: rgba(145,91,216,0.1);
-  color: #915BD8;
+  background: rgba(145, 91, 216, 0.1);
+  color: #915bd8;
   font-size: 11px;
   font-weight: 700;
   padding: 2px 8px;
@@ -2242,8 +2658,8 @@ onUnmounted(() => {
 
 .gs-close-btn:hover {
   background: #f9f7fc;
-  border-color: #915BD8;
-  color: #915BD8;
+  border-color: #915bd8;
+  color: #915bd8;
 }
 
 .gs-section-title {
@@ -2288,7 +2704,7 @@ onUnmounted(() => {
 .gs-inv-name {
   font-size: 11px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2359,7 +2775,7 @@ onUnmounted(() => {
 }
 
 .gs-chart-card--dark {
-  background: #2C2039;
+  background: #2c2039;
   border-color: #3d2f52;
 }
 
@@ -2422,8 +2838,8 @@ onUnmounted(() => {
 }
 
 .gs-toggle-pill.active {
-  background: #915BD8;
-  border-color: #915BD8;
+  background: #915bd8;
+  border-color: #915bd8;
   color: white;
 }
 
@@ -2496,7 +2912,7 @@ onUnmounted(() => {
 .gs-metrics-table td.gs-mt-inv {
   text-align: left;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
   padding-left: 12px;
 }
 
@@ -2677,9 +3093,13 @@ onUnmounted(() => {
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
 }
-.gs-genhoy-sub { font-size: 11px; font-weight: 400; color: #9ca3af; }
+.gs-genhoy-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: #9ca3af;
+}
 .gs-genhoy-legend {
   display: flex;
   align-items: center;
@@ -2700,17 +3120,26 @@ onUnmounted(() => {
   border-radius: 50%;
   display: inline-block;
 }
-.gs-genhoy-kpi { font-size: 12px; font-weight: 700; }
+.gs-genhoy-kpi {
+  font-size: 12px;
+  font-weight: 700;
+}
 .gs-genhoy-fuente {
   font-size: 9px;
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 4px;
-  background: rgba(145,91,216,.12);
+  background: rgba(145, 91, 216, 0.12);
   color: #7c3aed;
 }
-.gs-genhoy-fuente--med { background: rgba(22,163,74,.1); color: #16a34a; }
-.gs-genhoy-fuente--nd  { background: #f3f4f6; color: #9ca3af; }
+.gs-genhoy-fuente--med {
+  background: rgba(22, 163, 74, 0.1);
+  color: #16a34a;
+}
+.gs-genhoy-fuente--nd {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
 .gs-genhoy-reload {
   background: none;
   border: none;
@@ -2721,7 +3150,9 @@ onUnmounted(() => {
   border-radius: 6px;
   transition: color 0.15s;
 }
-.gs-genhoy-reload:hover { color: #7c3aed; }
+.gs-genhoy-reload:hover {
+  color: #7c3aed;
+}
 .gs-genhoy-state {
   display: flex;
   flex-direction: column;
@@ -2747,7 +3178,11 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 10px;
 }
-.gs-genhoy-item { display: flex; flex-direction: column; gap: 4px; }
+.gs-genhoy-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 .gs-genhoy-item-header {
   display: flex;
   align-items: center;
@@ -2755,7 +3190,11 @@ onUnmounted(() => {
   gap: 8px;
   flex-wrap: wrap;
 }
-.gs-genhoy-item-name { font-size: 12px; font-weight: 600; color: #374151; }
+.gs-genhoy-item-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #374151;
+}
 .gs-genhoy-item-vals {
   display: flex;
   align-items: center;
@@ -2763,7 +3202,10 @@ onUnmounted(() => {
   font-size: 12px;
   flex-wrap: wrap;
 }
-.gs-genhoy-pct { font-size: 11px; font-weight: 700; }
+.gs-genhoy-pct {
+  font-size: 11px;
+  font-weight: 700;
+}
 .gs-genhoy-track {
   height: 5px;
   background: #f3f4f6;
@@ -2778,14 +3220,25 @@ onUnmounted(() => {
 
 /* Overlay transitions */
 .gs-overlay-fade-enter-active,
-.gs-overlay-fade-leave-active { transition: opacity 0.25s ease; }
+.gs-overlay-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
 .gs-overlay-fade-enter-from,
-.gs-overlay-fade-leave-to { opacity: 0; }
+.gs-overlay-fade-leave-to {
+  opacity: 0;
+}
 
 .gs-overlay-rise-enter-active,
-.gs-overlay-rise-leave-active { transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease; }
+.gs-overlay-rise-leave-active {
+  transition:
+    transform 0.3s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.3s ease;
+}
 .gs-overlay-rise-enter-from,
-.gs-overlay-rise-leave-to { transform: translateY(60px); opacity: 0; }
+.gs-overlay-rise-leave-to {
+  transform: translateY(60px);
+  opacity: 0;
+}
 /* ── Detalle por inversor (expand + comparativa) ── */
 .gs-inv-hint {
   font-size: 10px;
@@ -2795,15 +3248,18 @@ onUnmounted(() => {
 
 .gs-inv-card--clickable {
   cursor: pointer;
-  transition: box-shadow .15s, border-color .15s, background .15s;
+  transition:
+    box-shadow 0.15s,
+    border-color 0.15s,
+    background 0.15s;
 }
 .gs-inv-card--clickable:hover {
-  box-shadow: 0 2px 8px rgba(145,91,216,0.18);
+  box-shadow: 0 2px 8px rgba(145, 91, 216, 0.18);
 }
 .gs-inv-card--active {
   background: #f3ecff;
   border-color: #c9b3ec;
-  box-shadow: 0 2px 10px rgba(145,91,216,0.22);
+  box-shadow: 0 2px 10px rgba(145, 91, 216, 0.22);
 }
 
 .gs-inv-chevron {
@@ -2832,7 +3288,7 @@ onUnmounted(() => {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  color: #2C2039;
+  color: #2c2039;
 }
 .gs-inv-expanded-state {
   font-size: 11px;
@@ -2863,7 +3319,7 @@ onUnmounted(() => {
   padding: 4px 6px;
   border: 1px solid #e5e7eb;
   border-radius: 6px;
-  color: #2C2039;
+  color: #2c2039;
 }
 .gs-date-sep {
   color: #9ca3af;
@@ -2875,10 +3331,14 @@ onUnmounted(() => {
 }
 
 /* Transición del panel expandido */
-.gs-expand-enter-active, .gs-expand-leave-active {
-  transition: opacity .18s ease, transform .18s ease;
+.gs-expand-enter-active,
+.gs-expand-leave-active {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
-.gs-expand-enter-from, .gs-expand-leave-to {
+.gs-expand-enter-from,
+.gs-expand-leave-to {
   opacity: 0;
   transform: translateY(-6px);
 }

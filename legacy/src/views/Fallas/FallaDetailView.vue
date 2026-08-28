@@ -1,13 +1,15 @@
 <template>
-
   <!-- ══ CARGANDO ════════════════════════════════════════════════════════ -->
-  <div v-if="loading" class="flex flex-col items-center justify-center py-20 gap-3">
-    <ProgressSpinner style="width:40px;height:40px" />
+  <div v-if="loading" class="flex flex-col items-center justify-center gap-3 py-20">
+    <ProgressSpinner style="width: 40px; height: 40px" />
     <span class="text-sm text-gray-500">Cargando falla…</span>
   </div>
 
   <!-- ══ NO ENCONTRADA ═══════════════════════════════════════════════════ -->
-  <div v-else-if="notFound" class="flex flex-col items-center justify-center py-20 gap-3 text-gray-500">
+  <div
+    v-else-if="notFound"
+    class="flex flex-col items-center justify-center gap-3 py-20 text-gray-500"
+  >
     <i class="pi pi-exclamation-circle text-4xl text-red-400" />
     <p class="text-sm font-semibold text-gray-700">Falla no encontrada</p>
     <p class="text-xs">El registro solicitado no existe o fue eliminado.</p>
@@ -16,25 +18,35 @@
 
   <!-- ══ VISTA PRINCIPAL ═════════════════════════════════════════════════ -->
   <div v-else-if="falla" class="space-y-4">
-
     <!-- ── Header ────────────────────────────────────────────────────── -->
-    <div class="flex items-start justify-between flex-wrap gap-3">
+    <div class="flex flex-wrap items-start justify-between gap-3">
       <div class="flex items-start gap-3">
-        <Button icon="pi pi-arrow-left" text rounded @click="router.back()" class="-ml-2 mt-1" />
+        <Button icon="pi pi-arrow-left" text rounded @click="router.back()" class="mt-1 -ml-2" />
         <div>
-          <div class="flex items-center gap-2 mb-1.5">
-            <Tag :value="falla.estado?.etiqueta || '—'" :style="pillStyle(falla.estado?.color_hex)" />
-            <Tag :value="falla.prioridad?.etiqueta || '—'" :severity="prioSeverity(falla.prioridad?.codigo)" />
-            <Tag v-if="categoria.etiqueta" :value="categoria.etiqueta"
-              :style="catTagStyle(categoria.color)" />
+          <div class="mb-1.5 flex items-center gap-2">
+            <Tag
+              :value="falla.estado?.etiqueta || '—'"
+              :style="pillStyle(falla.estado?.color_hex)"
+            />
+            <Tag
+              :value="falla.prioridad?.etiqueta || '—'"
+              :severity="prioSeverity(falla.prioridad?.codigo)"
+            />
+            <Tag
+              v-if="categoria.etiqueta"
+              :value="categoria.etiqueta"
+              :style="catTagStyle(categoria.color)"
+            />
           </div>
-          <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2 flex-wrap">
-            <code class="text-base font-mono text-purple-700 bg-purple-50 px-2 py-0.5 rounded">{{ falla.codigo_interno }}</code>
-            <span class="text-gray-400 text-sm">·</span>
+          <h2 class="flex flex-wrap items-center gap-2 text-xl font-bold text-gray-800">
+            <code class="rounded bg-purple-50 px-2 py-0.5 font-mono text-base text-purple-700">{{
+              falla.codigo_interno
+            }}</code>
+            <span class="text-sm text-gray-400">·</span>
             <span class="text-base font-medium text-gray-700">{{ titulo }}</span>
           </h2>
-          <p class="text-sm text-gray-600 mt-1 max-w-2xl">{{ falla.descripcion }}</p>
-          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-xs text-gray-500">
+          <p class="mt-1 max-w-2xl text-sm text-gray-600">{{ falla.descripcion }}</p>
+          <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
             <span v-if="falla.proyecto?.nombre_comercial" class="inline-flex items-center gap-1">
               <i class="pi pi-building" /> {{ falla.proyecto.nombre_comercial }}
             </span>
@@ -48,78 +60,142 @@
         </div>
       </div>
       <div class="flex gap-2">
-        <Button v-if="!editMode" label="Editar" icon="pi pi-pencil" outlined size="small"
-          @click="editMode = true" />
-        <Button v-else label="Cancelar edición" icon="pi pi-times" outlined size="small"
-          severity="secondary" @click="editMode = false" />
-        <Button icon="pi pi-trash" outlined size="small" severity="danger" @click="confirmDelete"
-          v-tooltip.top="'Eliminar falla'" />
+        <Button
+          v-if="!editMode"
+          label="Editar"
+          icon="pi pi-pencil"
+          outlined
+          size="small"
+          @click="editMode = true"
+        />
+        <Button
+          v-else
+          label="Cancelar edición"
+          icon="pi pi-times"
+          outlined
+          size="small"
+          severity="secondary"
+          @click="editMode = false"
+        />
+        <Button
+          icon="pi pi-trash"
+          outlined
+          size="small"
+          severity="danger"
+          @click="confirmDelete"
+          v-tooltip.top="'Eliminar falla'"
+        />
       </div>
     </div>
 
     <!-- ── Modo edición ──────────────────────────────────────────────── -->
-    <div v-if="editMode" class="bg-white rounded-xl shadow-sm p-5">
-      <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-        <i class="pi pi-pencil text-sm" style="color:#915BD8" />
-        <h3 class="font-semibold text-sm text-gray-700">Editar falla completa</h3>
+    <div v-if="editMode" class="rounded-xl bg-white p-5 shadow-sm">
+      <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
+        <i class="pi pi-pencil text-sm" style="color: #915bd8" />
+        <h3 class="text-sm font-semibold text-gray-700">Editar falla completa</h3>
       </div>
-      <FallaForm :initial="falla" :catalogos="catalogos" @save="onUpdate" @cancel="editMode = false" />
+      <FallaForm
+        :initial="falla"
+        :catalogos="catalogos"
+        @save="onUpdate"
+        @cancel="editMode = false"
+      />
     </div>
 
     <!-- ── Vista normal ──────────────────────────────────────────────── -->
-    <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
+    <div v-else class="grid grid-cols-1 gap-4 lg:grid-cols-3">
       <!-- COLUMNA PRINCIPAL -->
-      <div class="lg:col-span-2 space-y-4">
-
+      <div class="space-y-4 lg:col-span-2">
         <!-- Clasificación (metodología estructurada) -->
-        <div v-if="clasif" class="bg-white rounded-xl shadow-sm p-5">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
+        <div v-if="clasif" class="rounded-xl bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
             <i :class="clasif.icono" class="text-sm" :style="{ color: clasif.categoriaColor }" />
-            <h3 class="font-semibold text-sm text-gray-700">Clasificación</h3>
-            <Tag v-if="clasif.pendienteReclasificar" value="Pendiente de reclasificar"
-              severity="warn" class="ml-auto text-[11px]" />
+            <h3 class="text-sm font-semibold text-gray-700">Clasificación</h3>
+            <Tag
+              v-if="clasif.pendienteReclasificar"
+              value="Pendiente de reclasificar"
+              severity="warn"
+              class="ml-auto text-[11px]"
+            />
           </div>
 
           <!-- Sistema + equipo/evento -->
-          <div class="flex flex-wrap items-center gap-2 mb-3">
+          <div class="mb-3 flex flex-wrap items-center gap-2">
             <Tag :value="clasif.categoriaEtiqueta" :style="catTagStyle(clasif.categoriaColor)" />
-            <span v-if="clasif.subtitulo" class="text-sm font-semibold text-gray-800">{{ clasif.subtitulo }}</span>
+            <span v-if="clasif.subtitulo" class="text-sm font-semibold text-gray-800">{{
+              clasif.subtitulo
+            }}</span>
           </div>
 
           <!-- Detalle libre -->
-          <p v-if="clasif.detalle" class="text-sm text-gray-700 leading-relaxed whitespace-pre-line mb-3">
+          <p
+            v-if="clasif.detalle"
+            class="mb-3 text-sm leading-relaxed whitespace-pre-line text-gray-700"
+          >
             {{ clasif.detalle }}
           </p>
 
           <!-- Frontera: flags -->
           <div v-if="clasif.frontera" class="flex flex-wrap gap-2">
-            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md"
-              :class="clasif.frontera.afectaMedicion ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-500'">
-              <i :class="clasif.frontera.afectaMedicion ? 'pi pi-times-circle' : 'pi pi-check-circle'" class="text-[11px]" />
+            <span
+              class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold"
+              :class="
+                clasif.frontera.afectaMedicion
+                  ? 'bg-red-50 text-red-700'
+                  : 'bg-gray-100 text-gray-500'
+              "
+            >
+              <i
+                :class="
+                  clasif.frontera.afectaMedicion ? 'pi pi-times-circle' : 'pi pi-check-circle'
+                "
+                class="text-[11px]"
+              />
               {{ clasif.frontera.afectaMedicion ? 'Afecta la medición' : 'No afecta la medición' }}
             </span>
-            <span class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md"
-              :class="clasif.frontera.perdidaComunicacion ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500'">
-              <i :class="clasif.frontera.perdidaComunicacion ? 'pi pi-wifi' : 'pi pi-check-circle'" class="text-[11px]" />
-              {{ clasif.frontera.perdidaComunicacion ? 'Pérdida de comunicación' : 'Comunicación OK' }}
+            <span
+              class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold"
+              :class="
+                clasif.frontera.perdidaComunicacion
+                  ? 'bg-amber-50 text-amber-700'
+                  : 'bg-gray-100 text-gray-500'
+              "
+            >
+              <i
+                :class="clasif.frontera.perdidaComunicacion ? 'pi pi-wifi' : 'pi pi-check-circle'"
+                class="text-[11px]"
+              />
+              {{
+                clasif.frontera.perdidaComunicacion ? 'Pérdida de comunicación' : 'Comunicación OK'
+              }}
             </span>
           </div>
 
           <!-- Inversores afectados -->
           <div v-if="clasif.inversores.length" class="space-y-2">
-            <p class="text-xs text-gray-400 uppercase tracking-wide">Inversores afectados ({{ clasif.inversores.length }})</p>
-            <div v-for="(inv, idx) in clasif.inversores" :key="idx"
-              class="rounded-lg border border-gray-100 bg-gray-50 p-3">
-              <div class="flex items-center gap-2 mb-1.5">
-                <i class="pi pi-server text-xs" style="color:#915BD8" />
+            <p class="text-xs tracking-wide text-gray-400 uppercase">
+              Inversores afectados ({{ clasif.inversores.length }})
+            </p>
+            <div
+              v-for="(inv, idx) in clasif.inversores"
+              :key="idx"
+              class="rounded-lg border border-gray-100 bg-gray-50 p-3"
+            >
+              <div class="mb-1.5 flex items-center gap-2">
+                <i class="pi pi-server text-xs" style="color: #915bd8" />
                 <span class="text-sm font-semibold text-gray-800">{{ inv.nombre }}</span>
-                <span v-if="inv.potenciaKw != null" class="text-xs text-gray-500">· {{ inv.potenciaKw }} kW</span>
+                <span v-if="inv.potenciaKw != null" class="text-xs text-gray-500"
+                  >· {{ inv.potenciaKw }} kW</span
+                >
               </div>
               <div v-if="inv.tipos.length" class="flex flex-wrap gap-1.5">
-                <span v-for="(t, ti) in inv.tipos" :key="ti"
-                  class="text-[11px] font-semibold px-2 py-0.5 rounded"
-                  style="background:#915BD81a;color:#6E3FB8">{{ t }}</span>
+                <span
+                  v-for="(t, ti) in inv.tipos"
+                  :key="ti"
+                  class="rounded px-2 py-0.5 text-[11px] font-semibold"
+                  style="background: #915bd81a; color: #6e3fb8"
+                  >{{ t }}</span
+                >
               </div>
               <p v-else class="text-xs text-gray-400">Sin tipo de falla especificado</p>
             </div>
@@ -127,45 +203,58 @@
         </div>
 
         <!-- Información general -->
-        <div class="bg-white rounded-xl shadow-sm p-5">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-info-circle text-sm" style="color:#915BD8" />
-            <h3 class="font-semibold text-sm text-gray-700">Información general</h3>
+        <div class="rounded-xl bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
+            <i class="pi pi-info-circle text-sm" style="color: #915bd8" />
+            <h3 class="text-sm font-semibold text-gray-700">Información general</h3>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+          <div class="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
             <InfoField label="Proyecto" :value="falla.proyecto?.nombre_comercial" highlight />
             <InfoField label="Equipo / evento" :value="titulo" />
             <InfoField label="Registrado por" :value="falla.registrado_por?.nombre" />
             <InfoField label="Asignado a" :value="falla.asignado_a?.nombre || 'Sin asignar'" />
             <InfoField label="Fecha ocurrencia" :value="fmtDatetime(falla.fecha_ocurrencia)" />
-            <InfoField label="Fecha identificación" :value="fmtFechaConHora(falla.fecha_identificacion, falla.hora_identificacion)" />
+            <InfoField
+              label="Fecha identificación"
+              :value="fmtFechaConHora(falla.fecha_identificacion, falla.hora_identificacion)"
+            />
             <div v-if="falla.fecha_resolucion">
-              <p class="text-xs text-gray-400 uppercase tracking-wide">Fecha resolución</p>
-              <p class="font-semibold mt-0.5 text-emerald-600">{{ fmtDatetime(falla.fecha_resolucion) }}</p>
+              <p class="text-xs tracking-wide text-gray-400 uppercase">Fecha resolución</p>
+              <p class="mt-0.5 font-semibold text-emerald-600">
+                {{ fmtDatetime(falla.fecha_resolucion) }}
+              </p>
             </div>
             <div v-if="falla.tiempo_afectacion_horas != null">
-              <p class="text-xs text-gray-400 uppercase tracking-wide">Tiempo de afectación</p>
-              <p class="font-semibold mt-0.5" style="color:#b45309">{{ fmtDuracion(falla.tiempo_afectacion_horas) }}</p>
+              <p class="text-xs tracking-wide text-gray-400 uppercase">Tiempo de afectación</p>
+              <p class="mt-0.5 font-semibold" style="color: #b45309">
+                {{ fmtDuracion(falla.tiempo_afectacion_horas) }}
+              </p>
             </div>
-            <InfoField v-if="falla.resolucion" label="Tipo resolución" :value="falla.resolucion?.etiqueta" />
+            <InfoField
+              v-if="falla.resolucion"
+              label="Tipo resolución"
+              :value="falla.resolucion?.etiqueta"
+            />
           </div>
         </div>
 
         <!-- SLA -->
-        <div class="bg-white rounded-xl shadow-sm p-5">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-clock text-sm" style="color:#915BD8" />
-            <h3 class="font-semibold text-sm text-gray-700">SLA</h3>
+        <div class="rounded-xl bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
+            <i class="pi pi-clock text-sm" style="color: #915bd8" />
+            <h3 class="text-sm font-semibold text-gray-700">SLA</h3>
             <Tag :value="slaTexto" :severity="slaSeverity" class="ml-auto" />
           </div>
           <div v-if="falla.sla_limite_horas">
-            <div class="flex items-center gap-3 text-xs mb-2">
+            <div class="mb-2 flex items-center gap-3 text-xs">
               <span class="text-gray-500">Límite</span>
               <span class="font-semibold text-gray-800">{{ falla.sla_limite_horas }}h</span>
-              <span class="text-gray-500 ml-auto">Transcurrido</span>
-              <span class="font-semibold" :style="{ color: slaColor }">{{ horasTranscurridas }}h</span>
+              <span class="ml-auto text-gray-500">Transcurrido</span>
+              <span class="font-semibold" :style="{ color: slaColor }"
+                >{{ horasTranscurridas }}h</span
+              >
             </div>
-            <div class="bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div class="h-2 overflow-hidden rounded-full bg-gray-100">
               <div class="h-full rounded-full transition-all" :style="slaFillStyle" />
             </div>
           </div>
@@ -173,169 +262,284 @@
         </div>
 
         <!-- Análisis -->
-        <div v-if="falla.causa_raiz || falla.acciones_correctivas" class="bg-white rounded-xl shadow-sm p-5">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-search text-sm" style="color:#915BD8" />
-            <h3 class="font-semibold text-sm text-gray-700">Análisis</h3>
+        <div
+          v-if="falla.causa_raiz || falla.acciones_correctivas"
+          class="rounded-xl bg-white p-5 shadow-sm"
+        >
+          <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
+            <i class="pi pi-search text-sm" style="color: #915bd8" />
+            <h3 class="text-sm font-semibold text-gray-700">Análisis</h3>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div v-if="falla.causa_raiz">
-              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Causa raíz</p>
-              <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ falla.causa_raiz }}</p>
+              <p class="mb-1 text-xs tracking-wide text-gray-400 uppercase">Causa raíz</p>
+              <p class="text-sm leading-relaxed whitespace-pre-line text-gray-700">
+                {{ falla.causa_raiz }}
+              </p>
             </div>
             <div v-if="falla.acciones_correctivas">
-              <p class="text-xs text-gray-400 uppercase tracking-wide mb-1">Acciones correctivas</p>
-              <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ falla.acciones_correctivas }}</p>
+              <p class="mb-1 text-xs tracking-wide text-gray-400 uppercase">Acciones correctivas</p>
+              <p class="text-sm leading-relaxed whitespace-pre-line text-gray-700">
+                {{ falla.acciones_correctivas }}
+              </p>
             </div>
           </div>
         </div>
 
         <!-- Adjuntos -->
-        <div class="bg-white rounded-xl shadow-sm p-5">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-paperclip text-sm" style="color:#915BD8" />
-            <h3 class="font-semibold text-sm text-gray-700">Adjuntos ({{ adjuntos.length }})</h3>
-            <label class="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold cursor-pointer px-3 py-1.5 rounded-md border transition-colors"
-              :class="uploadingFoto ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-wait'
-                                    : 'border-purple-200 text-purple-700 hover:bg-purple-50'">
+        <div class="rounded-xl bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
+            <i class="pi pi-paperclip text-sm" style="color: #915bd8" />
+            <h3 class="text-sm font-semibold text-gray-700">Adjuntos ({{ adjuntos.length }})</h3>
+            <label
+              class="ml-auto inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors"
+              :class="
+                uploadingFoto
+                  ? 'cursor-wait border-gray-200 bg-gray-100 text-gray-400'
+                  : 'border-purple-200 text-purple-700 hover:bg-purple-50'
+              "
+            >
               <i v-if="uploadingFoto" class="pi pi-spin pi-spinner text-xs" />
               <i v-else class="pi pi-plus text-xs" />
               {{ uploadingFoto ? 'Subiendo...' : 'Subir' }}
-              <input type="file" accept="image/*,.pdf" multiple class="hidden"
-                @change="uploadFotos" :disabled="uploadingFoto" />
+              <input
+                type="file"
+                accept="image/*,.pdf"
+                multiple
+                class="hidden"
+                @change="uploadFotos"
+                :disabled="uploadingFoto"
+              />
             </label>
           </div>
 
-          <div v-if="adjuntos.length" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div v-for="(url, idx) in adjuntos" :key="idx"
-              class="relative group rounded-lg overflow-hidden border border-gray-100 bg-gray-50 aspect-square">
-              <img v-if="isImage(url)" :src="thumbUrl(url)" :alt="filename(url)"
-                class="w-full h-full object-cover" />
-              <div v-else class="w-full h-full flex flex-col items-center justify-center gap-2 p-3 text-gray-500">
-                <i :class="filename(url).match(/\.pdf$/i) ? 'pi pi-file-pdf text-red-400'
-                         : filename(url).match(/\.(xls|xlsx|csv)$/i) ? 'pi pi-file-excel text-green-500'
-                         : filename(url).match(/\.(doc|docx)$/i) ? 'pi pi-file-word text-blue-500'
-                         : 'pi pi-file text-gray-400'" style="font-size:2rem" />
-                <span class="text-[10px] text-center line-clamp-2 w-full px-1">{{ filename(url) }}</span>
+          <div v-if="adjuntos.length" class="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div
+              v-for="(url, idx) in adjuntos"
+              :key="idx"
+              class="group relative aspect-square overflow-hidden rounded-lg border border-gray-100 bg-gray-50"
+            >
+              <img
+                v-if="isImage(url)"
+                :src="thumbUrl(url)"
+                :alt="filename(url)"
+                class="h-full w-full object-cover"
+              />
+              <div
+                v-else
+                class="flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-gray-500"
+              >
+                <i
+                  :class="
+                    filename(url).match(/\.pdf$/i)
+                      ? 'pi pi-file-pdf text-red-400'
+                      : filename(url).match(/\.(xls|xlsx|csv)$/i)
+                        ? 'pi pi-file-excel text-green-500'
+                        : filename(url).match(/\.(doc|docx)$/i)
+                          ? 'pi pi-file-word text-blue-500'
+                          : 'pi pi-file text-gray-400'
+                  "
+                  style="font-size: 2rem"
+                />
+                <span class="line-clamp-2 w-full px-1 text-center text-[10px]">{{
+                  filename(url)
+                }}</span>
               </div>
-              <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
-                <a :href="resolveUrl(url)" target="_blank" rel="noopener"
-                  class="w-8 h-8 rounded-full bg-white text-gray-700 flex items-center justify-center hover:bg-purple-100 hover:text-purple-700 transition-colors"
-                  v-tooltip.top="'Abrir en Drive'">
+              <div
+                class="absolute inset-0 flex items-center justify-center gap-2 bg-black/0 opacity-0 transition-colors group-hover:bg-black/40 group-hover:opacity-100"
+              >
+                <a
+                  :href="resolveUrl(url)"
+                  target="_blank"
+                  rel="noopener"
+                  class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-700 transition-colors hover:bg-purple-100 hover:text-purple-700"
+                  v-tooltip.top="'Abrir en Drive'"
+                >
                   <i class="pi pi-external-link text-xs" />
                 </a>
-                <button class="w-8 h-8 rounded-full bg-white text-red-600 flex items-center justify-center hover:bg-red-50 transition-colors"
-                  v-tooltip.top="'Eliminar'" @click="deleteFoto(url)">
+                <button
+                  class="flex h-8 w-8 items-center justify-center rounded-full bg-white text-red-600 transition-colors hover:bg-red-50"
+                  v-tooltip.top="'Eliminar'"
+                  @click="deleteFoto(url)"
+                >
                   <i class="pi pi-trash text-xs" />
                 </button>
               </div>
             </div>
           </div>
-          <p v-else class="text-xs text-gray-400">Sin adjuntos. Sube imágenes o documentos relevantes.</p>
+          <p v-else class="text-xs text-gray-400">
+            Sin adjuntos. Sube imágenes o documentos relevantes.
+          </p>
         </div>
 
         <!-- Seguimientos -->
-        <div class="bg-white rounded-xl shadow-sm p-5">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-comments text-sm" style="color:#915BD8" />
-            <h3 class="font-semibold text-sm text-gray-700">Historial de seguimiento ({{ falla.seguimientos?.length || 0 }})</h3>
+        <div class="rounded-xl bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
+            <i class="pi pi-comments text-sm" style="color: #915bd8" />
+            <h3 class="text-sm font-semibold text-gray-700">
+              Historial de seguimiento ({{ falla.seguimientos?.length || 0 }})
+            </h3>
           </div>
 
           <!-- Añadir nota -->
-          <div class="bg-gray-50 rounded-lg p-3 mb-4 space-y-3">
+          <div class="mb-4 space-y-3 rounded-lg bg-gray-50 p-3">
             <div class="flex flex-col gap-1">
               <label class="field-label">Cambiar estado (opcional)</label>
-              <Select v-model="nuevaNota.estado_id" :options="catalogos.estados" optionLabel="etiqueta"
-                optionValue="id" placeholder="Mantener estado actual" showClear class="w-full md:w-72" />
+              <Select
+                v-model="nuevaNota.estado_id"
+                :options="catalogos.estados"
+                optionLabel="etiqueta"
+                optionValue="id"
+                placeholder="Mantener estado actual"
+                showClear
+                class="w-full md:w-72"
+              />
             </div>
-            <Textarea v-model="nuevaNota.nota" rows="2" autoResize
-              placeholder="Escribe una actualización, novedad o nota técnica…" class="w-full text-sm" />
+            <Textarea
+              v-model="nuevaNota.nota"
+              rows="2"
+              autoResize
+              placeholder="Escribe una actualización, novedad o nota técnica…"
+              class="w-full text-sm"
+            />
             <div class="flex justify-end">
-              <Button label="Agregar nota" icon="pi pi-send" size="small"
+              <Button
+                label="Agregar nota"
+                icon="pi pi-send"
+                size="small"
                 :disabled="!nuevaNota.nota.trim() && !nuevaNota.estado_id"
-                :loading="addingSeg" @click="addSeguimiento" />
+                :loading="addingSeg"
+                @click="addSeguimiento"
+              />
             </div>
           </div>
 
           <!-- Timeline -->
           <div v-if="sortedSeguimientos.length" class="space-y-3">
             <div v-for="seg in sortedSeguimientos" :key="seg.id" class="flex gap-3">
-              <div class="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-bold flex-shrink-0">
+              <div
+                class="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-purple-600 text-xs font-bold text-white"
+              >
                 {{ (seg.usuario?.nombre || seg.usuario_nombre || 'S')[0].toUpperCase() }}
               </div>
-              <div class="flex-1 bg-gray-50 rounded-lg px-3 py-2">
-                <div class="flex items-center justify-between gap-2 mb-1">
-                  <span class="text-sm font-semibold text-gray-800">{{ seg.usuario?.nombre || seg.usuario_nombre || 'Sistema' }}</span>
+              <div class="flex-1 rounded-lg bg-gray-50 px-3 py-2">
+                <div class="mb-1 flex items-center justify-between gap-2">
+                  <span class="text-sm font-semibold text-gray-800">{{
+                    seg.usuario?.nombre || seg.usuario_nombre || 'Sistema'
+                  }}</span>
                   <span class="text-xs text-gray-400">{{ fmtDatetime(seg.created_at) }}</span>
                 </div>
-                <p v-if="seg.nota" class="text-sm text-gray-700 whitespace-pre-line">{{ seg.nota }}</p>
+                <p v-if="seg.nota" class="text-sm whitespace-pre-line text-gray-700">
+                  {{ seg.nota }}
+                </p>
                 <div v-if="seg.estado_nuevo" class="mt-1.5 flex items-center gap-1 text-xs">
                   <i class="pi pi-arrow-right text-[10px] text-gray-400" />
-                  <Tag :value="seg.estado_nuevo?.etiqueta || ''" :style="pillStyle(seg.estado_nuevo?.color_hex)" class="text-[10px]" />
+                  <Tag
+                    :value="seg.estado_nuevo?.etiqueta || ''"
+                    :style="pillStyle(seg.estado_nuevo?.color_hex)"
+                    class="text-[10px]"
+                  />
                 </div>
               </div>
             </div>
           </div>
           <p v-else class="text-xs text-gray-400">Aún no hay notas de seguimiento.</p>
         </div>
-
       </div>
 
       <!-- COLUMNA SIDEBAR -->
       <div class="space-y-4">
-
         <!-- Acción sugerida -->
-        <div v-if="falla.tipo?.accion_sugerida" class="rounded-xl p-5 shadow-sm"
-          style="background: linear-gradient(135deg, #faf7ff 0%, #f3edff 100%); border: 1px solid #e5d9ff;">
-          <div class="flex items-center gap-2 mb-3">
-            <i class="pi pi-lightbulb text-sm" style="color:#915BD8" />
-            <h3 class="font-semibold text-sm" style="color:#4a3b6b">Acción sugerida</h3>
+        <div
+          v-if="falla.tipo?.accion_sugerida"
+          class="rounded-xl p-5 shadow-sm"
+          style="
+            background: linear-gradient(135deg, #faf7ff 0%, #f3edff 100%);
+            border: 1px solid #e5d9ff;
+          "
+        >
+          <div class="mb-3 flex items-center gap-2">
+            <i class="pi pi-lightbulb text-sm" style="color: #915bd8" />
+            <h3 class="text-sm font-semibold" style="color: #4a3b6b">Acción sugerida</h3>
           </div>
-          <p class="text-sm text-gray-700 leading-relaxed">{{ falla.tipo.accion_sugerida }}</p>
+          <p class="text-sm leading-relaxed text-gray-700">{{ falla.tipo.accion_sugerida }}</p>
         </div>
 
         <!-- Actualización rápida -->
-        <div class="bg-white rounded-xl shadow-sm p-5">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-bolt text-sm" style="color:#915BD8" />
-            <h3 class="font-semibold text-sm text-gray-700">Actualización rápida</h3>
+        <div class="rounded-xl bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
+            <i class="pi pi-bolt text-sm" style="color: #915bd8" />
+            <h3 class="text-sm font-semibold text-gray-700">Actualización rápida</h3>
           </div>
           <div class="space-y-3">
             <div class="flex flex-col gap-1">
               <label class="field-label">Estado</label>
-              <Select v-model="quickEdit.estado_id" :options="catalogos.estados" optionLabel="etiqueta"
-                optionValue="id" class="w-full" />
+              <Select
+                v-model="quickEdit.estado_id"
+                :options="catalogos.estados"
+                optionLabel="etiqueta"
+                optionValue="id"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Prioridad</label>
-              <Select v-model="quickEdit.prioridad_id" :options="catalogos.prioridades" optionLabel="etiqueta"
-                optionValue="id" class="w-full" />
+              <Select
+                v-model="quickEdit.prioridad_id"
+                :options="catalogos.prioridades"
+                optionLabel="etiqueta"
+                optionValue="id"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Asignado a</label>
-              <Select v-model="quickEdit.asignado_a_id" :options="usuarios" optionLabel="nombre"
-                optionValue="id" placeholder="Sin asignar" showClear class="w-full" />
+              <Select
+                v-model="quickEdit.asignado_a_id"
+                :options="usuarios"
+                optionLabel="nombre"
+                optionValue="id"
+                placeholder="Sin asignar"
+                showClear
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Energía perdida (kWh)</label>
-              <InputNumber v-model="quickEdit.energia_perdida_kwh" :minFractionDigits="0" :maxFractionDigits="2"
-                :min="0" locale="en-US" class="w-full" />
+              <InputNumber
+                v-model="quickEdit.energia_perdida_kwh"
+                :minFractionDigits="0"
+                :maxFractionDigits="2"
+                :min="0"
+                locale="en-US"
+                class="w-full"
+              />
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Causa raíz</label>
-              <Textarea v-model="quickEdit.causa_raiz" rows="2" autoResize
-                placeholder="Causa raíz identificada…" class="w-full text-sm" />
+              <Textarea
+                v-model="quickEdit.causa_raiz"
+                rows="2"
+                autoResize
+                placeholder="Causa raíz identificada…"
+                class="w-full text-sm"
+              />
             </div>
-            <Button label="Guardar cambios" icon="pi pi-check" :loading="savingQuick"
-              @click="saveQuickEdit" class="w-full" />
+            <Button
+              label="Guardar cambios"
+              icon="pi pi-check"
+              :loading="savingQuick"
+              @click="saveQuickEdit"
+              class="w-full"
+            />
           </div>
         </div>
 
         <!-- Detalles técnicos -->
-        <div class="bg-white rounded-xl shadow-sm p-5">
-          <div class="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-            <i class="pi pi-cog text-sm" style="color:#915BD8" />
-            <h3 class="font-semibold text-sm text-gray-700">Detalles técnicos</h3>
+        <div class="rounded-xl bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
+            <i class="pi pi-cog text-sm" style="color: #915bd8" />
+            <h3 class="text-sm font-semibold text-gray-700">Detalles técnicos</h3>
           </div>
           <div class="space-y-2 text-xs">
             <div class="flex items-center justify-between">
@@ -348,20 +552,22 @@
             </div>
             <div v-if="falla.energia_perdida_kwh != null" class="flex items-center justify-between">
               <span class="text-gray-500">Energía perdida</span>
-              <span class="font-semibold text-red-600">{{ falla.energia_perdida_kwh.toLocaleString('es-CO') }} kWh</span>
+              <span class="font-semibold text-red-600"
+                >{{ falla.energia_perdida_kwh.toLocaleString('es-CO') }} kWh</span
+              >
             </div>
             <div v-if="falla.sla_cumplido != null" class="flex items-center justify-between">
               <span class="text-gray-500">SLA</span>
-              <Tag :value="falla.sla_cumplido ? 'Cumplido' : 'Incumplido'"
-                :severity="falla.sla_cumplido ? 'success' : 'danger'" />
+              <Tag
+                :value="falla.sla_cumplido ? 'Cumplido' : 'Incumplido'"
+                :severity="falla.sla_cumplido ? 'success' : 'danger'"
+              />
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
-
 </template>
 
 <script setup>
@@ -413,7 +619,9 @@ const categoria = computed(() => categoriaFalla(falla.value))
 const clasif = computed(() => clasificacionDetalle(falla.value))
 
 const sortedSeguimientos = computed(() =>
-  [...(falla.value?.seguimientos ?? [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  [...(falla.value?.seguimientos ?? [])].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at),
+  ),
 )
 
 // El backend puede devolver `fotos_lista` como list[str] (URLs, legado) o como
@@ -431,14 +639,17 @@ const adjuntos = computed(() => {
     return a.nombre ? `${a.url}#${encodeURIComponent(a.nombre)}` : a.url
   }
   if (Array.isArray(v.fotos_lista)) return v.fotos_lista.map(toUrl).filter(Boolean)
-  if (Array.isArray(v.attachments)) return v.attachments.map(a => a.url || a.archivo_url || a).filter(Boolean)
-  if (Array.isArray(v.fotos)) return v.fotos.map(a => a.url || a.archivo_url || a).filter(Boolean)
+  if (Array.isArray(v.attachments))
+    return v.attachments.map((a) => a.url || a.archivo_url || a).filter(Boolean)
+  if (Array.isArray(v.fotos)) return v.fotos.map((a) => a.url || a.archivo_url || a).filter(Boolean)
   return []
 })
 
 const horasTranscurridas = computed(() => {
   if (!falla.value?.fecha_identificacion) return 0
-  const desde = new Date(falla.value.fecha_ocurrencia || falla.value.fecha_identificacion + 'T00:00:00')
+  const desde = new Date(
+    falla.value.fecha_ocurrencia || falla.value.fecha_identificacion + 'T00:00:00',
+  )
   const hasta = falla.value.fecha_resolucion ? new Date(falla.value.fecha_resolucion) : new Date()
   return Math.round((hasta - desde) / 3_600_000)
 })
@@ -491,17 +702,27 @@ function catTagStyle(hex) {
   return { background: c + '18', color: c, border: `1px solid ${c}33` }
 }
 function prioSeverity(codigo) {
-  return { critica: 'danger', alta: 'warn', media: 'info', baja: 'secondary' }[codigo] || 'secondary'
+  return (
+    { critica: 'danger', alta: 'warn', media: 'info', baja: 'secondary' }[codigo] || 'secondary'
+  )
 }
 function fmtDate(d) {
   if (!d) return '—'
-  return new Date(d + 'T00:00:00').toLocaleDateString('es-CO',
-    { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(d + 'T00:00:00').toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 function fmtDatetime(d) {
   if (!d) return '—'
-  return new Date(d).toLocaleString('es-CO',
-    { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return new Date(d).toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 function fmtFechaConHora(d, hora) {
   if (!d) return '—'
@@ -569,14 +790,18 @@ async function loadCatalogos() {
   try {
     const { data } = await api.get('/fallas/catalogos')
     catalogos.value = data
-  } catch { /* no crítico */ }
+  } catch {
+    /* no crítico */
+  }
 }
 
 async function loadUsuarios() {
   try {
     const { data } = await api.get('/usuarios', { params: { size: 200 } })
     usuarios.value = data.items ?? []
-  } catch { /* /usuarios puede no existir */ }
+  } catch {
+    /* /usuarios puede no existir */
+  }
 }
 
 // ── Acciones ────────────────────────────────────────────────────────────
@@ -600,7 +825,8 @@ async function saveQuickEdit() {
     if (quickEdit.prioridad_id) payload.prioridad_id = quickEdit.prioridad_id
     if (quickEdit.asignado_a_id) payload.asignado_a_id = quickEdit.asignado_a_id
     if (quickEdit.causa_raiz?.trim()) payload.causa_raiz = quickEdit.causa_raiz.trim()
-    if (quickEdit.energia_perdida_kwh != null) payload.energia_perdida_kwh = quickEdit.energia_perdida_kwh
+    if (quickEdit.energia_perdida_kwh != null)
+      payload.energia_perdida_kwh = quickEdit.energia_perdida_kwh
     await api.patch(`/fallas/${falla.value.id}`, payload)
     toast.add({ severity: 'success', summary: 'Cambios guardados', life: 2500 })
     await load()
@@ -643,8 +869,9 @@ async function uploadFotos(event) {
       // El backend espera el campo `archivo` (no `file`).
       form.append('archivo', file)
       try {
-        await api.post(`/fallas/${falla.value.id}/attachments`, form,
-          { headers: { 'Content-Type': 'multipart/form-data' } })
+        await api.post(`/fallas/${falla.value.id}/attachments`, form, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        })
         okCount++
       } catch (err) {
         const msg = err?.response?.data?.detail ?? `No se pudo subir ${file.name}`
@@ -671,7 +898,7 @@ function deleteFoto(url) {
     accept: async () => {
       try {
         // No hay endpoint DELETE en backend. Actualizamos fotos_urls vía PATCH excluyendo la URL.
-        const nuevaLista = adjuntos.value.filter(u => u !== url)
+        const nuevaLista = adjuntos.value.filter((u) => u !== url)
         await api.patch(`/fallas/${falla.value.id}`, { fotos_urls: nuevaLista })
         await load()
         toast.add({ severity: 'success', summary: 'Adjunto eliminado', life: 2500 })
@@ -719,9 +946,16 @@ const InfoField = {
   render() {
     return h('div', [
       h('p', { class: 'text-xs text-gray-400 uppercase tracking-wide' }, this.label),
-      h('p', {
-        class: ['mt-0.5', this.highlight ? 'font-bold text-gray-800' : 'font-medium text-gray-700'],
-      }, this.value || '—'),
+      h(
+        'p',
+        {
+          class: [
+            'mt-0.5',
+            this.highlight ? 'font-bold text-gray-800' : 'font-medium text-gray-700',
+          ],
+        },
+        this.value || '—',
+      ),
     ])
   },
 }

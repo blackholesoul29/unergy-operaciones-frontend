@@ -32,23 +32,23 @@ Oportunidad comercial  →  Oferta firmada  →  Proyecto  →  Construcción y 
 
 Es, en la práctica, cuatro productos que comparten sesión, catálogo de proyectos y navegación:
 
-| Producto interno | Usuarios | Qué resuelve |
-| --- | --- | --- |
-| **Operaciones / O&M** | operaciones, monitoreo, técnicos | Que las plantas generen: monitoreo, fallas, informes, pólizas |
-| **Comercialización / MEM** | comercialización | Que la energía se venda bien: cumplimiento PPA, bolsa, fronteras, garantías |
-| **Finanzas / Liquidaciones** | liquidaciones, contabilidad | Que la plata cuadre: liquidación mensual, costos, mandatos, facturación |
-| **Comercial** | comercial | Que entren proyectos: pipeline de ofertas y oportunidades |
+| Producto interno             | Usuarios                         | Qué resuelve                                                                |
+| ---------------------------- | -------------------------------- | --------------------------------------------------------------------------- |
+| **Operaciones / O&M**        | operaciones, monitoreo, técnicos | Que las plantas generen: monitoreo, fallas, informes, pólizas               |
+| **Comercialización / MEM**   | comercialización                 | Que la energía se venda bien: cumplimiento PPA, bolsa, fronteras, garantías |
+| **Finanzas / Liquidaciones** | liquidaciones, contabilidad      | Que la plata cuadre: liquidación mensual, costos, mandatos, facturación     |
+| **Comercial**                | comercial                        | Que entren proyectos: pipeline de ofertas y oportunidades                   |
 
 Además hay una **app móvil PWA independiente** (`/m/*`) para monitoreo en campo y reporte de
 fallas desde el celular, con su propio login, layout y navegación.
 
 ### URLs y entornos
 
-| Entorno | URL |
-| --- | --- |
+| Entorno               | URL                                                                                    |
+| --------------------- | -------------------------------------------------------------------------------------- |
 | Producción (frontend) | `https://frontend-taupe-six-252g9aw47x.vercel.app` (Vercel, deploy en push a `master`) |
-| API backend | `https://backend-production-63d8.up.railway.app` (Railway, FastAPI) |
-| Dev local | `http://localhost:5173`, proxy `/api` → `localhost:8000` |
+| API backend           | `https://backend-production-63d8.up.railway.app` (Railway, FastAPI)                    |
+| Dev local             | `http://localhost:5173`, proxy `/api` → `localhost:8000`                               |
 
 ---
 
@@ -116,17 +116,17 @@ endpoints, variables y componentes.
 La navegación del sidebar es la mejor descripción de la arquitectura de información. Hoy
 (`legacy/src/components/AppSidebar.vue`):
 
-| Grupo | Entradas |
-| --- | --- |
-| **General** | Dashboard · Proyectos (vista unificada) · Operadores de Red · Próximos a energizar · Retos Q |
-| **Comercial** | Pipeline |
-| **Operaciones** | Generación Solar · Informes Mensuales · Gestión de Fallas · Informe de Puesta en Marcha · Pólizas |
-| **Fronteras Comerciales** | General · Reporte de Energía |
-| **Registros CND/ASIC** | Proyectos en conexión |
-| **Comercialización** | Cumplimiento PPA · Descubrimientos · Garantías · GESCON/ASIC · Precio de Bolsa · Balance Energía · Clima & ENSO |
-| **Finanzas** | Liquidaciones (10 subentradas) · Panel Contable (4) · Herramientas liquidaciones (2) · Costos |
-| **Alertas** | Centro de Alertas |
-| **Admin** | Usuarios · Diagnóstico (restringido por email) |
+| Grupo                     | Entradas                                                                                                        |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **General**               | Dashboard · Proyectos (vista unificada) · Operadores de Red · Próximos a energizar · Retos Q                    |
+| **Comercial**             | Pipeline                                                                                                        |
+| **Operaciones**           | Generación Solar · Informes Mensuales · Gestión de Fallas · Informe de Puesta en Marcha · Pólizas               |
+| **Fronteras Comerciales** | General · Reporte de Energía                                                                                    |
+| **Registros CND/ASIC**    | Proyectos en conexión                                                                                           |
+| **Comercialización**      | Cumplimiento PPA · Descubrimientos · Garantías · GESCON/ASIC · Precio de Bolsa · Balance Energía · Clima & ENSO |
+| **Finanzas**              | Liquidaciones (10 subentradas) · Panel Contable (4) · Herramientas liquidaciones (2) · Costos                   |
+| **Alertas**               | Centro de Alertas                                                                                               |
+| **Admin**                 | Usuarios · Diagnóstico (restringido por email)                                                                  |
 
 Fuera del menú, alcanzables solo por navegación: detalles de cliente, proyecto, contrato,
 liquidación, falla, informe, oportunidad, reto, operador de red y registro CND.
@@ -140,21 +140,21 @@ liquidación, falla, informe, oportunidad, reto, operador de red y registro CND.
 
 ### Stack
 
-| Capa | Tecnología |
-| --- | --- |
-| Framework | Vue 3.4, Composition API, `<script setup>` |
-| Build | Vite 5 (SPA pura, sin SSR) |
-| Lenguaje | **JavaScript** — cero archivos TypeScript |
-| Router | vue-router 4, rutas declaradas a mano en un solo archivo |
-| Estado | Pinia 2 — **un solo store** (`auth`) |
-| HTTP | Axios 1.7, instancia única con interceptores |
-| UI | **PrimeVue 4** (tema Aura + preset propio morado) + PrimeIcons |
-| CSS | Tailwind 3 + estilos inline con hex de marca |
-| Gráficas | Chart.js 4 + vue-chartjs |
-| Mapas | MapLibre GL |
+| Capa       | Tecnología                                                              |
+| ---------- | ----------------------------------------------------------------------- |
+| Framework  | Vue 3.4, Composition API, `<script setup>`                              |
+| Build      | Vite 5 (SPA pura, sin SSR)                                              |
+| Lenguaje   | **JavaScript** — cero archivos TypeScript                               |
+| Router     | vue-router 4, rutas declaradas a mano en un solo archivo                |
+| Estado     | Pinia 2 — **un solo store** (`auth`)                                    |
+| HTTP       | Axios 1.7, instancia única con interceptores                            |
+| UI         | **PrimeVue 4** (tema Aura + preset propio morado) + PrimeIcons          |
+| CSS        | Tailwind 3 + estilos inline con hex de marca                            |
+| Gráficas   | Chart.js 4 + vue-chartjs                                                |
+| Mapas      | MapLibre GL                                                             |
 | Documentos | xlsx, xlsx-js-style, exceljs, jspdf, jspdf-autotable, pdfjs-dist, jszip |
-| Otros | vuedraggable |
-| Deploy | Vercel (rewrites como proxy) + Dockerfile alterno (nginx) |
+| Otros      | vuedraggable                                                            |
+| Deploy     | Vercel (rewrites como proxy) + Dockerfile alterno (nginx)               |
 
 ### Estructura
 
@@ -176,22 +176,22 @@ legacy/src/
 
 ### Números del codebase
 
-| Métrica | Valor |
-| --- | --- |
-| Archivos en `src/` | 237 |
-| Líneas de código | ~95.000 |
-| Componentes `.vue` | 177 (176 con `<script setup>`) |
-| Archivos TypeScript | **0** |
-| Archivos > 500 líneas | 56 |
-| Archivos > 1.000 líneas | 23 (el mayor: `CumplimientoV2View.vue`, 5.425) |
-| Archivos que importan PrimeVue | **120** de 237 |
-| Archivos con `style="…"` inline | 158 |
-| Literales hex de la paleta hardcodeados | ~2.528 |
-| Endpoints distintos consumidos | 341 |
-| Archivos que tocan `window.` | 30 |
-| Archivos que tocan `document.` | 26 |
-| Archivos que tocan `localStorage` | 14 |
-| Tests | 6 archivos `.test.mjs` con runner casero (`node`), sin framework |
+| Métrica                                 | Valor                                                            |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| Archivos en `src/`                      | 237                                                              |
+| Líneas de código                        | ~95.000                                                          |
+| Componentes `.vue`                      | 177 (176 con `<script setup>`)                                   |
+| Archivos TypeScript                     | **0**                                                            |
+| Archivos > 500 líneas                   | 56                                                               |
+| Archivos > 1.000 líneas                 | 23 (el mayor: `CumplimientoV2View.vue`, 5.425)                   |
+| Archivos que importan PrimeVue          | **120** de 237                                                   |
+| Archivos con `style="…"` inline         | 158                                                              |
+| Literales hex de la paleta hardcodeados | ~2.528                                                           |
+| Endpoints distintos consumidos          | 341                                                              |
+| Archivos que tocan `window.`            | 30                                                               |
+| Archivos que tocan `document.`          | 26                                                               |
+| Archivos que tocan `localStorage`       | 14                                                               |
+| Tests                                   | 6 archivos `.test.mjs` con runner casero (`node`), sin framework |
 
 ### Patrones actuales
 
@@ -217,7 +217,7 @@ legacy/src/
 - `SECURITY.md` del legacy documenta que el access token en `localStorage` **no protege ante
   XSS**, y que la solución real (refresh token en cookie `httpOnly`) exige backend. **El
   template v2 ya implementa exactamente ese esquema** — la migración lo resuelve de paso.
-- Hay una CSP en modo *report-only* en `index.html` que no se ha podido endurecer porque el
+- Hay una CSP en modo _report-only_ en `index.html` que no se ha podido endurecer porque el
   código usa `style=` inline por todas partes.
 - `composables/useSidebar.js` declara `ref` a nivel de módulo — inofensivo en una SPA,
   **prohibido y peligroso bajo SSR**.
@@ -237,20 +237,20 @@ Su contrato está en `v2/AGENTS.md` y es de obligado cumplimiento.
 
 ### Stack
 
-| Capa | Tecnología |
-| --- | --- |
-| Framework | **Nuxt 4.5** + Vue 3.5 (SSR + Nitro) |
-| Lenguaje | **TypeScript estricto** — `any` prohibido sin excepciones |
-| Estilos | **Tailwind 4** (CSS-first) + tokens semánticos + dark mode |
-| UI | **shadcn-vue** (`components/ui/`, intocable) + **Gandalf** (`components/gandalf/`, sistema de diseño propio, también intocable) |
-| Formularios | vee-validate + zod |
-| Gráficas | `@unovis/vue` (vía el `chart` de shadcn) |
-| Iconos | `@lucide/vue` |
-| Toasts | vue-sonner |
-| Estado | `useState` / composables (`useAuth`, `useQuery`, `useFilters`, `usePagination`, `useDisclosure`) + Pinia disponible |
-| Tests | Vitest |
-| Calidad | ESLint (`@nuxt/eslint`) + Prettier + husky + lint-staged |
-| Runtime | Bun |
+| Capa        | Tecnología                                                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Framework   | **Nuxt 4.5** + Vue 3.5 (SSR + Nitro)                                                                                            |
+| Lenguaje    | **TypeScript estricto** — `any` prohibido sin excepciones                                                                       |
+| Estilos     | **Tailwind 4** (CSS-first) + tokens semánticos + dark mode                                                                      |
+| UI          | **shadcn-vue** (`components/ui/`, intocable) + **Gandalf** (`components/gandalf/`, sistema de diseño propio, también intocable) |
+| Formularios | vee-validate + zod                                                                                                              |
+| Gráficas    | `@unovis/vue` (vía el `chart` de shadcn)                                                                                        |
+| Iconos      | `@lucide/vue`                                                                                                                   |
+| Toasts      | vue-sonner                                                                                                                      |
+| Estado      | `useState` / composables (`useAuth`, `useQuery`, `useFilters`, `usePagination`, `useDisclosure`) + Pinia disponible             |
+| Tests       | Vitest                                                                                                                          |
+| Calidad     | ESLint (`@nuxt/eslint`) + Prettier + husky + lint-staged                                                                        |
+| Runtime     | Bun                                                                                                                             |
 
 ### Arquitectura que impone
 
@@ -310,25 +310,25 @@ Del `AGENTS.md`, las que más impactan esta migración:
 
 Esta tabla es el mapa de todo lo que hay que traducir. Cada fila es trabajo real.
 
-| Eje | Legacy | v2 | Impacto |
-| --- | --- | --- | --- |
-| Framework | Vite SPA, `main.js` | Nuxt 4 SSR + Nitro | Bootstrap, layouts, plugins |
-| Lenguaje | JavaScript | TypeScript estricto | **237 archivos a tipar** |
-| Routing | `router/index.js`, 75 rutas a mano | file-based `app/pages/` | 67 archivos de página |
-| Auth | JWT en `localStorage`, Pinia | cookies `httpOnly` + `useState` + Nitro | Reescribir el flujo completo |
-| Permisos | `meta.roles` + bypass de `admin` | tags `recurso:acción`, deny-by-default, sin bypass | Rediseñar la matriz de acceso |
-| HTTP | axios global, llamado desde vistas | services `extends BaseService`, ofetch | **341 endpoints a encapsular** |
-| UI | PrimeVue 4 | shadcn-vue + Gandalf | **120 archivos** con imports de PrimeVue |
-| Iconos | PrimeIcons (`pi pi-*`) | `@lucide/vue` | Mapeo 1:1, mecánico pero masivo |
-| Estilos | Tailwind 3 + hex inline | Tailwind 4 + tokens semánticos | **~2.528 hex, 158 archivos** |
-| Estado | `ref` locales + `ref` de módulo | `useState`, composables | Auditoría SSR obligatoria |
-| Feedback | `useToast` de PrimeVue + `window.__primeToast` | vue-sonner | 75 llamadas a `useToast` |
-| Gráficas | Chart.js + vue-chartjs (12 archivos) | `@unovis/vue` | Reescribir 12 gráficas |
-| Errores | interceptor axios + toast | `normalizeError`/`AppError` + `logger` | Homogeneizar |
-| Tests | 6 `.test.mjs`, runner casero | Vitest | Portar + ampliar |
-| Deploy | Vercel rewrites como proxy | Nitro (routes/proxy propios) | Reconfigurar |
-| Documentos | xlsx/exceljs/jspdf/pdfjs en el cliente | igual, pero **client-only** | Aislar del SSR |
-| Mapas | maplibre-gl | igual, **client-only** | Aislar del SSR |
+| Eje        | Legacy                                         | v2                                                 | Impacto                                  |
+| ---------- | ---------------------------------------------- | -------------------------------------------------- | ---------------------------------------- |
+| Framework  | Vite SPA, `main.js`                            | Nuxt 4 SSR + Nitro                                 | Bootstrap, layouts, plugins              |
+| Lenguaje   | JavaScript                                     | TypeScript estricto                                | **237 archivos a tipar**                 |
+| Routing    | `router/index.js`, 75 rutas a mano             | file-based `app/pages/`                            | 67 archivos de página                    |
+| Auth       | JWT en `localStorage`, Pinia                   | cookies `httpOnly` + `useState` + Nitro            | Reescribir el flujo completo             |
+| Permisos   | `meta.roles` + bypass de `admin`               | tags `recurso:acción`, deny-by-default, sin bypass | Rediseñar la matriz de acceso            |
+| HTTP       | axios global, llamado desde vistas             | services `extends BaseService`, ofetch             | **341 endpoints a encapsular**           |
+| UI         | PrimeVue 4                                     | shadcn-vue + Gandalf                               | **120 archivos** con imports de PrimeVue |
+| Iconos     | PrimeIcons (`pi pi-*`)                         | `@lucide/vue`                                      | Mapeo 1:1, mecánico pero masivo          |
+| Estilos    | Tailwind 3 + hex inline                        | Tailwind 4 + tokens semánticos                     | **~2.528 hex, 158 archivos**             |
+| Estado     | `ref` locales + `ref` de módulo                | `useState`, composables                            | Auditoría SSR obligatoria                |
+| Feedback   | `useToast` de PrimeVue + `window.__primeToast` | vue-sonner                                         | 75 llamadas a `useToast`                 |
+| Gráficas   | Chart.js + vue-chartjs (12 archivos)           | `@unovis/vue`                                      | Reescribir 12 gráficas                   |
+| Errores    | interceptor axios + toast                      | `normalizeError`/`AppError` + `logger`             | Homogeneizar                             |
+| Tests      | 6 `.test.mjs`, runner casero                   | Vitest                                             | Portar + ampliar                         |
+| Deploy     | Vercel rewrites como proxy                     | Nitro (routes/proxy propios)                       | Reconfigurar                             |
+| Documentos | xlsx/exceljs/jspdf/pdfjs en el cliente         | igual, pero **client-only**                        | Aislar del SSR                           |
+| Mapas      | maplibre-gl                                    | igual, **client-only**                             | Aislar del SSR                           |
 
 ### Lo que **no** cambia
 

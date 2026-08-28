@@ -29,7 +29,7 @@ Aplican a todos los módulos y son criterio de aceptación de cada uno.
 - **Migración:** el destino sustituye JWT en `localStorage` por cookies `httpOnly` gestionadas
   por rutas Nitro propias. Requiere alinear el contrato con el backend en
   `server/utils/auth-api.ts`. Es la única pieza del roadmap que puede necesitar cambios en el
-  backend; ver *Decisiones abiertas*.
+  backend; ver _Decisiones abiertas_.
 
 ### RT-2 · Autorización
 
@@ -53,7 +53,7 @@ Aplican a todos los módulos y son criterio de aceptación de cada uno.
 
 ### RT-4 · Notificaciones in-app
 
-- Campana en el pie del sidebar con contador de no leídas, refrescado por *polling* cada 60 s.
+- Campana en el pie del sidebar con contador de no leídas, refrescado por _polling_ cada 60 s.
 - Lista de las últimas 20, marcado individual y masivo como leídas, y enlace al Centro de
   Alertas.
 - Severidades: `critica`, `alta`, `media`, `baja`, cada una con su color e icono.
@@ -65,14 +65,14 @@ Aplican a todos los módulos y son criterio de aceptación de cada uno.
 
 Es una capacidad central del producto, no un extra. Están en uso:
 
-| Formato | Dónde | Biblioteca |
-| --- | --- | --- |
-| Excel con estilos y fórmulas vivas | Cumplimiento matriz anual, GESCON, Panel Contable, Liquidaciones, Costos, Garantías, Retos | `xlsx-js-style`, `exceljs` |
-| Excel de lectura (importar) | Validador de mandatos, Descarga XM, Proyecto detalle, Wizard PPA, Generación, Garantías | `xlsx` |
-| PDF generado | Informe de puesta en marcha, Cumplimiento | `jspdf` + `jspdf-autotable` |
-| PDF impreso desde HTML | Liquidación PDF | CSS de impresión (`utils/rptStyles.js`) |
-| PDF leído (parseo) | Arriendos ZIP, facturas de Garantías | `pdfjs-dist` |
-| ZIP | Carga masiva de arriendos, estados de resultados | `jszip` |
+| Formato                            | Dónde                                                                                      | Biblioteca                              |
+| ---------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------- |
+| Excel con estilos y fórmulas vivas | Cumplimiento matriz anual, GESCON, Panel Contable, Liquidaciones, Costos, Garantías, Retos | `xlsx-js-style`, `exceljs`              |
+| Excel de lectura (importar)        | Validador de mandatos, Descarga XM, Proyecto detalle, Wizard PPA, Generación, Garantías    | `xlsx`                                  |
+| PDF generado                       | Informe de puesta en marcha, Cumplimiento                                                  | `jspdf` + `jspdf-autotable`             |
+| PDF impreso desde HTML             | Liquidación PDF                                                                            | CSS de impresión (`utils/rptStyles.js`) |
+| PDF leído (parseo)                 | Arriendos ZIP, facturas de Garantías                                                       | `pdfjs-dist`                            |
+| ZIP                                | Carga masiva de arriendos, estados de resultados                                           | `jszip`                                 |
 
 **Migración:** se conservan las bibliotecas. Todas deben quedar **`client-only`** y en imports
 dinámicos, para no entrar al bundle de servidor ni al bundle inicial.
@@ -166,7 +166,7 @@ Sistema interno de OKR trimestrales.
 - Detalle por pestañas: General, Técnico, Inversionistas, Servicios.
 - **Información técnica** editable (`PUT /proyectos/:id/info-tecnica`), con simulación P50/P90. `[W]`
 - **Inversionistas** del proyecto: alta, edición de participación, baja. `[W]`
-- **Inversores** (equipos): alta, edición, baja, y *backfill* de minigranja. `[W]`
+- **Inversores** (equipos): alta, edición, baja, y _backfill_ de minigranja. `[W]`
 - **Contactos de área**: alta, edición, baja. `[W]`
 - Vinculación con Sun Factory (`POST /proyectos/:id/vincular-sunfactory/:id`). `[W]`
 - **Proyectos pendientes**: bandeja de proyectos detectados por sincronización, con
@@ -271,7 +271,7 @@ Vista operativa de 1.941 líneas con la gestión completa del ciclo de una falla
 **Rutas:** `/fallas` (entrada, `MonitoreoView`), `/fallas/:id`
 
 - Dos pestañas: **Fallas** y **Calendario**.
-- Cuatro *buckets*: Activas · Alerta SLA · Cerradas · Todas, con colores y prioridades. `[R]`
+- Cuatro _buckets_: Activas · Alerta SLA · Cerradas · Todas, con colores y prioridades. `[R]`
 - **Clasificación jerárquica por activo afectado**, no plana: el usuario elige primero el
   **sistema** (Red · Frontera · Inversores · Eventos adversos) y se despliegan solo las
   opciones de ese sistema. La estructura canónica vive en el backend y se consume por
@@ -311,12 +311,12 @@ GESCON duplicados, con acción de corrección de enlaces
 **Alarmas de desconexión (MGS)** — evaluadas por el backend cada 15 min y notificadas por
 campana. Reglas (`legacy/docs/superpowers/specs/2026-06-08-alarmas-desconexion-design.md`):
 
-| Tipo | Severidad | Condición |
-| --- | --- | --- |
-| `FUENTE_UNICA` | alerta | El proyecto no tiene medidor Gaia: solo inversores, no se puede cruzar |
-| `SIN_DATOS` | alerta | De día, ambas fuentes en 0 |
-| `POSIBLE_DESCONEXION` | alerta | De día, una fuente genera y la otra en 0 |
-| `RECUPERACION` | info | Vuelve a reportar normal tras una alarma |
+| Tipo                  | Severidad | Condición                                                              |
+| --------------------- | --------- | ---------------------------------------------------------------------- |
+| `FUENTE_UNICA`        | alerta    | El proyecto no tiene medidor Gaia: solo inversores, no se puede cruzar |
+| `SIN_DATOS`           | alerta    | De día, ambas fuentes en 0                                             |
+| `POSIBLE_DESCONEXION` | alerta    | De día, una fuente genera y la otra en 0                               |
+| `RECUPERACION`        | info      | Vuelve a reportar normal tras una alarma                               |
 
 Ventana de día 07:00–17:00 Colombia. Notifica solo cuando el estado **cambia** (anti-spam).
 
@@ -392,7 +392,7 @@ de energía · Revisión del mes**.
 - Gráficas SVG construidas a mano (sin biblioteca): barras mensuales de generación vs.
   compromiso, con tooltips.
 - **Simulador** de cumplimiento con arrastre.
-- **Matriz anual** — matriz jerárquica *Contrato → Proyectos × 12 meses* con indicadores y
+- **Matriz anual** — matriz jerárquica _Contrato → Proyectos × 12 meses_ con indicadores y
   export a Excel con **fórmulas vivas, outline colapsable y estilo de marca**.
   - Regla de estado: por mes, **regla del mínimo**. Cada mes se evalúa contra su mínimo (real
     en meses cerrados, proyección de cierre en el mes actual, proyección a 30 días en futuros).
@@ -479,13 +479,13 @@ Plan de implementación: `legacy/docs/superpowers/plans/2026-08-12-garantias-06-
 Una sola vista con cinco pestañas, deep-link por `?tab=`
 (`legacy/docs/REDISENO_LIQUIDACIONES.md`):
 
-| Pestaña | Contenido |
-| --- | --- |
-| **Resumen** | KPIs del período (ingresos, costos, neto, margen, liquidados, sin liquidar) con comparativo vs. mes anterior, ingresos por tipo, pipeline de los 8 estados y tendencia de 12 meses |
-| **Proyectos** | Árbol Proyecto → Año → Mes, con filtros persistidos (búsqueda, estado, tipo de venta) |
-| **Inversionistas** | Árbol Inversionista → Proyecto → Período, con gráfica de barras |
-| **Diferencia** | Comparación entre versiones de liquidación |
-| **Facturación** | Facturación de energía: bolsa, despacho, agrupaciones, emisión y orden |
+| Pestaña            | Contenido                                                                                                                                                                          |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Resumen**        | KPIs del período (ingresos, costos, neto, margen, liquidados, sin liquidar) con comparativo vs. mes anterior, ingresos por tipo, pipeline de los 8 estados y tendencia de 12 meses |
+| **Proyectos**      | Árbol Proyecto → Año → Mes, con filtros persistidos (búsqueda, estado, tipo de venta)                                                                                              |
+| **Inversionistas** | Árbol Inversionista → Proyecto → Período, con gráfica de barras                                                                                                                    |
+| **Diferencia**     | Comparación entre versiones de liquidación                                                                                                                                         |
+| **Facturación**    | Facturación de energía: bolsa, despacho, agrupaciones, emisión y orden                                                                                                             |
 
 - Rutas viejas conservadas como redirecciones: `/liquidaciones/inversionista`,
   `/liquidaciones/cargar-excel`, `/liquidaciones/minigranjas`.
@@ -513,7 +513,7 @@ Vista imprimible por inversionista, con estilos de impresión propios. `[R]`
 habla con esa API porque las credenciales de la cuenta de servicio viven en el backend.
 
 - **Versiones del ciclo**: `txf` (inicial) y `tx3`…`tx8` (reliquidaciones).
-- Tareas asíncronas con estado normalizado (`en_curso` · `exito` · `fallo`) y *polling*.
+- Tareas asíncronas con estado normalizado (`en_curso` · `exito` · `fallo`) y _polling_.
 - Límites al subir facturas: 20 por lote, 10 MB por factura.
 - Errores tipados: `TareaFallida`, `TareaSinRespuesta`.
 - Ejecución de ciclo, ciclo IPP y diagnóstico. `[W]`
@@ -546,20 +546,20 @@ liquidación (normal / NITRO).
 
 Un conjunto de herramientas especializadas, cada una con su ruta.
 
-| Ruta | Qué hace |
-| --- | --- |
-| `/finanzas/costos` | Costos por proyecto y período, con export a Excel |
-| `/finanzas/costos-comercializacion` | Costos e ingresos fijos por proyecto |
-| `/finanzas/verificacion-costos` | Conceptos que recibe cada proyecto y su AC Power (GD y minigranjas en operación) |
-| `/finanzas/ids-proyectos` | Códigos SIC de liquidaciones e IDs de Quoia |
-| `/finanzas/contratos-energia` | Contratos de energía y sus proyectos vinculados |
-| `/finanzas/despachos-liquidados` | Energía ya liquidada por proyecto y concepto |
-| `/finanzas/consumo` | Consumo horario por proyecto y día |
-| `/finanzas/facturas-xm` | Facturas del período y su estado de alistamiento para repartir |
-| `/finanzas/estados-resultados` | Archivos generados en Drive: estados de resultados y cruce de facturas, con descarga individual y ZIP |
-| `/finanzas/mandatos` | Mandatos: períodos, resumen, PDF, carga de firmados y de ZIP |
-| `/validador-mandatos` | Validador y conciliador de mandatos (`utils/conciliacionMandatos.js`, con pruebas) |
-| `/finanzas/descarga-xm` | Descarga de archivos de XM a través del **agente local** en `127.0.0.1:8420` |
+| Ruta                                | Qué hace                                                                                              |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `/finanzas/costos`                  | Costos por proyecto y período, con export a Excel                                                     |
+| `/finanzas/costos-comercializacion` | Costos e ingresos fijos por proyecto                                                                  |
+| `/finanzas/verificacion-costos`     | Conceptos que recibe cada proyecto y su AC Power (GD y minigranjas en operación)                      |
+| `/finanzas/ids-proyectos`           | Códigos SIC de liquidaciones e IDs de Quoia                                                           |
+| `/finanzas/contratos-energia`       | Contratos de energía y sus proyectos vinculados                                                       |
+| `/finanzas/despachos-liquidados`    | Energía ya liquidada por proyecto y concepto                                                          |
+| `/finanzas/consumo`                 | Consumo horario por proyecto y día                                                                    |
+| `/finanzas/facturas-xm`             | Facturas del período y su estado de alistamiento para repartir                                        |
+| `/finanzas/estados-resultados`      | Archivos generados en Drive: estados de resultados y cruce de facturas, con descarga individual y ZIP |
+| `/finanzas/mandatos`                | Mandatos: períodos, resumen, PDF, carga de firmados y de ZIP                                          |
+| `/validador-mandatos`               | Validador y conciliador de mandatos (`utils/conciliacionMandatos.js`, con pruebas)                    |
+| `/finanzas/descarga-xm`             | Descarga de archivos de XM a través del **agente local** en `127.0.0.1:8420`                          |
 
 Además, sin entrada propia en el menú pero presentes como paneles:
 
@@ -595,15 +595,15 @@ Reglas de negocio con pruebas ya existentes: `conciliacionMandatos`, `financialC
 Aplicación **independiente**, con su propio login, layout y navegación. Vive en el mismo repo y
 el mismo deploy, aislada por ruta y por carpeta.
 
-| Ruta | Vista | Rol |
-| --- | --- | --- |
-| `/m/login` | Login con token de 30 días | público |
-| `/m/solar` | Generación en vivo: selector, gráfica combinada inversores + medidor con línea «ahora», reconexión | todos |
-| `/m/fallas` | Fallas: lista, filtros, registrar | todos |
-| `/m/coordinador` | Bandeja del coordinador de fallas | `coordinador`, `admin` |
-| `/m/tecnico` | Bandeja del técnico | `tecnico` |
-| `/m/resumen` | Resumen del día | todos |
-| `/m/reporte-cgm` | Reporte CGM desde el móvil | todos |
+| Ruta             | Vista                                                                                              | Rol                    |
+| ---------------- | -------------------------------------------------------------------------------------------------- | ---------------------- |
+| `/m/login`       | Login con token de 30 días                                                                         | público                |
+| `/m/solar`       | Generación en vivo: selector, gráfica combinada inversores + medidor con línea «ahora», reconexión | todos                  |
+| `/m/fallas`      | Fallas: lista, filtros, registrar                                                                  | todos                  |
+| `/m/coordinador` | Bandeja del coordinador de fallas                                                                  | `coordinador`, `admin` |
+| `/m/tecnico`     | Bandeja del técnico                                                                                | `tecnico`              |
+| `/m/resumen`     | Resumen del día                                                                                    | todos                  |
+| `/m/reporte-cgm` | Reporte CGM desde el móvil                                                                         | todos                  |
 
 - **Reconexión de plantas** desde el celular: hoja inferior con la lógica de reconexión
   (`GET /reconectadores/estados`, `POST /reconectadores/:id/comando`). `[W]`
@@ -627,19 +627,19 @@ HTTP, `loginMobile()` del store, e `index.html`.
 Se listan explícitamente para que la decisión sea consciente y no un olvido. **Requieren
 confirmación** antes de descartarse.
 
-| Elemento | Motivo |
-| --- | --- |
-| `views/Fallas/FallasListView.vue` | Muerto: la entrada de la ruta es `MonitoreoView` |
-| `views/Fallas/FallaDetalle.vue` | Muerto: sustituido por `FallaDetailView.vue` |
-| `views/MEM/MemPlaceholder.vue` | Plantilla de placeholder genérica |
-| `views/Liquidaciones/LiquidacionesListView.vue` | Sustituida por las pestañas de `LiquidacionesView` |
-| `views/Liquidaciones/LiquidacionesPorInversionistaView.vue` | Idem, es hoy una pestaña |
-| `views/Contratos/ContratosListView.vue` | Su ruta `/servicios` salió del menú a favor de `/servicios-unificado` |
-| `views/Clientes/*`, `views/Proyectos/*` como entradas de menú | Siguen vivas por navegación, pero salieron del menú principal |
-| `auth.previewLogin()` y `?preview=` | Utilidad solo-dev; el template ofrece `NUXT_PUBLIC_AUTH_ENABLED=false` para lo mismo |
-| `assets/*.js` (datasets estáticos) | Verificar si siguen en uso o si el backend ya los sirve |
-| `data/pagoarriendos.json` | Verificar si es dato de producción o de prueba |
-| `components/reports/*` | Verificar consumidores: parecen de una iteración anterior |
+| Elemento                                                      | Motivo                                                                               |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `views/Fallas/FallasListView.vue`                             | Muerto: la entrada de la ruta es `MonitoreoView`                                     |
+| `views/Fallas/FallaDetalle.vue`                               | Muerto: sustituido por `FallaDetailView.vue`                                         |
+| `views/MEM/MemPlaceholder.vue`                                | Plantilla de placeholder genérica                                                    |
+| `views/Liquidaciones/LiquidacionesListView.vue`               | Sustituida por las pestañas de `LiquidacionesView`                                   |
+| `views/Liquidaciones/LiquidacionesPorInversionistaView.vue`   | Idem, es hoy una pestaña                                                             |
+| `views/Contratos/ContratosListView.vue`                       | Su ruta `/servicios` salió del menú a favor de `/servicios-unificado`                |
+| `views/Clientes/*`, `views/Proyectos/*` como entradas de menú | Siguen vivas por navegación, pero salieron del menú principal                        |
+| `auth.previewLogin()` y `?preview=`                           | Utilidad solo-dev; el template ofrece `NUXT_PUBLIC_AUTH_ENABLED=false` para lo mismo |
+| `assets/*.js` (datasets estáticos)                            | Verificar si siguen en uso o si el backend ya los sirve                              |
+| `data/pagoarriendos.json`                                     | Verificar si es dato de producción o de prueba                                       |
+| `components/reports/*`                                        | Verificar consumidores: parecen de una iteración anterior                            |
 
 ---
 

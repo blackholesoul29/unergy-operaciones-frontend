@@ -6,26 +6,43 @@
       <!-- Arco principal -->
       <circle
         v-if="pctSeguro !== null"
-        cx="26" cy="26" r="22" fill="none"
-        :stroke="color" stroke-width="6" stroke-linecap="round"
+        cx="26"
+        cy="26"
+        r="22"
+        fill="none"
+        :stroke="color"
+        stroke-width="6"
+        stroke-linecap="round"
         :stroke-dasharray="dashPrincipal"
         class="an-arco"
       />
       <!-- Segunda vuelta: lo que se pasó del 100% -->
       <circle
         v-if="excesoPct > 0"
-        cx="26" cy="26" r="22" fill="none"
-        stroke="#14B8A6" stroke-width="6" stroke-linecap="round"
-        :stroke-dasharray="dashExceso" opacity="0.9"
+        cx="26"
+        cy="26"
+        r="22"
+        fill="none"
+        stroke="#14B8A6"
+        stroke-width="6"
+        stroke-linecap="round"
+        :stroke-dasharray="dashExceso"
+        opacity="0.9"
         class="an-arco"
       />
     </g>
     <text
-      x="26" y="26" text-anchor="middle" dominant-baseline="central"
-      :font-size="pctSeguro === null ? 13 : 13" font-weight="800"
+      x="26"
+      y="26"
+      text-anchor="middle"
+      dominant-baseline="central"
+      :font-size="pctSeguro === null ? 13 : 13"
+      font-weight="800"
       :fill="pctSeguro === null ? '#9b8fb0' : '#2C2039'"
       style="font-variant-numeric: tabular-nums"
-    >{{ etiquetaCentro }}</text>
+    >
+      {{ etiquetaCentro }}
+    </text>
   </svg>
 </template>
 
@@ -62,7 +79,7 @@ const excesoPct = computed(() => {
 const dashExceso = computed(() => `${(excesoPct.value / 100) * CIRCUNFERENCIA} ${CIRCUNFERENCIA}`)
 
 const etiquetaCentro = computed(() =>
-  pctSeguro.value === null ? '—' : String(Math.round(pctSeguro.value))
+  pctSeguro.value === null ? '—' : String(Math.round(pctSeguro.value)),
 )
 
 const aria = computed(() => {
@@ -72,5 +89,9 @@ const aria = computed(() => {
 </script>
 
 <style scoped>
-.an-arco { transition: stroke-dasharray .4s cubic-bezier(.4, 0, .2, 1), stroke .2s; }
+.an-arco {
+  transition:
+    stroke-dasharray 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 0.2s;
+}
 </style>

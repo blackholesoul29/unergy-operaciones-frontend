@@ -51,9 +51,15 @@ function findSheetByPattern(wb, pattern) {
 
 // Normaliza acentos (compuestos o descompuestos) y mayúsculas para comparar nombres de hoja.
 function normSheet(s) {
-  return String(s).normalize('NFC').toUpperCase()
-    .replace(/[ÁÀÂÄ]/g, 'A').replace(/[ÉÈÊË]/g, 'E').replace(/[ÍÌÎÏ]/g, 'I')
-    .replace(/[ÓÒÔÖ]/g, 'O').replace(/[ÚÙÛÜ]/g, 'U').trim()
+  return String(s)
+    .normalize('NFC')
+    .toUpperCase()
+    .replace(/[ÁÀÂÄ]/g, 'A')
+    .replace(/[ÉÈÊË]/g, 'E')
+    .replace(/[ÍÌÎÏ]/g, 'I')
+    .replace(/[ÓÒÔÖ]/g, 'O')
+    .replace(/[ÚÙÛÜ]/g, 'U')
+    .trim()
 }
 
 function findSheetByName(wb, target) {
@@ -72,9 +78,22 @@ function num(v) {
 }
 
 const MESES_ARCH = {
-  ene: '01', feb: '02', mar: '03', abr: '04', may: '05', jun: '06',
-  jul: '07', ago: '08', sep: '09', oct: '10', nov: '11', dic: '12',
-  jan: '01', apr: '04', aug: '08', dec: '12',
+  ene: '01',
+  feb: '02',
+  mar: '03',
+  abr: '04',
+  may: '05',
+  jun: '06',
+  jul: '07',
+  ago: '08',
+  sep: '09',
+  oct: '10',
+  nov: '11',
+  dic: '12',
+  jan: '01',
+  apr: '04',
+  aug: '08',
+  dec: '12',
 }
 
 // Extrae la fecha REAL de la semana desde los nombres de archivo.
@@ -106,7 +125,10 @@ function parseGarantiaSheet(wb) {
   const adjCols = []
   for (let c = 3; c < header.length; c++) {
     const name = String(header[c] ?? '').trim()
-    if (name) { adjCols.push({ idx: c, name }); adjColNames.push(name) }
+    if (name) {
+      adjCols.push({ idx: c, name })
+      adjColNames.push(name)
+    }
   }
 
   const agents = {}
@@ -114,7 +136,10 @@ function parseGarantiaSheet(wb) {
   for (let i = DATA_START; i < rows.length; i++) {
     const row = rows[i]
     const c0 = String(row?.[0] ?? '').trim()
-    if (c0.toUpperCase() === 'TOTAL') { totalRowIdx = i; break }
+    if (c0.toUpperCase() === 'TOTAL') {
+      totalRowIdx = i
+      break
+    }
     if (!row) continue
     if (c0 === 'UNGC' || c0 === 'UNGG') {
       const vals = {}
@@ -174,7 +199,10 @@ function parseCustodia(wb) {
 }
 
 function buildBlock(adjColNames, agentVals, tieVal) {
-  const rows = adjColNames.map((name) => ({ label: name, valor: agentVals ? (agentVals[name] ?? 0) : 0 }))
+  const rows = adjColNames.map((name) => ({
+    label: name,
+    valor: agentVals ? (agentVals[name] ?? 0) : 0,
+  }))
   rows.push({ label: 'TIE', valor: tieVal ?? 0 })
   const total = rows.reduce((s, r) => s + (Number(r.valor) || 0), 0)
   return { rows, total }
@@ -183,12 +211,35 @@ function buildBlock(adjColNames, agentVals, tieVal) {
 export async function parseSemanales(garantiaFile, saldoFile, webFile) {
   const errors = []
   let gWb, sWb, wWb
-  try { gWb = await readWorkbook(garantiaFile) } catch (e) { errors.push(`Error leyendo Garantía: ${e.message}`) }
-  try { sWb = await readWorkbook(saldoFile) } catch (e) { errors.push(`Error leyendo Saldo: ${e.message}`) }
-  try { wWb = await readWorkbook(webFile) } catch (e) { errors.push(`Error leyendo WEB: ${e.message}`) }
+  try {
+    gWb = await readWorkbook(garantiaFile)
+  } catch (e) {
+    errors.push(`Error leyendo Garantía: ${e.message}`)
+  }
+  try {
+    sWb = await readWorkbook(saldoFile)
+  } catch (e) {
+    errors.push(`Error leyendo Saldo: ${e.message}`)
+  }
+  try {
+    wWb = await readWorkbook(webFile)
+  } catch (e) {
+    errors.push(`Error leyendo WEB: ${e.message}`)
+  }
 
   if (!gWb) {
-    return { ungc: [], ungg: [], custodia: null, precios: {}, totalUNGC: 0, totalUNGG: 0, totalConsignar: 0, fechaNombre: '', fecha: null, errors }
+    return {
+      ungc: [],
+      ungg: [],
+      custodia: null,
+      precios: {},
+      totalUNGC: 0,
+      totalUNGG: 0,
+      totalConsignar: 0,
+      fechaNombre: '',
+      fecha: null,
+      errors,
+    }
   }
 
   const { adjColNames, agents, precios } = parseGarantiaSheet(gWb)
@@ -212,15 +263,38 @@ export async function parseSemanales(garantiaFile, saldoFile, webFile) {
   const fecha = parseFechaArchivo(garantiaFile?.name, saldoFile?.name, webFile?.name)
 
   return {
-    ungc: blkUNGC.rows, ungg: blkUNGG.rows,
-    custodia, precios,
-    totalUNGC, totalUNGG, totalConsignar,
-    fechaNombre, fecha, errors,
+    ungc: blkUNGC.rows,
+    ungg: blkUNGG.rows,
+    custodia,
+    precios,
+    totalUNGC,
+    totalUNGG,
+    totalConsignar,
+    fechaNombre,
+    fecha,
+    errors,
   }
 }
 
-const MESES_TXR = { ene: 0, feb: 1, mar: 2, abr: 3, may: 4, jun: 5, jul: 6, ago: 7, sep: 8, sept: 8, oct: 9, nov: 10, dic: 11 }
-const txt = (s) => String(s ?? '').normalize('NFC').trim()
+const MESES_TXR = {
+  ene: 0,
+  feb: 1,
+  mar: 2,
+  abr: 3,
+  may: 4,
+  jun: 5,
+  jul: 6,
+  ago: 7,
+  sep: 8,
+  sept: 8,
+  oct: 9,
+  nov: 10,
+  dic: 11,
+}
+const txt = (s) =>
+  String(s ?? '')
+    .normalize('NFC')
+    .trim()
 const isTotalAjuste = (s) => /^total\s*ajuste$/i.test(txt(s))
 
 // Detecta la hoja de datos por contenido: la fila cuyo primer encabezado es CÓDIGO
@@ -270,7 +344,9 @@ export async function parseTxr(file) {
 
   const found = findTxrSheet(wb)
   if (!found) {
-    errors.push(`No se encontró una hoja con encabezados esperados (CÓDIGO + "Total Ajuste"). Hojas en el archivo: ${wb.SheetNames.join(', ')}`)
+    errors.push(
+      `No se encontró una hoja con encabezados esperados (CÓDIGO + "Total Ajuste"). Hojas en el archivo: ${wb.SheetNames.join(', ')}`,
+    )
     return { rows: [], headers: [], totalAjuste: 0, fechaVencimiento: findVencimiento(wb), errors }
   }
 
@@ -287,7 +363,9 @@ export async function parseTxr(file) {
     const cod = normSheet(row[codigoIdx])
     if (cod === 'UNGC' || cod === 'UNGG') {
       const obj = {}
-      rawHeaders.forEach((h, idx) => { if (h) obj[h] = row[idx] ?? null })
+      rawHeaders.forEach((h, idx) => {
+        if (h) obj[h] = row[idx] ?? null
+      })
       dataRows.push(obj)
     }
   }
@@ -299,7 +377,13 @@ export async function parseTxr(file) {
   const totalRaw = ungg && ajusteHeader ? ungg[ajusteHeader] : null
   const totalAjuste = totalRaw != null && !isNaN(parseFloat(totalRaw)) ? parseFloat(totalRaw) : 0
 
-  return { rows: dataRows, headers: rawHeaders.filter(Boolean), totalAjuste, fechaVencimiento: findVencimiento(wb), errors }
+  return {
+    rows: dataRows,
+    headers: rawHeaders.filter(Boolean),
+    totalAjuste,
+    fechaVencimiento: findVencimiento(wb),
+    errors,
+  }
 }
 
 // ---------- Mensual (distinto al TXR) ----------
@@ -368,13 +452,35 @@ export async function parseMensual(file) {
     wb = await readWorkbook(file)
   } catch (e) {
     errors.push(`Error leyendo archivo Mensual: ${e.message}`)
-    return { rows: [], headers: [], monto: 0, garantiaUNGC: 0, garantiaUNGG: 0, noConsigna: false, fechaVencimiento: null, mesReporte: null, errors }
+    return {
+      rows: [],
+      headers: [],
+      monto: 0,
+      garantiaUNGC: 0,
+      garantiaUNGG: 0,
+      noConsigna: false,
+      fechaVencimiento: null,
+      mesReporte: null,
+      errors,
+    }
   }
 
   const found = findMensualSheet(wb)
   if (!found) {
-    errors.push(`No se encontró una hoja con encabezados esperados (CÓDIGO + columna GARANTIA). Hojas en el archivo: ${wb.SheetNames.join(', ')}`)
-    return { rows: [], headers: [], monto: 0, garantiaUNGC: 0, garantiaUNGG: 0, noConsigna: false, fechaVencimiento: findFechaLimite(wb), mesReporte: findMesReporte(wb), errors }
+    errors.push(
+      `No se encontró una hoja con encabezados esperados (CÓDIGO + columna GARANTIA). Hojas en el archivo: ${wb.SheetNames.join(', ')}`,
+    )
+    return {
+      rows: [],
+      headers: [],
+      monto: 0,
+      garantiaUNGC: 0,
+      garantiaUNGG: 0,
+      noConsigna: false,
+      fechaVencimiento: findFechaLimite(wb),
+      mesReporte: findMesReporte(wb),
+      errors,
+    }
   }
 
   const { rows, headerRowIdx } = found
@@ -389,7 +495,9 @@ export async function parseMensual(file) {
     const cod = normSheet(row[codigoIdx])
     if (cod === 'UNGC' || cod === 'UNGG') {
       const obj = {}
-      rawHeaders.forEach((h, idx) => { if (h) obj[h] = row[idx] ?? null })
+      rawHeaders.forEach((h, idx) => {
+        if (h) obj[h] = row[idx] ?? null
+      })
       dataRows.push(obj)
     }
   }
@@ -408,7 +516,10 @@ export async function parseMensual(file) {
   return {
     rows: dataRows,
     headers: rawHeaders.filter(Boolean),
-    monto, garantiaUNGC, garantiaUNGG, noConsigna,
+    monto,
+    garantiaUNGC,
+    garantiaUNGG,
+    noConsigna,
     fechaVencimiento: findFechaLimite(wb),
     mesReporte: findMesReporte(wb),
     errors,

@@ -1,29 +1,39 @@
 <template>
   <!-- Mobile overlay -->
-  <div v-if="mobileOpen" class="fixed inset-0 z-40 bg-black/40 lg:hidden" @click="mobileOpen = false" />
+  <div
+    v-if="mobileOpen"
+    class="fixed inset-0 z-40 bg-black/40 lg:hidden"
+    @click="mobileOpen = false"
+  />
 
-  <aside :class="[
-    'flex flex-col shrink-0 z-50 transition-transform duration-200 sb-aside',
-    'fixed inset-y-0 left-0 w-[216px] lg:relative lg:translate-x-0',
-    mobileOpen ? 'translate-x-0' : '-translate-x-full',
-    collapsed ? 'lg:hidden' : ''
-  ]">
+  <aside
+    :class="[
+      'sb-aside z-50 flex shrink-0 flex-col transition-transform duration-200',
+      'fixed inset-y-0 left-0 w-[216px] lg:relative lg:translate-x-0',
+      mobileOpen ? 'translate-x-0' : '-translate-x-full',
+      collapsed ? 'lg:hidden' : '',
+    ]"
+  >
     <!-- Marca -->
     <div class="sb-brand">
       <RouterLink to="/dashboard" class="sb-brand-link" @click="mobileOpen = false">
         <img src="/logos/Icono_purpura_energico.png" alt="Unergy" class="sb-brand-logo" />
         <span class="sb-brand-sub">Plataforma Operaciones</span>
       </RouterLink>
-      <div class="flex items-center shrink-0">
+      <div class="flex shrink-0 items-center">
         <!-- Ocultar barra (escritorio) -->
-        <button class="hidden lg:flex sb-icon-btn" @click="toggleCollapsed" title="Ocultar barra lateral">
+        <button
+          class="sb-icon-btn hidden lg:flex"
+          @click="toggleCollapsed"
+          title="Ocultar barra lateral"
+        >
           <i class="pi pi-angle-double-left" />
         </button>
       </div>
     </div>
 
     <!-- Nav -->
-    <nav class="flex-1 px-2.5 py-2 overflow-y-auto sb-nav">
+    <nav class="sb-nav flex-1 overflow-y-auto px-2.5 py-2">
       <template v-for="group in navGroups" :key="group.label || '__main__'">
         <button
           v-if="group.label"
@@ -47,9 +57,11 @@
                   @click="toggleItem(item.label)"
                 >
                   <i :class="[item.icon, 'sb-item-ico']" />
-                  <span class="truncate flex-1 text-left">{{ item.label }}</span>
-                  <i class="pi pi-chevron-down sb-item-chev"
-                    :class="{ 'sb-item-chev--open': isItemExpanded(item.label) }" />
+                  <span class="flex-1 truncate text-left">{{ item.label }}</span>
+                  <i
+                    class="pi pi-chevron-down sb-item-chev"
+                    :class="{ 'sb-item-chev--open': isItemExpanded(item.label) }"
+                  />
                 </button>
                 <transition name="sb-collapse">
                   <div v-show="isItemExpanded(item.label)" class="sb-subitems">
@@ -101,41 +113,76 @@
             </span>
           </button>
           <!-- Notification dropdown -->
-          <div v-if="showNotifications"
-            class="absolute bottom-full mb-2 right-0 w-80 bg-white rounded-xl shadow-xl z-50 overflow-hidden"
-            style="border: 1px solid #e8e0f0;">
-            <div class="flex items-center justify-between px-4 py-3 border-b" style="border-color: #e8e0f0;">
-              <span class="text-sm font-semibold" style="color: #2C2039;">Notificaciones</span>
-              <button v-if="unreadCount > 0" @click="markAllRead"
-                class="text-xs font-medium hover:underline" style="color: #915BD8;">
+          <div
+            v-if="showNotifications"
+            class="absolute right-0 bottom-full z-50 mb-2 w-80 overflow-hidden rounded-xl bg-white shadow-xl"
+            style="border: 1px solid #e8e0f0"
+          >
+            <div
+              class="flex items-center justify-between border-b px-4 py-3"
+              style="border-color: #e8e0f0"
+            >
+              <span class="text-sm font-semibold" style="color: #2c2039">Notificaciones</span>
+              <button
+                v-if="unreadCount > 0"
+                @click="markAllRead"
+                class="text-xs font-medium hover:underline"
+                style="color: #915bd8"
+              >
                 Marcar todas leídas
               </button>
             </div>
             <div class="max-h-80 overflow-y-auto">
               <div v-if="notifications.length === 0" class="py-8 text-center">
-                <i class="pi pi-bell-slash text-2xl mb-2 block" style="color: #c4b8d4;" />
-                <p class="text-xs" style="color: #6b5a8a;">Sin notificaciones</p>
+                <i class="pi pi-bell-slash mb-2 block text-2xl" style="color: #c4b8d4" />
+                <p class="text-xs" style="color: #6b5a8a">Sin notificaciones</p>
               </div>
-              <div v-for="n in notifications" :key="n.id"
+              <div
+                v-for="n in notifications"
+                :key="n.id"
                 @click="markAsRead(n)"
-                class="flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-gray-50 border-b last:border-b-0"
-                :style="{ borderColor: '#f3f0f7', backgroundColor: n.leida ? 'transparent' : 'rgba(145,91,216,0.04)' }">
-                <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5"
-                  :style="{ backgroundColor: severityBg(n.severidad), color: severityColor(n.severidad) }">
+                class="flex cursor-pointer items-start gap-3 border-b px-4 py-3 transition-colors last:border-b-0 hover:bg-gray-50"
+                :style="{
+                  borderColor: '#f3f0f7',
+                  backgroundColor: n.leida ? 'transparent' : 'rgba(145,91,216,0.04)',
+                }"
+              >
+                <div
+                  class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full"
+                  :style="{
+                    backgroundColor: severityBg(n.severidad),
+                    color: severityColor(n.severidad),
+                  }"
+                >
                   <i :class="severityIcon(n.severidad)" class="text-xs" />
                 </div>
                 <div class="min-w-0 flex-1">
-                  <p class="text-sm leading-snug" :style="{ color: '#2C2039', fontWeight: n.leida ? '400' : '600' }">{{ n.titulo || n.mensaje }}</p>
-                  <p v-if="n.titulo && n.mensaje" class="text-xs mt-0.5" style="color: #6b5a8a;">{{ n.mensaje }}</p>
-                  <p class="text-[10px] mt-1" style="color: #9b89b5;">{{ formatTimeAgo(n.created_at) }}</p>
+                  <p
+                    class="text-sm leading-snug"
+                    :style="{ color: '#2C2039', fontWeight: n.leida ? '400' : '600' }"
+                  >
+                    {{ n.titulo || n.mensaje }}
+                  </p>
+                  <p v-if="n.titulo && n.mensaje" class="mt-0.5 text-xs" style="color: #6b5a8a">
+                    {{ n.mensaje }}
+                  </p>
+                  <p class="mt-1 text-[10px]" style="color: #9b89b5">
+                    {{ formatTimeAgo(n.created_at) }}
+                  </p>
                 </div>
-                <div v-if="!n.leida" class="w-2 h-2 rounded-full shrink-0 mt-2" style="background-color: #915BD8;" />
+                <div
+                  v-if="!n.leida"
+                  class="mt-2 h-2 w-2 shrink-0 rounded-full"
+                  style="background-color: #915bd8"
+                />
               </div>
             </div>
-            <RouterLink to="/alertas"
-              class="block text-center py-2.5 text-xs font-medium border-t hover:bg-gray-50"
-              style="color: #915BD8; border-color: #e8e0f0;"
-              @click="showNotifications = false">
+            <RouterLink
+              to="/alertas"
+              class="block border-t py-2.5 text-center text-xs font-medium hover:bg-gray-50"
+              style="color: #915bd8; border-color: #e8e0f0"
+              @click="showNotifications = false"
+            >
               Ver todas las alertas
             </RouterLink>
           </div>
@@ -162,7 +209,13 @@ const { mobileOpen, collapsed, toggleCollapsed, isGroupCollapsed, toggleGroup } 
 
 const initials = computed(() => {
   const name = (auth.user?.nombre || auth.user?.email || '').trim()
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
 })
 
 // ── Notificaciones (movidas desde AppTopbar) ───────────────────────────
@@ -181,14 +234,18 @@ async function fetchUnreadCount() {
   try {
     const { data } = await api.get('/notificaciones/count')
     unreadCount.value = data.count ?? data.unread ?? 0
-  } catch { /* no crítico */ }
+  } catch {
+    /* no crítico */
+  }
 }
 
 async function fetchNotifications() {
   try {
     const { data } = await api.get('/notificaciones', { params: { limit: 20 } })
     notifications.value = Array.isArray(data) ? data : (data.items ?? [])
-  } catch { notifications.value = [] }
+  } catch {
+    notifications.value = []
+  }
 }
 
 async function markAsRead(n) {
@@ -197,19 +254,30 @@ async function markAsRead(n) {
     await api.patch(`/notificaciones/${n.id}/leer`)
     n.leida = true
     if (unreadCount.value > 0) unreadCount.value--
-  } catch { /* no crítico */ }
+  } catch {
+    /* no crítico */
+  }
 }
 
 async function markAllRead() {
   try {
     await api.post('/notificaciones/leer-todas')
-    notifications.value.forEach(n => { n.leida = true })
+    notifications.value.forEach((n) => {
+      n.leida = true
+    })
     unreadCount.value = 0
-  } catch { /* no crítico */ }
+  } catch {
+    /* no crítico */
+  }
 }
 
 function severityBg(sev) {
-  const map = { critica: 'rgba(214,68,85,0.12)', alta: 'rgba(234,88,12,0.12)', media: 'rgba(240,192,64,0.12)', baja: 'rgba(16,185,129,0.12)' }
+  const map = {
+    critica: 'rgba(214,68,85,0.12)',
+    alta: 'rgba(234,88,12,0.12)',
+    media: 'rgba(240,192,64,0.12)',
+    baja: 'rgba(16,185,129,0.12)',
+  }
   return map[sev] || 'rgba(145,91,216,0.08)'
 }
 function severityColor(sev) {
@@ -217,7 +285,12 @@ function severityColor(sev) {
   return map[sev] || '#915BD8'
 }
 function severityIcon(sev) {
-  const map = { critica: 'pi pi-exclamation-triangle', alta: 'pi pi-exclamation-circle', media: 'pi pi-info-circle', baja: 'pi pi-check-circle' }
+  const map = {
+    critica: 'pi pi-exclamation-triangle',
+    alta: 'pi pi-exclamation-circle',
+    media: 'pi pi-info-circle',
+    baja: 'pi pi-check-circle',
+  }
   return map[sev] || 'pi pi-bell'
 }
 
@@ -260,64 +333,116 @@ const ALL_GROUPS = [
   {
     label: 'General',
     items: [
-      { to: '/dashboard',       label: 'Dashboard',        icon: 'pi pi-home' },
+      { to: '/dashboard', label: 'Dashboard', icon: 'pi pi-home' },
       // Esta entrada reemplaza a las tres que había antes (Clientes, Proyectos
       // y Servicios). La base es el portafolio de plantas, y clientes y
       // contratos son formas de reagrupar ese mismo portafolio. Las rutas
       // /clientes, /proyectos y /servicios siguen vivas -- solo salieron del
       // menú, así que nada se rompe y revertir es volver a poner estas líneas.
-      { to: '/servicios-unificado', label: 'Proyectos',          icon: 'pi pi-bolt' },
+      { to: '/servicios-unificado', label: 'Proyectos', icon: 'pi pi-bolt' },
       { to: '/general/proximos-energizar', label: 'Próximos a energizar', icon: 'pi pi-clock' },
-      { to: '/mem/operadores-red', label: 'Operadores de Red', icon: 'pi pi-sitemap', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/general/retos',   label: 'Retos Q',          icon: 'pi pi-flag-fill' },
+      {
+        to: '/mem/operadores-red',
+        label: 'Operadores de Red',
+        icon: 'pi pi-sitemap',
+        roles: ['admin', 'operaciones', 'monitoreo'],
+      },
+      { to: '/general/retos', label: 'Retos Q', icon: 'pi pi-flag-fill' },
     ],
   },
   {
     label: 'Comercial',
     items: [
-      { to: '/comercial', label: 'Pipeline', icon: 'pi pi-briefcase', roles: ['admin', 'comercial'] },
+      {
+        to: '/comercial',
+        label: 'Pipeline',
+        icon: 'pi pi-briefcase',
+        roles: ['admin', 'comercial'],
+      },
     ],
   },
   {
     label: 'Operaciones',
     items: [
-      { to: '/solar-live', label: 'Generación Solar', icon: 'pi pi-sun', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/operaciones/informes-mensuales', label: 'Informes Mensuales', icon: 'pi pi-file-edit', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/fallas', label: 'Gestión de Fallas', icon: 'pi pi-wrench', roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/operaciones/informe-om', label: 'Informe de Puesta en Marcha', icon: 'pi pi-file-pdf', roles: ['admin', 'operaciones'] },
-      { to: '/operaciones/polizas', label: 'Pólizas', icon: 'pi pi-shield', roles: ['admin', 'operaciones'] },
+      {
+        to: '/solar-live',
+        label: 'Generación Solar',
+        icon: 'pi pi-sun',
+        roles: ['admin', 'operaciones', 'monitoreo'],
+      },
+      {
+        to: '/operaciones/informes-mensuales',
+        label: 'Informes Mensuales',
+        icon: 'pi pi-file-edit',
+        roles: ['admin', 'operaciones', 'monitoreo'],
+      },
+      {
+        to: '/fallas',
+        label: 'Gestión de Fallas',
+        icon: 'pi pi-wrench',
+        roles: ['admin', 'operaciones', 'monitoreo'],
+      },
+      {
+        to: '/operaciones/informe-om',
+        label: 'Informe de Puesta en Marcha',
+        icon: 'pi pi-file-pdf',
+        roles: ['admin', 'operaciones'],
+      },
+      {
+        to: '/operaciones/polizas',
+        label: 'Pólizas',
+        icon: 'pi pi-shield',
+        roles: ['admin', 'operaciones'],
+      },
     ],
   },
   {
     label: 'Fronteras Comerciales',
     items: [
-      { to: '/mem/fronteras',         label: 'General',            icon: 'pi pi-globe',      roles: ['admin', 'operaciones', 'monitoreo'] },
-      { to: '/mem/reporte-energia',   label: 'Reporte de Energía', icon: 'pi pi-file-edit',  roles: ['admin', 'operaciones', 'monitoreo'] },
+      {
+        to: '/mem/fronteras',
+        label: 'General',
+        icon: 'pi pi-globe',
+        roles: ['admin', 'operaciones', 'monitoreo'],
+      },
+      {
+        to: '/mem/reporte-energia',
+        label: 'Reporte de Energía',
+        icon: 'pi pi-file-edit',
+        roles: ['admin', 'operaciones', 'monitoreo'],
+      },
     ],
   },
   {
     label: 'Registros CND/ASIC',
     items: [
-      { to: '/registros-cnd-asic', label: 'Proyectos en conexión', icon: 'pi pi-flag', roles: ['admin', 'operaciones'] },
+      {
+        to: '/registros-cnd-asic',
+        label: 'Proyectos en conexión',
+        icon: 'pi pi-flag',
+        roles: ['admin', 'operaciones'],
+      },
     ],
   },
   {
     label: 'Comercialización',
     items: [
-      { to: '/mem/cumplimiento',    label: 'Cumplimiento PPA', icon: 'pi pi-shield' },
-      { to: '/mem/descubrimientos', label: 'Descubrimientos',  icon: 'pi pi-bolt' },
-      { to: '/garantias',           label: 'Garantías',        icon: 'pi pi-wallet' },
-      { to: '/mem/gescon',          label: 'GESCON / ASIC',    icon: 'pi pi-book' },
-      { to: '/mem/precio-bolsa',    label: 'Precio de Bolsa',  icon: 'pi pi-chart-line' },
-      { to: '/mem/balance',         label: 'Balance Energía',  icon: 'pi pi-chart-bar' },
-      { to: '/mem/clima',           label: 'Clima & ENSO',     icon: 'pi pi-cloud' },
+      { to: '/mem/cumplimiento', label: 'Cumplimiento PPA', icon: 'pi pi-shield' },
+      { to: '/mem/descubrimientos', label: 'Descubrimientos', icon: 'pi pi-bolt' },
+      { to: '/garantias', label: 'Garantías', icon: 'pi pi-wallet' },
+      { to: '/mem/gescon', label: 'GESCON / ASIC', icon: 'pi pi-book' },
+      { to: '/mem/precio-bolsa', label: 'Precio de Bolsa', icon: 'pi pi-chart-line' },
+      { to: '/mem/balance', label: 'Balance Energía', icon: 'pi pi-chart-bar' },
+      { to: '/mem/clima', label: 'Clima & ENSO', icon: 'pi pi-cloud' },
     ],
   },
   {
     label: 'Finanzas',
     items: [
       {
-        label: 'Liquidaciones', icon: 'pi pi-dollar', roles: ['admin', 'liquidaciones'],
+        label: 'Liquidaciones',
+        icon: 'pi pi-dollar',
+        roles: ['admin', 'liquidaciones'],
         children: [
           // Entrada directa: antes solo se llegaba a la pestaña de Facturación
           // entrando por Panel Contable → Minigranjas/Autoconsumo.
@@ -334,7 +459,9 @@ const ALL_GROUPS = [
         ],
       },
       {
-        label: 'Panel Contable', icon: 'pi pi-calculator', roles: ['admin', 'liquidaciones'],
+        label: 'Panel Contable',
+        icon: 'pi pi-calculator',
+        roles: ['admin', 'liquidaciones'],
         children: [
           { to: '/panel-contable', label: 'Panel contable' },
           { to: '/liquidaciones?tipo=minigranja', label: 'Minigranjas' },
@@ -343,26 +470,41 @@ const ALL_GROUPS = [
         ],
       },
       {
-        label: 'Herramientas liquidaciones', icon: 'pi pi-wrench', roles: ['admin', 'liquidaciones'],
+        label: 'Herramientas liquidaciones',
+        icon: 'pi pi-wrench',
+        roles: ['admin', 'liquidaciones'],
         children: [
           { to: '/validador-mandatos', label: 'Validador de Mandatos' },
           { to: '/finanzas/descarga-xm', label: 'Descarga de XM' },
         ],
       },
-      { to: '/finanzas/costos', label: 'Costos', icon: 'pi pi-credit-card', roles: ['admin', 'liquidaciones'] },
+      {
+        to: '/finanzas/costos',
+        label: 'Costos',
+        icon: 'pi pi-credit-card',
+        roles: ['admin', 'liquidaciones'],
+      },
     ],
   },
   {
     label: 'Alertas',
-    items: [
-      { to: '/alertas', label: 'Centro de Alertas', icon: 'pi pi-exclamation-circle' },
-    ],
+    items: [{ to: '/alertas', label: 'Centro de Alertas', icon: 'pi pi-exclamation-circle' }],
   },
   {
     label: 'Admin',
     items: [
-      { to: '/admin/usuarios', label: 'Usuarios', icon: 'pi pi-users', requireEmail: 'juanjose@unergy.io' },
-      { to: '/admin/diagnostico', label: 'Diagnóstico', icon: 'pi pi-link', requireEmail: 'juanjose@unergy.io' },
+      {
+        to: '/admin/usuarios',
+        label: 'Usuarios',
+        icon: 'pi pi-users',
+        requireEmail: 'juanjose@unergy.io',
+      },
+      {
+        to: '/admin/diagnostico',
+        label: 'Diagnóstico',
+        icon: 'pi pi-link',
+        requireEmail: 'juanjose@unergy.io',
+      },
     ],
   },
 ]
@@ -370,7 +512,9 @@ const ALL_GROUPS = [
 // Submenús expandibles dentro de un grupo (ej. Liquidaciones).
 // Arrancan cerrados al recargar para no saturar visualmente el menú.
 const expandedItems = ref(new Set())
-function isItemExpanded(label) { return expandedItems.value.has(label) }
+function isItemExpanded(label) {
+  return expandedItems.value.has(label)
+}
 function toggleItem(label) {
   expandedItems.value.has(label)
     ? expandedItems.value.delete(label)
@@ -379,105 +523,267 @@ function toggleItem(label) {
 }
 
 const navGroups = computed(() =>
-  ALL_GROUPS.map(g => ({
+  ALL_GROUPS.map((g) => ({
     ...g,
-    items: g.items.filter(i =>
-      (!i.roles || auth.can(...i.roles)) &&
-      (!i.requireEmail || auth.user?.email === i.requireEmail)
+    items: g.items.filter(
+      (i) =>
+        (!i.roles || auth.can(...i.roles)) &&
+        (!i.requireEmail || auth.user?.email === i.requireEmail),
     ),
-  })).filter(g => g.items.length > 0)
+  })).filter((g) => g.items.length > 0),
 )
 </script>
 
 <style scoped>
 .sb-aside {
   background: #fff;
-  border-right: 1px solid #ECE7F2;
+  border-right: 1px solid #ece7f2;
   font-family: 'Sora', system-ui, sans-serif;
 }
 
 /* Marca */
 .sb-brand {
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 14px 16px; border-bottom: 1px solid #F0ECF6; flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #f0ecf6;
+  flex-shrink: 0;
 }
 .sb-brand-link {
-  display: flex; flex-direction: column; gap: 3px; min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
   text-decoration: none;
 }
 .sb-brand-logo {
-  height: 30px; width: auto; object-fit: contain; align-self: flex-start;
+  height: 30px;
+  width: auto;
+  object-fit: contain;
+  align-self: flex-start;
   display: block;
 }
-.sb-brand-sub  { font-size: 10.5px; color: #9b8fb0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-brand-sub {
+  font-size: 10.5px;
+  color: #9b8fb0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* Nav — scrollbar morado oscuro */
-.sb-nav { scrollbar-width: thin; scrollbar-color: #4C1D95 transparent; }
-.sb-nav::-webkit-scrollbar { width: 8px; }
-.sb-nav::-webkit-scrollbar-thumb { background: #4C1D95; border-radius: 4px; }
-.sb-nav::-webkit-scrollbar-thumb:hover { background: #3B1278; }
-.sb-nav::-webkit-scrollbar-track { background: transparent; }
+.sb-nav {
+  scrollbar-width: thin;
+  scrollbar-color: #4c1d95 transparent;
+}
+.sb-nav::-webkit-scrollbar {
+  width: 8px;
+}
+.sb-nav::-webkit-scrollbar-thumb {
+  background: #4c1d95;
+  border-radius: 4px;
+}
+.sb-nav::-webkit-scrollbar-thumb:hover {
+  background: #3b1278;
+}
+.sb-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
 
 /* Grupos plegables */
 .sb-group {
-  display: flex; align-items: center; justify-content: space-between; width: 100%;
-  font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
-  color: #A89EC0; padding: 14px 10px 4px; background: transparent; border: none;
-  cursor: pointer; text-align: left; transition: color .12s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #a89ec0;
+  padding: 14px 10px 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.12s;
 }
-.sb-group:hover { color: #6D28D9; }
+.sb-group:hover {
+  color: #6d28d9;
+}
 .sb-group-chev {
-  font-size: 10px; transition: transform .18s ease; color: inherit; flex-shrink: 0;
+  font-size: 10px;
+  transition: transform 0.18s ease;
+  color: inherit;
+  flex-shrink: 0;
 }
-.sb-group--collapsed .sb-group-chev { transform: rotate(-90deg); }
+.sb-group--collapsed .sb-group-chev {
+  transform: rotate(-90deg);
+}
 
 /* Transición plegar/desplegar */
-.sb-collapse-enter-active, .sb-collapse-leave-active { transition: opacity .15s ease; }
-.sb-collapse-enter-from, .sb-collapse-leave-to { opacity: 0; }
-.sb-item {
-  display: flex; align-items: center; gap: 11px; padding: 8px 10px; margin-bottom: 1px;
-  border-radius: 9px; font-size: 13.5px; font-weight: 600; color: #5b5470;
-  transition: background .12s, color .12s; cursor: pointer;
+.sb-collapse-enter-active,
+.sb-collapse-leave-active {
+  transition: opacity 0.15s ease;
 }
-.sb-item:hover { background: #F5F2FB; color: #2C2039; }
-.sb-item-ico { font-size: 15px; width: 18px; text-align: center; color: #9990ad; flex-shrink: 0; transition: color .12s; }
-.sb-item:hover .sb-item-ico { color: #6D28D9; }
-.sb-item--active { background: #F1EAF9 !important; color: #2C2039 !important; font-weight: 700; }
-.sb-item--active .sb-item-ico { color: #6D28D9; }
+.sb-collapse-enter-from,
+.sb-collapse-leave-to {
+  opacity: 0;
+}
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 10px;
+  margin-bottom: 1px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #5b5470;
+  transition:
+    background 0.12s,
+    color 0.12s;
+  cursor: pointer;
+}
+.sb-item:hover {
+  background: #f5f2fb;
+  color: #2c2039;
+}
+.sb-item-ico {
+  font-size: 15px;
+  width: 18px;
+  text-align: center;
+  color: #9990ad;
+  flex-shrink: 0;
+  transition: color 0.12s;
+}
+.sb-item:hover .sb-item-ico {
+  color: #6d28d9;
+}
+.sb-item--active {
+  background: #f1eaf9 !important;
+  color: #2c2039 !important;
+  font-weight: 700;
+}
+.sb-item--active .sb-item-ico {
+  color: #6d28d9;
+}
 
 /* Item padre con submenú */
-.sb-item--parent { width: 100%; background: transparent; border: none; cursor: pointer; }
-.sb-item-chev { font-size: 10px; color: #9990ad; flex-shrink: 0; transition: transform .18s ease; }
-.sb-item-chev--open { transform: rotate(180deg); }
-.sb-subitems { padding-left: 18px; }
-.sb-subitem { font-size: 12.5px; font-weight: 600; padding: 6px 10px; }
-.sb-subitem::before {
-  content: ''; width: 4px; height: 4px; border-radius: 50%;
-  background: #c4b8d4; margin-right: 9px; flex-shrink: 0;
+.sb-item--parent {
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
-.sb-subitem.sb-item--active::before { background: #6D28D9; }
+.sb-item-chev {
+  font-size: 10px;
+  color: #9990ad;
+  flex-shrink: 0;
+  transition: transform 0.18s ease;
+}
+.sb-item-chev--open {
+  transform: rotate(180deg);
+}
+.sb-subitems {
+  padding-left: 18px;
+}
+.sb-subitem {
+  font-size: 12.5px;
+  font-weight: 600;
+  padding: 6px 10px;
+}
+.sb-subitem::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #c4b8d4;
+  margin-right: 9px;
+  flex-shrink: 0;
+}
+.sb-subitem.sb-item--active::before {
+  background: #6d28d9;
+}
 
 /* Footer usuario */
-.sb-footer { border-top: 1px solid #F0ECF6; padding: 10px 12px; flex-shrink: 0; }
-.sb-user { display: flex; align-items: center; gap: 9px; }
+.sb-footer {
+  border-top: 1px solid #f0ecf6;
+  padding: 10px 12px;
+  flex-shrink: 0;
+}
+.sb-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
 .sb-avatar {
-  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-  background: linear-gradient(135deg, #915BD8, #6D28D9); color: #fff;
-  font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #915bd8, #6d28d9);
+  color: #fff;
+  font-weight: 800;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.sb-user-name { font-size: 12.5px; font-weight: 700; color: #2C2039; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sb-user-mail { font-size: 10.5px; color: #9b8fb0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sb-user-name {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #2c2039;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-user-mail {
+  font-size: 10.5px;
+  color: #9b8fb0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .sb-icon-btn {
-  width: 30px; height: 30px; border-radius: 8px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  color: #8a7fa3; background: transparent; border: none; cursor: pointer;
-  transition: background .12s, color .12s;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8a7fa3;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
-.sb-icon-btn:hover { background: #F1ECF8; color: #6D28D9; }
-.sb-icon-btn .pi { font-size: 14px; }
+.sb-icon-btn:hover {
+  background: #f1ecf8;
+  color: #6d28d9;
+}
+.sb-icon-btn .pi {
+  font-size: 14px;
+}
 .sb-badge {
-  position: absolute; top: -2px; right: -2px; min-width: 15px; height: 15px;
-  display: flex; align-items: center; justify-content: center; padding: 0 3px;
-  border-radius: 999px; background: #DC2626; color: #fff; font-size: 9px; font-weight: 800;
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  min-width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 800;
 }
 </style>

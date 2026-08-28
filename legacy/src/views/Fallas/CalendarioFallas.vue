@@ -1,6 +1,5 @@
 <template>
   <div class="cal-root">
-
     <!-- ── Filtros + navegación ─────────────────────────────────────────── -->
     <div class="cal-toolbar">
       <div class="cal-nav">
@@ -11,12 +10,37 @@
       </div>
 
       <div class="cal-filtros">
-        <Select v-model="filtroProyecto" :options="proyectos" optionLabel="nombre_comercial"
-          optionValue="id" placeholder="Proyecto" showClear filter class="cal-select" size="small" />
-        <Select v-model="filtroAsignado" :options="usuarios" optionLabel="nombre"
-          optionValue="id" placeholder="Responsable" showClear class="cal-select" size="small" />
-        <Select v-model="filtroEstado" :options="estados" optionLabel="etiqueta"
-          optionValue="codigo" placeholder="Estado" showClear class="cal-select" size="small" />
+        <Select
+          v-model="filtroProyecto"
+          :options="proyectos"
+          optionLabel="nombre_comercial"
+          optionValue="id"
+          placeholder="Proyecto"
+          showClear
+          filter
+          class="cal-select"
+          size="small"
+        />
+        <Select
+          v-model="filtroAsignado"
+          :options="usuarios"
+          optionLabel="nombre"
+          optionValue="id"
+          placeholder="Responsable"
+          showClear
+          class="cal-select"
+          size="small"
+        />
+        <Select
+          v-model="filtroEstado"
+          :options="estados"
+          optionLabel="etiqueta"
+          optionValue="codigo"
+          placeholder="Estado"
+          showClear
+          class="cal-select"
+          size="small"
+        />
         <button v-if="hayFiltros" class="cal-clear-btn" @click="limpiarFiltros">
           <i class="pi pi-times" /> Limpiar
         </button>
@@ -24,11 +48,11 @@
 
       <div class="cal-kpis">
         <span class="cal-kpi">
-          <span class="cal-kpi-num" style="color:#9CA3AF">{{ kpiMes.pendientes }}</span>
+          <span class="cal-kpi-num" style="color: #9ca3af">{{ kpiMes.pendientes }}</span>
           <span class="cal-kpi-lbl">pendientes</span>
         </span>
         <span class="cal-kpi">
-          <span class="cal-kpi-num" style="color:#915BD8">{{ kpiMes.ejecutadas }}</span>
+          <span class="cal-kpi-num" style="color: #915bd8">{{ kpiMes.ejecutadas }}</span>
           <span class="cal-kpi-lbl">ejecutadas</span>
         </span>
         <span class="cal-kpi">
@@ -41,30 +65,30 @@
     <!-- ── Leyenda ─────────────────────────────────────────────────────────── -->
     <div class="cal-leyenda">
       <span class="cal-ley-item">
-        <span class="cal-ley-dot" style="background:#9CA3AF" />
+        <span class="cal-ley-dot" style="background: #9ca3af" />
         Programada (pendiente)
       </span>
       <span class="cal-ley-item">
-        <span class="cal-ley-dot" style="background:#915BD8" />
+        <span class="cal-ley-dot" style="background: #915bd8" />
         Ejecutada / Cerrada
       </span>
       <span class="cal-ley-item">
-        <span class="cal-ley-dot" style="background:#EF4444" />
+        <span class="cal-ley-dot" style="background: #ef4444" />
         Abierta
       </span>
       <span class="cal-ley-item">
-        <span class="cal-ley-dot" style="background:#F97316" />
+        <span class="cal-ley-dot" style="background: #f97316" />
         En gestión
       </span>
       <span class="cal-ley-item">
-        <span class="cal-ley-dot" style="background:#EAB308" />
+        <span class="cal-ley-dot" style="background: #eab308" />
         En espera
       </span>
     </div>
 
     <!-- ── Loading ─────────────────────────────────────────────────────── -->
     <div v-if="loading" class="cal-loading">
-      <i class="pi pi-spin pi-spinner" style="font-size:24px;color:#915BD8" />
+      <i class="pi pi-spin pi-spinner" style="font-size: 24px; color: #915bd8" />
       <span>Cargando fallas...</span>
     </div>
 
@@ -78,29 +102,38 @@
       <!-- Celda de días -->
       <div class="cal-grid">
         <div
-          v-for="cell in celdas" :key="cell.key"
-          :class="['cal-cell',
+          v-for="cell in celdas"
+          :key="cell.key"
+          :class="[
+            'cal-cell',
             !cell.esDelMes && 'cal-cell--fuera',
             cell.esHoy && 'cal-cell--hoy',
-            cell.eventos.length > 0 && 'cal-cell--con-eventos'
+            cell.eventos.length > 0 && 'cal-cell--con-eventos',
           ]"
         >
           <span class="cal-cell-num">{{ cell.dia }}</span>
 
           <div class="cal-eventos-list">
             <div
-              v-for="ev in cell.eventos.slice(0, 3)" :key="ev.id"
+              v-for="ev in cell.eventos.slice(0, 3)"
+              :key="ev.id"
               :class="['cal-evento', esFinal(ev) && 'cal-evento--final']"
-              :style="{ background: estadoColor(ev.estado?.codigo) + '18', borderLeft: `3px solid ${estadoColor(ev.estado?.codigo)}` }"
+              :style="{
+                background: estadoColor(ev.estado?.codigo) + '18',
+                borderLeft: `3px solid ${estadoColor(ev.estado?.codigo)}`,
+              }"
               @click="abrirDetalle(ev)"
               :title="`[${ev.estado?.etiqueta}] ${ev.proyecto?.nombre_comercial} — ${ev.descripcion}`"
             >
-              <i v-if="esFinal(ev)" class="pi pi-check-circle cal-evento-icon" style="color:#915BD8" />
-              <i v-else class="pi pi-clock cal-evento-icon" style="color:#9CA3AF" />
+              <i
+                v-if="esFinal(ev)"
+                class="pi pi-check-circle cal-evento-icon"
+                style="color: #915bd8"
+              />
+              <i v-else class="pi pi-clock cal-evento-icon" style="color: #9ca3af" />
               <span class="cal-evento-nombre">{{ ev.proyecto?.nombre_comercial }}</span>
             </div>
-            <div v-if="cell.eventos.length > 3" class="cal-evento-mas"
-              @click="abrirListaDia(cell)">
+            <div v-if="cell.eventos.length > 3" class="cal-evento-mas" @click="abrirListaDia(cell)">
               +{{ cell.eventos.length - 3 }} más
             </div>
           </div>
@@ -115,12 +148,20 @@
           <div class="cal-modal-header">
             <div class="cal-modal-title">
               <span class="cal-modal-code">{{ detalle.codigo_interno }}</span>
-              <span class="cal-estado-badge"
-                :style="{ background: estadoColor(detalle.estado?.codigo) + '22', color: estadoColor(detalle.estado?.codigo), border: `1px solid ${estadoColor(detalle.estado?.codigo)}40` }">
+              <span
+                class="cal-estado-badge"
+                :style="{
+                  background: estadoColor(detalle.estado?.codigo) + '22',
+                  color: estadoColor(detalle.estado?.codigo),
+                  border: `1px solid ${estadoColor(detalle.estado?.codigo)}40`,
+                }"
+              >
                 {{ detalle.estado?.etiqueta }}
               </span>
             </div>
-            <button class="cal-modal-close" @click="detalle = null"><i class="pi pi-times" /></button>
+            <button class="cal-modal-close" @click="detalle = null">
+              <i class="pi pi-times" />
+            </button>
           </div>
 
           <div class="cal-modal-body">
@@ -131,12 +172,17 @@
               </div>
               <div class="cal-detail-item">
                 <span class="cal-detail-lbl"><i class="pi pi-calendar" /> Fecha programada</span>
-                <span class="cal-detail-val cal-detail-val--highlight">{{ detalle.fecha_programada ?? '—' }}</span>
+                <span class="cal-detail-val cal-detail-val--highlight">{{
+                  detalle.fecha_programada ?? '—'
+                }}</span>
               </div>
               <div class="cal-detail-item">
                 <span class="cal-detail-lbl"><i class="pi pi-flag" /> Prioridad</span>
                 <span class="cal-detail-val">
-                  <span class="cal-prio-dot" :style="{ background: prioColor(detalle.prioridad?.codigo) }" />
+                  <span
+                    class="cal-prio-dot"
+                    :style="{ background: prioColor(detalle.prioridad?.codigo) }"
+                  />
                   {{ detalle.prioridad?.etiqueta }}
                 </span>
               </div>
@@ -152,8 +198,13 @@
                 <span class="cal-detail-lbl"><i class="pi pi-search" /> Causa raíz</span>
                 <p class="cal-detail-desc">{{ detalle.causa_raiz }}</p>
               </div>
-              <div v-if="detalle.acciones_correctivas" class="cal-detail-item cal-detail-item--full">
-                <span class="cal-detail-lbl"><i class="pi pi-check-square" /> Acciones correctivas</span>
+              <div
+                v-if="detalle.acciones_correctivas"
+                class="cal-detail-item cal-detail-item--full"
+              >
+                <span class="cal-detail-lbl"
+                  ><i class="pi pi-check-square" /> Acciones correctivas</span
+                >
                 <p class="cal-detail-desc">{{ detalle.acciones_correctivas }}</p>
               </div>
               <div v-if="detalle.asignado_a" class="cal-detail-item">
@@ -162,7 +213,9 @@
               </div>
               <div v-if="detalle.sla_limite_horas" class="cal-detail-item">
                 <span class="cal-detail-lbl"><i class="pi pi-clock" /> SLA</span>
-                <span class="cal-detail-val">{{ detalle.sla_limite_horas }}h ({{ detalle.sla_limite_dias }}d)</span>
+                <span class="cal-detail-val"
+                  >{{ detalle.sla_limite_horas }}h ({{ detalle.sla_limite_dias }}d)</span
+                >
               </div>
             </div>
           </div>
@@ -184,15 +237,21 @@
       <div v-if="diaModal" class="cal-modal-backdrop" @click.self="diaModal = null">
         <div class="cal-modal cal-modal--sm">
           <div class="cal-modal-header">
-            <div class="cal-modal-title">
-              Fallas — {{ diaModal.label }}
-            </div>
-            <button class="cal-modal-close" @click="diaModal = null"><i class="pi pi-times" /></button>
+            <div class="cal-modal-title">Fallas — {{ diaModal.label }}</div>
+            <button class="cal-modal-close" @click="diaModal = null">
+              <i class="pi pi-times" />
+            </button>
           </div>
           <div class="cal-modal-body">
-            <div v-for="ev in diaModal.eventos" :key="ev.id"
+            <div
+              v-for="ev in diaModal.eventos"
+              :key="ev.id"
               class="cal-dia-row"
-              @click="abrirDetalle(ev); diaModal = null">
+              @click="
+                abrirDetalle(ev)
+                diaModal = null
+              "
+            >
               <span class="cal-dia-dot" :style="{ background: estadoColor(ev.estado?.codigo) }" />
               <div>
                 <div class="cal-dia-code">{{ ev.codigo_interno }}</div>
@@ -203,7 +262,6 @@
         </div>
       </div>
     </Teleport>
-
   </div>
 </template>
 
@@ -220,20 +278,20 @@ const props = defineProps({
 const emit = defineEmits(['editar', 'ver-falla'])
 
 // ── Estado ───────────────────────────────────────────────────────────────────
-const loading    = ref(false)
-const fallas     = ref([])
-const proyectos  = ref([])
-const usuarios   = ref([])
-const estados    = ref([])
-const detalle    = ref(null)
-const diaModal   = ref(null)
+const loading = ref(false)
+const fallas = ref([])
+const proyectos = ref([])
+const usuarios = ref([])
+const estados = ref([])
+const detalle = ref(null)
+const diaModal = ref(null)
 
 const hoy = new Date()
-const mesActual  = ref(new Date(hoy.getFullYear(), hoy.getMonth(), 1))
+const mesActual = ref(new Date(hoy.getFullYear(), hoy.getMonth(), 1))
 
 const filtroProyecto = ref(null)
 const filtroAsignado = ref(null)
-const filtroEstado   = ref(null)
+const filtroEstado = ref(null)
 
 const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
@@ -242,18 +300,18 @@ const DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 // Fallas PENDIENTES (programado)   → gris #9CA3AF
 // Otros estados activos            → colores propios
 const ESTADO_COLORES = {
-  cerrada:      '#915BD8',   // morado plataforma = ejecutada
-  sin_solucion: '#915BD8',   // también final, mismo color
-  programado:   '#9CA3AF',   // gris = pendiente / por ejecutar
-  abierta:      '#EF4444',
-  en_gestion:   '#F97316',
-  en_espera:    '#EAB308',
+  cerrada: '#915BD8', // morado plataforma = ejecutada
+  sin_solucion: '#915BD8', // también final, mismo color
+  programado: '#9CA3AF', // gris = pendiente / por ejecutar
+  abierta: '#EF4444',
+  en_gestion: '#F97316',
+  en_espera: '#EAB308',
 }
 const PRIO_COLORES = {
   critica: '#DC2626',
-  grave:   '#EA580C',
-  media:   '#CA8A04',
-  leve:    '#16A34A',
+  grave: '#EA580C',
+  media: '#CA8A04',
+  leve: '#16A34A',
 }
 
 function estadoColor(codigo) {
@@ -264,30 +322,33 @@ function estadoColor(codigo) {
 function esFinal(falla) {
   return falla?.estado?.es_estado_final === true
 }
-function prioColor(codigo) { return PRIO_COLORES[codigo] ?? '#915BD8' }
+function prioColor(codigo) {
+  return PRIO_COLORES[codigo] ?? '#915BD8'
+}
 
 // ── Computed ─────────────────────────────────────────────────────────────────
 const mesLabel = computed(() => {
-  return mesActual.value.toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
-    .replace(/^\w/, c => c.toUpperCase())
+  return mesActual.value
+    .toLocaleDateString('es-CO', { month: 'long', year: 'numeric' })
+    .replace(/^\w/, (c) => c.toUpperCase())
 })
 
-const hayFiltros = computed(() =>
-  filtroProyecto.value || filtroAsignado.value || filtroEstado.value
+const hayFiltros = computed(
+  () => filtroProyecto.value || filtroAsignado.value || filtroEstado.value,
 )
 
 const eventosFiltrados = computed(() => {
   let list = fallas.value
-  if (filtroProyecto.value) list = list.filter(f => f.proyecto_id === filtroProyecto.value)
-  if (filtroAsignado.value) list = list.filter(f => f.asignado_a_id === filtroAsignado.value)
-  if (filtroEstado.value)   list = list.filter(f => f.estado?.codigo === filtroEstado.value)
+  if (filtroProyecto.value) list = list.filter((f) => f.proyecto_id === filtroProyecto.value)
+  if (filtroAsignado.value) list = list.filter((f) => f.asignado_a_id === filtroAsignado.value)
+  if (filtroEstado.value) list = list.filter((f) => f.estado?.codigo === filtroEstado.value)
   return list
 })
 
 const eventosMes = computed(() => {
-  const año  = mesActual.value.getFullYear()
-  const mes  = mesActual.value.getMonth()
-  return eventosFiltrados.value.filter(f => {
+  const año = mesActual.value.getFullYear()
+  const mes = mesActual.value.getMonth()
+  return eventosFiltrados.value.filter((f) => {
     if (!f.fecha_programada) return false
     const d = new Date(f.fecha_programada + 'T00:00:00')
     return d.getFullYear() === año && d.getMonth() === mes
@@ -296,34 +357,48 @@ const eventosMes = computed(() => {
 
 // KPIs del mes visible
 const kpiMes = computed(() => ({
-  pendientes: eventosMes.value.filter(f => !esFinal(f)).length,
-  ejecutadas: eventosMes.value.filter(f =>  esFinal(f)).length,
-  total:      eventosMes.value.length,
+  pendientes: eventosMes.value.filter((f) => !esFinal(f)).length,
+  ejecutadas: eventosMes.value.filter((f) => esFinal(f)).length,
+  total: eventosMes.value.length,
 }))
 
 const celdas = computed(() => {
-  const año  = mesActual.value.getFullYear()
-  const mes  = mesActual.value.getMonth()
+  const año = mesActual.value.getFullYear()
+  const mes = mesActual.value.getMonth()
   const primer = new Date(año, mes, 1)
   const offsetLun = (primer.getDay() + 6) % 7
   const ultimoDia = new Date(año, mes + 1, 0).getDate()
-  const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2,'0')}-${String(hoy.getDate()).padStart(2,'0')}`
+  const hoyStr = `${hoy.getFullYear()}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`
 
   const cells = []
   for (let i = offsetLun - 1; i >= 0; i--) {
     const d = new Date(año, mes, -i)
-    cells.push({ key: `prev-${i}`, dia: d.getDate(), esDelMes: false, esHoy: false, eventos: [], label: '' })
-  }
-  for (let d = 1; d <= ultimoDia; d++) {
-    const dStr = `${año}-${String(mes + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
-    const eventos = eventosMes.value.filter(f => f.fecha_programada === dStr)
     cells.push({
-      key: dStr, dia: d, esDelMes: true, esHoy: dStr === hoyStr,
-      eventos,
-      label: new Date(dStr + 'T00:00:00').toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }),
+      key: `prev-${i}`,
+      dia: d.getDate(),
+      esDelMes: false,
+      esHoy: false,
+      eventos: [],
+      label: '',
     })
   }
-  const resto = (7 - cells.length % 7) % 7
+  for (let d = 1; d <= ultimoDia; d++) {
+    const dStr = `${año}-${String(mes + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    const eventos = eventosMes.value.filter((f) => f.fecha_programada === dStr)
+    cells.push({
+      key: dStr,
+      dia: d,
+      esDelMes: true,
+      esHoy: dStr === hoyStr,
+      eventos,
+      label: new Date(dStr + 'T00:00:00').toLocaleDateString('es-CO', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+      }),
+    })
+  }
+  const resto = (7 - (cells.length % 7)) % 7
   for (let i = 1; i <= resto; i++) {
     cells.push({ key: `next-${i}`, dia: i, esDelMes: false, esHoy: false, eventos: [], label: '' })
   }
@@ -331,16 +406,38 @@ const celdas = computed(() => {
 })
 
 // ── Navegación ────────────────────────────────────────────────────────────────
-function mesAnterior()  { const m = mesActual.value; mesActual.value = new Date(m.getFullYear(), m.getMonth() - 1, 1) }
-function mesSiguiente() { const m = mesActual.value; mesActual.value = new Date(m.getFullYear(), m.getMonth() + 1, 1) }
-function irAHoy()       { mesActual.value = new Date(hoy.getFullYear(), hoy.getMonth(), 1) }
-function limpiarFiltros() { filtroProyecto.value = null; filtroAsignado.value = null; filtroEstado.value = null }
+function mesAnterior() {
+  const m = mesActual.value
+  mesActual.value = new Date(m.getFullYear(), m.getMonth() - 1, 1)
+}
+function mesSiguiente() {
+  const m = mesActual.value
+  mesActual.value = new Date(m.getFullYear(), m.getMonth() + 1, 1)
+}
+function irAHoy() {
+  mesActual.value = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
+}
+function limpiarFiltros() {
+  filtroProyecto.value = null
+  filtroAsignado.value = null
+  filtroEstado.value = null
+}
 
 // ── Acciones ──────────────────────────────────────────────────────────────────
-function abrirDetalle(falla) { detalle.value = falla }
-function abrirListaDia(cell) { diaModal.value = { label: cell.label, eventos: cell.eventos } }
-function irAFalla(falla)     { emit('ver-falla', falla); detalle.value = null }
-function emitEditar(falla)   { emit('editar', falla);    detalle.value = null }
+function abrirDetalle(falla) {
+  detalle.value = falla
+}
+function abrirListaDia(cell) {
+  diaModal.value = { label: cell.label, eventos: cell.eventos }
+}
+function irAFalla(falla) {
+  emit('ver-falla', falla)
+  detalle.value = null
+}
+function emitEditar(falla) {
+  emit('editar', falla)
+  detalle.value = null
+}
 
 // ── Carga de datos ────────────────────────────────────────────────────────────
 async function cargar() {
@@ -352,9 +449,9 @@ async function cargar() {
       api.get('/proyectos', { params: { size: 500 } }),
       api.get('/fallas/catalogos'),
     ])
-    fallas.value    = resFallas.data.items ?? []
+    fallas.value = resFallas.data.items ?? []
     proyectos.value = resProy.data.items ?? []
-    estados.value   = resCatalogos.data.estados ?? []
+    estados.value = resCatalogos.data.estados ?? []
 
     const mapa = {}
     for (const f of fallas.value) {
@@ -367,215 +464,509 @@ async function cargar() {
 }
 
 // Recarga automática cuando el padre guarda una falla
-watch(() => props.refreshKey, (newVal, oldVal) => {
-  if (newVal !== oldVal) cargar()
-})
+watch(
+  () => props.refreshKey,
+  (newVal, oldVal) => {
+    if (newVal !== oldVal) cargar()
+  },
+)
 
 onMounted(cargar)
 </script>
 
 <style scoped>
 .cal-root {
-  display: flex; flex-direction: column; gap: 16px;
-  padding: 20px; font-family: 'Sora', system-ui, sans-serif;
-  min-height: 0; flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  font-family: 'Sora', system-ui, sans-serif;
+  min-height: 0;
+  flex: 1;
 }
 
 /* ── Toolbar ── */
 .cal-toolbar {
-  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-  background: #fff; border: 1px solid #e9e6f5; border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid #e9e6f5;
+  border-radius: 12px;
   padding: 12px 16px;
 }
-.cal-nav { display: flex; align-items: center; gap: 8px; }
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .cal-nav-btn {
-  width: 30px; height: 30px; border-radius: 8px; border: 1px solid #e5e7eb;
-  background: #fff; cursor: pointer; font-size: 12px; color: #6b7280;
-  display: flex; align-items: center; justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.15s;
 }
-.cal-nav-btn:hover { background: #f3f4f6; color: #374151; }
-.cal-mes-label { font-size: 15px; font-weight: 800; color: #2C2039; min-width: 160px; text-align: center; }
+.cal-nav-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+.cal-mes-label {
+  font-size: 15px;
+  font-weight: 800;
+  color: #2c2039;
+  min-width: 160px;
+  text-align: center;
+}
 .cal-hoy-btn {
-  padding: 4px 12px; border-radius: 6px; border: 1px solid #915BD8;
-  background: #fff; color: #915BD8; font-size: 12px; font-weight: 700;
-  cursor: pointer; transition: all 0.15s; font-family: inherit;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid #915bd8;
+  background: #fff;
+  color: #915bd8;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
 }
-.cal-hoy-btn:hover { background: #f5f0ff; }
+.cal-hoy-btn:hover {
+  background: #f5f0ff;
+}
 
-.cal-filtros { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; flex: 1; }
-.cal-select { min-width: 130px !important; }
+.cal-filtros {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.cal-select {
+  min-width: 130px !important;
+}
 .cal-clear-btn {
-  display: flex; align-items: center; gap: 4px;
-  padding: 5px 10px; border-radius: 6px; border: none;
-  background: #f3f4f6; color: #6b7280; font-size: 12px; font-weight: 600;
-  cursor: pointer; font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.cal-kpis { display: flex; gap: 16px; margin-left: auto; }
-.cal-kpi { display: flex; flex-direction: column; align-items: center; }
-.cal-kpi-num { font-size: 18px; font-weight: 800; color: #2C2039; line-height: 1.2; }
-.cal-kpi-lbl { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.5px; }
+.cal-kpis {
+  display: flex;
+  gap: 16px;
+  margin-left: auto;
+}
+.cal-kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cal-kpi-num {
+  font-size: 18px;
+  font-weight: 800;
+  color: #2c2039;
+  line-height: 1.2;
+}
+.cal-kpi-lbl {
+  font-size: 10px;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* ── Loading ── */
-.cal-loading { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 60px; color: #6b7280; font-size: 14px; }
+.cal-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px;
+  color: #6b7280;
+  font-size: 14px;
+}
 
 /* ── Grid ── */
-.cal-grid-wrap { display: flex; flex-direction: column; background: #fff; border: 1px solid #e9e6f5; border-radius: 12px; overflow: hidden; }
+.cal-grid-wrap {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid #e9e6f5;
+  border-radius: 12px;
+  overflow: hidden;
+}
 
 .cal-week-header {
-  display: grid; grid-template-columns: repeat(7, 1fr);
-  background: #f9f8ff; border-bottom: 1px solid #e9e6f5;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #f9f8ff;
+  border-bottom: 1px solid #e9e6f5;
 }
 .cal-weekday {
-  padding: 8px 0; text-align: center;
-  font-size: 11px; font-weight: 800; text-transform: uppercase;
-  letter-spacing: 0.5px; color: #7c6a9a;
+  padding: 8px 0;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #7c6a9a;
 }
 
 .cal-grid {
-  display: grid; grid-template-columns: repeat(7, 1fr);
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
 }
 
 .cal-cell {
-  min-height: 110px; padding: 6px 8px;
-  border-right: 1px solid #f3f1f8; border-bottom: 1px solid #f3f1f8;
-  display: flex; flex-direction: column; gap: 3px;
+  min-height: 110px;
+  padding: 6px 8px;
+  border-right: 1px solid #f3f1f8;
+  border-bottom: 1px solid #f3f1f8;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   transition: background 0.15s;
 }
-.cal-cell:nth-child(7n) { border-right: none; }
-.cal-cell--fuera { background: #fafafa; }
-.cal-cell--fuera .cal-cell-num { color: #d1d5db; }
-.cal-cell--hoy { background: #faf5ff; }
+.cal-cell:nth-child(7n) {
+  border-right: none;
+}
+.cal-cell--fuera {
+  background: #fafafa;
+}
+.cal-cell--fuera .cal-cell-num {
+  color: #d1d5db;
+}
+.cal-cell--hoy {
+  background: #faf5ff;
+}
 .cal-cell--hoy .cal-cell-num {
-  background: #915BD8; color: #fff; border-radius: 50%;
-  width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+  background: #915bd8;
+  color: #fff;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 800;
 }
-.cal-cell--con-eventos { background: #fdfcff; }
+.cal-cell--con-eventos {
+  background: #fdfcff;
+}
 
 .cal-cell-num {
-  font-size: 12px; font-weight: 700; color: #374151;
-  line-height: 1; margin-bottom: 2px; align-self: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  line-height: 1;
+  margin-bottom: 2px;
+  align-self: flex-start;
 }
 
 /* ── Leyenda ── */
 .cal-leyenda {
-  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
-  background: #fff; border: 1px solid #e9e6f5; border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid #e9e6f5;
+  border-radius: 10px;
   padding: 8px 16px;
 }
-.cal-ley-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #6b7280; font-weight: 500; }
-.cal-ley-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.cal-ley-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #6b7280;
+  font-weight: 500;
+}
+.cal-ley-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
 /* ── Eventos ── */
-.cal-eventos-list { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow: hidden; }
-.cal-evento {
-  display: flex; align-items: center; gap: 4px;
-  padding: 2px 6px; border-radius: 4px;
-  cursor: pointer; transition: opacity 0.15s;
+.cal-eventos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
   overflow: hidden;
 }
-.cal-evento:hover { opacity: 0.82; }
-.cal-evento--final { opacity: 0.9; }
-.cal-evento-icon { font-size: 9px; flex-shrink: 0; }
+.cal-evento {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  overflow: hidden;
+}
+.cal-evento:hover {
+  opacity: 0.82;
+}
+.cal-evento--final {
+  opacity: 0.9;
+}
+.cal-evento-icon {
+  font-size: 9px;
+  flex-shrink: 0;
+}
 .cal-evento-nombre {
-  font-size: 10px; font-weight: 600; color: #374151;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+  font-size: 10px;
+  font-weight: 600;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
 }
-.cal-evento--final .cal-evento-nombre { color: #6b7280; text-decoration: line-through; text-decoration-color: #c4b5e0; }
+.cal-evento--final .cal-evento-nombre {
+  color: #6b7280;
+  text-decoration: line-through;
+  text-decoration-color: #c4b5e0;
+}
 .cal-evento-mas {
-  font-size: 10px; font-weight: 700; color: #915BD8;
-  cursor: pointer; padding: 1px 4px; border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #915bd8;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
 }
-.cal-evento-mas:hover { background: #f0edf8; }
+.cal-evento-mas:hover {
+  background: #f0edf8;
+}
 
 /* ── Modal backdrop ── */
 .cal-modal-backdrop {
-  position: fixed; inset: 0; background: rgba(44,32,57,0.4);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999; backdrop-filter: blur(2px);
+  position: fixed;
+  inset: 0;
+  background: rgba(44, 32, 57, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
 }
 
 /* ── Modal detalle ── */
 .cal-modal {
-  background: #fff; border-radius: 16px; width: 100%; max-width: 520px;
-  max-height: 85vh; overflow-y: auto;
-  box-shadow: 0 24px 48px rgba(0,0,0,0.18);
-  display: flex; flex-direction: column;
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
   font-family: 'Sora', system-ui, sans-serif;
 }
-.cal-modal--sm { max-width: 360px; }
+.cal-modal--sm {
+  max-width: 360px;
+}
 
 .cal-modal-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px 16px; border-bottom: 1px solid #f3f1f8;
-  position: sticky; top: 0; background: #fff; z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f3f1f8;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 1;
 }
-.cal-modal-title { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; color: #2C2039; }
-.cal-modal-code { font-size: 13px; font-weight: 800; color: #2C2039; font-family: monospace; }
-.cal-modal-close { background: none; border: none; cursor: pointer; color: #9ca3af; font-size: 14px; padding: 4px; border-radius: 6px; }
-.cal-modal-close:hover { color: #6b7280; }
+.cal-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #2c2039;
+}
+.cal-modal-code {
+  font-size: 13px;
+  font-weight: 800;
+  color: #2c2039;
+  font-family: monospace;
+}
+.cal-modal-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  font-size: 14px;
+  padding: 4px;
+  border-radius: 6px;
+}
+.cal-modal-close:hover {
+  color: #6b7280;
+}
 
 .cal-estado-badge {
-  font-size: 11px; font-weight: 700; padding: 2px 10px;
-  border-radius: 999px; letter-spacing: 0.3px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
 }
 
-.cal-modal-body { padding: 16px 24px; flex: 1; }
+.cal-modal-body {
+  padding: 16px 24px;
+  flex: 1;
+}
 
 .cal-detail-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
-.cal-detail-item { display: flex; flex-direction: column; gap: 3px; }
-.cal-detail-item--full { grid-column: 1 / -1; }
+.cal-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cal-detail-item--full {
+  grid-column: 1 / -1;
+}
 .cal-detail-lbl {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.5px; color: #9ca3af;
-  display: flex; align-items: center; gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .cal-detail-val {
-  font-size: 13px; font-weight: 600; color: #374151;
-  display: flex; align-items: center; gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .cal-detail-val--highlight {
-  color: #3B82F6; font-weight: 800;
+  color: #3b82f6;
+  font-weight: 800;
 }
 .cal-detail-desc {
-  font-size: 13px; color: #4b5563; line-height: 1.5; margin: 0;
-  background: #f9f8ff; border-radius: 6px; padding: 8px 10px;
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.5;
+  margin: 0;
+  background: #f9f8ff;
+  border-radius: 6px;
+  padding: 8px 10px;
 }
-.cal-prio-dot { width: 8px; height: 8px; border-radius: 50%; }
+.cal-prio-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
 
 .cal-modal-footer {
-  display: flex; gap: 10px; justify-content: flex-end;
-  padding: 14px 24px; border-top: 1px solid #f3f1f8;
-  position: sticky; bottom: 0; background: #fff;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 14px 24px;
+  border-top: 1px solid #f3f1f8;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
 }
 .cal-modal-link {
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 16px; border-radius: 8px; border: 1.5px solid #e5e7eb;
-  background: #fff; color: #6b7280; font-size: 13px; font-weight: 600;
-  cursor: pointer; font-family: inherit; transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
 }
-.cal-modal-link:hover { border-color: #915BD8; color: #915BD8; }
+.cal-modal-link:hover {
+  border-color: #915bd8;
+  color: #915bd8;
+}
 .cal-modal-edit {
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 16px; border-radius: 8px; border: none;
-  background: #915BD8; color: #fff; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: inherit; transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #915bd8;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
 }
-.cal-modal-edit:hover { background: #7c3aed; }
+.cal-modal-edit:hover {
+  background: #7c3aed;
+}
 
 /* ── Modal lista día ── */
 .cal-dia-row {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 0; border-bottom: 1px solid #f3f1f8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f3f1f8;
   cursor: pointer;
 }
-.cal-dia-row:hover { background: #faf8ff; border-radius: 6px; padding-inline: 6px; }
-.cal-dia-row:last-child { border-bottom: none; }
-.cal-dia-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.cal-dia-code { font-size: 12px; font-weight: 700; color: #2C2039; font-family: monospace; }
-.cal-dia-proy { font-size: 11px; color: #6b7280; }
+.cal-dia-row:hover {
+  background: #faf8ff;
+  border-radius: 6px;
+  padding-inline: 6px;
+}
+.cal-dia-row:last-child {
+  border-bottom: none;
+}
+.cal-dia-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cal-dia-code {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2c2039;
+  font-family: monospace;
+}
+.cal-dia-proy {
+  font-size: 11px;
+  color: #6b7280;
+}
 </style>

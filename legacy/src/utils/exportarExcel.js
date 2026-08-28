@@ -23,7 +23,7 @@ export async function exportarExcel(filas, columnas, nombreArchivo, hoja = 'Dato
   const wb = new ExcelJS.Workbook()
   const ws = wb.addWorksheet(hoja, { views: [{ state: 'frozen', ySplit: 1 }] })
 
-  ws.columns = columnas.map(col => ({ header: col.header, key: col.header }))
+  ws.columns = columnas.map((col) => ({ header: col.header, key: col.header }))
   for (const fila of filas) {
     const row = {}
     for (const col of columnas) row[col.header] = col.value(fila)
@@ -32,7 +32,7 @@ export async function exportarExcel(filas, columnas, nombreArchivo, hoja = 'Dato
 
   const borde = { style: 'thin', color: { argb: COLOR_BORDE } }
   ws.eachRow((row, rowNum) => {
-    row.eachCell({ includeEmpty: true }, cell => {
+    row.eachCell({ includeEmpty: true }, (cell) => {
       cell.border = { top: borde, left: borde, bottom: borde, right: borde }
       if (rowNum === 1) {
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' } }
@@ -43,9 +43,9 @@ export async function exportarExcel(filas, columnas, nombreArchivo, hoja = 'Dato
   })
   ws.getRow(1).height = 20
 
-  ws.columns.forEach(col => {
+  ws.columns.forEach((col) => {
     let max = String(col.header || '').length
-    col.eachCell({ includeEmpty: true }, cell => {
+    col.eachCell({ includeEmpty: true }, (cell) => {
       const len = (cell.value ?? '').toString().length
       if (len > max) max = len
     })
@@ -53,7 +53,9 @@ export async function exportarExcel(filas, columnas, nombreArchivo, hoja = 'Dato
   })
 
   const buffer = await wb.xlsx.writeBuffer()
-  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url

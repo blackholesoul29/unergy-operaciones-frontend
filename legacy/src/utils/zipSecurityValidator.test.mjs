@@ -14,8 +14,11 @@ import { dirname, join } from 'path'
 const here = dirname(fileURLToPath(import.meta.url))
 let src = fs.readFileSync(join(here, 'zipSecurityValidator.js'), 'utf8')
 src = src.replace(/export const /g, 'const ').replace(/export function /g, 'function ')
-const api = new Function(src + `
-return { validateZipEntries, getSafeFilePath, DEFAULT_ALLOWED_EXTENSIONS };`)()
+const api = new Function(
+  src +
+    `
+return { validateZipEntries, getSafeFilePath, DEFAULT_ALLOWED_EXTENSIONS };`,
+)()
 
 // Construye un objeto con la forma pública de JSZip (`.files`): mapa ruta → ZipObject.
 function fakeZip(entries) {
@@ -38,35 +41,35 @@ test('validateZipEntries: rechaza path traversal con ".."', () => {
   const zip = fakeZip([['pago_1/../../../etc/passwd.pdf']])
   const res = api.validateZipEntries(zip, DOCS)
   assert.equal(res.valid, false)
-  assert.ok(res.errors.some(e => e.code === 'PATH_TRAVERSAL'))
+  assert.ok(res.errors.some((e) => e.code === 'PATH_TRAVERSAL'))
 })
 
 test('validateZipEntries: rechaza ruta absoluta unix', () => {
   const zip = fakeZip([['/etc/passwd.pdf']])
   const res = api.validateZipEntries(zip, DOCS)
   assert.equal(res.valid, false)
-  assert.ok(res.errors.some(e => e.code === 'ABSOLUTE_PATH'))
+  assert.ok(res.errors.some((e) => e.code === 'ABSOLUTE_PATH'))
 })
 
 test('validateZipEntries: rechaza ruta absoluta windows (drive letter)', () => {
   const zip = fakeZip([['C:\\Windows\\evil.pdf']])
   const res = api.validateZipEntries(zip, DOCS)
   assert.equal(res.valid, false)
-  assert.ok(res.errors.some(e => e.code === 'ABSOLUTE_PATH'))
+  assert.ok(res.errors.some((e) => e.code === 'ABSOLUTE_PATH'))
 })
 
 test('validateZipEntries: rechaza extensión no permitida (.exe)', () => {
   const zip = fakeZip([['pago_1/cuenta.pdf'], ['pago_1/malware.exe']])
   const res = api.validateZipEntries(zip, DOCS)
   assert.equal(res.valid, false)
-  assert.ok(res.errors.some(e => e.code === 'DISALLOWED_EXTENSION' && /exe/.test(e.path)))
+  assert.ok(res.errors.some((e) => e.code === 'DISALLOWED_EXTENSION' && /exe/.test(e.path)))
 })
 
 test('validateZipEntries: rechaza archivo sin extensión', () => {
   const zip = fakeZip([['pago_1/passwd']])
   const res = api.validateZipEntries(zip, DOCS)
   assert.equal(res.valid, false)
-  assert.ok(res.errors.some(e => e.code === 'DISALLOWED_EXTENSION'))
+  assert.ok(res.errors.some((e) => e.code === 'DISALLOWED_EXTENSION'))
 })
 
 test('validateZipEntries: ignora entradas de directorio', () => {

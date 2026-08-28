@@ -1,77 +1,138 @@
 <template>
   <div class="space-y-4">
-    <PageHeader title="Clientes" :subtitle="`${filtrados.length} de ${items.length} cliente${items.length === 1 ? '' : 's'} · vista comercial`">
+    <PageHeader
+      title="Clientes"
+      :subtitle="`${filtrados.length} de ${items.length} cliente${items.length === 1 ? '' : 's'} · vista comercial`"
+    >
       <template #actions>
         <IconField class="flex-1 sm:flex-none">
           <InputIcon class="pi pi-search" />
-          <InputText v-model="q" placeholder="Buscar razón social o NIT..." class="w-full sm:w-64" />
+          <InputText
+            v-model="q"
+            placeholder="Buscar razón social o NIT..."
+            class="w-full sm:w-64"
+          />
         </IconField>
-        <Button label="Descargar Excel" icon="pi pi-file-excel" severity="secondary" outlined size="small" @click="descargarExcel" />
+        <Button
+          label="Descargar Excel"
+          icon="pi pi-file-excel"
+          severity="secondary"
+          outlined
+          size="small"
+          @click="descargarExcel"
+        />
         <Button label="Nuevo cliente" icon="pi pi-plus" size="small" @click="openNew" />
       </template>
     </PageHeader>
 
     <!-- Filtros dinámicos: actualizan la tabla al instante -->
     <div class="flex flex-wrap items-center gap-3">
-      <MultiSelect v-model="filtroServicios" :options="opcionesServicio" optionLabel="label" optionValue="value"
-        placeholder="Filtrar por servicio" display="chip" class="w-72" showClear />
-      <SelectButton v-model="filtroEstado" :options="opcionesEstado" optionLabel="label" optionValue="value"
-        :allowEmpty="false" />
+      <MultiSelect
+        v-model="filtroServicios"
+        :options="opcionesServicio"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Filtrar por servicio"
+        display="chip"
+        class="w-72"
+        showClear
+      />
+      <SelectButton
+        v-model="filtroEstado"
+        :options="opcionesEstado"
+        optionLabel="label"
+        optionValue="value"
+        :allowEmpty="false"
+      />
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden border" style="border-color:#ECE7F2">
-      <DataTable :value="filtrados" :loading="loading" paginator :rows="25"
-        :rowsPerPageOptions="[25, 50, 100]" rowHover
-        sortField="razon_social_nombre" :sortOrder="1" :rowClass="rowClass"
-        @row-click="abrirCliente" class="text-sm clientes-tabla">
+    <div class="overflow-hidden rounded-xl border bg-white shadow-sm" style="border-color: #ece7f2">
+      <DataTable
+        :value="filtrados"
+        :loading="loading"
+        paginator
+        :rows="25"
+        :rowsPerPageOptions="[25, 50, 100]"
+        rowHover
+        sortField="razon_social_nombre"
+        :sortOrder="1"
+        :rowClass="rowClass"
+        @row-click="abrirCliente"
+        class="clientes-tabla text-sm"
+      >
         <Column field="razon_social_nombre" header="Razón social" sortable>
           <template #body="{ data }">
             <div class="flex items-center gap-2">
-              <span class="font-medium" style="color:#2C2039">{{ formatearNombre(data.razon_social_nombre) }}</span>
-              <span v-if="data.alerta_contrato" class="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
-                :style="{ color: SEMAFORO[data.alerta_contrato].color, background: SEMAFORO[data.alerta_contrato].bg }">
+              <span class="font-medium" style="color: #2c2039">{{
+                formatearNombre(data.razon_social_nombre)
+              }}</span>
+              <span
+                v-if="data.alerta_contrato"
+                class="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                :style="{
+                  color: SEMAFORO[data.alerta_contrato].color,
+                  background: SEMAFORO[data.alerta_contrato].bg,
+                }"
+              >
                 {{ SEMAFORO[data.alerta_contrato].label }}
               </span>
             </div>
           </template>
         </Column>
-        <Column field="nit_cedula" header="NIT" sortable style="white-space:nowrap">
+        <Column field="nit_cedula" header="NIT" sortable style="white-space: nowrap">
           <template #body="{ data }">{{ fmt(data.nit_cedula) }}</template>
         </Column>
-        <Column field="num_plantas" header="Plantas" sortable style="width:90px">
+        <Column field="num_plantas" header="Plantas" sortable style="width: 90px">
           <template #body="{ data }">
-            <span class="font-semibold tabular-nums" style="color:#2C2039">{{ data.num_plantas }}</span>
+            <span class="font-semibold tabular-nums" style="color: #2c2039">{{
+              data.num_plantas
+            }}</span>
           </template>
         </Column>
         <Column header="Servicios">
           <template #body="{ data }">
             <div class="flex flex-wrap gap-1">
-              <span v-for="s in data.servicios" :key="s"
-                class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full"
-                style="background:#f0ebfd;color:#915BD8">{{ servicioLabel(s) }}</span>
-              <span v-if="!data.servicios.length" class="text-xs" style="color:#bba8d4">—</span>
+              <span
+                v-for="s in data.servicios"
+                :key="s"
+                class="rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                style="background: #f0ebfd; color: #915bd8"
+                >{{ servicioLabel(s) }}</span
+              >
+              <span v-if="!data.servicios.length" class="text-xs" style="color: #bba8d4">—</span>
             </div>
           </template>
         </Column>
         <Column header="Contacto comercial">
           <template #body="{ data }">
             <div class="leading-tight">
-              <p class="text-sm" style="color:#2C2039">
+              <p class="text-sm" style="color: #2c2039">
                 {{ fmt(data.contacto_comercial_nombre) }}
-                <span v-if="data.contactos_comerciales_extra" class="text-[10px]" style="color:#9b89b5">
+                <span
+                  v-if="data.contactos_comerciales_extra"
+                  class="text-[10px]"
+                  style="color: #9b89b5"
+                >
                   +{{ data.contactos_comerciales_extra }}
                 </span>
               </p>
-              <p class="text-xs" style="color:#6b5a8a">{{ fmt(data.contacto_comercial_telefono) }}</p>
+              <p class="text-xs" style="color: #6b5a8a">
+                {{ fmt(data.contacto_comercial_telefono) }}
+              </p>
             </div>
           </template>
         </Column>
-        <Column field="contacto_comercial_correo" header="Correo comercial" sortable style="white-space:nowrap">
+        <Column
+          field="contacto_comercial_correo"
+          header="Correo comercial"
+          sortable
+          style="white-space: nowrap"
+        >
           <template #body="{ data }">{{ fmt(data.contacto_comercial_correo) }}</template>
         </Column>
-        <Column header="" style="width:44px">
+        <Column header="" style="width: 44px">
           <template #body>
-            <i class="pi pi-chevron-right text-xs" style="color:#c5b9db" />
+            <i class="pi pi-chevron-right text-xs" style="color: #c5b9db" />
           </template>
         </Column>
       </DataTable>
@@ -119,24 +180,28 @@ const opcionesEstado = [
 ]
 
 const opcionesServicio = computed(() => {
-  const set = new Set(items.value.flatMap(c => c.servicios))
-  return [...set].sort().map(s => ({ label: servicioLabel(s), value: s }))
+  const set = new Set(items.value.flatMap((c) => c.servicios))
+  return [...set].sort().map((s) => ({ label: servicioLabel(s), value: s }))
 })
 
-function estadoDe(c) { return c.alerta_contrato || 'vigente' }
+function estadoDe(c) {
+  return c.alerta_contrato || 'vigente'
+}
 
 // Búsqueda + servicio + estado filtran (ocultan). El resaltado de fila (ámbar/
 // rojo) sigue presente para llamar la atención de un vistazo.
 const filtrados = computed(() => {
   let rows = items.value
   const term = q.value.trim().toLowerCase()
-  if (term) rows = rows.filter(c =>
-    (c.razon_social_nombre || '').toLowerCase().includes(term) ||
-    (c.nit_cedula || '').toLowerCase().includes(term))
+  if (term)
+    rows = rows.filter(
+      (c) =>
+        (c.razon_social_nombre || '').toLowerCase().includes(term) ||
+        (c.nit_cedula || '').toLowerCase().includes(term),
+    )
   if (filtroServicios.value.length)
-    rows = rows.filter(c => filtroServicios.value.some(s => c.servicios.includes(s)))
-  if (filtroEstado.value !== 'todos')
-    rows = rows.filter(c => estadoDe(c) === filtroEstado.value)
+    rows = rows.filter((c) => filtroServicios.value.some((s) => c.servicios.includes(s)))
+  if (filtroEstado.value !== 'todos') rows = rows.filter((c) => estadoDe(c) === filtroEstado.value)
   return rows
 })
 
@@ -167,16 +232,21 @@ function openNew() {
 }
 
 async function descargarExcel() {
-  await exportarExcel(filtrados.value, [
-    { header: 'Razón social', value: c => formatearNombre(c.razon_social_nombre) },
-    { header: 'NIT', value: c => c.nit_cedula || '' },
-    { header: 'Plantas', value: c => c.num_plantas ?? 0 },
-    { header: 'Servicios', value: c => (c.servicios || []).map(servicioLabel).join(', ') },
-    { header: 'Contacto comercial', value: c => c.contacto_comercial_nombre || '' },
-    { header: 'Teléfono contacto', value: c => c.contacto_comercial_telefono || '' },
-    { header: 'Correo comercial', value: c => c.contacto_comercial_correo || '' },
-    { header: 'Estado', value: c => estadoDe(c) },
-  ], `clientes_${new Date().toISOString().slice(0, 10)}.xlsx`, 'Clientes')
+  await exportarExcel(
+    filtrados.value,
+    [
+      { header: 'Razón social', value: (c) => formatearNombre(c.razon_social_nombre) },
+      { header: 'NIT', value: (c) => c.nit_cedula || '' },
+      { header: 'Plantas', value: (c) => c.num_plantas ?? 0 },
+      { header: 'Servicios', value: (c) => (c.servicios || []).map(servicioLabel).join(', ') },
+      { header: 'Contacto comercial', value: (c) => c.contacto_comercial_nombre || '' },
+      { header: 'Teléfono contacto', value: (c) => c.contacto_comercial_telefono || '' },
+      { header: 'Correo comercial', value: (c) => c.contacto_comercial_correo || '' },
+      { header: 'Estado', value: (c) => estadoDe(c) },
+    ],
+    `clientes_${new Date().toISOString().slice(0, 10)}.xlsx`,
+    'Clientes',
+  )
 }
 
 async function onSave(payload) {
@@ -192,7 +262,13 @@ async function onSave(payload) {
 </script>
 
 <style scoped>
-:deep(.clientes-tabla tbody tr) { cursor: pointer; }
-:deep(.row-vencido) { background: #FEF2F2 !important; }
-:deep(.row-por-vencer) { background: #FFFBEB !important; }
+:deep(.clientes-tabla tbody tr) {
+  cursor: pointer;
+}
+:deep(.row-vencido) {
+  background: #fef2f2 !important;
+}
+:deep(.row-por-vencer) {
+  background: #fffbeb !important;
+}
 </style>

@@ -1,16 +1,20 @@
 <template>
   <div class="gf-page" ref="pageRef">
-
     <!-- ══ TAB BAR (fuera del sticky) ═══════════════════════════════════ -->
     <div class="mon-tab-bar">
-      <i class="pi pi-bolt text-sm" style="color:#915BD8" />
-      <span class="text-base font-bold text-gray-800 whitespace-nowrap mr-2">Gestión de Fallas</span>
+      <i class="pi pi-bolt text-sm" style="color: #915bd8" />
+      <span class="mr-2 text-base font-bold whitespace-nowrap text-gray-800"
+        >Gestión de Fallas</span
+      >
       <div class="mon-tab-group">
-        <button v-for="(tab, i) in TABS" :key="i"
+        <button
+          v-for="(tab, i) in TABS"
+          :key="i"
           class="mon-tab"
           :class="{ 'mon-tab--active': activeTab === i }"
-          @click="activeTab = i">
-          <i :class="tab.icon" style="font-size:12px" />
+          @click="activeTab = i"
+        >
+          <i :class="tab.icon" style="font-size: 12px" />
           {{ tab.label }}
         </button>
       </div>
@@ -18,19 +22,20 @@
 
     <!-- ══ TAB 0 — FALLAS ════════════════════════════════════════════════ -->
     <template v-if="activeTab === 0">
-
       <!-- ══ STICKY HEADER ════════════════════════════════════════════════ -->
       <div class="gf-sticky-header" ref="stickyHeaderRef">
-
         <!-- ── Topbar ── -->
         <div class="gf-topbar">
           <!-- Bucket pills -->
           <div class="gf-bucket-pills">
-            <button v-for="b in BUCKETS" :key="b.key"
+            <button
+              v-for="b in BUCKETS"
+              :key="b.key"
               class="bucket-pill"
               :class="{ 'bucket-pill--active': bucket === b.key }"
               :style="bucketPillStyle(b.color, bucket === b.key)"
-              @click="bucket = b.key">
+              @click="bucket = b.key"
+            >
               <span class="bucket-pill-dot" :style="{ background: b.color }" />
               <span class="bucket-pill-label">{{ b.label }}</span>
               <span class="bucket-pill-count" :style="{ color: b.color }">{{ counts[b.key] }}</span>
@@ -38,69 +43,131 @@
           </div>
 
           <div class="gf-topbar-actions">
-            <Button icon="pi pi-refresh" outlined size="small" :loading="loading" @click="cargar"
-              v-tooltip.bottom="'Actualizar'" />
+            <Button
+              icon="pi pi-refresh"
+              outlined
+              size="small"
+              :loading="loading"
+              @click="cargar"
+              v-tooltip.bottom="'Actualizar'"
+            />
             <Button label="Nueva falla" icon="pi pi-plus" size="small" @click="abrirCrear" />
           </div>
         </div>
 
         <!-- ── Toolbar ── -->
         <div class="gf-toolbar">
-          <IconField class="flex-1 min-w-[200px] max-w-sm">
+          <IconField class="max-w-sm min-w-[200px] flex-1">
             <InputIcon class="pi pi-search text-xs" />
-            <InputText ref="searchInputRef" v-model="search"
+            <InputText
+              ref="searchInputRef"
+              v-model="search"
               placeholder="Buscar por código, descripción, proyecto, tipo..."
-              class="w-full" size="small" />
+              class="w-full"
+              size="small"
+            />
           </IconField>
-          <Select v-model="filtroProyecto" :options="proyectos" optionLabel="nombre_comercial"
-            optionValue="id" placeholder="Proyecto" showClear filter class="w-36" size="small" />
-          <Select v-model="filtroPrioridad" :options="catalogos.prioridades"
-            optionLabel="etiqueta" optionValue="codigo" placeholder="Prioridad" showClear class="w-32" size="small" />
-          <Select v-model="filtroEstado" :options="catalogos.estados"
-            optionLabel="etiqueta" optionValue="codigo" placeholder="Estado" showClear class="w-32" size="small" />
-          <DatePicker v-model="filtroFechaDesde" placeholder="Desde" dateFormat="yy-mm-dd"
-            showButtonBar class="w-28" size="small" />
-          <DatePicker v-model="filtroFechaHasta" placeholder="Hasta" dateFormat="yy-mm-dd"
-            showButtonBar class="w-28" size="small" />
-          <Button v-if="hayFiltros" icon="pi pi-times" text size="small" severity="secondary"
-            @click="limpiarFiltros" v-tooltip.bottom="'Limpiar filtros'" />
-          <span class="ml-auto text-[11px] text-gray-500 whitespace-nowrap" v-if="!loading">
+          <Select
+            v-model="filtroProyecto"
+            :options="proyectos"
+            optionLabel="nombre_comercial"
+            optionValue="id"
+            placeholder="Proyecto"
+            showClear
+            filter
+            class="w-36"
+            size="small"
+          />
+          <Select
+            v-model="filtroPrioridad"
+            :options="catalogos.prioridades"
+            optionLabel="etiqueta"
+            optionValue="codigo"
+            placeholder="Prioridad"
+            showClear
+            class="w-32"
+            size="small"
+          />
+          <Select
+            v-model="filtroEstado"
+            :options="catalogos.estados"
+            optionLabel="etiqueta"
+            optionValue="codigo"
+            placeholder="Estado"
+            showClear
+            class="w-32"
+            size="small"
+          />
+          <DatePicker
+            v-model="filtroFechaDesde"
+            placeholder="Desde"
+            dateFormat="yy-mm-dd"
+            showButtonBar
+            class="w-28"
+            size="small"
+          />
+          <DatePicker
+            v-model="filtroFechaHasta"
+            placeholder="Hasta"
+            dateFormat="yy-mm-dd"
+            showButtonBar
+            class="w-28"
+            size="small"
+          />
+          <Button
+            v-if="hayFiltros"
+            icon="pi pi-times"
+            text
+            size="small"
+            severity="secondary"
+            @click="limpiarFiltros"
+            v-tooltip.bottom="'Limpiar filtros'"
+          />
+          <span class="ml-auto text-[11px] whitespace-nowrap text-gray-500" v-if="!loading">
             {{ filtradas.length }} / {{ porBucket.length }}
           </span>
         </div>
-
-      </div><!-- /gf-sticky-header -->
+      </div>
+      <!-- /gf-sticky-header -->
 
       <div :class="['gf-layout', drawerVisible && 'gf-layout--split']">
-
-        <div class="gf-main space-y-4 min-w-0">
-
+        <div class="gf-main min-w-0 space-y-4">
           <!-- ══ COMPACT LIST (lg+ con panel abierto) ═══════════════════ -->
           <div v-if="drawerVisible" class="gf-compact hidden lg:flex">
             <div class="gf-compact-header">
-              <span class="text-[11px] font-bold uppercase tracking-wide text-gray-500">
+              <span class="text-[11px] font-bold tracking-wide text-gray-500 uppercase">
                 {{ filtradas.length }} falla{{ filtradas.length !== 1 ? 's' : '' }}
               </span>
             </div>
             <div v-if="!filtradas.length" class="gf-compact-empty">
-              <i class="pi pi-inbox text-2xl mb-2" />
+              <i class="pi pi-inbox mb-2 text-2xl" />
               <p class="text-xs">Sin resultados</p>
             </div>
             <div v-else class="gf-compact-list">
-              <button v-for="f in filtradas" :key="f.id"
+              <button
+                v-for="f in filtradas"
+                :key="f.id"
                 class="gf-compact-row"
                 :class="{ 'gf-compact-row--active': drawerFalla?.id === f.id }"
-                @click="abrirDrawer(f)">
-                <span class="gf-compact-stripe" :style="{ background: prioColor(f.prioridad?.codigo) }" />
+                @click="abrirDrawer(f)"
+              >
+                <span
+                  class="gf-compact-stripe"
+                  :style="{ background: prioColor(f.prioridad?.codigo) }"
+                />
                 <div class="gf-compact-content">
                   <div class="gf-compact-line1">
                     <code class="gf-compact-code">{{ f.codigo_interno }}</code>
-                    <span v-if="f.estado?.codigo"
+                    <span
+                      v-if="f.estado?.codigo"
                       class="gf-compact-dot"
                       :style="{ background: f.estado?.color_hex || '#915BD8' }"
-                      v-tooltip.right="f.estado?.etiqueta" />
+                      v-tooltip.right="f.estado?.etiqueta"
+                    />
                   </div>
-                  <div class="gf-compact-line2">{{ f.tipo?.etiqueta || f.tipo_libre || f.descripcion || 'Sin descripción' }}</div>
+                  <div class="gf-compact-line2">
+                    {{ f.tipo?.etiqueta || f.tipo_libre || f.descripcion || 'Sin descripción' }}
+                  </div>
                 </div>
               </button>
             </div>
@@ -108,88 +175,142 @@
 
           <!-- ══ TABLA (oculta cuando hay panel en lg+) ════════════════ -->
           <div :class="['gf-table-wrap', drawerVisible && 'lg:!hidden']">
-            <div v-if="error" class="p-6 flex items-center gap-3 text-red-600">
+            <div v-if="error" class="flex items-center gap-3 p-6 text-red-600">
               <i class="pi pi-exclamation-circle text-xl" />
               <div class="flex-1">
                 <div class="font-semibold">Error al cargar</div>
                 <div class="text-sm text-gray-500">{{ error }}</div>
               </div>
-              <Button label="Reintentar" icon="pi pi-refresh" outlined size="small" @click="cargar" />
+              <Button
+                label="Reintentar"
+                icon="pi pi-refresh"
+                outlined
+                size="small"
+                @click="cargar"
+              />
             </div>
-            <DataTable v-else :value="filtradas" :loading="loading" rowHover stripedRows
-              size="small" class="gf-table text-xs" :rows="25" paginator
-              :rowsPerPageOptions="[15, 25, 50, 100]" :alwaysShowPaginator="false"
-              @row-click="(e) => abrirDrawer(e.data)" selectionMode="single"
-              :rowClass="rowClass" scrollable>
+            <DataTable
+              v-else
+              :value="filtradas"
+              :loading="loading"
+              rowHover
+              stripedRows
+              size="small"
+              class="gf-table text-xs"
+              :rows="25"
+              paginator
+              :rowsPerPageOptions="[15, 25, 50, 100]"
+              :alwaysShowPaginator="false"
+              @row-click="(e) => abrirDrawer(e.data)"
+              selectionMode="single"
+              :rowClass="rowClass"
+              scrollable
+            >
               <template #empty>
-                <div class="flex flex-col items-center py-14 gap-2 text-gray-400">
-                  <i :class="bucketActual.icon + ' text-4xl'" :style="{ color: bucketActual.color }" />
+                <div class="flex flex-col items-center gap-2 py-14 text-gray-400">
+                  <i
+                    :class="bucketActual.icon + ' text-4xl'"
+                    :style="{ color: bucketActual.color }"
+                  />
                   <p class="text-sm font-semibold text-gray-700">{{ emptyTitulo }}</p>
                   <p class="text-xs">{{ emptySubtitulo }}</p>
-                  <Button v-if="bucket === 'activas' && !hayFiltros" label="Registrar primera falla"
-                    icon="pi pi-plus" outlined size="small" class="mt-2" @click="abrirCrear" />
-                  <Button v-else-if="hayFiltros" label="Limpiar filtros" icon="pi pi-times" text size="small"
-                    class="mt-2" @click="limpiarFiltros" />
+                  <Button
+                    v-if="bucket === 'activas' && !hayFiltros"
+                    label="Registrar primera falla"
+                    icon="pi pi-plus"
+                    outlined
+                    size="small"
+                    class="mt-2"
+                    @click="abrirCrear"
+                  />
+                  <Button
+                    v-else-if="hayFiltros"
+                    label="Limpiar filtros"
+                    icon="pi pi-times"
+                    text
+                    size="small"
+                    class="mt-2"
+                    @click="limpiarFiltros"
+                  />
                 </div>
               </template>
 
               <!-- Stripe prioridad -->
-              <Column header="" style="width:6px;padding:0" :pt="{ headerCell: { style: 'padding:0; border:none' } }">
+              <Column
+                header=""
+                style="width: 6px; padding: 0"
+                :pt="{ headerCell: { style: 'padding:0; border:none' } }"
+              >
                 <template #body="{ data }">
-                  <div class="prio-stripe" :style="{ background: prioColor(data.prioridad?.codigo) }" />
+                  <div
+                    class="prio-stripe"
+                    :style="{ background: prioColor(data.prioridad?.codigo) }"
+                  />
                 </template>
               </Column>
 
               <!-- Código -->
-              <Column field="codigo_interno" header="Código" style="width:100px" sortable>
+              <Column field="codigo_interno" header="Código" style="width: 100px" sortable>
                 <template #body="{ data }">
                   <span class="font-mono text-[10px] text-gray-400">{{ data.codigo_interno }}</span>
                 </template>
               </Column>
 
               <!-- Falla -->
-              <Column header="Falla" style="min-width:280px">
+              <Column header="Falla" style="min-width: 280px">
                 <template #body="{ data }">
                   <div class="flex items-start gap-2">
-                    <span class="cat-dot mt-1.5 flex-shrink-0"
+                    <span
+                      class="cat-dot mt-1.5 flex-shrink-0"
                       :style="{ background: categoriaFalla(data).color }"
-                      v-tooltip.top="categoriaFalla(data).etiqueta" />
+                      v-tooltip.top="categoriaFalla(data).etiqueta"
+                    />
                     <div class="min-w-0 flex-1">
-                      <div class="text-xs font-medium text-gray-700 flex items-center gap-1.5 flex-wrap">
+                      <div
+                        class="flex flex-wrap items-center gap-1.5 text-xs font-medium text-gray-700"
+                      >
                         <span class="truncate">{{ tituloFalla(data) }}</span>
-                        <span v-if="recurrencias(data) > 1"
-                          class="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-                          style="background: rgba(234,88,12,0.12); color: #ea580c;"
-                          v-tooltip.top="`${recurrencias(data)}× mismo tipo en este proyecto`">
-                          <i class="pi pi-replay" style="font-size:9px" />{{ recurrencias(data) }}×
+                        <span
+                          v-if="recurrencias(data) > 1"
+                          class="inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+                          style="background: rgba(234, 88, 12, 0.12); color: #ea580c"
+                          v-tooltip.top="`${recurrencias(data)}× mismo tipo en este proyecto`"
+                        >
+                          <i class="pi pi-replay" style="font-size: 9px" />{{ recurrencias(data) }}×
                         </span>
                       </div>
-                      <div class="text-xs text-gray-500 line-clamp-1">{{ data.descripcion }}</div>
+                      <div class="line-clamp-1 text-xs text-gray-500">{{ data.descripcion }}</div>
                     </div>
                   </div>
                 </template>
               </Column>
 
               <!-- Proyecto -->
-              <Column header="Proyecto" style="min-width:130px">
+              <Column header="Proyecto" style="min-width: 130px">
                 <template #body="{ data }">
-                  <span class="text-xs text-gray-600">{{ data.proyecto?.nombre_comercial || '—' }}</span>
+                  <span class="text-xs text-gray-600">{{
+                    data.proyecto?.nombre_comercial || '—'
+                  }}</span>
                 </template>
               </Column>
 
               <!-- Estado -->
-              <Column header="Estado" style="width:130px">
+              <Column header="Estado" style="width: 130px">
                 <template #body="{ data }">
                   <div class="flex items-center gap-1.5">
-                    <span class="w-1.5 h-1.5 rounded-full shrink-0"
-                      :style="{ background: data.estado?.color_hex || '#9ca3af' }"></span>
-                    <span class="text-[11px] text-gray-600">{{ data.estado?.etiqueta || '—' }}</span>
+                    <span
+                      class="h-1.5 w-1.5 shrink-0 rounded-full"
+                      :style="{ background: data.estado?.color_hex || '#9ca3af' }"
+                    ></span>
+                    <span class="text-[11px] text-gray-600">{{
+                      data.estado?.etiqueta || '—'
+                    }}</span>
                   </div>
                 </template>
               </Column>
 
               <!-- Fecha + relativeTime -->
-              <Column header="Fecha" style="width:110px" field="fecha_identificacion" sortable>
+              <Column header="Fecha" style="width: 110px" field="fecha_identificacion" sortable>
                 <template #body="{ data }">
                   <div class="text-xs">
                     <div class="text-gray-700">{{ fmtFecha(data.fecha_identificacion) }}</div>
@@ -199,136 +320,269 @@
               </Column>
 
               <!-- Días abierta -->
-              <Column header="Días" style="width:70px">
+              <Column header="Días" style="width: 70px">
                 <template #body="{ data }">
-                  <span v-if="data.dias_abierta != null"
+                  <span
+                    v-if="data.dias_abierta != null"
                     class="dias-badge"
-                    :class="diasClass(data)">
+                    :class="diasClass(data)"
+                  >
                     {{ data.dias_abierta }}d
                   </span>
-                  <span v-else class="text-gray-400 text-xs">—</span>
+                  <span v-else class="text-xs text-gray-400">—</span>
                 </template>
               </Column>
 
-
               <!-- Acciones -->
-              <Column header="" style="width:120px">
+              <Column header="" style="width: 120px">
                 <template #body="{ data }">
                   <div class="row-actions" @click.stop>
-                    <Button v-if="!data.estado?.es_estado_final" icon="pi pi-check-circle"
-                      text rounded size="small" severity="success"
-                      @click="quickResolve(data)" v-tooltip.left="'Marcar resuelta'" />
-                    <Button icon="pi pi-pencil" text rounded size="small" severity="info"
-                      @click="abrirEditar(data)" v-tooltip.left="'Editar'" />
-                    <Button icon="pi pi-arrow-right" text rounded size="small" severity="secondary"
-                      @click="abrirDrawer(data)" v-tooltip.left="'Ver detalle'" />
+                    <Button
+                      v-if="!data.estado?.es_estado_final"
+                      icon="pi pi-check-circle"
+                      text
+                      rounded
+                      size="small"
+                      severity="success"
+                      @click="quickResolve(data)"
+                      v-tooltip.left="'Marcar resuelta'"
+                    />
+                    <Button
+                      icon="pi pi-pencil"
+                      text
+                      rounded
+                      size="small"
+                      severity="info"
+                      @click="abrirEditar(data)"
+                      v-tooltip.left="'Editar'"
+                    />
+                    <Button
+                      icon="pi pi-arrow-right"
+                      text
+                      rounded
+                      size="small"
+                      severity="secondary"
+                      @click="abrirDrawer(data)"
+                      v-tooltip.left="'Ver detalle'"
+                    />
                   </div>
                 </template>
               </Column>
             </DataTable>
           </div>
-
-        </div><!-- /gf-main -->
+        </div>
+        <!-- /gf-main -->
 
         <!-- ══ PANEL DETALLE ══════════════════════════════════════════════ -->
-        <aside v-if="drawerVisible && drawerFalla" class="gf-aside"
-          @keydown.left.stop="navegar(-1)" @keydown.right.stop="navegar(1)">
+        <aside
+          v-if="drawerVisible && drawerFalla"
+          class="gf-aside"
+          @keydown.left.stop="navegar(-1)"
+          @keydown.right.stop="navegar(1)"
+        >
           <!-- Backdrop solo en móvil -->
           <div class="gf-aside-backdrop" @click="drawerVisible = false" />
           <div class="gf-aside-panel">
-
             <!-- Header panel -->
             <div class="gf-drawer-header">
-              <Button icon="pi pi-times" text rounded size="small" @click="drawerVisible = false"
-                v-tooltip.bottom="'Cerrar (Esc)'" />
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <code class="font-mono text-sm text-purple-700 bg-purple-50 px-2 py-0.5 rounded">{{ drawerFalla.codigo_interno }}</code>
+              <Button
+                icon="pi pi-times"
+                text
+                rounded
+                size="small"
+                @click="drawerVisible = false"
+                v-tooltip.bottom="'Cerrar (Esc)'"
+              />
+              <div class="min-w-0 flex-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <code
+                    class="rounded bg-purple-50 px-2 py-0.5 font-mono text-sm text-purple-700"
+                    >{{ drawerFalla.codigo_interno }}</code
+                  >
                   <span class="text-xs text-gray-400">·</span>
-                  <span class="text-sm font-medium text-gray-700 truncate">{{ tituloFalla(drawerFalla) }}</span>
-                  <span v-if="navIndex >= 0" class="text-[10px] text-gray-400 ml-auto whitespace-nowrap hidden sm:inline-block">
+                  <span class="truncate text-sm font-medium text-gray-700">{{
+                    tituloFalla(drawerFalla)
+                  }}</span>
+                  <span
+                    v-if="navIndex >= 0"
+                    class="ml-auto hidden text-[10px] whitespace-nowrap text-gray-400 sm:inline-block"
+                  >
                     {{ navIndex + 1 }} / {{ filtradas.length }}
                   </span>
                 </div>
               </div>
-              <Button icon="pi pi-chevron-left" text rounded size="small" severity="secondary"
-                :disabled="navIndex <= 0" @click="navegar(-1)" v-tooltip.bottom="'Anterior (←)'" />
-              <Button icon="pi pi-chevron-right" text rounded size="small" severity="secondary"
-                :disabled="navIndex < 0 || navIndex >= filtradas.length - 1" @click="navegar(1)"
-                v-tooltip.bottom="'Siguiente (→)'" />
-              <Button icon="pi pi-external-link" text rounded size="small" severity="secondary"
-                @click="router.push(`/fallas/${drawerFalla.id}`)" v-tooltip.bottom="'Abrir página completa'" />
-              <Button icon="pi pi-trash" text rounded size="small" severity="danger"
-                @click="confirmDelete(drawerFalla)" v-tooltip.bottom="'Eliminar'" />
+              <Button
+                icon="pi pi-chevron-left"
+                text
+                rounded
+                size="small"
+                severity="secondary"
+                :disabled="navIndex <= 0"
+                @click="navegar(-1)"
+                v-tooltip.bottom="'Anterior (←)'"
+              />
+              <Button
+                icon="pi pi-chevron-right"
+                text
+                rounded
+                size="small"
+                severity="secondary"
+                :disabled="navIndex < 0 || navIndex >= filtradas.length - 1"
+                @click="navegar(1)"
+                v-tooltip.bottom="'Siguiente (→)'"
+              />
+              <Button
+                icon="pi pi-external-link"
+                text
+                rounded
+                size="small"
+                severity="secondary"
+                @click="router.push(`/fallas/${drawerFalla.id}`)"
+                v-tooltip.bottom="'Abrir página completa'"
+              />
+              <Button
+                icon="pi pi-trash"
+                text
+                rounded
+                size="small"
+                severity="danger"
+                @click="confirmDelete(drawerFalla)"
+                v-tooltip.bottom="'Eliminar'"
+              />
             </div>
 
             <!-- Body drawer -->
             <div class="gf-drawer-body">
-
               <!-- ── HERO: título + estado + descripción ──────────────── -->
               <section class="gf-hero">
                 <div>
                   <p class="gf-hero-title">{{ tituloFalla(drawerFalla) }}</p>
-                  <div class="flex flex-wrap gap-1.5 mt-2">
-                    <Tag :value="drawerFalla.estado?.etiqueta" :style="estadoPillStyle(drawerFalla.estado?.color_hex)" />
+                  <div class="mt-2 flex flex-wrap gap-1.5">
+                    <Tag
+                      :value="drawerFalla.estado?.etiqueta"
+                      :style="estadoPillStyle(drawerFalla.estado?.color_hex)"
+                    />
                     <span class="prio-pill" :style="prioPillStyle(drawerFalla.prioridad?.codigo)">
                       {{ drawerFalla.prioridad?.etiqueta }}
                     </span>
-                    <Tag v-if="categoriaFalla(drawerFalla).etiqueta" :value="categoriaFalla(drawerFalla).etiqueta"
-                      :style="catTagStyle(categoriaFalla(drawerFalla).color)" />
-                    <Tag v-if="drawerFalla.pendiente_reclasificar" value="Pendiente de reclasificar" severity="warn" />
+                    <Tag
+                      v-if="categoriaFalla(drawerFalla).etiqueta"
+                      :value="categoriaFalla(drawerFalla).etiqueta"
+                      :style="catTagStyle(categoriaFalla(drawerFalla).color)"
+                    />
+                    <Tag
+                      v-if="drawerFalla.pendiente_reclasificar"
+                      value="Pendiente de reclasificar"
+                      severity="warn"
+                    />
                   </div>
                 </div>
-                <p v-if="drawerFalla.descripcion" class="gf-hero-desc">{{ drawerFalla.descripcion }}</p>
+                <p v-if="drawerFalla.descripcion" class="gf-hero-desc">
+                  {{ drawerFalla.descripcion }}
+                </p>
               </section>
 
               <!-- ── EQUIPO QUE FALLÓ / CLASIFICACIÓN ──────────────────── -->
               <section class="gf-section">
                 <header class="gf-section-head">
-                  <i :class="clasifDrawer ? clasifDrawer.icono : 'pi pi-server'" class="gf-section-icon"
-                    :style="clasifDrawer ? { color: clasifDrawer.categoriaColor } : {}" />
+                  <i
+                    :class="clasifDrawer ? clasifDrawer.icono : 'pi pi-server'"
+                    class="gf-section-icon"
+                    :style="clasifDrawer ? { color: clasifDrawer.categoriaColor } : {}"
+                  />
                   <h3 class="gf-section-title">Equipo / clasificación</h3>
                 </header>
 
                 <template v-if="clasifDrawer">
                   <div class="flex flex-wrap items-center gap-2">
-                    <Tag :value="clasifDrawer.categoriaEtiqueta" :style="catTagStyle(clasifDrawer.categoriaColor)" />
-                    <span v-if="clasifDrawer.subtitulo" class="gf-clasif-sub">{{ clasifDrawer.subtitulo }}</span>
+                    <Tag
+                      :value="clasifDrawer.categoriaEtiqueta"
+                      :style="catTagStyle(clasifDrawer.categoriaColor)"
+                    />
+                    <span v-if="clasifDrawer.subtitulo" class="gf-clasif-sub">{{
+                      clasifDrawer.subtitulo
+                    }}</span>
                   </div>
-                  <p v-if="clasifDrawer.detalle" class="gf-body-text mt-2">{{ clasifDrawer.detalle }}</p>
+                  <p v-if="clasifDrawer.detalle" class="gf-body-text mt-2">
+                    {{ clasifDrawer.detalle }}
+                  </p>
 
                   <!-- Frontera: flags de medición / comunicación -->
-                  <div v-if="clasifDrawer.frontera" class="flex flex-wrap gap-2 mt-3">
-                    <span class="gf-flag" :class="clasifDrawer.frontera.afectaMedicion ? 'gf-flag--bad' : 'gf-flag--ok'">
-                      <i :class="clasifDrawer.frontera.afectaMedicion ? 'pi pi-times-circle' : 'pi pi-check-circle'" />
-                      {{ clasifDrawer.frontera.afectaMedicion ? 'Afecta la medición' : 'No afecta la medición' }}
+                  <div v-if="clasifDrawer.frontera" class="mt-3 flex flex-wrap gap-2">
+                    <span
+                      class="gf-flag"
+                      :class="clasifDrawer.frontera.afectaMedicion ? 'gf-flag--bad' : 'gf-flag--ok'"
+                    >
+                      <i
+                        :class="
+                          clasifDrawer.frontera.afectaMedicion
+                            ? 'pi pi-times-circle'
+                            : 'pi pi-check-circle'
+                        "
+                      />
+                      {{
+                        clasifDrawer.frontera.afectaMedicion
+                          ? 'Afecta la medición'
+                          : 'No afecta la medición'
+                      }}
                     </span>
-                    <span class="gf-flag" :class="clasifDrawer.frontera.perdidaComunicacion ? 'gf-flag--warn' : 'gf-flag--ok'">
-                      <i :class="clasifDrawer.frontera.perdidaComunicacion ? 'pi pi-wifi' : 'pi pi-check-circle'" />
-                      {{ clasifDrawer.frontera.perdidaComunicacion ? 'Pérdida de comunicación' : 'Comunicación OK' }}
+                    <span
+                      class="gf-flag"
+                      :class="
+                        clasifDrawer.frontera.perdidaComunicacion ? 'gf-flag--warn' : 'gf-flag--ok'
+                      "
+                    >
+                      <i
+                        :class="
+                          clasifDrawer.frontera.perdidaComunicacion
+                            ? 'pi pi-wifi'
+                            : 'pi pi-check-circle'
+                        "
+                      />
+                      {{
+                        clasifDrawer.frontera.perdidaComunicacion
+                          ? 'Pérdida de comunicación'
+                          : 'Comunicación OK'
+                      }}
                     </span>
                   </div>
 
                   <!-- Capa aparte: TIPO(S) DE FALLA del inversor -->
                   <div v-if="clasifDrawer.inversorTipos.length" class="gf-tipo-layer mt-3">
-                    <p class="gf-subhead">Tipo{{ clasifDrawer.inversorTipos.length > 1 ? 's' : '' }} de falla</p>
+                    <p class="gf-subhead">
+                      Tipo{{ clasifDrawer.inversorTipos.length > 1 ? 's' : '' }} de falla
+                    </p>
                     <div class="gf-tipo-chips">
-                      <span v-for="(t, ti) in clasifDrawer.inversorTipos" :key="ti" class="gf-tipo-chip">{{ t }}</span>
+                      <span
+                        v-for="(t, ti) in clasifDrawer.inversorTipos"
+                        :key="ti"
+                        class="gf-tipo-chip"
+                        >{{ t }}</span
+                      >
                     </div>
                   </div>
 
                   <!-- Capa: INVERSORES afectados -->
                   <div v-if="clasifDrawer.inversores.length" class="gf-inv-list mt-3">
-                    <p class="gf-subhead">Inversores afectados ({{ clasifDrawer.inversores.length }})</p>
+                    <p class="gf-subhead">
+                      Inversores afectados ({{ clasifDrawer.inversores.length }})
+                    </p>
                     <div v-for="(inv, idx) in clasifDrawer.inversores" :key="idx" class="gf-inv">
                       <div class="gf-inv-top">
                         <i class="pi pi-server" />
                         <span class="gf-inv-name">{{ inv.nombre }}</span>
-                        <span v-if="inv.potenciaKw != null" class="gf-inv-pot">· {{ inv.potenciaKw }} kW</span>
+                        <span v-if="inv.potenciaKw != null" class="gf-inv-pot"
+                          >· {{ inv.potenciaKw }} kW</span
+                        >
                       </div>
                       <!-- Chips por inversor solo si los tipos difieren entre inversores -->
-                      <div v-if="!clasifDrawer.tiposUniformes && inv.tipos.length" class="gf-inv-tipos">
-                        <span v-for="(t, ti) in inv.tipos" :key="ti" class="gf-inv-tag">{{ t }}</span>
+                      <div
+                        v-if="!clasifDrawer.tiposUniformes && inv.tipos.length"
+                        class="gf-inv-tipos"
+                      >
+                        <span v-for="(t, ti) in inv.tipos" :key="ti" class="gf-inv-tag">{{
+                          t
+                        }}</span>
                       </div>
                     </div>
                   </div>
@@ -337,13 +591,19 @@
                 <!-- Falla sin clasificación estructurada (catálogo anterior) -->
                 <template v-else>
                   <div class="flex flex-wrap items-center gap-2">
-                    <Tag v-if="categoriaFalla(drawerFalla).etiqueta" :value="categoriaFalla(drawerFalla).etiqueta"
-                      :style="catTagStyle(categoriaFalla(drawerFalla).color)" />
-                    <span class="gf-clasif-sub">{{ drawerFalla.tipo?.etiqueta || drawerFalla.tipo_libre || 'Sin clasificación' }}</span>
+                    <Tag
+                      v-if="categoriaFalla(drawerFalla).etiqueta"
+                      :value="categoriaFalla(drawerFalla).etiqueta"
+                      :style="catTagStyle(categoriaFalla(drawerFalla).color)"
+                    />
+                    <span class="gf-clasif-sub">{{
+                      drawerFalla.tipo?.etiqueta || drawerFalla.tipo_libre || 'Sin clasificación'
+                    }}</span>
                   </div>
                   <p class="gf-legacy-note">
                     <i class="pi pi-info-circle" />
-                    Registrada sin desglose específico por equipo/inversor. Las fallas nuevas capturan el detalle (p. ej. inversor afectado y tipo de falla).
+                    Registrada sin desglose específico por equipo/inversor. Las fallas nuevas
+                    capturan el detalle (p. ej. inversor afectado y tipo de falla).
                   </p>
                 </template>
               </section>
@@ -358,8 +618,13 @@
                   <div class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-calendar-plus" /> Identificada</dt>
                     <dd class="gf-fact-value">
-                      {{ fmtFecha(drawerFalla.fecha_identificacion) }}<span v-if="drawerFalla.hora_identificacion"> · {{ String(drawerFalla.hora_identificacion).slice(0,5) }}</span>
-                      <span class="text-gray-500">· {{ relativeTime(drawerFalla.fecha_identificacion) }}</span>
+                      {{ fmtFecha(drawerFalla.fecha_identificacion)
+                      }}<span v-if="drawerFalla.hora_identificacion">
+                        · {{ String(drawerFalla.hora_identificacion).slice(0, 5) }}</span
+                      >
+                      <span class="text-gray-500"
+                        >· {{ relativeTime(drawerFalla.fecha_identificacion) }}</span
+                      >
                     </dd>
                   </div>
                   <div v-if="drawerFalla.fecha_ocurrencia" class="gf-fact">
@@ -372,19 +637,30 @@
                   </div>
                   <div v-if="drawerFalla.fecha_resolucion" class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-check-circle" /> Resuelta</dt>
-                    <dd class="gf-fact-value text-emerald-700 font-semibold">{{ fmtFechaHora(drawerFalla.fecha_resolucion) }}</dd>
+                    <dd class="gf-fact-value font-semibold text-emerald-700">
+                      {{ fmtFechaHora(drawerFalla.fecha_resolucion) }}
+                    </dd>
                   </div>
                   <div v-if="drawerFalla.dias_abierta != null" class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-hourglass" /> Días abierta</dt>
                     <dd class="gf-fact-value">
-                      <span class="dias-badge" :class="diasClass(drawerFalla)">{{ drawerFalla.dias_abierta }}d</span>
+                      <span class="dias-badge" :class="diasClass(drawerFalla)"
+                        >{{ drawerFalla.dias_abierta }}d</span
+                      >
                     </dd>
                   </div>
                   <div v-if="drawerFalla.tiempo_afectacion_horas != null" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-stopwatch" /> Tiempo de afectación</dt>
-                    <dd class="gf-fact-value" style="color:#b45309;font-weight:600">{{ fmtHoras(drawerFalla.tiempo_afectacion_horas) }}</dd>
+                    <dt class="gf-fact-label">
+                      <i class="pi pi-stopwatch" /> Tiempo de afectación
+                    </dt>
+                    <dd class="gf-fact-value" style="color: #b45309; font-weight: 600">
+                      {{ fmtHoras(drawerFalla.tiempo_afectacion_horas) }}
+                    </dd>
                   </div>
-                  <div v-if="tiempoEnEstadoActual && !drawerFalla.estado?.es_estado_final" class="gf-fact">
+                  <div
+                    v-if="tiempoEnEstadoActual && !drawerFalla.estado?.es_estado_final"
+                    class="gf-fact"
+                  >
                     <dt class="gf-fact-label"><i class="pi pi-stopwatch" /> En estado actual</dt>
                     <dd class="gf-fact-value">{{ tiempoEnEstadoActual }}</dd>
                   </div>
@@ -400,7 +676,9 @@
                 <dl class="gf-facts gf-facts--flush">
                   <div class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-building" /> Proyecto</dt>
-                    <dd class="gf-fact-value">{{ drawerFalla.proyecto?.nombre_comercial || '—' }}</dd>
+                    <dd class="gf-fact-value">
+                      {{ drawerFalla.proyecto?.nombre_comercial || '—' }}
+                    </dd>
                   </div>
                   <div class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-user-edit" /> Registrado por</dt>
@@ -408,25 +686,33 @@
                   </div>
                   <div class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-user" /> Asignado a</dt>
-                    <dd class="gf-fact-value">{{ drawerFalla.asignado_a?.nombre || 'Sin asignar' }}</dd>
+                    <dd class="gf-fact-value">
+                      {{ drawerFalla.asignado_a?.nombre || 'Sin asignar' }}
+                    </dd>
                   </div>
                   <div v-if="drawerFalla.resolucion" class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-wrench" /> Resolución</dt>
-                    <dd class="gf-fact-value font-medium text-emerald-700">{{ drawerFalla.resolucion.etiqueta }}</dd>
+                    <dd class="gf-fact-value font-medium text-emerald-700">
+                      {{ drawerFalla.resolucion.etiqueta }}
+                    </dd>
                   </div>
                   <div v-if="drawerFalla.kwh_perdidos_estimado != null" class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-bolt" /> Energía perdida</dt>
-                    <dd class="gf-fact-value text-red-700 font-semibold">
+                    <dd class="gf-fact-value font-semibold text-red-700">
                       {{ Number(drawerFalla.kwh_perdidos_estimado).toLocaleString('es-CO') }} kWh
                     </dd>
                   </div>
                   <div v-if="drawerFalla.impacto_economico_cop != null" class="gf-fact">
                     <dt class="gf-fact-label"><i class="pi pi-dollar" /> Impacto económico</dt>
-                    <dd class="gf-fact-value text-red-700 font-semibold">{{ fmtCOP(drawerFalla.impacto_economico_cop) }}</dd>
+                    <dd class="gf-fact-value font-semibold text-red-700">
+                      {{ fmtCOP(drawerFalla.impacto_economico_cop) }}
+                    </dd>
                   </div>
                   <div v-if="recurrencias(drawerFalla) > 1" class="gf-fact">
-                    <dt class="gf-fact-label"><i class="pi pi-replay" style="color:#ea580c" /> Reincidencia</dt>
-                    <dd class="gf-fact-value font-semibold" style="color:#ea580c">
+                    <dt class="gf-fact-label">
+                      <i class="pi pi-replay" style="color: #ea580c" /> Reincidencia
+                    </dt>
+                    <dd class="gf-fact-value font-semibold" style="color: #ea580c">
                       {{ recurrencias(drawerFalla) }}× mismo tipo en este proyecto
                     </dd>
                   </div>
@@ -454,15 +740,25 @@
                   <div class="space-y-2">
                     <div class="gf-field-row">
                       <label class="gf-field-label">Estado</label>
-                      <Select v-model="quickEdit.estado_id" :options="catalogos.estados"
-                        optionLabel="etiqueta" optionValue="id" class="flex-1"
-                        @change="autosaveQuick()" />
+                      <Select
+                        v-model="quickEdit.estado_id"
+                        :options="catalogos.estados"
+                        optionLabel="etiqueta"
+                        optionValue="id"
+                        class="flex-1"
+                        @change="autosaveQuick()"
+                      />
                     </div>
                     <div class="gf-field-row">
                       <label class="gf-field-label">Prioridad</label>
-                      <Select v-model="quickEdit.prioridad_id" :options="catalogos.prioridades"
-                        optionLabel="etiqueta" optionValue="id" class="flex-1"
-                        @change="autosaveQuick()" />
+                      <Select
+                        v-model="quickEdit.prioridad_id"
+                        :options="catalogos.prioridades"
+                        optionLabel="etiqueta"
+                        optionValue="id"
+                        class="flex-1"
+                        @change="autosaveQuick()"
+                      />
                     </div>
                   </div>
                 </section>
@@ -472,20 +768,31 @@
                   <header class="gf-section-head">
                     <i class="pi pi-clock gf-section-icon" />
                     <h3 class="gf-section-title">SLA</h3>
-                    <Tag v-if="drawerFalla.sla_limite_horas" class="ml-auto"
-                      :value="slaText(drawerFalla)" :severity="slaSeverity(drawerFalla)" />
+                    <Tag
+                      v-if="drawerFalla.sla_limite_horas"
+                      class="ml-auto"
+                      :value="slaText(drawerFalla)"
+                      :severity="slaSeverity(drawerFalla)"
+                    />
                     <span v-else class="ml-auto text-xs text-gray-500">Sin límite</span>
                   </header>
                   <template v-if="drawerFalla.sla_limite_horas">
                     <div class="gf-sla-stat">
-                      <span class="gf-sla-num" :style="{ color: slaTextColor(drawerFalla) }">{{ horasTranscurridas(drawerFalla) }}h</span>
+                      <span class="gf-sla-num" :style="{ color: slaTextColor(drawerFalla) }"
+                        >{{ horasTranscurridas(drawerFalla) }}h</span
+                      >
                       <span class="gf-sla-of">de {{ drawerFalla.sla_limite_horas }}h</span>
                     </div>
-                    <div class="bg-gray-200 rounded-full h-2 overflow-hidden mt-2">
-                      <div class="h-full rounded-full transition-all" :style="slaFillStyle(drawerFalla)" />
+                    <div class="mt-2 h-2 overflow-hidden rounded-full bg-gray-200">
+                      <div
+                        class="h-full rounded-full transition-all"
+                        :style="slaFillStyle(drawerFalla)"
+                      />
                     </div>
                   </template>
-                  <p v-else class="text-sm text-gray-600 mt-1">Esta falla no tiene SLA configurado.</p>
+                  <p v-else class="mt-1 text-sm text-gray-600">
+                    Esta falla no tiene SLA configurado.
+                  </p>
                 </section>
               </div>
 
@@ -499,7 +806,10 @@
               </aside>
 
               <!-- ── ANÁLISIS ───────────────────────────────────────── -->
-              <section v-if="drawerFalla.causa_raiz || drawerFalla.acciones_correctivas" class="gf-section">
+              <section
+                v-if="drawerFalla.causa_raiz || drawerFalla.acciones_correctivas"
+                class="gf-section"
+              >
                 <header class="gf-section-head">
                   <i class="pi pi-search gf-section-icon" />
                   <h3 class="gf-section-title">Análisis</h3>
@@ -526,37 +836,62 @@
 
                 <!-- Agregar nota -->
                 <div class="gf-add-note">
-                  <Textarea v-model="nuevaNota.nota" rows="2" autoResize
-                    placeholder="Agregar nota o actualización…" class="w-full" />
-                  <div class="flex items-center gap-2 mt-2">
-                    <Select v-model="nuevaNota.estado_id" :options="catalogos.estados"
-                      optionLabel="etiqueta" optionValue="id" placeholder="Cambiar estado (opcional)"
-                      showClear class="flex-1" />
-                    <Button label="Agregar" icon="pi pi-send" size="small"
+                  <Textarea
+                    v-model="nuevaNota.nota"
+                    rows="2"
+                    autoResize
+                    placeholder="Agregar nota o actualización…"
+                    class="w-full"
+                  />
+                  <div class="mt-2 flex items-center gap-2">
+                    <Select
+                      v-model="nuevaNota.estado_id"
+                      :options="catalogos.estados"
+                      optionLabel="etiqueta"
+                      optionValue="id"
+                      placeholder="Cambiar estado (opcional)"
+                      showClear
+                      class="flex-1"
+                    />
+                    <Button
+                      label="Agregar"
+                      icon="pi pi-send"
+                      size="small"
                       :disabled="!nuevaNota.nota.trim() && !nuevaNota.estado_id"
-                      :loading="addingSeg" @click="agregarSeguimiento" />
+                      :loading="addingSeg"
+                      @click="agregarSeguimiento"
+                    />
                   </div>
                 </div>
 
                 <!-- Timeline -->
-                <div v-if="sortedSeguimientos.length" class="space-y-3 mt-3">
+                <div v-if="sortedSeguimientos.length" class="mt-3 space-y-3">
                   <div v-for="seg in sortedSeguimientos" :key="seg.id" class="flex gap-2.5">
                     <div class="avatar-md flex-shrink-0" :style="avatarStyle(seg.usuario)">
                       {{ initials(seg.usuario?.nombre) }}
                     </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <span class="gf-body-text font-semibold">{{ seg.usuario?.nombre || 'Sistema' }}</span>
-                        <span class="text-xs text-gray-500">{{ relativeTime(seg.created_at, true) }}</span>
+                    <div class="min-w-0 flex-1">
+                      <div class="mb-0.5 flex flex-wrap items-center gap-2">
+                        <span class="gf-body-text font-semibold">{{
+                          seg.usuario?.nombre || 'Sistema'
+                        }}</span>
+                        <span class="text-xs text-gray-500">{{
+                          relativeTime(seg.created_at, true)
+                        }}</span>
                       </div>
                       <p v-if="seg.nota" class="gf-body-text whitespace-pre-line">{{ seg.nota }}</p>
                       <div v-if="seg.estado_nuevo" class="mt-1.5">
-                        <Tag :value="seg.estado_nuevo?.etiqueta" :style="estadoPillStyle(seg.estado_nuevo?.color_hex)" />
+                        <Tag
+                          :value="seg.estado_nuevo?.etiqueta"
+                          :style="estadoPillStyle(seg.estado_nuevo?.color_hex)"
+                        />
                       </div>
                     </div>
                   </div>
                 </div>
-                <p v-else class="text-sm text-gray-500 mt-3">Aún no hay seguimientos registrados.</p>
+                <p v-else class="mt-3 text-sm text-gray-500">
+                  Aún no hay seguimientos registrados.
+                </p>
               </section>
 
               <!-- ── ARCHIVOS ADJUNTOS ─────────────────────────────── -->
@@ -564,53 +899,109 @@
 
               <!-- ── ACCIONES PRINCIPALES ───────────────────────────── -->
               <div class="gf-actions-inline">
-                <Button label="Editar completa" icon="pi pi-pencil" outlined class="flex-1"
-                  @click="editarDesdeDrawer" />
-                <Button v-if="!drawerFalla.estado?.es_estado_final" label="Marcar resuelta"
-                  icon="pi pi-check" severity="success" class="flex-1"
-                  :loading="resolvingFalla" @click="quickResolve(drawerFalla)" />
-                <Button v-else label="Reabrir" icon="pi pi-replay" severity="warn" outlined
-                  class="flex-1" @click="reabrirFalla" />
+                <Button
+                  label="Editar completa"
+                  icon="pi pi-pencil"
+                  outlined
+                  class="flex-1"
+                  @click="editarDesdeDrawer"
+                />
+                <Button
+                  v-if="!drawerFalla.estado?.es_estado_final"
+                  label="Marcar resuelta"
+                  icon="pi pi-check"
+                  severity="success"
+                  class="flex-1"
+                  :loading="resolvingFalla"
+                  @click="quickResolve(drawerFalla)"
+                />
+                <Button
+                  v-else
+                  label="Reabrir"
+                  icon="pi pi-replay"
+                  severity="warn"
+                  outlined
+                  class="flex-1"
+                  @click="reabrirFalla"
+                />
               </div>
-
-            </div><!-- /gf-drawer-body -->
-          </div><!-- /gf-aside-panel -->
+            </div>
+            <!-- /gf-drawer-body -->
+          </div>
+          <!-- /gf-aside-panel -->
         </aside>
-
-      </div><!-- /gf-layout -->
+      </div>
+      <!-- /gf-layout -->
 
       <!-- ══ DIALOG CREAR / EDITAR ════════════════════════════════════════ -->
-      <Dialog v-model:visible="formDialogVisible" modal class="w-full max-w-2xl"
+      <Dialog
+        v-model:visible="formDialogVisible"
+        modal
+        class="w-full max-w-2xl"
         :header="editingFalla ? `Editar falla ${editingFalla.codigo_interno}` : 'Nueva falla'"
-        :closable="!savingForm">
-        <FallaForm :initial="editingFalla" :catalogos="catalogos"
-          @save="onSaveForm" @cancel="formDialogVisible = false" />
+        :closable="!savingForm"
+      >
+        <FallaForm
+          :initial="editingFalla"
+          :catalogos="catalogos"
+          @save="onSaveForm"
+          @cancel="formDialogVisible = false"
+        />
       </Dialog>
 
       <!-- ══ DIALOG RESOLVER FALLA ══════════════════════════════════════════ -->
-      <Dialog v-model:visible="resolveDialogVisible" modal class="w-full max-w-sm"
-        header="Resolver falla" :closable="!resolvingFalla">
+      <Dialog
+        v-model:visible="resolveDialogVisible"
+        modal
+        class="w-full max-w-sm"
+        header="Resolver falla"
+        :closable="!resolvingFalla"
+      >
         <div v-if="resolveFallaTarget" class="resolve-dialog-body">
-          <p class="resolve-dialog-code">{{ resolveFallaTarget.codigo_interno }} — {{ resolveFallaTarget.proyecto?.nombre_comercial }}</p>
+          <p class="resolve-dialog-code">
+            {{ resolveFallaTarget.codigo_interno }} —
+            {{ resolveFallaTarget.proyecto?.nombre_comercial }}
+          </p>
           <div class="resolve-dialog-field">
             <label class="resolve-dialog-label">Fecha y hora de solución *</label>
-            <DatePicker v-model="resolveFecha" showTime hourFormat="24"
-              dateFormat="yy-mm-dd" class="w-full" showIcon />
+            <DatePicker
+              v-model="resolveFecha"
+              showTime
+              hourFormat="24"
+              dateFormat="yy-mm-dd"
+              class="w-full"
+              showIcon
+            />
           </div>
           <div class="resolve-dialog-field">
             <label class="resolve-dialog-label">Tipo de solución</label>
-            <Select v-model="resolveTipoSolucion" :options="TIPOS_SOLUCION_RESOLVE"
-              placeholder="Seleccionar (opcional)" showClear class="w-full" />
+            <Select
+              v-model="resolveTipoSolucion"
+              :options="TIPOS_SOLUCION_RESOLVE"
+              placeholder="Seleccionar (opcional)"
+              showClear
+              class="w-full"
+            />
           </div>
         </div>
         <template #footer>
-          <Button label="Cancelar" severity="secondary" outlined @click="resolveDialogVisible = false" :disabled="resolvingFalla" />
-          <Button label="Marcar resuelta" icon="pi pi-check" severity="success"
-            :loading="resolvingFalla" @click="confirmarResolve" />
+          <Button
+            label="Cancelar"
+            severity="secondary"
+            outlined
+            @click="resolveDialogVisible = false"
+            :disabled="resolvingFalla"
+          />
+          <Button
+            label="Marcar resuelta"
+            icon="pi pi-check"
+            severity="success"
+            :loading="resolvingFalla"
+            @click="confirmarResolve"
+          />
         </template>
-      </Dialog>
-
-    </template><!-- /TAB 0 -->
+      </Dialog> </template
+    ><!-- /TAB 0 -->
 
     <!-- ══ TAB 1 — CALENDARIO ══════════════════════════════════════════════ -->
     <div v-if="activeTab === 1" class="mon-tab-calendario">
@@ -619,18 +1010,28 @@
         @editar="abrirEditar"
         @ver-falla="irAFallaDesdeCalendario"
       />
-    </div><!-- /TAB 1 -->
+    </div>
+    <!-- /TAB 1 -->
 
     <!-- ══ TAB 2 — MAPA ══════════════════════════════════════════════════ -->
 
     <!-- ══ BOTÓN FLOTANTE: Diagrama fasorial ══════════════════════════════ -->
     <FasorialButton />
-
-  </div><!-- /gf-page -->
+  </div>
+  <!-- /gf-page -->
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick, defineAsyncComponent } from 'vue'
+import {
+  ref,
+  reactive,
+  computed,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  nextTick,
+  defineAsyncComponent,
+} from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useToast } from 'primevue/usetoast'
 import { useConfirm } from 'primevue/useconfirm'
@@ -653,17 +1054,34 @@ import FasorialButton from '@/components/FasorialButton.vue'
 const FallasMapView = defineAsyncComponent(() => import('./FallasMapView.vue'))
 import { Bar, Line } from 'vue-chartjs'
 import {
-  Chart as ChartJS, Tooltip, Legend,
-  CategoryScale, LinearScale, BarElement,
-  PointElement, LineElement, Title, Filler
+  Chart as ChartJS,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+  Filler,
 } from 'chart.js'
-ChartJS.register(Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Filler)
+ChartJS.register(
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Title,
+  Filler,
+)
 import api from '@/api/client'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '@/utils/fallaTitulo'
 
-const route          = useRoute()
-const router         = useRouter()
-const toast          = useToast()
+const route = useRoute()
+const router = useRouter()
+const toast = useToast()
 const confirmService = useConfirm()
 
 // ── Calendario: refresh automático al guardar fallas ─────────────────────
@@ -671,47 +1089,57 @@ const calRefreshKey = ref(0)
 
 // ── Tabs ─────────────────────────────────────────────────────────────────
 const TABS = [
-  { label: 'Fallas',     icon: 'pi pi-bolt' },
+  { label: 'Fallas', icon: 'pi pi-bolt' },
   { label: 'Calendario', icon: 'pi pi-calendar' },
 ]
 const activeTab = ref(0)
 
 // ── Buckets ───────────────────────────────────────────────────────────────
 const BUCKETS = [
-  { key: 'activas',  label: 'Activas',    icon: 'pi pi-bolt',              color: '#dc2626' },
-  { key: 'alerta',   label: 'Alerta SLA', icon: 'pi pi-exclamation-circle', color: '#d97706' },
-  { key: 'cerradas', label: 'Cerradas',   icon: 'pi pi-check-circle',      color: '#16a34a' },
-  { key: 'todas',    label: 'Todas',      icon: 'pi pi-list',              color: '#915BD8' },
+  { key: 'activas', label: 'Activas', icon: 'pi pi-bolt', color: '#dc2626' },
+  { key: 'alerta', label: 'Alerta SLA', icon: 'pi pi-exclamation-circle', color: '#d97706' },
+  { key: 'cerradas', label: 'Cerradas', icon: 'pi pi-check-circle', color: '#16a34a' },
+  { key: 'todas', label: 'Todas', icon: 'pi pi-list', color: '#915BD8' },
 ]
 
 const PRIO_COLORS = {
   critica: '#dc2626',
-  alta:    '#ea580c',
-  media:   '#d97706',
-  baja:    '#6b7280',
+  alta: '#ea580c',
+  media: '#d97706',
+  baja: '#6b7280',
 }
 
-const AVATAR_PALETTE = ['#915BD8', '#2563eb', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#7c3aed', '#db2777']
+const AVATAR_PALETTE = [
+  '#915BD8',
+  '#2563eb',
+  '#16a34a',
+  '#d97706',
+  '#dc2626',
+  '#0891b2',
+  '#7c3aed',
+  '#db2777',
+]
 
 // ── Estado base ───────────────────────────────────────────────────────────
-const allFallas  = ref([])
-const proyectos  = ref([])
-const catalogos  = ref({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
-const loading    = ref(false)
-const error      = ref(null)
+const allFallas = ref([])
+const proyectos = ref([])
+const catalogos = ref({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
+const loading = ref(false)
+const error = ref(null)
 
 // ── Filtros ───────────────────────────────────────────────────────────────
 // Sincronizados con la URL (?q=&proyecto=&prioridad=&estado=&desde=&hasta=)
 // para que se sostengan al volver con "atras" o al refrescar.
-const bucket           = ref('activas')
-const search           = ref(route.query.q || '')
-const filtroProyecto   = ref(route.query.proyecto ? Number(route.query.proyecto) : null)
-const filtroPrioridad  = ref(route.query.prioridad || null)
-const filtroEstado     = ref(route.query.estado || null)
+const bucket = ref('activas')
+const search = ref(route.query.q || '')
+const filtroProyecto = ref(route.query.proyecto ? Number(route.query.proyecto) : null)
+const filtroPrioridad = ref(route.query.prioridad || null)
+const filtroEstado = ref(route.query.estado || null)
 const filtroFechaDesde = ref(route.query.desde ? new Date(route.query.desde) : null)
 const filtroFechaHasta = ref(route.query.hasta ? new Date(route.query.hasta) : null)
 
-watch([search, filtroProyecto, filtroPrioridad, filtroEstado, filtroFechaDesde, filtroFechaHasta],
+watch(
+  [search, filtroProyecto, filtroPrioridad, filtroEstado, filtroFechaDesde, filtroFechaHasta],
   ([q, proyecto, prioridad, estado, desde, hasta]) => {
     const query = {}
     if (q) query.q = q
@@ -721,24 +1149,25 @@ watch([search, filtroProyecto, filtroPrioridad, filtroEstado, filtroFechaDesde, 
     if (desde) query.desde = desde.toISOString().split('T')[0]
     if (hasta) query.hasta = hasta.toISOString().split('T')[0]
     router.replace({ query })
-  })
+  },
+)
 
 // ── Refs DOM ─────────────────────────────────────────────────────────────
-const searchInputRef  = ref(null)
-const pageRef         = ref(null)
+const searchInputRef = ref(null)
+const pageRef = ref(null)
 const stickyHeaderRef = ref(null)
 
 // ── Drawer / detalle ──────────────────────────────────────────────────────
-const drawerVisible  = ref(false)
-const drawerFalla    = ref(null)
-const quickEdit      = reactive({ estado_id: null, prioridad_id: null })
-const savingQuick    = ref(false)
-const savedFlash     = ref(false)
-const resolvingFalla       = ref(false)
+const drawerVisible = ref(false)
+const drawerFalla = ref(null)
+const quickEdit = reactive({ estado_id: null, prioridad_id: null })
+const savingQuick = ref(false)
+const savedFlash = ref(false)
+const resolvingFalla = ref(false)
 const resolveDialogVisible = ref(false)
-const resolveFallaTarget   = ref(null)
-const resolveFecha         = ref(new Date())
-const resolveTipoSolucion  = ref(null)
+const resolveFallaTarget = ref(null)
+const resolveFecha = ref(new Date())
+const resolveTipoSolucion = ref(null)
 
 const TIPOS_SOLUCION_RESOLVE = [
   'Reemplazo de componente',
@@ -752,57 +1181,64 @@ const TIPOS_SOLUCION_RESOLVE = [
   'Solución remota',
   'Otro',
 ]
-const addingSeg      = ref(false)
-const nuevaNota      = reactive({ nota: '', estado_id: null })
+const addingSeg = ref(false)
+const nuevaNota = reactive({ nota: '', estado_id: null })
 
 // ── Dialog formulario ─────────────────────────────────────────────────────
 const formDialogVisible = ref(false)
-const editingFalla      = ref(null)
-const savingForm        = ref(false)
+const editingFalla = ref(null)
+const savingForm = ref(false)
 
 // ── Tab Gráficos: Generación ───────────────────────────────────────────────
-const genHoyLoading      = ref(false)
-const genHoyRows         = ref([])   // [{nombre_comercial, real, p90}]
-const hoyLabel           = new Date().toLocaleDateString('es-CO', { weekday:'long', day:'2-digit', month:'long' })
-const gen7Loading        = ref(false)
-const gen7Days           = ref([])       // [{fecha, real, p90}] — últimos 7 días
-const genProjLoading      = ref(false)
-const genProjCargado      = ref(false)
-const genProjSel          = ref(null)        // ID de un solo proyecto (nuestra BD)
-const genProjFiltro       = ref('30d')       // ayer | semana | mes | 30d | custom
-const genProjGran         = ref('day')       // day | hour
-const genProjFechaInicio  = ref(new Date(Date.now() - 29 * 86400000))
-const genProjFechaFin     = ref(new Date())
-const genProjPuntos       = ref([])          // [{ label, kwh }] desde Solenium
-const genProjTotalKwh     = ref(0)
+const genHoyLoading = ref(false)
+const genHoyRows = ref([]) // [{nombre_comercial, real, p90}]
+const hoyLabel = new Date().toLocaleDateString('es-CO', {
+  weekday: 'long',
+  day: '2-digit',
+  month: 'long',
+})
+const gen7Loading = ref(false)
+const gen7Days = ref([]) // [{fecha, real, p90}] — últimos 7 días
+const genProjLoading = ref(false)
+const genProjCargado = ref(false)
+const genProjSel = ref(null) // ID de un solo proyecto (nuestra BD)
+const genProjFiltro = ref('30d') // ayer | semana | mes | 30d | custom
+const genProjGran = ref('day') // day | hour
+const genProjFechaInicio = ref(new Date(Date.now() - 29 * 86400000))
+const genProjFechaFin = ref(new Date())
+const genProjPuntos = ref([]) // [{ label, kwh }] desde Solenium
+const genProjTotalKwh = ref(0)
 
 const GENPROJ_FILTROS = [
-  { key: 'ayer',   label: 'Ayer' },
+  { key: 'ayer', label: 'Ayer' },
   { key: 'semana', label: 'Esta semana' },
-  { key: 'mes',    label: 'Este mes' },
-  { key: '30d',    label: 'Últimos 30 días' },
+  { key: 'mes', label: 'Este mes' },
+  { key: '30d', label: 'Últimos 30 días' },
   { key: 'custom', label: 'Personalizado' },
 ]
 
 function aplicarFiltroGenProj(key) {
   genProjFiltro.value = key
-  const hoy = new Date(); hoy.setHours(0, 0, 0, 0)
+  const hoy = new Date()
+  hoy.setHours(0, 0, 0, 0)
   if (key === 'ayer') {
-    const ayer = new Date(hoy); ayer.setDate(ayer.getDate() - 1)
+    const ayer = new Date(hoy)
+    ayer.setDate(ayer.getDate() - 1)
     genProjFechaInicio.value = ayer
-    genProjFechaFin.value    = ayer
+    genProjFechaFin.value = ayer
   } else if (key === 'semana') {
     const lunes = new Date(hoy)
     lunes.setDate(hoy.getDate() - ((hoy.getDay() + 6) % 7))
     genProjFechaInicio.value = lunes
-    genProjFechaFin.value    = hoy
+    genProjFechaFin.value = hoy
   } else if (key === 'mes') {
     genProjFechaInicio.value = new Date(hoy.getFullYear(), hoy.getMonth(), 1)
-    genProjFechaFin.value    = hoy
+    genProjFechaFin.value = hoy
   } else if (key === '30d') {
-    const d = new Date(hoy); d.setDate(d.getDate() - 29)
+    const d = new Date(hoy)
+    d.setDate(d.getDate() - 29)
     genProjFechaInicio.value = d
-    genProjFechaFin.value    = hoy
+    genProjFechaFin.value = hoy
   }
   // 'custom' no cambia las fechas — el usuario las elige con DatePicker
 }
@@ -848,68 +1284,82 @@ const counts = computed(() => {
 })
 
 const porBucket = computed(() => {
-  if (bucket.value === 'todas')    return allFallas.value
-  if (bucket.value === 'cerradas') return allFallas.value.filter(f => f.estado?.es_estado_final)
-  if (bucket.value === 'alerta')   return allFallas.value.filter(f => !f.estado?.es_estado_final && esAlertaSLA(f))
+  if (bucket.value === 'todas') return allFallas.value
+  if (bucket.value === 'cerradas') return allFallas.value.filter((f) => f.estado?.es_estado_final)
+  if (bucket.value === 'alerta')
+    return allFallas.value.filter((f) => !f.estado?.es_estado_final && esAlertaSLA(f))
   // activas
-  return allFallas.value.filter(f => !f.estado?.es_estado_final)
+  return allFallas.value.filter((f) => !f.estado?.es_estado_final)
 })
 
 const filtradas = computed(() => {
   let arr = porBucket.value
   const q = search.value.trim().toLowerCase()
   if (q) {
-    arr = arr.filter(f =>
-      (f.codigo_interno || '').toLowerCase().includes(q) ||
-      (f.descripcion || '').toLowerCase().includes(q) ||
-      (f.proyecto?.nombre_comercial || '').toLowerCase().includes(q) ||
-      tituloFalla(f).toLowerCase().includes(q) ||
-      categoriaFalla(f).etiqueta.toLowerCase().includes(q)
+    arr = arr.filter(
+      (f) =>
+        (f.codigo_interno || '').toLowerCase().includes(q) ||
+        (f.descripcion || '').toLowerCase().includes(q) ||
+        (f.proyecto?.nombre_comercial || '').toLowerCase().includes(q) ||
+        tituloFalla(f).toLowerCase().includes(q) ||
+        categoriaFalla(f).etiqueta.toLowerCase().includes(q),
     )
   }
-  if (filtroProyecto.value)  arr = arr.filter(f => f.proyecto?.id === filtroProyecto.value)
-  if (filtroPrioridad.value) arr = arr.filter(f => f.prioridad?.codigo === filtroPrioridad.value)
-  if (filtroEstado.value)    arr = arr.filter(f => f.estado?.codigo === filtroEstado.value)
+  if (filtroProyecto.value) arr = arr.filter((f) => f.proyecto?.id === filtroProyecto.value)
+  if (filtroPrioridad.value) arr = arr.filter((f) => f.prioridad?.codigo === filtroPrioridad.value)
+  if (filtroEstado.value) arr = arr.filter((f) => f.estado?.codigo === filtroEstado.value)
   if (filtroFechaDesde.value) {
     const desde = startOfDay(filtroFechaDesde.value)
-    arr = arr.filter(f => f.fecha_identificacion && new Date(f.fecha_identificacion + 'T00:00:00') >= desde)
+    arr = arr.filter(
+      (f) => f.fecha_identificacion && new Date(f.fecha_identificacion + 'T00:00:00') >= desde,
+    )
   }
   if (filtroFechaHasta.value) {
-    const hasta = startOfDay(filtroFechaHasta.value); hasta.setHours(23, 59, 59, 999)
-    arr = arr.filter(f => f.fecha_identificacion && new Date(f.fecha_identificacion + 'T00:00:00') <= hasta)
+    const hasta = startOfDay(filtroFechaHasta.value)
+    hasta.setHours(23, 59, 59, 999)
+    arr = arr.filter(
+      (f) => f.fecha_identificacion && new Date(f.fecha_identificacion + 'T00:00:00') <= hasta,
+    )
   }
   return arr
 })
 
-const hayFiltros = computed(() =>
-  search.value || filtroProyecto.value || filtroPrioridad.value ||
-  filtroEstado.value || filtroFechaDesde.value || filtroFechaHasta.value
+const hayFiltros = computed(
+  () =>
+    search.value ||
+    filtroProyecto.value ||
+    filtroPrioridad.value ||
+    filtroEstado.value ||
+    filtroFechaDesde.value ||
+    filtroFechaHasta.value,
 )
 
-const bucketActual = computed(() => BUCKETS.find(b => b.key === bucket.value) || BUCKETS[0])
+const bucketActual = computed(() => BUCKETS.find((b) => b.key === bucket.value) || BUCKETS[0])
 
 const emptyTitulo = computed(() => {
   if (hayFiltros.value) return 'Sin resultados con los filtros aplicados'
   return {
-    activas:  'No hay fallas activas',
-    alerta:   'Sin fallas en alerta SLA',
+    activas: 'No hay fallas activas',
+    alerta: 'Sin fallas en alerta SLA',
     cerradas: 'Sin fallas cerradas',
-    todas:    'No hay fallas registradas',
+    todas: 'No hay fallas registradas',
   }[bucket.value]
 })
 
 const emptySubtitulo = computed(() => {
   if (hayFiltros.value) return 'Prueba con otros filtros o limpia la búsqueda'
   return {
-    activas:  'Todas las incidencias están bajo control',
-    alerta:   'Ninguna falla supera el umbral de SLA',
+    activas: 'Todas las incidencias están bajo control',
+    alerta: 'Ninguna falla supera el umbral de SLA',
     cerradas: 'Aún no se han cerrado fallas',
-    todas:    'Registra la primera para empezar',
+    todas: 'Registra la primera para empezar',
   }[bucket.value]
 })
 
 const sortedSeguimientos = computed(() =>
-  [...(drawerFalla.value?.seguimientos ?? [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+  [...(drawerFalla.value?.seguimientos ?? [])].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at),
+  ),
 )
 
 // ── Clasificación estructurada del drawer (equipo que falló) ──────────────
@@ -943,25 +1393,26 @@ function recurrencias(f) {
 // ── Tiempo en estado actual (desde último cambio de estado en seguimientos) ─
 const tiempoEnEstadoActual = computed(() => {
   if (!drawerFalla.value) return null
-  const segs = [...(drawerFalla.value.seguimientos ?? [])]
-    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-  const lastChange = segs.find(s => s.estado_nuevo)
+  const segs = [...(drawerFalla.value.seguimientos ?? [])].sort(
+    (a, b) => new Date(b.created_at) - new Date(a.created_at),
+  )
+  const lastChange = segs.find((s) => s.estado_nuevo)
   if (!lastChange) return null
   const diffH = (Date.now() - new Date(lastChange.created_at)) / 3_600_000
-  if (diffH < 1)  return `${Math.round(diffH * 60)} min`
+  if (diffH < 1) return `${Math.round(diffH * 60)} min`
   if (diffH < 24) return `${Math.round(diffH)}h`
   return `${Math.round(diffH / 24)}d`
 })
 
 const navIndex = computed(() => {
   if (!drawerFalla.value) return -1
-  return filtradas.value.findIndex(f => f.id === drawerFalla.value.id)
+  return filtradas.value.findIndex((f) => f.id === drawerFalla.value.id)
 })
 
 // ── Carga de datos ────────────────────────────────────────────────────────
 async function cargar() {
   loading.value = true
-  error.value   = null
+  error.value = null
   try {
     const { data: primera } = await api.get('/fallas', { params: { page: 1, size: 500 } })
     const total = primera.total ?? 0
@@ -970,8 +1421,8 @@ async function cargar() {
       const totalPages = Math.ceil(total / 500)
       const rest = await Promise.allSettled(
         Array.from({ length: totalPages - 1 }, (_, i) =>
-          api.get('/fallas', { params: { page: i + 2, size: 500 } })
-        )
+          api.get('/fallas', { params: { page: i + 2, size: 500 } }),
+        ),
       )
       for (const r of rest) {
         if (r.status === 'fulfilled') items.push(...(r.value.data.items ?? []))
@@ -989,7 +1440,9 @@ async function cargarCatalogos() {
   try {
     const { data } = await api.get('/fallas/catalogos')
     catalogos.value = data
-  } catch { /* no crítico */ }
+  } catch {
+    /* no crítico */
+  }
 }
 
 async function cargarProyectos() {
@@ -999,17 +1452,19 @@ async function cargarProyectos() {
     // Cargar gráficos de generación una vez que los proyectos estén disponibles
     cargarGenHoy()
     cargarGen7()
-  } catch { /* no crítico */ }
+  } catch {
+    /* no crítico */
+  }
 }
 
 // ── Helpers P90 ──────────────────────────────────────────────────────────
 // P90 diario de un proyecto para una fecha: p90_mensual_kwh[mes] / días del mes
 function dailyP90(proyectoId, fecha) {
-  const p = proyectos.value.find(x => x.id === proyectoId)
+  const p = proyectos.value.find((x) => x.id === proyectoId)
   const arr = p?.p90_mensual_kwh
   if (!arr || !arr.length) return 0
   const dt = new Date(fecha + 'T00:00:00')
-  const month = dt.getMonth()                                         // 0-indexed
+  const month = dt.getMonth() // 0-indexed
   const daysInMonth = new Date(dt.getFullYear(), month + 1, 0).getDate()
   return (Number(arr[month]) || 0) / daysInMonth
 }
@@ -1042,14 +1497,21 @@ async function cargarGenHoy() {
       const { data } = await api.get('/generacion-solar/generacion-hoy')
       for (const row of data.proyectos ?? []) {
         if (byProyecto[row.proyecto_id] !== undefined) {
-          byProyecto[row.proyecto_id].real   = Number(row.kwh_real || 0)
+          byProyecto[row.proyecto_id].real = Number(row.kwh_real || 0)
           byProyecto[row.proyecto_id].fuente = row.fuente || 'sin_dato'
         }
       }
-    } catch { /* Solenium no disponible — solo P90 */ }
+    } catch {
+      /* Solenium no disponible — solo P90 */
+    }
 
     genHoyRows.value = Object.values(byProyecto)
-      .map(r => ({ ...r, real: +r.real.toFixed(1), p90: +r.p90.toFixed(1), fuente: r.fuente || 'sin_dato' }))
+      .map((r) => ({
+        ...r,
+        real: +r.real.toFixed(1),
+        p90: +r.p90.toFixed(1),
+        fuente: r.fuente || 'sin_dato',
+      }))
       .sort((a, b) => b.p90 - a.p90)
   } catch {
     genHoyRows.value = []
@@ -1064,11 +1526,12 @@ async function cargarGen7() {
   gen7Loading.value = true
   gen7Days.value = []
   try {
-    const hoy    = new Date()
+    const hoy = new Date()
     const hoyStr = hoy.toISOString().split('T')[0]
-    const hace7  = new Date(hoy); hace7.setDate(hace7.getDate() - 6)
-    const fi     = hace7.toISOString().split('T')[0]
-    const ff     = hoyStr
+    const hace7 = new Date(hoy)
+    hace7.setDate(hace7.getDate() - 6)
+    const fi = hace7.toISOString().split('T')[0]
+    const ff = hoyStr
 
     // Fetch Unergy (histórico) y Solenium (hoy) en paralelo
     const [unergRes, solRes] = await Promise.allSettled([
@@ -1099,7 +1562,7 @@ async function cargarGen7() {
       result.push({
         fecha: key,
         real: realByDate[key] != null ? realByDate[key] : null,
-        p90:  p90 > 0 ? +p90.toFixed(1) : null,
+        p90: p90 > 0 ? +p90.toFixed(1) : null,
       })
       cursor.setDate(cursor.getDate() + 1)
     }
@@ -1120,19 +1583,18 @@ async function cargarGenProj() {
   }
   genProjLoading.value = true
   genProjCargado.value = false
-  genProjPuntos.value  = []
+  genProjPuntos.value = []
   genProjTotalKwh.value = 0
   try {
     const fi = genProjFechaInicio.value.toISOString().split('T')[0]
     const ff = genProjFechaFin.value.toISOString().split('T')[0]
-    const { data } = await api.get(
-      `/generacion-solar/proyecto/${genProjSel.value}/historial`,
-      { params: { fecha_inicio: fi, fecha_fin: ff, granularidad: genProjGran.value } }
-    )
-    genProjPuntos.value   = data.puntos ?? []
+    const { data } = await api.get(`/generacion-solar/proyecto/${genProjSel.value}/historial`, {
+      params: { fecha_inicio: fi, fecha_fin: ff, granularidad: genProjGran.value },
+    })
+    genProjPuntos.value = data.puntos ?? []
     genProjTotalKwh.value = data.total_kwh ?? 0
   } catch {
-    genProjPuntos.value   = []
+    genProjPuntos.value = []
     genProjTotalKwh.value = 0
   } finally {
     genProjLoading.value = false
@@ -1142,10 +1604,10 @@ async function cargarGenProj() {
 
 // ── Acciones ──────────────────────────────────────────────────────────────
 function limpiarFiltros() {
-  search.value           = ''
-  filtroProyecto.value   = null
-  filtroPrioridad.value  = null
-  filtroEstado.value     = null
+  search.value = ''
+  filtroProyecto.value = null
+  filtroPrioridad.value = null
+  filtroEstado.value = null
   filtroFechaDesde.value = null
   filtroFechaHasta.value = null
 }
@@ -1160,21 +1622,21 @@ function navegar(delta) {
 }
 
 function abrirDrawer(falla) {
-  drawerFalla.value       = falla
-  quickEdit.estado_id     = falla.estado?.id ?? null
-  quickEdit.prioridad_id  = falla.prioridad?.id ?? null
-  nuevaNota.nota          = ''
-  nuevaNota.estado_id     = null
-  drawerVisible.value     = true
+  drawerFalla.value = falla
+  quickEdit.estado_id = falla.estado?.id ?? null
+  quickEdit.prioridad_id = falla.prioridad?.id ?? null
+  nuevaNota.nota = ''
+  nuevaNota.estado_id = null
+  drawerVisible.value = true
 }
 
 function abrirCrear() {
-  editingFalla.value    = null
+  editingFalla.value = null
   formDialogVisible.value = true
 }
 
 function abrirEditar(falla) {
-  editingFalla.value    = falla
+  editingFalla.value = falla
   formDialogVisible.value = true
 }
 
@@ -1182,17 +1644,23 @@ async function _mostrarResultadoNotificacion(fallaIds) {
   // Envía notificación para cada falla y muestra un toast con el resultado.
   // Si alguna falla, muestra advertencia pero NO bloquea el flujo.
   const resultados = await Promise.all(
-    fallaIds.map(id =>
-      api.post(`/fallas/${id}/notificar`)
-        .then(r => r.data)
-        .catch(err => ({ ok: false, enviados: [], errores: [err.response?.data?.detail || err.message || 'Error desconocido'], sin_correos: false }))
-    )
+    fallaIds.map((id) =>
+      api
+        .post(`/fallas/${id}/notificar`)
+        .then((r) => r.data)
+        .catch((err) => ({
+          ok: false,
+          enviados: [],
+          errores: [err.response?.data?.detail || err.message || 'Error desconocido'],
+          sin_correos: false,
+        })),
+    ),
   )
 
-  const todosOk     = resultados.every(r => r.ok)
-  const sinCorreos  = resultados.some(r => r.sin_correos)
-  const enviados    = [...new Set(resultados.flatMap(r => r.enviados || []))]
-  const errores     = resultados.flatMap(r => r.errores || []).filter(Boolean)
+  const todosOk = resultados.every((r) => r.ok)
+  const sinCorreos = resultados.some((r) => r.sin_correos)
+  const enviados = [...new Set(resultados.flatMap((r) => r.enviados || []))]
+  const errores = resultados.flatMap((r) => r.errores || []).filter(Boolean)
 
   if (todosOk) {
     toast.add({
@@ -1205,12 +1673,15 @@ async function _mostrarResultadoNotificacion(fallaIds) {
     toast.add({
       severity: 'warn',
       summary: '⚠️ Sin correos configurados',
-      detail: 'La falla fue guardada pero el cliente no tiene correos operacionales configurados. Agrégalos en Clientes → Correos Operacionales.',
+      detail:
+        'La falla fue guardada pero el cliente no tiene correos operacionales configurados. Agrégalos en Clientes → Correos Operacionales.',
       life: 8000,
     })
   } else {
     // Obtener el error SMTP más descriptivo
-    const errorSmtp = errores.find(e => e.includes('534') || e.includes('Application-specific') || e.includes('password'))
+    const errorSmtp = errores.find(
+      (e) => e.includes('534') || e.includes('Application-specific') || e.includes('password'),
+    )
     toast.add({
       severity: 'error',
       summary: '✉️ Error al enviar notificación',
@@ -1230,7 +1701,7 @@ function irAFallaDesdeCalendario(falla) {
 
 function editarDesdeDrawer() {
   if (!drawerFalla.value) return
-  editingFalla.value    = drawerFalla.value
+  editingFalla.value = drawerFalla.value
   formDialogVisible.value = true
 }
 
@@ -1246,68 +1717,70 @@ async function onSaveForm(payload) {
       delete payload.nota_inicial
       delete payload._archivos
       await api.patch(`/fallas/${editingFalla.value.id}`, payload)
-      if (notaInicial) await api.post(`/fallas/${editingFalla.value.id}/seguimientos`, { nota: notaInicial })
+      if (notaInicial)
+        await api.post(`/fallas/${editingFalla.value.id}/seguimientos`, { nota: notaInicial })
       if (archivosEdit.length) {
-        await Promise.all(archivosEdit.map(file => {
-          const fd = new FormData()
-          fd.append('archivo', file)
-          return api.post(`/fallas/${editingFalla.value.id}/archivos`, fd)
-        }))
+        await Promise.all(
+          archivosEdit.map((file) => {
+            const fd = new FormData()
+            fd.append('archivo', file)
+            return api.post(`/fallas/${editingFalla.value.id}/archivos`, fd)
+          }),
+        )
       }
       toast.add({ severity: 'success', summary: 'Falla actualizada', life: 2500 })
 
       // Notificación tras edición
       if (notificar) {
-        await _mostrarResultadoNotificacion(
-          [editingFalla.value.id]
-        )
+        await _mostrarResultadoNotificacion([editingFalla.value.id])
       }
     } else {
       // ── Creación (uno o más proyectos) ──────────────────────────────────
       const { proyecto_ids, nota_inicial, _archivos, ...base } = payload
-      const ids      = proyecto_ids ?? []
+      const ids = proyecto_ids ?? []
       const archivos = _archivos ?? []
 
       // Una falla por proyecto, en paralelo
       const nuevas = await Promise.all(
-        ids.map(pid => api.post('/fallas', { ...base, proyecto_id: pid }).then(r => r.data))
+        ids.map((pid) => api.post('/fallas', { ...base, proyecto_id: pid }).then((r) => r.data)),
       )
       // Nota inicial para cada falla creada (si la hay)
       if (nota_inicial) {
         await Promise.all(
-          nuevas.map(f => api.post(`/fallas/${f.id}/seguimientos`, { nota: nota_inicial }))
+          nuevas.map((f) => api.post(`/fallas/${f.id}/seguimientos`, { nota: nota_inicial })),
         )
       }
       // Subir archivos adjuntos a cada falla (si los hay)
       if (archivos.length) {
         await Promise.all(
-          nuevas.flatMap(f =>
-            archivos.map(file => {
+          nuevas.flatMap((f) =>
+            archivos.map((file) => {
               const fd = new FormData()
               fd.append('archivo', file)
               return api.post(`/fallas/${f.id}/archivos`, fd)
-            })
-          )
+            }),
+          ),
         )
       }
       const n = nuevas.length
       toast.add({
         severity: 'success',
         summary: n === 1 ? 'Falla registrada' : `${n} fallas registradas`,
-        detail: n > 1 ? `Se creó una falla independiente por cada proyecto seleccionado` : undefined,
+        detail:
+          n > 1 ? `Se creó una falla independiente por cada proyecto seleccionado` : undefined,
         life: 3000,
       })
 
       // Notificación tras creación
       if (notificar && nuevas.length) {
-        await _mostrarResultadoNotificacion(nuevas.map(f => f.id))
+        await _mostrarResultadoNotificacion(nuevas.map((f) => f.id))
       }
     }
     formDialogVisible.value = false
-    calRefreshKey.value++     // ← dispara recarga del calendario
+    calRefreshKey.value++ // ← dispara recarga del calendario
     await cargar()
     if (drawerFalla.value && editingFalla.value) {
-      const refreshed = allFallas.value.find(f => f.id === editingFalla.value.id)
+      const refreshed = allFallas.value.find((f) => f.id === editingFalla.value.id)
       if (refreshed) abrirDrawer(refreshed)
     }
   } catch (err) {
@@ -1329,34 +1802,42 @@ async function guardarQuickEdit() {
   if (!drawerFalla.value) return
   const payload = {}
   if (quickEdit.estado_id !== drawerFalla.value.estado?.id) payload.estado_id = quickEdit.estado_id
-  if (quickEdit.prioridad_id !== drawerFalla.value.prioridad?.id) payload.prioridad_id = quickEdit.prioridad_id
+  if (quickEdit.prioridad_id !== drawerFalla.value.prioridad?.id)
+    payload.prioridad_id = quickEdit.prioridad_id
   if (!Object.keys(payload).length) return
 
   savingQuick.value = true
   try {
     const { data } = await api.patch(`/fallas/${drawerFalla.value.id}`, payload)
     drawerFalla.value = data
-    const idx = allFallas.value.findIndex(f => f.id === data.id)
+    const idx = allFallas.value.findIndex((f) => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     savedFlash.value = true
-    setTimeout(() => { savedFlash.value = false }, 1500)
+    setTimeout(() => {
+      savedFlash.value = false
+    }, 1500)
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'No se pudo guardar', detail: err?.response?.data?.detail, life: 3000 })
-    quickEdit.estado_id     = drawerFalla.value.estado?.id ?? null
-    quickEdit.prioridad_id  = drawerFalla.value.prioridad?.id ?? null
+    toast.add({
+      severity: 'error',
+      summary: 'No se pudo guardar',
+      detail: err?.response?.data?.detail,
+      life: 3000,
+    })
+    quickEdit.estado_id = drawerFalla.value.estado?.id ?? null
+    quickEdit.prioridad_id = drawerFalla.value.prioridad?.id ?? null
   } finally {
     savingQuick.value = false
   }
 }
 
 function quickResolve(falla) {
-  const estadoFinal = catalogos.value.estados.find(e => e.es_estado_final)
+  const estadoFinal = catalogos.value.estados.find((e) => e.es_estado_final)
   if (!estadoFinal) {
     toast.add({ severity: 'warn', summary: 'Sin estado final configurado', life: 3000 })
     return
   }
-  resolveFallaTarget.value  = falla
-  resolveFecha.value        = new Date()
+  resolveFallaTarget.value = falla
+  resolveFecha.value = new Date()
   resolveTipoSolucion.value = null
   resolveDialogVisible.value = true
 }
@@ -1364,48 +1845,59 @@ function quickResolve(falla) {
 async function confirmarResolve() {
   const falla = resolveFallaTarget.value
   if (!falla) return
-  const estadoFinal = catalogos.value.estados.find(e => e.es_estado_final)
+  const estadoFinal = catalogos.value.estados.find((e) => e.es_estado_final)
   resolvingFalla.value = true
   try {
     const payload = {
-      estado_id:        estadoFinal.id,
+      estado_id: estadoFinal.id,
       fecha_resolucion: resolveFecha.value?.toISOString() ?? new Date().toISOString(),
-      sla_cumplido:     !slaVencido(falla),
+      sla_cumplido: !slaVencido(falla),
     }
     if (resolveTipoSolucion.value) payload.tipo_solucion = resolveTipoSolucion.value
     const { data } = await api.patch(`/fallas/${falla.id}`, payload)
-    const idx = allFallas.value.findIndex(f => f.id === data.id)
+    const idx = allFallas.value.findIndex((f) => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     if (drawerFalla.value?.id === data.id) drawerFalla.value = data
     resolveDialogVisible.value = false
     calRefreshKey.value++
     toast.add({ severity: 'success', summary: 'Falla resuelta', life: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: err?.response?.data?.detail,
+      life: 3000,
+    })
   } finally {
     resolvingFalla.value = false
   }
 }
 
 async function reabrirFalla() {
-  const abierta = catalogos.value.estados.find(e => e.codigo === 'abierta')
-    || catalogos.value.estados.find(e => !e.es_estado_final)
+  const abierta =
+    catalogos.value.estados.find((e) => e.codigo === 'abierta') ||
+    catalogos.value.estados.find((e) => !e.es_estado_final)
   if (!abierta) {
     toast.add({ severity: 'warn', summary: 'Sin estado abierto configurado', life: 3000 })
     return
   }
   try {
     const { data } = await api.patch(`/fallas/${drawerFalla.value.id}`, {
-      estado_id:        abierta.id,
+      estado_id: abierta.id,
       fecha_resolucion: null,
     })
     drawerFalla.value = data
-    const idx = allFallas.value.findIndex(f => f.id === data.id)
+    const idx = allFallas.value.findIndex((f) => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     quickEdit.estado_id = data.estado?.id ?? null
     toast.add({ severity: 'success', summary: 'Falla reabierta', life: 2500 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: err?.response?.data?.detail,
+      life: 3000,
+    })
   }
 }
 
@@ -1417,17 +1909,22 @@ async function agregarSeguimiento() {
     if (nuevaNota.nota.trim()) payload.nota = nuevaNota.nota.trim()
     if (nuevaNota.estado_id) payload.estado_nuevo_id = nuevaNota.estado_id
     await api.post(`/fallas/${drawerFalla.value.id}/seguimientos`, payload)
-    nuevaNota.nota      = ''
+    nuevaNota.nota = ''
     nuevaNota.estado_id = null
     const { data } = await api.get(`/fallas/${drawerFalla.value.id}`)
     drawerFalla.value = data
-    const idx = allFallas.value.findIndex(f => f.id === data.id)
+    const idx = allFallas.value.findIndex((f) => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     quickEdit.estado_id = data.estado?.id ?? null
     if (payload.estado_nuevo_id) calRefreshKey.value++
     toast.add({ severity: 'success', summary: 'Seguimiento agregado', life: 2000 })
   } catch (err) {
-    toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: err?.response?.data?.detail,
+      life: 3000,
+    })
   } finally {
     addingSeg.value = false
   }
@@ -1443,18 +1940,25 @@ function confirmDelete(falla) {
     accept: async () => {
       try {
         await api.delete(`/fallas/${falla.id}`)
-        allFallas.value     = allFallas.value.filter(f => f.id !== falla.id)
+        allFallas.value = allFallas.value.filter((f) => f.id !== falla.id)
         drawerVisible.value = false
         toast.add({ severity: 'success', summary: 'Falla eliminada', life: 2500 })
       } catch (err) {
-        toast.add({ severity: 'error', summary: 'Error', detail: err?.response?.data?.detail, life: 3000 })
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err?.response?.data?.detail,
+          life: 3000,
+        })
       }
     },
   })
 }
 
 // ── Helpers visuales ──────────────────────────────────────────────────────
-function prioColor(codigo) { return PRIO_COLORS[codigo] || '#9ca3af' }
+function prioColor(codigo) {
+  return PRIO_COLORS[codigo] || '#9ca3af'
+}
 
 function prioPillStyle(codigo) {
   const c = prioColor(codigo)
@@ -1488,7 +1992,7 @@ function initials(nombre) {
 
 function avatarStyle(user) {
   if (!user) return { background: '#9ca3af' }
-  const id    = user.id ?? hashCode(user.nombre || '')
+  const id = user.id ?? hashCode(user.nombre || '')
   const color = AVATAR_PALETTE[Math.abs(id) % AVATAR_PALETTE.length]
   return { background: color }
 }
@@ -1509,8 +2013,8 @@ function diasClass(f) {
 
 function horasTranscurridas(falla) {
   if (!falla?.fecha_identificacion) return 0
-  const desde = new Date(falla.fecha_ocurrencia || (falla.fecha_identificacion + 'T00:00:00'))
-  const hasta  = falla.fecha_resolucion ? new Date(falla.fecha_resolucion) : new Date()
+  const desde = new Date(falla.fecha_ocurrencia || falla.fecha_identificacion + 'T00:00:00')
+  const hasta = falla.fecha_resolucion ? new Date(falla.fecha_resolucion) : new Date()
   return Math.max(0, Math.round((hasta - desde) / 3_600_000))
 }
 
@@ -1530,21 +2034,21 @@ function slaFillStyle(falla) {
 }
 
 function slaTextColor(falla) {
-  if (falla?.sla_cumplido === true)  return '#16a34a'
+  if (falla?.sla_cumplido === true) return '#16a34a'
   if (falla?.sla_cumplido === false) return '#dc2626'
   const p = slaPct(falla)
-  if (p == null)  return '#9ca3af'
-  if (p >= 100)   return '#dc2626'
-  if (p >= 70)    return '#d97706'
+  if (p == null) return '#9ca3af'
+  if (p >= 100) return '#dc2626'
+  if (p >= 70) return '#d97706'
   return '#16a34a'
 }
 
 function slaText(falla) {
-  if (falla?.sla_cumplido === true)  return 'OK'
+  if (falla?.sla_cumplido === true) return 'OK'
   if (falla?.sla_cumplido === false) return 'Vencido'
   const p = slaPct(falla)
   if (p == null) return '—'
-  if (p >= 100)  return 'Vencido'
+  if (p >= 100) return 'Vencido'
   return `${p}%`
 }
 
@@ -1558,8 +2062,11 @@ function slaSeverity(falla) {
 
 function fmtFecha(d) {
   if (!d) return '—'
-  return new Date(d + 'T00:00:00').toLocaleDateString('es-CO',
-    { day: '2-digit', month: 'short', year: 'numeric' })
+  return new Date(d + 'T00:00:00').toLocaleDateString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
 }
 
 // Fecha + hora para campos datetime (ocurrencia, resolución).
@@ -1567,14 +2074,23 @@ function fmtFechaHora(dt) {
   if (!dt) return '—'
   const d = new Date(dt)
   if (isNaN(d)) return fmtFecha(String(dt).slice(0, 10))
-  return d.toLocaleString('es-CO',
-    { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleString('es-CO', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 // Moneda COP sin decimales.
 function fmtCOP(v) {
   if (v == null) return '—'
-  return Number(v).toLocaleString('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 })
+  return Number(v).toLocaleString('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    maximumFractionDigits: 0,
+  })
 }
 
 // Duración legible a partir de horas (min / h / d h).
@@ -1589,26 +2105,26 @@ function fmtHoras(h) {
 
 function relativeTime(d, includeAbsolute = false) {
   if (!d) return ''
-  const date = typeof d === 'string' && d.length === 10
-    ? new Date(d + 'T00:00:00')
-    : new Date(d)
+  const date = typeof d === 'string' && d.length === 10 ? new Date(d + 'T00:00:00') : new Date(d)
   const diff = (Date.now() - date.getTime()) / 1000
   let rel
   if (diff < 0) {
     const future = Math.abs(diff)
     if (future < 86400) rel = `en ${Math.floor(future / 3600)}h`
     else rel = `en ${Math.floor(future / 86400)}d`
-  } else if (diff < 60)          rel = 'ahora'
-  else if (diff < 3600)          rel = `hace ${Math.floor(diff / 60)}min`
-  else if (diff < 86400)         rel = `hace ${Math.floor(diff / 3600)}h`
-  else if (diff < 86400 * 30)    rel = `hace ${Math.floor(diff / 86400)}d`
-  else if (diff < 86400 * 365)   rel = `hace ${Math.floor(diff / (86400 * 30))}m`
-  else                           rel = `hace ${Math.floor(diff / (86400 * 365))}a`
+  } else if (diff < 60) rel = 'ahora'
+  else if (diff < 3600) rel = `hace ${Math.floor(diff / 60)}min`
+  else if (diff < 86400) rel = `hace ${Math.floor(diff / 3600)}h`
+  else if (diff < 86400 * 30) rel = `hace ${Math.floor(diff / 86400)}d`
+  else if (diff < 86400 * 365) rel = `hace ${Math.floor(diff / (86400 * 30))}m`
+  else rel = `hace ${Math.floor(diff / (86400 * 365))}a`
   return rel
 }
 
 function startOfDay(d) {
-  const x = new Date(d); x.setHours(0, 0, 0, 0); return x
+  const x = new Date(d)
+  x.setHours(0, 0, 0, 0)
+  return x
 }
 
 // ── Computed: Generación ──────────────────────────────────────────────────
@@ -1617,102 +2133,177 @@ function startOfDay(d) {
 // 3) todos los proyectos (último recurso para que siempre haya datos).
 const proyectosGenOp = computed(() => {
   if (!proyectos.value.length) return []
-  const conOp = proyectos.value.filter(p =>
-    p.srv_operacion === true && ['minigranja', 'gd'].includes(p.tipo_proyecto)
+  const conOp = proyectos.value.filter(
+    (p) => p.srv_operacion === true && ['minigranja', 'gd'].includes(p.tipo_proyecto),
   )
   if (conOp.length) return conOp
-  const conP90 = proyectos.value.filter(p => {
+  const conP90 = proyectos.value.filter((p) => {
     const arr = p.p90_mensual_kwh
-    return Array.isArray(arr) ? arr.some(v => Number(v) > 0)
-         : arr && typeof arr === 'object' ? Object.values(arr).some(v => Number(v) > 0)
-         : false
+    return Array.isArray(arr)
+      ? arr.some((v) => Number(v) > 0)
+      : arr && typeof arr === 'object'
+        ? Object.values(arr).some((v) => Number(v) > 0)
+        : false
   })
   if (conP90.length) return conP90
-  return proyectos.value   // muestra todos si no hay mejor opción
+  return proyectos.value // muestra todos si no hay mejor opción
 })
 // IDs de esos proyectos para filtrar filas de generación
-const genOpIds = computed(() => new Set(proyectosGenOp.value.map(p => p.id)))
+const genOpIds = computed(() => new Set(proyectosGenOp.value.map((p) => p.id)))
 
 // ── Constantes Chart.js ───────────────────────────────────────────────────
-const FONT       = { family: 'inherit', size: 11 }
+const FONT = { family: 'inherit', size: 11 }
 const GRID_COLOR = '#f0eaf8'
-const BRAND      = '#915BD8'
+const BRAND = '#915BD8'
 
 // Chart 1 ─ Últimos 7 días
-const gen7HasData   = computed(() => gen7Days.value.some(d => d.real != null || d.p90 != null))
-const gen7HasP90    = computed(() => gen7Days.value.some(d => d.p90 != null && d.p90 > 0))
-const gen7TotalReal = computed(() => +gen7Days.value.reduce((s, d) => s + (d.real || 0), 0).toFixed(0))
-const gen7TotalP90  = computed(() => +gen7Days.value.reduce((s, d) => s + (d.p90  || 0), 0).toFixed(0))
+const gen7HasData = computed(() => gen7Days.value.some((d) => d.real != null || d.p90 != null))
+const gen7HasP90 = computed(() => gen7Days.value.some((d) => d.p90 != null && d.p90 > 0))
+const gen7TotalReal = computed(
+  () => +gen7Days.value.reduce((s, d) => s + (d.real || 0), 0).toFixed(0),
+)
+const gen7TotalP90 = computed(
+  () => +gen7Days.value.reduce((s, d) => s + (d.p90 || 0), 0).toFixed(0),
+)
 
 const lineGen7Data = computed(() => ({
-  labels: gen7Days.value.map(d =>
-    new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-CO', { weekday: 'short', day: '2-digit', month: 'short' })
+  labels: gen7Days.value.map((d) =>
+    new Date(d.fecha + 'T00:00:00').toLocaleDateString('es-CO', {
+      weekday: 'short',
+      day: '2-digit',
+      month: 'short',
+    }),
   ),
   datasets: [
     {
       label: 'Real (kWh)',
-      data: gen7Days.value.map(d => d.real),
-      borderColor: '#16a34a', backgroundColor: '#16a34a20',
-      borderWidth: 2.5, fill: true, tension: 0.4,
-      pointRadius: 5, pointHoverRadius: 7, spanGaps: true,
+      data: gen7Days.value.map((d) => d.real),
+      borderColor: '#16a34a',
+      backgroundColor: '#16a34a20',
+      borderWidth: 2.5,
+      fill: true,
+      tension: 0.4,
+      pointRadius: 5,
+      pointHoverRadius: 7,
+      spanGaps: true,
     },
-    ...(gen7HasP90.value ? [{
-      label: 'P90 (kWh)',
-      data: gen7Days.value.map(d => d.p90),
-      borderColor: '#f59e0b', backgroundColor: 'transparent',
-      borderWidth: 2, borderDash: [6, 3], fill: false, tension: 0.4,
-      pointRadius: 3, pointHoverRadius: 5, spanGaps: true,
-    }] : []),
+    ...(gen7HasP90.value
+      ? [
+          {
+            label: 'P90 (kWh)',
+            data: gen7Days.value.map((d) => d.p90),
+            borderColor: '#f59e0b',
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderDash: [6, 3],
+            fill: false,
+            tension: 0.4,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            spanGaps: true,
+          },
+        ]
+      : []),
   ],
 }))
 
 const lineGen7Opts = {
-  responsive: true, maintainAspectRatio: false,
+  responsive: true,
+  maintainAspectRatio: false,
   plugins: {
-    legend: { position: 'top', align: 'end', labels: { font: FONT, padding: 12, boxWidth: 12, boxHeight: 12 } },
-    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.raw ?? 0).toLocaleString('es-CO')} kWh` } },
+    legend: {
+      position: 'top',
+      align: 'end',
+      labels: { font: FONT, padding: 12, boxWidth: 12, boxHeight: 12 },
+    },
+    tooltip: {
+      callbacks: {
+        label: (ctx) =>
+          ` ${ctx.dataset.label}: ${Number(ctx.raw ?? 0).toLocaleString('es-CO')} kWh`,
+      },
+    },
   },
   scales: {
-    x: { grid: { color: GRID_COLOR }, ticks: { font: FONT, color: '#6b7280' }, border: { display: false } },
-    y: { grid: { color: GRID_COLOR }, ticks: { font: FONT, color: '#6b7280' }, border: { display: false }, beginAtZero: true },
+    x: {
+      grid: { color: GRID_COLOR },
+      ticks: { font: FONT, color: '#6b7280' },
+      border: { display: false },
+    },
+    y: {
+      grid: { color: GRID_COLOR },
+      ticks: { font: FONT, color: '#6b7280' },
+      border: { display: false },
+      beginAtZero: true,
+    },
   },
 }
 
 // Chart 3 ─ Hoy
 const genHoyKpi = computed(() => {
   const totalReal = genHoyRows.value.reduce((s, r) => s + r.real, 0)
-  const totalP90  = genHoyRows.value.reduce((s, r) => s + r.p90,  0)
-  return { totalReal: +totalReal.toFixed(1), totalP90: +totalP90.toFixed(1), ratio: totalP90 > 0 ? Math.round(totalReal / totalP90 * 100) : 0 }
+  const totalP90 = genHoyRows.value.reduce((s, r) => s + r.p90, 0)
+  return {
+    totalReal: +totalReal.toFixed(1),
+    totalP90: +totalP90.toFixed(1),
+    ratio: totalP90 > 0 ? Math.round((totalReal / totalP90) * 100) : 0,
+  }
 })
 
 const barGenHoyData = computed(() => ({
-  labels: genHoyRows.value.map(r => r.nombre),
+  labels: genHoyRows.value.map((r) => r.nombre),
   datasets: [
     {
       label: 'Real (kWh)',
-      data: genHoyRows.value.map(r => r.real),
-      backgroundColor: genHoyRows.value.map(r => r.p90 > 0 && r.real >= r.p90 ? '#16a34acc' : '#dc2626cc'),
-      borderColor:     genHoyRows.value.map(r => r.p90 > 0 && r.real >= r.p90 ? '#16a34a'   : '#dc2626'),
-      borderWidth: 1, borderRadius: 4, barThickness: 14,
+      data: genHoyRows.value.map((r) => r.real),
+      backgroundColor: genHoyRows.value.map((r) =>
+        r.p90 > 0 && r.real >= r.p90 ? '#16a34acc' : '#dc2626cc',
+      ),
+      borderColor: genHoyRows.value.map((r) =>
+        r.p90 > 0 && r.real >= r.p90 ? '#16a34a' : '#dc2626',
+      ),
+      borderWidth: 1,
+      borderRadius: 4,
+      barThickness: 14,
     },
     {
       label: 'P90 (kWh)',
-      data: genHoyRows.value.map(r => r.p90),
-      backgroundColor: '#f59e0bcc', borderColor: '#f59e0b',
-      borderWidth: 1, borderRadius: 4, barThickness: 14,
+      data: genHoyRows.value.map((r) => r.p90),
+      backgroundColor: '#f59e0bcc',
+      borderColor: '#f59e0b',
+      borderWidth: 1,
+      borderRadius: 4,
+      barThickness: 14,
     },
   ],
 }))
 
 const barGenHoyOpts = {
-  indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+  indexAxis: 'y',
+  responsive: true,
+  maintainAspectRatio: false,
   plugins: {
-    legend: { position: 'top', align: 'end', labels: { font: FONT, padding: 12, boxWidth: 12, boxHeight: 12 } },
-    tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('es-CO')} kWh` } },
+    legend: {
+      position: 'top',
+      align: 'end',
+      labels: { font: FONT, padding: 12, boxWidth: 12, boxHeight: 12 },
+    },
+    tooltip: {
+      callbacks: {
+        label: (ctx) => ` ${ctx.dataset.label}: ${Number(ctx.raw).toLocaleString('es-CO')} kWh`,
+      },
+    },
   },
   scales: {
-    x: { grid: { color: GRID_COLOR }, ticks: { font: FONT, color: '#6b7280' }, border: { display: false } },
-    y: { grid: { display: false }, ticks: { font: { ...FONT, size: 11 }, color: '#374151' }, border: { display: false } },
+    x: {
+      grid: { color: GRID_COLOR },
+      ticks: { font: FONT, color: '#6b7280' },
+      border: { display: false },
+    },
+    y: {
+      grid: { display: false },
+      ticks: { font: { ...FONT, size: 11 }, color: '#374151' },
+      border: { display: false },
+    },
   },
 }
 
@@ -1723,10 +2314,13 @@ const genProjFallasByDate = computed(() => {
   const ff = genProjFechaFin.value?.toISOString().split('T')[0] || ''
   const map = {}
   allFallas.value
-    .filter(f => Number(f.proyecto?.id) === Number(genProjSel.value) &&
-      (f.fecha_identificacion || '').split('T')[0] >= fi &&
-      (f.fecha_identificacion || '').split('T')[0] <= ff)
-    .forEach(f => {
+    .filter(
+      (f) =>
+        Number(f.proyecto?.id) === Number(genProjSel.value) &&
+        (f.fecha_identificacion || '').split('T')[0] >= fi &&
+        (f.fecha_identificacion || '').split('T')[0] <= ff,
+    )
+    .forEach((f) => {
       const d = (f.fecha_identificacion || '').split('T')[0]
       if (!map[d]) map[d] = []
       map[d].push(f)
@@ -1739,9 +2333,12 @@ const genProjFallas = computed(() => {
   const fi = genProjFechaInicio.value?.toISOString().split('T')[0] || ''
   const ff = genProjFechaFin.value?.toISOString().split('T')[0] || ''
   return allFallas.value
-    .filter(f => Number(f.proyecto?.id) === Number(genProjSel.value) &&
-      (f.fecha_identificacion || '').split('T')[0] >= fi &&
-      (f.fecha_identificacion || '').split('T')[0] <= ff)
+    .filter(
+      (f) =>
+        Number(f.proyecto?.id) === Number(genProjSel.value) &&
+        (f.fecha_identificacion || '').split('T')[0] >= fi &&
+        (f.fecha_identificacion || '').split('T')[0] <= ff,
+    )
     .sort((a, b) => (a.fecha_identificacion || '').localeCompare(b.fecha_identificacion || ''))
 })
 
@@ -1749,37 +2346,42 @@ const barGenProjData = computed(() => {
   const fbd = genProjFallasByDate.value
   const isHour = genProjGran.value === 'hour'
   return {
-    labels: genProjPuntos.value.map(pt => {
+    labels: genProjPuntos.value.map((pt) => {
       if (isHour) {
         // "2026-05-22 08:00" → "22 may 08h"
         const [day, time] = pt.label.split(' ')
         const d = new Date(day + 'T00:00:00')
-        return `${d.toLocaleDateString('es-CO', { day:'2-digit', month:'short' })} ${time?.slice(0, 5) || ''}`
+        return `${d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })} ${time?.slice(0, 5) || ''}`
       }
       // "2026-05-22" → "22 may"
-      return new Date(pt.label + 'T00:00:00').toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })
+      return new Date(pt.label + 'T00:00:00').toLocaleDateString('es-CO', {
+        day: '2-digit',
+        month: 'short',
+      })
     }),
-    datasets: [{
-      label: 'Generación (kWh)',
-      data: genProjPuntos.value.map(pt => pt.kwh),
-      // Barras rojas en días con falla (solo en vista diaria)
-      backgroundColor: genProjPuntos.value.map(pt => {
-        if (isHour) return '#7c3aedcc'
-        const day = pt.label.split(' ')[0]
-        return fbd[day]?.length ? '#dc2626cc' : '#7c3aedcc'
-      }),
-      borderColor: genProjPuntos.value.map(pt => {
-        if (isHour) return '#7c3aed'
-        const day = pt.label.split(' ')[0]
-        return fbd[day]?.length ? '#b91c1c' : '#7c3aed'
-      }),
-      borderWidth: genProjPuntos.value.map(pt => {
-        if (isHour) return 1
-        const day = pt.label.split(' ')[0]
-        return fbd[day]?.length ? 2 : 1
-      }),
-      borderRadius: 3,
-    }],
+    datasets: [
+      {
+        label: 'Generación (kWh)',
+        data: genProjPuntos.value.map((pt) => pt.kwh),
+        // Barras rojas en días con falla (solo en vista diaria)
+        backgroundColor: genProjPuntos.value.map((pt) => {
+          if (isHour) return '#7c3aedcc'
+          const day = pt.label.split(' ')[0]
+          return fbd[day]?.length ? '#dc2626cc' : '#7c3aedcc'
+        }),
+        borderColor: genProjPuntos.value.map((pt) => {
+          if (isHour) return '#7c3aed'
+          const day = pt.label.split(' ')[0]
+          return fbd[day]?.length ? '#b91c1c' : '#7c3aed'
+        }),
+        borderWidth: genProjPuntos.value.map((pt) => {
+          if (isHour) return 1
+          const day = pt.label.split(' ')[0]
+          return fbd[day]?.length ? 2 : 1
+        }),
+        borderRadius: 3,
+      },
+    ],
   }
 })
 
@@ -1788,7 +2390,8 @@ const barGenProjOpts = computed(() => {
   const puntos = genProjPuntos.value
   const isHour = genProjGran.value === 'hour'
   return {
-    responsive: true, maintainAspectRatio: false,
+    responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
       tooltip: {
@@ -1797,7 +2400,7 @@ const barGenProjOpts = computed(() => {
             const pt = puntos[items[0]?.dataIndex]
             return pt ? pt.label : ''
           },
-          label: ctx => ` ${Number(ctx.raw ?? 0).toLocaleString('es-CO')} kWh`,
+          label: (ctx) => ` ${Number(ctx.raw ?? 0).toLocaleString('es-CO')} kWh`,
           afterBody: (items) => {
             if (isHour) return []
             const pt = puntos[items[0]?.dataIndex]
@@ -1806,7 +2409,9 @@ const barGenProjOpts = computed(() => {
             const fallas = fbd[day] || []
             if (!fallas.length) return []
             const lines = ['', `⚡ ${fallas.length} falla(s):`]
-            fallas.forEach(f => lines.push(`  · ${f.codigo_interno}: ${(f.descripcion || '').slice(0, 45)}`))
+            fallas.forEach((f) =>
+              lines.push(`  · ${f.codigo_interno}: ${(f.descripcion || '').slice(0, 45)}`),
+            )
             return lines
           },
         },
@@ -1820,7 +2425,11 @@ const barGenProjOpts = computed(() => {
       },
       y: {
         grid: { color: GRID_COLOR },
-        ticks: { font: FONT, color: '#6b7280', callback: v => `${v.toLocaleString('es-CO')} kWh` },
+        ticks: {
+          font: FONT,
+          color: '#6b7280',
+          callback: (v) => `${v.toLocaleString('es-CO')} kWh`,
+        },
         border: { display: false },
         beginAtZero: true,
       },
@@ -1857,7 +2466,7 @@ function measureHeader() {
 onMounted(() => {
   cargar()
   cargarCatalogos()
-  cargarProyectos()   // cargarGenHoy + cargarGen7 se llaman desde aquí tras cargar proyectos
+  cargarProyectos() // cargarGenHoy + cargarGen7 se llaman desde aquí tras cargar proyectos
   window.addEventListener('keydown', onKeydown)
   nextTick(() => {
     measureHeader()
@@ -1875,7 +2484,10 @@ onBeforeUnmount(() => {
 
 // Limpiar drawer al cerrar
 watch(drawerVisible, (val) => {
-  if (!val) setTimeout(() => { drawerFalla.value = null }, 200)
+  if (!val)
+    setTimeout(() => {
+      drawerFalla.value = null
+    }, 200)
 })
 
 // Al cambiar de tab, volver arriba
@@ -1894,8 +2506,8 @@ watch(bucket, (newBucket) => {
   const pertenece = (() => {
     const f = drawerFalla.value
     if (newBucket === 'cerradas') return !!f.estado?.es_estado_final
-    if (newBucket === 'alerta')   return !f.estado?.es_estado_final && esAlertaSLA(f)
-    if (newBucket === 'activas')  return !f.estado?.es_estado_final
+    if (newBucket === 'alerta') return !f.estado?.es_estado_final && esAlertaSLA(f)
+    if (newBucket === 'activas') return !f.estado?.es_estado_final
     return true
   })()
   if (!pertenece) drawerVisible.value = false
@@ -1910,7 +2522,7 @@ watch(bucket, (newBucket) => {
   gap: 8px;
   padding: 6px 14px;
   background: #fff;
-  border-bottom: 1px solid #ECE7F2;
+  border-bottom: 1px solid #ece7f2;
   box-shadow: 0 1px 3px rgba(28, 18, 50, 0.04);
   flex-shrink: 0;
   position: sticky;
@@ -1928,24 +2540,31 @@ watch(bucket, (newBucket) => {
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-  color: #6B5A8A;
+  color: #6b5a8a;
   border-radius: 6px;
   cursor: pointer;
-  transition: all .15s;
+  transition: all 0.15s;
   white-space: nowrap;
 }
-.mon-tab i { font-size: 12px; }
-.mon-tab:hover:not(.mon-tab--active) { color: #2C2039; background: rgba(145,91,216,.08); }
-.mon-tab--active {
-  background: #915BD8;
-  color: #FDFAF7;
-  box-shadow: 0 1px 4px rgba(145,91,216,.3);
+.mon-tab i {
+  font-size: 12px;
 }
-.mon-tab--active:hover { color: #FDFAF7; }
+.mon-tab:hover:not(.mon-tab--active) {
+  color: #2c2039;
+  background: rgba(145, 91, 216, 0.08);
+}
+.mon-tab--active {
+  background: #915bd8;
+  color: #fdfaf7;
+  box-shadow: 0 1px 4px rgba(145, 91, 216, 0.3);
+}
+.mon-tab--active:hover {
+  color: #fdfaf7;
+}
 .mon-tab-group {
   display: inline-flex;
-  background: #F4F1FA;
-  border: 1px solid #E5E2EC;
+  background: #f4f1fa;
+  border: 1px solid #e5e2ec;
   border-radius: 8px;
   padding: 2px;
   gap: 0;
@@ -1974,7 +2593,7 @@ watch(bucket, (newBucket) => {
   gap: 0;
 }
 .gf-sticky-header::before {
-  content: "";
+  content: '';
   position: absolute;
   left: -24px;
   right: -24px;
@@ -2044,7 +2663,7 @@ watch(bucket, (newBucket) => {
 .bucket-pill--active {
   background: #f0eaf8;
   border-color: #c4aee8;
-  color: #2C2039;
+  color: #2c2039;
   font-weight: 600;
 }
 .bucket-pill--active .bucket-pill-count {
@@ -2059,7 +2678,9 @@ watch(bucket, (newBucket) => {
 .bucket-pill--active .bucket-pill-dot {
   box-shadow: none;
 }
-.bucket-pill-label { color: inherit; }
+.bucket-pill-label {
+  color: inherit;
+}
 .bucket-pill-count {
   font-weight: 700;
   font-size: 11px;
@@ -2105,8 +2726,12 @@ watch(bucket, (newBucket) => {
 }
 
 /* ══ Layout ══════════════════════════════════════════════════════════════ */
-.gf-layout { display: block; }
-.gf-main { min-width: 0; }
+.gf-layout {
+  display: block;
+}
+.gf-main {
+  min-width: 0;
+}
 
 @media (min-width: 1024px) {
   .gf-layout--split {
@@ -2115,7 +2740,9 @@ watch(bucket, (newBucket) => {
     gap: 16px;
     align-items: stretch;
   }
-  .gf-layout--split .gf-main { align-self: stretch; }
+  .gf-layout--split .gf-main {
+    align-self: stretch;
+  }
 }
 @media (min-width: 1440px) {
   .gf-layout--split {
@@ -2155,7 +2782,9 @@ watch(bucket, (newBucket) => {
     display: block;
     max-height: none;
   }
-  .gf-aside-backdrop { display: none; }
+  .gf-aside-backdrop {
+    display: none;
+  }
   .gf-aside-panel {
     max-width: none;
     height: auto;
@@ -2177,7 +2806,9 @@ watch(bucket, (newBucket) => {
   flex-wrap: nowrap;
   overflow: hidden;
 }
-.gf-drawer-header > :deep(.p-button) { flex-shrink: 0; }
+.gf-drawer-header > :deep(.p-button) {
+  flex-shrink: 0;
+}
 .gf-drawer-body {
   padding: 16px 18px;
   display: flex;
@@ -2208,13 +2839,21 @@ watch(bucket, (newBucket) => {
   gap: 8px;
   margin-bottom: 10px;
 }
-.gf-section-icon { color: #915BD8; font-size: 13px; }
-.gf-section-title { font-size: 14px; font-weight: 700; color: #2C2039; margin: 0; }
+.gf-section-icon {
+  color: #915bd8;
+  font-size: 13px;
+}
+.gf-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2c2039;
+  margin: 0;
+}
 .gf-section-count {
   margin-left: auto;
   font-size: 12px;
   font-weight: 700;
-  color: #915BD8;
+  color: #915bd8;
   background: rgba(145, 91, 216, 0.1);
   padding: 1px 8px;
   border-radius: 999px;
@@ -2229,7 +2868,10 @@ watch(bucket, (newBucket) => {
   align-items: center;
   gap: 4px;
 }
-.gf-save-flag--ok { color: #047857; font-weight: 600; }
+.gf-save-flag--ok {
+  color: #047857;
+  font-weight: 600;
+}
 
 .gf-subhead {
   font-size: 11.5px;
@@ -2242,7 +2884,7 @@ watch(bucket, (newBucket) => {
 .gf-body-text {
   font-size: 14px;
   line-height: 1.55;
-  color: #2C2039;
+  color: #2c2039;
   margin: 0;
 }
 
@@ -2259,7 +2901,7 @@ watch(bucket, (newBucket) => {
 .gf-hero-title {
   font-size: 17px;
   font-weight: 800;
-  color: #2C2039;
+  color: #2c2039;
   line-height: 1.3;
   margin: 0;
 }
@@ -2273,39 +2915,119 @@ watch(bucket, (newBucket) => {
 }
 
 /* Clasificación / equipo que falló */
-.gf-clasif-sub { font-size: 14px; font-weight: 700; color: #2C2039; }
-.gf-flag {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 8px;
+.gf-clasif-sub {
+  font-size: 14px;
+  font-weight: 700;
+  color: #2c2039;
 }
-.gf-flag i { font-size: 11px; }
-.gf-flag--ok  { background: #f3f4f6; color: #6b7280; }
-.gf-flag--bad { background: #fee2e2; color: #b91c1c; }
-.gf-flag--warn{ background: #fef3c7; color: #b45309; }
-.gf-inv-list { display: flex; flex-direction: column; gap: 8px; }
-.gf-inv { border: 1px solid #eee6fa; border-radius: 9px; padding: 9px 11px; background: #faf9fc; }
-.gf-inv-top { display: flex; align-items: center; gap: 6px; }
-.gf-inv-top .pi { color: #915BD8; font-size: 12px; }
-.gf-inv-name { font-size: 13.5px; font-weight: 700; color: #2C2039; }
-.gf-inv-pot { font-size: 12.5px; color: #6b5a8a; }
-.gf-inv-tipos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
-.gf-inv-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; background: #915BD81a; color: #6E3FB8; }
-.gf-inv-empty { font-size: 12px; color: #9ca3af; margin: 6px 0 0; }
+.gf-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+.gf-flag i {
+  font-size: 11px;
+}
+.gf-flag--ok {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+.gf-flag--bad {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.gf-flag--warn {
+  background: #fef3c7;
+  color: #b45309;
+}
+.gf-inv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.gf-inv {
+  border: 1px solid #eee6fa;
+  border-radius: 9px;
+  padding: 9px 11px;
+  background: #faf9fc;
+}
+.gf-inv-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gf-inv-top .pi {
+  color: #915bd8;
+  font-size: 12px;
+}
+.gf-inv-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #2c2039;
+}
+.gf-inv-pot {
+  font-size: 12.5px;
+  color: #6b5a8a;
+}
+.gf-inv-tipos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+.gf-inv-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: #915bd81a;
+  color: #6e3fb8;
+}
+.gf-inv-empty {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 6px 0 0;
+}
 /* Capa aparte para el tipo de falla del inversor */
 .gf-tipo-layer {
-  border: 1px solid #e9ddff; border-radius: 10px; padding: 10px 12px;
+  border: 1px solid #e9ddff;
+  border-radius: 10px;
+  padding: 10px 12px;
   background: linear-gradient(180deg, #faf7ff 0%, #fff 100%);
 }
-.gf-tipo-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 6px; }
+.gf-tipo-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 6px;
+}
 .gf-tipo-chip {
-  font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 8px;
-  background: #915BD814; color: #6E3FB8; border: 1px solid #915BD833;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 8px;
+  background: #915bd814;
+  color: #6e3fb8;
+  border: 1px solid #915bd833;
 }
 .gf-legacy-note {
-  display: flex; align-items: flex-start; gap: 6px;
-  font-size: 12px; color: #9ca3af; margin: 8px 0 0; line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 8px 0 0;
+  line-height: 1.4;
 }
-.gf-legacy-note i { font-size: 11px; margin-top: 2px; flex-shrink: 0; }
+.gf-legacy-note i {
+  font-size: 11px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
 .gf-facts {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2314,9 +3036,21 @@ watch(bucket, (newBucket) => {
   padding-top: 10px;
   border-top: 1px solid #e9ddff;
 }
-@media (max-width: 480px) { .gf-facts { grid-template-columns: 1fr; } }
-.gf-facts--flush { border-top: none; padding-top: 0; }
-.gf-fact { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+@media (max-width: 480px) {
+  .gf-facts {
+    grid-template-columns: 1fr;
+  }
+}
+.gf-facts--flush {
+  border-top: none;
+  padding-top: 0;
+}
+.gf-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 .gf-fact-label {
   font-size: 11.5px;
   font-weight: 600;
@@ -2327,10 +3061,12 @@ watch(bucket, (newBucket) => {
   align-items: center;
   gap: 5px;
 }
-.gf-fact-label i { font-size: 11px; }
+.gf-fact-label i {
+  font-size: 11px;
+}
 .gf-fact-value {
   font-size: 14px;
-  color: #2C2039;
+  color: #2c2039;
   font-weight: 500;
   margin: 0;
   word-break: break-word;
@@ -2343,11 +3079,17 @@ watch(bucket, (newBucket) => {
   grid-template-columns: 1fr;
 }
 @media (min-width: 640px) {
-  .gf-twocol { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .gf-twocol {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
 }
 
 /* ══ Field row ═══════════════════════════════════════════════════════════ */
-.gf-field-row { display: flex; align-items: center; gap: 8px; }
+.gf-field-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .gf-field-label {
   width: 70px;
   font-size: 12.5px;
@@ -2363,14 +3105,29 @@ watch(bucket, (newBucket) => {
   gap: 8px;
   margin-top: 4px;
 }
-.gf-sla-num { font-size: 28px; font-weight: 800; line-height: 1; }
-.gf-sla-of  { font-size: 13px; color: #6b5a8a; font-weight: 500; }
+.gf-sla-num {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+.gf-sla-of {
+  font-size: 13px;
+  color: #6b5a8a;
+  font-weight: 500;
+}
 
 /* ══ Avatars ═════════════════════════════════════════════════════════════ */
 .avatar-md {
-  width: 32px; height: 32px; border-radius: 50%;
-  display: inline-flex; align-items: center; justify-content: center;
-  color: #fff; font-size: 12px; font-weight: 700; flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 /* ══ Suggestion ══════════════════════════════════════════════════════════ */
@@ -2383,20 +3140,32 @@ watch(bucket, (newBucket) => {
   padding: 12px 14px;
 }
 .gf-suggestion-icon {
-  width: 32px; height: 32px;
+  width: 32px;
+  height: 32px;
   border-radius: 8px;
   background: rgba(217, 119, 6, 0.18);
   color: #92400e;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
-.gf-suggestion-icon i { font-size: 14px; }
+.gf-suggestion-icon i {
+  font-size: 14px;
+}
 .gf-suggestion-label {
-  font-size: 11.5px; font-weight: 700; color: #92400e;
-  text-transform: uppercase; letter-spacing: 0.4px; margin: 0 0 3px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #92400e;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 3px;
 }
 .gf-suggestion-text {
-  font-size: 14px; color: #1f1530; margin: 0; line-height: 1.45;
+  font-size: 14px;
+  color: #1f1530;
+  margin: 0;
+  line-height: 1.45;
 }
 
 /* ══ Add note ════════════════════════════════════════════════════════════ */
@@ -2406,7 +3175,9 @@ watch(bucket, (newBucket) => {
   border-radius: 8px;
   padding: 10px;
 }
-.gf-add-note :deep(textarea) { font-size: 14px; }
+.gf-add-note :deep(textarea) {
+  font-size: 14px;
+}
 
 /* ══ Acciones inline ═════════════════════════════════════════════════════ */
 .gf-actions-inline {
@@ -2451,7 +3222,10 @@ watch(bucket, (newBucket) => {
 }
 
 /* ══ DataTable tweaks ════════════════════════════════════════════════════ */
-:deep(.gf-table .p-datatable-tbody > tr) { cursor: pointer; transition: background 0.12s; }
+:deep(.gf-table .p-datatable-tbody > tr) {
+  cursor: pointer;
+  transition: background 0.12s;
+}
 :deep(.gf-table .p-datatable-tbody > tr > td) {
   padding: 10px 12px;
   vertical-align: middle;
@@ -2467,20 +3241,27 @@ watch(bucket, (newBucket) => {
 }
 :deep(.gf-table .p-datatable-tbody > tr.gf-row-active) {
   background: #faf5ff !important;
-  box-shadow: inset 3px 0 0 #915BD8;
+  box-shadow: inset 3px 0 0 #915bd8;
 }
 :deep(.gf-table .p-datatable-tbody > tr.gf-row-active > td) {
   border-color: #e9ddff;
 }
-:deep(.gf-table .p-datatable-wrapper) { overflow-x: auto; }
+:deep(.gf-table .p-datatable-wrapper) {
+  overflow-x: auto;
+}
 
 /* ══ Prio stripe + pill + cat-dot ════════════════════════════════════════ */
 .prio-stripe {
-  width: 4px; height: 32px; border-radius: 2px; margin: 0 auto;
+  width: 4px;
+  height: 32px;
+  border-radius: 2px;
+  margin: 0 auto;
 }
 .cat-dot {
   display: inline-block;
-  width: 8px; height: 8px; border-radius: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   box-shadow: 0 0 0 2px #fff;
 }
 
@@ -2491,19 +3272,36 @@ watch(bucket, (newBucket) => {
   font-weight: 400;
   white-space: nowrap;
 }
-.dias-green   { color: #16a34a; }
-.dias-yellow  { color: #a16207; }
-.dias-red     { color: #dc2626; }
-.dias-cerrada { color: #9ca3af; }
+.dias-green {
+  color: #16a34a;
+}
+.dias-yellow {
+  color: #a16207;
+}
+.dias-red {
+  color: #dc2626;
+}
+.dias-cerrada {
+  color: #9ca3af;
+}
 
 /* ══ Row actions ══════════════════════════════════════════════════════════ */
 .row-actions {
-  display: flex; gap: 2px; opacity: 0.4; transition: opacity 0.15s;
+  display: flex;
+  gap: 2px;
+  opacity: 0.4;
+  transition: opacity 0.15s;
 }
-:deep(tr:hover) .row-actions { opacity: 1; }
+:deep(tr:hover) .row-actions {
+  opacity: 1;
+}
 
-:deep(.p-datatable-tbody > tr > td) { padding: 6px 10px; }
-:deep(.p-datatable-thead > tr > th) { padding: 6px 10px; }
+:deep(.p-datatable-tbody > tr > td) {
+  padding: 6px 10px;
+}
+:deep(.p-datatable-thead > tr > th) {
+  padding: 6px 10px;
+}
 
 /* ══ Line clamp ══════════════════════════════════════════════════════════ */
 .line-clamp-1 {
@@ -2545,7 +3343,11 @@ watch(bucket, (newBucket) => {
   color: #9ca3af;
   padding: 24px;
 }
-.gf-compact-list { overflow-y: auto; flex: 1; min-height: 0; }
+.gf-compact-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
 .gf-compact-row {
   position: relative;
   width: 100%;
@@ -2561,159 +3363,397 @@ watch(bucket, (newBucket) => {
   text-align: left;
   transition: background 0.12s;
 }
-.gf-compact-row:hover { background: #faf9fc; }
-.gf-compact-row--active { background: #faf5ff; }
+.gf-compact-row:hover {
+  background: #faf9fc;
+}
+.gf-compact-row--active {
+  background: #faf5ff;
+}
 .gf-compact-row--active::before {
   content: '';
   position: absolute;
-  left: 0; top: 0; bottom: 0;
+  left: 0;
+  top: 0;
+  bottom: 0;
   width: 3px;
-  background: #915BD8;
+  background: #915bd8;
 }
-.gf-compact-stripe { width: 3px; border-radius: 2px; flex-shrink: 0; }
+.gf-compact-stripe {
+  width: 3px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
 .gf-compact-content {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column; gap: 2px;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
-.gf-compact-line1 { display: flex; align-items: center; gap: 6px; }
+.gf-compact-line1 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .gf-compact-code {
   font-family: 'Courier New', monospace;
-  font-size: 10.5px; font-weight: 700; color: #6b5a8a;
-  background: #f3f1f8; padding: 1px 6px; border-radius: 4px; letter-spacing: 0.2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #6b5a8a;
+  background: #f3f1f8;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.2px;
 }
 .gf-compact-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  flex-shrink: 0; margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 .gf-compact-line2 {
-  font-size: 13px; font-weight: 500; color: #2C2039; line-height: 1.3;
-  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; word-break: break-word;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2c2039;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
 }
-.gf-compact-row--active .gf-compact-line2 { color: #4a3b6b; font-weight: 600; }
+.gf-compact-row--active .gf-compact-line2 {
+  color: #4a3b6b;
+  font-weight: 600;
+}
 
 /* ══ TAB 1 — GRÁFICOS ════════════════════════════════════════════════════ */
-.mon-tab-view { padding: 24px 24px 40px; background: #f5f4f8; }
-.mon-tab-calendario { flex: 1; display: flex; flex-direction: column; min-height: 0; background: #f5f4f8; overflow-y: auto; }
-.mon-tab-loading { display:flex; flex-direction:column; align-items:center; gap:14px; padding:80px 20px; color:#a094b8; font-size:13px; }
-.mon-spinner { width:32px; height:32px; border:3px solid #ece8f4; border-top-color:#915BD8; border-radius:50%; animation:spin .75s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.mon-tab-empty { text-align:center; padding:80px 20px; }
-.mon-empty-icon { font-size:40px; opacity:.2; margin-bottom:12px; }
-.mon-empty-title { font-size:15px; font-weight:700; color:#6b7280; margin-bottom:5px; }
-.mon-empty-sub { font-size:12.5px; color:#9ca3af; }
+.mon-tab-view {
+  padding: 24px 24px 40px;
+  background: #f5f4f8;
+}
+.mon-tab-calendario {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #f5f4f8;
+  overflow-y: auto;
+}
+.mon-tab-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 80px 20px;
+  color: #a094b8;
+  font-size: 13px;
+}
+.mon-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #ece8f4;
+  border-top-color: #915bd8;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.mon-tab-empty {
+  text-align: center;
+  padding: 80px 20px;
+}
+.mon-empty-icon {
+  font-size: 40px;
+  opacity: 0.2;
+  margin-bottom: 12px;
+}
+.mon-empty-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 5px;
+}
+.mon-empty-sub {
+  font-size: 12.5px;
+  color: #9ca3af;
+}
 
 /* Container */
-.charts-container { display:flex; flex-direction:column; gap:16px; }
+.charts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
 /* Charts grid */
 .chart-card {
-  background:#fff; border:1px solid #ece8f4; border-radius:12px;
-  padding:16px 18px; box-shadow:0 1px 4px rgba(28,18,50,.05);
+  background: #fff;
+  border: 1px solid #ece8f4;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(28, 18, 50, 0.05);
 }
-.chart-card--wide { grid-column: 1 / -1; }
-.chart-card-title { font-size:12.5px; font-weight:700; color:#2C2039; margin-bottom:14px; }
-.chart-card-sub { font-size:11px; font-weight:500; color:#a094b8; }
-.chart-canvas-wrap { position:relative; }
+.chart-card--wide {
+  grid-column: 1 / -1;
+}
+.chart-card-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #2c2039;
+  margin-bottom: 14px;
+}
+.chart-card-sub {
+  font-size: 11px;
+  font-weight: 500;
+  color: #a094b8;
+}
+.chart-canvas-wrap {
+  position: relative;
+}
 
-@media (max-width:768px) {
-  .mon-tab-view { padding:16px; }
-  .chart-card--wide { grid-column:1; }
+@media (max-width: 768px) {
+  .mon-tab-view {
+    padding: 16px;
+  }
+  .chart-card--wide {
+    grid-column: 1;
+  }
 }
 
 /* ══ P90 Section ════════════════════════════════════════════════════════ */
 .p90-section-head {
-  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
-  background:#fff; border:1px solid #ece8f4; border-radius:12px;
-  padding:14px 18px; box-shadow:0 1px 3px rgba(28,18,50,.04);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: #fff;
+  border: 1px solid #ece8f4;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 3px rgba(28, 18, 50, 0.04);
 }
 .p90-section-title {
-  display:flex; align-items:center; gap:8px; flex:1; min-width:0;
-  font-size:13px; font-weight:700; color:#2C2039;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2c2039;
 }
-.p90-section-sub { font-size:11.5px; font-weight:500; color:#a094b8; }
-.p90-controls { display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.p90-section-sub {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #a094b8;
+}
+.p90-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
 :deep(.p90-dp .p-datepicker-input) {
-  font-size:12px !important; padding:5px 8px !important; width:110px !important;
+  font-size: 12px !important;
+  padding: 5px 8px !important;
+  width: 110px !important;
 }
 .p90-reload-btn {
-  width:30px; height:30px; display:flex; align-items:center; justify-content:center;
-  background:#f4f1fa; border:1px solid #e5e0f0; border-radius:8px;
-  cursor:pointer; color:#6b5a8a; font-size:12px; transition:background .12s;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f1fa;
+  border: 1px solid #e5e0f0;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #6b5a8a;
+  font-size: 12px;
+  transition: background 0.12s;
 }
-.p90-reload-btn:hover:not(:disabled) { background:#e9e0f5; }
-.p90-reload-btn:disabled { opacity:.4; cursor:not-allowed; }
+.p90-reload-btn:hover:not(:disabled) {
+  background: #e9e0f5;
+}
+.p90-reload-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
-.p90-kpis { display:flex; gap:8px; flex-wrap:wrap; }
-.p90-kpi {
-  display:flex; flex-direction:column; align-items:center;
-  background:#faf9fc; border:1px solid #ece8f4; border-radius:10px;
-  padding:8px 16px; min-width:72px;
+.p90-kpis {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
-.p90-kpi--green { background:#f0fdf4; border-color:#bbf7d0; }
-.p90-kpi--red   { background:#fef2f2; border-color:#fecaca; }
-.p90-kpi-val { font-size:20px; font-weight:900; line-height:1; }
+.p90-kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #faf9fc;
+  border: 1px solid #ece8f4;
+  border-radius: 10px;
+  padding: 8px 16px;
+  min-width: 72px;
+}
+.p90-kpi--green {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.p90-kpi--red {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.p90-kpi-val {
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
 .p90-kpi-lbl {
-  font-size:9.5px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.3px; color:#9b89b5; margin-top:3px;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #9b89b5;
+  margin-top: 3px;
 }
 
 .p90-state {
-  display:flex; flex-direction:column; align-items:center;
-  gap:8px; padding:40px 20px; font-size:12.5px; color:#9ca3af;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 40px 20px;
+  font-size: 12.5px;
+  color: #9ca3af;
 }
 
-.p90-bar-card { cursor:pointer; }
-.p90-chart-legend {
-  display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;
+.p90-bar-card {
+  cursor: pointer;
 }
-.p90-legend-item { display:flex; align-items:center; gap:5px; font-size:11.5px; color:#6b5a8a; }
-.p90-legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.p90-legend-hint { font-size:11px; color:#a094b8; }
+.p90-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.p90-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #6b5a8a;
+}
+.p90-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.p90-legend-hint {
+  font-size: 11px;
+  color: #a094b8;
+}
 
 .p90-detail-card {
-  background:#fff; border:1px solid #d1fae5; border-radius:12px;
-  padding:14px 18px; box-shadow:0 1px 4px rgba(22,163,74,.08);
+  background: #fff;
+  border: 1px solid #d1fae5;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 4px rgba(22, 163, 74, 0.08);
 }
 .p90-detail-head {
-  display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 .p90-detail-kpis {
-  margin-left:auto; display:flex; align-items:center; gap:10px;
-  font-size:11.5px; font-weight:700;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11.5px;
+  font-weight: 700;
 }
 .p90-close-btn {
-  width:22px; height:22px; display:flex; align-items:center; justify-content:center;
-  background:#f0eaf8; border:none; border-radius:6px;
-  cursor:pointer; color:#6b5a8a; flex-shrink:0;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0eaf8;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #6b5a8a;
+  flex-shrink: 0;
 }
 
 .p90-separator {
-  display:flex; align-items:center; gap:8px;
-  font-size:11px; font-weight:700; text-transform:uppercase;
-  letter-spacing:.5px; color:#a094b8; padding:4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #a094b8;
+  padding: 4px 0;
 }
-.p90-separator::after { content:''; flex:1; height:1px; background:#ece8f4; }
+.p90-separator::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #ece8f4;
+}
 
 /* ── Gen cards ── */
 .gen-card-head {
-  display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
 }
 .gen-card-title {
-  display:flex; align-items:center; gap:8px; flex:1; min-width:0;
-  font-size:13px; font-weight:700; color:#2C2039;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #2c2039;
 }
 .gen-legend {
-  display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-left:auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
 }
 .gen-kpi {
-  font-size:11.5px; font-weight:700;
+  font-size: 11.5px;
+  font-weight: 700;
 }
 .gen-pr-controls {
-  display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
 }
 :deep(.gen-multiselect) {
-  min-width:220px; flex:1; font-size:12px;
+  min-width: 220px;
+  flex: 1;
+  font-size: 12px;
 }
 
 /* ── Generación de hoy — lista de barras de progreso ── */
@@ -2769,7 +3809,7 @@ watch(bucket, (newBucket) => {
 .gen-hoy-fill {
   height: 100%;
   border-radius: 999px;
-  transition: width 0.5s cubic-bezier(.4,0,.2,1);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 2px;
 }
 
@@ -2834,10 +3874,13 @@ watch(bucket, (newBucket) => {
   transition: all 0.15s;
   white-space: nowrap;
 }
-.genproj-quick-btn:hover { border-color: #915BD8; color: #915BD8; }
+.genproj-quick-btn:hover {
+  border-color: #915bd8;
+  color: #915bd8;
+}
 .genproj-quick-btn--active {
-  background: #915BD8;
-  border-color: #915BD8;
+  background: #915bd8;
+  border-color: #915bd8;
   color: #fff;
 }
 .genproj-gran-toggle {
@@ -2859,9 +3902,17 @@ watch(bucket, (newBucket) => {
   gap: 4px;
   transition: all 0.15s;
 }
-.genproj-gran-btn + .genproj-gran-btn { border-left: 1px solid #e5e7eb; }
-.genproj-gran-btn--active { background: #7c3aed; color: #fff; }
-.genproj-gran-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.genproj-gran-btn + .genproj-gran-btn {
+  border-left: 1px solid #e5e7eb;
+}
+.genproj-gran-btn--active {
+  background: #7c3aed;
+  color: #fff;
+}
+.genproj-gran-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 .genproj-kpi {
   display: flex;
   align-items: center;
@@ -2870,9 +3921,17 @@ watch(bucket, (newBucket) => {
   font-size: 11px;
   color: #6b7280;
 }
-.genproj-kpi-val { font-size: 15px; font-weight: 700; color: #7c3aed; }
-.genproj-kpi-lbl { color: #9ca3af; }
-.genproj-kpi-sep { color: #d1d5db; }
+.genproj-kpi-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: #7c3aed;
+}
+.genproj-kpi-lbl {
+  color: #9ca3af;
+}
+.genproj-kpi-sep {
+  color: #d1d5db;
+}
 
 /* ── Generación por proyecto ── */
 .genproj-leyenda {
@@ -2885,7 +3944,8 @@ watch(bucket, (newBucket) => {
 }
 .genproj-dot {
   display: inline-block;
-  width: 10px; height: 10px;
+  width: 10px;
+  height: 10px;
   border-radius: 2px;
   margin-right: 5px;
   vertical-align: middle;
@@ -2918,7 +3978,9 @@ watch(bucket, (newBucket) => {
   border-bottom: 1px solid #f3f4f6;
   flex-wrap: wrap;
 }
-.genproj-falla-row:last-child { border-bottom: none; }
+.genproj-falla-row:last-child {
+  border-bottom: none;
+}
 .genproj-codigo {
   font-family: monospace;
   font-size: 10.5px;

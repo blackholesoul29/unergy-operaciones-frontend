@@ -28,10 +28,10 @@ export const useAuthStore = defineStore('auth', () => {
     const payload = decodeJwtPayload(token.value)
     if (payload?.sub && payload?.rol) {
       initialUser = {
-        id:     payload.sub,
-        rol:    payload.rol,
+        id: payload.sub,
+        rol: payload.rol,
         nombre: payload.nombre || '',
-        email:  payload.email  || '',
+        email: payload.email || '',
       }
       setStoredUser(initialUser)
     }
@@ -47,7 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // ── Computeds ────────────────────────────────────────────────────────────────
   const isAuthenticated = computed(() => !!token.value && !isTokenExpired(token.value))
-  const role            = computed(() => user.value?.rol || null)
+  const role = computed(() => user.value?.rol || null)
 
   function can(...roles) {
     if (!role.value) return false
@@ -71,10 +71,10 @@ export const useAuthStore = defineStore('auth', () => {
     // Decodificar payload del nuevo token para obtener datos del usuario
     const payload = decodeJwtPayload(data.access_token) || {}
     user.value = {
-      id:     payload.sub,
-      rol:    payload.rol,
+      id: payload.sub,
+      rol: payload.rol,
       nombre: payload.nombre,
-      email:  payload.email,
+      email: payload.email,
     }
     setStoredUser(user.value)
   }
@@ -91,15 +91,23 @@ export const useAuthStore = defineStore('auth', () => {
   // ── Logout ───────────────────────────────────────────────────────────────────
   function logout() {
     token.value = null
-    user.value  = null
+    user.value = null
     clearTokens()
   }
 
   // Solo en desarrollo: simula login sin backend para preview de vistas
   function previewLogin(rol) {
     if (!import.meta.env.DEV) return
-    const h = btoa('{"alg":"HS256","typ":"JWT"}').replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_')
-    const p = btoa(`{"sub":"99","rol":"${rol}","nombre":"Preview ${rol}","email":"preview@unergy.io","exp":9999999999}`).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_')
+    const h = btoa('{"alg":"HS256","typ":"JWT"}')
+      .replace(/=/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+    const p = btoa(
+      `{"sub":"99","rol":"${rol}","nombre":"Preview ${rol}","email":"preview@unergy.io","exp":9999999999}`,
+    )
+      .replace(/=/g, '')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
     const fakeToken = `${h}.${p}.preview`
     token.value = fakeToken
     user.value = { id: '99', rol, nombre: `Preview ${rol}`, email: 'preview@unergy.io' }

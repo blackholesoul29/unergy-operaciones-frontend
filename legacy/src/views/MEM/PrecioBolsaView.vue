@@ -4,22 +4,27 @@
     <PageHeader title="Mercado de Energía" subtitle="Precios de bolsa XM + Pronóstico Clima">
       <template #lead>
         <Button icon="pi pi-arrow-left" text @click="$router.back()" class="-ml-2" />
-        <div class="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style="background:#915BD822">
-          <i class="pi pi-chart-line text-sm" style="color:#915BD8" />
+        <div
+          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+          style="background: #915bd822"
+        >
+          <i class="pi pi-chart-line text-sm" style="color: #915bd8" />
         </div>
       </template>
     </PageHeader>
 
     <!-- Tabs -->
     <div class="flex gap-1 border-b border-gray-200">
-      <button v-for="(tab, i) in TABS" :key="i"
+      <button
+        v-for="(tab, i) in TABS"
+        :key="i"
         @click="activeTab = i"
         :class="[
-          'px-4 py-2 text-sm font-medium transition-colors -mb-px',
-          activeTab === i
-            ? 'border-b-2 text-gray-800' : 'text-gray-400 hover:text-gray-600'
+          '-mb-px px-4 py-2 text-sm font-medium transition-colors',
+          activeTab === i ? 'border-b-2 text-gray-800' : 'text-gray-400 hover:text-gray-600',
         ]"
-        :style="activeTab === i ? 'border-color:#915BD8' : ''">
+        :style="activeTab === i ? 'border-color:#915BD8' : ''"
+      >
         {{ tab }}
       </button>
     </div>
@@ -30,106 +35,179 @@
 
     <!-- ═══ TAB 0: Precios de Bolsa ═══ -->
     <template v-if="!loading && activeTab === 0">
-      <div v-if="!spot" class="flex flex-col items-center py-12 gap-2 text-gray-400">
+      <div v-if="!spot" class="flex flex-col items-center gap-2 py-12 text-gray-400">
         <i class="pi pi-cloud-download text-3xl" />
         <p class="text-sm">Sin datos de predespacho disponibles.</p>
       </div>
 
       <template v-else>
         <!-- KPI cards -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div v-for="kpi in spotKpis" :key="kpi.label"
-            class="rounded-xl border p-3" :style="`border-color:${kpi.color}33; background:${kpi.color}08`">
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-5">
+          <div
+            v-for="kpi in spotKpis"
+            :key="kpi.label"
+            class="rounded-xl border p-3"
+            :style="`border-color:${kpi.color}33; background:${kpi.color}08`"
+          >
             <p class="text-2xl font-bold" :style="`color:${kpi.color}`">{{ kpi.value }}</p>
-            <p class="text-xs font-medium mt-0.5" :style="`color:${kpi.color}cc`">{{ kpi.label }}</p>
+            <p class="mt-0.5 text-xs font-medium" :style="`color:${kpi.color}cc`">
+              {{ kpi.label }}
+            </p>
           </div>
         </div>
 
         <!-- Price chart (SVG) -->
         <div class="rounded-xl border border-gray-100 bg-white p-4">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="font-semibold text-gray-700 text-sm">Precio Bolsa por hora ($/kWh)</h3>
+          <div class="mb-3 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-gray-700">Precio Bolsa por hora ($/kWh)</h3>
             <span class="text-xs text-gray-400">{{ spot.date }}</span>
           </div>
-          <svg :viewBox="`0 0 ${chartW} ${chartH}`" class="w-full" style="max-height:260px"
-            @mousemove="onChartMove" @mouseleave="hoverBar = null">
+          <svg
+            :viewBox="`0 0 ${chartW} ${chartH}`"
+            class="w-full"
+            style="max-height: 260px"
+            @mousemove="onChartMove"
+            @mouseleave="hoverBar = null"
+          >
             <!-- Grid lines -->
-            <line v-for="y in gridY" :key="'g'+y.val"
-              :x1="padL" :x2="chartW - padR" :y1="y.py" :y2="y.py"
-              stroke="#e5e7eb" stroke-width="0.5" />
-            <text v-for="y in gridY" :key="'t'+y.val"
-              :x="padL - 4" :y="y.py + 3" text-anchor="end"
-              fill="#9ca3af" font-size="9">{{ y.label }}</text>
+            <line
+              v-for="y in gridY"
+              :key="'g' + y.val"
+              :x1="padL"
+              :x2="chartW - padR"
+              :y1="y.py"
+              :y2="y.py"
+              stroke="#e5e7eb"
+              stroke-width="0.5"
+            />
+            <text
+              v-for="y in gridY"
+              :key="'t' + y.val"
+              :x="padL - 4"
+              :y="y.py + 3"
+              text-anchor="end"
+              fill="#9ca3af"
+              font-size="9"
+            >
+              {{ y.label }}
+            </text>
 
             <!-- Bars -->
-            <rect v-for="(bar, i) in priceBars" :key="i"
-              :x="bar.x" :y="bar.y" :width="bar.w" :height="bar.h"
-              :fill="bar.peak ? '#F6FF72' : '#915BD8'" :opacity="hoverBar?.hour === bar.hour ? 1 : 0.85"
-              rx="2" />
+            <rect
+              v-for="(bar, i) in priceBars"
+              :key="i"
+              :x="bar.x"
+              :y="bar.y"
+              :width="bar.w"
+              :height="bar.h"
+              :fill="bar.peak ? '#F6FF72' : '#915BD8'"
+              :opacity="hoverBar?.hour === bar.hour ? 1 : 0.85"
+              rx="2"
+            />
 
             <!-- Scarcity line -->
-            <line v-if="spot.scarcity_price"
-              :x1="padL" :x2="chartW - padR"
-              :y1="priceToY(spot.scarcity_price)" :y2="priceToY(spot.scarcity_price)"
-              stroke="#D64455" stroke-width="1" stroke-dasharray="4,3" />
-            <text v-if="spot.scarcity_price"
-              :x="chartW - padR + 2" :y="priceToY(spot.scarcity_price) + 3"
-              fill="#D64455" font-size="8">P.Esc ${{ Math.round(spot.scarcity_price) }}</text>
+            <line
+              v-if="spot.scarcity_price"
+              :x1="padL"
+              :x2="chartW - padR"
+              :y1="priceToY(spot.scarcity_price)"
+              :y2="priceToY(spot.scarcity_price)"
+              stroke="#D64455"
+              stroke-width="1"
+              stroke-dasharray="4,3"
+            />
+            <text
+              v-if="spot.scarcity_price"
+              :x="chartW - padR + 2"
+              :y="priceToY(spot.scarcity_price) + 3"
+              fill="#D64455"
+              font-size="8"
+            >
+              P.Esc ${{ Math.round(spot.scarcity_price) }}
+            </text>
 
             <!-- Hour labels -->
-            <text v-for="h in 24" :key="'h'+h"
-              :x="padL + (h - 0.5) * barStep" :y="chartH - 2"
-              text-anchor="middle" fill="#9ca3af" font-size="8">{{ h }}</text>
+            <text
+              v-for="h in 24"
+              :key="'h' + h"
+              :x="padL + (h - 0.5) * barStep"
+              :y="chartH - 2"
+              text-anchor="middle"
+              fill="#9ca3af"
+              font-size="8"
+            >
+              {{ h }}
+            </text>
           </svg>
 
           <!-- Tooltip -->
-          <div v-if="hoverBar"
-            class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg px-3 py-2 text-xs pointer-events-none"
-            :style="{ left: tooltipLeft + 'px', top: tooltipTop + 'px' }">
+          <div
+            v-if="hoverBar"
+            class="pointer-events-none fixed z-50 rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs shadow-lg"
+            :style="{ left: tooltipLeft + 'px', top: tooltipTop + 'px' }"
+          >
             <p class="font-semibold text-gray-800">Hora {{ hoverBar.hour }}</p>
-            <p style="color:#915BD8">${{ hoverBar.price.toFixed(2) }} /kWh</p>
+            <p style="color: #915bd8">${{ hoverBar.price.toFixed(2) }} /kWh</p>
             <p class="text-gray-400">{{ hoverBar.marginal }}</p>
           </div>
         </div>
 
         <!-- Generation table -->
         <div class="rounded-xl border border-gray-100 bg-white p-4">
-          <h3 class="font-semibold text-gray-700 mb-3 text-sm">Generación por hora (MWh)</h3>
-          <DataTable :value="genRows" size="small" stripedRows scrollable scrollHeight="400px"
-            :paginator="false" class="text-sm">
-            <Column field="hour" header="Hora" style="width:60px">
+          <h3 class="mb-3 text-sm font-semibold text-gray-700">Generación por hora (MWh)</h3>
+          <DataTable
+            :value="genRows"
+            size="small"
+            stripedRows
+            scrollable
+            scrollHeight="400px"
+            :paginator="false"
+            class="text-sm"
+          >
+            <Column field="hour" header="Hora" style="width: 60px">
               <template #body="{ data }">
                 <span class="font-mono text-xs font-semibold text-gray-700">{{ data.hour }}</span>
               </template>
             </Column>
-            <Column header="Hidráulica" style="min-width:100px">
+            <Column header="Hidráulica" style="min-width: 100px">
               <template #body="{ data }">
-                <span class="text-blue-600 font-mono text-xs">{{ data.hidro.toLocaleString() }}</span>
+                <span class="font-mono text-xs text-blue-600">{{
+                  data.hidro.toLocaleString()
+                }}</span>
               </template>
             </Column>
-            <Column header="Térmica" style="min-width:100px">
+            <Column header="Térmica" style="min-width: 100px">
               <template #body="{ data }">
-                <span class="text-orange-600 font-mono text-xs">{{ data.termica.toLocaleString() }}</span>
+                <span class="font-mono text-xs text-orange-600">{{
+                  data.termica.toLocaleString()
+                }}</span>
               </template>
             </Column>
-            <Column header="Renovable" style="min-width:100px">
+            <Column header="Renovable" style="min-width: 100px">
               <template #body="{ data }">
-                <span class="text-green-600 font-mono text-xs">{{ data.renovable.toLocaleString() }}</span>
+                <span class="font-mono text-xs text-green-600">{{
+                  data.renovable.toLocaleString()
+                }}</span>
               </template>
             </Column>
-            <Column header="Menores" style="min-width:100px">
+            <Column header="Menores" style="min-width: 100px">
               <template #body="{ data }">
-                <span class="font-mono text-xs" style="color:#915BD8">{{ data.menor.toLocaleString() }}</span>
+                <span class="font-mono text-xs" style="color: #915bd8">{{
+                  data.menor.toLocaleString()
+                }}</span>
               </template>
             </Column>
-            <Column header="Precio" style="min-width:90px">
+            <Column header="Precio" style="min-width: 90px">
               <template #body="{ data }">
-                <span class="font-mono text-xs font-semibold" :class="data.price >= 900 ? 'text-red-600' : 'text-gray-700'">
+                <span
+                  class="font-mono text-xs font-semibold"
+                  :class="data.price >= 900 ? 'text-red-600' : 'text-gray-700'"
+                >
                   ${{ data.price.toFixed(0) }}
                 </span>
               </template>
             </Column>
-            <Column header="Marginal" style="min-width:120px">
+            <Column header="Marginal" style="min-width: 120px">
               <template #body="{ data }">
                 <span class="text-xs text-gray-500">{{ data.marginal }}</span>
               </template>
@@ -141,7 +219,10 @@
 
     <!-- ═══ TAB 1: Clima / Pronóstico ═══ -->
     <template v-if="!loading && activeTab === 1">
-      <div v-if="!clima || !clima.models_available" class="flex flex-col items-center py-12 gap-2 text-gray-400">
+      <div
+        v-if="!clima || !clima.models_available"
+        class="flex flex-col items-center gap-2 py-12 text-gray-400"
+      >
         <i class="pi pi-cloud text-3xl" />
         <p class="text-sm">Modelos de pronóstico no disponibles.</p>
         <p class="text-xs">Los endpoints están activos — ejecute el pipeline de entrenamiento.</p>
@@ -150,58 +231,97 @@
       <template v-else>
         <!-- ENSO classification -->
         <div class="rounded-xl border border-gray-100 bg-white p-4" v-if="clima.enso">
-          <h3 class="font-semibold text-gray-700 mb-2 text-sm">Clasificación ENSO</h3>
+          <h3 class="mb-2 text-sm font-semibold text-gray-700">Clasificación ENSO</h3>
           <div class="flex items-center gap-4">
-            <span class="text-lg font-bold" :class="ensoColor">{{ clima.enso.current_state || (Array.isArray(clima.enso.classification) ? clima.enso.classification[0] : clima.enso.classification) }}</span>
-            <span class="text-sm text-gray-500">ONI: {{ clima.enso.latest_oni?.toFixed(2) ?? (Array.isArray(clima.enso.nino34_predicted) ? clima.enso.nino34_predicted[0]?.toFixed(2) : clima.enso.nino34_predicted?.toFixed(2)) }}</span>
+            <span class="text-lg font-bold" :class="ensoColor">{{
+              clima.enso.current_state ||
+              (Array.isArray(clima.enso.classification)
+                ? clima.enso.classification[0]
+                : clima.enso.classification)
+            }}</span>
+            <span class="text-sm text-gray-500"
+              >ONI:
+              {{
+                clima.enso.latest_oni?.toFixed(2) ??
+                (Array.isArray(clima.enso.nino34_predicted)
+                  ? clima.enso.nino34_predicted[0]?.toFixed(2)
+                  : clima.enso.nino34_predicted?.toFixed(2))
+              }}</span
+            >
           </div>
-          <div v-if="clima.enso.probabilities" class="flex gap-3 mt-2">
-            <span v-for="(prob, label) in clima.enso.probabilities" :key="label"
-              class="text-xs text-gray-500">{{ label.replace('p_','') }}: {{ ((Array.isArray(prob) ? prob[0] : prob) * 100).toFixed(0) }}%</span>
+          <div v-if="clima.enso.probabilities" class="mt-2 flex gap-3">
+            <span
+              v-for="(prob, label) in clima.enso.probabilities"
+              :key="label"
+              class="text-xs text-gray-500"
+              >{{ label.replace('p_', '') }}:
+              {{ ((Array.isArray(prob) ? prob[0] : prob) * 100).toFixed(0) }}%</span
+            >
           </div>
         </div>
 
         <!-- Trading signals -->
-        <div class="rounded-xl border border-gray-100 bg-white p-4" v-if="clima.trading_signals?.length">
-          <h3 class="font-semibold text-gray-700 mb-3 text-sm">Señales de Trading</h3>
+        <div
+          class="rounded-xl border border-gray-100 bg-white p-4"
+          v-if="clima.trading_signals?.length"
+        >
+          <h3 class="mb-3 text-sm font-semibold text-gray-700">Señales de Trading</h3>
           <DataTable :value="clima.trading_signals" size="small" stripedRows class="text-sm">
-            <Column field="month" header="Mes" style="min-width:80px" />
-            <Column header="Precio" style="min-width:100px">
+            <Column field="month" header="Mes" style="min-width: 80px" />
+            <Column header="Precio" style="min-width: 100px">
               <template #body="{ data }">
                 <span class="font-mono text-xs font-semibold">${{ data.price?.toFixed(0) }}</span>
               </template>
             </Column>
-            <Column header="Dirección" style="min-width:110px">
+            <Column header="Dirección" style="min-width: 110px">
               <template #body="{ data }">
-                <span :class="[
-                  'inline-flex items-center gap-1 text-xs font-semibold rounded-full px-2 py-0.5',
-                  data.direction?.includes('COMPRAR') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                ]">
-                  <i :class="data.direction?.includes('COMPRAR') ? 'pi pi-arrow-down' : 'pi pi-arrow-up'" class="text-[10px]" />
+                <span
+                  :class="[
+                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold',
+                    data.direction?.includes('COMPRAR')
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-red-100 text-red-700',
+                  ]"
+                >
+                  <i
+                    :class="
+                      data.direction?.includes('COMPRAR') ? 'pi pi-arrow-down' : 'pi pi-arrow-up'
+                    "
+                    class="text-[10px]"
+                  />
                   {{ data.direction }}
                 </span>
               </template>
             </Column>
-            <Column header="Riesgo" style="min-width:90px">
+            <Column header="Riesgo" style="min-width: 90px">
               <template #body="{ data }">
-                <span :class="[
-                  'text-xs font-medium rounded-full px-2 py-0.5',
-                  data.risk_level === 'ALTO' ? 'bg-red-100 text-red-600' :
-                  data.risk_level === 'MEDIO' ? 'bg-orange-100 text-orange-600' :
-                  'bg-green-100 text-green-600'
-                ]">
+                <span
+                  :class="[
+                    'rounded-full px-2 py-0.5 text-xs font-medium',
+                    data.risk_level === 'ALTO'
+                      ? 'bg-red-100 text-red-600'
+                      : data.risk_level === 'MEDIO'
+                        ? 'bg-orange-100 text-orange-600'
+                        : 'bg-green-100 text-green-600',
+                  ]"
+                >
                   {{ data.risk_level }}
                 </span>
               </template>
             </Column>
-            <Column header="Régimen" style="min-width:100px">
+            <Column header="Régimen" style="min-width: 100px">
               <template #body="{ data }">
-                <span class="text-xs text-gray-500">{{ data.regime }} ({{ (data.regime_prob * 100).toFixed(0) }}%)</span>
+                <span class="text-xs text-gray-500"
+                  >{{ data.regime }} ({{ (data.regime_prob * 100).toFixed(0) }}%)</span
+                >
               </template>
             </Column>
-            <Column header="Margen" style="min-width:80px">
+            <Column header="Margen" style="min-width: 80px">
               <template #body="{ data }">
-                <span class="font-mono text-xs" :class="data.margin > 0 ? 'text-green-600' : 'text-red-600'">
+                <span
+                  class="font-mono text-xs"
+                  :class="data.margin > 0 ? 'text-green-600' : 'text-red-600'"
+                >
                   {{ data.margin > 0 ? '+' : '' }}${{ data.margin?.toFixed(0) }}
                 </span>
               </template>
@@ -213,50 +333,91 @@
 
     <!-- ═══ TAB 2: Histórico ═══ -->
     <template v-if="!loading && activeTab === 2">
-      <div v-if="!histPrices.length" class="flex flex-col items-center py-12 gap-2 text-gray-400">
+      <div v-if="!histPrices.length" class="flex flex-col items-center gap-2 py-12 text-gray-400">
         <i class="pi pi-database text-3xl" />
         <p class="text-sm">Sin datos históricos.</p>
       </div>
 
       <template v-else>
         <!-- Stats row -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div v-for="kpi in histKpis" :key="kpi.label"
-            class="rounded-xl border p-3" :style="`border-color:${kpi.color}33; background:${kpi.color}08`">
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <div
+            v-for="kpi in histKpis"
+            :key="kpi.label"
+            class="rounded-xl border p-3"
+            :style="`border-color:${kpi.color}33; background:${kpi.color}08`"
+          >
             <p class="text-2xl font-bold" :style="`color:${kpi.color}`">{{ kpi.value }}</p>
-            <p class="text-xs font-medium mt-0.5" :style="`color:${kpi.color}cc`">{{ kpi.label }}</p>
+            <p class="mt-0.5 text-xs font-medium" :style="`color:${kpi.color}cc`">
+              {{ kpi.label }}
+            </p>
           </div>
         </div>
 
         <!-- Price + ONI SVG chart -->
         <div class="rounded-xl border border-gray-100 bg-white p-4">
-          <h3 class="font-semibold text-gray-700 mb-3 text-sm">Precio Bolsa vs ONI ({{ histPrices.length }} meses)</h3>
-          <svg :viewBox="`0 0 ${histChartW} ${histChartH}`" class="w-full" style="max-height:320px">
+          <h3 class="mb-3 text-sm font-semibold text-gray-700">
+            Precio Bolsa vs ONI ({{ histPrices.length }} meses)
+          </h3>
+          <svg
+            :viewBox="`0 0 ${histChartW} ${histChartH}`"
+            class="w-full"
+            style="max-height: 320px"
+          >
             <!-- Background ENSO bands -->
-            <rect v-for="(band, i) in ensoBands" :key="'b'+i"
-              :x="band.x" :y="10" :width="band.w" :height="histChartH - 30"
-              :fill="band.color" opacity="0.12" />
+            <rect
+              v-for="(band, i) in ensoBands"
+              :key="'b' + i"
+              :x="band.x"
+              :y="10"
+              :width="band.w"
+              :height="histChartH - 30"
+              :fill="band.color"
+              opacity="0.12"
+            />
 
             <!-- Price line -->
             <polyline :points="histPriceLine" fill="none" stroke="#915BD8" stroke-width="1.5" />
 
             <!-- ONI line (secondary axis) -->
-            <polyline :points="histOniLine" fill="none" stroke="#3B82F6" stroke-width="1" stroke-dasharray="4,2" />
+            <polyline
+              :points="histOniLine"
+              fill="none"
+              stroke="#3B82F6"
+              stroke-width="1"
+              stroke-dasharray="4,2"
+            />
 
             <!-- Zero line for ONI -->
-            <line :x1="histPadL" :x2="histChartW - histPadR"
-              :y1="oniToY(0)" :y2="oniToY(0)"
-              stroke="#94a3b8" stroke-width="0.5" stroke-dasharray="2,2" />
+            <line
+              :x1="histPadL"
+              :x2="histChartW - histPadR"
+              :y1="oniToY(0)"
+              :y2="oniToY(0)"
+              stroke="#94a3b8"
+              stroke-width="0.5"
+              stroke-dasharray="2,2"
+            />
 
             <!-- Year labels -->
-            <template v-for="(yl, i) in histYearLabels" :key="'yl'+i">
-              <text :x="yl.x" :y="histChartH - 2" text-anchor="middle" fill="#9ca3af" font-size="9">{{ yl.year }}</text>
+            <template v-for="(yl, i) in histYearLabels" :key="'yl' + i">
+              <text :x="yl.x" :y="histChartH - 2" text-anchor="middle" fill="#9ca3af" font-size="9">
+                {{ yl.year }}
+              </text>
             </template>
 
             <!-- Legend -->
             <line x1="10" x2="30" y1="6" y2="6" stroke="#915BD8" stroke-width="2" />
             <text x="33" y="9" fill="#915BD8" font-size="8">Precio COP/kWh</text>
-            <line x1="140" x2="160" y1="6" y2="6" stroke="#3B82F6" stroke-width="1" stroke-dasharray="4,2" />
+            <line
+              x1="140"
+              x2="160"
+              y1="6"
+              y2="6"
+              stroke="#3B82F6"
+              stroke-width="1"
+              stroke-dasharray="4,2"
+            />
             <text x="163" y="9" fill="#3B82F6" font-size="8">ONI</text>
             <rect x="230" y="2" width="10" height="8" fill="#ef4444" opacity="0.2" />
             <text x="243" y="9" fill="#9ca3af" font-size="8">El Niño</text>
@@ -267,13 +428,19 @@
 
         <!-- Price by ENSO phase table -->
         <div class="rounded-xl border border-gray-100 bg-white p-4">
-          <h3 class="font-semibold text-gray-700 mb-3 text-sm">Precio promedio por fase ENSO</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div v-for="phase in ensoPhaseStats" :key="phase.label"
-              class="rounded-lg p-4 text-center" :style="`background: ${phase.bg}`">
+          <h3 class="mb-3 text-sm font-semibold text-gray-700">Precio promedio por fase ENSO</h3>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <div
+              v-for="phase in ensoPhaseStats"
+              :key="phase.label"
+              class="rounded-lg p-4 text-center"
+              :style="`background: ${phase.bg}`"
+            >
               <p class="text-lg font-bold" :style="`color: ${phase.color}`">{{ phase.label }}</p>
-              <p class="text-2xl font-bold mt-1" style="color: #2C2039;">${{ phase.avgPrice }}</p>
-              <p class="text-xs mt-1" style="color: #6b5a8a;">{{ phase.count }} meses · prom. COP/kWh</p>
+              <p class="mt-1 text-2xl font-bold" style="color: #2c2039">${{ phase.avgPrice }}</p>
+              <p class="mt-1 text-xs" style="color: #6b5a8a">
+                {{ phase.count }} meses · prom. COP/kWh
+              </p>
             </div>
           </div>
         </div>
@@ -346,10 +513,12 @@ const prices = computed(() => {
     .sort((a, b) => a.hour - b.hour)
 })
 
-const priceMin = computed(() => prices.value.length ? Math.min(...prices.value.map(p => p.price)) * 0.9 : 0)
+const priceMin = computed(() =>
+  prices.value.length ? Math.min(...prices.value.map((p) => p.price)) * 0.9 : 0,
+)
 const priceMax = computed(() => {
   if (!prices.value.length) return 1000
-  let mx = Math.max(...prices.value.map(p => p.price))
+  let mx = Math.max(...prices.value.map((p) => p.price))
   if (spot.value?.scarcity_price) mx = Math.max(mx, spot.value.scarcity_price)
   return mx * 1.05
 })
@@ -419,7 +588,10 @@ const genRows = computed(() => {
 
 const ensoColor = computed(() => {
   const enso = clima.value?.enso
-  const c = enso?.current_state || (Array.isArray(enso?.classification) ? enso.classification[0] : enso?.classification) || ''
+  const c =
+    enso?.current_state ||
+    (Array.isArray(enso?.classification) ? enso.classification[0] : enso?.classification) ||
+    ''
   if (c.includes('Niño')) return 'text-red-600'
   if (c.includes('Niña')) return 'text-blue-600'
   return 'text-gray-600'
@@ -433,7 +605,7 @@ const histPadR = 20
 
 const histPriceRange = computed(() => {
   if (!histPrices.value.length) return { min: 0, max: 1000 }
-  const vals = histPrices.value.map(p => Number(p.price_cop_kwh) || 0)
+  const vals = histPrices.value.map((p) => Number(p.price_cop_kwh) || 0)
   return { min: Math.min(...vals) * 0.9, max: Math.max(...vals) * 1.05 }
 })
 
@@ -445,7 +617,7 @@ function histPriceToY(price) {
 
 const oniRange = computed(() => {
   if (!histOni.value.length) return { min: -2, max: 2 }
-  const vals = histOni.value.map(o => Number(o.oni_value) || 0)
+  const vals = histOni.value.map((o) => Number(o.oni_value) || 0)
   return { min: Math.min(...vals, -1.5), max: Math.max(...vals, 1.5) }
 })
 
@@ -459,22 +631,26 @@ const histPriceLine = computed(() => {
   const n = histPrices.value.length
   if (!n) return ''
   const step = (histChartW - histPadL - histPadR) / Math.max(n - 1, 1)
-  return histPrices.value.map((p, i) => {
-    const x = histPadL + i * step
-    const y = histPriceToY(Number(p.price_cop_kwh) || 0)
-    return `${x},${y}`
-  }).join(' ')
+  return histPrices.value
+    .map((p, i) => {
+      const x = histPadL + i * step
+      const y = histPriceToY(Number(p.price_cop_kwh) || 0)
+      return `${x},${y}`
+    })
+    .join(' ')
 })
 
 const histOniLine = computed(() => {
   const n = histOni.value.length
   if (!n) return ''
   const step = (histChartW - histPadL - histPadR) / Math.max(n - 1, 1)
-  return histOni.value.map((o, i) => {
-    const x = histPadL + i * step
-    const y = oniToY(Number(o.oni_value) || 0)
-    return `${x},${y}`
-  }).join(' ')
+  return histOni.value
+    .map((o, i) => {
+      const x = histPadL + i * step
+      const y = oniToY(Number(o.oni_value) || 0)
+      return `${x},${y}`
+    })
+    .join(' ')
 })
 
 const ensoBands = computed(() => {
@@ -527,7 +703,7 @@ const histYearLabels = computed(() => {
 const histKpis = computed(() => {
   const data = histPrices.value
   if (!data.length) return []
-  const prices = data.map(p => Number(p.price_cop_kwh) || 0)
+  const prices = data.map((p) => Number(p.price_cop_kwh) || 0)
   const avg = prices.reduce((s, p) => s + p, 0) / prices.length
   const max = Math.max(...prices)
   const min = Math.min(...prices)
@@ -555,14 +731,16 @@ const ensoPhaseStats = computed(() => {
     { key: 'Neutral', label: 'Neutral', color: '#6b5a8a', bg: 'rgba(107,90,138,0.08)' },
     { key: 'La Niña', label: 'La Niña', color: '#3B82F6', bg: 'rgba(59,130,246,0.08)' },
   ]
-  return phases.filter(p => groups[p.key]).map(p => {
-    const g = groups[p.key]
-    return {
-      ...p,
-      avgPrice: (g.prices.reduce((s, v) => s + v, 0) / g.count).toFixed(0),
-      count: g.count,
-    }
-  })
+  return phases
+    .filter((p) => groups[p.key])
+    .map((p) => {
+      const g = groups[p.key]
+      return {
+        ...p,
+        avgPrice: (g.prices.reduce((s, v) => s + v, 0) / g.count).toFixed(0),
+        count: g.count,
+      }
+    })
 })
 </script>
 
