@@ -1,0 +1,46 @@
+# Dependencies and build output
+node_modules
+.nuxt
+.output
+dist
+
+# Unrelated reference projects
+template
+example
+
+# Tooling caches
+.prettier-cache
+
+# Generated artifacts
+*.min.js
+*.min.css
+
+# Vendored UI — shadcn-vue regenerates the first, Gandalf syncs the second
+app/components/ui
+app/components/gandalf
+
+# Agent tooling — written by the tools, not by us
+.claude
+.agents
+
+# MIGRACIÓN — Fase 1/2: el legacy todavía no cumple el formato del template.
+# Mismo criterio que en eslint.config.mjs: el legacy es JavaScript, el template
+# TypeScript. La lista se vacía sola a medida que la fase 3 convierte archivos.
+app/features/*/components
+app/data
+app/assets/*.js
+app/assets/main.css
+app/components/layout/LegacyAppSidebar.vue
+app/components/blocks/PageHeader.vue
+app/components/blocks/InfoField.vue
+app/components/blocks/DetalleLayout.vue
+app/components/blocks/ContactosPanel.vue
+app/features/*/utils
+app/features/*/data
+
+# Especificaciones de dominio traídas del legacy: se conservan tal cual se
+# escribieron, reformatearlas solo produce ruido en el diff.
+docs
+
+# Service worker de la PWA móvil: código vendido, se sirve tal cual.
+public/sw-mobile.js

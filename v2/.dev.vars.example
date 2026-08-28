@@ -1,0 +1,13 @@
+# Variables locales para `wrangler dev` (Cloudflare Workers). Copiar a
+# `.dev.vars` — ese sí queda fuera de git.
+#
+# Es el equivalente de `.env` para el runtime de Workers: `nuxt dev`/`nuxt
+# build` normal siguen leyendo `.env` (ver `.env.example`). Las claves públicas
+# y de configuración no-secreta también viven commiteadas en `wrangler.jsonc`
+# (`vars`) para que salgan en el dashboard de Cloudflare — este archivo es solo
+# para probar en local con `wrangler dev` sin tocar ese archivo commiteado.
+#
+# `NUXT_EVO_API_TOKEN` es el único valor real de este proyecto que no debe
+# vivir en texto plano en ningún archivo commiteado: en producción se setea con
+# `wrangler secret put NUXT_EVO_API_TOKEN`, nunca en `wrangler.jsonc`.
+NUXT_EVO_API_TOKEN=

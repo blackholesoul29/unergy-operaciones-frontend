@@ -1,0 +1,40 @@
+<template>
+  <div class="space-y-5">
+    <PageHeader title="Reporte de Energía" />
+
+    <div class="ret-tabs">
+      <button :class="['ret-tab', tab === 'automatizacion' && 'ret-tab--on']" @click="tab = 'automatizacion'">
+        <SettingsIcon class="size-[1em]" /> Reporte ASIC
+      </button>
+      <button :class="['ret-tab', tab === 'cgm' && 'ret-tab--on']" @click="tab = 'cgm'">
+        <MailIcon class="size-[1em]" /> Reporte CGM
+      </button>
+    </div>
+
+    <div class="ret-body">
+      <ReporteEnergiaAutomatizacionView v-show="tab === 'automatizacion'" />
+      <ReporteCGMView v-show="tab === 'cgm'" />
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import ReporteEnergiaAutomatizacionView from '~/features/fronteras/components/ReporteEnergiaAutomatizacionView.vue'
+import ReporteCGMView from '~/features/operadores-red/components/ReporteCGMView.vue'
+import { MailIcon, SettingsIcon } from '@lucide/vue'
+
+const tab = ref('automatizacion')
+</script>
+
+<style scoped>
+.ret-tabs { display: flex; gap: 6px; border-bottom: 1px solid #eceaf2; padding: 0 2px; }
+.ret-tab {
+  display: flex; align-items: center; gap: 7px; border: none; background: none;
+  font-size: 14px; font-weight: 700; color: #9b8db5; padding: 12px 16px; cursor: pointer;
+  border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+}
+.ret-tab svg { font-size: 14px; }
+.ret-tab--on { color: var(--color-unergy-purple-dark); border-bottom-color: var(--color-unergy-purple); }
+.ret-body { padding-top: 4px; }
+</style>
