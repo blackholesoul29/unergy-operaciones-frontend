@@ -131,6 +131,29 @@ export default defineNuxtConfig({
     plugins: [tailwindcss()],
   },
 
+  /**
+   * Despliegue en Cloudflare Workers (no Pages: este Nitro sirve rutas de
+   * servidor de verdad — proxies, auth — no solo estáticos).
+   *
+   * `deployConfig: true` es lo que hace que Nitro escriba
+   * `.output/server/wrangler.json` en el build, fusionando el `wrangler.jsonc`
+   * de la raíz con lo que el preset calcula (`main`, `assets`). Sin esa fusión,
+   * las `[vars]` de `wrangler.jsonc` nunca llegan al Worker desplegado ni al
+   * dashboard de Cloudflare.
+   *
+   * `nodeCompat: true` agrega el flag `nodejs_compat` — Nitro lo usa
+   * internamente (p. ej. `node:async_hooks` para el contexto de cada request)
+   * y sin él el Worker falla en runtime, no en build, que es el peor momento
+   * para enterarse.
+   */
+  nitro: {
+    preset: 'cloudflare-module',
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true,
+    },
+  },
+
   shadcn: {
     prefix: '',
     componentDir: '@/components/ui',
