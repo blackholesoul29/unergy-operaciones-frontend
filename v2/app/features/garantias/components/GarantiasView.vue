@@ -16,6 +16,7 @@
 
     <AjustesXMView v-if="activeTab === 'ajustes'" />
     <ProyeccionesView v-else-if="activeTab === 'proyecciones'" />
+    <ModeloPredictivoView v-else-if="activeTab === 'modelo'" />
   </div>
 </template>
 
@@ -23,10 +24,12 @@
 import { ref } from 'vue'
 import AjustesXMView from './AjustesXM/AjustesXMView.vue'
 import ProyeccionesView from './Proyecciones/ProyeccionesView.vue'
+import ModeloPredictivoView from './ModeloPredictivo/ModeloPredictivoView.vue'
 
 const tabs = [
   { key: 'ajustes', label: 'Ajustes XM' },
   { key: 'proyecciones', label: 'Proyecciones' },
+  { key: 'modelo', label: 'Modelo Predictivo' },
 ]
 const activeTab = ref('ajustes')
 </script>

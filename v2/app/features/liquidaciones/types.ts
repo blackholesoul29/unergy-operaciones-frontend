@@ -96,6 +96,18 @@ export interface FiltrosDespachos {
   version?: VersionCiclo
 }
 
+export interface RespuestaConsumo {
+  results: unknown[]
+}
+
+export interface FiltrosConsumo {
+  month: number
+  year: number
+  version?: VersionCiclo
+  project?: string
+  fecha?: string
+}
+
 /** Catálogos fijos: empresas, precios de energía y tipos de costo. */
 export interface Catalogos {
   tipos_costo?: unknown[]

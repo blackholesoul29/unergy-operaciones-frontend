@@ -61,3 +61,95 @@ export interface PagoGarantia {
   mes: number
   valor: number
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Modelo Predictivo — verificado contra `ModeloPredictivo/*.vue`, que son las
+// vistas que lo consumen.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export interface FrescuraGeneracion {
+  fecha_dato_generacion: string
+  dias_atraso: number
+  umbral_dias: number
+}
+
+export interface TotalesModeloPredictivo {
+  suma_p90: number
+  p90_total: number
+  brecha: number
+  central: number
+}
+
+export interface VencimientoSemanal {
+  id: Id
+  vencimiento: string
+  periodo_ini: string
+  periodo_fin: string
+  etiqueta_periodo: string
+  estado: string
+  procedencia_ventana: string
+  central: number | null
+  p90: number | null
+  real: number | null
+}
+
+export interface GarantiaMensual {
+  id: Id
+  mes: string
+  estado: string
+  procedencia_ventana: string
+  central: number | null
+  p90: number
+  ventana_cierra: string
+  objetivo: string
+  publica_xm: string
+  dias_ventaja: number
+}
+
+export interface BacktestModeloPredictivo {
+  cobertura_semanal: number
+  cobertura_mensual: number
+  ancho_mediano: number
+  ancho_baseline: number
+  n_vencimientos: number
+}
+
+export interface PlanModeloPredictivo {
+  frescura: FrescuraGeneracion | null
+  totales: TotalesModeloPredictivo
+  semanales: VencimientoSemanal[]
+  mensuales: GarantiaMensual[]
+  backtest: BacktestModeloPredictivo | null
+}
+
+export interface EslabonCalculo {
+  concepto: string
+  origen?: string | null
+  central: number | null
+  p90: number | null
+}
+
+export interface FuenteAncho {
+  fuente: string
+  pct: number
+}
+
+export interface InsumoModelo {
+  tipo: string
+  version: string
+  rango: string
+  dias: number
+}
+
+export interface DetalleVencimiento {
+  cadena: EslabonCalculo[]
+  descomposicion_ancho: FuenteAncho[]
+  insumos: InsumoModelo[]
+}
+
+export interface ParametrosPlanModeloPredictivo {
+  agente: string
+  esquema: string
+  cuantil?: number
+  horizonte?: number
+}

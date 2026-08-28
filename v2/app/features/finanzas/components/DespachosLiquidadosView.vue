@@ -1,8 +1,19 @@
 <template>
   <div class="space-y-4">
     <PageHeader title="Despachos liquidados"
-                subtitle="Energía ya liquidada por proyecto y concepto">
+                subtitle="Energía ya liquidada por proyecto, día y contrato">
       <template #actions>
+        <!-- El IPP que se consultó queda guardado; se muestra aquí para no
+             tener que volver a pedirlo solo para verlo. -->
+        <span v-if="ippVigente" class="text-xs px-2.5 py-1.5 rounded-lg self-center whitespace-nowrap"
+              style="background:#F1EAF9; color:#6E3FB8"
+              v-tooltip.bottom="`Consultado el ${fmtFechaCorta(ippVigente.consultado_el)}`">
+          IPP {{ nombreMes(filtros.month) }}: <b>{{ ippVigente.ipp }}</b>
+        </span>
+        <span v-else class="text-xs px-2.5 py-1.5 rounded-lg self-center whitespace-nowrap"
+              style="background:#F3F4F6; color:#6B7280">
+          IPP {{ nombreMes(filtros.month) }}: sin consultar
+        </span>
         <Button label="Consultar IPP" size="small" outlined :loading="accion === 'ipp'" @click="abrir('ipp')">
           <template #icon><PercentIcon class="size-[1em]" /></template>
         </Button>
@@ -89,18 +100,26 @@
         <Select v-model="filtros.version" :options="VERSIONES" class="w-28" @change="cargar" />
       </div>
       <div>
+        <label class="field-label">Tipo</label>
+        <Select v-model="tipoSel" :options="OPCIONES_TIPO" optionLabel="label" optionValue="value"
+                class="w-40" showClear placeholder="Todos" />
+      </div>
+      <div>
         <label class="field-label">Buscar</label>
         <IconField>
           <InputIcon><SearchIcon class="size-[1em]" /></InputIcon>
-          <InputText v-model="q" placeholder="Proyecto, concepto, tipo…" class="w-64" />
+          <InputText v-model="q" placeholder="Proyecto, contrato, fecha…" class="w-56" />
         </IconField>
       </div>
       <div class="flex-1" />
       <Button size="small" text rounded :loading="loading" v-tooltip.left="'Recargar'" @click="cargar">
         <template #icon><RefreshCwIcon class="size-[1em]" /></template>
       </Button>
-      <div class="text-xs text-gray-400 self-center">
+      <div class="text-xs text-gray-400 self-center text-right">
         {{ filtrados.length }} registro{{ filtrados.length === 1 ? '' : 's' }}
+        <span v-if="filtrados.length" class="block font-mono" style="color:#915BD8">
+          {{ fmtNum(totales.energia) }} kWh · {{ fmtNum(totales.valor) }}
+        </span>
       </div>
     </div>
 
@@ -146,17 +165,20 @@
           <tbody>
             <tr v-for="(row, i) in filtrados" :key="i"
                 class="border-t border-gray-100 hover:bg-gray-50/70 transition-colors duration-100">
-              <td class="px-4 py-2">{{ row.proyecto_nombre || row.proyecto || '—' }}</td>
-              <td class="px-4 py-2">{{ row.concepto || '—' }}</td>
+              <td class="px-4 py-2">{{ row.proyecto || '—' }}</td>
+              <td class="px-4 py-2 text-xs text-gray-500 whitespace-nowrap">{{ row.fecha || '—' }}</td>
               <td class="px-4 py-2 whitespace-nowrap">
-                <span class="text-xs font-mono text-gray-500">{{ row.tipo_dato || '—' }}</span>
+                <span class="text-[11px] px-1.5 py-0.5 rounded" :style="estiloTipo(row.tipo_dato)">
+                  {{ ETIQUETA_TIPO[row.tipo_dato] || row.tipo_dato || '—' }}
+                </span>
               </td>
+              <td class="px-4 py-2 text-xs font-mono text-gray-500">{{ row.codigo_contrato || '—' }}</td>
               <td class="px-4 py-2 text-right font-mono text-xs">{{ fmtNum(row.energia_kwh) }}</td>
               <td class="px-4 py-2 text-right font-mono text-xs"
                   :style="row.valor < 0 ? 'color:#D64455' : ''">{{ fmtNum(row.valor) }}</td>
               <td class="px-4 py-2 whitespace-nowrap uppercase text-xs">{{ row.version || '—' }}</td>
               <td class="px-4 py-2">
-                <Button text rounded size="small" v-tooltip.left="'Diagnosticar este proyecto'" @click="diagnosticar(row.proyecto)">
+                <Button text rounded size="small" v-tooltip.left="'Diagnosticar este proyecto'" @click="diagnosticar(row.topico)">
                   <template #icon><SearchIcon class="size-[1em]" /></template>
                 </Button>
               </td>
@@ -203,13 +225,30 @@ const MESES = [
 ].map((label, i) => ({ label, value: i + 1 }))
 
 const COLUMNAS = [
-  { key: 'proyecto',    label: 'Proyecto' },
-  { key: 'concepto',    label: 'Concepto' },
-  { key: 'tipo_dato',   label: 'Tipo de dato' },
-  { key: 'energia_kwh', label: 'Energía (kWh)', right: true },
-  { key: 'valor',       label: 'Valor',         right: true },
-  { key: 'version',     label: 'Versión' },
+  { key: 'proyecto',        label: 'Proyecto' },
+  { key: 'fecha',           label: 'Fecha' },
+  { key: 'tipo_dato',       label: 'Tipo' },
+  { key: 'codigo_contrato', label: 'Contrato' },
+  { key: 'energia_kwh',     label: 'Energía (kWh)', right: true },
+  { key: 'valor',           label: 'Valor',         right: true },
+  { key: 'version',         label: 'Versión' },
 ]
+
+/** Cómo llama XM a cada tipo de dato, en cristiano. */
+const ETIQUETA_TIPO = {
+  dispatch: 'Venta',
+  purchase: 'Compra',
+  dispatch_fazni: 'Venta en bolsa',
+}
+const OPCIONES_TIPO = Object.entries(ETIQUETA_TIPO).map(([value, label]) => ({ value, label }))
+
+function estiloTipo(tipo) {
+  return {
+    dispatch: 'background:#EAF7EF; color:#1D6F42',
+    purchase: 'background:#FDEEF0; color:#B42318',
+    dispatch_fazni: 'background:#F1EAF9; color:#6E3FB8',
+  }[tipo] || 'background:#F3F4F6; color:#6B7280'
+}
 
 // Las tres acciones del ciclo que arrancan aquí. IPP y FTP son independientes;
 // liquidar necesita el FTP ya descargado y va ANTES de repartir.
@@ -241,29 +280,60 @@ const q = ref('')
 const loading = ref(false)
 const error = ref(null)
 const despachos = ref([])
-const avisos = ref([])
-const avisosAbiertos = ref(false)
+const tipoSel = ref(null)
 
 const filtrados = computed(() => {
   const term = q.value.trim().toLowerCase()
-  if (!term) return despachos.value
-  return despachos.value.filter(d =>
-    [d.proyecto_nombre, d.proyecto, d.concepto, d.tipo_dato, d.version]
-      .filter(Boolean).some(v => String(v).toLowerCase().includes(term)),
-  )
+  return despachos.value.filter(d => {
+    if (tipoSel.value && d.tipo_dato !== tipoSel.value) return false
+    if (!term) return true
+    return [d.proyecto, d.topico, d.codigo_contrato, ETIQUETA_TIPO[d.tipo_dato], d.fecha]
+      .filter(Boolean).some(v => String(v).toLowerCase().includes(term))
+  })
 })
+
+/** Totales de lo que se está viendo: es lo primero que se cuadra contra XM. */
+const totales = computed(() => filtrados.value.reduce(
+  (t, d) => ({
+    energia: t.energia + (Number(d.energia_kwh) || 0),
+    valor: t.valor + (Number(d.valor) || 0),
+  }),
+  { energia: 0, valor: 0 },
+))
+
+// El IPP del período, si ya se consultó alguna vez. Hay una fila por consulta,
+// no una por mes: el backend marca cuál es la vigente.
+const ippVigente = ref(null)
+
+function nombreMes(m) {
+  return MESES.find(x => x.value === m)?.label || m
+}
+
+function fmtFechaCorta(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+async function cargarIpp() {
+  try {
+    const filas = await liquidacionesApi.listarIpp({ year: filtros.year, month: filtros.month })
+    ippVigente.value = (filas || []).find(f => f.vigente) || null
+  } catch {
+    // Es informativo: si falla, la tabla sigue sirviendo.
+    ippVigente.value = null
+  }
+}
 
 async function cargar() {
   loading.value = true
   error.value = null
+  cargarIpp()
   try {
     const data = await liquidacionesApi.listarDespachos(filtros)
     despachos.value = data.results || []
-    avisos.value = data.avisos || []
   } catch (e) {
     error.value = e.response?.data?.detail || 'No se pudieron cargar los despachos liquidados.'
     despachos.value = []
-    avisos.value = []
   } finally {
     loading.value = false
   }
@@ -299,7 +369,12 @@ async function ejecutar() {
   try {
     if (modo.value === 'ipp') {
       const ipp = await liquidacionesApi.consultarIpp(periodo)
-      toast.success(`IPP de ${c.mes}/${c.anio}`, { description: String(ipp), duration: 6000 })
+      toast.success(`IPP de ${nombreMes(c.mes)} ${c.anio}`, {
+        description: `${ipp} · queda guardado y se ve en la cabecera`,
+        duration: 6000,
+      })
+      // Si se consultó el período que está en pantalla, refrescar el indicador.
+      if (c.mes === filtros.month && c.anio === filtros.year) cargarIpp()
     } else {
       const opciones = { onEstado: (t) => { progreso.value = t.mensaje } }
       const res = modo.value === 'ftp'

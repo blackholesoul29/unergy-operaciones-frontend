@@ -9,9 +9,11 @@ import type {
   AccionCiclo,
   Catalogos,
   DiagnosticoProyecto,
+  FiltrosConsumo,
   FiltrosDespachos,
   OpcionesEsperaTarea,
   PeriodoCiclo,
+  RespuestaConsumo,
   RespuestaCostos,
   RespuestaDespachos,
   RespuestaFacturasXm,
@@ -35,11 +37,13 @@ const RUTAS = {
   facturasXm: `${BASE}/facturas-xm`,
   catalogos: `${BASE}/catalogos`,
   despachos: `${BASE}/despachos`,
+  consumo: `${BASE}/consumo`,
   costos: `${BASE}/costos`,
   costosExcel: `${BASE}/costos/excel`,
   contratosEnergia: `${BASE}/contratos-energia`,
   ciclo: (accion: AccionCiclo | string) => `${BASE}/ciclo/${accion}`,
   cicloIpp: `${BASE}/ciclo/ipp`,
+  ipp: `${BASE}/ipp`,
   cicloDiagnostico: `${BASE}/ciclo/diagnostico`,
 } as const
 
@@ -130,6 +134,18 @@ export class LiquidacionesApiService extends LegacyBaseService {
     return this.get<RespuestaDespachos>(RUTAS.despachos, { params: { month, year, version } })
   }
 
+  // ── Consumo ─────────────────────────────────────────────────────────────────
+
+  listarConsumo({
+    month,
+    year,
+    version = VERSION_INICIAL,
+    project,
+    fecha,
+  }: FiltrosConsumo): Promise<RespuestaConsumo> {
+    return this.get<RespuestaConsumo>(RUTAS.consumo, { params: { month, year, version, project, fecha } })
+  }
+
   // ── Costos e ingresos fijos ────────────────────────────────────────────────
 
   listarCostos(filtros: Record<string, unknown> = {}): Promise<RespuestaCostos> {
@@ -162,6 +178,14 @@ export class LiquidacionesApiService extends LegacyBaseService {
   async consultarIpp({ month, year }: { month: number; year: number }): Promise<number> {
     const { ipp } = await this.post<{ ipp: number }>(RUTAS.cicloIpp, { month, year })
     return ipp
+  }
+
+  /**
+   * Los IPP ya consultados. Hay una fila por consulta, no una por mes: la
+   * marcada con `vigente` es la que manda.
+   */
+  listarIpp({ year, month }: { year?: number; month?: number } = {}): Promise<unknown[]> {
+    return this.get<unknown[]>(RUTAS.ipp, { params: { year, month } })
   }
 
   /** Lanza una acción asíncrona del ciclo y espera a que termine. */
