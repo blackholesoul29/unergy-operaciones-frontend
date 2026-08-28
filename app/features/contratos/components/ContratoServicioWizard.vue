@@ -504,7 +504,7 @@ import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, LinkIcon, PencilIcon, PlusIco
 
 const props = defineProps({
   visible: Boolean,
-  tipo: { type: String, required: true }, // representacion | operacion | rec
+  tipo: { type: String, required: true }, // representacion | mantenimiento | arriendo | internet | rec
   proyectoIdDefault: { type: Number, default: null },
 })
 const emit = defineEmits(['update:visible', 'cerrar', 'creado'])
@@ -520,7 +520,6 @@ const nuevoClienteRol = ref('contratante')
 
 const TIPO_CONFIG = {
   representacion: { label: 'Representación', color: '#3b82f6' },
-  operacion:      { label: 'Operación',       color: '#10b981' },
   rec:            { label: 'REC',             color: '#14b8a6' },
   mantenimiento:  { label: 'Mantenimiento',   color: '#f59e0b' },
   arriendo:       { label: 'Arriendo',        color: '#8b5cf6' },

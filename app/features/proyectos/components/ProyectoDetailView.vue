@@ -672,7 +672,7 @@
         <ContratoServicioWizard
           v-if="showContratoWizard"
           :visible="showContratoWizard"
-          :tipo="SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.tipo ?? 'operacion'"
+          :tipo="SERVICIOS_CARDS.find(s => s.key === srvExpanded)?.tipo ?? 'rec'"
           :proyecto-id-default="Number(route.params.id)"
           @cerrar="showContratoWizard = false"
           @creado="onContratoServicioCreado"
@@ -828,7 +828,7 @@ const CLASIFICACIONES = ['AGP', 'AGPE', 'AGGE', 'GD', 'DER', 'otra']
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 const SERVICIOS_CARDS = [
   { key: 'srv_ppa',           label: 'PPA',           icon: ZapIcon,       color: '#f59e0b', bg: '#fef3c7', tipo: null },
-  { key: 'srv_operacion',     label: 'Operación',     icon: WrenchIcon,     color: '#10b981', bg: '#ecfdf5', tipo: 'operacion' },
+  { key: 'srv_operacion',     label: 'Operación',     icon: WrenchIcon,     color: '#10b981', bg: '#ecfdf5', tipo: null },
   { key: 'srv_representacion',label: 'Representación', icon: FilePenIcon,  color: '#3b82f6', bg: '#eff6ff', tipo: 'representacion' },
   { key: 'srv_rec',           label: 'REC',           icon: BadgeCheckIcon,   color: '#14b8a6', bg: '#f0fdfa', tipo: 'rec' },
 ]
