@@ -1,6 +1,6 @@
 /** Histórico de ajustes semanales de garantías (`AjustesXM/HistoricoTab.vue`). */
 import type { AjusteGarantia, PayloadAjusteGarantia } from '~/features/garantias/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/garantias-ajustes'
 
@@ -9,7 +9,7 @@ const RUTAS = {
   ajuste: (id: AjusteGarantia['id']) => `${BASE}/${id}`,
 } as const
 
-export class AjustesGarantiaService extends LegacyBaseService {
+export class AjustesGarantiaService extends BaseService {
   listar(): Promise<AjusteGarantia[]> {
     return this.get<AjusteGarantia[]>(RUTAS.ajustes)
   }

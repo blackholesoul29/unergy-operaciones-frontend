@@ -12,7 +12,7 @@ import type {
   RespuestaPaneles,
   RespuestaReasignarConsecutivos,
 } from '~/features/panel-contable/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/panel-contable'
 
@@ -33,7 +33,7 @@ const RUTAS = {
   fuenteIngreso: `${BASE}/fuente-ingreso`,
 } as const
 
-export class PanelContableService extends LegacyBaseService {
+export class PanelContableService extends BaseService {
   listar(filtros: FiltrosPanel): Promise<RespuestaPaneles> {
     return this.get<RespuestaPaneles>(RUTAS.paneles, { query: { ...filtros } })
   }

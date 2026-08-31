@@ -11,11 +11,11 @@ import type {
   RespuestaPortafoliosLegacy,
   RespuestaProyectosLegacy,
 } from '~/features/operaciones/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const RUTA = '/monitoreo/_legacy'
 
-export class MonitoreoLegacyService extends LegacyBaseService {
+export class MonitoreoLegacyService extends BaseService {
   obtenerProyectos(): Promise<RespuestaProyectosLegacy> {
     return this.get<RespuestaProyectosLegacy>(RUTA, { query: { action: 'getProjects' } })
   }

@@ -17,7 +17,7 @@ import type {
   ResumenReporteEnergiaDia,
   RespuestaCargaExcelTerceros,
 } from '~/features/fronteras/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/reporte-energia'
 
@@ -44,7 +44,7 @@ const RUTAS = {
   estadoQuoia: `${BASE}/estado-quoia`,
 } as const
 
-export class ReporteEnergiaService extends LegacyBaseService {
+export class ReporteEnergiaService extends BaseService {
   obtenerResumen(fecha: string): Promise<ResumenReporteEnergiaDia> {
     return this.get<ResumenReporteEnergiaDia>(RUTAS.resumen, { query: { fecha } })
   }

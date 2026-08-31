@@ -11,7 +11,7 @@ import type {
   ParametrosProyeccion,
   Proyecciones,
 } from '~/features/garantias/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/garantias/proyecciones'
 
@@ -33,7 +33,7 @@ function aQuery({
   return { plantas_nuevas: plantasNuevas, kwh_planta_nueva: kwhPlantaNueva }
 }
 
-export class ProyeccionesGarantiasService extends LegacyBaseService {
+export class ProyeccionesGarantiasService extends BaseService {
   obtener(parametros: ParametrosProyeccion = {}): Promise<Proyecciones> {
     return this.get<Proyecciones>(RUTAS.proyecciones, { query: aQuery(parametros) })
   }

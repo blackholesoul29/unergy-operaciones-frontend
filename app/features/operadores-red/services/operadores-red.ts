@@ -5,7 +5,7 @@ import type {
   PayloadContactoOperadorRed,
   PayloadOperadorRed,
 } from '~/features/operadores-red/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/operadores-red'
 
@@ -16,7 +16,7 @@ const RUTAS = {
   contacto: (contactoId: ContactoOperadorRed['id']) => `${BASE}/contactos/${contactoId}`,
 } as const
 
-export class OperadoresRedService extends LegacyBaseService {
+export class OperadoresRedService extends BaseService {
   listar(): Promise<OperadorRed[]> {
     return this.get<OperadorRed[]>(RUTAS.operadores)
   }

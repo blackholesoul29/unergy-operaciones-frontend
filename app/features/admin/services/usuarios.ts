@@ -1,7 +1,7 @@
 /** Gestión de usuarios de la plataforma. */
 import type { Paginado } from '~/types/api'
 import type { PayloadUsuario, Usuario } from '~/features/admin/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/usuarios'
 
@@ -10,7 +10,7 @@ const RUTAS = {
   usuario: (id: number) => `${BASE}/${id}`,
 } as const
 
-export class UsuariosService extends LegacyBaseService {
+export class UsuariosService extends BaseService {
   async listar({ size }: { size?: number } = {}): Promise<Usuario[]> {
     const data = await this.get<Paginado<Usuario>>(RUTAS.usuarios, {
       query: size ? { size } : undefined,

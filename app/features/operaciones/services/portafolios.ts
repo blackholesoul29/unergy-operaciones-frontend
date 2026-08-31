@@ -1,6 +1,6 @@
 /** Los portafolios de proyectos: agrupaciones para los informes consolidados. */
 import type { Portafolio, RespuestaPortafolios } from '~/features/operaciones/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/portafolios'
 
@@ -10,7 +10,7 @@ const RUTAS = {
   asignar: `${BASE}/asignar`,
 } as const
 
-export class PortafoliosService extends LegacyBaseService {
+export class PortafoliosService extends BaseService {
   listar(): Promise<RespuestaPortafolios> {
     return this.get<RespuestaPortafolios>(RUTAS.portafolios)
   }

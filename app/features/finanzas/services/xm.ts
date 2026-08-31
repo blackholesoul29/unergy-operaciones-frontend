@@ -12,7 +12,7 @@
  */
 import type { EstadoDescargaXm, TrabajoDescargaXm } from '~/features/finanzas/types'
 import air, { isAirError } from '@korastd/air'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const AGENTE_LOCAL_URL = 'http://127.0.0.1:8420'
 const TIMEOUT_MS = 10_000
@@ -22,7 +22,7 @@ const RUTAS = {
   descarga: (jobId: string) => `/descargas/${jobId}`,
 } as const
 
-export class XmAgenteLocalService extends LegacyBaseService {
+export class XmAgenteLocalService extends BaseService {
   constructor() {
     super(air.create({ baseURL: AGENTE_LOCAL_URL, signal: () => AbortSignal.timeout(TIMEOUT_MS) }))
   }

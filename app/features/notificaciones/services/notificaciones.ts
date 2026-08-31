@@ -1,10 +1,6 @@
-/**
- * Las notificaciones de la campana. Sobre `LegacyBaseService` porque necesita
- * su interceptor de sesión (`~/core/client.ts`) — pasa a `BaseService` en la
- * fase 3, cuando la sesión se mueva a cookies httpOnly.
- */
+/** Las notificaciones de la campana. */
 import type { Notificacion } from '~/features/notificaciones/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 /** El backend contesta a veces un array plano, a veces `{ items: [...] }`. */
 interface RespuestaListado {
@@ -17,7 +13,7 @@ interface RespuestaConteo {
   unread?: number
 }
 
-export class NotificacionesService extends LegacyBaseService {
+export class NotificacionesService extends BaseService {
   async contarNoLeidas(): Promise<number> {
     const data = await this.get<RespuestaConteo>('/notificaciones/count')
     return data.no_leidas ?? data.count ?? data.unread ?? 0

@@ -14,7 +14,7 @@ import type {
   PayloadRegistrarOportunidad,
   RespuestaFirmarOferta,
 } from '~/features/comercial/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/comercial'
 
@@ -32,7 +32,7 @@ const RUTAS = {
   oportunidadProyectos: (id: Oportunidad['id']) => `${BASE}/oportunidades/${id}/proyectos`,
 } as const
 
-export class ComercialService extends LegacyBaseService {
+export class ComercialService extends BaseService {
   listarOfertas(): Promise<Oferta[]> {
     return this.get<Oferta[]>(RUTAS.ofertas)
   }

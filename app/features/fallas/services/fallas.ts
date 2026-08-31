@@ -22,7 +22,7 @@ import type {
   OperadorMapa,
   DatosMapa,
 } from '~/features/fallas/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/fallas'
 
@@ -45,7 +45,7 @@ const RUTAS = {
   mapa: '/mapa',
 } as const
 
-export class FallasService extends LegacyBaseService {
+export class FallasService extends BaseService {
   obtenerCatalogos(): Promise<CatalogosFalla> {
     return this.get<CatalogosFalla>(RUTAS.catalogos)
   }

@@ -12,7 +12,7 @@ import type {
   RespuestaResumenPanel,
   RespuestaResumenPanelRango,
 } from '~/features/liquidaciones/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/liquidaciones'
 
@@ -24,7 +24,7 @@ const RUTAS = {
   resumenPanelRango: `${BASE}/resumen-panel-rango`,
 } as const
 
-export class LiquidacionesService extends LegacyBaseService {
+export class LiquidacionesService extends BaseService {
   obtener(id: Liquidacion['id']): Promise<Liquidacion> {
     return this.get<Liquidacion>(RUTAS.liquidacion(id))
   }

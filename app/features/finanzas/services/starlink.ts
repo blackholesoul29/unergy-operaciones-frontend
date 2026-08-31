@@ -4,7 +4,7 @@ import type {
   PayloadMapeoStarlink,
   ResultadoProcesarPdfStarlink,
 } from '~/features/finanzas/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/starlink'
 
@@ -16,7 +16,7 @@ const RUTAS = {
   mapeo: `${BASE}/mapeo`,
 } as const
 
-export class StarlinkService extends LegacyBaseService {
+export class StarlinkService extends BaseService {
   listarPeriodos(): Promise<string[]> {
     return this.get<string[]>(RUTAS.periodos)
   }

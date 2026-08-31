@@ -1,6 +1,6 @@
 /** API Keys de un usuario: heredan su rol y permisos. */
 import type { ApiKey, Usuario } from '~/features/admin/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/api-keys'
 
@@ -15,7 +15,7 @@ interface RespuestaCreacion {
   api_key: string
 }
 
-export class ApiKeysService extends LegacyBaseService {
+export class ApiKeysService extends BaseService {
   listarPorUsuario(usuarioId: Usuario['id']): Promise<ApiKey[]> {
     return this.get<ApiKey[]>(RUTAS.porUsuario(usuarioId))
   }

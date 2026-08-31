@@ -1,6 +1,6 @@
 /** CRUD de fronteras comerciales y su sincronización con Quoia (el CGM). */
 import type { Frontera, FronteraPendienteQuoia, PayloadFrontera } from '~/features/fronteras/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/fronteras'
 
@@ -12,7 +12,7 @@ const RUTAS = {
   quoiaIgnorar: (frtCode: string) => `${BASE}/quoia/pendientes/${frtCode}/ignorar`,
 } as const
 
-export class FronterasService extends LegacyBaseService {
+export class FronterasService extends BaseService {
   listar(filtros: { limit?: number } = {}): Promise<Frontera[]> {
     return this.get<Frontera[]>(RUTAS.fronteras, { query: { ...filtros } })
   }

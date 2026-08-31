@@ -8,7 +8,7 @@ import type {
   Reto,
   RespuestaListaRetos,
 } from '~/features/retos/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/retos'
 
@@ -23,7 +23,7 @@ const RUTAS = {
     `${BASE}/${retoId}/metricas/copiar-desde/${origenId}`,
 } as const
 
-export class RetosService extends LegacyBaseService {
+export class RetosService extends BaseService {
   /** `GET /retos?anio=` autocrea los 4 trimestres de ese año. */
   listarPorAnio(anio: number): Promise<RespuestaListaRetos> {
     return this.get<RespuestaListaRetos>(RUTAS.retos, { query: { anio } })
