@@ -96,6 +96,57 @@
             </div>
           </div>
 
+          <!-- Excepciones de tasa por servicio -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-xs font-bold uppercase tracking-wide" style="color: #9b89b5;">
+                Excepciones de tasa por servicio
+              </h3>
+              <button @click="abrirDialogoTasa(null)"
+                class="px-3 py-1.5 rounded-lg text-xs font-semibold text-white flex items-center gap-1"
+                style="background: var(--color-unergy-purple);">
+                <PlusIcon class="text-xs size-[1em]" /> Agregar excepción
+              </button>
+            </div>
+            <p class="text-xs mb-3" style="color: #9b89b5;">
+              Sobrescribe el IVA/retención/ReteIVA/ReteICA general del cliente solo para un servicio
+              (y opcionalmente un proyecto) puntual. Un % vacío hereda la tasa general del cliente.
+            </p>
+            <div v-if="loadingTasas" class="flex justify-center py-4">
+              <LoaderCircleIcon class="text-xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
+            </div>
+            <div v-else-if="tasasServicio.length === 0"
+              class="text-sm text-center py-4 rounded-xl" style="color:#bba8d4; border: 1.5px dashed #e8e0f0;">
+              Sin excepciones — este cliente usa sus tasas generales para todos los servicios.
+            </div>
+            <div v-else class="space-y-2">
+              <div v-for="t in tasasServicio" :key="t.id"
+                class="flex flex-wrap items-center justify-between gap-2 rounded-xl px-4 py-3"
+                style="border: 1.5px solid #e8e0f0;">
+                <div>
+                  <p class="text-sm font-semibold" style="color: var(--color-unergy-deep);">
+                    {{ t.servicio }}
+                    <span class="text-xs font-normal" style="color:#9b89b5;"> · {{ nombreProyectoTasa(t.proyecto_id) }}</span>
+                  </p>
+                  <p class="text-xs" style="color: #6b5a8a;">
+                    <span v-if="t.iva_pct != null">IVA {{ t.iva_pct }}% · </span>
+                    <span v-if="t.retencion_pct != null">Retención {{ t.retencion_pct }}% · </span>
+                    <span v-if="t.reteiva_pct != null">ReteIVA {{ t.reteiva_pct }}% · </span>
+                    <span v-if="t.reteica_pct != null">ReteICA {{ t.reteica_pct }}%</span>
+                  </p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  <button @click="abrirDialogoTasa(t)" style="color: #6b5a8a;" class="hover:text-purple-700">
+                    <PencilIcon class="text-sm size-[1em]" />
+                  </button>
+                  <button @click="eliminarTasa(t)" class="text-red-400 hover:text-red-600">
+                    <Trash2Icon class="text-sm size-[1em]" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         <!-- ── Tab: Documentos ── -->
@@ -377,6 +428,47 @@
         style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);" />
     </template>
   </Dialog>
+
+  <!-- ── Dialog: Excepción de tasa por servicio ── -->
+  <Dialog v-model:visible="dialogTasa" modal
+    :header="editandoTasa?.id ? 'Editar excepción de tasa' : 'Nueva excepción de tasa'"
+    class="w-full max-w-lg">
+    <div class="space-y-4 pt-2">
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Servicio *</label>
+          <Select v-model="formTasa.servicio" :options="SERVICIOS_TASA" class="w-full" placeholder="Seleccionar" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Proyecto</label>
+          <Select v-model="formTasa.proyecto_id" :options="clienteProyectos" optionLabel="nombre_comercial" optionValue="id"
+            class="w-full" placeholder="Todos los proyectos" showClear />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">IVA %</label>
+          <InputNumber v-model="formTasa.iva_pct" suffix="%" :minFractionDigits="0" :maxFractionDigits="2" class="w-full" placeholder="Hereda del cliente" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">Retención %</label>
+          <InputNumber v-model="formTasa.retencion_pct" suffix="%" :minFractionDigits="0" :maxFractionDigits="2" class="w-full" placeholder="Hereda del cliente" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">ReteIVA %</label>
+          <InputNumber v-model="formTasa.reteiva_pct" suffix="%" :minFractionDigits="0" :maxFractionDigits="2" class="w-full" placeholder="Hereda del cliente" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style="color: var(--color-unergy-deep);">ReteICA %</label>
+          <InputNumber v-model="formTasa.reteica_pct" suffix="%" :minFractionDigits="0" :maxFractionDigits="2" class="w-full" placeholder="Hereda del cliente" />
+        </div>
+      </div>
+    </div>
+    <template #footer>
+      <Button label="Cancelar" severity="secondary" @click="dialogTasa = false" />
+      <Button label="Guardar" :disabled="!formTasa.servicio || guardando"
+        :loading="guardando" @click="guardarTasa"
+        style="background: var(--color-unergy-purple); border-color: var(--color-unergy-purple);" />
+    </template>
+  </Dialog>
 </template>
 
 <script setup>
@@ -389,6 +481,7 @@ import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
+import InputNumber from 'primevue/inputnumber'
 import api from '~/core/client'
 import ClienteForm from './ClienteForm.vue'
 import DetalleLayout from '~/components/blocks/DetalleLayout.vue'
@@ -425,6 +518,9 @@ const loadingRelated = ref(false)
 
 const serviciosContratos = ref([])
 const loadingServiciosContratos = ref(false)
+
+const tasasServicio = ref([])
+const loadingTasas = ref(false)
 
 const TIPOS_DOC = [
   { value: 'rut',                label: 'RUT' },
@@ -661,8 +757,86 @@ async function loadServiciosContratos() {
   }
 }
 
+// ── Tasas de servicio (excepciones de IVA/retencion/ReteIVA/ReteICA) ──────────
+// Sobrescriben las tasas generales del cliente SOLO para un servicio puntual
+// (y opcionalmente un proyecto puntual). Ver app/utils/impuestos_factura.py
+// (tasas_efectivas) en el backend -- esto es lo que aplica el Panel Contable
+// y las Liquidaciones.
+const SERVICIOS_TASA = ['Representación', 'CGM', 'Administración']
+
+async function loadTasasServicio() {
+  loadingTasas.value = true
+  try {
+    const { data } = await api.get(`/clientes/${route.params.id}/tasas-servicio`)
+    tasasServicio.value = Array.isArray(data) ? data : []
+  } catch {
+    tasasServicio.value = []
+  } finally {
+    loadingTasas.value = false
+  }
+}
+
+const dialogTasa = ref(false)
+const editandoTasa = ref(null)
+const formTasa = reactive({
+  servicio: '', proyecto_id: null,
+  iva_pct: null, retencion_pct: null, reteiva_pct: null, reteica_pct: null,
+})
+
+async function abrirDialogoTasa(tasa) {
+  editandoTasa.value = tasa
+  if (tasa) {
+    Object.assign(formTasa, {
+      servicio: tasa.servicio, proyecto_id: tasa.proyecto_id ?? null,
+      iva_pct: tasa.iva_pct ?? null, retencion_pct: tasa.retencion_pct ?? null,
+      reteiva_pct: tasa.reteiva_pct ?? null, reteica_pct: tasa.reteica_pct ?? null,
+    })
+  } else {
+    Object.assign(formTasa, {
+      servicio: '', proyecto_id: null,
+      iva_pct: null, retencion_pct: null, reteiva_pct: null, reteica_pct: null,
+    })
+  }
+  if (clienteProyectos.value.length === 0) await loadRelatedData('proyectos')
+  dialogTasa.value = true
+}
+
+async function guardarTasa() {
+  guardando.value = true
+  try {
+    await api.put(`/clientes/${route.params.id}/tasa-servicio`, {
+      servicio: formTasa.servicio,
+      proyecto_id: formTasa.proyecto_id || null,
+      iva_pct: formTasa.iva_pct ?? null,
+      retencion_pct: formTasa.retencion_pct ?? null,
+      reteiva_pct: formTasa.reteiva_pct ?? null,
+      reteica_pct: formTasa.reteica_pct ?? null,
+    })
+    dialogTasa.value = false
+    toast.success('Tasa de servicio guardada', { duration: 3000 })
+    await loadTasasServicio()
+  } catch (e) {
+    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
+  } finally {
+    guardando.value = false
+  }
+}
+
+async function eliminarTasa(tasa) {
+  if (!confirm(`¿Eliminar la excepción de "${tasa.servicio}"${tasa.proyecto_id ? '' : ' (todos los proyectos)'}?`)) return
+  await api.delete(`/clientes/${route.params.id}/tasa-servicio/${tasa.id}`)
+  toast.success('Eliminada', { duration: 3000 })
+  await loadTasasServicio()
+}
+
+function nombreProyectoTasa(proyectoId) {
+  if (!proyectoId) return 'Todos los proyectos'
+  return clienteProyectos.value.find(p => p.id === proyectoId)?.nombre_comercial || `Proyecto #${proyectoId}`
+}
+
 onMounted(() => {
   cargar()
   loadServiciosContratos()
+  loadTasasServicio()
 })
 </script>
