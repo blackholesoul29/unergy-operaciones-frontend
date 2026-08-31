@@ -1,13 +1,15 @@
 /**
- * API client factory, backed by ofetch — the same `$fetch` Nuxt uses, so a
+ * API client factory, backed by `air` — a tiny fetch-based client, so a
  * relative URL called during SSR reaches this app's own Nitro routes without a
- * round trip over the network.
+ * round trip over the network, same as the native `fetch` it wraps.
  *
  * Usage:
  *   import { createApiClient } from '~/core/api'
  *   const client = createApiClient({ getToken: () => auth.accessToken.value })
  */
-export type ApiClient = ReturnType<typeof $fetch.create>
+import air, { type AirClient } from '@korastd/air'
+
+export type ApiClient = AirClient
 
 export interface ApiClientOptions {
   baseUrl?: string
@@ -18,15 +20,11 @@ export interface ApiClientOptions {
 export function createApiClient(options: ApiClientOptions = {}): ApiClient {
   const { baseUrl = '', getToken } = options
 
-  return $fetch.create({
+  return air.create({
     baseURL: baseUrl,
-    onRequest({ options }) {
+    headers: () => {
       const token = getToken?.()
-      if (!token) return
-
-      const headers = new Headers(options.headers)
-      headers.set('Authorization', `Bearer ${token}`)
-      options.headers = headers
+      return token ? { Authorization: `Bearer ${token}` } : {}
     },
   })
 }

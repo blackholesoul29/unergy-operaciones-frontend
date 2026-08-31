@@ -24,7 +24,7 @@ export class NotificacionesService extends LegacyBaseService {
 
   async listar(limit = 20): Promise<Notificacion[]> {
     const data = await this.get<Notificacion[] | RespuestaListado>('/notificaciones', {
-      params: { limit },
+      query: { limit },
     })
     return Array.isArray(data) ? data : (data.items ?? [])
   }

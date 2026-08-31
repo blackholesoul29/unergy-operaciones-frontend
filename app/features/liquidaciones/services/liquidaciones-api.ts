@@ -22,6 +22,7 @@ import type {
   TareaEstado,
   VersionCiclo,
 } from '~/features/liquidaciones/types'
+import type { QueryValue } from '@korastd/air'
 import { LegacyBaseService } from '~/core/legacy-service'
 import {
   EstadoTarea,
@@ -100,8 +101,8 @@ export class LiquidacionesApiService extends LegacyBaseService {
   // ── Facturas de XM ─────────────────────────────────────────────────────────
 
   /** Facturas de XM del período, con su bloque de alistamiento. */
-  listarFacturasXm(filtros: Record<string, unknown> = {}): Promise<RespuestaFacturasXm> {
-    return this.get<RespuestaFacturasXm>(RUTAS.facturasXm, { params: filtros })
+  listarFacturasXm(filtros: Record<string, QueryValue> = {}): Promise<RespuestaFacturasXm> {
+    return this.get<RespuestaFacturasXm>(RUTAS.facturasXm, { query: filtros })
   }
 
   /** Sube un lote de facturas en PDF. El mes y el año los extrae la IA del PDF. */
@@ -131,7 +132,7 @@ export class LiquidacionesApiService extends LegacyBaseService {
     year,
     version = VERSION_INICIAL,
   }: FiltrosDespachos): Promise<RespuestaDespachos> {
-    return this.get<RespuestaDespachos>(RUTAS.despachos, { params: { month, year, version } })
+    return this.get<RespuestaDespachos>(RUTAS.despachos, { query: { month, year, version } })
   }
 
   // ── Consumo ─────────────────────────────────────────────────────────────────
@@ -144,14 +145,14 @@ export class LiquidacionesApiService extends LegacyBaseService {
     fecha,
   }: FiltrosConsumo): Promise<RespuestaConsumo> {
     return this.get<RespuestaConsumo>(RUTAS.consumo, {
-      params: { month, year, version, project, fecha },
+      query: { month, year, version, project, fecha },
     })
   }
 
   // ── Costos e ingresos fijos ────────────────────────────────────────────────
 
-  listarCostos(filtros: Record<string, unknown> = {}): Promise<RespuestaCostos> {
-    return this.get<RespuestaCostos>(RUTAS.costos, { params: filtros })
+  listarCostos(filtros: Record<string, QueryValue> = {}): Promise<RespuestaCostos> {
+    return this.get<RespuestaCostos>(RUTAS.costos, { query: filtros })
   }
 
   /** Carga masiva de costos e ingresos fijos desde un Excel. Un archivo por llamada. */
@@ -187,7 +188,7 @@ export class LiquidacionesApiService extends LegacyBaseService {
    * marcada con `vigente` es la que manda.
    */
   listarIpp({ year, month }: { year?: number; month?: number } = {}): Promise<unknown[]> {
-    return this.get<unknown[]>(RUTAS.ipp, { params: { year, month } })
+    return this.get<unknown[]>(RUTAS.ipp, { query: { year, month } })
   }
 
   /** Lanza una acción asíncrona del ciclo y espera a que termine. */

@@ -303,7 +303,7 @@ async function cargar() {
     costos.value = data.results || []
     total.value = data.total || 0
   } catch (e) {
-    error.value = e.response?.data?.detail || 'No se pudieron cargar los costos.'
+    error.value = e.data?.detail || 'No se pudieron cargar los costos.'
     costos.value = []
     total.value = 0
   } finally {
@@ -354,7 +354,7 @@ async function subirExcel() {
     excel.value = null
     await cargar()
   } catch (e) {
-    toast.error('No se pudo cargar', { description: e.response?.data?.detail || e.message, duration: 8000 })
+    toast.error('No se pudo cargar', { description: e.data?.detail || e.message, duration: 8000 })
   } finally {
     subiendoExcel.value = false
   }
@@ -406,7 +406,7 @@ async function repartir() {
     acVisible.value = false
     recargar()
   } catch (e) {
-    toast.error('El reparto falló', { description: e.response?.data?.detail || e.message, duration: 10000 })
+    toast.error('El reparto falló', { description: e.data?.detail || e.message, duration: 10000 })
   } finally {
     repartiendo.value = false
     progresoReparto.value = ''

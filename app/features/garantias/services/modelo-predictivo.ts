@@ -18,7 +18,9 @@ const RUTAS = {
 
 export class ModeloPredictivoService extends LegacyBaseService {
   getPlan(parametros: ParametrosPlanModeloPredictivo): Promise<PlanModeloPredictivo> {
-    return this.get<PlanModeloPredictivo>(RUTAS.plan, { params: parametros })
+    // Objeto fresco, no el valor tipado tal cual: una `interface` no tiene firma de
+    // índice y `Query` (de `air`) la exige — ver la nota del propio README de `air`.
+    return this.get<PlanModeloPredictivo>(RUTAS.plan, { query: { ...parametros } })
   }
 
   getDetalle(id: string): Promise<DetalleVencimiento> {

@@ -183,7 +183,7 @@ async function cargar() {
     })
     consumos.value = data.results || []
   } catch (e) {
-    error.value = e?.response?.data?.detail
+    error.value = e?.data?.detail
       || 'No se pudo consultar el consumo del período.'
     consumos.value = []
   } finally {

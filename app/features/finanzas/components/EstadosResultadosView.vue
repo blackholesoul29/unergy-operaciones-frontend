@@ -313,7 +313,7 @@ async function cargar(refrescar = false) {
     }
   } catch (e) {
     archivos.value = []
-    error.value = e.response?.data?.detail || 'No se pudo leer la carpeta de Drive'
+    error.value = e.data?.detail || 'No se pudo leer la carpeta de Drive'
   } finally {
     loading.value = false
     cargandoPeriodos.value = false
@@ -405,7 +405,7 @@ async function generarArchivo({ accion, periodo, titulo, enCurso, progreso, cerr
     cerrar()
     await cargar(true)
   } catch (e) {
-    toast.error(`${titulo} falló`, { description: e.response?.data?.detail || e.message, duration: 10000 })
+    toast.error(`${titulo} falló`, { description: e.data?.detail || e.message, duration: 10000 })
   } finally {
     enCurso.value = false
     progreso.value = ''

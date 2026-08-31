@@ -50,6 +50,6 @@ export class ArriendosDocsService extends LegacyBaseService {
 
   /** El PDF crudo, para dárselo al navegador. */
   descargarArchivo(docId: number): Promise<Blob> {
-    return this.get<Blob>(RUTAS.archivo(docId), { responseType: 'blob' })
+    return this.get<Blob>(RUTAS.archivo(docId), { parse: 'blob' })
   }
 }

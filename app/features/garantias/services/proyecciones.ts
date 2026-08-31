@@ -35,12 +35,12 @@ function aQuery({
 
 export class ProyeccionesGarantiasService extends LegacyBaseService {
   obtener(parametros: ParametrosProyeccion = {}): Promise<Proyecciones> {
-    return this.get<Proyecciones>(RUTAS.proyecciones, { params: aQuery(parametros) })
+    return this.get<Proyecciones>(RUTAS.proyecciones, { query: aQuery(parametros) })
   }
 
   /** Congela la proyección actual para poder compararla después. */
   guardarSnapshot(parametros: ParametrosProyeccion = {}): Promise<unknown> {
-    return this.post<unknown>(RUTAS.snapshot, null, { params: aQuery(parametros) })
+    return this.post<unknown>(RUTAS.snapshot, null, { query: aQuery(parametros) })
   }
 
   obtenerHistorial(): Promise<HistorialGarantias> {
@@ -48,6 +48,6 @@ export class ProyeccionesGarantiasService extends LegacyBaseService {
   }
 
   registrarPago({ anio, mes, valor }: PagoGarantia): Promise<unknown> {
-    return this.put<unknown>(RUTAS.pagado, null, { params: { anio, mes, valor } })
+    return this.put<unknown>(RUTAS.pagado, null, { query: { anio, mes, valor } })
   }
 }
