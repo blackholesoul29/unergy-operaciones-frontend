@@ -6,11 +6,13 @@ import type {
   ContratoServicioResumenProyecto,
   FronteraProyectoResumen,
   InversionistaProyecto,
+  InversorProyecto,
   PayloadActualizarInversionista,
   PayloadActualizarProyecto,
   PayloadAreaContactoOverride,
   PayloadConfirmarPendiente,
   PayloadInversionista,
+  PayloadInversorProyecto,
   PayloadServicioToggle,
   ProyectoConDetalle,
   ProyectoConServicioRepresentacion,
@@ -28,6 +30,9 @@ const RUTAS = {
   inversionistas: (id: Proyecto['id']) => `${BASE}/${id}/inversionistas`,
   inversionista: (id: Proyecto['id'], invId: InversionistaProyecto['id']) =>
     `${BASE}/${id}/inversionistas/${invId}`,
+  inversores: (id: Proyecto['id']) => `${BASE}/${id}/inversores`,
+  inversor: (id: Proyecto['id'], inversorId: InversorProyecto['id']) =>
+    `${BASE}/${id}/inversores/${inversorId}`,
   servicios: (id: Proyecto['id']) => `${BASE}/${id}/servicios`,
   areaContactos: (id: Proyecto['id']) => `${BASE}/${id}/area-contactos`,
   areaContacto: (id: Proyecto['id'], tipo: string) => `${BASE}/${id}/area-contactos/${tipo}`,
@@ -107,6 +112,28 @@ export class ProyectosService extends LegacyBaseService {
 
   eliminarInversionista(id: Proyecto['id'], invId: InversionistaProyecto['id']): Promise<unknown> {
     return this.delete<unknown>(RUTAS.inversionista(id, invId))
+  }
+
+  // ── Inversores (equipo de la planta, no inversionistas) ───────────────────────
+
+  listarInversores(id: Proyecto['id']): Promise<InversorProyecto[]> {
+    return this.get<InversorProyecto[]>(RUTAS.inversores(id))
+  }
+
+  crearInversor(id: Proyecto['id'], payload: PayloadInversorProyecto): Promise<InversorProyecto> {
+    return this.post<InversorProyecto>(RUTAS.inversores(id), payload)
+  }
+
+  actualizarInversor(
+    id: Proyecto['id'],
+    inversorId: InversorProyecto['id'],
+    payload: PayloadInversorProyecto,
+  ): Promise<InversorProyecto> {
+    return this.patch<InversorProyecto>(RUTAS.inversor(id, inversorId), payload)
+  }
+
+  eliminarInversor(id: Proyecto['id'], inversorId: InversorProyecto['id']): Promise<unknown> {
+    return this.delete<unknown>(RUTAS.inversor(id, inversorId))
   }
 
   alternarServicio(id: Proyecto['id'], payload: PayloadServicioToggle): Promise<unknown> {

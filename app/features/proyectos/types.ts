@@ -156,6 +156,18 @@ export interface PayloadServicioToggle {
   [clave: string]: boolean
 }
 
+// ── Inversores del proyecto (equipo, no inversionistas — catálogo para clasificar fallas) ──
+
+export interface InversorProyecto {
+  id: number
+  nombre?: string
+  potencia_nominal_kw?: number | null
+  orden?: number
+  [clave: string]: unknown
+}
+
+export type PayloadInversorProyecto = Partial<Omit<InversorProyecto, 'id'>>
+
 // ── Fronteras del proyecto (el slice `fronteras` aún no está migrado) ─────────
 
 export interface FronteraProyectoResumen {

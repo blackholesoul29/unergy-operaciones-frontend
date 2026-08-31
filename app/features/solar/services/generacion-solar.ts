@@ -1,0 +1,58 @@
+/** Monitoreo en vivo de generación solar (datos de Solenium). */
+import type {
+  DetalleMonitoreoSolar,
+  GeneracionHoyProyecto,
+  HistorialGeneracionProyecto,
+  PotenciaInversores,
+  RespuestaGeneracionHoy,
+  RespuestaMonitoreoSolar,
+} from '~/features/solar/types'
+import { LegacyBaseService } from '~/core/legacy-service'
+
+const BASE = '/generacion-solar'
+
+const RUTAS = {
+  monitoring: `${BASE}/monitoring`,
+  monitoringDetalle: (proyectoId: number) => `${BASE}/monitoring/${proyectoId}`,
+  invertersPower: (proyectoId: number) => `${BASE}/monitoring/${proyectoId}/inverters-power`,
+  generacionHoy: `${BASE}/generacion-hoy`,
+  historialProyecto: (proyectoId: number) => `${BASE}/proyecto/${proyectoId}/historial`,
+} as const
+
+export class GeneracionSolarService extends LegacyBaseService {
+  obtenerMonitoreo(): Promise<RespuestaMonitoreoSolar> {
+    return this.get<RespuestaMonitoreoSolar>(RUTAS.monitoring)
+  }
+
+  obtenerDetalle(proyectoId: number): Promise<DetalleMonitoreoSolar> {
+    return this.get<DetalleMonitoreoSolar>(RUTAS.monitoringDetalle(proyectoId))
+  }
+
+  obtenerPotenciaInversores(
+    proyectoId: number,
+    { dateFrom, dateTo }: { dateFrom: string; dateTo: string },
+  ): Promise<PotenciaInversores> {
+    return this.get<PotenciaInversores>(RUTAS.invertersPower(proyectoId), {
+      query: { date_from: dateFrom, date_to: dateTo },
+    })
+  }
+
+  async obtenerGeneracionHoy(): Promise<GeneracionHoyProyecto[]> {
+    const data = await this.get<RespuestaGeneracionHoy>(RUTAS.generacionHoy)
+    return data.proyectos ?? []
+  }
+
+  /** Igual que `obtenerGeneracionHoy`, sin desenvolver: `MonitoreoView.vue` también necesita `.total`. */
+  obtenerGeneracionHoyCompleta(): Promise<RespuestaGeneracionHoy> {
+    return this.get<RespuestaGeneracionHoy>(RUTAS.generacionHoy)
+  }
+
+  obtenerHistorialProyecto(
+    proyectoId: number,
+    filtros: { fecha_inicio: string; fecha_fin: string; granularidad: string },
+  ): Promise<HistorialGeneracionProyecto> {
+    return this.get<HistorialGeneracionProyecto>(RUTAS.historialProyecto(proyectoId), {
+      query: filtros,
+    })
+  }
+}

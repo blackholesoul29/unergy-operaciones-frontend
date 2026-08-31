@@ -249,8 +249,12 @@ import {
 import { Line } from 'vue-chartjs'
 import draggable from 'vuedraggable'
 import AutoComplete from 'primevue/autocomplete'
-import api from '~/core/client'
+import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import GeneracionView from '~/features/operaciones/components/GeneracionView.vue'
+
+const generacionSolarService = new GeneracionSolarService()
+const proyectosService = new ProyectosService()
 import { ChartLineIcon, ChevronDownIcon, ClockIcon, LoaderCircleIcon, MenuIcon, RefreshCwIcon, SearchIcon, SunIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler)
@@ -317,12 +321,12 @@ function getGenHoy(id) {
 
 async function cargarGenHoy() {
   try {
-    const [resHoy, resProy] = await Promise.all([
-      api.get('/generacion-solar/generacion-hoy'),
-      api.get('/proyectos', { params: { size: 500 } }),
+    const [filasHoy, proyectos] = await Promise.all([
+      generacionSolarService.obtenerGeneracionHoy(),
+      proyectosService.listar({ size: 500 }),
     ])
-    p90List.value = resProy.data.items ?? []
-    for (const row of resHoy.data.proyectos ?? []) {
+    p90List.value = proyectos
+    for (const row of filasHoy) {
       genHoyMap[row.proyecto_id] = { kwh_real: row.kwh_real, fuente: row.fuente }
     }
   } catch { /* silencioso */ }
@@ -577,8 +581,8 @@ function chartOptionsMed(id) { return makeOptions('#D4A017', getChartMax(id)) }
 async function cargar() {
   loading.value = true
   try {
-    const res = await api.get('/generacion-solar/monitoring')
-    proyectos.value = applyOrder(res.data.projects ?? [])
+    const res = await generacionSolarService.obtenerMonitoreo()
+    proyectos.value = applyOrder(res.projects ?? [])
     lastUpdated.value = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
   } catch { /* silencioso */ } finally {
     loading.value = false
@@ -594,8 +598,7 @@ async function cargar() {
 
 async function loadDetail(id) {
   try {
-    const res = await api.get(`/generacion-solar/monitoring/${id}`)
-    detailMap[id] = res.data
+    detailMap[id] = await generacionSolarService.obtenerDetalle(id)
   } catch { detailMap[id] = {} }
 }
 

@@ -145,8 +145,12 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import Select from 'primevue/select'
 import FallaForm from './FallaForm.vue'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { ChevronRightIcon, PlusIcon, SearchIcon, XIcon } from '@lucide/vue'
+
+const fallasService = new FallasService()
+const proyectosService = new ProyectosService()
 
 const route = useRoute()
 const router = useRouter()
@@ -211,8 +215,7 @@ function formatDate(d) {
 
 async function loadCatalogos() {
   try {
-    const { data } = await api.get('/fallas/catalogos')
-    catalogos.value = data
+    catalogos.value = await fallasService.obtenerCatalogos()
   } catch {
     // Keep empty defaults
   }
@@ -226,7 +229,7 @@ async function load() {
     if (filters.value.estado_id) params.estado_id = filters.value.estado_id
     if (filters.value.prioridad_id) params.prioridad_id = filters.value.prioridad_id
     if (filters.value.proyecto_id) params.proyecto_id = filters.value.proyecto_id
-    const { data } = await api.get('/fallas', { params })
+    const data = await fallasService.listar(params)
     items.value = data.items
     total.value = data.total
   } catch {
@@ -260,16 +263,16 @@ async function onCreate(payload) {
   try {
     const notaInicial = payload.nota_inicial
     delete payload.nota_inicial
-    const { data: nueva } = await api.post('/fallas', payload)
+    const nueva = await fallasService.crear(payload)
     if (notaInicial) {
-      await api.post(`/fallas/${nueva.id}/seguimientos`, { nota: notaInicial })
+      await fallasService.crearSeguimiento(nueva.id, { nota: notaInicial })
     }
     dialogVisible.value = false
     toast.success('Falla registrada', { duration: 3000 })
     page.value = 1
     load()
   } catch (err) {
-    const msg = err?.response?.data?.detail ?? 'Error al registrar la falla'
+    const msg = err?.data?.detail ?? 'Error al registrar la falla'
     toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     saving.value = false
@@ -278,8 +281,7 @@ async function onCreate(payload) {
 
 async function loadProyectos() {
   try {
-    const { data } = await api.get('/proyectos', { params: { size: 500 } })
-    proyectos.value = data.items ?? []
+    proyectos.value = await proyectosService.listar({ size: 500 })
   } catch {
     // non-critical
   }

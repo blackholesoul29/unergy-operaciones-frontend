@@ -674,9 +674,15 @@ import {
   PointElement, LineElement, Title, Filler
 } from 'chart.js'
 ChartJS.register(Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title, Filler)
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
+import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
 import { ArrowRightIcon, BellIcon, BriefcaseIcon, BuildingIcon, CalendarIcon, CalendarPlusIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, ClockIcon, DollarSignIcon, ExternalLinkIcon, HourglassIcon, InboxIcon, InfoIcon, LightbulbIcon, ListIcon, LoaderCircleIcon, MessagesSquareIcon, PencilIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, SendIcon, ServerIcon, TimerIcon, Trash2Icon, UserIcon, UserPenIcon, WifiIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
+
+const fallasService = new FallasService()
+const proyectosService = new ProyectosService()
+const generacionSolarService = new GeneracionSolarService()
 
 const route          = useRoute()
 const router         = useRouter()
@@ -979,23 +985,23 @@ async function cargar() {
   loading.value = true
   error.value   = null
   try {
-    const { data: primera } = await api.get('/fallas', { params: { page: 1, size: 500 } })
+    const primera = await fallasService.listar({ page: 1, size: 500 })
     const total = primera.total ?? 0
     const items = [...(primera.items ?? [])]
     if (total > 500) {
       const totalPages = Math.ceil(total / 500)
       const rest = await Promise.allSettled(
         Array.from({ length: totalPages - 1 }, (_, i) =>
-          api.get('/fallas', { params: { page: i + 2, size: 500 } })
+          fallasService.listar({ page: i + 2, size: 500 })
         )
       )
       for (const r of rest) {
-        if (r.status === 'fulfilled') items.push(...(r.value.data.items ?? []))
+        if (r.status === 'fulfilled') items.push(...(r.value.items ?? []))
       }
     }
     allFallas.value = items
   } catch (e) {
-    error.value = e.response?.data?.detail || e.message || 'Error de conexión'
+    error.value = e.data?.detail || e.message || 'Error de conexión'
   } finally {
     loading.value = false
   }
@@ -1003,15 +1009,13 @@ async function cargar() {
 
 async function cargarCatalogos() {
   try {
-    const { data } = await api.get('/fallas/catalogos')
-    catalogos.value = data
+    catalogos.value = await fallasService.obtenerCatalogos()
   } catch { /* no crítico */ }
 }
 
 async function cargarProyectos() {
   try {
-    const { data } = await api.get('/proyectos', { params: { size: 500 } })
-    proyectos.value = data.items ?? []
+    proyectos.value = await proyectosService.listar({ size: 500 })
     // Cargar gráficos de generación una vez que los proyectos estén disponibles
     cargarGenHoy()
     cargarGen7()
@@ -1055,8 +1059,8 @@ async function cargarGenHoy() {
 
     // 2. Real desde Solenium — el backend empareja por project_id_solenium o por nombre
     try {
-      const { data } = await api.get('/generacion-solar/generacion-hoy')
-      for (const row of data.proyectos ?? []) {
+      const filas = await generacionSolarService.obtenerGeneracionHoy()
+      for (const row of filas) {
         if (byProyecto[row.proyecto_id] !== undefined) {
           byProyecto[row.proyecto_id].real   = Number(row.kwh_real || 0)
           byProyecto[row.proyecto_id].fuente = row.fuente || 'sin_dato'
@@ -1088,21 +1092,21 @@ async function cargarGen7() {
 
     // Fetch Unergy (histórico) y Solenium (hoy) en paralelo
     const [unergRes, solRes] = await Promise.allSettled([
-      api.get('/monitoreo/resumen-generacion', { params: { date_from: fi, date_to: ff } }),
-      api.get('/generacion-solar/generacion-hoy'),
+      fallasService.obtenerResumenGeneracion({ date_from: fi, date_to: ff }),
+      generacionSolarService.obtenerGeneracionHoyCompleta(),
     ])
 
     // Indexar real por fecha (Unergy histórico)
     const realByDate = {}
     if (unergRes.status === 'fulfilled') {
-      for (const entry of unergRes.value.data.dates ?? []) {
+      for (const entry of unergRes.value.dates ?? []) {
         realByDate[entry.fecha] = entry.kwh_real
       }
     }
 
     // Reemplazar hoy con el total de Solenium (más real-time, mismo origen que "Generación de hoy")
     if (solRes.status === 'fulfilled') {
-      const solTotal = Number(solRes.value.data.total ?? 0)
+      const solTotal = Number(solRes.value.total ?? 0)
       if (solTotal > 0) realByDate[hoyStr] = +solTotal.toFixed(1)
     }
 
@@ -1141,10 +1145,11 @@ async function cargarGenProj() {
   try {
     const fi = genProjFechaInicio.value.toISOString().split('T')[0]
     const ff = genProjFechaFin.value.toISOString().split('T')[0]
-    const { data } = await api.get(
-      `/generacion-solar/proyecto/${genProjSel.value}/historial`,
-      { params: { fecha_inicio: fi, fecha_fin: ff, granularidad: genProjGran.value } }
-    )
+    const data = await generacionSolarService.obtenerHistorialProyecto(genProjSel.value, {
+      fecha_inicio: fi,
+      fecha_fin: ff,
+      granularidad: genProjGran.value,
+    })
     genProjPuntos.value   = data.puntos ?? []
     genProjTotalKwh.value = data.total_kwh ?? 0
   } catch {
@@ -1199,9 +1204,8 @@ async function _mostrarResultadoNotificacion(fallaIds) {
   // Si alguna falla, muestra advertencia pero NO bloquea el flujo.
   const resultados = await Promise.all(
     fallaIds.map(id =>
-      api.post(`/fallas/${id}/notificar`)
-        .then(r => r.data)
-        .catch(err => ({ ok: false, enviados: [], errores: [err.response?.data?.detail || err.message || 'Error desconocido'], sin_correos: false }))
+      fallasService.notificar(id)
+        .catch(err => ({ ok: false, enviados: [], errores: [err.data?.detail || err.message || 'Error desconocido'], sin_correos: false }))
     )
   )
 
@@ -1255,14 +1259,12 @@ async function onSaveForm(payload) {
       const archivosEdit = payload._archivos ?? []
       delete payload.nota_inicial
       delete payload._archivos
-      await api.patch(`/fallas/${editingFalla.value.id}`, payload)
-      if (notaInicial) await api.post(`/fallas/${editingFalla.value.id}/seguimientos`, { nota: notaInicial })
+      await fallasService.actualizar(editingFalla.value.id, payload)
+      if (notaInicial) await fallasService.crearSeguimiento(editingFalla.value.id, { nota: notaInicial })
       if (archivosEdit.length) {
-        await Promise.all(archivosEdit.map(file => {
-          const fd = new FormData()
-          fd.append('archivo', file)
-          return api.post(`/fallas/${editingFalla.value.id}/archivos`, fd)
-        }))
+        await Promise.all(archivosEdit.map(file =>
+          fallasService.subirArchivo(editingFalla.value.id, file)
+        ))
       }
       toast.success('Falla actualizada', { duration: 2500 })
 
@@ -1280,23 +1282,19 @@ async function onSaveForm(payload) {
 
       // Una falla por proyecto, en paralelo
       const nuevas = await Promise.all(
-        ids.map(pid => api.post('/fallas', { ...base, proyecto_id: pid }).then(r => r.data))
+        ids.map(pid => fallasService.crear({ ...base, proyecto_id: pid }))
       )
       // Nota inicial para cada falla creada (si la hay)
       if (nota_inicial) {
         await Promise.all(
-          nuevas.map(f => api.post(`/fallas/${f.id}/seguimientos`, { nota: nota_inicial }))
+          nuevas.map(f => fallasService.crearSeguimiento(f.id, { nota: nota_inicial }))
         )
       }
       // Subir archivos adjuntos a cada falla (si los hay)
       if (archivos.length) {
         await Promise.all(
           nuevas.flatMap(f =>
-            archivos.map(file => {
-              const fd = new FormData()
-              fd.append('archivo', file)
-              return api.post(`/fallas/${f.id}/archivos`, fd)
-            })
+            archivos.map(file => fallasService.subirArchivo(f.id, file))
           )
         )
       }
@@ -1319,7 +1317,7 @@ async function onSaveForm(payload) {
       if (refreshed) abrirDrawer(refreshed)
     }
   } catch (err) {
-    const msg = err?.response?.data?.detail ?? 'Error al guardar'
+    const msg = err?.data?.detail ?? 'Error al guardar'
     toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     savingForm.value = false
@@ -1342,14 +1340,14 @@ async function guardarQuickEdit() {
 
   savingQuick.value = true
   try {
-    const { data } = await api.patch(`/fallas/${drawerFalla.value.id}`, payload)
+    const data = await fallasService.actualizar(drawerFalla.value.id, payload)
     drawerFalla.value = data
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     savedFlash.value = true
     setTimeout(() => { savedFlash.value = false }, 1500)
   } catch (err) {
-    toast.error('No se pudo guardar', { description: err?.response?.data?.detail, duration: 3000 })
+    toast.error('No se pudo guardar', { description: err?.data?.detail, duration: 3000 })
     quickEdit.estado_id     = drawerFalla.value.estado?.id ?? null
     quickEdit.prioridad_id  = drawerFalla.value.prioridad?.id ?? null
   } finally {
@@ -1381,7 +1379,7 @@ async function confirmarResolve() {
       sla_cumplido:     !slaVencido(falla),
     }
     if (resolveTipoSolucion.value) payload.tipo_solucion = resolveTipoSolucion.value
-    const { data } = await api.patch(`/fallas/${falla.id}`, payload)
+    const data = await fallasService.actualizar(falla.id, payload)
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     if (drawerFalla.value?.id === data.id) drawerFalla.value = data
@@ -1389,7 +1387,7 @@ async function confirmarResolve() {
     calRefreshKey.value++
     toast.success('Falla resuelta', { duration: 2500 })
   } catch (err) {
-    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: err?.data?.detail, duration: 3000 })
   } finally {
     resolvingFalla.value = false
   }
@@ -1403,7 +1401,7 @@ async function reabrirFalla() {
     return
   }
   try {
-    const { data } = await api.patch(`/fallas/${drawerFalla.value.id}`, {
+    const data = await fallasService.actualizar(drawerFalla.value.id, {
       estado_id:        abierta.id,
       fecha_resolucion: null,
     })
@@ -1413,7 +1411,7 @@ async function reabrirFalla() {
     quickEdit.estado_id = data.estado?.id ?? null
     toast.success('Falla reabierta', { duration: 2500 })
   } catch (err) {
-    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: err?.data?.detail, duration: 3000 })
   }
 }
 
@@ -1424,10 +1422,10 @@ async function agregarSeguimiento() {
     const payload = {}
     if (nuevaNota.nota.trim()) payload.nota = nuevaNota.nota.trim()
     if (nuevaNota.estado_id) payload.estado_nuevo_id = nuevaNota.estado_id
-    await api.post(`/fallas/${drawerFalla.value.id}/seguimientos`, payload)
+    await fallasService.crearSeguimiento(drawerFalla.value.id, payload)
     nuevaNota.nota      = ''
     nuevaNota.estado_id = null
-    const { data } = await api.get(`/fallas/${drawerFalla.value.id}`)
+    const data = await fallasService.obtener(drawerFalla.value.id)
     drawerFalla.value = data
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
@@ -1435,7 +1433,7 @@ async function agregarSeguimiento() {
     if (payload.estado_nuevo_id) calRefreshKey.value++
     toast.success('Seguimiento agregado', { duration: 2000 })
   } catch (err) {
-    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: err?.data?.detail, duration: 3000 })
   } finally {
     addingSeg.value = false
   }
@@ -1450,12 +1448,12 @@ function confirmDelete(falla) {
     variant: 'destructive',
     onConfirm: async () => {
       try {
-        await api.delete(`/fallas/${falla.id}`)
+        await fallasService.eliminar(falla.id)
         allFallas.value     = allFallas.value.filter(f => f.id !== falla.id)
         drawerVisible.value = false
         toast.success('Falla eliminada', { duration: 2500 })
       } catch (err) {
-        toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
+        toast.error('Error', { description: err?.data?.detail, duration: 3000 })
       }
     },
   })
