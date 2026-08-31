@@ -20,17 +20,19 @@ export class ReporteCgmService extends LegacyBaseService {
   /** Las fronteras vivas, con sus vínculos de operador y clientes CGM. */
   listarFronteras(): Promise<FronteraCgm[]> {
     return this.get<FronteraCgm[]>(RUTAS.fronteras, {
-      params: { limit: 500, incluir_clientes_cgm: true },
+      query: { limit: 500, incluir_clientes_cgm: true },
     })
   }
 
   enviar(payload: PayloadEnvioCgm): Promise<RespuestaEnvioCgm> {
-    return this.post<RespuestaEnvioCgm>(RUTAS.enviar, payload, { timeout: TIMEOUT_ENVIO_MS })
+    return this.post<RespuestaEnvioCgm>(RUTAS.enviar, payload, {
+      signal: () => AbortSignal.timeout(TIMEOUT_ENVIO_MS),
+    })
   }
 
   listarHistorialEnvios(): Promise<EnvioInforme[]> {
     return this.get<EnvioInforme[]>(RUTAS.historialEnvios, {
-      params: { tipo: 'reporte_cgm', limit: 500 },
+      query: { tipo: 'reporte_cgm', limit: 500 },
     })
   }
 }

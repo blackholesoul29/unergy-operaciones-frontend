@@ -135,3 +135,53 @@ export interface PanelCliente {
   contratos: ContratoPanelCliente[]
   participaciones_historico: ParticipacionHistorico[]
 }
+
+// ── Pestañas de registros relacionados (proyectos, fronteras, PPA, servicios) ─
+
+/** Fila de `GET /clientes/:id/proyectos` — proyección liviana, no `Proyecto` completo. */
+export interface ProyectoClienteResumen {
+  id: number
+  nombre_comercial: string
+  municipio?: string | null
+  departamento?: string | null
+  potencia_instalada_kwp?: number | null
+  estado?: string
+}
+
+/** Fila de `GET /clientes/:id/fronteras`. */
+export interface FronteraClienteResumen {
+  id: number
+  codigo_frontera: string
+  nombre_frontera?: string | null
+  estado?: string
+}
+
+/** Fila de `GET /clientes/:id/contratos-ppa`. */
+export interface ContratoPpaClienteResumen {
+  id: number
+  nombre_interno?: string | null
+  numero_codigo_contrato?: string | null
+  comprador_nombre?: string | null
+  vendedor_nombre?: string | null
+  fecha_inicio?: string | null
+  fecha_fin?: string | null
+}
+
+export interface ContratoServicioResumen {
+  contrato_id: number
+  proyecto_nombre?: string | null
+  numero_contrato?: string | null
+  fecha_inicio?: string | null
+  fecha_fin?: string | null
+  tarifa?: number | null
+  semaforo?: Vigencia
+  enlace_drive?: string | null
+}
+
+/** Fila de `GET /clientes/:id/servicios-contratos`: un servicio con sus contratos por planta. */
+export interface ServicioContratosResumen {
+  servicio: string
+  num_plantas: number
+  semaforo?: Vigencia
+  contratos: ContratoServicioResumen[]
+}

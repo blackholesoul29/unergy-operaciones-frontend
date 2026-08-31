@@ -31,7 +31,7 @@ export class OperadoresRedService extends LegacyBaseService {
    * `forzar: true` lo crea igual.
    */
   crear(payload: PayloadOperadorRed, forzar = false): Promise<OperadorRed> {
-    return this.post<OperadorRed>(RUTAS.operadores, payload, { params: { forzar } })
+    return this.post<OperadorRed>(RUTAS.operadores, payload, { query: { forzar } })
   }
 
   actualizar(id: OperadorRed['id'], payload: PayloadOperadorRed): Promise<OperadorRed> {
