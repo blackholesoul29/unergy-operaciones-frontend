@@ -168,10 +168,33 @@ export interface DiagnosticoProyecto {
 export interface ConfigLiquidacionProyecto {
   sic_gen?: string | null
   sic_con?: string | null
+  /** Uno por subproyecto en la API — ver `SubproyectoQuoia`. */
+  subproyectos?: SubproyectoQuoia[]
   [clave: string]: unknown
 }
 
 export interface PayloadConfigLiquidacionProyecto {
   sic_gen: string | null
   sic_con: string | null
+}
+
+/**
+ * Los tres ids de Quoia viven por subproyecto, no por proyecto — un proyecto
+ * puede tener varios (la mayoría tiene exactamente uno). `topic` identifica
+ * al subproyecto y es el que se usa en la URL de
+ * `PATCH /liquidaciones-api/subproyectos/:topic`.
+ */
+export interface SubproyectoQuoia {
+  topic: string
+  name?: string | null
+  quoia_report_gen_id?: string | null
+  quoia_report_con_id?: string | null
+  quoia_node_id?: string | null
+}
+
+/** PATCH parcial: lo que no se envía no se toca, y `null` borra el id. */
+export interface PayloadSubproyectoQuoia {
+  quoia_report_gen_id?: string | null
+  quoia_report_con_id?: string | null
+  quoia_node_id?: string | null
 }

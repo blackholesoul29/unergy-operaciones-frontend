@@ -14,6 +14,7 @@ import type {
   FiltrosDespachos,
   OpcionesEsperaTarea,
   PayloadConfigLiquidacionProyecto,
+  PayloadSubproyectoQuoia,
   PeriodoCiclo,
   RespuestaConsumo,
   RespuestaCostos,
@@ -21,6 +22,7 @@ import type {
   RespuestaFacturasXm,
   RespuestaSubidaFacturas,
   ResultadoTarea,
+  SubproyectoQuoia,
   TareaEstado,
   VersionCiclo,
 } from '~/features/liquidaciones/types'
@@ -49,6 +51,7 @@ const RUTAS = {
   ipp: `${BASE}/ipp`,
   cicloDiagnostico: `${BASE}/ciclo/diagnostico`,
   proyecto: (id: number) => `${BASE}/proyectos/${id}`,
+  subproyecto: (topic: string) => `${BASE}/subproyectos/${encodeURIComponent(topic)}`,
 } as const
 
 const ESPERA_POR_DEFECTO = {
@@ -74,6 +77,18 @@ export class LiquidacionesApiService extends LegacyBaseService {
     payload: PayloadConfigLiquidacionProyecto,
   ): Promise<unknown> {
     return this.patch<unknown>(RUTAS.proyecto(id), payload)
+  }
+
+  /**
+   * Escribe los ids de Quoia de un subproyecto. Es un PATCH parcial de
+   * verdad: lo que no se envía no se toca, y enviar `null` **borra** el id
+   * (ver PayloadSubproyectoQuoia) — nunca mandes un campo "por si acaso".
+   */
+  actualizarSubproyecto(
+    topic: string,
+    payload: PayloadSubproyectoQuoia,
+  ): Promise<SubproyectoQuoia> {
+    return this.patch<SubproyectoQuoia>(RUTAS.subproyecto(topic), payload)
   }
 
   // ── Tareas asíncronas ──────────────────────────────────────────────────────

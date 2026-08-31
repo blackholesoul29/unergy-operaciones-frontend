@@ -1195,7 +1195,7 @@ async function saveEdit() {
         (sub.quoia_report_con_id || null) !== (original?.quoia_report_con_id || null) ||
         (sub.quoia_node_id || null) !== (original?.quoia_node_id || null)
       if (!cambio) continue
-      await api.patch(`/liquidaciones-api/subproyectos/${encodeURIComponent(sub.topic)}`, {
+      await liquidacionesApiService.actualizarSubproyecto(sub.topic, {
         quoia_report_gen_id: sub.quoia_report_gen_id || null,
         quoia_report_con_id: sub.quoia_report_con_id || null,
         quoia_node_id: sub.quoia_node_id || null,
