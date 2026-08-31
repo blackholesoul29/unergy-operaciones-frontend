@@ -806,11 +806,19 @@ import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
 import { toast } from 'vue-sonner'
 import * as XLSX from 'xlsx'
-import api from '~/core/client'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
+import { ClientesService } from '~/features/clientes/services/clientes'
+import { OperadoresRedService } from '~/features/operadores-red/services/operadores-red'
+import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
 import divipola from '~/data/colombia-divipola.json'
 import ContratoServicioWizard from '~/features/contratos/components/ContratoServicioWizard.vue'
 import ProyectoAreaContactosPanel from '~/features/proyectos/components/ProyectoAreaContactosPanel.vue'
 import DetalleLayout from '~/components/blocks/DetalleLayout.vue'
+
+const proyectosService = new ProyectosService()
+const clientesService = new ClientesService()
+const operadoresRedService = new OperadoresRedService()
+const liquidacionesApiService = new LiquidacionesApiService()
 
 const route = useRoute()
 const router = useRouter()
@@ -1124,14 +1132,14 @@ async function saveEdit() {
     payload.es_comunidad_energetica = !!editForm.es_comunidad_energetica
     payload.nombre_comunidad = editForm.es_comunidad_energetica ? (editForm.nombre_comunidad || null) : null
 
-    await api.patch(`/proyectos/${route.params.id}`, payload)
+    await proyectosService.actualizar(route.params.id, payload)
     // Los códigos SIC se guardan en la API de Liquidaciones, no en esta base.
     if (proyecto.value?.sub_project) {
       const sicCambio =
         (editLiq.sic_gen || null) !== (liqConfig.value?.sic_gen || null) ||
         (editLiq.sic_con || null) !== (liqConfig.value?.sic_con || null)
       if (sicCambio) {
-        await api.patch(`/liquidaciones-api/proyectos/${route.params.id}`, {
+        await liquidacionesApiService.actualizarConfigProyecto(route.params.id, {
           sic_gen: editLiq.sic_gen || null,
           sic_con: editLiq.sic_con || null,
         })
@@ -1143,24 +1151,20 @@ async function saveEdit() {
     for (const [k, v] of Object.entries(editInfoTecnica)) {
       itPayload[k] = v === '' ? null : v
     }
-    await api.put(`/proyectos/${route.params.id}/info-tecnica`, itPayload)
-    const [proyRes, invRes] = await Promise.all([
-      api.get(`/proyectos/${route.params.id}`),
-      api.get(`/proyectos/${route.params.id}/inversionistas`),
+    await proyectosService.guardarInfoTecnica(route.params.id, itPayload)
+    const [proy, inversionistas] = await Promise.all([
+      proyectosService.obtener(route.params.id),
+      proyectosService.listarInversionistas(route.params.id),
     ])
-    proyecto.value = {
-      ...proyRes.data,
-      inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
-    }
+    proyecto.value = { ...proy, inversionistas }
     try {
-      const { data } = await api.get(`/liquidaciones-api/proyectos/${route.params.id}`)
-      liqConfig.value = data
+      liqConfig.value = await liquidacionesApiService.obtenerConfigProyecto(route.params.id)
     } catch { /* la API externa puede no responder; no bloquea el guardado */ }
     router.replace({ query: {} })
     toast.success('Proyecto actualizado', { duration: 3000 })
   } catch (e) {
     toast.error('Error al guardar', {
-      description: e.response?.data?.detail || e.message || 'No se pudo actualizar el proyecto.',
+      description: e.data?.detail || e.message || 'No se pudo actualizar el proyecto.',
       duration: 5000,
     })
   } finally {
@@ -1222,15 +1226,14 @@ async function agregarInversionista() {
   }
   guardando.value = true
   try {
-    await api.post(`/proyectos/${route.params.id}/inversionistas`, {
+    await proyectosService.agregarInversionista(route.params.id, {
       cliente_id: nuevoInv.cliente_id,
       porcentaje_participacion: nuevoInv.porcentaje_pct != null ? nuevoInv.porcentaje_pct / 100 : null,
       es_patrimonio_autonomo: nuevoInv.es_patrimonio_autonomo,
       fecha_inicio: formatFecha(nuevoInv.fecha_inicio),
       fecha_fin: formatFecha(nuevoInv.fecha_fin),
     })
-    const { data } = await api.get(`/proyectos/${route.params.id}/inversionistas`)
-    proyecto.value.inversionistas = Array.isArray(data) ? data : (data.items ?? [])
+    proyecto.value.inversionistas = await proyectosService.listarInversionistas(route.params.id)
     nuevoInv.cliente_id = null
     nuevoInv.porcentaje_pct = null
     nuevoInv.es_patrimonio_autonomo = false
@@ -1238,7 +1241,7 @@ async function agregarInversionista() {
     nuevoInv.fecha_fin = null
     toast.success('Inversionista agregado', { duration: 2000 })
   } catch (e) {
-    toast.error('Error al agregar', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('Error al agregar', { description: e.data?.detail, duration: 3000 })
   } finally {
     guardando.value = false
   }
@@ -1247,11 +1250,11 @@ async function agregarInversionista() {
 async function eliminarInversionista(invId) {
   if (!confirm('¿Estás seguro de que deseas eliminar este inversionista?')) return
   try {
-    await api.delete(`/proyectos/${route.params.id}/inversionistas/${invId}`)
+    await proyectosService.eliminarInversionista(route.params.id, invId)
     proyecto.value.inversionistas = proyecto.value.inversionistas.filter(i => i.id !== invId)
     toast.success('Inversionista eliminado', { duration: 2000 })
   } catch (e) {
-    toast.error('Error al eliminar', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('Error al eliminar', { description: e.data?.detail, duration: 3000 })
   }
 }
 
@@ -1265,7 +1268,7 @@ function iniciarEdicionInversionista(inv) {
 async function guardarEdicionInversionista(invId) {
   guardando.value = true
   try {
-    await api.patch(`/proyectos/${route.params.id}/inversionistas/${invId}`, {
+    await proyectosService.actualizarInversionista(route.params.id, invId, {
       porcentaje_participacion: editPct.value != null ? editPct.value / 100 : null,
       fecha_inicio: formatFecha(editFechaInicio.value),
       fecha_fin: formatFecha(editFechaFin.value),
@@ -1274,11 +1277,10 @@ async function guardarEdicionInversionista(invId) {
     editPct.value = null
     editFechaInicio.value = null
     editFechaFin.value = null
-    const { data } = await api.get(`/proyectos/${route.params.id}/inversionistas`)
-    proyecto.value.inversionistas = Array.isArray(data) ? data : (data.items ?? [])
+    proyecto.value.inversionistas = await proyectosService.listarInversionistas(route.params.id)
     toast.success('Porcentaje actualizado', { duration: 2000 })
   } catch (e) {
-    toast.error('Error al actualizar', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('Error al actualizar', { description: e.data?.detail, duration: 3000 })
   } finally {
     guardando.value = false
   }
@@ -1287,15 +1289,12 @@ async function guardarEdicionInversionista(invId) {
 // ── Servicios ─────────────────────────────────────────────────────────────────
 async function toggleServicio(key, value) {
   try {
-    await api.patch(`/proyectos/${route.params.id}/servicios`, { [key]: value })
-    const [proyRes, invRes] = await Promise.all([
-      api.get(`/proyectos/${route.params.id}`),
-      api.get(`/proyectos/${route.params.id}/inversionistas`),
+    await proyectosService.alternarServicio(route.params.id, { [key]: value })
+    const [proy, inversionistas] = await Promise.all([
+      proyectosService.obtener(route.params.id),
+      proyectosService.listarInversionistas(route.params.id),
     ])
-    proyecto.value = {
-      ...proyRes.data,
-      inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
-    }
+    proyecto.value = { ...proy, inversionistas }
     toast.success('Servicio actualizado', { duration: 2000 })
   } catch {
     srvFlags[key] = !value
@@ -1329,8 +1328,7 @@ async function cargarContratosInline(tipo) {
   contratosInline.value = []
   loadingInline.value = true
   try {
-    const { data } = await api.get('/contratos-servicio', { params: { tipo, proyecto_id: route.params.id } })
-    contratosInline.value = data
+    contratosInline.value = await proyectosService.listarContratosServicioInline(tipo, route.params.id)
   } catch {
     toast.error('Error al cargar contratos', { duration: 3000 })
   } finally {
@@ -1373,27 +1371,24 @@ const operadoresRedOptions = computed(() =>
 // ── Carga inicial ─────────────────────────────────────────────────────────────
 onMounted(async () => {
   try {
-    const [proyRes, clientesRes, invRes, operadoresRes, fronterasRes] = await Promise.all([
-      api.get(`/proyectos/${route.params.id}`),
-      api.get('/clientes', { params: { size: 200 } }),
-      api.get(`/proyectos/${route.params.id}/inversionistas`),
-      api.get('/operadores-red').catch(() => ({ data: [] })),
-      api.get('/fronteras', { params: { proyecto_id: route.params.id } }).catch(() => ({ data: [] })),
+    const [proy, clientesList, inversionistas, operadoresRes, fronterasRes] = await Promise.all([
+      proyectosService.obtener(route.params.id),
+      clientesService.listar({ size: 200 }),
+      proyectosService.listarInversionistas(route.params.id),
+      operadoresRedService.listar().catch(() => []),
+      proyectosService.listarFronterasDelProyecto(route.params.id).catch(() => []),
     ])
-    api.get(`/liquidaciones-api/proyectos/${route.params.id}`)
-      .then(r => { liqConfig.value = r.data; if (isEditMode.value) populateEditForm() })
+    liquidacionesApiService.obtenerConfigProyecto(route.params.id)
+      .then(config => { liqConfig.value = config; if (isEditMode.value) populateEditForm() })
       .catch(() => { liqConfig.value = null })
-    proyecto.value = {
-      ...proyRes.data,
-      inversionistas: Array.isArray(invRes.data) ? invRes.data : (invRes.data.items ?? []),
-    }
-    clientes.value = clientesRes.data.items
-    fronteras.value = Array.isArray(fronterasRes.data) ? fronterasRes.data : (fronterasRes.data.items ?? [])
-    operadoresRed.value = Array.isArray(operadoresRes.data) ? operadoresRes.data : (operadoresRes.data.items ?? [])
-    for (const s of SERVICIOS_FLAGS) srvFlags[s.key] = proyRes.data[s.key]
+    proyecto.value = { ...proy, inversionistas }
+    clientes.value = clientesList
+    fronteras.value = fronterasRes
+    operadoresRed.value = operadoresRes
+    for (const s of SERVICIOS_FLAGS) srvFlags[s.key] = proy[s.key]
     if (isEditMode.value) populateEditForm()
   } catch (e) {
-    errorMsg.value = e.response?.data?.detail || e.message || 'Error de conexión con el servidor'
+    errorMsg.value = e.data?.detail || e.message || 'Error de conexión con el servidor'
   } finally {
     loading.value = false
   }

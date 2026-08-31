@@ -1,5 +1,5 @@
 /** El cliente (inversionista o comprador): datos, documentos, tasas y sus registros relacionados. */
-import type { ClienteEditable } from '~/types/cliente'
+import type { Cliente, ClienteEditable } from '~/types/cliente'
 import { comoLista, type ListaODirecto } from '~/types/api'
 import type {
   ClienteDetalle,
@@ -40,6 +40,12 @@ const RUTAS = {
 export class ClientesService extends LegacyBaseService {
   listarVistaComercial(): Promise<ClienteVistaComercial[]> {
     return this.get<ClienteVistaComercial[]>(RUTAS.vistaComercial)
+  }
+
+  /** El listado general (sin el read-model comercial), para selects de "elige un cliente". */
+  async listar({ size = 200 }: { size?: number } = {}): Promise<Cliente[]> {
+    const data = await this.get<ListaODirecto<Cliente>>(RUTAS.clientes, { query: { size } })
+    return comoLista(data)
   }
 
   crear(payload: ClienteEditable): Promise<ClienteDetalle> {
