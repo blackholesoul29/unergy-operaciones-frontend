@@ -122,7 +122,7 @@
         </div>
         <div v-else-if="filasHistorial.length" class="workspace">
           <ReporteEnergiaLista
-            :filas="filasHistorial"
+            :filas="filasFiltradas"
             :seleccionada="seleccionHistorial?.frontera_id"
             @seleccionar="(f) => seleccionar(f, 'historial')"
           />
@@ -758,9 +758,14 @@ function semaforo(f) {
   return 'warning'
 }
 
+// Mismo criterio que `stats`: el filtro de las tarjetas tiene que aplicar
+// sobre la lista que se está viendo, no siempre sobre 'hoy' -- si no, un
+// click en una tarjeta mientras se está en Historial no hacía nada (la
+// lista de Historial leía `filasHistorial` sin pasar por este filtro).
 const filasFiltradas = computed(() => {
-  if (!filtroSemaforo.value) return filas.value
-  return filas.value.filter(f => semaforo(f) === filtroSemaforo.value)
+  const base = activeTab.value === 1 ? filasHistorial.value : filas.value
+  if (!filtroSemaforo.value) return base
+  return base.filter(f => semaforo(f) === filtroSemaforo.value)
 })
 
 const stats = computed(() => {
