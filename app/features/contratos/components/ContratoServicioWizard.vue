@@ -401,9 +401,9 @@
         </Dialog>
       </template>
 
-      <!-- PASO 3: CGM y Promotor (solo REPRESENTACIÓN) -->
+      <!-- PASO 3: CGM (solo REPRESENTACIÓN) -->
       <template v-if="step === 3 && tipo === 'representacion'">
-        <p class="step-title">CGM y Promotor <span class="normal-case font-normal text-gray-400">(opcional)</span></p>
+        <p class="step-title">CGM <span class="normal-case font-normal text-gray-400">(opcional)</span></p>
         <div class="space-y-4">
           <!-- CGM -->
           <div class="rounded-lg border border-gray-200 p-4 space-y-3">
@@ -425,27 +425,6 @@
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Tipo de asignación</label>
                   <InputText v-model="form.cgm_tipo_asignacion" placeholder="Ej: Proporcional" class="w-full" />
-                </div>
-              </div>
-            </template>
-          </div>
-
-          <!-- Promotor -->
-          <div class="rounded-lg border border-gray-200 p-4 space-y-3">
-            <div class="flex items-center gap-3">
-              <ToggleSwitch v-model="form.tiene_promotor" />
-              <span class="text-sm font-semibold text-gray-700">Incluye Promotor</span>
-            </div>
-            <template v-if="form.tiene_promotor">
-              <div class="grid grid-cols-2 gap-4 pt-1">
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Tarifa promotor (COP/kWh)</label>
-                  <InputNumber v-model="form.promotor_tarifa" :minFractionDigits="2" :maxFractionDigits="4" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Condiciones</label>
-                  <Textarea v-model="form.promotor_condiciones" rows="3" autoResize class="w-full"
-                    placeholder="Describe las condiciones del promotor…" />
                 </div>
               </div>
             </template>
@@ -536,7 +515,7 @@ const STEPS = computed(() => {
     { label: 'Partes' },
     { label: 'Términos' },
   ]
-  if (props.tipo === 'representacion') return [...base, { label: 'CGM y Promotor' }]
+  if (props.tipo === 'representacion') return [...base, { label: 'CGM' }]
   if (props.tipo === 'arriendo') return [...base, { label: 'Arrendadores' }]
   return base
 })
@@ -578,9 +557,6 @@ const form = reactive({
   cgm_codigo_sic: '',
   cgm_porcentaje_fncer: null,
   cgm_tipo_asignacion: '',
-  tiene_promotor: false,
-  promotor_tarifa: null,
-  promotor_condiciones: '',
   rec_cantidad: null,
   rec_precio_unitario: null,
   rec_vintage: '',
@@ -841,9 +817,6 @@ async function crearContrato() {
       cgm_codigo_sic: form.tiene_cgm ? (form.cgm_codigo_sic?.trim() || null) : null,
       cgm_porcentaje_fncer: form.tiene_cgm ? (form.cgm_porcentaje_fncer ?? null) : null,
       cgm_tipo_asignacion: form.tiene_cgm ? (form.cgm_tipo_asignacion?.trim() || null) : null,
-      tiene_promotor: form.tiene_promotor,
-      promotor_tarifa: form.tiene_promotor ? (form.promotor_tarifa ?? null) : null,
-      promotor_condiciones: form.tiene_promotor ? (form.promotor_condiciones?.trim() || null) : null,
       rec_cantidad: form.rec_cantidad ?? null,
       rec_precio_unitario: form.rec_precio_unitario ?? null,
       rec_vintage: form.rec_vintage?.trim() || null,

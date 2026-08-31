@@ -57,9 +57,7 @@ export interface Contacto {
  */
 export const SERVICIOS = [
   'representacion',
-  'operacion',
   'cgm',
-  'promotor',
   'ppa',
   'rec',
   'mantenimiento',
