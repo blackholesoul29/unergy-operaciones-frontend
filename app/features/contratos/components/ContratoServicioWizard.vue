@@ -825,9 +825,9 @@ async function crearContrato() {
 async function guardar() {
   guardando.value = true
   try {
-    await crearContrato()
+    const data = await crearContrato()
     toast.success('Contrato creado', { duration: 2500 })
-    emit('creado')
+    emit('creado', data)
     emit('cerrar')
   } catch (e) {
     toast.error('Error', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
@@ -851,7 +851,7 @@ async function crearYContinuarArriendo() {
 }
 
 function finalizarArriendo() {
-  emit('creado')
+  emit('creado', { id: contratoIdCreado.value })
   emit('cerrar')
 }
 
