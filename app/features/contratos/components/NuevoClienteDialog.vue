@@ -57,8 +57,10 @@ import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Select from 'primevue/select'
-import api from '~/core/client'
+import { ClientesService } from '~/features/clientes/services/clientes'
 import { CheckIcon } from '@lucide/vue'
+
+const clientesService = new ClientesService()
 
 defineProps({ visible: Boolean })
 const emit = defineEmits(['update:visible', 'creado'])
@@ -82,7 +84,7 @@ async function guardar() {
 
   guardando.value = true
   try {
-    const { data: cliente } = await api.post('/clientes', {
+    const cliente = await clientesService.crear({
       razon_social_nombre: form.razon_social_nombre.trim(),
       nit_cedula: form.nit_cedula.trim(),
       tipo_persona: form.tipo_persona,
@@ -95,18 +97,22 @@ async function guardar() {
     ].filter(d => d.url)
 
     for (const d of docs) {
-      await api.post(`/clientes/${cliente.id}/documentos`, {
+      await clientesService.crearDocumento(cliente.id, {
         tipo: d.tipo,
         nombre: d.nombre,
-        archivo_url: d.url,
+        numero: null,
+        fecha: null,
         estado: 'aceptado',
+        archivo_url: d.url,
+        archivo_nombre: null,
+        notas: null,
       })
     }
 
     emit('creado', cliente)
     emit('update:visible', false)
   } catch (e) {
-    errores.nombre = e.response?.data?.detail || e.message
+    errores.nombre = e.data?.detail || e.message
   } finally {
     guardando.value = false
   }

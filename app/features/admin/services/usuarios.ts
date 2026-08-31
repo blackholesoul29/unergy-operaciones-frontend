@@ -11,8 +11,10 @@ const RUTAS = {
 } as const
 
 export class UsuariosService extends LegacyBaseService {
-  async listar(): Promise<Usuario[]> {
-    const data = await this.get<Paginado<Usuario>>(RUTAS.usuarios)
+  async listar({ size }: { size?: number } = {}): Promise<Usuario[]> {
+    const data = await this.get<Paginado<Usuario>>(RUTAS.usuarios, {
+      query: size ? { size } : undefined,
+    })
     return data.items
   }
 

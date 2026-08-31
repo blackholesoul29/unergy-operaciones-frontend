@@ -210,8 +210,12 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import Select from 'primevue/select'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { AlignLeftIcon, ArrowRightIcon, CalendarClockIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon, CircleCheckIcon, ClockIcon, FlagIcon, LoaderCircleIcon, PencilIcon, SearchIcon, SquareCheckIcon, UserIcon, XIcon, ZapIcon } from '@lucide/vue'
+
+const fallasService = new FallasService()
+const proyectosService = new ProyectosService()
 
 // ── Props / Emits ─────────────────────────────────────────────────────────────
 const props = defineProps({
@@ -347,15 +351,15 @@ function emitEditar(falla)   { emit('editar', falla);    detalle.value = null }
 async function cargar() {
   loading.value = true
   try {
-    const [resFallas, resProy, resCatalogos] = await Promise.all([
+    const [resFallas, listaProyectos, catalogos] = await Promise.all([
       // Traer TODAS las fallas con fecha_programada (programadas + ejecutadas = historial completo)
-      api.get('/fallas', { params: { size: 5000, con_fecha_programada: true } }),
-      api.get('/proyectos', { params: { size: 500 } }),
-      api.get('/fallas/catalogos'),
+      fallasService.listar({ size: 5000, con_fecha_programada: true }),
+      proyectosService.listar({ size: 500 }),
+      fallasService.obtenerCatalogos(),
     ])
-    fallas.value    = resFallas.data.items ?? []
-    proyectos.value = resProy.data.items ?? []
-    estados.value   = resCatalogos.data.estados ?? []
+    fallas.value    = resFallas.items ?? []
+    proyectos.value = listaProyectos
+    estados.value   = catalogos.estados ?? []
 
     const mapa = {}
     for (const f of fallas.value) {

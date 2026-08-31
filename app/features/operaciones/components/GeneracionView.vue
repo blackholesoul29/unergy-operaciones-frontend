@@ -391,10 +391,13 @@ import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
 import * as XLSX from 'xlsx'
 import { useRouter } from 'vue-router'
-import api from '~/core/client'
+import { MonitoreoLegacyService } from '~/features/operaciones/services/monitoreo-legacy'
+import { FallasService } from '~/features/fallas/services/fallas'
 import { CalendarClockIcon, CalendarIcon, ChartColumnIcon, ChartLineIcon, CircleAlertIcon, CircleCheckIcon, ClockIcon, DatabaseIcon, FileSpreadsheetIcon, InfoIcon, ListIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon, TrophyIcon, ZapIcon } from '@lucide/vue'
 
 const router = useRouter()
+const monitoreoLegacyService = new MonitoreoLegacyService()
+const fallasService = new FallasService()
 
 // ── Constantes ────────────────────────────────────────────────────────
 const MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
@@ -631,9 +634,9 @@ async function cargar() {
     // Endpoint real: /api/v1/monitoreo/_legacy (baseURL del cliente ya es /api/v1).
     const results = await Promise.allSettled(
       proyectosSel.value.map(sub =>
-        api.get('/monitoreo/_legacy', {
-          params: { action: 'getGeneration', sub_project: sub, date_from: fInicio, date_to: fFin },
-        }).then(r => ({ sub, body: r.data }))
+        monitoreoLegacyService
+          .obtenerGeneracion({ sub_project: sub, date_from: fInicio, date_to: fFin })
+          .then(body => ({ sub, body }))
       )
     )
 
@@ -644,7 +647,7 @@ async function cargar() {
       const nombre = nombrePorSub.value[sub] || sub
       if (r.status !== 'fulfilled') {
         const reason = r.reason
-        const msg = reason?.response?.data?.detail || reason?.message || 'error de conexión'
+        const msg = reason?.data?.detail || reason?.message || 'error de conexión'
         errores.push(`${nombre}: ${msg}`)
         return
       }
@@ -679,7 +682,7 @@ async function cargar() {
     ds.sort((a, b) => b.total - a.total)
     datasets.value = ds
   } catch (e) {
-    error.value = e.response?.data?.detail || e.message || 'Error de conexión'
+    error.value = e.data?.detail || e.message || 'Error de conexión'
   } finally {
     loading.value = false
   }
@@ -1031,7 +1034,7 @@ function exportarExcel() {
 // getProjects ya filtra a proyectos en operación con ID de API y lo entrega.
 async function cargarProyectos() {
   try {
-    const { data } = await api.get('/monitoreo/_legacy', { params: { action: 'getProjects' } })
+    const data = await monitoreoLegacyService.obtenerProyectos()
     const seen = new Set()
     proyectos.value = (data?.projects ?? [])
       .filter(p => {
@@ -1049,17 +1052,17 @@ async function cargarProyectos() {
 async function cargarFallas() {
   fallasCargando.value = true
   try {
-    const { data: primera } = await api.get('/fallas', { params: { page: 1, size: 200 } })
+    const primera = await fallasService.listar({ page: 1, size: 200 })
     const total = primera.total ?? 0
     const items = [...(primera.items ?? [])]
     if (total > 200) {
       const totalPages = Math.ceil(total / 200)
       const rest = await Promise.allSettled(
         Array.from({ length: totalPages - 1 }, (_, i) =>
-          api.get('/fallas', { params: { page: i + 2, size: 200 } })
+          fallasService.listar({ page: i + 2, size: 200 })
         )
       )
-      for (const r of rest) if (r.status === 'fulfilled') items.push(...(r.value.data.items ?? []))
+      for (const r of rest) if (r.status === 'fulfilled') items.push(...(r.value.items ?? []))
     }
     allFallas.value = items
   } catch (e) {

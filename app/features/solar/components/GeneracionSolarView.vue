@@ -719,7 +719,13 @@ import { Bar, Line } from 'vue-chartjs'
 import Dialog from 'primevue/dialog'
 import AutoComplete from 'primevue/autocomplete'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
+
+const generacionSolarService = new GeneracionSolarService()
+const fallasService = new FallasService()
+const proyectosService = new ProyectosService()
 // Cruza de slice: el formulario de fallas vive en su propio slice, así que se
 // importa por ruta absoluta. Era `./Fallas/FallaForm.vue` cuando ambos colgaban
 // de `views/`.
@@ -1450,8 +1456,7 @@ async function cargar() {
   loading.value = true
   resetCountdown()
   try {
-    const res = await api.get('/generacion-solar/monitoring')
-    monitoringData.value = res.data
+    monitoringData.value = await generacionSolarService.obtenerMonitoreo()
     const now = new Date()
     lastUpdated.value = now.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
   } catch (err) {
@@ -1473,8 +1478,7 @@ async function loadDetail(proyectoId) {
   await nextTick()
   detailRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   try {
-    const res = await api.get(`/generacion-solar/monitoring/${proyectoId}`)
-    detailData.value = res.data
+    detailData.value = await generacionSolarService.obtenerDetalle(proyectoId)
     loadInverterPower(proyectoId)   // potencia por inversor (no bloquea el render)
   } catch (err) {
     toast.warning('Sin detalle', { description: 'No se pudo cargar el detalle del proyecto', duration: 3000 })
@@ -1487,10 +1491,10 @@ async function loadDetail(proyectoId) {
 async function loadInverterPower(proyectoId) {
   invPowerLoading.value = true
   try {
-    const res = await api.get(`/generacion-solar/monitoring/${proyectoId}/inverters-power`, {
-      params: { date_from: invDateFrom.value, date_to: invDateTo.value },
+    invPowerData.value = await generacionSolarService.obtenerPotenciaInversores(proyectoId, {
+      dateFrom: invDateFrom.value,
+      dateTo: invDateTo.value,
     })
-    invPowerData.value = res.data
   } catch {
     invPowerData.value = null
   } finally {
@@ -1508,8 +1512,7 @@ function toggleInverter(inv) {
 
 async function loadCatalogos() {
   try {
-    const res = await api.get('/fallas/catalogos')
-    catalogos.value = res.data
+    catalogos.value = await fallasService.obtenerCatalogos()
   } catch { /* no crítico */ }
 }
 
@@ -1557,13 +1560,13 @@ async function onSaveFalla(payload) {
 
     // Create one falla per project in parallel
     const nuevas = await Promise.all(
-      ids.map(pid => api.post('/fallas', { ...base, proyecto_id: pid }).then(r => r.data))
+      ids.map(pid => fallasService.crear({ ...base, proyecto_id: pid }))
     )
 
     // Nota inicial
     if (nota_inicial) {
       await Promise.all(
-        nuevas.map(f => api.post(`/fallas/${f.id}/seguimientos`, { nota: nota_inicial }))
+        nuevas.map(f => fallasService.crearSeguimiento(f.id, { nota: nota_inicial }))
       )
     }
 
@@ -1571,11 +1574,7 @@ async function onSaveFalla(payload) {
     if (archivos.length) {
       await Promise.all(
         nuevas.flatMap(f =>
-          archivos.map(file => {
-            const fd = new FormData()
-            fd.append('archivo', file)
-            return api.post(`/fallas/${f.id}/archivos`, fd)
-          })
+          archivos.map(file => fallasService.subirArchivo(f.id, file))
         )
       )
     }
@@ -1587,7 +1586,7 @@ async function onSaveFalla(payload) {
     cargar()
   } catch (err) {
     toast.error('Error al guardar', {
-      description: err?.response?.data?.detail || err?.message,
+      description: err?.data?.detail || err?.message,
       duration: 4000,
     })
   } finally {
@@ -1652,8 +1651,7 @@ async function cargarGenHoy() {
   try {
     // Fetch proyectos if not yet loaded
     if (!proyectosP90.value.length) {
-      const { data } = await api.get('/proyectos', { params: { size: 500 } })
-      proyectosP90.value = data.items ?? []
+      proyectosP90.value = await proyectosService.listar({ size: 500 })
     }
 
     const hoy    = new Date().toISOString().split('T')[0]
@@ -1671,8 +1669,8 @@ async function cargarGenHoy() {
 
     // Fill real data from Solenium
     try {
-      const { data } = await api.get('/generacion-solar/generacion-hoy')
-      for (const row of data.proyectos ?? []) {
+      const filas = await generacionSolarService.obtenerGeneracionHoy()
+      for (const row of filas) {
         if (byProy[row.proyecto_id] !== undefined) {
           byProy[row.proyecto_id].real   = +Number(row.kwh_real || 0).toFixed(1)
           byProy[row.proyecto_id].fuente = row.fuente || 'sin_dato'

@@ -160,3 +160,18 @@ export interface DiagnosticoProyecto {
   year: number
   version?: VersionCiclo
 }
+
+/**
+ * `GET/PATCH /liquidaciones-api/proyectos/:id`: los códigos SIC de un proyecto,
+ * verificado contra `ProyectoDetailView.vue` (pestaña ID liquidaciones).
+ */
+export interface ConfigLiquidacionProyecto {
+  sic_gen?: string | null
+  sic_con?: string | null
+  [clave: string]: unknown
+}
+
+export interface PayloadConfigLiquidacionProyecto {
+  sic_gen: string | null
+  sic_con: string | null
+}

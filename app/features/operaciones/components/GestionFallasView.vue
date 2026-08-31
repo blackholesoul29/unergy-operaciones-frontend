@@ -513,11 +513,16 @@ import DatePicker from 'primevue/datepicker'
 import Dialog from 'primevue/dialog'
 import Textarea from 'primevue/textarea'
 import FallaForm from '~/features/fallas/components/FallaForm.vue'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
+import { UsuariosService } from '~/features/admin/services/usuarios'
 import { tituloFalla, categoriaFalla } from '~/features/fallas/utils/fallaTitulo'
 
 const route = useRoute()
 const router = useRouter()
+const fallasService = new FallasService()
+const proyectosService = new ProyectosService()
+const usuariosService = new UsuariosService()
 const confirm = useConfirm()
 
 // ── Constantes ──────────────────────────────────────────────────────────
@@ -703,23 +708,23 @@ async function cargar() {
   loading.value = true
   error.value = null
   try {
-    const { data: primera } = await api.get('/fallas', { params: { page: 1, size: 500 } })
+    const primera = await fallasService.listar({ page: 1, size: 500 })
     const total = primera.total ?? 0
     const items = [...(primera.items ?? [])]
     if (total > 500) {
       const totalPages = Math.ceil(total / 500)
       const rest = await Promise.allSettled(
         Array.from({ length: totalPages - 1 }, (_, i) =>
-          api.get('/fallas', { params: { page: i + 2, size: 500 } })
+          fallasService.listar({ page: i + 2, size: 500 })
         )
       )
       for (const r of rest) {
-        if (r.status === 'fulfilled') items.push(...(r.value.data.items ?? []))
+        if (r.status === 'fulfilled') items.push(...(r.value.items ?? []))
       }
     }
     allFallas.value = items
   } catch (e) {
-    error.value = e.response?.data?.detail || e.message || 'Error de conexión'
+    error.value = e.data?.detail || e.message || 'Error de conexión'
   } finally {
     loading.value = false
   }
@@ -727,22 +732,19 @@ async function cargar() {
 
 async function cargarCatalogos() {
   try {
-    const { data } = await api.get('/fallas/catalogos')
-    catalogos.value = data
+    catalogos.value = await fallasService.obtenerCatalogos()
   } catch { /* no crítico */ }
 }
 
 async function cargarProyectos() {
   try {
-    const { data } = await api.get('/proyectos', { params: { size: 500 } })
-    proyectos.value = data.items ?? []
+    proyectos.value = await proyectosService.listar({ size: 500 })
   } catch { /* no crítico */ }
 }
 
 async function cargarUsuarios() {
   try {
-    const { data } = await api.get('/usuarios', { params: { size: 200 } })
-    usuarios.value = data.items ?? []
+    usuarios.value = await usuariosService.listar({ size: 200 })
   } catch { /* /usuarios puede no existir */ }
 }
 
@@ -774,7 +776,7 @@ async function abrirDrawer(falla) {
 
   cargandoSeguimientos.value = true
   try {
-    const { data } = await api.get(`/fallas/${falla.id}`)
+    const data = await fallasService.obtener(falla.id)
     if (drawerFalla.value?.id === falla.id) drawerFalla.value = data
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
@@ -807,9 +809,9 @@ async function onSaveForm(payload) {
     if (editingFalla.value) {
       // eslint-disable-next-line no-unused-vars
       const { nota_inicial: notaInicial, _archivos, ...patchPayload } = payload
-      await api.patch(`/fallas/${editingFalla.value.id}`, patchPayload)
+      await fallasService.actualizar(editingFalla.value.id, patchPayload)
       if (notaInicial) {
-        api.post(`/fallas/${editingFalla.value.id}/seguimientos`, { nota: notaInicial }).catch(() => {})
+        fallasService.crearSeguimiento(editingFalla.value.id, { nota: notaInicial }).catch(() => {})
       }
       toast.success('Falla actualizada', { duration: 2500 })
     } else {
@@ -820,11 +822,11 @@ async function onSaveForm(payload) {
       if (!ids.length) throw new Error('Selecciona al menos un proyecto')
       const created = []
       for (const pid of ids) {
-        const { data: nueva } = await api.post('/fallas', { ...basePayload, proyecto_id: pid })
+        const nueva = await fallasService.crear({ ...basePayload, proyecto_id: pid })
         created.push(nueva)
         // La nota inicial se agrega por separado — no bloquea el guardado si falla
         if (nota_inicial) {
-          api.post(`/fallas/${nueva.id}/seguimientos`, { nota: nota_inicial }).catch(() => {})
+          fallasService.crearSeguimiento(nueva.id, { nota: nota_inicial }).catch(() => {})
         }
       }
       toast.success(created.length > 1 ? `${created.length} fallas registradas` : 'Falla registrada', {
@@ -839,7 +841,7 @@ async function onSaveForm(payload) {
       if (refreshed) abrirDrawer(refreshed)
     }
   } catch (err) {
-    const msg = err?.response?.data?.detail ?? 'Error al guardar'
+    const msg = err?.data?.detail ?? 'Error al guardar'
     toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     savingForm.value = false
@@ -865,14 +867,14 @@ async function guardarQuickEdit() {
 
   savingQuick.value = true
   try {
-    const { data } = await api.patch(`/fallas/${drawerFalla.value.id}`, payload)
+    const data = await fallasService.actualizar(drawerFalla.value.id, payload)
     drawerFalla.value = data
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     savedFlash.value = true
     setTimeout(() => { savedFlash.value = false }, 1500)
   } catch (err) {
-    toast.error('No se pudo guardar', { description: err?.response?.data?.detail, duration: 3000 })
+    toast.error('No se pudo guardar', { description: err?.data?.detail, duration: 3000 })
     // Revertir UI
     quickEdit.estado_id = drawerFalla.value.estado?.id ?? null
     quickEdit.prioridad_id = drawerFalla.value.prioridad?.id ?? null
@@ -906,7 +908,7 @@ async function confirmarResolver() {
   const falla = resolveDialog.falla
   resolvingFalla.value = true
   try {
-    const { data } = await api.patch(`/fallas/${falla.id}`, {
+    const data = await fallasService.actualizar(falla.id, {
       estado_id: resolveDialog.estadoId,
       fecha_resolucion: resolveDialog.fecha.toISOString(),
       sla_cumplido: !slaVencido(falla),
@@ -917,7 +919,7 @@ async function confirmarResolver() {
     resolveDialog.visible = false
     toast.success('Falla resuelta', { duration: 2500 })
   } catch (err) {
-    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: err?.data?.detail, duration: 3000 })
   } finally {
     resolvingFalla.value = false
   }
@@ -931,7 +933,7 @@ async function reabrirFalla() {
     return
   }
   try {
-    const { data } = await api.patch(`/fallas/${drawerFalla.value.id}`, {
+    const data = await fallasService.actualizar(drawerFalla.value.id, {
       estado_id: abierta.id,
       fecha_resolucion: null,
     })
@@ -941,7 +943,7 @@ async function reabrirFalla() {
     quickEdit.estado_id = data.estado?.id ?? null
     toast.success('Falla reabierta', { duration: 2500 })
   } catch (err) {
-    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: err?.data?.detail, duration: 3000 })
   }
 }
 
@@ -952,18 +954,18 @@ async function agregarSeguimiento() {
     const payload = {}
     if (nuevaNota.nota.trim()) payload.nota = nuevaNota.nota.trim()
     if (nuevaNota.estado_id) payload.estado_nuevo_id = nuevaNota.estado_id
-    await api.post(`/fallas/${drawerFalla.value.id}/seguimientos`, payload)
+    await fallasService.crearSeguimiento(drawerFalla.value.id, payload)
     nuevaNota.nota = ''
     nuevaNota.estado_id = null
     // Refrescar la falla del drawer
-    const { data } = await api.get(`/fallas/${drawerFalla.value.id}`)
+    const data = await fallasService.obtener(drawerFalla.value.id)
     drawerFalla.value = data
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
     quickEdit.estado_id = data.estado?.id ?? null
     toast.success('Seguimiento agregado', { duration: 2000 })
   } catch (err) {
-    toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: err?.data?.detail, duration: 3000 })
   } finally {
     addingSeg.value = false
   }
@@ -978,12 +980,12 @@ function confirmDelete(falla) {
     variant: 'destructive',
     onConfirm: async () => {
       try {
-        await api.delete(`/fallas/${falla.id}`)
+        await fallasService.eliminar(falla.id)
         allFallas.value = allFallas.value.filter(f => f.id !== falla.id)
         drawerVisible.value = false
         toast.success('Falla eliminada', { duration: 2500 })
       } catch (err) {
-        toast.error('Error', { description: err?.response?.data?.detail, duration: 3000 })
+        toast.error('Error', { description: err?.data?.detail, duration: 3000 })
       }
     },
   })

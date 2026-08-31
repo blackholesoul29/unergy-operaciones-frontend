@@ -407,8 +407,10 @@ import InputText from 'primevue/inputtext'
 import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon, FilterIcon, LoaderCircleIcon, ReceiptIcon, Trash2Icon, UsersIcon, XIcon } from '@lucide/vue'
+
+const contratosServicioService = new ContratosServicioService()
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 const props = defineProps({
@@ -473,11 +475,11 @@ async function load() {
   if (!props.contratoId) return
   loading.value = true
   try {
-    const { data } = await api.get(`/contratos-servicio/${props.contratoId}/facturas`)
+    const data = await contratosServicioService.listarFacturas(props.contratoId)
     facturasSol.value = data.filter(f => f.tipo === 'solenium')
     facturasInv.value = data.filter(f => f.tipo === 'inversionista')
   } catch (e) {
-    toast.error('Error al cargar facturas', { description: e.response?.data?.detail || e.message, duration: 4000 })
+    toast.error('Error al cargar facturas', { description: e.data?.detail || e.message, duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -528,7 +530,7 @@ async function guardarFactura() {
       monto:          modal.form.monto ?? null,
       enlace_soporte: modal.form.enlace_soporte?.trim() || null,
     }
-    const { data } = await api.post(`/contratos-servicio/${props.contratoId}/facturas`, payload)
+    const data = await contratosServicioService.crearFactura(props.contratoId, payload)
 
     if (modal.tipo === 'solenium') facturasSol.value = [...facturasSol.value, data]
     else facturasInv.value = [...facturasInv.value, data]
@@ -536,7 +538,7 @@ async function guardarFactura() {
     modal.visible = false
     toast.success('Factura agregada', { duration: 2500 })
   } catch (e) {
-    toast.error('Error al guardar', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
+    toast.error('Error al guardar', { description: e.data?.detail ?? e.message, duration: 4000 })
   } finally {
     saving.value = false
   }
@@ -545,12 +547,12 @@ async function guardarFactura() {
 async function eliminarFactura(tipo, id) {
   if (!confirm('¿Eliminar esta factura? Esta acción no se puede deshacer.')) return
   try {
-    await api.delete(`/contratos-servicio/${props.contratoId}/facturas/${id}`)
+    await contratosServicioService.eliminarFactura(props.contratoId, id)
     if (tipo === 'solenium') facturasSol.value = facturasSol.value.filter(f => f.id !== id)
     else facturasInv.value = facturasInv.value.filter(f => f.id !== id)
     toast.success('Factura eliminada', { duration: 2000 })
   } catch (e) {
-    toast.error('Error al eliminar', { description: e.response?.data?.detail || e.message, duration: 3000 })
+    toast.error('Error al eliminar', { description: e.data?.detail || e.message, duration: 3000 })
   }
 }
 

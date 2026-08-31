@@ -466,8 +466,14 @@ import DatePicker from 'primevue/datepicker'
 import ToggleSwitch from 'primevue/toggleswitch'
 import Textarea from 'primevue/textarea'
 import NuevoClienteDialog from '~/features/contratos/components/NuevoClienteDialog.vue'
-import api from '~/core/client'
+import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
+import { ClientesService } from '~/features/clientes/services/clientes'
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, LinkIcon, PencilIcon, PlusIcon, Trash2Icon, UsersIcon } from '@lucide/vue'
+
+const contratosServicioService = new ContratosServicioService()
+const proyectosService = new ProyectosService()
+const clientesService = new ClientesService()
 
 const props = defineProps({
   visible: Boolean,
@@ -714,8 +720,7 @@ function formatCOP(v) {
 async function cargarArrendadoresWizard() {
   if (!contratoIdCreado.value) { arrendadores.value = []; return }
   try {
-    const { data } = await api.get(`/arriendos/contratos/${contratoIdCreado.value}/arrendadores`)
-    arrendadores.value = data || []
+    arrendadores.value = await contratosServicioService.listarArrendadores(contratoIdCreado.value)
   } catch {
     arrendadores.value = []
   }
@@ -753,15 +758,15 @@ async function guardarArrendadorWizard() {
       observaciones: arrendadorDialog.form.observaciones?.trim() || null,
     }
     if (arrendadorDialog.modo === 'editar' && arrendadorDialog.editId) {
-      await api.put(`/arriendos/arrendadores/${arrendadorDialog.editId}`, payload)
+      await contratosServicioService.actualizarArrendador(arrendadorDialog.editId, payload)
     } else {
-      await api.post(`/arriendos/contratos/${contratoIdCreado.value}/arrendadores`, payload)
+      await contratosServicioService.crearArrendador(contratoIdCreado.value, payload)
     }
     arrendadorDialog.visible = false
     await cargarArrendadoresWizard()
     toast.success('Arrendador guardado', { duration: 2500 })
   } catch (e) {
-    toast.error('Error al guardar arrendador', { description: e.response?.data?.detail, duration: 3500 })
+    toast.error('Error al guardar arrendador', { description: e.data?.detail, duration: 3500 })
   } finally {
     arrendadorDialog.guardando = false
   }
@@ -770,10 +775,10 @@ async function guardarArrendadorWizard() {
 async function eliminarArrendadorWizard(arrendador) {
   if (!confirm(`¿Eliminar al arrendador "${arrendador.nombre}"?`)) return
   try {
-    await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
+    await contratosServicioService.eliminarArrendador(arrendador.id)
     await cargarArrendadoresWizard()
   } catch (e) {
-    toast.error('Error al eliminar', { description: e.response?.data?.detail, duration: 3500 })
+    toast.error('Error al eliminar', { description: e.data?.detail, duration: 3500 })
   }
 }
 
@@ -818,8 +823,7 @@ async function crearContrato() {
       ubicacion_lat: props.tipo === 'internet' ? (form.ubicacion_lat ?? null) : null,
       ubicacion_lng: props.tipo === 'internet' ? (form.ubicacion_lng ?? null) : null,
     }
-  const { data } = await api.post('/contratos-servicio', payload)
-  return data
+  return contratosServicioService.crear(payload)
 }
 
 async function guardar() {
@@ -830,7 +834,7 @@ async function guardar() {
     emit('creado', data)
     emit('cerrar')
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
+    toast.error('Error', { description: e.data?.detail ?? e.message, duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -844,7 +848,7 @@ async function crearYContinuarArriendo() {
     toast.success('Contrato creado — agrega los arrendadores', { duration: 3000 })
     step.value++
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
+    toast.error('Error', { description: e.data?.detail ?? e.message, duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -856,9 +860,9 @@ function finalizarArriendo() {
 }
 
 onMounted(async () => {
-  const [{ data: proyectos }, { data: clientes }] = await Promise.all([
-    api.get('/proyectos', { params: { size: 500 } }),
-    api.get('/clientes', { params: { size: 500 } }),
+  const [proyectos, clientes] = await Promise.all([
+    proyectosService.listar({ size: 500 }),
+    clientesService.listar({ size: 500 }),
   ])
   todosProyectos.value = proyectos
   todosClientes.value = clientes

@@ -636,9 +636,11 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import api from '~/core/client'
+import { InformeOmService } from '~/features/operaciones/services/informe-om'
 import EvidenciaUploader from '~/features/operaciones/components/EvidenciaUploader.vue'
 import ListaEditable from '~/features/operaciones/components/ListaEditable.vue'
+
+const informeOmService = new InformeOmService()
 import { ArrowLeftIcon, BadgeCheckIcon, BellIcon, BoxIcon, ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, EyeIcon, FileCheckIcon, FilePenIcon, FileTextIcon, FlagIcon, ImagesIcon, InboxIcon, InfoIcon, ListChecksIcon, ListIcon, LoaderCircleIcon, MapPinIcon, MonitorIcon, NetworkIcon, PaperclipIcon, PencilIcon, PlusIcon, RefreshCwIcon, SearchIcon, ThumbsUpIcon, Trash2Icon, TriangleAlertIcon, ZapIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
@@ -721,8 +723,7 @@ const proyectosFiltrados = computed(() => {
 async function cargarLista() {
   loadingLista.value = true
   try {
-    const { data } = await api.get('/informe-om/proyectos')
-    proyectos.value = data
+    proyectos.value = await informeOmService.listarProyectos()
   } catch {
     proyectos.value = []
   } finally {
@@ -735,7 +736,7 @@ async function abrir(id) {
   loadingFicha.value = true
   dirty.value = false
   try {
-    const { data } = await api.get(`/informe-om/${id}`)
+    const data = await informeOmService.obtener(id)
     Object.assign(detalle, data)
     const base = fichaVacia()
     Object.assign(ficha, base, data.ficha, {
@@ -790,13 +791,13 @@ function cerrar() {
 async function guardar() {
   guardando.value = true
   try {
-    const { data } = await api.put(`/informe-om/${seleccion.value}`, ficha)
+    const data = await informeOmService.guardar(seleccion.value, ficha)
     Object.assign(detalle, data)
     dirty.value = false
     toast.success('Informe guardado', { duration: 2000 })
     cargarLista()
   } catch (e) {
-    toast.error('No se pudo guardar', { description: e.response?.data?.detail, duration: 3500 })
+    toast.error('No se pudo guardar', { description: e.data?.detail, duration: 3500 })
   } finally {
     guardando.value = false
   }

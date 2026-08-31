@@ -227,8 +227,10 @@ import Select from 'primevue/select'
 import Textarea from 'primevue/textarea'
 import InputNumber from 'primevue/inputnumber'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
 import { CheckIcon, EyeIcon, FileTextIcon, PlusIcon, Trash2Icon, UploadIcon } from '@lucide/vue'
+
+const fallasService = new FallasService()
 
 const props  = defineProps({ falla: Object, catalogos: Object })
 const emit   = defineEmits(['update', 'close'])
@@ -303,11 +305,11 @@ const isImage = (url) => /\.(jpg|jpeg|png|gif|webp)$/i.test(url || '')
 async function saveEdit() {
   saving.value = true
   try {
-    const { data } = await api.patch(`/fallas/${props.falla.id}`, editState)
+    const data = await fallasService.actualizar(props.falla.id, editState)
     toast.success('Falla actualizada', { duration: 2500 })
     emit('update', data)
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: e.data?.detail, duration: 3000 })
   } finally {
     saving.value = false
   }
@@ -317,17 +319,17 @@ async function addSeguimiento() {
   if (!newSeg.nota.trim()) return
   segLoading.value = true
   try {
-    await api.post(`/fallas/${props.falla.id}/seguimientos`, {
+    await fallasService.crearSeguimiento(props.falla.id, {
       nota: newSeg.nota.trim(),
       estado_nuevo: newSeg.estado_nuevo || null,
     })
-    const { data } = await api.get(`/fallas/${props.falla.id}`)
+    const data = await fallasService.obtener(props.falla.id)
     newSeg.nota = ''
     newSeg.estado_nuevo = null
     emit('update', data)
     toast.success('Seguimiento guardado', { duration: 2000 })
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: e.data?.detail, duration: 3000 })
   } finally {
     segLoading.value = false
   }
@@ -337,18 +339,13 @@ async function uploadFotos(event) {
   const files = Array.from(event.target.files)
   if (!files.length) return
   for (const file of files) {
-    const form = new FormData()
-    form.append('file', file)
-    form.append('etapa', 'proceso')
     try {
-      await api.post(`/fallas/${props.falla.id}/fotos`, form, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      })
+      await fallasService.subirFoto(props.falla.id, file, 'proceso')
     } catch {
       toast.warning(`No se pudo subir ${file.name}`, { duration: 3000 })
     }
   }
-  const { data } = await api.get(`/fallas/${props.falla.id}`)
+  const data = await fallasService.obtener(props.falla.id)
   emit('update', data)
   toast.success(`${files.length} foto(s) subidas`, { duration: 2000 })
   event.target.value = ''
@@ -357,8 +354,8 @@ async function uploadFotos(event) {
 async function deleteFoto(foto) {
   if (!confirm('¿Estás seguro de que deseas eliminar esta foto?')) return
   try {
-    await api.delete(`/fallas/${props.falla.id}/fotos/${foto.id}`)
-    const { data } = await api.get(`/fallas/${props.falla.id}`)
+    await fallasService.eliminarFoto(props.falla.id, foto.id)
+    const data = await fallasService.obtener(props.falla.id)
     emit('update', data)
   } catch {
     toast.error('No se pudo eliminar la foto', { duration: 3000 })

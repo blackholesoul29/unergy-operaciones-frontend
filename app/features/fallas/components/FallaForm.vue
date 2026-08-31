@@ -365,10 +365,12 @@ import DatePicker from 'primevue/datepicker'
 import InputNumber from 'primevue/inputnumber'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
-import api from '~/core/client'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { getEstructuraFallas } from '~/features/fallas/utils/fallasEstructuraCache'
 import { AlignLeftIcon, BellIcon, CalendarIcon, CheckIcon, CircleCheckIcon, ClockIcon, FileIcon, FileSpreadsheetIcon, FileTextIcon, FileTypeIcon, ImageIcon, InfoIcon, MessageSquareIcon, PaperclipIcon, PlusIcon, SearchIcon, SendIcon, SettingsIcon, TagIcon, Trash2Icon, UploadIcon, XIcon } from '@lucide/vue'
 import { iconoCategoriaFalla } from '~/features/fallas/utils/fallaTitulo'
+
+const proyectosService = new ProyectosService()
 
 const TIPOS_SOLUCION = [
   'Reemplazo de componente',
@@ -555,11 +557,11 @@ async function cargarInversores(pid) {
   if (!pid) { inversoresProyecto.value = []; return }
   cargandoInv.value = true
   try {
-    const { data } = await api.get(`/proyectos/${pid}/inversores`)
+    const data = await proyectosService.listarInversores(pid)
     inversoresProyecto.value = (data ?? []).map(i => ({ ...i, _label: _label(i) }))
     // potencia AC nominal del proyecto (para feedback de la regla de suma)
     try {
-      const { data: p } = await api.get(`/proyectos/${pid}`)
+      const p = await proyectosService.obtener(pid)
       potenciaAc.value = p?.info_tecnica?.potencia_ac_kw != null ? Number(p.info_tecnica.potencia_ac_kw) : null
     } catch { potenciaAc.value = null }
   } catch { inversoresProyecto.value = [] }
@@ -569,11 +571,11 @@ async function cargarInversores(pid) {
 async function guardarInv(inv) {
   invError.value = ''
   try {
-    const { data } = await api.patch(`/proyectos/${proyectoUnicoId.value}/inversores/${inv.id}`,
+    const data = await proyectosService.actualizarInversor(proyectoUnicoId.value, inv.id,
       { nombre: inv.nombre, potencia_nominal_kw: inv.potencia_nominal_kw })
     Object.assign(inv, data, { _label: _label(data) })
   } catch (e) {
-    invError.value = e.response?.data?.detail || 'No se pudo guardar el inversor'
+    invError.value = e.data?.detail || 'No se pudo guardar el inversor'
     await cargarInversores(proyectoUnicoId.value)
   }
 }
@@ -581,7 +583,7 @@ async function agregarInv() {
   invError.value = ''
   if (!nuevoInv.value.nombre && nuevoInv.value.potencia_nominal_kw == null) return
   try {
-    await api.post(`/proyectos/${proyectoUnicoId.value}/inversores`, {
+    await proyectosService.crearInversor(proyectoUnicoId.value, {
       nombre: nuevoInv.value.nombre || null,
       potencia_nominal_kw: nuevoInv.value.potencia_nominal_kw,
       orden: inversoresProyecto.value.length,
@@ -589,17 +591,17 @@ async function agregarInv() {
     nuevoInv.value = { nombre: '', potencia_nominal_kw: null }
     await cargarInversores(proyectoUnicoId.value)
   } catch (e) {
-    invError.value = e.response?.data?.detail || 'No se pudo agregar el inversor'
+    invError.value = e.data?.detail || 'No se pudo agregar el inversor'
   }
 }
 async function eliminarInv(inv) {
   invError.value = ''
   try {
-    await api.delete(`/proyectos/${proyectoUnicoId.value}/inversores/${inv.id}`)
+    await proyectosService.eliminarInversor(proyectoUnicoId.value, inv.id)
     cls.value.inversores_ids = cls.value.inversores_ids.filter(id => id !== inv.id)
     await cargarInversores(proyectoUnicoId.value)
   } catch (e) {
-    invError.value = e.response?.data?.detail || 'No se pudo eliminar el inversor'
+    invError.value = e.data?.detail || 'No se pudo eliminar el inversor'
   }
 }
 // Config típica de minigranja (Baraya/San Pedro son excepciones → se ajustan a mano)
@@ -614,9 +616,9 @@ async function prefillMinigranja() {
   invError.value = ''
   for (let i = 0; i < tipica.length; i++) {
     try {
-      await api.post(`/proyectos/${proyectoUnicoId.value}/inversores`, { ...tipica[i], orden: i })
+      await proyectosService.crearInversor(proyectoUnicoId.value, { ...tipica[i], orden: i })
     } catch (e) {
-      invError.value = e.response?.data?.detail || 'No se pudieron crear todos los inversores'
+      invError.value = e.data?.detail || 'No se pudieron crear todos los inversores'
       break
     }
   }
@@ -802,8 +804,7 @@ onMounted(async () => {
   // solo se pide aparte si no llegaron (uso del form fuera de esa vista).
   if (!proyectos.value.length) {
     try {
-      const { data } = await api.get('/proyectos', { params: { size: 500 } })
-      proyectos.value = data.items ?? []
+      proyectos.value = await proyectosService.listar({ size: 500 })
     } catch { /* no crítico */ }
   }
   estructura.value = await getEstructuraFallas()

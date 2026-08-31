@@ -383,7 +383,11 @@ import InputNumber from 'primevue/inputnumber'
 import ProgressSpinner from 'primevue/progressspinner'
 import FallaForm from './FallaForm.vue'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { UsuariosService } from '~/features/admin/services/usuarios'
+
+const fallasService = new FallasService()
+const usuariosService = new UsuariosService()
 
 const route = useRoute()
 const router = useRouter()
@@ -557,7 +561,7 @@ function thumbUrl(url) {
 async function load() {
   loading.value = true
   try {
-    const { data } = await api.get(`/fallas/${route.params.id}`)
+    const data = await fallasService.obtener(route.params.id)
     falla.value = data
     quickEdit.estado_id = data.estado?.id ?? null
     quickEdit.prioridad_id = data.prioridad?.id ?? null
@@ -565,7 +569,7 @@ async function load() {
     quickEdit.energia_perdida_kwh = data.energia_perdida_kwh ?? null
     quickEdit.causa_raiz = data.causa_raiz ?? ''
   } catch (err) {
-    if (err?.response?.status === 404) notFound.value = true
+    if (err?.status === 404) notFound.value = true
   } finally {
     loading.value = false
   }
@@ -573,27 +577,25 @@ async function load() {
 
 async function loadCatalogos() {
   try {
-    const { data } = await api.get('/fallas/catalogos')
-    catalogos.value = data
+    catalogos.value = await fallasService.obtenerCatalogos()
   } catch { /* no crítico */ }
 }
 
 async function loadUsuarios() {
   try {
-    const { data } = await api.get('/usuarios', { params: { size: 200 } })
-    usuarios.value = data.items ?? []
+    usuarios.value = await usuariosService.listar({ size: 200 })
   } catch { /* /usuarios puede no existir */ }
 }
 
 // ── Acciones ────────────────────────────────────────────────────────────
 async function onUpdate(payload) {
   try {
-    await api.patch(`/fallas/${falla.value.id}`, payload)
+    await fallasService.actualizar(falla.value.id, payload)
     toast.success('Falla actualizada', { duration: 3000 })
     editMode.value = false
     await load()
   } catch (err) {
-    const msg = err?.response?.data?.detail ?? 'Error al actualizar'
+    const msg = err?.data?.detail ?? 'Error al actualizar'
     toast.error('Error', { description: msg, duration: 4000 })
   }
 }
@@ -607,11 +609,11 @@ async function saveQuickEdit() {
     if (quickEdit.asignado_a_id) payload.asignado_a_id = quickEdit.asignado_a_id
     if (quickEdit.causa_raiz?.trim()) payload.causa_raiz = quickEdit.causa_raiz.trim()
     if (quickEdit.energia_perdida_kwh != null) payload.energia_perdida_kwh = quickEdit.energia_perdida_kwh
-    await api.patch(`/fallas/${falla.value.id}`, payload)
+    await fallasService.actualizar(falla.value.id, payload)
     toast.success('Cambios guardados', { duration: 2500 })
     await load()
   } catch (err) {
-    const msg = err?.response?.data?.detail ?? 'Error al guardar'
+    const msg = err?.data?.detail ?? 'Error al guardar'
     toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     savingQuick.value = false
@@ -625,13 +627,13 @@ async function addSeguimiento() {
     const payload = {}
     if (nuevaNota.nota.trim()) payload.nota = nuevaNota.nota.trim()
     if (nuevaNota.estado_id) payload.estado_nuevo_id = nuevaNota.estado_id
-    await api.post(`/fallas/${falla.value.id}/seguimientos`, payload)
+    await fallasService.crearSeguimiento(falla.value.id, payload)
     nuevaNota.nota = ''
     nuevaNota.estado_id = ''
     toast.success('Seguimiento agregado', { duration: 2500 })
     await load()
   } catch (err) {
-    const msg = err?.response?.data?.detail ?? 'Error al agregar'
+    const msg = err?.data?.detail ?? 'Error al agregar'
     toast.error('Error', { description: msg, duration: 4000 })
   } finally {
     addingSeg.value = false
@@ -645,15 +647,11 @@ async function uploadFotos(event) {
   let okCount = 0
   try {
     for (const file of files) {
-      const form = new FormData()
-      // El backend espera el campo `archivo` (no `file`).
-      form.append('archivo', file)
       try {
-        await api.post(`/fallas/${falla.value.id}/attachments`, form,
-          { headers: { 'Content-Type': 'multipart/form-data' } })
+        await fallasService.subirAdjunto(falla.value.id, file)
         okCount++
       } catch (err) {
-        const msg = err?.response?.data?.detail ?? `No se pudo subir ${file.name}`
+        const msg = err?.data?.detail ?? `No se pudo subir ${file.name}`
         toast.warning('Archivo rechazado', { description: msg, duration: 4000 })
       }
     }
@@ -678,11 +676,11 @@ function deleteFoto(url) {
       try {
         // No hay endpoint DELETE en backend. Actualizamos fotos_urls vía PATCH excluyendo la URL.
         const nuevaLista = adjuntos.value.filter(u => u !== url)
-        await api.patch(`/fallas/${falla.value.id}`, { fotos_urls: nuevaLista })
+        await fallasService.actualizar(falla.value.id, { fotos_urls: nuevaLista })
         await load()
         toast.success('Adjunto eliminado', { duration: 2500 })
       } catch (err) {
-        const msg = err?.response?.data?.detail ?? 'No se pudo eliminar'
+        const msg = err?.data?.detail ?? 'No se pudo eliminar'
         toast.error('Error', { description: msg, duration: 3000 })
       }
     },
@@ -698,7 +696,7 @@ function confirmDelete() {
     variant: 'destructive',
     onConfirm: async () => {
       try {
-        await api.delete(`/fallas/${falla.value.id}`)
+        await fallasService.eliminar(falla.value.id)
         toast.success('Falla eliminada', { duration: 3000 })
         router.back()
       } catch {

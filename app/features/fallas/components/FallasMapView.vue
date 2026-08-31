@@ -137,8 +137,12 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
 import maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import Select from 'primevue/select'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { BuildingIcon, CircleAlertIcon, CircleCheckIcon, LoaderCircleIcon, MapIcon, MapPinIcon, RefreshCwIcon, Share2Icon, SunIcon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
+
+const fallasService = new FallasService()
+const proyectosService = new ProyectosService()
 
 const props = defineProps({
   fallas: { type: Array, default: () => [] },
@@ -199,8 +203,7 @@ function diasClass(f) {
 async function cargarOperadores() {
   loadingOps.value = true
   try {
-    const { data } = await api.get('/mapa/operadores')
-    operadores.value = data ?? []
+    operadores.value = await fallasService.listarOperadoresMapa()
   } catch { /* no crítico */ } finally {
     loadingOps.value = false
   }
@@ -214,16 +217,16 @@ async function cargar() {
   subSel.value   = null
   try {
     const [proyRes, mapaRes] = await Promise.allSettled([
-      api.get('/proyectos', { params: { size: 500 } }),
-      operadorSel.value ? api.get('/mapa', { params: { operator: operadorSel.value } }) : Promise.resolve(null),
+      proyectosService.listar({ size: 500 }),
+      operadorSel.value ? fallasService.obtenerMapa(operadorSel.value) : Promise.resolve(null),
     ])
 
     proyectos.value = proyRes.status === 'fulfilled'
-      ? (proyRes.value.data.items ?? []).filter(p => p.latitud && p.longitud)
+      ? (proyRes.value ?? []).filter(p => p.latitud && p.longitud)
       : []
 
     const mapaData = mapaRes.status === 'fulfilled' && mapaRes.value
-      ? mapaRes.value.data
+      ? mapaRes.value
       : null
 
     await nextTick()

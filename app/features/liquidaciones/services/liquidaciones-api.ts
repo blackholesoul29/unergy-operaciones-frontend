@@ -8,10 +8,12 @@
 import type {
   AccionCiclo,
   Catalogos,
+  ConfigLiquidacionProyecto,
   DiagnosticoProyecto,
   FiltrosConsumo,
   FiltrosDespachos,
   OpcionesEsperaTarea,
+  PayloadConfigLiquidacionProyecto,
   PeriodoCiclo,
   RespuestaConsumo,
   RespuestaCostos,
@@ -46,6 +48,7 @@ const RUTAS = {
   cicloIpp: `${BASE}/ciclo/ipp`,
   ipp: `${BASE}/ipp`,
   cicloDiagnostico: `${BASE}/ciclo/diagnostico`,
+  proyecto: (id: number) => `${BASE}/proyectos/${id}`,
 } as const
 
 const ESPERA_POR_DEFECTO = {
@@ -56,6 +59,23 @@ const ESPERA_POR_DEFECTO = {
 const dormir = (ms: number) => new Promise((resolver) => setTimeout(resolver, ms))
 
 export class LiquidacionesApiService extends LegacyBaseService {
+  // ── Proyectos ────────────────────────────────────────────────────────────────
+
+  /**
+   * Los códigos SIC de un proyecto se guardan acá, no en la base propia — es la
+   * única config del proyecto que vive en esta API.
+   */
+  obtenerConfigProyecto(id: number): Promise<ConfigLiquidacionProyecto> {
+    return this.get<ConfigLiquidacionProyecto>(RUTAS.proyecto(id))
+  }
+
+  actualizarConfigProyecto(
+    id: number,
+    payload: PayloadConfigLiquidacionProyecto,
+  ): Promise<unknown> {
+    return this.patch<unknown>(RUTAS.proyecto(id), payload)
+  }
+
   // ── Tareas asíncronas ──────────────────────────────────────────────────────
 
   /**
