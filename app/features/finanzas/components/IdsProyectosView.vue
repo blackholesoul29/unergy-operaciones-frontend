@@ -262,30 +262,22 @@ async function cargar() {
   loading.value = true
   errorApi.value = null
   try {
-    const [liqRes, proyRes] = await Promise.all([
-      api.get('/liquidaciones-api/proyectos'),
-      api.get('/proyectos', { params: { page: 1, size: 500 } }),
-    ])
-    const quoiaPorId = new Map(
-      (proyRes.data.items ?? proyRes.data).map(p => [p.id, p])
-    )
-    filas.value = (liqRes.data || [])
+    const { data: liqData } = await api.get('/liquidaciones-api/proyectos')
+    filas.value = (liqData || [])
       .filter(r => TIPOS_INCLUIDOS.includes(r.tipo_proyecto) && r.estado === ESTADO_OPERATIVA)
       .map(r => {
-        const p = quoiaPorId.get(r.proyecto_id) || {}
-        // Los ids de Quoia son de los subproyectos, no del proyecto. Manda lo
-        // que diga la API — es la misma que los consume — y solo si allá no hay
-        // nada se muestra lo que quedó tecleado en esta base.
+        // Los ids de Quoia son de los subproyectos, no del proyecto -- viven
+        // solo en la API de Liquidaciones (ver auditoría 2026-08-31: la
+        // columna equivalente en esta base se eliminó por quedar siempre
+        // vacía y desconectada de este dato real).
         const sub = (r.subproyectos || [])
         const deLaApi = campo => sub.map(s => s[campo]).find(v => v !== null && v !== '') ?? null
         return {
           ...r,
           nombre_comercial: formatearNombreProyecto(r.nombre_comercial),
-          quoia_reporte_generacion_id:
-            deLaApi('quoia_report_gen_id') ?? p.quoia_reporte_generacion_id ?? null,
-          quoia_reporte_consumo_id:
-            deLaApi('quoia_report_con_id') ?? p.quoia_reporte_consumo_id ?? null,
-          quoia_nodo_id: deLaApi('quoia_node_id') ?? p.quoia_nodo_id ?? null,
+          quoia_reporte_generacion_id: deLaApi('quoia_report_gen_id'),
+          quoia_reporte_consumo_id: deLaApi('quoia_report_con_id'),
+          quoia_nodo_id: deLaApi('quoia_node_id'),
           // Cuántos subproyectos tiene: con más de uno, la columna muestra el
           // primero que tenga valor y hay que abrir el detalle para verlos todos.
           subproyectos_n: sub.length,

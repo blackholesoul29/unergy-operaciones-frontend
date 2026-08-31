@@ -747,24 +747,56 @@
 
       <!-- ══ ID QUOIA ══ -->
       <div v-if="tab === 'id-quoia'">
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 text-sm">
-          <template v-if="!isEditMode">
-            <InfoField label="ID Reporte Generación Quoia" :value="proyecto.quoia_reporte_generacion_id" />
-            <InfoField label="ID Reporte Consumo Quoia" :value="proyecto.quoia_reporte_consumo_id" />
-            <InfoField label="ID de Nodo Quoia" :value="proyecto.quoia_nodo_id" />
+        <div class="p-4 space-y-4 text-sm">
+          <p class="text-[11px] text-gray-400">
+            <InfoIcon class="mr-1 size-[1em]" />
+            Estos ids viven en la API de Liquidaciones de Unergy, uno por subproyecto -- no en esta base.
+          </p>
+
+          <div v-if="!proyecto.sub_project && !proyecto.topico_liquidaciones" class="rounded-lg px-3 py-2 text-xs"
+               style="background:#FEF3C7; color:#92400E">
+            El proyecto no tiene <b>API ID Unergy</b> (código base), así que no se puede
+            identificar en la API de Liquidaciones. Complétalo en la pestaña General.
+          </div>
+          <div v-else-if="!isEditMode && !(liqConfig?.subproyectos?.length)" class="text-xs text-gray-400">
+            Sin subproyectos registrados en la API de Liquidaciones.
+          </div>
+
+          <template v-else-if="!isEditMode">
+            <div v-for="sub in liqConfig?.subproyectos ?? []" :key="sub.topic" class="space-y-2">
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                {{ sub.name || sub.topic }}
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <InfoField label="ID Reporte Generación Quoia" :value="sub.quoia_report_gen_id" />
+                <InfoField label="ID Reporte Consumo Quoia" :value="sub.quoia_report_con_id" />
+                <InfoField label="ID de Nodo Quoia" :value="sub.quoia_node_id" />
+              </div>
+            </div>
           </template>
+
           <template v-else>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">ID Reporte Generación Quoia</label>
-              <InputNumber v-model="editForm.quoia_reporte_generacion_id" :useGrouping="false" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">ID Reporte Consumo Quoia</label>
-              <InputNumber v-model="editForm.quoia_reporte_consumo_id" :useGrouping="false" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">ID de Nodo Quoia</label>
-              <InputNumber v-model="editForm.quoia_nodo_id" :useGrouping="false" class="w-full" />
+            <p v-if="!editSubproyectos.length" class="text-xs text-gray-400">
+              Sin subproyectos registrados en la API de Liquidaciones -- no hay dónde guardar estos ids.
+            </p>
+            <div v-for="sub in editSubproyectos" :key="sub.topic" class="space-y-2">
+              <div class="text-[11px] font-semibold uppercase tracking-wide text-gray-500">
+                {{ sub.name || sub.topic }}
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">ID Reporte Generación Quoia</label>
+                  <InputText v-model="sub.quoia_report_gen_id" maxlength="4" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">ID Reporte Consumo Quoia</label>
+                  <InputText v-model="sub.quoia_report_con_id" maxlength="4" class="w-full" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="field-label">ID de Nodo Quoia</label>
+                  <InputText v-model="sub.quoia_node_id" maxlength="50" class="w-full" />
+                </div>
+              </div>
             </div>
           </template>
         </div>
@@ -846,6 +878,11 @@ const proyecto = ref(null)
 // Configuración de liquidaciones: vive en la API de Unergy, no en esta base.
 const liqConfig = ref(null)
 const editLiq = reactive({ sic_gen: '', sic_con: '' })
+// IDs de Quoia: viven en la API de Liquidaciones, uno por subproyecto (no en
+// esta base -- ver auditoría 2026-08-31: la pestaña "ID Quoia" editaba antes
+// proyectos.quoia_* acá, una copia muerta que la vista de lista de IDs ni
+// siquiera mostraba, porque esa vista ya prioriza el dato real de la API).
+const editSubproyectos = ref([])
 const fronteras = ref([])
 const clientes = ref([])
 const loading = ref(true)
@@ -901,10 +938,6 @@ const editForm = reactive({
   sub_project: null,
   codigo_tsf: null,
   topico_liquidaciones: null,
-  // IDs de Quoia: viven en esta base (no en la API de Liquidaciones).
-  quoia_reporte_generacion_id: null,
-  quoia_reporte_consumo_id: null,
-  quoia_nodo_id: null,
   produccion_especifica_kwh_kwp: null,
   es_comunidad_energetica: false,
   nombre_comunidad: '',
@@ -1055,6 +1088,13 @@ function populateEditForm() {
   editFechaFinRep.value = toDate(p.fecha_fin_representacion)
   editLiq.sic_gen = liqConfig.value?.sic_gen ?? ''
   editLiq.sic_con = liqConfig.value?.sic_con ?? ''
+  editSubproyectos.value = (liqConfig.value?.subproyectos ?? []).map(s => ({
+    topic: s.topic,
+    name: s.name,
+    quoia_report_gen_id: s.quoia_report_gen_id ?? '',
+    quoia_report_con_id: s.quoia_report_con_id ?? '',
+    quoia_node_id: s.quoia_node_id ?? '',
+  }))
 }
 
 watch(isEditMode, (entering) => {
@@ -1136,6 +1176,22 @@ async function saveEdit() {
           sic_con: editLiq.sic_con || null,
         })
       }
+    }
+    // IDs de Quoia: uno por subproyecto, viven en la API de Liquidaciones.
+    // Se compara contra el original para no golpear la API de subproyectos
+    // que no se tocaron.
+    for (const sub of editSubproyectos.value) {
+      const original = (liqConfig.value?.subproyectos ?? []).find(s => s.topic === sub.topic)
+      const cambio =
+        (sub.quoia_report_gen_id || null) !== (original?.quoia_report_gen_id || null) ||
+        (sub.quoia_report_con_id || null) !== (original?.quoia_report_con_id || null) ||
+        (sub.quoia_node_id || null) !== (original?.quoia_node_id || null)
+      if (!cambio) continue
+      await api.patch(`/liquidaciones-api/subproyectos/${encodeURIComponent(sub.topic)}`, {
+        quoia_report_gen_id: sub.quoia_report_gen_id || null,
+        quoia_report_con_id: sub.quoia_report_con_id || null,
+        quoia_node_id: sub.quoia_node_id || null,
+      })
     }
     // Mismo criterio que arriba -- sin filtrar, para poder limpiar un campo
     // (ver comentario en el payload de editForm).
