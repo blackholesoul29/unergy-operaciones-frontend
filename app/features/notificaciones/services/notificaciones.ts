@@ -12,6 +12,7 @@ interface RespuestaListado {
 }
 
 interface RespuestaConteo {
+  no_leidas?: number
   count?: number
   unread?: number
 }
@@ -19,7 +20,7 @@ interface RespuestaConteo {
 export class NotificacionesService extends LegacyBaseService {
   async contarNoLeidas(): Promise<number> {
     const data = await this.get<RespuestaConteo>('/notificaciones/count')
-    return data.count ?? data.unread ?? 0
+    return data.no_leidas ?? data.count ?? data.unread ?? 0
   }
 
   async listar(limit = 20): Promise<Notificacion[]> {
@@ -34,6 +35,6 @@ export class NotificacionesService extends LegacyBaseService {
   }
 
   marcarTodasLeidas(): Promise<void> {
-    return this.post('/notificaciones/leer-todas')
+    return this.patch('/notificaciones/leer-todas')
   }
 }
