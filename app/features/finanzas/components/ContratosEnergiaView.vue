@@ -367,7 +367,7 @@ async function cargar() {
   try {
     contratos.value = await liquidacionesApi.listarContratosEnergia()
   } catch (e) {
-    error.value = e.response?.data?.detail || 'No se pudieron cargar los contratos de energía.'
+    error.value = e.data?.detail || 'No se pudieron cargar los contratos de energía.'
     contratos.value = []
   } finally {
     loading.value = false
@@ -393,7 +393,7 @@ async function cargarCatalogos() {
     empresasOptions.value = []
     preciosOptions.value = []
     toast.warning('Catálogos no disponibles', {
-      description: e.response?.data?.detail
+      description: e.data?.detail
         || 'No se pudieron cargar comercializadores ni precios de energía.',
       duration: 5000,
     })
@@ -539,7 +539,7 @@ async function guardar() {
     formVisible.value = false
     await cargar()
   } catch (e) {
-    toast.error('No se pudo crear', { description: e.response?.data?.detail || e.message, duration: 10000 })
+    toast.error('No se pudo crear', { description: e.data?.detail || e.message, duration: 10000 })
   } finally {
     guardando.value = false
   }

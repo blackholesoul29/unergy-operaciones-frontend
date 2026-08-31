@@ -266,7 +266,7 @@ async function cargar() {
     facturas.value = data.results || []
     readiness.value = data.readiness || readinessVacia()
   } catch (e) {
-    error.value = e.response?.data?.detail || 'No se pudieron cargar las facturas de XM.'
+    error.value = e.data?.detail || 'No se pudieron cargar las facturas de XM.'
     facturas.value = []
     readiness.value = readinessVacia()
   } finally {
@@ -350,7 +350,7 @@ async function subir() {
     await cargar()
   } catch (e) {
     toast.error('No se pudieron cargar', {
-      description: e.response?.data?.detail || e.message,
+      description: e.data?.detail || e.message,
       duration: 8000,
     })
   } finally {

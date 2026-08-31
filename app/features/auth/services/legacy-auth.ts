@@ -1,12 +1,12 @@
 /**
  * El login contra el backend de operaciones.
  *
- * Usa una instancia de axios **propia, sin los interceptores** de
+ * Usa una instancia de `air` **propia, sin el interceptor de sesión** de
  * `~/core/client.ts`, y por un motivo concreto: unas credenciales equivocadas
- * responden 401, y el interceptor de la plataforma reacciona a un 401 borrando
- * la sesión y redirigiendo al login. En la pantalla de login eso es ruido; en la
- * app móvil es un salto de página en medio del intento. El login es la única
- * llamada de la app para la que un 401 es una respuesta normal.
+ * responden 401, y ese interceptor reacciona a un 401 borrando la sesión y
+ * redirigiendo al login. En la pantalla de login eso es ruido; en la app móvil
+ * es un salto de página en medio del intento. El login es la única llamada de
+ * la app para la que un 401 es una respuesta normal.
  *
  * El backend espera `application/x-www-form-urlencoded` con `username` y
  * `password` (es el flujo de contraseña de OAuth2 tal como lo sirve FastAPI), no
@@ -17,8 +17,7 @@
  * `POST /api/auth/login` de Nitro (`~/features/auth/services/auth.ts`), que
  * asume ese endpoint para resolver la sesión en cada request.
  */
-import type { AxiosError } from 'axios'
-import axios from 'axios'
+import air, { isAirError, type AirError } from '@korastd/air'
 import { AppError, codeFromHttpStatus } from '~/core/errors'
 import { LegacyBaseService } from '~/core/legacy-service'
 
@@ -42,19 +41,19 @@ interface DetalleError {
   detail?: string
 }
 
-/** Traduce el error de axios a `AppError`, para que `normalizeError` lo deje pasar tal cual. */
+/** Traduce el error de `air` a `AppError`, para que `normalizeError` lo deje pasar tal cual. */
 function comoAppError(err: unknown): AppError {
-  if (!axios.isAxiosError(err))
+  if (!isAirError(err))
     return new AppError('UNKNOWN', err instanceof Error ? err.message : String(err))
 
-  const error = err as AxiosError<DetalleError>
-  const status = error.response?.status ?? 0
-  return new AppError(codeFromHttpStatus(status), error.response?.data?.detail, { cause: err })
+  const error = err as AirError<DetalleError>
+  const status = error.status ?? 0
+  return new AppError(codeFromHttpStatus(status), error.data?.detail, { cause: err })
 }
 
 export class LegacyAuthService extends LegacyBaseService {
   constructor() {
-    super(axios.create({ baseURL: BASE_URL }))
+    super(air.create({ baseURL: BASE_URL }))
   }
 
   private async solicitarToken(
