@@ -4,10 +4,12 @@ import { comoLista, type ListaODirecto, type Paginado } from '~/types/api'
 import type {
   ClienteDetalle,
   ClienteVistaComercial,
+  ContactoCliente,
   ContratoPpaClienteResumen,
   DocumentoCliente,
   FronteraClienteResumen,
   PanelCliente,
+  PayloadContactoCliente,
   PayloadDocumentoCliente,
   PayloadTasaServicioCliente,
   ProyectoClienteResumen,
@@ -35,6 +37,10 @@ const RUTAS = {
   documento: (id: number, docId: DocumentoCliente['id']) => `${BASE}/${id}/documentos/${docId}`,
   archivoDocumento: (id: number, docId: DocumentoCliente['id']) =>
     `${BASE}/${id}/documentos/${docId}/archivo`,
+  contactos: (id: number) => `${BASE}/${id}/contactos`,
+  contacto: (id: number, contactoId: ContactoCliente['id']) =>
+    `${BASE}/${id}/contactos/${contactoId}`,
+  testCorreo: (id: number) => `${BASE}/${id}/test-correo`,
 } as const
 
 export class ClientesService extends LegacyBaseService {
@@ -143,5 +149,31 @@ export class ClientesService extends LegacyBaseService {
     const form = new FormData()
     form.append('archivo', archivo)
     return this.postFormData<unknown>(RUTAS.archivoDocumento(id, docId), form)
+  }
+
+  // ── Contactos (`ContactosPanel.vue`) ──────────────────────────────────────────
+
+  listarContactos(id: number): Promise<ContactoCliente[]> {
+    return this.get<ContactoCliente[]>(RUTAS.contactos(id))
+  }
+
+  crearContacto(id: number, payload: PayloadContactoCliente): Promise<ContactoCliente> {
+    return this.post<ContactoCliente>(RUTAS.contactos(id), payload)
+  }
+
+  actualizarContacto(
+    id: number,
+    contactoId: ContactoCliente['id'],
+    payload: PayloadContactoCliente,
+  ): Promise<unknown> {
+    return this.patch<unknown>(RUTAS.contacto(id, contactoId), payload)
+  }
+
+  eliminarContacto(id: number, contactoId: ContactoCliente['id']): Promise<unknown> {
+    return this.delete<unknown>(RUTAS.contacto(id, contactoId))
+  }
+
+  enviarCorreoPrueba(id: number, email: string): Promise<unknown> {
+    return this.post<unknown>(RUTAS.testCorreo(id), { email })
   }
 }

@@ -6,6 +6,7 @@ import type {
   PotenciaInversores,
   RespuestaGeneracionHoy,
   RespuestaMonitoreoSolar,
+  RespuestaResumenGeneracionDia,
 } from '~/features/solar/types'
 import { LegacyBaseService } from '~/core/legacy-service'
 
@@ -16,6 +17,7 @@ const RUTAS = {
   monitoringDetalle: (proyectoId: number) => `${BASE}/monitoring/${proyectoId}`,
   invertersPower: (proyectoId: number) => `${BASE}/monitoring/${proyectoId}/inverters-power`,
   generacionHoy: `${BASE}/generacion-hoy`,
+  resumenDia: `${BASE}/resumen-dia`,
   historialProyecto: (proyectoId: number) => `${BASE}/proyecto/${proyectoId}/historial`,
 } as const
 
@@ -30,10 +32,10 @@ export class GeneracionSolarService extends LegacyBaseService {
 
   obtenerPotenciaInversores(
     proyectoId: number,
-    { dateFrom, dateTo }: { dateFrom: string; dateTo: string },
+    filtros?: { dateFrom: string; dateTo: string },
   ): Promise<PotenciaInversores> {
     return this.get<PotenciaInversores>(RUTAS.invertersPower(proyectoId), {
-      query: { date_from: dateFrom, date_to: dateTo },
+      query: filtros ? { date_from: filtros.dateFrom, date_to: filtros.dateTo } : undefined,
     })
   }
 
@@ -45,6 +47,11 @@ export class GeneracionSolarService extends LegacyBaseService {
   /** Igual que `obtenerGeneracionHoy`, sin desenvolver: `MonitoreoView.vue` también necesita `.total`. */
   obtenerGeneracionHoyCompleta(): Promise<RespuestaGeneracionHoy> {
     return this.get<RespuestaGeneracionHoy>(RUTAS.generacionHoy)
+  }
+
+  /** Top de generación de hoy por medidor e inversor (`MobileResumenView.vue`). */
+  obtenerResumenDia(): Promise<RespuestaResumenGeneracionDia> {
+    return this.get<RespuestaResumenGeneracionDia>(RUTAS.resumenDia)
   }
 
   obtenerHistorialProyecto(

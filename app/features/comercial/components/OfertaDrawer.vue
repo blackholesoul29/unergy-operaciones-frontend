@@ -303,7 +303,8 @@ import DatePicker from 'primevue/datepicker'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { OperadoresRedService } from '~/features/operadores-red/services/operadores-red'
+import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
 import {
   ETAPAS, TIPOS_OFERTA, TIPOS_GESTION, FUENTES, puedeFirmarPPA,
   aFecha, aFechaStr, fmtFecha, diasDesde, sinRespuesta,
@@ -328,6 +329,8 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'firmar'])
 
 const confirm = useConfirm()
+const operadoresRedService = new OperadoresRedService()
+const contratosServicioService = new ContratosServicioService()
 
 const moviendo = ref(false)
 const tocando = ref(false)
@@ -410,8 +413,8 @@ watch(() => props.visible, async (abierto) => {
   cargandoCatalogos.value = true
   const [pr, op, cs] = await Promise.allSettled([
     cargarProyectos(),
-    api.get('/operadores-red'),
-    api.get('/contratos-servicio', { params: { tipo: 'representacion' } }),
+    operadoresRedService.listar(),
+    contratosServicioService.listar({ tipo: 'representacion' }),
   ])
   if (pr.status === 'fulfilled') {
     proyectos.value = pr.value
@@ -419,11 +422,10 @@ watch(() => props.visible, async (abierto) => {
     toast.warning('No se pudo cargar la lista de proyectos', { duration: 4000 })
   }
   if (op.status === 'fulfilled') {
-    const filas = op.value.data.items ?? op.value.data
-    operadores.value = filas.map((o) => ({ id: o.id, nombre: o.nombre_comercial || o.nombre_legal }))
+    operadores.value = op.value.map((o) => ({ id: o.id, nombre: o.nombre_comercial || o.nombre_legal }))
   }
   if (cs.status === 'fulfilled') {
-    contratosServicio.value = cs.value.data.items ?? cs.value.data
+    contratosServicio.value = cs.value
   }
   cargandoCatalogos.value = false
 })

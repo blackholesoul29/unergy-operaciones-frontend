@@ -1,7 +1,8 @@
 /**
- * Forma verificada contra `SolarLiveView.vue`, `GeneracionSolarView.vue` y
- * `SolarView.vue`. Dos aggregates: `/generacion-solar/*` (monitoreo en vivo,
- * datos de Solenium) y `/solar/*` (estadísticas históricas).
+ * Forma verificada contra `SolarLiveView.vue`, `GeneracionSolarView.vue`,
+ * `SolarView.vue` y `MobileResumenView.vue` (mobile). Dos aggregates:
+ * `/generacion-solar/*` (monitoreo en vivo, datos de Solenium) y `/solar/*`
+ * (estadísticas históricas).
  */
 
 // ── Monitoreo en vivo (`/generacion-solar/*`) ─────────────────────────────────
@@ -31,6 +32,28 @@ export interface DetalleMonitoreoSolar {
 
 /** `GET /generacion-solar/monitoring/:id/inverters-power`. */
 export interface PotenciaInversores {
+  [clave: string]: unknown
+}
+
+/** Una fila del "top" de proyectos por generación de `resumen-dia`. */
+export interface TopGeneracionProyecto {
+  proyecto_id: number
+  nombre?: string
+  kwh: number
+  [clave: string]: unknown
+}
+
+export interface ResumenGeneracionDiaFuente {
+  total?: number
+  top?: TopGeneracionProyecto[]
+  [clave: string]: unknown
+}
+
+/** `GET /generacion-solar/resumen-dia`: top de generación de hoy por medidor e inversor. */
+export interface RespuestaResumenGeneracionDia {
+  medidor?: ResumenGeneracionDiaFuente
+  inversor?: ResumenGeneracionDiaFuente
+  fecha?: string
   [clave: string]: unknown
 }
 

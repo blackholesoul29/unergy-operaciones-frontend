@@ -188,7 +188,7 @@ async function fixEnlaces() {
     await load()
   } catch (e) {
     logger.error('admin.diagnostico-enlaces', e)
-    fixResult.value = { actions: [{ action: 'error', reason: e.response?.data?.detail || e.message, contrato: '—' }] }
+    fixResult.value = { actions: [{ action: 'error', reason: e.data?.detail || e.message, contrato: '—' }] }
   } finally {
     fixing.value = false
   }

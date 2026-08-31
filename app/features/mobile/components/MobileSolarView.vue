@@ -152,7 +152,11 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { UsuariosService } from '~/features/admin/services/usuarios'
+import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'
+import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
+import { ReconectadoresService } from '~/features/mobile/services/reconectadores'
 import { usePwa } from '~/features/mobile/components/usePwa'
 import { inverterSeries, meterSeries, latest, fmtKw } from '~/features/mobile/components/solarSeries'
 import ProjectLiveChart from '~/features/mobile/components/components/ProjectLiveChart.vue'
@@ -169,6 +173,11 @@ import { toast } from 'vue-sonner'
 const router = useRouter()
 const { user, signOut } = useAuth()
 const { register } = usePwa()
+const fallasService = new FallasService()
+const usuariosService = new UsuariosService()
+const notificacionesService = new NotificacionesService()
+const generacionSolarService = new GeneracionSolarService()
+const reconectadoresService = new ReconectadoresService()
 
 const STATUS_COLORS = {
   online: '#16a34a', degradado: '#d97706', caido: '#dc2626',
@@ -210,11 +219,11 @@ const proyectosFalla = computed(() =>
 async function cargarCatalogos() {
   try {
     const [cat, usr] = await Promise.all([
-      api.get('/fallas/catalogos'),
-      api.get('/usuarios', { params: { size: 200 } }).catch(() => ({ data: { items: [] } })),
+      fallasService.obtenerCatalogos(),
+      usuariosService.listar({ size: 200 }).catch(() => []),
     ])
-    Object.assign(catalogos, cat.data)
-    usuarios.value = usr.data.items ?? []
+    Object.assign(catalogos, cat)
+    usuarios.value = usr ?? []
   } catch { /* no crítico — la generación funciona igual */ }
 }
 
@@ -222,7 +231,7 @@ async function loadFallas(proyectoId, force = false) {
   if (!proyectoId) return
   if (fallasMap[proyectoId] && !force) return
   try {
-    const { data } = await api.get('/fallas', { params: { proyecto_id: proyectoId, size: 100 } })
+    const data = await fallasService.listar({ proyecto_id: proyectoId, size: 100 })
     fallasMap[proyectoId] = (data.items ?? []).filter((f) => !f.estado?.es_estado_final)
   } catch { if (!fallasMap[proyectoId]) fallasMap[proyectoId] = [] }
 }
@@ -240,8 +249,7 @@ function onFallaUpdated(f) { if (f?.proyecto_id) loadFallas(f.proyecto_id, true)
 
 async function fetchUnread() {
   try {
-    const { data } = await api.get('/notificaciones/count')
-    unreadCount.value = data.no_leidas ?? data.count ?? data.unread ?? 0
+    unreadCount.value = await notificacionesService.contarNoLeidas()
   } catch { /* silencioso */ }
 }
 
@@ -304,8 +312,8 @@ function onTouchEnd() {
 async function cargarLista() {
   loadingList.value = true
   try {
-    const res = await api.get('/generacion-solar/monitoring')
-    proyectos.value = res.data.projects ?? []
+    const res = await generacionSolarService.obtenerMonitoreo()
+    proyectos.value = res.projects ?? []
     if (idx.value >= proyectos.value.length) idx.value = 0
   } catch { /* el estado vacío lo maneja */ } finally {
     loadingList.value = false
@@ -317,7 +325,7 @@ async function cargarLista() {
 
 async function cargarEstados() {
   try {
-    const { data } = await api.get('/reconectadores/estados')
+    const data = await reconectadoresService.obtenerEstados()
     for (const r of data) rcnMap[r.proyecto_id] = r
   } catch { /* silencioso */ }
 }
@@ -327,9 +335,9 @@ async function loadDetail(id, force = false) {
   if (detailMap[id] && !force) return
   loadingDetail.value++
   try {
-    const res = await api.get(`/generacion-solar/monitoring/${id}`)
-    detailMap[id] = res.data
-    nowMap[id] = { inv: latest(inverterSeries(res.data)), med: latest(meterSeries(res.data)) }
+    const res = await generacionSolarService.obtenerDetalle(id)
+    detailMap[id] = res
+    nowMap[id] = { inv: latest(inverterSeries(res)), med: latest(meterSeries(res)) }
     lastUpdated.value = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
   } catch { if (!detailMap[id]) detailMap[id] = {} } finally {
     loadingDetail.value = Math.max(0, loadingDetail.value - 1)

@@ -153,7 +153,7 @@ async function createKey() {
     toast.success('API Key creada', { duration: 3000 })
     await loadKeys()
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail || 'Error al crear', duration: 4000 })
+    toast.error('Error', { description: e.data?.detail || 'Error al crear', duration: 4000 })
   } finally {
     creating.value = false
   }

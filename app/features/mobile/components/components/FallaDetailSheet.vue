@@ -142,7 +142,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { tituloFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
 import { CircleCheckIcon, LoaderCircleIcon, RotateCcwIcon, SendIcon, ServerIcon, XIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
@@ -154,6 +154,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'updated'])
 
+const fallasService = new FallasService()
 const fa = ref(null)
 const saving = ref(false)
 const addingSeg = ref(false)
@@ -198,8 +199,7 @@ function close() { emit('close') }
 async function refrescar() {
   if (!fa.value) return
   try {
-    const { data } = await api.get(`/fallas/${fa.value.id}`)
-    fa.value = data
+    fa.value = await fallasService.obtener(fa.value.id)
   } catch { /* mantiene la copia del listado */ }
 }
 
@@ -207,11 +207,11 @@ async function cambiar(payload) {
   if (!fa.value) return
   saving.value = true
   try {
-    const { data } = await api.patch(`/fallas/${fa.value.id}`, payload)
+    const data = await fallasService.actualizar(fa.value.id, payload)
     fa.value = data
     emit('updated', data)
   } catch (e) {
-    toast.error('No se pudo guardar', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('No se pudo guardar', { description: e.data?.detail, duration: 3000 })
   } finally {
     saving.value = false
   }
@@ -224,14 +224,14 @@ async function agregarSeg() {
     const payload = {}
     if (nota.value.trim()) payload.nota = nota.value.trim()
     if (notaEstadoId.value) payload.estado_nuevo_id = notaEstadoId.value
-    await api.post(`/fallas/${fa.value.id}/seguimientos`, payload)
+    await fallasService.crearSeguimiento(fa.value.id, payload)
     nota.value = ''
     notaEstadoId.value = null
     await refrescar()
     emit('updated', fa.value)
     toast.success('Seguimiento agregado', { duration: 2000 })
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: e.data?.detail, duration: 3000 })
   } finally {
     addingSeg.value = false
   }

@@ -9,12 +9,15 @@
 import type {
   ArchivoFalla,
   CatalogosFalla,
+  CategoriaFalla,
   Falla,
   FiltrosListaFallas,
   PayloadFalla,
   PayloadSeguimiento,
   ResultadoNotificacionFalla,
   ResumenGeneracionMonitoreo,
+  RespuestaActividadHoyFallas,
+  RespuestaEstructuraFallas,
   RespuestaListaFallas,
   OperadorMapa,
   DatosMapa,
@@ -27,6 +30,8 @@ const RUTAS = {
   fallas: BASE,
   falla: (id: Falla['id']) => `${BASE}/${id}`,
   catalogos: `${BASE}/catalogos`,
+  estructura: `${BASE}/estructura`,
+  actividadHoy: `${BASE}/actividad-hoy`,
   seguimientos: (id: Falla['id']) => `${BASE}/${id}/seguimientos`,
   archivos: (id: Falla['id']) => `${BASE}/${id}/archivos`,
   archivo: (id: Falla['id'], archivoId: ArchivoFalla['id']) =>
@@ -43,6 +48,18 @@ const RUTAS = {
 export class FallasService extends LegacyBaseService {
   obtenerCatalogos(): Promise<CatalogosFalla> {
     return this.get<CatalogosFalla>(RUTAS.catalogos)
+  }
+
+  // ── Estructura de clasificación (`FallaCreateSheet.vue`, mobile) ─────────────
+
+  async obtenerEstructura(): Promise<CategoriaFalla[]> {
+    const data = await this.get<RespuestaEstructuraFallas>(RUTAS.estructura)
+    return data.categorias ?? []
+  }
+
+  /** Fallas creadas y cambios de estado de hoy (`MobileResumenView.vue`). */
+  obtenerActividadHoy(): Promise<RespuestaActividadHoyFallas> {
+    return this.get<RespuestaActividadHoyFallas>(RUTAS.actividadHoy)
   }
 
   listar(filtros: FiltrosListaFallas = {}): Promise<RespuestaListaFallas> {

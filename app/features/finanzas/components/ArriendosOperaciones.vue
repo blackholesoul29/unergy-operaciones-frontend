@@ -370,7 +370,7 @@ import Column      from 'primevue/column'
 import InputNumber from 'primevue/inputnumber'
 import InputText   from 'primevue/inputtext'
 import { toast } from 'vue-sonner'
-import api          from '~/core/client'
+import { ArriendosCalculoService } from '~/features/finanzas/services/arriendos-calculo'
 import ArriendosZipUpload from './ArriendosZipUpload.vue'
 import CalculoIpcPopover from '~/features/finanzas/components/CalculoIpcPopover.vue'
 const { docsPorProyecto, loadDocs, downloadDoc } = useArriendosDocs()
@@ -378,6 +378,7 @@ import DocumentoIcon from '~/features/finanzas/components/DocumentoIcon.vue'
 import { ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, InfoIcon, MessageSquareIcon, SaveIcon, TableIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const router = useRouter()
+const arriendosCalculoService = new ArriendosCalculoService()
 
 function irADetalleProyecto(fila) {
   if (!fila.proyecto_id) return
@@ -442,7 +443,7 @@ const ipcForm       = reactive({ año: new Date().getFullYear() - 1, tasaPct: nu
 async function guardarIPC() {
   if (!ipcForm.año || ipcForm.tasaPct == null) return
   try {
-    await api.put(`/arriendos/ipc/${ipcForm.año}`, {
+    await arriendosCalculoService.guardarIpc(ipcForm.año, {
       tasa: ipcForm.tasaPct / 100,
       confirmado: true,
       fuente: ipcForm.fuente || 'DANE',
@@ -465,11 +466,11 @@ async function cargarDatos() {
   loading.value = true
   try {
     const [calc, ipc] = await Promise.all([
-      api.get(`/arriendos/calculo/${periodoActual.value}`),
-      api.get('/arriendos/ipc'),
+      arriendosCalculoService.obtenerCalculo(periodoActual.value),
+      arriendosCalculoService.obtenerIpc(),
     ])
-    filas.value = calc.data.filas
-    ipcTasas.value = ipc.data
+    filas.value = calc.filas
+    ipcTasas.value = ipc
     filas.value.forEach(f => { seleccion[f.id] = f.incluido && f.habilitado })
   } catch {
     toast.error('Error al cargar arriendos', { duration: 3000 })
@@ -595,7 +596,7 @@ async function _ejecutarGuardado(motivos) {
       incluido: !!(seleccion[f.id] && esFacturable(f)),
       motivo_exclusion: motivos[f.id] || null,
     }))
-    await api.post(`/arriendos/seleccion/${periodoActual.value}`, { items })
+    await arriendosCalculoService.guardarSeleccion(periodoActual.value, items)
     toast.success('Selección guardada', { duration: 2500 })
     await cargarDatos()
   } catch {
@@ -607,7 +608,7 @@ async function _ejecutarGuardado(motivos) {
 
 async function toggleFacturado(id) {
   try {
-    await api.patch(`/arriendos/seleccion/${periodoActual.value}/${id}/facturado`)
+    await arriendosCalculoService.marcarFacturado(periodoActual.value, id)
     await cargarDatos()
   } catch {
     toast.error('Error al marcar facturado', { duration: 3000 })

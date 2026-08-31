@@ -45,6 +45,8 @@ export interface PayloadDocumentoCliente {
   archivo_url: string | null
   archivo_nombre: string | null
   notas: string | null
+  /** Vincula el documento a la oportunidad que lo generó (`OportunidadDetailView.vue`). */
+  oportunidad_id?: number
 }
 
 /** `GET /clientes/:id`: `Cliente` (`~/types/cliente.ts`) más sus documentos comerciales. */
@@ -184,4 +186,23 @@ export interface ServicioContratosResumen {
   num_plantas: number
   semaforo?: Vigencia
   contratos: ContratoServicioResumen[]
+}
+
+/** Tipo de área a la que se dirige el contacto (`ContactosPanel.vue`). */
+export type TipoContactoCliente = 'liquidacion' | 'operacional' | 'comercial' | 'cgm' | 'contable'
+
+/** Fila de `GET /clientes/:id/contactos`. */
+export interface ContactoCliente {
+  id: number
+  tipo: TipoContactoCliente
+  email: string
+  nombre?: string | null
+  telefono?: string | null
+}
+
+export interface PayloadContactoCliente {
+  tipo?: TipoContactoCliente
+  email: string
+  nombre?: string | null
+  telefono?: string | null
 }

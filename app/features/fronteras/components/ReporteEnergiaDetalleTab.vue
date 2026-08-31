@@ -366,7 +366,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { ReporteEnergiaService } from '~/features/fronteras/services/reporte-energia'
+import { FallasService } from '~/features/fallas/services/fallas'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
@@ -380,6 +381,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['actualizado'])
 
+const reporteEnergiaService = new ReporteEnergiaService()
+const fallasService = new FallasService()
 const loading = ref(true)
 const detalle = ref(null)
 const curvaEditable = ref(Array(24).fill(null))
@@ -417,8 +420,7 @@ const editandoExclusionGuardando = ref(false)
 
 async function cargarExclusiones() {
   try {
-    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/exclusiones`)
-    exclusiones.value = data
+    exclusiones.value = await reporteEnergiaService.listarExclusiones(props.fronteraId)
   } catch (e) {
     exclusiones.value = []
   }
@@ -434,7 +436,7 @@ const exclusionActiva = computed(() => {
 async function crearExclusionActual() {
   creandoExclusion.value = true
   try {
-    await api.post(`/reporte-energia/fronteras/${props.fronteraId}/exclusiones`, {
+    await reporteEnergiaService.crearExclusion(props.fronteraId, {
       frontera_id: props.fronteraId,
       motivo: nuevaExclusionMotivo.value.trim(),
       fecha_inicio: props.fecha,
@@ -455,7 +457,7 @@ async function resolverExclusionActual() {
   if (!exclusionActiva.value) return
   resolviendoExclusion.value = true
   try {
-    await api.post(`/reporte-energia/exclusiones/${exclusionActiva.value.id}/resolver`)
+    await reporteEnergiaService.resolverExclusion(exclusionActiva.value.id)
     toast.success('Exclusión resuelta', { duration: 2500 })
     await cargarExclusiones()
   } catch (e) {
@@ -478,7 +480,7 @@ async function guardarEdicionExclusion() {
   if (!exclusionActiva.value) return
   editandoExclusionGuardando.value = true
   try {
-    await api.patch(`/reporte-energia/exclusiones/${exclusionActiva.value.id}`, {
+    await reporteEnergiaService.actualizarExclusion(exclusionActiva.value.id, {
       motivo: nuevaExclusionMotivo.value.trim(),
       fecha_fin_estimada: nuevaExclusionFechaFin.value ? nuevaExclusionFechaFin.value.toISOString().slice(0, 10) : null,
     })
@@ -501,7 +503,7 @@ function fmtFechaHora(iso) {
 async function cargar() {
   loading.value = true
   try {
-    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}`, { params: { fecha: props.fecha } })
+    const data = await reporteEnergiaService.obtenerDetalle(props.fronteraId, props.fecha)
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
     curvaRespaldoEditable.value = Array(24).fill(null)
@@ -557,7 +559,7 @@ async function cargarFallasActivas(proyectoId) {
     // activa_en_fecha (no solo_activas): esta vista es el detalle de UN día
     // ya clasificado -- debe mostrar las fallas que estaban abiertas en ese
     // momento, no las que están abiertas hoy consultando en vivo.
-    const { data } = await api.get('/fallas', { params: { proyecto_id: proyectoId, activa_en_fecha: props.fecha, size: 10 } })
+    const data = await fallasService.listar({ proyecto_id: proyectoId, activa_en_fecha: props.fecha, size: 10 })
     fallasActivas.value = colapsarDuplicadas(data.items || [])
   } catch (e) {
     fallasActivas.value = []
@@ -572,10 +574,7 @@ function estadoPillStyleFalla(hex) {
 async function cargarCurvaTipicaPreview() {
   curvaTipicaPreview.value = null
   try {
-    const { data } = await api.get(`/reporte-energia/fronteras/${props.fronteraId}/curva-tipica`, {
-      params: { fecha: props.fecha },
-    })
-    curvaTipicaPreview.value = data
+    curvaTipicaPreview.value = await reporteEnergiaService.obtenerCurvaTipica(props.fronteraId, props.fecha)
   } catch (e) {
     curvaTipicaPreview.value = null
   }
@@ -594,9 +593,7 @@ async function onArchivoExcelTercerosSeleccionado(event) {
   if (!file) return
   subiendoExcelTerceros.value = true
   try {
-    const fd = new FormData()
-    fd.append('archivo', file)
-    const { data } = await api.post(`/reporte-energia/fronteras/${props.fronteraId}/cargar-excel-terceros`, fd)
+    const data = await reporteEnergiaService.cargarExcelTerceros(props.fronteraId, file)
     toast.success('Excel cargado', {
       description: `Se cargaron ${data.fechas_cargadas.length} día(s): ${data.fechas_cargadas.join(', ')}`,
       duration: 4000,
@@ -605,7 +602,7 @@ async function onArchivoExcelTercerosSeleccionado(event) {
     emit('actualizado')
   } catch (e) {
     toast.error('Error', {
-      description: e?.response?.data?.detail || 'No se pudo cargar el Excel.',
+      description: e?.data?.detail || 'No se pudo cargar el Excel.',
       duration: 5000,
     })
   } finally {
@@ -619,15 +616,13 @@ async function onArchivoExcelTercerosSeleccionado(event) {
 async function eliminarExcelTerceros() {
   eliminandoExcelTerceros.value = true
   try {
-    await api.delete(`/reporte-energia/fronteras/${props.fronteraId}/cargar-excel-terceros`, {
-      params: { fecha: props.fecha },
-    })
+    await reporteEnergiaService.eliminarExcelTerceros(props.fronteraId, props.fecha)
     toast.success('Carga eliminada', { duration: 2500 })
     await cargar()
     emit('actualizado')
   } catch (e) {
     toast.error('Error', {
-      description: e?.response?.data?.detail || 'No se pudo eliminar la carga.',
+      description: e?.data?.detail || 'No se pudo eliminar la carga.',
       duration: 5000,
     })
   } finally {
@@ -749,10 +744,7 @@ const hayHuecosSinRellenar = computed(() => {
 async function rellenarHorario() {
   rellenando.value = true
   try {
-    const { data } = await api.post(
-      `/reporte-energia/fronteras/${props.fronteraId}/rellenar-horario`, null,
-      { params: { fecha: props.fecha } },
-    )
+    const data = await reporteEnergiaService.rellenarHorario(props.fronteraId, props.fecha)
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
     curvaRespaldoEditable.value = Array(24).fill(null)
@@ -760,7 +752,7 @@ async function rellenarHorario() {
     emit('actualizado')
   } catch (e) {
     toast.error('No se pudo rellenar', {
-      description: e?.response?.data?.detail || 'Ninguna fuente tenía dato para las horas faltantes.',
+      description: e?.data?.detail || 'Ninguna fuente tenía dato para las horas faltantes.',
       duration: 4000,
     })
   } finally {
@@ -771,10 +763,7 @@ async function rellenarHorario() {
 async function deshacerRelleno() {
   deshaciendoRelleno.value = true
   try {
-    const { data } = await api.post(
-      `/reporte-energia/fronteras/${props.fronteraId}/deshacer-relleno`, null,
-      { params: { fecha: props.fecha } },
-    )
+    const data = await reporteEnergiaService.deshacerRelleno(props.fronteraId, props.fecha)
     detalle.value = data
     curvaEditable.value = [...(data.curva_final || Array(24).fill(null))]
     curvaRespaldoEditable.value = Array(24).fill(null)
@@ -782,7 +771,7 @@ async function deshacerRelleno() {
     emit('actualizado')
   } catch (e) {
     toast.error('No se pudo deshacer', {
-      description: e?.response?.data?.detail || 'No se pudo deshacer el relleno.',
+      description: e?.data?.detail || 'No se pudo deshacer el relleno.',
       duration: 4000,
     })
   } finally {
@@ -800,10 +789,7 @@ async function recuperarMedidor() {
   recuperandoMedidor.value = true
   toast.info('Recuperando medidor', { description: 'Puede tardar hasta 90 segundos...', duration: 4000 })
   try {
-    const { data } = await api.post(
-      `/reporte-energia/fronteras/${props.fronteraId}/recuperar-medidor`, null,
-      { params: { fecha: props.fecha }, timeout: 120000 },
-    )
+    const data = await reporteEnergiaService.recuperarMedidor(props.fronteraId, props.fecha)
     detalle.value = data
     toast.success('Recuperación completada', {
       description: data.recuperacion_datos || 'Sin medidores para recuperar.',
@@ -811,7 +797,7 @@ async function recuperarMedidor() {
     })
   } catch (e) {
     toast.error('No se pudo recuperar', {
-      description: e?.response?.data?.detail || 'Falló la recuperación del medidor.',
+      description: e?.data?.detail || 'Falló la recuperación del medidor.',
       duration: 4000,
     })
   } finally {
@@ -828,10 +814,7 @@ const usandoRespaldoEnVivo = ref(false)
 async function usarRespaldoEnVivo() {
   usandoRespaldoEnVivo.value = true
   try {
-    const { data } = await api.post(
-      `/reporte-energia/fronteras/${props.fronteraId}/revisar-respaldo`, null,
-      { params: { fecha: props.fecha } },
-    )
+    const data = await reporteEnergiaService.revisarRespaldo(props.fronteraId, props.fecha)
     detalle.value = data
     if (data.respaldo_reportado_origen === 'medidor') {
       toast.success('Respaldo actualizado', { description: 'Se adoptó el valor real del medidor.', duration: 4000 })
@@ -839,7 +822,7 @@ async function usarRespaldoEnVivo() {
       toast.warning('Sigue en estimado', { description: 'El valor en vivo no quedó dentro de la tolerancia -- no se adoptó.', duration: 5000 })
     }
   } catch (e) {
-    toast.error('No se pudo revisar', { description: e?.response?.data?.detail || 'Falló la revisión del respaldo.', duration: 4000 })
+    toast.error('No se pudo revisar', { description: e?.data?.detail || 'Falló la revisión del respaldo.', duration: 4000 })
   } finally {
     usandoRespaldoEnVivo.value = false
   }
@@ -946,11 +929,7 @@ async function guardarCurva() {
     if (curvaRespaldoEditable.value.some((v) => v !== null && v !== undefined && v !== '')) {
       payload.curva_respaldo_final = _normalizarCurva(curvaRespaldoEditable.value)
     }
-    const { data } = await api.patch(
-      `/reporte-energia/fronteras/${props.fronteraId}`,
-      payload,
-      { params: { fecha: props.fecha } },
-    )
+    const data = await reporteEnergiaService.guardarCurva(props.fronteraId, props.fecha, payload)
     detalle.value = data
     curvaRespaldoEditable.value = Array(24).fill(null)
     toast.success('Corrección guardada', { duration: 2500 })
@@ -965,9 +944,7 @@ async function guardarCurva() {
 async function validar() {
   validando.value = true
   try {
-    await api.post(`/reporte-energia/fronteras/${props.fronteraId}/validar`, null, {
-      params: { fecha: props.fecha },
-    })
+    await reporteEnergiaService.validar(props.fronteraId, props.fecha)
     detalle.value.revisar_manualmente = false
     toast.success('Validado', { duration: 2000 })
     emit('actualizado')

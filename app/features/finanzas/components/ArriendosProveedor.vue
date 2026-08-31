@@ -118,9 +118,10 @@
 
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
-import api from '~/core/client'
+import { ArriendosCalculoService } from '~/features/finanzas/services/arriendos-calculo'
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, ExternalLinkIcon, FileTextIcon, InboxIcon, SaveIcon, XIcon } from '@lucide/vue'
 
+const arriendosCalculoService = new ArriendosCalculoService()
 const hoy           = new Date()
 const periodoOffset = ref(0)
 
@@ -150,7 +151,7 @@ const filas = ref([])
 
 async function cargarDatos() {
   try {
-    const { data } = await api.get(`/arriendos/calculo/${periodoActual.value}`)
+    const data = await arriendosCalculoService.obtenerCalculo(periodoActual.value)
     filas.value = data.filas.filter(f => f.incluido && f.habilitado)
   } catch {
     filas.value = []
@@ -163,7 +164,7 @@ const facturadoActual = computed(() => {
 
 async function toggleFacturado(id) {
   try {
-    await api.patch(`/arriendos/seleccion/${periodoActual.value}/${id}/facturado`)
+    await arriendosCalculoService.marcarFacturado(periodoActual.value, id)
     await cargarDatos()
   } catch {}
 }

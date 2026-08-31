@@ -395,7 +395,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { ReporteEnergiaService } from '~/features/fronteras/services/reporte-energia'
 import Button from 'primevue/button'
 import Calendar from 'primevue/calendar'
 import TabView from 'primevue/tabview'
@@ -414,6 +414,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
 const route = useRoute()
 const router = useRouter()
+const reporteEnergiaService = new ReporteEnergiaService()
 
 // Bogotá (America/Bogota) es UTC-5 fijo, sin horario de verano -- pero
 // calcularlo restando 5h al epoch y leyendo el resultado con getters LOCALES
@@ -494,13 +495,12 @@ async function cargarResumenHistorico() {
   grupoSeleccionadoGen.value = null
   grupoSeleccionadoCon.value = null
   try {
-    const { data } = await api.get('/reporte-energia/resumen-historico', {
-      params: { desde: resumenDesdeISO.value, hasta: resumenHastaISO.value },
-    })
-    resumenHistorico.value = data
+    resumenHistorico.value = await reporteEnergiaService.obtenerResumenHistorico(
+      resumenDesdeISO.value, resumenHastaISO.value,
+    )
   } catch (e) {
     toast.error('Error', {
-      description: e.response?.data?.detail || 'No se pudo cargar el resumen histórico.',
+      description: e.data?.detail || 'No se pudo cargar el resumen histórico.',
       duration: 4000,
     })
     resumenHistorico.value = null
@@ -644,8 +644,7 @@ async function irAFronteraHistorial(frontera_id) {
 
 async function cargarResumen() {
   try {
-    const { data } = await api.get('/reporte-energia/resumen', { params: { fecha: fechaISO.value } })
-    resumen.value = data
+    resumen.value = await reporteEnergiaService.obtenerResumen(fechaISO.value)
   } catch (e) {
     resumen.value = null
   }
@@ -654,8 +653,7 @@ async function cargarResumen() {
 async function cargarLista(silent = false) {
   if (!silent) loadingLista.value = true
   try {
-    const { data } = await api.get('/reporte-energia/fronteras', { params: { fecha: fechaISO.value } })
-    filas.value = data
+    filas.value = await reporteEnergiaService.listarFronteras(fechaISO.value)
   } catch (e) {
     if (!silent) {
       toast.error('Error', { description: 'No se pudo cargar el reporte de ese día.', duration: 4000 })
@@ -669,9 +667,7 @@ async function cargarLista(silent = false) {
 async function cargarHistorial() {
   loadingHistorial.value = true
   try {
-    const f = fechaHistorialISO.value
-    const { data } = await api.get('/reporte-energia/fronteras', { params: { fecha: f } })
-    filasHistorial.value = data
+    filasHistorial.value = await reporteEnergiaService.listarFronteras(fechaHistorialISO.value)
   } catch (e) {
     filasHistorial.value = []
   } finally {
@@ -687,7 +683,7 @@ async function cargarHistorial() {
 // refrescarse (pedido 2026-08-21).
 async function cargarEstadoQuoiaActual() {
   try {
-    const { data } = await api.get('/reporte-energia/estado-quoia', { params: { fecha: fechaISO.value } })
+    const data = await reporteEnergiaService.obtenerEstadoQuoia(fechaISO.value)
     estadoQuoia.value = data.total > 0 ? data : null
     if (estadoQuoia.value && estadoQuoia.value.en_espera > 0) iniciarPollingEstadoQuoia()
   } catch {
@@ -697,10 +693,7 @@ async function cargarEstadoQuoiaActual() {
 
 async function revisarEstadoQuoia() {
   try {
-    const { data } = await api.post(
-      '/reporte-energia/estado-quoia', null,
-      { params: { fecha: fechaISO.value }, timeout: 180000 },
-    )
+    const data = await reporteEnergiaService.revisarEstadoQuoia(fechaISO.value)
     estadoQuoia.value = data
     if (data.en_espera === 0) detenerPollingEstadoQuoia()
   } catch {
@@ -816,7 +809,7 @@ watch([activeTab, seleccion, seleccionHistorial, fecha, fechaHistorial], () => {
 async function ejecutarClasificacion() {
   ejecutando.value = true
   try {
-    await api.post('/reporte-energia/ejecutar', null, { params: { fecha: fechaISO.value } })
+    await reporteEnergiaService.ejecutarClasificacion(fechaISO.value)
     toast.info('Clasificación iniciada', {
       description: 'Corre en segundo plano -- puede tardar varios minutos si hay medidores incompletos. La tabla se va a ir actualizando sola.',
       duration: 6000,
@@ -824,7 +817,7 @@ async function ejecutarClasificacion() {
     sondearResultado()
   } catch (e) {
     toast.error('Error', {
-      description: e.response?.data?.detail || 'No se pudo iniciar la clasificación.',
+      description: e.data?.detail || 'No se pudo iniciar la clasificación.',
       duration: 4000,
     })
     ejecutando.value = false
@@ -838,7 +831,7 @@ async function ejecutarClasificacion() {
 async function detenerClasificacion() {
   deteniendo.value = true
   try {
-    await api.post('/reporte-energia/ejecutar/cancelar', null, { params: { fecha: fechaISO.value } })
+    await reporteEnergiaService.cancelarClasificacion(fechaISO.value)
     toast.info('Deteniendo…', {
       description: 'Se detiene después de terminar la frontera en curso, no de inmediato.',
       duration: 5000,
@@ -890,7 +883,7 @@ function sondearResultado() {
 // logs de Railway.
 async function avisarSiHuboFallidas(fechaSondeada) {
   try {
-    const { data } = await api.get('/reporte-energia/ejecutar/estado', { params: { fecha: fechaSondeada } })
+    const data = await reporteEnergiaService.obtenerEstadoEjecucion(fechaSondeada)
     if (data.error_general) {
       toast.error('Clasificación interrumpida', { description: data.error_general, duration: 8000 })
     } else if (data.cancelado) {
@@ -914,10 +907,8 @@ async function avisarSiHuboFallidas(fechaSondeada) {
 async function generarExcel() {
   generandoExcel.value = true
   try {
-    const response = await api.get('/reporte-energia/excel', {
-      params: { fecha: fechaISO.value }, responseType: 'blob',
-    })
-    const url = URL.createObjectURL(response.data)
+    const blob = await reporteEnergiaService.descargarExcel(fechaISO.value)
+    const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = `reporte-energia-${fechaISO.value}.xlsx`
@@ -933,7 +924,7 @@ async function generarExcel() {
 async function enviarReporte() {
   enviando.value = true
   try {
-    const { data } = await api.post('/reporte-energia/enviar', null, { params: { fecha: fechaISO.value }, timeout: 300000 })
+    const data = await reporteEnergiaService.enviarReporte(fechaISO.value)
     if (data.bloqueado) {
       toast.warning('Envío bloqueado', { description: data.motivo_bloqueo, duration: 5000 })
     } else if (data.fallidos.length) {
@@ -950,7 +941,7 @@ async function enviarReporte() {
     }
   } catch (e) {
     toast.error('Error', {
-      description: e.response?.data?.detail || 'No se pudo enviar el reporte.',
+      description: e.data?.detail || 'No se pudo enviar el reporte.',
       duration: 4000,
     })
   } finally {

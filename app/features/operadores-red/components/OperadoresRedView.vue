@@ -162,7 +162,7 @@ async function _crearContactoSiAplica(operadorId) {
       nombre: form.value.contacto_nombre?.trim() || null,
     })
   } catch (e) {
-    const detail = e.response?.data?.detail
+    const detail = e.data?.detail
     toast.warning('Operador creado, pero el contacto no se pudo agregar', {
       description: typeof detail === 'string' ? detail : 'Revísalo desde el detalle del operador',
       duration: 5000,
@@ -188,10 +188,10 @@ async function guardar() {
     showForm.value = false
     await loadData()
   } catch (e) {
-    const detail = e.response?.data?.detail
+    const detail = e.data?.detail
     // Aviso de nombre parecido (409 estructurado): se puede confirmar y crear
     // igual. Distinto de un choque real de nombre_legal exacto (detail es un string).
-    if (e.response?.status === 409 && detail?.duplicado_nombre) {
+    if (e.status === 409 && detail?.duplicado_nombre) {
       duplicadoInfo.value = detail
       pendingBody.value = body
       duplicadoVisible.value = true
@@ -216,7 +216,7 @@ async function guardarForzado() {
     showForm.value = false
     await loadData()
   } catch (e) {
-    const detail = e.response?.data?.detail
+    const detail = e.data?.detail
     toast.error('Error', {
       description: typeof detail === 'string' ? detail : 'No se pudo crear',
       duration: 4000,

@@ -368,7 +368,7 @@ async function enviarSeleccionados() {
       toast.success(resumen, { duration: 6000 })
     }
   } catch (e) {
-    toast.error('Error al enviar', { description: e.response?.data?.detail || e.message, duration: 5000 })
+    toast.error('Error al enviar', { description: e.data?.detail || e.message, duration: 5000 })
   } finally {
     enviando.value = false
   }

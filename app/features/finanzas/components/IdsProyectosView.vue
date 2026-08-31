@@ -139,11 +139,14 @@ import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { formatearNombreProyecto } from '~/features/proyectos/components/proyectosUi'
 import { CheckIcon, CircleCheckIcon, LoaderCircleIcon, PencilIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const router = useRouter()
+const liquidacionesApi = new LiquidacionesApiService()
+const proyectosService = new ProyectosService()
 
 // Solo GD y minigranjas en operación.
 const TIPOS_INCLUIDOS = ['gd', 'minigranja']
@@ -243,7 +246,7 @@ function abrirEditar(row) {
 async function guardar() {
   guardando.value = true
   try {
-    await api.patch(`/liquidaciones-api/proyectos/${f.proyecto_id}`, {
+    await liquidacionesApi.actualizarConfigProyecto(f.proyecto_id, {
       sic_gen: f.sic_gen || null,
       sic_con: f.sic_con || null,
     })
@@ -251,7 +254,7 @@ async function guardar() {
     await cargar()
     toast.success('Códigos guardados', { duration: 2000 })
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail || 'No se pudo guardar', duration: 4000 })
+    toast.error('Error', { description: e.data?.detail || 'No se pudo guardar', duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -262,14 +265,12 @@ async function cargar() {
   loading.value = true
   errorApi.value = null
   try {
-    const [liqRes, proyRes] = await Promise.all([
-      api.get('/liquidaciones-api/proyectos'),
-      api.get('/proyectos', { params: { page: 1, size: 500 } }),
+    const [liq, proy] = await Promise.all([
+      liquidacionesApi.listarProyectos(),
+      proyectosService.listar({ page: 1, size: 500 }),
     ])
-    const quoiaPorId = new Map(
-      (proyRes.data.items ?? proyRes.data).map(p => [p.id, p])
-    )
-    filas.value = (liqRes.data || [])
+    const quoiaPorId = new Map(proy.map(p => [p.id, p]))
+    filas.value = (liq || [])
       .filter(r => TIPOS_INCLUIDOS.includes(r.tipo_proyecto) && r.estado === ESTADO_OPERATIVA)
       .map(r => {
         const p = quoiaPorId.get(r.proyecto_id) || {}
@@ -293,7 +294,7 @@ async function cargar() {
       })
       .sort((a, b) => a.nombre_comercial.localeCompare(b.nombre_comercial))
   } catch (e) {
-    errorApi.value = e.response?.data?.detail || 'No se pudo cargar la configuración de liquidaciones.'
+    errorApi.value = e.data?.detail || 'No se pudo cargar la configuración de liquidaciones.'
     filas.value = []
   } finally {
     loading.value = false

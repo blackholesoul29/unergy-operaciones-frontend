@@ -105,7 +105,7 @@ async function cargar() {
   try {
     rows.value = await registrosCndService.listar()
   } catch (e) {
-    toast.error('Error al cargar', { description: e.response?.data?.detail ?? '', duration: 5000 })
+    toast.error('Error al cargar', { description: e.data?.detail ?? '', duration: 5000 })
   } finally {
     loading.value = false
   }

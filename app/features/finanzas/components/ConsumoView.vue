@@ -115,7 +115,6 @@ import Select from 'primevue/select'
 import Button from 'primevue/button'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
-import api from '~/core/client'
 import { VERSIONES, VERSION_INICIAL } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
 import { LoaderCircleIcon, RefreshCwIcon, SearchIcon, ZapIcon } from '@lucide/vue'
@@ -213,7 +212,7 @@ function exportar() {
 
 async function cargarProyectos() {
   try {
-    const { data } = await api.get('/liquidaciones-api/proyectos')
+    const data = await liquidacionesApi.listarProyectos()
     proyectosOptions.value = (data || [])
       .filter(p => p.nombre_topico)
       .map(p => ({ value: p.nombre_topico, label: p.nombre_comercial }))

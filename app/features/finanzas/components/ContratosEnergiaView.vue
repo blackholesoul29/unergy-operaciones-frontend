@@ -249,7 +249,6 @@ import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
 import { TIPOS_CONTRATO, TIPOS_TARIFA } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
 
@@ -403,7 +402,7 @@ async function cargarCatalogos() {
 // La API externa identifica los proyectos por su tópico, no por nuestro id.
 async function cargarProyectos() {
   try {
-    const { data } = await api.get('/liquidaciones-api/proyectos')
+    const data = await liquidacionesApi.listarProyectos()
     const conTopico = (data || []).filter(p => p.nombre_topico)
     nombrePorTopico.value = Object.fromEntries(
       conTopico.map(p => [p.nombre_topico, formatearNombreProyecto(p.nombre_comercial)]),
