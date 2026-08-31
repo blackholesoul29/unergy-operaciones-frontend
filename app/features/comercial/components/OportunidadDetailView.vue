@@ -285,8 +285,6 @@ function autosave() {
   clearTimeout(saveTimer)
   saveTimer = setTimeout(async () => {
     try {
-      // `tipo_servicio` NO se envía: era el campo que respondía 422 y quedó
-      // vestigial cuando la etapa se mudó a la oferta.
       await api.patch(`/comercial/oportunidades/${op.value.id}`, {
         nombre: seg.value.nombre || null,
         numero_oferta: seg.value.numero_oferta || null,
