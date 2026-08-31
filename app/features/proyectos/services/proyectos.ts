@@ -1,6 +1,6 @@
 /** La planta: su ficha, sus inversionistas, sus servicios contratados y sus punteros de contacto. */
 import type { Proyecto, ProyectoEditable, ProyectoInfoTecnica } from '~/types/proyecto'
-import { comoLista, type ListaODirecto } from '~/types/api'
+import { comoLista, type ListaODirecto, type Paginado } from '~/types/api'
 import type {
   AreaContactoOverride,
   ContratoServicioResumenProyecto,
@@ -13,6 +13,7 @@ import type {
   PayloadInversionista,
   PayloadServicioToggle,
   ProyectoConDetalle,
+  ProyectoConServicioRepresentacion,
   ProyectoPendiente,
   ReporteBackfillInversores,
 } from '~/features/proyectos/types'
@@ -48,8 +49,23 @@ export class ProyectosService extends LegacyBaseService {
     return comoLista(data)
   }
 
+  /** Igual que `listar`, pero sin desenvolver `Paginado`: para avisar cuando la página no trae todo. */
+  listarPaginado({ page = 1, size = 500 }: { page?: number; size?: number } = {}): Promise<
+    Paginado<ProyectoConDetalle>
+  > {
+    return this.get<Paginado<ProyectoConDetalle>>(RUTAS.proyectos, { query: { page, size } })
+  }
+
   obtener(id: Proyecto['id']): Promise<ProyectoConDetalle> {
     return this.get<ProyectoConDetalle>(RUTAS.proyecto(id))
+  }
+
+  /** Las plantas con contrato de representación, con el resumen de ese contrato ya embebido. */
+  async listarConServicioRepresentacion(): Promise<ProyectoConServicioRepresentacion[]> {
+    const data = await this.get<ListaODirecto<ProyectoConServicioRepresentacion>>(RUTAS.proyectos, {
+      query: { servicio: 'representacion', size: 500 },
+    })
+    return comoLista(data)
   }
 
   /**

@@ -1062,8 +1062,12 @@ import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Dialog from 'primevue/dialog'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import ContratoServicioWizard from '~/features/contratos/components/ContratoServicioWizard.vue'
+
+const contratosServicioService = new ContratosServicioService()
+const proyectosService = new ProyectosService()
 const route = useRoute()
 const router = useRouter()
 
@@ -1282,17 +1286,17 @@ onMounted(async () => {
   const proyId = route.params.id
   try {
     const [proyRes, mantRes, arrRes, netRes] = await Promise.allSettled([
-      api.get(`/proyectos/${proyId}`),
-      api.get('/contratos-servicio', { params: { tipo: 'mantenimiento', proyecto_id: proyId } }),
-      api.get('/contratos-servicio', { params: { tipo: 'arriendo',      proyecto_id: proyId } }),
-      api.get('/contratos-servicio', { params: { tipo: 'internet',      proyecto_id: proyId } }),
+      proyectosService.obtener(proyId),
+      contratosServicioService.listar({ tipo: 'mantenimiento', proyecto_id: proyId }),
+      contratosServicioService.listar({ tipo: 'arriendo', proyecto_id: proyId }),
+      contratosServicioService.listar({ tipo: 'internet', proyecto_id: proyId }),
     ])
 
-    if (proyRes.status === 'fulfilled') proyectoNombre.value = proyRes.value.data.nombre_comercial
+    if (proyRes.status === 'fulfilled') proyectoNombre.value = proyRes.value.nombre_comercial
 
-    contratos.mantenimiento = mantRes.status === 'fulfilled' && mantRes.value.data.length ? mantRes.value.data[0] : null
-    contratos.arriendo      = arrRes.status  === 'fulfilled' && arrRes.value.data.length  ? arrRes.value.data[0]  : null
-    contratos.internet      = netRes.status  === 'fulfilled' && netRes.value.data.length  ? netRes.value.data[0]  : null
+    contratos.mantenimiento = mantRes.status === 'fulfilled' && mantRes.value.length ? mantRes.value[0] : null
+    contratos.arriendo      = arrRes.status  === 'fulfilled' && arrRes.value.length  ? arrRes.value[0]  : null
+    contratos.internet      = netRes.status  === 'fulfilled' && netRes.value.length  ? netRes.value[0]  : null
     await initInternetMap(contratos.internet)
 
     await cargarIndexacionOM()
@@ -1311,8 +1315,7 @@ async function loadPagos(tipo) {
   if (!contratos[tipo]) { pagos[tipo] = []; return }
   loadingPagos[tipo] = true
   try {
-    const { data } = await api.get(`/contratos-servicio/${contratos[tipo].id}/pagos`)
-    pagos[tipo] = data
+    pagos[tipo] = await contratosServicioService.listarPagos(contratos[tipo].id)
   } catch {
     pagos[tipo] = []
   } finally {
@@ -1341,7 +1344,7 @@ async function guardarPago() {
   }
   guardandoPago.value = true
   try {
-    await api.post(`/contratos-servicio/${contratos[tipo].id}/pagos`, {
+    await contratosServicioService.registrarPago(contratos[tipo].id, {
       mes:          dialogPago.form.mes,
       año:          dialogPago.form.año,
       valor_pagado: dialogPago.form.valor_pagado,
@@ -1352,7 +1355,7 @@ async function guardarPago() {
     dialogPago.visible = false
     toast.success('Pago registrado', { duration: 2500 })
   } catch (e) {
-    const msg = e.response?.data?.detail
+    const msg = e.data?.detail
     const isDup = typeof msg === 'string' && msg.includes('uq_pago_servicio')
     toast.error(isDup ? 'Ya existe un pago para ese período' : 'Error al registrar', {
       description: isDup ? undefined : String(msg ?? ''),
@@ -1367,7 +1370,7 @@ async function eliminarPago(tipo, pagoId) {
   if (!contratos[tipo]) return
   if (!confirm('¿Eliminar este pago?')) return
   try {
-    await api.delete(`/contratos-servicio/${contratos[tipo].id}/pagos/${pagoId}`)
+    await contratosServicioService.eliminarPago(contratos[tipo].id, pagoId)
     pagos[tipo] = pagos[tipo].filter(p => p.id !== pagoId)
     toast.success('Pago eliminado', { duration: 2000 })
   } catch {
@@ -1443,7 +1446,7 @@ async function saveContrato() {
       payload.ubicacion_lat = dialogEdit.form.ubicacion_lat ?? null
       payload.ubicacion_lng = dialogEdit.form.ubicacion_lng ?? null
     }
-    const { data } = await api.patch(`/contratos-servicio/${contratos[tipo].id}`, payload)
+    const data = await contratosServicioService.actualizar(contratos[tipo].id, payload)
     contratos[tipo] = { ...contratos[tipo], ...data }
     if (tipo === 'arriendo') await cargarIndexacionArriendo()
     if (tipo === 'internet') {
@@ -1454,7 +1457,7 @@ async function saveContrato() {
     dialogEdit.visible = false
     toast.success('Contrato actualizado', { duration: 2500 })
   } catch (e) {
-    toast.error('Error al guardar', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('Error al guardar', { description: e.data?.detail, duration: 3000 })
   } finally {
     guardandoContrato.value = false
   }
@@ -1470,7 +1473,7 @@ async function onContratoCreado() {
   const tipo = wizardTipo.value
   const proyId = route.params.id
   try {
-    const { data } = await api.get('/contratos-servicio', { params: { tipo, proyecto_id: proyId } })
+    const data = await contratosServicioService.listar({ tipo, proyecto_id: proyId })
     contratos[tipo] = data.length ? data[0] : null
     if (tipo === 'arriendo') {
       await cargarArrendadores()
@@ -1544,12 +1547,12 @@ async function saveMantenimiento() {
       const proyId = route.params.id
       payload.servicio_aplica = 'mantenimiento'
       payload.proyecto_id     = Number(proyId)
-      await api.post('/contratos-servicio', payload)
-      const { data } = await api.get('/contratos-servicio', { params: { tipo: 'mantenimiento', proyecto_id: proyId } })
+      await contratosServicioService.crear(payload)
+      const data = await contratosServicioService.listar({ tipo: 'mantenimiento', proyecto_id: proyId })
       contratos.mantenimiento = data.length ? data[0] : null
       await loadPagos('mantenimiento')
     } else {
-      const { data } = await api.patch(`/contratos-servicio/${contratos.mantenimiento.id}`, payload)
+      const data = await contratosServicioService.actualizar(contratos.mantenimiento.id, payload)
       contratos.mantenimiento = { ...contratos.mantenimiento, ...data }
     }
     // Recalcular la indexación automática (cambió tarifa/fecha inicio O&M)
@@ -1559,7 +1562,7 @@ async function saveMantenimiento() {
       duration: 2500,
     })
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail ?? e.message, duration: 4000 })
+    toast.error('Error', { description: e.data?.detail ?? e.message, duration: 4000 })
   } finally {
     guardandoMant.value = false
   }
@@ -1641,7 +1644,7 @@ function getValorVigente(filas) {
 async function cargarIndexacionOM() {
   if (!contratos.mantenimiento?.id) return
   try {
-    const { data } = await api.get(`/om/indexacion/${contratos.mantenimiento.id}`)
+    const data = await contratosServicioService.obtenerIndexacionOm(contratos.mantenimiento.id)
     contratos.mantenimiento.indexacion_anual   = data.anual   || []
     contratos.mantenimiento.indexacion_mensual = data.mensual || []
   } catch {
@@ -1657,7 +1660,7 @@ async function cargarIndexacionOM() {
 async function cargarIndexacionArriendo() {
   if (!contratos.arriendo?.id) return
   try {
-    const { data } = await api.get(`/arriendos/indexacion/${contratos.arriendo.id}`)
+    const data = await contratosServicioService.obtenerIndexacionArriendo(contratos.arriendo.id)
     contratos.arriendo.indexacion_anual   = data.anual   || []
     contratos.arriendo.indexacion_mensual = data.mensual || []
   } catch {
@@ -1667,9 +1670,7 @@ async function cargarIndexacionArriendo() {
   // Indexación individual por cada arrendador (usa su propio valor_base)
   await Promise.all(arrendadores.value.map(async (a) => {
     try {
-      const { data } = await api.get(`/arriendos/indexacion/${contratos.arriendo.id}`, {
-        params: { arrendador_id: a.id },
-      })
+      const data = await contratosServicioService.obtenerIndexacionArriendo(contratos.arriendo.id, a.id)
       a.indexacion_anual   = data.anual   || []
       a.indexacion_mensual = data.mensual || []
     } catch {
@@ -1683,8 +1684,7 @@ async function cargarIndexacionArriendo() {
 async function cargarArrendadores() {
   if (!contratos.arriendo?.id) { arrendadores.value = []; return }
   try {
-    const { data } = await api.get(`/arriendos/contratos/${contratos.arriendo.id}/arrendadores`)
-    arrendadores.value = data || []
+    arrendadores.value = await contratosServicioService.listarArrendadores(contratos.arriendo.id)
   } catch {
     arrendadores.value = []
   }
@@ -1722,16 +1722,16 @@ async function guardarArrendador() {
       observaciones: arrendadorDialog.form.observaciones?.trim() || null,
     }
     if (arrendadorDialog.modo === 'editar' && arrendadorDialog.editId) {
-      await api.put(`/arriendos/arrendadores/${arrendadorDialog.editId}`, payload)
+      await contratosServicioService.actualizarArrendador(arrendadorDialog.editId, payload)
     } else {
-      await api.post(`/arriendos/contratos/${contratos.arriendo.id}/arrendadores`, payload)
+      await contratosServicioService.crearArrendador(contratos.arriendo.id, payload)
     }
     arrendadorDialog.visible = false
     await cargarArrendadores()
     await cargarIndexacionArriendo()
     toast.success('Arrendador guardado', { duration: 2500 })
   } catch (e) {
-    toast.error('Error al guardar arrendador', { description: e.response?.data?.detail, duration: 3500 })
+    toast.error('Error al guardar arrendador', { description: e.data?.detail, duration: 3500 })
   } finally {
     arrendadorDialog.guardando = false
   }
@@ -1740,13 +1740,13 @@ async function guardarArrendador() {
 async function eliminarArrendador(arrendador) {
   if (!confirm(`¿Eliminar al arrendador "${arrendador.nombre}"?`)) return
   try {
-    await api.delete(`/arriendos/arrendadores/${arrendador.id}`)
+    await contratosServicioService.eliminarArrendador(arrendador.id)
     await cargarArrendadores()
     await cargarIndexacionArriendo()
     toast.success('Arrendador eliminado', { duration: 2500 })
   } catch (e) {
     toast.error('Error al eliminar', {
-      description: e.response?.data?.detail || 'No se pudo eliminar el arrendador',
+      description: e.data?.detail || 'No se pudo eliminar el arrendador',
       duration: 3500,
     })
   }

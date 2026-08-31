@@ -1,6 +1,6 @@
 /** El cliente (inversionista o comprador): datos, documentos, tasas y sus registros relacionados. */
 import type { Cliente, ClienteEditable } from '~/types/cliente'
-import { comoLista, type ListaODirecto } from '~/types/api'
+import { comoLista, type ListaODirecto, type Paginado } from '~/types/api'
 import type {
   ClienteDetalle,
   ClienteVistaComercial,
@@ -48,7 +48,21 @@ export class ClientesService extends LegacyBaseService {
     return comoLista(data)
   }
 
-  crear(payload: ClienteEditable): Promise<ClienteDetalle> {
+  /** Igual que `listar`, pero sin desenvolver `Paginado`: para avisar cuando la página no trae todo. */
+  listarPaginado({ page = 1, size = 200 }: { page?: number; size?: number } = {}): Promise<
+    Paginado<Cliente>
+  > {
+    return this.get<Paginado<Cliente>>(RUTAS.clientes, { query: { page, size } })
+  }
+
+  /**
+   * `razon_social_nombre` es el único campo que de verdad exige el backend; el
+   * resto de `ClienteEditable` lo completa el formulario largo, pero el alta
+   * rápida desde un wizard de contrato solo manda nombre, NIT y tipo.
+   */
+  crear(
+    payload: Partial<ClienteEditable> & Pick<ClienteEditable, 'razon_social_nombre'>,
+  ): Promise<ClienteDetalle> {
     return this.post<ClienteDetalle>(RUTAS.clientes, payload)
   }
 

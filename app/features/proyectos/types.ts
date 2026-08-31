@@ -111,6 +111,15 @@ export interface ProyectoConDetalle extends Proyecto {
   [clave: string]: unknown
 }
 
+/** `GET /proyectos?servicio=representacion`: agrega el resumen del contrato de representación de la planta. */
+export interface ProyectoConServicioRepresentacion extends ProyectoConDetalle {
+  servicio_representacion?: {
+    nombre_rf?: string | null
+    nombre_comercializador?: string | null
+    [clave: string]: unknown
+  }
+}
+
 /**
  * El cuerpo de `PATCH /proyectos/:id` que arma el detalle: además de
  * `ProyectoEditable`, los campos de simulación, fechas e IDs de Quoia — el
