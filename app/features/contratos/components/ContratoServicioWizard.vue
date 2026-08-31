@@ -256,14 +256,10 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="max-w-xs">
             <div class="flex flex-col gap-1">
               <label class="field-label">Índice de indexación</label>
               <InputText v-model="form.indice_indexacion" placeholder="Ej: IPC, IPP" class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
-              <label class="field-label">Cánones / otros (COP)</label>
-              <InputNumber v-model="form.canones_otros" :minFractionDigits="2" :maxFractionDigits="4" class="w-full" />
             </div>
           </div>
 
@@ -541,7 +537,6 @@ const form = reactive({
   tarifa_base: null,
   periodicidad_pago: null,
   indice_indexacion: '',
-  canones_otros: null,
   fecha_firma_contrato: null,
   enlace_drive: '',
   estado_pago: null,
@@ -802,7 +797,6 @@ async function crearContrato() {
       tarifa_base: form.tarifa_base ?? null,
       periodicidad_pago: form.periodicidad_pago ?? null,
       indice_indexacion: form.indice_indexacion?.trim() || null,
-      canones_otros: form.canones_otros ?? null,
       tiene_cgm: form.tiene_cgm,
       cgm_codigo_sic: form.tiene_cgm ? (form.cgm_codigo_sic?.trim() || null) : null,
       rec_cantidad: form.rec_cantidad ?? null,
