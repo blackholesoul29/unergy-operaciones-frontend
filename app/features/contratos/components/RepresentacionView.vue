@@ -870,7 +870,6 @@ async function nuevoContrato() {
       servicio_aplica: 'representacion',
       proyecto_id: Number(route.params.id),
       estado: 'vigente',
-      nombre_proyecto_ref: proyectoNombre.value || null,
     })
     contratos.value.push(data)
     idSeleccionado.value = data.id
