@@ -482,7 +482,7 @@ import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import DatePicker from 'primevue/datepicker'
 import InputNumber from 'primevue/inputnumber'
-import api from '~/core/client'
+import { ClientesService } from '~/features/clientes/services/clientes'
 import ClienteForm from './ClienteForm.vue'
 import DetalleLayout from '~/components/blocks/DetalleLayout.vue'
 import ClienteResumen from './ClienteResumen.vue'
@@ -490,6 +490,8 @@ import ContactosPanel from '~/components/blocks/ContactosPanel.vue'
 import { formatearNombre } from '~/utils/nombreFormato'
 import { SEMAFORO, servicioLabel as servicioAplicaLabel } from './clientesUi'
 import { BriefcaseIcon, ChevronRightIcon, ExternalLinkIcon, FilePenIcon, FolderIcon, GlobeIcon, LayoutGridIcon, LoaderCircleIcon, MailIcon, PencilIcon, PlusIcon, Trash2Icon, UploadIcon, UserIcon, ZapIcon } from '@lucide/vue'
+
+const clientesService = new ClientesService()
 
 const route = useRoute()
 const router = useRouter()
@@ -626,20 +628,16 @@ async function guardarDocumento() {
 
     let docId
     if (editandoDocumento.value?.id) {
-      await api.patch(`/clientes/${route.params.id}/documentos/${editandoDocumento.value.id}`, payload)
+      await clientesService.actualizarDocumento(route.params.id, editandoDocumento.value.id, payload)
       docId = editandoDocumento.value.id
     } else {
-      const { data } = await api.post(`/clientes/${route.params.id}/documentos`, payload)
-      docId = data.id
+      const documento = await clientesService.crearDocumento(route.params.id, payload)
+      docId = documento.id
     }
 
     // Upload archivo si se seleccionó uno
     if (archivoSeleccionado.value) {
-      const fd = new FormData()
-      fd.append('archivo', archivoSeleccionado.value)
-      await api.post(`/clientes/${route.params.id}/documentos/${docId}/archivo`, fd, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      await clientesService.subirArchivoDocumento(route.params.id, docId, archivoSeleccionado.value)
     }
 
     dialogDocumento.value = false
@@ -654,7 +652,7 @@ async function guardarDocumento() {
 
 async function eliminarDocumento(doc) {
   if (!confirm(`¿Eliminar "${doc.archivo_nombre || doc.nombre}"?`)) return
-  await api.delete(`/clientes/${route.params.id}/documentos/${doc.id}`)
+  await clientesService.eliminarDocumento(route.params.id, doc.id)
   toast.success('Eliminado', { duration: 3000 })
   await cargar()
 }
@@ -662,7 +660,7 @@ async function eliminarDocumento(doc) {
 // ── Info ──────────────────────────────────────────────────────────────────────
 
 async function saveInfo(payload) {
-  await api.patch(`/clientes/${route.params.id}`, payload)
+  await clientesService.actualizar(route.params.id, payload)
   toast.success('Información actualizada', { duration: 3000 })
   await cargar()
 }
@@ -670,7 +668,7 @@ async function saveInfo(payload) {
 async function doDelete() {
   deleting.value = true
   try {
-    await api.delete(`/clientes/${route.params.id}`)
+    await clientesService.eliminar(route.params.id)
     toast.success('Cliente eliminado', { duration: 3000 })
     router.push('/clientes')
   } catch (e) {
@@ -708,8 +706,7 @@ function formatDate(d) {
 }
 
 async function cargar() {
-  const { data } = await api.get(`/clientes/${route.params.id}`)
-  cliente.value = data
+  cliente.value = await clientesService.obtener(route.params.id)
 }
 
 // Fix 2026-08-19: cada llamada tenia su propio .catch(() => ({data: []})),
@@ -720,14 +717,11 @@ async function loadRelatedData(tab) {
   loadingRelated.value = true
   try {
     if (tab === 'proyectos' && clienteProyectos.value.length === 0) {
-      const { data } = await api.get(`/clientes/${route.params.id}/proyectos`)
-      clienteProyectos.value = Array.isArray(data) ? data : (data.items ?? [])
+      clienteProyectos.value = await clientesService.listarProyectos(route.params.id)
     } else if (tab === 'fronteras' && clienteFronteras.value.length === 0) {
-      const { data } = await api.get(`/clientes/${route.params.id}/fronteras`)
-      clienteFronteras.value = Array.isArray(data) ? data : (data.items ?? [])
+      clienteFronteras.value = await clientesService.listarFronteras(route.params.id)
     } else if (tab === 'ppa' && clientePPA.value.length === 0) {
-      const { data } = await api.get(`/clientes/${route.params.id}/contratos-ppa`)
-      clientePPA.value = Array.isArray(data) ? data : (data.items ?? [])
+      clientePPA.value = await clientesService.listarContratosPpa(route.params.id)
     }
   } catch (e) {
     toast.error('No se pudo cargar', {
@@ -748,8 +742,7 @@ watch(activeTab, (tab) => {
 async function loadServiciosContratos() {
   loadingServiciosContratos.value = true
   try {
-    const { data } = await api.get(`/clientes/${route.params.id}/servicios-contratos`)
-    serviciosContratos.value = Array.isArray(data) ? data : []
+    serviciosContratos.value = await clientesService.listarServiciosContratos(route.params.id)
   } catch {
     serviciosContratos.value = []
   } finally {
@@ -767,8 +760,7 @@ const SERVICIOS_TASA = ['Representación', 'CGM', 'Administración']
 async function loadTasasServicio() {
   loadingTasas.value = true
   try {
-    const { data } = await api.get(`/clientes/${route.params.id}/tasas-servicio`)
-    tasasServicio.value = Array.isArray(data) ? data : []
+    tasasServicio.value = await clientesService.listarTasasServicio(route.params.id)
   } catch {
     tasasServicio.value = []
   } finally {
@@ -804,7 +796,7 @@ async function abrirDialogoTasa(tasa) {
 async function guardarTasa() {
   guardando.value = true
   try {
-    await api.put(`/clientes/${route.params.id}/tasa-servicio`, {
+    await clientesService.guardarTasaServicio(route.params.id, {
       servicio: formTasa.servicio,
       proyecto_id: formTasa.proyecto_id || null,
       iva_pct: formTasa.iva_pct ?? null,
@@ -824,7 +816,7 @@ async function guardarTasa() {
 
 async function eliminarTasa(tasa) {
   if (!confirm(`¿Eliminar la excepción de "${tasa.servicio}"${tasa.proyecto_id ? '' : ' (todos los proyectos)'}?`)) return
-  await api.delete(`/clientes/${route.params.id}/tasa-servicio/${tasa.id}`)
+  await clientesService.eliminarTasaServicio(route.params.id, tasa.id)
   toast.success('Eliminada', { duration: 3000 })
   await loadTasasServicio()
 }
