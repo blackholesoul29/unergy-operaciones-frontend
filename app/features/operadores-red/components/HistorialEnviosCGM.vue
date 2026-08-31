@@ -169,7 +169,7 @@ function normalizarNombre(s) {
 
 async function cargarNombresVigentes() {
   try {
-    const { data } = await api.get('/fronteras', { params: { limit: 500 } })
+    const { data } = await api.get('/fronteras', { params: { limit: 500, incluir_clientes_cgm: true } })
     const set = new Set()
     for (const f of data) {
       if (f.operador_comercial) set.add(normalizarNombre(f.operador_comercial))
