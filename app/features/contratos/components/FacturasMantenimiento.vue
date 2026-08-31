@@ -128,7 +128,7 @@
                     <span v-else class="text-gray-300 text-xs">—</span>
                   </td>
                   <td class="px-4 py-2.5 text-center">
-                    <button v-if="!fac.id?.startsWith('sol_static_')" type="button"
+                    <button type="button"
                       class="w-7 h-7 rounded-lg inline-flex items-center justify-center text-red-300 hover:text-red-500 hover:bg-red-50 transition-colors"
                       style="background:none;border:none;cursor:pointer"
                       @click="eliminarFactura('solenium', fac.id)">
@@ -408,14 +408,11 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import { toast } from 'vue-sonner'
 import api from '~/core/client'
-import FACTURAS_SOL_ESTATICAS from '~/features/contratos/data/facturas_solenium_data.js'
-import FACTURAS_INV_ESTATICAS from '~/features/contratos/data/facturas_inversionistas_data.js'
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon, FilterIcon, LoaderCircleIcon, ReceiptIcon, Trash2Icon, UsersIcon, XIcon } from '@lucide/vue'
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 const props = defineProps({
-  contratoId:    { type: Number, default: null },
-  proyectoNombre: { type: String, default: '' },
+  contratoId: { type: Number, default: null },
 })
 
 
@@ -444,78 +441,6 @@ const modal = reactive({
   tipo: 'solenium',
   form: { fecha: '', numero_factura: '', monto: null, enlace_soporte: '' },
   errores: {},
-})
-
-// ── Helpers: datos estáticos ───────────────────────────────────────────────────
-/**
- * Filtra los registros estáticos de Solenium por el nombre del proyecto activo.
- *
- * Estrategia dual:
- *  1) Coincidencia exacta (case-insensitive) — p.ej. "Minigranja Solar Gandalf"
- *  2) Si falla, coincidencia por palabras clave — cubre el formato del DB
- *     "MGS 0004 Valle de Gandalf" que debe mapear a "Minigranja Solar Gandalf".
- *     Se extraen palabras significativas (≥3 chars, no números, no palabras
- *     vacías), se busca el proyecto estático con mayor score de coincidencia.
- */
-const staticSolForProject = computed(() => {
-  const nombre = (props.proyectoNombre || '').trim()
-  if (!nombre) return []
-
-  const nombreLower = nombre.toLowerCase()
-
-  // 1. Exacta
-  const exactos = FACTURAS_SOL_ESTATICAS.filter(
-    r => r.proyecto.trim().toLowerCase() === nombreLower,
-  )
-  if (exactos.length) return exactos
-
-  // 2. Por palabras clave
-  const STOP = new Set([
-    'mgs', 'de', 'la', 'el', 'los', 'las', 'del', 'solar', 'minigranja', 'y', 'con',
-  ])
-  const keywords = nombreLower
-    .split(/\s+/)
-    .filter(w => w.length >= 3 && !STOP.has(w) && !/^\d+$/.test(w))
-  if (!keywords.length) return []
-
-  const proyectosUnicos = [...new Set(FACTURAS_SOL_ESTATICAS.map(r => r.proyecto))]
-  let mejorProyecto = null
-  let mejorScore = 0
-  for (const p of proyectosUnicos) {
-    const pLower = p.toLowerCase()
-    const score = keywords.filter(kw => pLower.includes(kw)).length
-    if (score > mejorScore) { mejorScore = score; mejorProyecto = p }
-  }
-
-  if (!mejorProyecto || mejorScore === 0) return []
-  return FACTURAS_SOL_ESTATICAS.filter(r => r.proyecto === mejorProyecto)
-})
-
-const staticInvForProject = computed(() => {
-  const nombre = (props.proyectoNombre || '').trim()
-  if (!nombre) return []
-  const nombreLower = nombre.toLowerCase()
-  const exactos = FACTURAS_INV_ESTATICAS.filter(
-    r => r.proyecto.trim().toLowerCase() === nombreLower,
-  )
-  if (exactos.length) return exactos
-  const STOP = new Set([
-    'mgs', 'de', 'la', 'el', 'los', 'las', 'del', 'solar', 'minigranja', 'y', 'con',
-  ])
-  const keywords = nombreLower
-    .split(/\s+/)
-    .filter(w => w.length >= 3 && !STOP.has(w) && !/^\d+$/.test(w))
-  if (!keywords.length) return []
-  const proyectosUnicos = [...new Set(FACTURAS_INV_ESTATICAS.map(r => r.proyecto))]
-  let mejorProyecto = null
-  let mejorScore = 0
-  for (const p of proyectosUnicos) {
-    const pLower = p.toLowerCase()
-    const score = keywords.filter(kw => pLower.includes(kw)).length
-    if (score > mejorScore) { mejorScore = score; mejorProyecto = p }
-  }
-  if (!mejorProyecto || mejorScore === 0) return []
-  return FACTURAS_INV_ESTATICAS.filter(r => r.proyecto === mejorProyecto)
 })
 
 /**
@@ -548,19 +473,11 @@ async function load() {
   if (!props.contratoId) return
   loading.value = true
   try {
-    const { data } = await api.get(`/contratos-servicio/${props.contratoId}`)
-    // Si el contrato ya tiene facturas guardadas en la BD → usarlas.
-    // Si no → mostrar los datos estáticos del JSON filtrados por proyecto.
-    facturasSol.value = (data.facturas_solenium && data.facturas_solenium.length)
-      ? data.facturas_solenium
-      : staticSolForProject.value
-    facturasInv.value = (data.facturas_inversionistas && data.facturas_inversionistas.length)
-      ? data.facturas_inversionistas
-      : staticInvForProject.value
-  } catch {
-    // En caso de error de red → mostrar datos estáticos de igual forma
-    facturasSol.value = staticSolForProject.value
-    facturasInv.value = staticInvForProject.value
+    const { data } = await api.get(`/contratos-servicio/${props.contratoId}/facturas`)
+    facturasSol.value = data.filter(f => f.tipo === 'solenium')
+    facturasInv.value = data.filter(f => f.tipo === 'inversionista')
+  } catch (e) {
+    toast.error('Error al cargar facturas', { description: e.response?.data?.detail || e.message, duration: 4000 })
   } finally {
     loading.value = false
   }
@@ -568,15 +485,6 @@ async function load() {
 
 onMounted(() => { if (props.contratoId) load() })
 watch(() => props.contratoId, (id) => { if (id) load() })
-
-watch(() => props.proyectoNombre, () => {
-  if (!loading.value && facturasSol.value.length === 0) {
-    facturasSol.value = staticSolForProject.value
-  }
-  if (!loading.value && facturasInv.value.length === 0) {
-    facturasInv.value = staticInvForProject.value
-  }
-})
 
 // ── Modal ──────────────────────────────────────────────────────────────────────
 function abrirModal(tipo) {
@@ -612,24 +520,18 @@ async function guardarFactura() {
   if (!validarModal()) return
   saving.value = true
   try {
-    const nueva = {
-      id:             Date.now().toString() + Math.random().toString(36).slice(2, 6),
+    const payload = {
+      tipo:           modal.tipo === 'solenium' ? 'solenium' : 'inversionista',
       fecha:          modal.form.fecha.trim(),
       inversionista:  modal.form.inversionista?.trim() || null,
-      numero_factura: modal.form.numero_factura?.trim() || '',
-      monto:          modal.form.monto ?? 0,
+      numero_factura: modal.form.numero_factura?.trim() || null,
+      monto:          modal.form.monto ?? null,
       enlace_soporte: modal.form.enlace_soporte?.trim() || null,
     }
+    const { data } = await api.post(`/contratos-servicio/${props.contratoId}/facturas`, payload)
 
-    if (modal.tipo === 'solenium') {
-      const lista = [...facturasSol.value, nueva]
-      await api.patch(`/contratos-servicio/${props.contratoId}/facturas-solenium`, lista)
-      facturasSol.value = lista
-    } else {
-      const lista = [...facturasInv.value, nueva]
-      await api.patch(`/contratos-servicio/${props.contratoId}/facturas-inversionistas`, lista)
-      facturasInv.value = lista
-    }
+    if (modal.tipo === 'solenium') facturasSol.value = [...facturasSol.value, data]
+    else facturasInv.value = [...facturasInv.value, data]
 
     modal.visible = false
     toast.success('Factura agregada', { duration: 2500 })
@@ -643,18 +545,12 @@ async function guardarFactura() {
 async function eliminarFactura(tipo, id) {
   if (!confirm('¿Eliminar esta factura? Esta acción no se puede deshacer.')) return
   try {
-    if (tipo === 'solenium') {
-      const lista = facturasSol.value.filter(f => f.id !== id)
-      await api.patch(`/contratos-servicio/${props.contratoId}/facturas-solenium`, lista)
-      facturasSol.value = lista
-    } else {
-      const lista = facturasInv.value.filter(f => f.id !== id)
-      await api.patch(`/contratos-servicio/${props.contratoId}/facturas-inversionistas`, lista)
-      facturasInv.value = lista
-    }
+    await api.delete(`/contratos-servicio/${props.contratoId}/facturas/${id}`)
+    if (tipo === 'solenium') facturasSol.value = facturasSol.value.filter(f => f.id !== id)
+    else facturasInv.value = facturasInv.value.filter(f => f.id !== id)
     toast.success('Factura eliminada', { duration: 2000 })
   } catch (e) {
-    toast.error('Error al eliminar', { description: e.message, duration: 3000 })
+    toast.error('Error al eliminar', { description: e.response?.data?.detail || e.message, duration: 3000 })
   }
 }
 

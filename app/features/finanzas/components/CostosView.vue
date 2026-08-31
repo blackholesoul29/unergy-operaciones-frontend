@@ -101,10 +101,7 @@
       <div v-else-if="proyectoSeleccionado" class="space-y-4 mt-3">
 
         <!-- Facturas históricas -->
-        <FacturasMantenimiento
-          :contrato-id="contratoMantenimientoId"
-          :proyecto-nombre="proyectoNombre"
-        />
+        <FacturasMantenimiento :contrato-id="contratoMantenimientoId" />
 
         <!-- Cargar factura -->
         <div class="rounded-xl border bg-white overflow-hidden" style="border-color:#ECE7F2">
