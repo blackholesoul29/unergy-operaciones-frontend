@@ -413,18 +413,10 @@
               <span class="text-xs text-gray-400">(Comercializador Generador Minorista)</span>
             </div>
             <template v-if="form.tiene_cgm">
-              <div class="grid grid-cols-3 gap-4 pt-1">
+              <div class="pt-1 max-w-xs">
                 <div class="flex flex-col gap-1">
                   <label class="field-label">Código SIC</label>
                   <InputText v-model="form.cgm_codigo_sic" placeholder="Ej: CGM-001" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">% FNCER</label>
-                  <InputNumber v-model="form.cgm_porcentaje_fncer" suffix="%" :minFractionDigits="1" :maxFractionDigits="2" locale="en-US" class="w-full" />
-                </div>
-                <div class="flex flex-col gap-1">
-                  <label class="field-label">Tipo de asignación</label>
-                  <InputText v-model="form.cgm_tipo_asignacion" placeholder="Ej: Proporcional" class="w-full" />
                 </div>
               </div>
             </template>
@@ -555,8 +547,6 @@ const form = reactive({
   estado_pago: null,
   tiene_cgm: false,
   cgm_codigo_sic: '',
-  cgm_porcentaje_fncer: null,
-  cgm_tipo_asignacion: '',
   rec_cantidad: null,
   rec_precio_unitario: null,
   rec_vintage: '',
@@ -815,8 +805,6 @@ async function crearContrato() {
       canones_otros: form.canones_otros ?? null,
       tiene_cgm: form.tiene_cgm,
       cgm_codigo_sic: form.tiene_cgm ? (form.cgm_codigo_sic?.trim() || null) : null,
-      cgm_porcentaje_fncer: form.tiene_cgm ? (form.cgm_porcentaje_fncer ?? null) : null,
-      cgm_tipo_asignacion: form.tiene_cgm ? (form.cgm_tipo_asignacion?.trim() || null) : null,
       rec_cantidad: form.rec_cantidad ?? null,
       rec_precio_unitario: form.rec_precio_unitario ?? null,
       rec_vintage: form.rec_vintage?.trim() || null,
