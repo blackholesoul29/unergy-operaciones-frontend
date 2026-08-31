@@ -519,7 +519,7 @@ async function guardarGeneral() {
     await recargarReg()
     toast.success('Datos guardados', { duration: 2500 })
   } catch (e) {
-    toast.error('No se pudo guardar', { description: e.response?.data?.detail ?? '', duration: 6000 })
+    toast.error('No se pudo guardar', { description: e.data?.detail ?? '', duration: 6000 })
   } finally {
     guardandoGeneral.value = false
   }
@@ -534,7 +534,7 @@ async function hacerTransicion(etapa, aEstado) {
     seleccionada.value = prevSel  // mantener el foco en la etapa que se estaba tocando
     toast.success('Estado actualizado', { duration: 2500 })
   } catch (e) {
-    toast.error('Transición no válida', { description: e.response?.data?.detail ?? '', duration: 6000 })
+    toast.error('Transición no válida', { description: e.data?.detail ?? '', duration: 6000 })
   } finally {
     transicionando.value = false
   }
@@ -549,7 +549,7 @@ async function guardarParams() {
     await cargarValidacion()
     toast.success('Parámetros guardados', { duration: 2500 })
   } catch (e) {
-    toast.error('No se pudo guardar', { description: e.response?.data?.detail ?? '', duration: 6000 })
+    toast.error('No se pudo guardar', { description: e.data?.detail ?? '', duration: 6000 })
   } finally {
     guardandoParams.value = false
   }
@@ -562,7 +562,7 @@ async function recomputar() {
     alertas.value = data.alertas || []
     toast.success(`Alertas: ${data.alertas.length} (${data.creadas} nuevas)`, { duration: 3000 })
   } catch (e) {
-    toast.error('Error al recomputar', { description: e.response?.data?.detail ?? '', duration: 5000 })
+    toast.error('Error al recomputar', { description: e.data?.detail ?? '', duration: 5000 })
   } finally {
     recomputando.value = false
   }
@@ -580,7 +580,7 @@ async function crearEquipo() {
     await cargarEquipos()
     toast.success('Equipo agregado', { duration: 2500 })
   } catch (e) {
-    toast.error('No se pudo agregar', { description: e.response?.data?.detail ?? '', duration: 5000 })
+    toast.error('No se pudo agregar', { description: e.data?.detail ?? '', duration: 5000 })
   }
 }
 async function borrarEquipo(row) {
@@ -601,7 +601,7 @@ async function crearDoc() {
     await cargarDocumentos()
     toast.success('Documento agregado', { duration: 2500 })
   } catch (e) {
-    toast.error('No se pudo agregar', { description: e.response?.data?.detail ?? '', duration: 5000 })
+    toast.error('No se pudo agregar', { description: e.data?.detail ?? '', duration: 5000 })
   }
 }
 async function borrarDoc(row) {
@@ -618,7 +618,7 @@ async function generarCorreo(tipo) {
     correo.value = await registrosCndService.generarCorreo(regId.value, tipo)
     correoDialog.value = true
   } catch (e) {
-    toast.error('No se pudo generar', { description: e.response?.data?.detail ?? '', duration: 5000 })
+    toast.error('No se pudo generar', { description: e.data?.detail ?? '', duration: 5000 })
   }
 }
 function copiarCorreo() {
@@ -632,7 +632,7 @@ onMounted(async () => {
     await Promise.all([cargarCatalogos(), cargarParams(), cargarEquipos(), cargarDocumentos()])
   } catch (e) {
     toast.error('No se pudo abrir el proyecto', {
-      description: e.response?.data?.detail ?? '',
+      description: e.data?.detail ?? '',
       duration: 6000,
     })
   }

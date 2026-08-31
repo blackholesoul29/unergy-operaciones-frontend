@@ -191,7 +191,7 @@ async function onSave(payload) {
     dialogVisible.value = false
     router.push(`/clientes/${cliente.id}`)
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
+    toast.error('Error', { description: e.data?.detail, duration: 4000 })
   }
 }
 </script>

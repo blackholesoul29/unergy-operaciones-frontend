@@ -139,11 +139,12 @@ import Dialog from 'primevue/dialog'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
 import { formatearNombreProyecto } from '~/features/proyectos/components/proyectosUi'
 import { CheckIcon, CircleCheckIcon, LoaderCircleIcon, PencilIcon, RefreshCwIcon, SearchIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const router = useRouter()
+const liquidacionesApi = new LiquidacionesApiService()
 
 // Solo GD y minigranjas en operación.
 const TIPOS_INCLUIDOS = ['gd', 'minigranja']
@@ -243,7 +244,7 @@ function abrirEditar(row) {
 async function guardar() {
   guardando.value = true
   try {
-    await api.patch(`/liquidaciones-api/proyectos/${f.proyecto_id}`, {
+    await liquidacionesApi.actualizarConfigProyecto(f.proyecto_id, {
       sic_gen: f.sic_gen || null,
       sic_con: f.sic_con || null,
     })
@@ -251,7 +252,7 @@ async function guardar() {
     await cargar()
     toast.success('Códigos guardados', { duration: 2000 })
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail || 'No se pudo guardar', duration: 4000 })
+    toast.error('Error', { description: e.data?.detail || 'No se pudo guardar', duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -262,8 +263,8 @@ async function cargar() {
   loading.value = true
   errorApi.value = null
   try {
-    const { data: liqData } = await api.get('/liquidaciones-api/proyectos')
-    filas.value = (liqData || [])
+    const liq = await liquidacionesApi.listarProyectos()
+    filas.value = (liq || [])
       .filter(r => TIPOS_INCLUIDOS.includes(r.tipo_proyecto) && r.estado === ESTADO_OPERATIVA)
       .map(r => {
         // Los ids de Quoia son de los subproyectos, no del proyecto -- viven
@@ -285,7 +286,7 @@ async function cargar() {
       })
       .sort((a, b) => a.nombre_comercial.localeCompare(b.nombre_comercial))
   } catch (e) {
-    errorApi.value = e.response?.data?.detail || 'No se pudo cargar la configuración de liquidaciones.'
+    errorApi.value = e.data?.detail || 'No se pudo cargar la configuración de liquidaciones.'
     filas.value = []
   } finally {
     loading.value = false

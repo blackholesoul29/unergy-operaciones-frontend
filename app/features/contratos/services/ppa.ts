@@ -2,10 +2,17 @@
 import type {
   CompromisoEnergiaPpa,
   ContratoPpa,
+  PayloadAsic,
+  PayloadAsicModificacion,
+  PayloadAsicTerminacion,
+  PayloadAsignarResponsablesPpa,
   PayloadPpa,
+  PayloadResponsablePpa,
   PlantasInscritasPorMes,
   RegistroAsic,
   ResponsablePpa,
+  RespuestaAsicOperacion,
+  RespuestaBackfillAsic,
   TarifaPpa,
 } from '~/features/contratos/types'
 import { comoLista, type ListaODirecto } from '~/types/api'
@@ -20,8 +27,14 @@ const RUTAS = {
   compromisos: (id: ContratoPpa['id']) => `${BASE}/${id}/compromisos`,
   proyectosVinculados: (id: ContratoPpa['id']) => `${BASE}/${id}/proyectos`,
   responsables: `${BASE}/responsables`,
+  responsable: (id: ResponsablePpa['id']) => `${BASE}/responsables/${id}`,
+  responsablesAsignar: `${BASE}/responsables/asignar`,
   asic: '/asic',
   asicItem: (id: RegistroAsic['id']) => `/asic/${id}`,
+  asicTerminacion: '/asic/terminacion',
+  asicModificacion: '/asic/modificacion',
+  asicBackfillNombreInterno: '/asic/backfill-nombre-interno',
+  asicBackfillTerminaciones: '/asic/backfill-terminaciones',
   plantasInscritasPorMes: (id: ContratoPpa['id']) =>
     `/cumplimiento/ppa/${id}/plantas-inscritas-por-mes`,
 } as const
@@ -66,6 +79,25 @@ export class PpaService extends LegacyBaseService {
     return this.get<ResponsablePpa[]>(RUTAS.responsables)
   }
 
+  crearResponsable(payload: PayloadResponsablePpa): Promise<ResponsablePpa> {
+    return this.post<ResponsablePpa>(RUTAS.responsables, payload)
+  }
+
+  actualizarResponsable(
+    id: ResponsablePpa['id'],
+    payload: PayloadResponsablePpa,
+  ): Promise<ResponsablePpa> {
+    return this.patch<ResponsablePpa>(RUTAS.responsable(id), payload)
+  }
+
+  eliminarResponsable(id: ResponsablePpa['id']): Promise<unknown> {
+    return this.delete<unknown>(RUTAS.responsable(id))
+  }
+
+  asignarResponsables(payload: PayloadAsignarResponsablesPpa): Promise<unknown> {
+    return this.post<unknown>(RUTAS.responsablesAsignar, payload)
+  }
+
   listarPlantasInscritasPorMes(id: ContratoPpa['id']): Promise<PlantasInscritasPorMes[]> {
     return this.get<PlantasInscritasPorMes[]>(RUTAS.plantasInscritasPorMes(id))
   }
@@ -86,5 +118,33 @@ export class PpaService extends LegacyBaseService {
 
   eliminarAsic(id: RegistroAsic['id']): Promise<unknown> {
     return this.delete<unknown>(RUTAS.asicItem(id))
+  }
+
+  crearAsic(payload: PayloadAsic): Promise<RegistroAsic> {
+    return this.post<RegistroAsic>(RUTAS.asic, payload)
+  }
+
+  actualizarAsic(id: RegistroAsic['id'], payload: PayloadAsic): Promise<RegistroAsic> {
+    return this.patch<RegistroAsic>(RUTAS.asicItem(id), payload)
+  }
+
+  crearTerminacionAsic(payload: PayloadAsicTerminacion): Promise<RespuestaAsicOperacion> {
+    return this.post<RespuestaAsicOperacion>(RUTAS.asicTerminacion, payload)
+  }
+
+  crearModificacionAsic(payload: PayloadAsicModificacion): Promise<RespuestaAsicOperacion> {
+    return this.post<RespuestaAsicOperacion>(RUTAS.asicModificacion, payload)
+  }
+
+  backfillNombreInterno(dryRun: boolean): Promise<RespuestaBackfillAsic> {
+    return this.post<RespuestaBackfillAsic>(RUTAS.asicBackfillNombreInterno, null, {
+      query: { dry_run: dryRun },
+    })
+  }
+
+  backfillTerminaciones(dryRun: boolean): Promise<RespuestaBackfillAsic> {
+    return this.post<RespuestaBackfillAsic>(RUTAS.asicBackfillTerminaciones, null, {
+      query: { dry_run: dryRun },
+    })
   }
 }

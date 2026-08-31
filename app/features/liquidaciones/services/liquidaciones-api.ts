@@ -16,6 +16,7 @@ import type {
   PayloadConfigLiquidacionProyecto,
   PayloadSubproyectoQuoia,
   PeriodoCiclo,
+  ProyectoLiquidacionApi,
   RespuestaConsumo,
   RespuestaCostos,
   RespuestaDespachos,
@@ -24,6 +25,7 @@ import type {
   ResultadoTarea,
   SubproyectoQuoia,
   TareaEstado,
+  TotalesAcPower,
   VersionCiclo,
 } from '~/features/liquidaciones/types'
 import type { QueryValue } from '@korastd/air'
@@ -50,8 +52,10 @@ const RUTAS = {
   cicloIpp: `${BASE}/ciclo/ipp`,
   ipp: `${BASE}/ipp`,
   cicloDiagnostico: `${BASE}/ciclo/diagnostico`,
+  proyectos: `${BASE}/proyectos`,
   proyecto: (id: number) => `${BASE}/proyectos/${id}`,
   subproyecto: (topic: string) => `${BASE}/subproyectos/${encodeURIComponent(topic)}`,
+  acPower: `${BASE}/ac-power`,
 } as const
 
 const ESPERA_POR_DEFECTO = {
@@ -63,6 +67,16 @@ const dormir = (ms: number) => new Promise((resolver) => setTimeout(resolver, ms
 
 export class LiquidacionesApiService extends LegacyBaseService {
   // ── Proyectos ────────────────────────────────────────────────────────────────
+
+  /** El listado plano de proyectos de esta API, identificados por `nombre_topico`. */
+  listarProyectos(): Promise<ProyectoLiquidacionApi[]> {
+    return this.get<ProyectoLiquidacionApi[]>(RUTAS.proyectos)
+  }
+
+  /** Totales de potencia AC y tópicos que no cruzaron con un proyecto propio. */
+  obtenerAcPower(): Promise<TotalesAcPower> {
+    return this.get<TotalesAcPower>(RUTAS.acPower)
+  }
 
   /**
    * Los códigos SIC de un proyecto se guardan acá, no en la base propia — es la

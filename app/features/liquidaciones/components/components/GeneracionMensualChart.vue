@@ -52,7 +52,8 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend,
 } from 'chart.js'
 import ProgressSpinner from 'primevue/progressspinner'
-import api from '~/core/client'
+import { MonitoreoLegacyService } from '~/features/operaciones/services/monitoreo-legacy'
+import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
 import { formatPeriodo } from '~/features/liquidaciones/utils/liquidaciones'
 import { ChartColumnIcon, SunIcon } from '@lucide/vue'
 
@@ -63,6 +64,9 @@ const props = defineProps({
   proyectoNombre: { type: String, default: '' },
   periodo: { type: String, required: true },   // YYYY-MM-01
 })
+
+const monitoreoLegacyService = new MonitoreoLegacyService()
+const contratosServicioService = new ContratosServicioService()
 
 const loading = ref(false)
 const dias = ref([])
@@ -121,7 +125,7 @@ function ultimoDiaMes(periodo) {
 
 // ── Generación (API de monitoreo en vivo) ─────────────────────────────────────
 async function resolverSub() {
-  const { data } = await api.get('/monitoreo/_legacy', { params: { action: 'getProjects' } })
+  const data = await monitoreoLegacyService.obtenerProyectos()
   const projects = data?.projects ?? []
   const pid = props.proyectoId != null ? String(props.proyectoId) : null
   const nombre = norm(props.proyectoNombre)
@@ -139,9 +143,7 @@ async function cargarGeneracion() {
   try {
     const sub = await resolverSub()
     if (!sub) { mensaje.value = 'Este proyecto no tiene monitoreo en la API de Unergy.'; return }
-    const { data } = await api.get('/monitoreo/_legacy', {
-      params: { action: 'getGeneration', sub_project: sub, date_from: props.periodo, date_to: ultimoDiaMes(props.periodo) },
-    })
+    const data = await monitoreoLegacyService.obtenerGeneracion({ sub_project: sub, date_from: props.periodo, date_to: ultimoDiaMes(props.periodo) })
     if (data && data.ok === false) { mensaje.value = data.error || 'La API de Unergy no devolvió datos.'; return }
     const porDia = new Map()
     for (const it of (Array.isArray(data?.data) ? data.data : [])) {
@@ -150,7 +152,7 @@ async function cargarGeneracion() {
     }
     dias.value = [...porDia.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([date, kwh]) => ({ date, kwh }))
   } catch (e) {
-    mensaje.value = e?.response?.data?.detail || 'No se pudo consultar la generación.'
+    mensaje.value = e?.data?.detail || 'No se pudo consultar la generación.'
   } finally {
     loading.value = false
   }
@@ -174,7 +176,7 @@ async function cargarTarifas() {
   tarifas.representacion = null; tarifas.cgm = null; tarifas.admin = null
   if (!props.proyectoId) return
   try {
-    const { data } = await api.get('/contratos-servicio', { params: { proyecto_id: props.proyectoId } })
+    const data = await contratosServicioService.listar({ proyecto_id: props.proyectoId })
     const contratos = Array.isArray(data) ? data : []
     const anio = Number(props.periodo.split('-')[0])
     for (const c of contratos) {

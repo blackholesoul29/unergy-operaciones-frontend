@@ -1,7 +1,7 @@
 /**
  * Forma verificada contra `FallasListView.vue`, `MonitoreoView.vue`,
  * `FallaDetailView.vue`, `FallaDetalle.vue`, `FallaForm.vue`, `FallaArchivos.vue`,
- * `CalendarioFallas.vue` y `FallasMapView.vue`.
+ * `CalendarioFallas.vue`, `FallasMapView.vue` y `FallaCreateSheet.vue` (mobile).
  */
 
 /** Un ítem de catálogo (`tipos`, `estados`, `prioridades`, `categorias`…): `{id, nombre}` y poco más. */
@@ -26,6 +26,34 @@ export interface FotoFalla {
   id: number
   url?: string
   [clave: string]: unknown
+}
+
+/** Una opción dentro de una categoría de `GET /fallas/estructura` (p.ej. un tipo de evento de red). */
+export interface OpcionCategoriaFalla {
+  codigo: string
+  requiere_detalle?: boolean
+  [clave: string]: unknown
+}
+
+/** Una categoría del árbol de clasificación que arma `FallaCreateSheet.vue` (mobile). */
+export interface CategoriaFalla {
+  codigo: string
+  tipo?: string
+  opciones?: OpcionCategoriaFalla[]
+  opciones_label?: string
+  [clave: string]: unknown
+}
+
+/** `GET /fallas/estructura`: árbol de categorías/subtipos para el formulario de reporte. */
+export interface RespuestaEstructuraFallas {
+  categorias: CategoriaFalla[]
+}
+
+/** `GET /fallas/actividad-hoy` (`MobileResumenView.vue`): fallas creadas y cambios de estado del día. */
+export interface RespuestaActividadHoyFallas {
+  creadas: Falla[]
+  cambios_estado: Falla[]
+  fecha?: string
 }
 
 export interface SeguimientoFalla {
@@ -133,6 +161,7 @@ export interface FiltrosListaFallas {
   proyecto_id?: number
   estado_id?: number
   prioridad_id?: number
+  asignado_a_id?: number
   con_fecha_programada?: boolean
   q?: string
 }

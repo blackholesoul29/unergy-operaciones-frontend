@@ -154,9 +154,13 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { CheckIcon, CirclePlusIcon, LoaderCircleIcon, PlusIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 import { iconoCategoriaFalla } from '~/features/fallas/utils/fallaTitulo'
+
+const fallasService = new FallasService()
+const proyectosService = new ProyectosService()
 
 const props = defineProps({
   open:            { type: Boolean, default: false },
@@ -219,7 +223,7 @@ async function cargarInversores() {
   if (!f.proyecto_id) { inversores.value = []; return }
   cargandoInv.value = true
   try {
-    const { data } = await api.get(`/proyectos/${f.proyecto_id}/inversores`)
+    const data = await proyectosService.listarInversores(f.proyecto_id)
     inversores.value = data ?? []
   } catch { inversores.value = [] }
   finally { cargandoInv.value = false }
@@ -228,18 +232,18 @@ async function agregarInv() {
   invError.value = ''
   if (!nuevoInv.nombre && nuevoInv.potencia_nominal_kw == null) return
   try {
-    await api.post(`/proyectos/${f.proyecto_id}/inversores`,
+    await proyectosService.crearInversor(f.proyecto_id,
       { nombre: nuevoInv.nombre || null, potencia_nominal_kw: nuevoInv.potencia_nominal_kw, orden: inversores.value.length })
     nuevoInv.nombre = ''; nuevoInv.potencia_nominal_kw = null
     await cargarInversores()
-  } catch (e) { invError.value = e.response?.data?.detail || 'No se pudo agregar' }
+  } catch (e) { invError.value = e.data?.detail || 'No se pudo agregar' }
 }
 async function prefillMinigranja() {
   invError.value = ''
   const tipica = [['Inversor 1', 300], ['Inversor 2', 300], ['Inversor 3', 300], ['Inversor 4', 50], ['Inversor 5', 40]]
   for (let i = 0; i < tipica.length; i++) {
-    try { await api.post(`/proyectos/${f.proyecto_id}/inversores`, { nombre: tipica[i][0], potencia_nominal_kw: tipica[i][1], orden: i }) }
-    catch (e) { invError.value = e.response?.data?.detail || 'Error creando inversores'; break }
+    try { await proyectosService.crearInversor(f.proyecto_id, { nombre: tipica[i][0], potencia_nominal_kw: tipica[i][1], orden: i }) }
+    catch (e) { invError.value = e.data?.detail || 'Error creando inversores'; break }
   }
   await cargarInversores()
 }
@@ -267,7 +271,7 @@ watch(() => props.open, async (o) => {
   const media = (props.catalogos.prioridades || []).find(p => p.codigo === 'media')
   if (media) f.prioridad_id = media.id
   if (!estructura.value.length) {
-    try { const { data } = await api.get('/fallas/estructura'); estructura.value = data.categorias ?? [] } catch { /* */ }
+    try { estructura.value = await fallasService.obtenerEstructura() } catch { /* */ }
   }
 })
 
@@ -320,14 +324,14 @@ async function submit() {
       }
     }
 
-    const { data: nueva } = await api.post('/fallas', payload)
+    const nueva = await fallasService.crear(payload)
     if (f.nota.trim()) {
-      try { await api.post(`/fallas/${nueva.id}/seguimientos`, { nota: f.nota.trim() }) } catch { /* no crítico */ }
+      try { await fallasService.crearSeguimiento(nueva.id, { nota: f.nota.trim() }) } catch { /* no crítico */ }
     }
     emit('created', nueva)
     emit('close')
   } catch (e) {
-    error.value = e.response?.data?.detail || 'No se pudo registrar la falla'
+    error.value = e.data?.detail || 'No se pudo registrar la falla'
   } finally {
     saving.value = false
   }

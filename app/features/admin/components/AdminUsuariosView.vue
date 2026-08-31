@@ -152,7 +152,7 @@ async function onSave(payload) {
     dialogVisible.value = false
     load()
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail || 'Error al guardar', duration: 4000 })
+    toast.error('Error', { description: e.data?.detail || 'Error al guardar', duration: 4000 })
   }
 }
 </script>

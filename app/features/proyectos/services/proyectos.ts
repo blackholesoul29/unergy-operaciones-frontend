@@ -47,9 +47,13 @@ const RUTAS = {
 } as const
 
 export class ProyectosService extends LegacyBaseService {
-  async listar({ page = 1, size = 500 } = {}): Promise<ProyectoConDetalle[]> {
+  async listar({
+    page = 1,
+    size = 500,
+    tipo_proyecto,
+  }: { page?: number; size?: number; tipo_proyecto?: string } = {}): Promise<ProyectoConDetalle[]> {
     const data = await this.get<ListaODirecto<ProyectoConDetalle>>(RUTAS.proyectos, {
-      query: { page, size },
+      query: tipo_proyecto ? { page, size, tipo_proyecto } : { page, size },
     })
     return comoLista(data)
   }

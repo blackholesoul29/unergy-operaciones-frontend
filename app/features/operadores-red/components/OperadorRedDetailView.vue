@@ -129,7 +129,7 @@ async function crearContacto() {
     nuevo.value = null
   } catch (e) {
     toast.error('Error', {
-      description: e.response?.data?.detail || 'No se pudo agregar el contacto',
+      description: e.data?.detail || 'No se pudo agregar el contacto',
       duration: 4000,
     })
   }
@@ -144,7 +144,7 @@ async function guardarContacto(contacto) {
     })
   } catch (e) {
     toast.error('Error', {
-      description: e.response?.data?.detail || 'No se pudo guardar el contacto',
+      description: e.data?.detail || 'No se pudo guardar el contacto',
       duration: 4000,
     })
   }

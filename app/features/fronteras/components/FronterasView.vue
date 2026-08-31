@@ -345,7 +345,9 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
-import api from '~/core/client'
+import { FronterasService } from '~/features/fronteras/services/fronteras'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
+import { OperadoresRedService } from '~/features/operadores-red/services/operadores-red'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import InputText from 'primevue/inputtext'
@@ -358,6 +360,9 @@ import { exportarExcel } from '~/utils/exportarExcel'
 import { CheckIcon, FileSpreadsheetIcon, LoaderCircleIcon, PencilIcon, PlusIcon, SearchIcon, Trash2Icon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 
 const confirm = useConfirm()
+const fronterasService = new FronterasService()
+const proyectosService = new ProyectosService()
+const operadoresRedService = new OperadoresRedService()
 
 const route = useRoute()
 const router = useRouter()
@@ -573,12 +578,12 @@ async function saveFrontera() {
   if (!editingFrontera.value || !editForm.value) return
   saving.value = true
   try {
-    await api.patch(`/fronteras/${editingFrontera.value.id}`, editForm.value)
+    await fronterasService.actualizar(editingFrontera.value.id, editForm.value)
     toast.success('Frontera actualizada', { duration: 2000 })
     showEdit.value = false
     await loadData()
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail || 'Error al guardar', duration: 4000 })
+    toast.error('Error', { description: e.data?.detail || 'Error al guardar', duration: 4000 })
   } finally {
     saving.value = false
   }
@@ -597,15 +602,15 @@ async function crearFrontera() {
   creating.value = true
   const body = { ...createForm.value, codigo_frontera: createForm.value.codigo_frontera || null }
   try {
-    await api.post('/fronteras', body)
+    await fronterasService.crear(body)
     toast.success('Frontera creada', { duration: 2500 })
     showCreate.value = false
     await loadData()
   } catch (e) {
-    const detail = e.response?.data?.detail
+    const detail = e.data?.detail
     // Aviso de nombre parecido (409 estructurado): se puede confirmar y crear
     // igual. Distinto de un choque real de columna unica (detail es un string).
-    if (e.response?.status === 409 && detail?.duplicado_nombre) {
+    if (e.status === 409 && detail?.duplicado_nombre) {
       duplicadoInfo.value = detail
       pendingCreatePayload.value = body
       duplicadoVisible.value = true
@@ -623,13 +628,13 @@ async function crearFrontera() {
 async function crearFronteraForzado() {
   forzando.value = true
   try {
-    await api.post('/fronteras', pendingCreatePayload.value, { params: { forzar: true } })
+    await fronterasService.crear(pendingCreatePayload.value, true)
     toast.success('Frontera creada', { duration: 2500 })
     duplicadoVisible.value = false
     showCreate.value = false
     await loadData()
   } catch (e) {
-    const detail = e.response?.data?.detail
+    const detail = e.data?.detail
     toast.error('Error', {
       description: typeof detail === 'string' ? detail : 'No se pudo crear la frontera',
       duration: 4000,
@@ -648,11 +653,11 @@ function deleteFrontera(f) {
     variant: 'destructive',
     onConfirm: async () => {
       try {
-        await api.delete(`/fronteras/${f.id}`)
+        await fronterasService.eliminar(f.id)
         toast.success('Frontera eliminada', { duration: 2000 })
         await loadData()
       } catch (e) {
-        toast.error('Error', { description: e.response?.data?.detail || 'Error al eliminar', duration: 4000 })
+        toast.error('Error', { description: e.data?.detail || 'Error al eliminar', duration: 4000 })
       }
     },
   })
@@ -661,8 +666,7 @@ function deleteFrontera(f) {
 async function loadData() {
   loading.value = true
   try {
-    const { data } = await api.get('/fronteras', { params: { limit: 500 } })
-    fronteras.value = data
+    fronteras.value = await fronterasService.listar({ limit: 500 })
   } catch (e) {
     console.error('Error loading fronteras:', e)
   } finally {
@@ -678,7 +682,7 @@ const proyectosAll = ref([])
 
 async function loadPendientesQuoia() {
   try {
-    const { data } = await api.get('/fronteras/quoia/pendientes')
+    const data = await fronterasService.listarPendientesQuoia()
     pendientesQuoia.value = data.map(p => ({ ...p, _proyectoId: p.proyecto_sugerido_id ?? null, _loading: null }))
   } catch (e) {
     // Gaia sin configurar u otro error -- no bloquea la vista, solo no se muestra el aviso.
@@ -689,8 +693,7 @@ async function loadPendientesQuoia() {
 async function loadProyectosAll() {
   if (proyectosAll.value.length) return
   try {
-    const { data } = await api.get('/proyectos', { params: { size: 500 } })
-    proyectosAll.value = data.items ?? []
+    proyectosAll.value = await proyectosService.listar({ size: 500 })
   } catch {
     proyectosAll.value = []
   }
@@ -705,13 +708,13 @@ function abrirPendientes() {
 async function confirmarPendiente(p) {
   p._loading = 'confirmar'
   try {
-    await api.post(`/fronteras/quoia/pendientes/${p.frt_code}/confirmar`, { proyecto_id: p._proyectoId })
+    await fronterasService.confirmarPendienteQuoia(p.frt_code, p._proyectoId)
     pendientesQuoia.value = pendientesQuoia.value.filter(x => x.frt_code !== p.frt_code)
     toast.success('Frontera agregada', { duration: 2500 })
     await loadData()
   } catch (e) {
     toast.error('Error', {
-      description: e.response?.data?.detail || 'No se pudo agregar la frontera',
+      description: e.data?.detail || 'No se pudo agregar la frontera',
       duration: 4000,
     })
   } finally {
@@ -729,7 +732,7 @@ function ignorarPendiente(p) {
     onConfirm: async () => {
       p._loading = 'ignorar'
       try {
-        await api.post(`/fronteras/quoia/pendientes/${p.frt_code}/ignorar`, {})
+        await fronterasService.ignorarPendienteQuoia(p.frt_code)
         pendientesQuoia.value = pendientesQuoia.value.filter(x => x.frt_code !== p.frt_code)
         toast.success('Ignorada', { duration: 2000 })
       } catch (e) {
@@ -749,8 +752,7 @@ const operadoresRedOptions = computed(() =>
 )
 async function loadOperadoresRed() {
   try {
-    const { data } = await api.get('/operadores-red')
-    operadoresRed.value = Array.isArray(data) ? data : (data.items ?? [])
+    operadoresRed.value = await operadoresRedService.listar()
   } catch { /* graceful degrade -- el select queda vacío */ }
 }
 

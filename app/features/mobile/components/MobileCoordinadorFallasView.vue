@@ -108,7 +108,10 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { ProyectosService } from '~/features/proyectos/services/proyectos'
+import { UsuariosService } from '~/features/admin/services/usuarios'
+import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
 import FallaCreateSheet from '~/features/mobile/components/components/FallaCreateSheet.vue'
@@ -116,6 +119,10 @@ import NotificationsSheet from '~/features/mobile/components/components/Notifica
 import { BellIcon, CircleCheckIcon, LoaderCircleIcon, PlusIcon, SearchIcon, UserPlusIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
+const fallasService = new FallasService()
+const proyectosService = new ProyectosService()
+const usuariosService = new UsuariosService()
+const notificacionesService = new NotificacionesService()
 const fallas = ref([])
 const catalogos = reactive({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
 const proyectos = ref([])
@@ -187,18 +194,18 @@ async function cargar() {
   loading.value = true
   try {
     const [cat, proy, usr] = await Promise.all([
-      api.get('/fallas/catalogos').catch(() => ({ data: { estados: [], prioridades: [], tipos: [], resoluciones: [] } })),
-      api.get('/proyectos', { params: { size: 500 } }).catch(() => ({ data: { items: [] } })),
-      api.get('/usuarios', { params: { size: 200 } }).catch(() => ({ data: { items: [] } })),
+      fallasService.obtenerCatalogos().catch(() => ({ estados: [], prioridades: [], tipos: [], resoluciones: [] })),
+      proyectosService.listar({ size: 500 }).catch(() => []),
+      usuariosService.listar({ size: 200 }).catch(() => []),
     ])
-    Object.assign(catalogos, cat.data)
-    proyectos.value = proy.data.items ?? []
-    const todos = usr.data.items ?? []
+    Object.assign(catalogos, cat)
+    proyectos.value = proy ?? []
+    const todos = usr ?? []
     tecnicos.value = todos.filter((u) => u.rol === 'tecnico')
     await cargarFallas()
   } catch (e) {
     toast.error('Error al cargar fallas', {
-      description: e.response?.data?.detail || e.message,
+      description: e.data?.detail || e.message,
       duration: 4000,
     })
   } finally {
@@ -207,14 +214,14 @@ async function cargar() {
 }
 
 async function cargarFallas() {
-  const primera = await api.get('/fallas', { params: { page: 1, size: 500 } })
-  let items = primera.data.items ?? []
-  const total = primera.data.total ?? items.length
+  const primera = await fallasService.listar({ page: 1, size: 500 })
+  let items = primera.items ?? []
+  const total = primera.total ?? items.length
   const pages = Math.ceil(total / 500)
   if (pages > 1) {
     const rest = await Promise.all(
-      Array.from({ length: pages - 1 }, (_, i) => api.get('/fallas', { params: { page: i + 2, size: 500 } })))
-    for (const r of rest) items = items.concat(r.data.items ?? [])
+      Array.from({ length: pages - 1 }, (_, i) => fallasService.listar({ page: i + 2, size: 500 })))
+    for (const r of rest) items = items.concat(r.items ?? [])
   }
   fallas.value = items
 }
@@ -227,7 +234,7 @@ function onUpdated(falla) {
 function onCreated() { cargarFallas() }
 
 async function fetchUnread() {
-  try { const { data } = await api.get('/notificaciones/count'); unreadCount.value = data.no_leidas ?? data.count ?? data.unread ?? 0 }
+  try { unreadCount.value = await notificacionesService.contarNoLeidas() }
   catch { /* silencioso */ }
 }
 

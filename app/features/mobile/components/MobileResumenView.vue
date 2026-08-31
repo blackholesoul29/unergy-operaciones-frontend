@@ -96,7 +96,9 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, h } from 'vue'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
+import { UsuariosService } from '~/features/admin/services/usuarios'
+import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
 import { ArrowRightIcon, ChartColumnIcon, ChevronRightIcon, CirclePlusIcon, GaugeIcon, LoaderCircleIcon, RefreshCwIcon, WrenchIcon, ZapIcon } from '@lucide/vue'
@@ -148,6 +150,10 @@ const TopCard = {
   },
 }
 
+const fallasService = new FallasService()
+const usuariosService = new UsuariosService()
+const generacionSolarService = new GeneracionSolarService()
+
 // ── Estado ───────────────────────────────────────────────────────────────────
 const gen          = reactive({ medidor: null, inversor: null, fecha: null })
 const fallas       = reactive({ creadas: [], cambios_estado: [], fecha: null })
@@ -191,7 +197,7 @@ function estadoStyle(estado) {
 async function cargarGen(force = false) {
   loadingGen.value = true
   try {
-    const { data } = await api.get('/generacion-solar/resumen-dia')
+    const data = await generacionSolarService.obtenerResumenDia()
     gen.medidor = data.medidor || { total: 0, top: [] }
     gen.inversor = data.inversor || { total: 0, top: [] }
     gen.fecha = data.fecha
@@ -207,7 +213,7 @@ async function cargarGen(force = false) {
 async function cargarFallas() {
   loadingFallas.value = true
   try {
-    const { data } = await api.get('/fallas/actividad-hoy')
+    const data = await fallasService.obtenerActividadHoy()
     fallas.creadas = data.creadas || []
     fallas.cambios_estado = data.cambios_estado || []
     fallas.fecha = data.fecha
@@ -221,11 +227,11 @@ async function cargarFallas() {
 async function cargarCatalogos() {
   try {
     const [cat, usr] = await Promise.all([
-      api.get('/fallas/catalogos'),
-      api.get('/usuarios', { params: { size: 200 } }).catch(() => ({ data: { items: [] } })),
+      fallasService.obtenerCatalogos(),
+      usuariosService.listar({ size: 200 }).catch(() => []),
     ])
-    Object.assign(catalogos, cat.data)
-    usuarios.value = usr.data.items ?? []
+    Object.assign(catalogos, cat)
+    usuarios.value = usr ?? []
   } catch { /* no crítico */ }
 }
 

@@ -232,7 +232,6 @@ import { VERSIONES, VERSION_INICIAL, AccionCiclo } from '~/features/liquidacione
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
 
 const liquidacionesApi = new LiquidacionesApiService()
-import api from '~/core/client'
 import { ChevronLeftIcon, ChevronRightIcon, CircleXIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon, UploadIcon, WalletIcon, ZapIcon } from '@lucide/vue'
 
 
@@ -431,8 +430,8 @@ function fmtNum(v) {
 // ── Catálogos de los filtros ─────────────────────────────────────────────────
 async function cargarOpciones() {
   try {
-    const [{ data: proyectos }, catalogos] = await Promise.all([
-      api.get('/liquidaciones-api/proyectos'),
+    const [proyectos, catalogos] = await Promise.all([
+      liquidacionesApi.listarProyectos(),
       liquidacionesApi.listarCatalogos(),
     ])
     // La API identifica por tópico, pero se muestra el nombre de esta base.

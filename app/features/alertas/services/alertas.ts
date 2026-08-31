@@ -2,9 +2,9 @@
  * El centro de alertas: los KPIs operativos que resumen la portada y las
  * inconsistencias de contratos PPA en GESCON.
  *
- * Sobre `LegacyBaseService` porque lo consume el cliente axios compartido
- * (`~/core/client.ts`), como el resto de la app hoy — pasa a `BaseService`
- * cuando ese resto migre.
+ * Sobre `LegacyBaseService` porque necesita su interceptor de sesión
+ * (`~/core/client.ts`) — pasa a `BaseService` en la fase 3, cuando la sesión
+ * se mueva a cookies httpOnly.
  */
 import type { KpisOperativos } from '~/types/dashboard'
 import type { AlertasContratosPpa } from '~/features/alertas/types'

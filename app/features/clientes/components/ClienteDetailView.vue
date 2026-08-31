@@ -644,7 +644,7 @@ async function guardarDocumento() {
     toast.success('Documento guardado', { duration: 3000 })
     await cargar()
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
+    toast.error('Error', { description: e.data?.detail, duration: 4000 })
   } finally {
     guardando.value = false
   }
@@ -672,7 +672,7 @@ async function doDelete() {
     toast.success('Cliente eliminado', { duration: 3000 })
     router.push('/clientes')
   } catch (e) {
-    const detail = e.response?.data?.detail || 'Error al eliminar'
+    const detail = e.data?.detail || 'Error al eliminar'
     toast.error('No se pudo eliminar', { description: detail, duration: 5000 })
   } finally {
     deleting.value = false
@@ -725,7 +725,7 @@ async function loadRelatedData(tab) {
     }
   } catch (e) {
     toast.error('No se pudo cargar', {
-      description: e.response?.data?.detail || 'Intenta de nuevo en un momento',
+      description: e.data?.detail || 'Intenta de nuevo en un momento',
       duration: 4000,
     })
   } finally {
@@ -808,7 +808,7 @@ async function guardarTasa() {
     toast.success('Tasa de servicio guardada', { duration: 3000 })
     await loadTasasServicio()
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail, duration: 4000 })
+    toast.error('Error', { description: e.data?.detail, duration: 4000 })
   } finally {
     guardando.value = false
   }

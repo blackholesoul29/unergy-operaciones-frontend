@@ -34,6 +34,17 @@ export interface CompromisoEnergiaPpa {
 export interface ResponsablePpa {
   id: number
   nombre: string
+  incluir_en_cumplimiento?: boolean
+}
+
+export interface PayloadResponsablePpa {
+  nombre: string
+  incluir_en_cumplimiento: boolean
+}
+
+export interface PayloadAsignarResponsablesPpa {
+  contrato_ids: number[]
+  responsable_id: number | null
 }
 
 export interface ProyectoPpaResumen {
@@ -97,6 +108,75 @@ export interface RegistroAsic {
   codigo_sic_contrato?: string
   contrato_interno?: string
   fecha_fin?: string | null
+  [clave: string]: unknown
+}
+
+/** `POST /asic`, `PATCH /asic/:id` — un registro GESCON/ASIC (forma libre, `GesconView.vue`). */
+export interface PayloadAsic {
+  codigo_sic_contrato?: string | null
+  codigo_sic_vendedor?: string | null
+  codigo_sic_comprador?: string | null
+  cedula_agente_vendedor?: string | null
+  cedula_agente_comprador?: string | null
+  contrato_interno?: string | null
+  nombre_interno?: string | null
+  requerimiento_asic?: string | null
+  nombre_contacto_solicitante?: string | null
+  tipo_asignacion?: string | null
+  link_archivo?: string | null
+  observaciones?: string | null
+  modalidad_pago?: string | null
+  fecha_solicitud?: string | null
+  fecha_inicio?: string | null
+  fecha_fin?: string | null
+  porcentaje_despacho?: number | null
+  porcentaje_fncer?: number | null
+  proyecto_id?: number | null
+  reemplaza_anterior?: boolean
+  es_duplicado?: boolean
+  uso_del_recurso?: boolean
+  [clave: string]: unknown
+}
+
+/** `POST /asic/terminacion` — cierra la vigencia de un contrato ASIC (`GesconTerminacionForm.vue`). */
+export interface PayloadAsicTerminacion {
+  codigo_sic_contrato: string
+  fecha_terminacion: string | null
+  requerimiento_asic?: string | null
+  cedula_agente_vendedor?: string | null
+  cedula_agente_comprador?: string | null
+  estado_solicitud?: string
+  fecha_solicitud?: string | null
+  link_archivo?: string | null
+  observaciones?: string | null
+}
+
+/** `POST /asic/modificacion` — nueva versión de un contrato ASIC vigente (`GesconModificacionForm.vue`). */
+export interface PayloadAsicModificacion {
+  codigo_sic_contrato: string
+  fecha_entrada: string | null
+  requerimiento_asic: string
+  fecha_fin?: string | null
+  proyecto_id?: number | null
+  porcentaje_despacho?: number | null
+  modalidad?: string
+  proyecto_saliente_id?: number | null
+  estado_solicitud?: string
+  fecha_solicitud?: string | null
+  link_archivo?: string | null
+  observaciones?: string | null
+}
+
+/** Respuesta de `/asic/terminacion` y `/asic/modificacion`: el registro creado + un resumen legible. */
+export interface RespuestaAsicOperacion {
+  resumen?: string
+  [clave: string]: unknown
+}
+
+/** `POST /asic/backfill-nombre-interno` y `/asic/backfill-terminaciones` (con `dry_run`). */
+export interface RespuestaBackfillAsic {
+  a_actualizar?: number
+  a_recortar?: number
   [clave: string]: unknown
 }
 

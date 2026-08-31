@@ -136,7 +136,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import api from '~/core/client'
+import { FallasService } from '~/features/fallas/services/fallas'
 import { CameraIcon, CircleCheckIcon, FlagIcon, ImageIcon, ImagesIcon, LoaderCircleIcon, RotateCcwIcon, SendIcon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
@@ -147,6 +147,7 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'updated'])
 
+const fallasService = new FallasService()
 const fa        = ref(null)
 const saving    = ref(false)
 const addingSeg = ref(false)
@@ -202,7 +203,7 @@ function close() { emit('close') }
 async function refrescar() {
   if (!fa.value) return
   try {
-    const { data } = await api.get(`/fallas/${fa.value.id}`)
+    const data = await fallasService.obtener(fa.value.id)
     fa.value = data
     hallazgos.value = data.causa_raiz || ''
     solucion.value  = data.acciones_correctivas || ''
@@ -213,7 +214,7 @@ async function refrescar() {
 async function cargarArchivos() {
   if (!fa.value) return
   try {
-    const { data } = await api.get(`/fallas/${fa.value.id}/archivos`)
+    const data = await fallasService.listarArchivos(fa.value.id)
     archivos.value = Array.isArray(data) ? data : []
   } catch { archivos.value = [] }
 }
@@ -222,12 +223,12 @@ async function patch(payload) {
   if (!fa.value) return false
   saving.value = true
   try {
-    const { data } = await api.patch(`/fallas/${fa.value.id}`, payload)
+    const data = await fallasService.actualizar(fa.value.id, payload)
     fa.value = data
     emit('updated', data)
     return true
   } catch (e) {
-    toast.error('No se pudo guardar', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('No se pudo guardar', { description: e.data?.detail, duration: 3000 })
     return false
   } finally {
     saving.value = false
@@ -247,12 +248,12 @@ async function agregarNota() {
   if (!fa.value || !nota.value.trim()) return
   addingSeg.value = true
   try {
-    await api.post(`/fallas/${fa.value.id}/seguimientos`, { nota: nota.value.trim() })
+    await fallasService.crearSeguimiento(fa.value.id, { nota: nota.value.trim() })
     nota.value = ''
     await refrescar()
     toast.success('Nota agregada', { duration: 2000 })
   } catch (e) {
-    toast.error('Error', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('Error', { description: e.data?.detail, duration: 3000 })
   } finally {
     addingSeg.value = false
   }
@@ -282,20 +283,15 @@ async function _subirArchivo(file) {
   uploadError.value = ''
   uploadPct.value = 10
   try {
-    const form = new FormData()
-    form.append('archivo', file, file.name)
     uploadPct.value = 40
-    const { data } = await api.post(`/fallas/${fa.value.id}/archivos`, form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (e) => {
-        if (e.total) uploadPct.value = Math.round(10 + (e.loaded / e.total) * 80)
-      },
+    const data = await fallasService.subirArchivo(fa.value.id, file, (pct) => {
+      uploadPct.value = Math.round(10 + pct * 0.8)
     })
     uploadPct.value = 100
     archivos.value.push(data)
     toast.success('Foto guardada en Drive', { duration: 2000 })
   } catch (e) {
-    const msg = e.response?.data?.detail || 'Error al subir la foto. Verifica tu conexión.'
+    const msg = e.data?.detail || 'Error al subir la foto. Verifica tu conexión.'
     uploadError.value = msg
     toast.error('Error al subir foto', { description: msg, duration: 4000 })
   } finally {
@@ -307,11 +303,11 @@ async function _subirArchivo(file) {
 async function eliminarFoto(archivo) {
   if (!fa.value) return
   try {
-    await api.delete(`/fallas/${fa.value.id}/archivos/${archivo.id}`)
+    await fallasService.eliminarArchivo(fa.value.id, archivo.id)
     archivos.value = archivos.value.filter((a) => a.id !== archivo.id)
     toast.info('Foto eliminada', { duration: 2000 })
   } catch (e) {
-    toast.error('No se pudo eliminar', { description: e.response?.data?.detail, duration: 3000 })
+    toast.error('No se pudo eliminar', { description: e.data?.detail, duration: 3000 })
   }
 }
 

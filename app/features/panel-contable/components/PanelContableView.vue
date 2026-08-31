@@ -708,7 +708,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import XLSX from 'xlsx-js-style'
-import api from '~/core/client'
+import { PanelContableService } from '~/features/panel-contable/services/panel-contable'
 import { toast } from 'vue-sonner'
 import Dialog from 'primevue/dialog'
 import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon, SaveIcon, SearchIcon, TriangleAlertIcon, UploadIcon, ZapIcon } from '@lucide/vue'
@@ -800,6 +800,7 @@ const fuenteLabel = (f) => (FUENTES[f]?.label) || f
 const fuenteTitle = (f) => (FUENTES[f]?.title) || f
 const fuenteOrigen = (f) => (FUENTES[f]?.origen) || 'de un módulo'
 const loading = ref(false)
+const panelContableService = new PanelContableService()
 
 // ── Armar desde la API y contrastar ──────────────────────────────────────────
 // El Panel se arma desde `income_statement_data`; el Excel quedó solo para NEU y
@@ -814,9 +815,7 @@ async function armarPeriodo() {
   armando.value = true
   resultado.value = null
   try {
-    const { data } = await api.post('/panel-contable/cargar-periodo', {
-      periodo: periodo.value, tipo: tipoDatos.value,
-    })
+    const data = await panelContableService.armarPeriodo({ periodo: periodo.value, tipo: tipoDatos.value })
     resultado.value = data
     toast.add({
       severity: 'success', summary: `${data.armados} paneles armados`,
@@ -839,7 +838,7 @@ async function armarPeriodo() {
   } catch (e) {
     toast.add({
       severity: 'error', summary: 'No se pudo armar el período',
-      detail: e?.response?.data?.detail || e.message, life: 8000,
+      detail: e?.data?.detail || e.message, life: 8000,
     })
   } finally {
     armando.value = false
@@ -850,14 +849,12 @@ async function verContraste() {
   if (!periodo.value) return
   contrastando.value = true
   try {
-    const { data } = await api.get('/panel-contable/contraste', {
-      params: { periodo: periodo.value, tipo: tipoDatos.value },
-    })
+    const data = await panelContableService.obtenerContraste({ periodo: periodo.value, tipo: tipoDatos.value })
     contraste.value = data
   } catch (e) {
     toast.add({
       severity: 'error', summary: 'No se pudo contrastar',
-      detail: e?.response?.data?.detail || e.message, life: 8000,
+      detail: e?.data?.detail || e.message, life: 8000,
     })
   } finally {
     contrastando.value = false
@@ -867,10 +864,7 @@ async function verContraste() {
 /** Descarga el ER que generamos nosotros, del proyecto o de un inversionista. */
 async function descargarEr(panel, inversionista = null) {
   try {
-    const { data } = await api.get(`/panel-contable/${panel.id}/estado-resultados`, {
-      params: inversionista ? { inversionista } : {},
-      responseType: 'blob',
-    })
+    const data = await panelContableService.descargarEstadoResultados(panel.id, inversionista)
     const url = URL.createObjectURL(data)
     const a = document.createElement('a')
     a.href = url
@@ -881,7 +875,7 @@ async function descargarEr(panel, inversionista = null) {
   } catch (e) {
     toast.add({
       severity: 'error', summary: 'No se pudo generar el ER',
-      detail: e?.response?.data?.detail || e.message, life: 6000,
+      detail: e?.data?.detail || e.message, life: 6000,
     })
   }
 }
@@ -894,7 +888,7 @@ const consInfo = ref(null)   // { ingresos:{usados,siguiente}, costos:{...} } de
 
 async function cargarConsInfo () {
   try {
-    const { data } = await api.get('/panel-contable/consecutivos-usados')
+    const data = await panelContableService.obtenerConsecutivosUsados()
     consInfo.value = data
   } catch { consInfo.value = null }
 }
@@ -1068,26 +1062,21 @@ function pickSoporte (p, ln) {
   input.click()
 }
 async function subirSoporte (p, ln, file) {
-  const fd = new FormData()
-  fd.append('archivo', file)
-  fd.append('grupo', ln.grupo)
-  fd.append('concepto', ln.concepto)
   subiendoSoporte.value = sopKey(ln)
   try {
-    const { data } = await api.post(`/panel-contable/${p.id}/soporte`, fd,
-      { headers: { 'Content-Type': 'multipart/form-data' } })
+    const data = await panelContableService.subirSoporte(p.id, { archivo: file, grupo: ln.grupo, concepto: ln.concepto })
     aplicarSoporte(p, ln.grupo, ln.concepto, { archivo_url: data.archivo_url, archivo_nombre: data.archivo_nombre })
   } catch (e) {
-    alert('No se pudo subir el soporte: ' + (e?.response?.data?.detail || e.message || e))
+    alert('No se pudo subir el soporte: ' + (e?.data?.detail || e.message || e))
   } finally { subiendoSoporte.value = null }
 }
 async function eliminarSoporte (p, ln) {
   if (!confirm(`¿Quitar el soporte de "${ln.concepto}"? (el archivo queda en Drive)`)) return
   try {
-    await api.delete(`/panel-contable/${p.id}/soporte`, { params: { grupo: ln.grupo, concepto: ln.concepto } })
+    await panelContableService.eliminarSoporte(p.id, ln.grupo, ln.concepto)
     aplicarSoporte(p, ln.grupo, ln.concepto, null)
   } catch (e) {
-    alert('No se pudo quitar el soporte: ' + (e?.response?.data?.detail || e.message || e))
+    alert('No se pudo quitar el soporte: ' + (e?.data?.detail || e.message || e))
   }
 }
 
@@ -1115,7 +1104,7 @@ async function cargarPaneles () {
   loading.value = true
   cargaError.value = false
   try {
-    const { data } = await api.get('/panel-contable', { params: { periodo: periodo.value, tipo: tipoDatos.value } })
+    const data = await panelContableService.listar({ periodo: periodo.value, tipo: tipoDatos.value })
     paneles.value = data.paneles || []
     paneles.value.forEach((p, i) => { if (open[p.id] === undefined) open[p.id] = (i === 0 && esActivo(p)) })
     cargarClasMap()   // para el filtro por tipo de liquidación (no bloquea el render)
@@ -1139,7 +1128,7 @@ async function cargarPaneles () {
 async function cargarClasMap () {
   if (!periodo.value) return
   try {
-    const { data } = await api.get('/panel-contable/clasificacion', { params: { periodo: periodo.value } })
+    const data = await panelContableService.obtenerClasificacion(periodo.value)
     for (const k in clasMap) delete clasMap[k]
     for (const c of (data.proyectos || [])) clasMap[c.proyecto_id] = c.tipo
   } catch { /* el filtro por tipo queda inactivo si falla */ }
@@ -1149,7 +1138,7 @@ async function cargarDiferencia () {
   if (!periodo.value) { diff.value = {}; return }
   loading.value = true
   try {
-    const { data } = await api.get('/panel-contable/diferencia', { params: { periodo: periodo.value } })
+    const data = await panelContableService.obtenerDiferencia(periodo.value)
     diff.value = data
   } catch (e) {
     toast.error('Error', { description: 'No se pudo cargar la diferencia', duration: 4000 })
@@ -1163,7 +1152,7 @@ async function cargarClasificacion () {
   clasLoading.value = true
   clasDirty.value = false
   try {
-    const { data } = await api.get('/panel-contable/clasificacion', { params: { periodo: periodo.value } })
+    const data = await panelContableService.obtenerClasificacion(periodo.value)
     clasProyectos.value = (data.proyectos || []).map(p => ({ ...p }))
   } catch (e) {
     toast.error('Error', { description: 'No se pudo cargar la clasificación', duration: 4000 })
@@ -1176,7 +1165,7 @@ async function guardarClasificacion () {
   if (!periodo.value) return
   clasSaving.value = true
   try {
-    await api.post('/panel-contable/clasificacion', {
+    await panelContableService.guardarClasificacion({
       periodo: periodo.value,
       asignaciones: clasProyectos.value.map(c => ({ proyecto_id: c.proyecto_id, tipo: c.tipo })),
     })
@@ -1239,7 +1228,7 @@ async function onErSelected (e) {
   fd.append('tipo', tipoSubida)
   fd.append('tipo_carga', tipoCargaConfirm.value)
   try {
-    const { data } = await api.post('/panel-contable/cargar-er', fd)
+    const data = await panelContableService.cargarEr(fd)
     rechazados.value = data.rechazados || []
     const partes = []
     if (data.cargados?.length) partes.push(`<b>${data.cargados.length}</b> cargados`)
@@ -1260,7 +1249,7 @@ async function onErSelected (e) {
     }
   } catch (err) {
     toast.error('Error', {
-      description: err.response?.data?.detail || 'Fallo al procesar ER',
+      description: err.data?.detail || 'Fallo al procesar ER',
       duration: 5000,
     })
   } finally {
@@ -1277,7 +1266,7 @@ function _aplicarLoteFlags (campos, val, trasReasignar = true) {
   paneles.value.forEach(p => campos.forEach(c => { p[c] = val }))
   Promise.all(paneles.value.map(p => {
     const payload = Object.fromEntries(campos.map(c => [c, p[c]]))
-    return api.patch(`/panel-contable/${p.id}`, payload).then(() => null).catch(() => p.id)
+    return panelContableService.actualizarPanel(p.id, payload).then(() => null).catch(() => p.id)
   })).then(res => {
     const fallidos = new Set(res.filter(Boolean))
     if (fallidos.size) {
@@ -1306,7 +1295,7 @@ async function onFlag (p) {
   // valor previo para revertir localmente: si el PATCH falla, resincronizamos desde
   // el backend (autoritativo) para que el checkbox refleje lo realmente guardado.
   try {
-    await api.patch(`/panel-contable/${p.id}`, {
+    await panelContableService.actualizarPanel(p.id, {
       liquidar_ingresos: p.liquidar_ingresos,
       liquidar_costos: p.liquidar_costos,
       generar_mandatos: p.generar_mandatos,
@@ -1328,7 +1317,7 @@ async function reasignar (soloFaltantes = true) {
     // La respuesta trae 'asignados' con los consecutivos de cada panel, así que
     // actualizamos en memoria SIN un segundo GET completo (antes: POST + GET =
     // triple round-trip al entrar/cambiar de pestaña).
-    const { data } = await api.post('/panel-contable/reasignar-consecutivos', {
+    const data = await panelContableService.reasignarConsecutivos({
       periodo: periodo.value,
       tipo: tipoDatos.value,
       consecutivo_ingresos_inicial: Number(consIngIni.value) || 0,
@@ -1366,7 +1355,7 @@ async function cambiarCelda (p, ln, texto) {
   }
   const [, hoja, celda] = m
   try {
-    const { data } = await api.post('/panel-contable/mapeo-celda', {
+    const data = await panelContableService.mapearCelda({
       proyecto_id: p.proyecto_id,
       periodo: periodo.value,
       tipo: tipoDatos.value,
@@ -1381,7 +1370,7 @@ async function cambiarCelda (p, ln, texto) {
     })
   } catch (err) {
     toast.error('Error', {
-      description: err.response?.data?.detail || 'No se pudo remapear la celda',
+      description: err.data?.detail || 'No se pudo remapear la celda',
       duration: 4500,
     })
   }
@@ -1399,7 +1388,7 @@ async function renombrarFuente (p, ln, nuevaEtiqueta) {
   nuevaEtiqueta = String(nuevaEtiqueta).trim()
   if (!nuevaEtiqueta || nuevaEtiqueta === ln.concepto) return
   try {
-    const { data } = await api.post('/panel-contable/alias-fuente', {
+    const data = await panelContableService.renombrarFuente({
       proyecto_id: p.proyecto_id,
       periodo: periodo.value,
       tipo: tab.value,
@@ -1410,7 +1399,7 @@ async function renombrarFuente (p, ln, nuevaEtiqueta) {
     toast.success('Fuente renombrada', { description: nuevaEtiqueta, duration: 2500 })
   } catch (err) {
     toast.error('Error', {
-      description: err.response?.data?.detail || 'No se pudo renombrar la fuente',
+      description: err.data?.detail || 'No se pudo renombrar la fuente',
       duration: 4500,
     })
   }
@@ -1428,7 +1417,7 @@ async function agregarFuente (p) {
   }
   const [, hoja, celda] = m
   try {
-    const { data } = await api.post('/panel-contable/fuente-ingreso', {
+    const data = await panelContableService.agregarFuenteIngreso({
       proyecto_id: p.proyecto_id,
       periodo: periodo.value,
       tipo: tab.value,
@@ -1440,7 +1429,7 @@ async function agregarFuente (p) {
     toast.success('Fuente agregada', { description: String(etiqueta).trim(), duration: 2500 })
   } catch (err) {
     toast.error('Error', {
-      description: err.response?.data?.detail || 'No se pudo agregar la fuente',
+      description: err.data?.detail || 'No se pudo agregar la fuente',
       duration: 4500,
     })
   }
@@ -1449,19 +1438,17 @@ async function agregarFuente (p) {
 async function quitarFuente (p, ln) {
   if (!window.confirm('¿Quitar la fuente "' + ln.concepto + '"?')) return
   try {
-    const { data } = await api.delete('/panel-contable/fuente-ingreso', {
-      data: {
-        proyecto_id: p.proyecto_id,
-        periodo: periodo.value,
-        tipo: tab.value,
-        columna_origen: ln.origen || (ln.hoja + '!' + ln.celda),
-      },
+    const data = await panelContableService.quitarFuenteIngreso({
+      proyecto_id: p.proyecto_id,
+      periodo: periodo.value,
+      tipo: tab.value,
+      columna_origen: ln.origen || (ln.hoja + '!' + ln.celda),
     })
     _reemplazarPanel(p, data)
     toast.success('Fuente quitada', { description: ln.concepto, duration: 2500 })
   } catch (err) {
     toast.error('Error', {
-      description: err.response?.data?.detail || 'No se pudo quitar la fuente',
+      description: err.data?.detail || 'No se pudo quitar la fuente',
       duration: 4500,
     })
   }
@@ -1473,7 +1460,7 @@ async function guardar (p) {
     lineas.push({ id: l.id, valor_cop: Number(l.valor_cop) || 0, comprobante_contable: l.comprobante_contable })
   }))
   try {
-    await api.patch(`/panel-contable/${p.id}`, { lineas })
+    await panelContableService.actualizarPanel(p.id, { lineas })
     dirty[p.id] = false
     savedAt[p.id] = true
     toast.success('Guardado', { description: p.proyecto, duration: 2500 })
