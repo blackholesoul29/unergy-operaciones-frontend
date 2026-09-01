@@ -389,7 +389,6 @@ import Select from 'primevue/select'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import ProgressSpinner from 'primevue/progressspinner'
-import * as XLSX from 'xlsx'
 import { useRouter } from 'vue-router'
 import { MonitoreoLegacyService } from '~/features/operaciones/services/monitoreo-legacy'
 import { FallasService } from '~/features/fallas/services/fallas'
@@ -986,8 +985,9 @@ const tablaFilas = computed(() => {
 })
 
 // ── Export Excel ─────────────────────────────────────────────────────
-function exportarExcel() {
+async function exportarExcel() {
   try {
+    const XLSX = await import('xlsx')
     const wb = XLSX.utils.book_new()
 
     // Hoja 1: Resumen

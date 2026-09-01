@@ -707,7 +707,6 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
-import XLSX from 'xlsx-js-style'
 import { PanelContableService } from '~/features/panel-contable/services/panel-contable'
 import { toast } from 'vue-sonner'
 import Dialog from 'primevue/dialog'
@@ -1475,7 +1474,8 @@ const _TINTE_DOC = {
   Costos:  { fill: 'FAEEDA', text: '854F0B' },
   Factura: { fill: 'EEEDFE', text: '3C3489' },
 }
-function exportarExcel () {
+async function exportarExcel () {
+  const XLSX = await import('xlsx-js-style')
   const gruposBloque = fBloque.value ? _DOC_DE_BLOQUE[fBloque.value] : null
   const rows = []
   for (const p of panelesFiltrados.value) {
