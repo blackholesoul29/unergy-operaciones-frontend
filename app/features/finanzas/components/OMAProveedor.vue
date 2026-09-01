@@ -240,6 +240,7 @@
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { toast } from 'vue-sonner'
 import { OmService } from '~/features/finanzas/services/om'
+import { formatCOP } from '~/utils/currency'
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleCheckIcon, CircleXIcon, CloudUploadIcon, DownloadIcon, ExternalLinkIcon, FileTextIcon, InboxIcon, LoaderCircleIcon, PaperclipIcon, TriangleAlertIcon } from '@lucide/vue'
 
 
@@ -374,11 +375,6 @@ async function subirFactura() {
   } finally {
     subiendoFactura.value = false
   }
-}
-
-function formatCOP(v) {
-  if (v == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
 }
 
 async function cargarDatos() {

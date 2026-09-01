@@ -469,6 +469,7 @@ import NuevoClienteDialog from '~/features/contratos/components/NuevoClienteDial
 import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { ClientesService } from '~/features/clientes/services/clientes'
+import { formatCOP } from '~/utils/currency'
 import { ArrowLeftIcon, ArrowRightIcon, CheckIcon, LinkIcon, PencilIcon, PlusIcon, Trash2Icon, UsersIcon } from '@lucide/vue'
 
 const contratosServicioService = new ContratosServicioService()
@@ -711,11 +712,6 @@ const arrendadorDialog = reactive({
     anticipo_pagado_desde: null, anticipo_pagado_hasta: null, observaciones: '',
   },
 })
-
-function formatCOP(v) {
-  if (v == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
-}
 
 async function cargarArrendadoresWizard() {
   if (!contratoIdCreado.value) { arrendadores.value = []; return }

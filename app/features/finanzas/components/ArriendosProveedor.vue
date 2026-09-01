@@ -119,6 +119,7 @@
 <script setup>
 import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { ArriendosCalculoService } from '~/features/finanzas/services/arriendos-calculo'
+import { formatCOP } from '~/utils/currency'
 import { CheckIcon, ChevronLeftIcon, ChevronRightIcon, ExternalLinkIcon, FileTextIcon, InboxIcon, SaveIcon, XIcon } from '@lucide/vue'
 
 const arriendosCalculoService = new ArriendosCalculoService()
@@ -140,11 +141,6 @@ const periodoLabel = computed(() => {
 })
 
 function cambiarMes(delta) { periodoOffset.value += delta }
-
-function formatCOP(v) {
-  if (v == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
-}
 
 // ── Datos (API) — solo lectura de lo que Operaciones incluyó ────────────────────
 const filas = ref([])

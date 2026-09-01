@@ -494,6 +494,7 @@ import { toast } from 'vue-sonner'
 import { OmService } from '~/features/finanzas/services/om'
 import DocumentoIcon  from '~/features/finanzas/components/DocumentoIcon.vue'
 import { parseCOP }   from '~/utils/parseCOP'
+import { formatCOP } from '~/utils/currency'
 import { ChartColumnIcon, ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, CircleIcon, ClockIcon, DownloadIcon, ExternalLinkIcon, FileTextIcon, InfoIcon, LoaderCircleIcon, MessageSquareIcon, SaveIcon, SearchIcon, TableIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 
 
@@ -663,11 +664,6 @@ const todosMarcadosSeccion = (items) => {
 }
 function toggleTodosSeccion(items, checked) {
   seccionHabilitadas(items).forEach(f => { seleccion[f.contrato_id] = checked })
-}
-
-function formatCOP(v) {
-  if (v == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
 }
 
 // Valor a mostrar/guardar: override local dirty → valor del backend (ya resuelto)
