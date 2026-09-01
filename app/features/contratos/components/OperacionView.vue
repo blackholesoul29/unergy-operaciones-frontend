@@ -1050,7 +1050,6 @@
 import { ArrowLeftIcon, BoxIcon, BuildingIcon, CalculatorIcon, CalendarIcon, CheckIcon, ChevronDownIcon, CirclePlusIcon, CreditCardIcon, DatabaseIcon, DollarSignIcon, ExternalLinkIcon, EyeIcon, EyeOffIcon, FileIcon, FileInputIcon, FileOutputIcon, FileSpreadsheetIcon, FileTextIcon, FilterIcon, GaugeIcon, HouseIcon, LinkIcon, LockIcon, MonitorIcon, NetworkIcon, PencilIcon, PlusIcon, ShieldIcon, TableIcon, Trash2Icon, UserIcon, UsersIcon, WifiIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import * as XLSX from 'xlsx'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import Button from 'primevue/button'
@@ -1580,6 +1579,7 @@ async function cargarDesdeExcel(event) {
   event.target.value = ''
   try {
     const buffer = await file.arrayBuffer()
+    const XLSX   = await import('xlsx')
     const wb     = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true })
     const ws     = wb.Sheets[wb.SheetNames[0]]
     const rows   = XLSX.utils.sheet_to_json(ws, { defval: '' })

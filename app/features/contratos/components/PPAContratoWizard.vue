@@ -413,7 +413,6 @@ import NuevoClienteDialog from '~/features/contratos/components/NuevoClienteDial
 import { PpaService } from '~/features/contratos/services/ppa'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { ClientesService } from '~/features/clientes/services/clientes'
-import * as XLSX from 'xlsx'
 
 const ppaService = new PpaService()
 const proyectosService = new ProyectosService()
@@ -645,7 +644,8 @@ function parseEnergia() {
 
 // Descarga la plantilla Excel (Año · Mes · Mín · Máx · Plantas contrato) precargada con los
 // compromisos actuales para editarla y volver a pegarla en el cuadro de texto.
-function descargarPlantillaEnergia() {
+async function descargarPlantillaEnergia() {
+  const XLSX = await import('xlsx')
   const header = ['Año', 'Mes', 'Mín (MWh)', 'Máx (MWh)', 'Plantas contrato']
   const filas = energiaRows.value.length
     ? energiaRows.value.map(r => [r.año, r.mes, r.energia_minima, r.energia_maxima, r.cantidad_proyectos])
