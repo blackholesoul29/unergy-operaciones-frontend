@@ -113,8 +113,6 @@ const opcionesInv = computed(() => [
 ])
 
 const fmtKwh = (v) => v == null ? '—' : (Math.abs(v) >= 1000 ? (v / 1000).toFixed(1) + ' MWh' : Math.round(v) + ' kWh')
-const _cop2 = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2, maximumFractionDigits: 2 })
-const fmtTarifa = (v) => v == null ? '—' : _cop2.format(v)
 // Administración se cobra como % (no $/kWh). Acepta fracción (0.02) o número (2).
 const fmtAdminPct = (v) => v == null ? '—' : `${(Math.abs(Number(v)) < 1 ? Number(v) * 100 : Number(v)).toFixed(2)}%`
 
@@ -300,8 +298,8 @@ function generacionSectionHtml() {
   const t = tarifas.value
   const hayTar = t.representacion != null || t.cgm != null || t.admin != null
   const tarifasHtml = hayTar ? `<div class="rpt-tarifas">
-      <div class="rpt-tar"><span>Representación ($/kWh)</span><b>${fmtTarifa(t.representacion)}</b></div>
-      <div class="rpt-tar"><span>CGM ($/kWh)</span><b>${fmtTarifa(t.cgm)}</b></div>
+      <div class="rpt-tar"><span>Representación ($/kWh)</span><b>${fmtCOP(t.representacion)}</b></div>
+      <div class="rpt-tar"><span>CGM ($/kWh)</span><b>${fmtCOP(t.cgm)}</b></div>
       <div class="rpt-tar"><span>Administración (%)</span><b>${fmtAdminPct(t.admin)}</b></div>
     </div>` : ''
   return `<section class="rpt-block">
