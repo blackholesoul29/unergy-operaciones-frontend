@@ -221,10 +221,6 @@ const invFiltrado = computed(() =>
 
 // Inversionistas a mostrar en la capa "por inversionista": si hay filtro ?inv=,
 // solo ese; si no, todos los del proyecto.
-function fmt(v) {
-  if (v == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2 }).format(v)
-}
 function pct(v) {
   if (v == null) return '—'
   return (v * 100).toFixed(4) + '%'
