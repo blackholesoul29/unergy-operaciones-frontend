@@ -10,7 +10,6 @@
  * Cada proyecto genera SIEMPRE sus 7 filas (una por payment_type); los payment_type
  * sin registro guardado ese mes quedan en value = 0. Genera y descarga el .xlsx.
  */
-import * as XLSX from 'xlsx'
 import { OmService } from '~/features/finanzas/services/om'
 import { ArriendosCalculoService } from '~/features/finanzas/services/arriendos-calculo'
 import { StarlinkService } from '~/features/finanzas/services/starlink'
@@ -194,6 +193,7 @@ export async function generarExcelCostos(periodo) {
   }
 
   // Hoja .xlsx plana
+  const XLSX = await import('xlsx')
   const ws = XLSX.utils.json_to_sheet(rows, {
     header: ['project_pk', 'payment_type', 'value', 'from_date', 'to_date', 'payment_frecuency'],
   })
