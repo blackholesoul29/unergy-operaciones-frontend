@@ -47,22 +47,44 @@ const RUTAS = {
 } as const
 
 export class ProyectosService extends BaseService {
+  /**
+   * `soloPadres` deja fuera los subproyectos y devuelve solo los proyectos de
+   * primer nivel, cada uno con sus hijos en `subproyectos`. Un autoconsumo
+   * repartido en varias conexiones cuenta como UNA planta, no como seis.
+   */
   async listar({
     page = 1,
     size = 500,
     tipo_proyecto,
-  }: { page?: number; size?: number; tipo_proyecto?: string } = {}): Promise<ProyectoConDetalle[]> {
+    soloPadres,
+  }: {
+    page?: number
+    size?: number
+    tipo_proyecto?: string
+    soloPadres?: boolean
+  } = {}): Promise<ProyectoConDetalle[]> {
     const data = await this.get<ListaODirecto<ProyectoConDetalle>>(RUTAS.proyectos, {
-      query: tipo_proyecto ? { page, size, tipo_proyecto } : { page, size },
+      query: {
+        page,
+        size,
+        ...(tipo_proyecto ? { tipo_proyecto } : {}),
+        ...(soloPadres ? { solo_padres: true } : {}),
+      },
     })
     return comoLista(data)
   }
 
   /** Igual que `listar`, pero sin desenvolver `Paginado`: para avisar cuando la página no trae todo. */
-  listarPaginado({ page = 1, size = 500 }: { page?: number; size?: number } = {}): Promise<
+  listarPaginado({
+    page = 1,
+    size = 500,
+    soloPadres,
+  }: { page?: number; size?: number; soloPadres?: boolean } = {}): Promise<
     Paginado<ProyectoConDetalle>
   > {
-    return this.get<Paginado<ProyectoConDetalle>>(RUTAS.proyectos, { query: { page, size } })
+    return this.get<Paginado<ProyectoConDetalle>>(RUTAS.proyectos, {
+      query: { page, size, ...(soloPadres ? { solo_padres: true } : {}) },
+    })
   }
 
   obtener(id: Proyecto['id']): Promise<ProyectoConDetalle> {

@@ -148,13 +148,20 @@
                           :class="row.codigo_tsf ? 'text-gray-400' : 'text-gray-300'">
                       {{ row.codigo_tsf || '—' }}
                     </span>
-                    <button type="button"
-                            class="block text-left text-sm text-gray-800 font-medium leading-snug mt-0.5
-                                   proyecto-nombre-link"
-                            @click="goDetail(row)"
-                            v-tooltip.bottom="'Ver detalle'">
-                      {{ formatearNombreProyecto(row.nombre_comercial) }}
-                    </button>
+                    <div class="flex items-center gap-1.5 mt-0.5">
+                      <button type="button"
+                              class="block text-left text-sm text-gray-800 font-medium leading-snug
+                                     proyecto-nombre-link"
+                              @click="goDetail(row)"
+                              v-tooltip.bottom="'Ver detalle'">
+                        {{ formatearNombreProyecto(row.nombre_comercial) }}
+                      </button>
+                      <!-- Avisa que el proyecto tiene conexiones adentro; se ven al abrirlo. -->
+                      <span v-if="row.__numHijos" class="subproyecto-contador"
+                            v-tooltip.bottom="row.__numHijos + ' subproyecto' + (row.__numHijos === 1 ? '' : 's') + ': abre el proyecto para verlos'">
+                        {{ row.__numHijos }}
+                      </span>
+                    </div>
                   </td>
 
                   <!-- Estado -->
@@ -713,8 +720,17 @@ const sectionList = computed(() => {
   }
   return TIPO_ORDER
     .filter(t => groups[t]?.length)
-    .map(t => ({ tipo: t, items: groups[t] }))
+    .map(t => ({ tipo: t, items: conNumSubproyectos(groups[t]) }))
 })
+
+/**
+ * Anota cuántos subproyectos tiene cada proyecto, para el contador que va al
+ * lado del nombre. La lista solo trae proyectos de primer nivel (ver `load()`),
+ * así que el número es la única señal de que ahí dentro hay conexiones.
+ */
+function conNumSubproyectos(items) {
+  return items.map(p => ({ ...p, __numHijos: (p.subproyectos || []).length }))
+}
 
 // ── Secciones colapsables ──────────────────────────────────────────────────────
 function toggleSection(tipo) {
@@ -728,7 +744,9 @@ function toggleSection(tipo) {
 async function load() {
   loading.value = true
   try {
-    allItems.value = await proyectosService.listar({ page: 1, size: 500 })
+    // `soloPadres`: un autoconsumo repartido en varias conexiones aparece UNA
+    // vez; sus subproyectos se ven al abrir el proyecto.
+    allItems.value = await proyectosService.listar({ page: 1, size: 500, soloPadres: true })
     // Abrir la primera sección automáticamente en la carga inicial
     if (openSections.value.size === 0) {
       const first = sectionList.value[0]?.tipo
@@ -937,6 +955,24 @@ function ignorarPendiente(p) {
   cursor: pointer;
   transition: color 0.12s;
 }
+/* Contador de subproyectos: un autoconsumo repartido en varias conexiones
+   aparece una sola vez en la lista, con este número al lado del nombre. */
+.subproyecto-contador {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: #F3EEFA;
+  color: #6D4AA8;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: default;
+}
+
 .proyecto-nombre-link:hover {
   color: var(--color-unergy-purple);
   text-decoration: underline;

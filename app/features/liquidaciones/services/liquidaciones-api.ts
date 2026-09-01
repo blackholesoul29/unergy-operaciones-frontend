@@ -54,6 +54,7 @@ const RUTAS = {
   cicloDiagnostico: `${BASE}/ciclo/diagnostico`,
   proyectos: `${BASE}/proyectos`,
   proyecto: (id: number) => `${BASE}/proyectos/${id}`,
+  subproyectos: `${BASE}/subproyectos`,
   subproyecto: (topic: string) => `${BASE}/subproyectos/${encodeURIComponent(topic)}`,
   acPower: `${BASE}/ac-power`,
 } as const
@@ -91,6 +92,16 @@ export class LiquidacionesApiService extends BaseService {
     payload: PayloadConfigLiquidacionProyecto,
   ): Promise<unknown> {
     return this.patch<unknown>(RUTAS.proyecto(id), payload)
+  }
+
+  /**
+   * Los subproyectos de un proyecto con sus ids de Quoia. Es la fuente real de
+   * esos ids: no viven en la tabla `proyectos` de esta base (la migración 136
+   * borró las columnas `quoia_*` justamente porque estaban vacías y el dato
+   * verdadero es por subproyecto, aquí).
+   */
+  listarSubproyectos(project: string): Promise<SubproyectoQuoia[]> {
+    return this.get<SubproyectoQuoia[]>(RUTAS.subproyectos, { query: { project } })
   }
 
   /**
