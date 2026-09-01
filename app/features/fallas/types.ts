@@ -18,6 +18,7 @@ export interface CatalogosFalla {
   tipos: CatalogoItemFalla[]
   estados: CatalogoItemFalla[]
   prioridades: CatalogoItemFalla[]
+  resoluciones: CatalogoItemFalla[]
   categorias?: unknown[]
   [clave: string]: unknown
 }
@@ -94,7 +95,6 @@ export interface Falla {
   fecha_ocurrencia?: string | null
   fecha_resolucion?: string | null
   fecha_programada?: string | null
-  tipo_solucion?: string | null
   causa_raiz?: string | null
   acciones_correctivas?: string | null
   equipo_afectado?: string | null
@@ -106,8 +106,8 @@ export interface Falla {
   tiempo_afectacion_horas?: number | null
   asignado_a?: string | null
   registrado_por?: string | null
-  resolucion?: string | null
-  tipo_resolucion?: string | null
+  resolucion?: CatalogoItemFalla | null
+  resolucion_id?: number | null
   fotos?: FotoFalla[]
   fotos_urls?: string[]
   seguimientos?: SeguimientoFalla[]

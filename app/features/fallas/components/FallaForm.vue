@@ -275,7 +275,8 @@
 
         <div class="ff-field">
           <label class="ff-label">Tipo de solución</label>
-          <Select v-model="form.tipo_solucion" :options="TIPOS_SOLUCION"
+          <Select v-model="form.resolucion_id" :options="catalogos.resoluciones"
+            optionLabel="etiqueta" optionValue="id"
             placeholder="Seleccionar tipo" showClear class="w-full" />
         </div>
 
@@ -372,19 +373,6 @@ import { iconoCategoriaFalla } from '~/features/fallas/utils/fallaTitulo'
 
 const proyectosService = new ProyectosService()
 
-const TIPOS_SOLUCION = [
-  'Reemplazo de componente',
-  'Reparación mecánica',
-  'Reparación eléctrica',
-  'Actualización de firmware',
-  'Limpieza y mantenimiento',
-  'Reconexión / rearme',
-  'Configuración / calibración',
-  'Gestión con OR / proveedor',
-  'Solución remota',
-  'Otro',
-]
-
 const props = defineProps({
   initial:            { type: Object, default: null },
   catalogos:          { type: Object, required: true },
@@ -444,7 +432,7 @@ const form = ref({
                           : new Date(),
   fecha_ocurrencia:     props.initial?.fecha_ocurrencia ? new Date(props.initial.fecha_ocurrencia) : null,
   fecha_resolucion:     props.initial?.fecha_resolucion ? new Date(props.initial.fecha_resolucion) : null,
-  tipo_solucion:        props.initial?.tipo_solucion ?? null,
+  resolucion_id:        props.initial?.resolucion?.id ?? null,
   sla_limite_horas:     props.initial?.sla_limite_horas ?? null,
   causa_raiz:           props.initial?.causa_raiz ?? '',
   acciones_correctivas: props.initial?.acciones_correctivas ?? '',
@@ -748,7 +736,7 @@ async function submit() {
     // La fecha de solución solo aplica cuando el estado es final (cerrada).
     if (esEstadoFinal.value && form.value.fecha_resolucion)
       base.fecha_resolucion = form.value.fecha_resolucion instanceof Date ? form.value.fecha_resolucion.toISOString() : form.value.fecha_resolucion
-    if (esEstadoFinal.value && form.value.tipo_solucion)  base.tipo_solucion        = form.value.tipo_solucion
+    if (esEstadoFinal.value && form.value.resolucion_id)  base.resolucion_id        = form.value.resolucion_id
     if (form.value.causa_raiz?.trim())            base.causa_raiz           = form.value.causa_raiz.trim()
     if (form.value.acciones_correctivas?.trim())  base.acciones_correctivas = form.value.acciones_correctivas.trim()
     if (form.value.equipo_afectado?.trim())       base.equipo_afectado      = form.value.equipo_afectado.trim()

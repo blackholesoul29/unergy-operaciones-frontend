@@ -616,7 +616,8 @@
           </div>
           <div class="resolve-dialog-field">
             <label class="resolve-dialog-label">Tipo de solución</label>
-            <Select v-model="resolveTipoSolucion" :options="TIPOS_SOLUCION_RESOLVE"
+            <Select v-model="resolveResolucionId" :options="catalogos.resoluciones"
+              optionLabel="etiqueta" optionValue="id"
               placeholder="Seleccionar (opcional)" showClear class="w-full" />
           </div>
         </div>
@@ -760,20 +761,7 @@ const resolvingFalla       = ref(false)
 const resolveDialogVisible = ref(false)
 const resolveFallaTarget   = ref(null)
 const resolveFecha         = ref(new Date())
-const resolveTipoSolucion  = ref(null)
-
-const TIPOS_SOLUCION_RESOLVE = [
-  'Reemplazo de componente',
-  'Reparación mecánica',
-  'Reparación eléctrica',
-  'Actualización de firmware',
-  'Limpieza y mantenimiento',
-  'Reconexión / rearme',
-  'Configuración / calibración',
-  'Gestión con OR / proveedor',
-  'Solución remota',
-  'Otro',
-]
+const resolveResolucionId  = ref(null)
 const addingSeg      = ref(false)
 const nuevaNota      = reactive({ nota: '', estado_id: null })
 
@@ -1363,7 +1351,7 @@ function quickResolve(falla) {
   }
   resolveFallaTarget.value  = falla
   resolveFecha.value        = new Date()
-  resolveTipoSolucion.value = null
+  resolveResolucionId.value = null
   resolveDialogVisible.value = true
 }
 
@@ -1378,7 +1366,7 @@ async function confirmarResolve() {
       fecha_resolucion: resolveFecha.value?.toISOString() ?? new Date().toISOString(),
       sla_cumplido:     !slaVencido(falla),
     }
-    if (resolveTipoSolucion.value) payload.tipo_solucion = resolveTipoSolucion.value
+    if (resolveResolucionId.value) payload.resolucion_id = resolveResolucionId.value
     const data = await fallasService.actualizar(falla.id, payload)
     const idx = allFallas.value.findIndex(f => f.id === data.id)
     if (idx >= 0) allFallas.value[idx] = data
