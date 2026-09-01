@@ -291,6 +291,7 @@ import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
+import { logger } from '~/core/logger'
 import { EvoService } from '~/features/mem/services/evo'
 import { ArrowDownIcon, ArrowLeftIcon, ArrowUpIcon, ChartLineIcon, CloudDownloadIcon, CloudIcon, DatabaseIcon } from '@lucide/vue'
 
@@ -327,7 +328,7 @@ onMounted(async () => {
     if (pricesRes) histPrices.value = pricesRes.reverse()
     if (oniRes) histOni.value = oniRes.reverse()
   } catch (e) {
-    console.error('Error cargando datos MEM:', e)
+    logger.error('mem', e)
   } finally {
     loading.value = false
   }

@@ -96,6 +96,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, h } from 'vue'
+import { logger } from '~/core/logger'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { UsuariosService } from '~/features/admin/services/usuarios'
 import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
@@ -202,7 +203,7 @@ async function cargarGen(force = false) {
     gen.inversor = data.inversor || { total: 0, top: [] }
     gen.fecha = data.fecha
   } catch (e) {
-    console.error('resumen-dia generación', e)
+    logger.error('mobile', e)
     if (!gen.medidor) gen.medidor = { total: 0, top: [] }
     if (!gen.inversor) gen.inversor = { total: 0, top: [] }
   } finally {
@@ -218,7 +219,7 @@ async function cargarFallas() {
     fallas.cambios_estado = data.cambios_estado || []
     fallas.fecha = data.fecha
   } catch (e) {
-    console.error('actividad-hoy fallas', e)
+    logger.error('mobile', e)
   } finally {
     loadingFallas.value = false
   }

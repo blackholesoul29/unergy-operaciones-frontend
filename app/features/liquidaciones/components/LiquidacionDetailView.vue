@@ -144,6 +144,7 @@ import DatePicker from 'primevue/datepicker'
 import Textarea from 'primevue/textarea'
 import Checkbox from 'primevue/checkbox'
 import { LiquidacionesService } from '~/features/liquidaciones/services/liquidaciones'
+import { logger } from '~/core/logger'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import EstadoResultadosConsolidado from './components/EstadoResultadosConsolidado.vue'
 import GeneracionMensualChart from './components/GeneracionMensualChart.vue'
@@ -259,7 +260,7 @@ async function load() {
     liq.value = data
     nuevoEstado.value = data.estado
   } catch (e) {
-    console.error('[LiquidacionDetail] Error:', e?.status, e?.data ?? e)
+    logger.error('liquidaciones', e)
     toast.error(`Error ${e?.status || 'red'} — liq ${route.params.id}`, {
       description: JSON.stringify(e?.data ?? e?.message ?? 'sin detalle').slice(0, 300),
       duration: 10000,
@@ -273,7 +274,7 @@ async function load() {
       const raw = await proyectosService.listarInversionistas(liq.value.proyecto_id)
       proyectoInversionistas.value = Array.isArray(raw) ? raw : (raw.items ?? [])
     } catch (e) {
-      console.error('[LiquidacionDetail] Error cargando inversionistas:', e?.status, e?.data ?? e)
+      logger.error('liquidaciones', e)
     }
 
     // Estado de Resultados = espejo del Panel Contable del período (fuente única).
@@ -284,7 +285,7 @@ async function load() {
         panelER.value = (data.proyectos || []).find(p => p.proyecto_id === liq.value.proyecto_id) || null
       }
     } catch (e) {
-      console.error('[LiquidacionDetail] Error cargando Panel ER:', e?.status, e?.data ?? e)
+      logger.error('liquidaciones', e)
       panelER.value = null
     }
   }
