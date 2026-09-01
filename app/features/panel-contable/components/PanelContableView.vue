@@ -50,9 +50,9 @@
          parecería que el período quedó completo. -->
     <div v-if="resultado" class="pc-aviso pc-aviso--ok">
       <div class="pc-aviso-cab">
-        <i class="pi pi-check-circle" />
+        <CircleCheckIcon class="size-[1em]" />
         <b>{{ resultado.armados }}</b> paneles armados desde la API
-        <button class="pc-aviso-x" @click="resultado = null"><i class="pi pi-times" /></button>
+        <button class="pc-aviso-x" @click="resultado = null"><XIcon class="size-[1em]" /></button>
       </div>
       <div v-if="resultado.omitidos.length" class="pc-aviso-linea">
         <b>{{ resultado.omitidos.length }} omitidos</b> — siguen cargando su Excel:
@@ -75,10 +75,10 @@
     <!-- Contraste: qué se diferencia de lo que hay hoy. No guarda nada. -->
     <div v-if="contraste" class="pc-aviso">
       <div class="pc-aviso-cab">
-        <i class="pi pi-search" />
+        <SearchIcon class="size-[1em]" />
         Contraste de {{ contraste.periodo }}:
         <b>{{ contraste.cuadran_exacto }}</b> de {{ contraste.paneles }} cuadran exacto
-        <button class="pc-aviso-x" @click="contraste = null"><i class="pi pi-times" /></button>
+        <button class="pc-aviso-x" @click="contraste = null"><XIcon class="size-[1em]" /></button>
       </div>
       <div v-for="(p, i) in contraste.proyectos.filter(x => x.diferencias && x.diferencias.length)"
            :key="i" class="pc-contraste-proy">
@@ -390,7 +390,7 @@
               <span>Cost: <b>{{ tab === 'oficial' ? (p.consecutivo_costos ?? '—') : '—' }}</b></span>
               <button class="btn-er" @click.stop="descargarEr(p)"
                       v-tooltip.left="'Descargar el Estado de Resultados de este proyecto'">
-                <i class="pi pi-download" /> ER
+                <DownloadIcon class="size-[1em]" /> ER
               </button>
             </div>
           </div>
@@ -711,7 +711,7 @@ import XLSX from 'xlsx-js-style'
 import { PanelContableService } from '~/features/panel-contable/services/panel-contable'
 import { toast } from 'vue-sonner'
 import Dialog from 'primevue/dialog'
-import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon, SaveIcon, SearchIcon, TriangleAlertIcon, UploadIcon, ZapIcon } from '@lucide/vue'
+import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, CircleCheckIcon, ClockIcon, DownloadIcon, FileSpreadsheetIcon, InfoIcon, LoaderCircleIcon, SaveIcon, SearchIcon, TriangleAlertIcon, UploadIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 
 // Grupos de VISUALIZACIÓN. `keys` son las claves de `grupo` del backend que
@@ -817,12 +817,11 @@ async function armarPeriodo() {
   try {
     const data = await panelContableService.armarPeriodo({ periodo: periodo.value, tipo: tipoDatos.value })
     resultado.value = data
-    toast.add({
-      severity: 'success', summary: `${data.armados} paneles armados`,
-      detail: data.omitidos.length
+    toast.success(`${data.armados} paneles armados`, {
+      description: data.omitidos.length
         ? `${data.omitidos.length} omitidos (NEU/Nitro): siguen con su Excel.`
         : 'Todos los proyectos del período.',
-      life: 7000,
+      duration: 7000,
     })
     // Refrescar DESPUÉS de avisar y en su propio try: si falla el refresco, los
     // paneles ya quedaron escritos. Reportarlo como "no se pudo armar" haría
@@ -830,15 +829,13 @@ async function armarPeriodo() {
     try {
       await cargarPaneles()
     } catch {
-      toast.add({
-        severity: 'warn', summary: 'Paneles armados, vista sin refrescar',
-        detail: 'Recarga la página para verlos.', life: 6000,
+      toast.warning('Paneles armados, vista sin refrescar', {
+        description: 'Recarga la página para verlos.', duration: 6000,
       })
     }
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo armar el período',
-      detail: e?.data?.detail || e.message, life: 8000,
+    toast.error('No se pudo armar el período', {
+      description: e?.data?.detail || e.message, duration: 8000,
     })
   } finally {
     armando.value = false
@@ -852,9 +849,8 @@ async function verContraste() {
     const data = await panelContableService.obtenerContraste({ periodo: periodo.value, tipo: tipoDatos.value })
     contraste.value = data
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo contrastar',
-      detail: e?.data?.detail || e.message, life: 8000,
+    toast.error('No se pudo contrastar', {
+      description: e?.data?.detail || e.message, duration: 8000,
     })
   } finally {
     contrastando.value = false
@@ -873,9 +869,8 @@ async function descargarEr(panel, inversionista = null) {
     a.click()
     URL.revokeObjectURL(url)
   } catch (e) {
-    toast.add({
-      severity: 'error', summary: 'No se pudo generar el ER',
-      detail: e?.data?.detail || e.message, life: 6000,
+    toast.error('No se pudo generar el ER', {
+      description: e?.data?.detail || e.message, duration: 6000,
     })
   }
 }
