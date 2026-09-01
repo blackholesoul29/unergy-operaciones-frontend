@@ -192,10 +192,17 @@
                   :style="{ color: data.codigo_tsf ? '#9ca3af' : '#d1d5db' }">
               {{ data.codigo_tsf || '—' }}
             </span>
-            <button type="button" class="nombre-link" @click="ir(`/proyectos/${data.id}`)"
-                    v-tooltip.bottom="'Ver detalle'">
-              {{ formatearNombre(data.nombre_comercial) }}
-            </button>
+            <div class="flex items-center gap-1.5">
+              <button type="button" class="nombre-link" @click="ir(`/proyectos/${data.id}`)"
+                      v-tooltip.bottom="'Ver detalle'">
+                {{ formatearNombre(data.nombre_comercial) }}
+              </button>
+              <!-- Avisa que el proyecto tiene conexiones adentro; se ven al abrirlo. -->
+              <span v-if="data.__numHijos" class="contador-subproyectos"
+                    v-tooltip.bottom="`${data.__numHijos} subproyecto${data.__numHijos === 1 ? '' : 's'}: abre el proyecto para verlos`">
+                {{ data.__numHijos }}
+              </span>
+            </div>
           </template>
         </Column>
         <Column field="estado" header="Estado" sortable style="width:10%">
@@ -808,10 +815,21 @@ function gruposDe(p) {
   }
 }
 
+/**
+ * Anota cuántos subproyectos tiene cada fila, para el contador de la primera
+ * columna. La lista trae solo proyectos de primer nivel (ver `cargarProyectos`):
+ * un autoconsumo repartido en varias conexiones aparece UNA vez, y sus
+ * subproyectos se ven al abrirlo.
+ */
+function conNumSubproyectos(items) {
+  return items.map(p => ({ ...p, __numHijos: (p.subproyectos || []).length }))
+}
+
 const proyectosAgrupados = computed(() => {
-  if (!agruparPor.value) return proyectosFiltrados.value
+  const conConteo = conNumSubproyectos(proyectosFiltrados.value)
+  if (!agruparPor.value) return conConteo
   const filas = []
-  for (const p of proyectosFiltrados.value) {
+  for (const p of conConteo) {
     for (const g of gruposDe(p)) filas.push({ ...p, __grupo: g })
   }
   // PrimeVue pinta subencabezados solo si las filas del grupo vienen juntas.
@@ -1040,7 +1058,14 @@ const proyectosFiltrados = computed(() => {
 async function cargarProyectos() {
   loadingProyectos.value = true
   try {
-    const data = await proyectosService.listarPaginado({ page: 1, size: TOPE_PAGINA })
+    // `soloPadres`: los subproyectos NO son plantas aparte, son las conexiones
+    // de un mismo proyecto. Se ven al abrir el proyecto, en su pestaña
+    // Subproyectos; aquí contarlos como filas propias infla el total (Laureles
+    // Campestre sumaría 6 en vez de 1). El padre sigue trayendo su lista de
+    // subproyectos, que es de donde sale el contador de la primera columna.
+    const data = await proyectosService.listarPaginado({
+      page: 1, size: TOPE_PAGINA, soloPadres: true,
+    })
     proyectos.value = data.items ?? []
     avisarSiTrunca(data.total, proyectos.value.length, 'plantas')
     proyectosCargados.value = true
@@ -1777,6 +1802,15 @@ function confirmarBorrarPpa(contrato) {
   cursor: pointer; transition: color .12s;
 }
 .nombre-link:hover { color: var(--color-unergy-purple); text-decoration: underline; text-underline-offset: 2px; }
+
+/* Contador de subproyectos: un autoconsumo repartido en varias conexiones
+   aparece una sola vez en la lista, con este número al lado del nombre. */
+.contador-subproyectos {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 1.05rem; height: 1.05rem; padding: 0 .28rem; flex: none;
+  border-radius: 999px; background: #F3EEFA; color: #6D4AA8;
+  font-size: 9.5px; font-weight: 700; line-height: 1; cursor: default;
+}
 
 .ppa-chip {
   min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;

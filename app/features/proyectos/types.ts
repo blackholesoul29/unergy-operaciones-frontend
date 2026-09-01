@@ -87,8 +87,31 @@ export interface ContratoPpaResumenProyecto {
 
 // ── El proyecto con todo lo que agregan el listado y el detalle ──────────────
 
+/** Un subproyecto visto desde su padre: lo justo para listarlo y saltar a él. */
+export interface SubproyectoResumen {
+  id: number
+  nombre_comercial: string
+  estado: string
+  /**
+   * El tópico de la API de generación de Unergy: la conexión de este
+   * subproyecto. Los ids de Quoia no van aquí: viven por subproyecto en la API
+   * de Liquidaciones, no en la tabla `proyectos`.
+   */
+  sub_project: string | null
+  potencia_instalada_kwp: number | null
+}
+
 export interface ProyectoConDetalle extends Proyecto {
   inversionistas: InversionistaProyecto[]
+  /**
+   * Jerarquía de subproyectos. Un autoconsumo repartido en varias conexiones
+   * (Laureles Campestre, IML, Clínica Somer, San Esteban, Coopsana) es UN
+   * proyecto con subproyectos. Los dos primeros campos vienen llenos solo en un
+   * hijo; `subproyectos` solo en un padre. Todo vacío = proyecto suelto.
+   */
+  proyecto_padre_id?: number | null
+  padre_nombre?: string | null
+  subproyectos?: SubproyectoResumen[]
   info_tecnica?: ProyectoInfoTecnica
   ppa_contratos?: ContratoPpaResumenProyecto[]
   fecha_inicio_comercializacion?: string | null

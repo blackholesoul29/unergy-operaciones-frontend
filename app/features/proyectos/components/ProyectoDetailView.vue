@@ -12,6 +12,14 @@
       </template>
       <template v-if="!isEditMode" #chips>
         <GBadge :color="estadoSeverity(proyecto.estado)" class="text-[10px]">{{ proyecto.estado }}</GBadge>
+        <!-- En un subproyecto, la ficha sola no dice de qué proyecto es parte.
+             Este chip lo dice y lleva al padre en un clic. -->
+        <button v-if="proyecto.proyecto_padre_id" type="button" class="chip-padre"
+                @click="router.push(`/proyectos/${proyecto.proyecto_padre_id}`)"
+                v-tooltip.bottom="'Ir al proyecto padre'">
+          <NetworkIcon class="size-[0.8em]" />
+          Subproyecto de {{ proyecto.padre_nombre || '—' }}
+        </button>
       </template>
       <template #acciones>
         <template v-if="isEditMode">
@@ -700,6 +708,47 @@
         </div>
       </div>
 
+      <!-- ══ SUBPROYECTOS ══ -->
+      <div v-if="tab === 'subproyectos'">
+        <div class="p-4">
+          <p class="text-[11px] mb-3" style="color: #9b89b5;">
+            <InfoIcon class="inline size-[1em] mr-1" />
+            Este proyecto se reparte en {{ subproyectos.length }}
+            {{ subproyectos.length === 1 ? 'conexión' : 'conexiones' }}.
+            La generación se mide en cada subproyecto, no en el proyecto padre.
+          </p>
+          <DataTable :value="subproyectos" class="text-sm" stripedRows>
+            <Column field="nombre_comercial" header="Subproyecto">
+              <template #body="{ data }">
+                <button type="button" class="subproyecto-link"
+                        @click="router.push(`/proyectos/${data.id}`)"
+                        v-tooltip.bottom="'Abrir este subproyecto'">
+                  {{ data.nombre_comercial }}
+                </button>
+              </template>
+            </Column>
+            <Column header="Estado">
+              <template #body="{ data }">
+                <GBadge :color="estadoSeverity(data.estado)">{{ data.estado }}</GBadge>
+              </template>
+            </Column>
+            <Column header="Conexión (API ID Unergy)">
+              <template #body="{ data }">
+                <span class="font-mono text-[11px]">{{ data.sub_project || '—' }}</span>
+              </template>
+            </Column>
+            <Column header="kWp">
+              <template #body="{ data }">{{ data.potencia_instalada_kwp ?? '—' }}</template>
+            </Column>
+            <Column header="Nodo Quoia">
+              <template #body="{ data }">
+                {{ nodoQuoiaPorConexion[data.sub_project] ?? '—' }}
+              </template>
+            </Column>
+          </DataTable>
+        </div>
+      </div>
+
       <!-- ══ ID LIQUIDACIONES ══ -->
       <div v-if="tab === 'id-liquidaciones'">
         <div class="p-4 space-y-3 text-sm">
@@ -820,7 +869,7 @@
 </template>
 
 <script setup>
-import { ArrowRightIcon, BadgeCheckIcon, BriefcaseIcon, ChartColumnIcon, ChartLineIcon, CheckIcon, CircleAlertIcon, DollarSignIcon, ExternalLinkIcon, FileIcon, FilePenIcon, FileSpreadsheetIcon, GlobeIcon, InfoIcon, LinkIcon, MailIcon, MapPinIcon, PencilIcon, PlusIcon, RefreshCwIcon, Trash2Icon, TriangleAlertIcon, UsersIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
+import { ArrowRightIcon, BadgeCheckIcon, BriefcaseIcon, ChartColumnIcon, ChartLineIcon, CheckIcon, CircleAlertIcon, DollarSignIcon, ExternalLinkIcon, FileIcon, FilePenIcon, FileSpreadsheetIcon, GlobeIcon, InfoIcon, LinkIcon, MailIcon, MapPinIcon, NetworkIcon, PencilIcon, PlusIcon, RefreshCwIcon, Trash2Icon, TriangleAlertIcon, UsersIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import Button from 'primevue/button'
@@ -891,6 +940,32 @@ const editLiq = reactive({ sic_gen: '', sic_con: '' })
 // siquiera mostraba, porque esa vista ya prioriza el dato real de la API).
 const editSubproyectos = ref([])
 const fronteras = ref([])
+// Subproyectos: los manda la API dentro del propio proyecto, así que no hace
+// falta una consulta aparte. Ordenados por nombre para que la tabla se lea
+// igual que el listado.
+const subproyectos = computed(() =>
+  [...(proyecto.value?.subproyectos || [])]
+    .sort((a, b) => (a.nombre_comercial || '').localeCompare(b.nombre_comercial || '')))
+
+// Nodo de Quoia por conexión. No sale de esta base: los ids de Quoia viven en
+// la API de Liquidaciones, por subproyecto (la migración 136 borró las columnas
+// `quoia_*` de `proyectos` porque estaban vacías y el dato real está allá).
+// Si la API externa falla, el mapa queda vacío y la columna muestra "—": es un
+// dato de apoyo, no vale tumbar la ficha por él.
+const nodoQuoiaPorConexion = ref({})
+
+async function cargarNodosQuoia() {
+  const topico = proyecto.value?.topico_liquidaciones || proyecto.value?.sub_project
+  if (!topico || !subproyectos.value.length) return
+  try {
+    const subs = await liquidacionesApiService.listarSubproyectos(topico)
+    nodoQuoiaPorConexion.value = Object.fromEntries(
+      subs.filter(s => s.quoia_node_id).map(s => [s.topic, s.quoia_node_id]),
+    )
+  } catch {
+    nodoQuoiaPorConexion.value = {}
+  }
+}
 const clientes = ref([])
 const loading = ref(true)
 const errorMsg = ref(null)
@@ -922,6 +997,10 @@ const TABS = computed(() => [
   { key: 'inversionistas',   label: 'Inversionistas',   icon: UsersIcon },
   { key: 'fronteras',        label: 'Fronteras',        icon: GlobeIcon,
     badge: fronteras.value.length || null, oculta: !fronteras.value.length },
+  // Solo aparece en un proyecto que tenga subproyectos (los 5 autoconsumos
+  // repartidos en varias conexiones). En los demás no hay nada que mostrar.
+  { key: 'subproyectos',     label: 'Subproyectos',     icon: NetworkIcon,
+    badge: subproyectos.value.length || null, oculta: !subproyectos.value.length },
   { key: 'id-liquidaciones', label: 'ID liquidaciones', icon: DollarSignIcon },
   { key: 'id-quoia',         label: 'ID Quoia',         icon: LinkIcon },
 ])
@@ -1425,7 +1504,13 @@ const operadoresRedOptions = computed(() =>
 )
 
 // ── Carga inicial ─────────────────────────────────────────────────────────────
-onMounted(async () => {
+// Va en una función aparte porque el router reusa este componente al pasar de un
+// proyecto a otro: navegar de un padre a su subproyecto cambia la URL pero no
+// vuelve a montar la vista, así que sin el watch de más abajo la ficha se
+// quedaba mostrando el proyecto anterior.
+async function cargar() {
+  loading.value = true
+  errorMsg.value = null
   try {
     const [proy, clientesList, inversionistas, operadoresRes, fronterasRes] = await Promise.all([
       proyectosService.obtener(route.params.id),
@@ -1443,11 +1528,23 @@ onMounted(async () => {
     operadoresRed.value = operadoresRes
     for (const s of SERVICIOS_FLAGS) srvFlags[s.key] = proy[s.key]
     if (isEditMode.value) populateEditForm()
+    cargarNodosQuoia()
   } catch (e) {
     errorMsg.value = e.data?.detail || e.message || 'Error de conexión con el servidor'
   } finally {
     loading.value = false
   }
+}
+
+onMounted(cargar)
+
+// Saltar entre proyectos (padre -> subproyecto -> padre) sin volver a montar la
+// vista: hay que recargar a mano. Se resetea la pestaña porque las pestañas
+// visibles dependen del proyecto (un subproyecto no tiene subproyectos).
+watch(() => route.params.id, (nuevo, anterior) => {
+  if (!nuevo || nuevo === anterior) return
+  activeTab.value = 'general'
+  cargar()
 })
 </script>
 
@@ -1471,6 +1568,34 @@ export default { components: { InfoField } }
 </script>
 
 <style scoped>
+/* ── Jerarquía de subproyectos ─────────────────────────────────────────────── */
+.subproyecto-link {
+  text-align: left;
+  font-weight: 600;
+  color: #2C2039;
+  cursor: pointer;
+  transition: color .12s;
+}
+.subproyecto-link:hover {
+  color: #915BD8;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.chip-padre {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #F3EEFA;
+  color: #6D4AA8;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.chip-padre:hover { background: #915BD8; color: #fff; }
+
 /* MIGRACIÓN — Fase 1: en Tailwind 4 cada bloque <style> se procesa aislado y no
    ve el tema, así que `@apply` falla con "unknown utility class". `@reference`
    le da acceso al tema sin emitir CSS. Era innecesario en Tailwind 3. */
