@@ -2368,7 +2368,7 @@ watch(bucket, (newBucket) => {
   margin-bottom: 6px;
 }
 .gf-sla-override-label { font-size: 12px; font-weight: 600; color: #4a3b6b; }
-.gf-sla-override-ref { font-size: 11.5px; color: #9b8db5; }
+.gf-sla-override-ref { font-size: 13px; color: #9b8db5; }
 .gf-sla-override-ref strong { color: #4a3b6b; font-weight: 700; }
 .gf-sla-override-input { display: flex; align-items: center; gap: 6px; }
 .gf-sla-override-clear {

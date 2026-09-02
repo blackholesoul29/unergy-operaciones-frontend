@@ -926,7 +926,7 @@ onMounted(async () => {
   margin-bottom: 4px;
 }
 .ff-sla-override-row .ff-label { font-size: 11.5px; font-weight: 600; }
-.ff-sla-override-ref { font-size: 11px; color: #9b89b5; }
+.ff-sla-override-ref { font-size: 12.5px; color: #9b89b5; }
 .ff-sla-override-ref strong { color: #4a3b6b; font-weight: 700; }
 .ff-sla-override-input { display: flex; align-items: center; gap: 6px; }
 .ff-sla-override-clear {
@@ -935,7 +935,7 @@ onMounted(async () => {
   display: flex; align-items: center; justify-content: center;
 }
 .ff-sla-override-clear:hover { background: #e5e0ef; }
-.ff-sla-override-hint { display: block; margin-top: 4px; }
+.ff-sla-override-hint { display: block; margin-top: 4px; font-size: 11px; line-height: 1.4; }
 
 /* ── Dropzone ── */
 .ff-dropzone {
