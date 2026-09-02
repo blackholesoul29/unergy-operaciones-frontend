@@ -1,5 +1,5 @@
 /**
- * El login contra el backend de operaciones.
+ * `OperacionesAuthService`: el login contra el backend de operaciones.
  *
  * Usa una instancia de `air` **propia, sin el interceptor de sesión** de
  * `~/core/client.ts`, y por un motivo concreto: unas credenciales equivocadas
@@ -19,7 +19,7 @@
  */
 import air, { isAirError, type AirError } from '@korastd/air'
 import { AppError, codeFromHttpStatus } from '~/core/errors'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 /** Vacío = mismo origen, que es lo normal: el proxy resuelve el resto. */
 const BASE_URL = import.meta.env.VITE_API_URL || ''
@@ -51,7 +51,7 @@ function comoAppError(err: unknown): AppError {
   return new AppError(codeFromHttpStatus(status), error.data?.detail, { cause: err })
 }
 
-export class LegacyAuthService extends LegacyBaseService {
+export class OperacionesAuthService extends BaseService {
   constructor() {
     super(air.create({ baseURL: BASE_URL }))
   }

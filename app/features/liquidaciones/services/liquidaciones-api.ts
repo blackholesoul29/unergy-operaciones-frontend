@@ -29,7 +29,7 @@ import type {
   VersionCiclo,
 } from '~/features/liquidaciones/types'
 import type { QueryValue } from '@korastd/air'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 import {
   EstadoTarea,
   TareaFallida,
@@ -65,7 +65,7 @@ const ESPERA_POR_DEFECTO = {
 
 const dormir = (ms: number) => new Promise((resolver) => setTimeout(resolver, ms))
 
-export class LiquidacionesApiService extends LegacyBaseService {
+export class LiquidacionesApiService extends BaseService {
   // ── Proyectos ────────────────────────────────────────────────────────────────
 
   /** El listado plano de proyectos de esta API, identificados por `nombre_topico`. */

@@ -1050,7 +1050,6 @@
 import { ArrowLeftIcon, BoxIcon, BuildingIcon, CalculatorIcon, CalendarIcon, CheckIcon, ChevronDownIcon, CirclePlusIcon, CreditCardIcon, DatabaseIcon, DollarSignIcon, ExternalLinkIcon, EyeIcon, EyeOffIcon, FileIcon, FileInputIcon, FileOutputIcon, FileSpreadsheetIcon, FileTextIcon, FilterIcon, GaugeIcon, HouseIcon, LinkIcon, LockIcon, MonitorIcon, NetworkIcon, PencilIcon, PlusIcon, ShieldIcon, TableIcon, Trash2Icon, UserIcon, UsersIcon, WifiIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, reactive, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import * as XLSX from 'xlsx'
 import TabView from 'primevue/tabview'
 import TabPanel from 'primevue/tabpanel'
 import Button from 'primevue/button'
@@ -1064,6 +1063,7 @@ import Dialog from 'primevue/dialog'
 import { toast } from 'vue-sonner'
 import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
+import { formatCOP } from '~/utils/currency'
 import ContratoServicioWizard from '~/features/contratos/components/ContratoServicioWizard.vue'
 
 const contratosServicioService = new ContratosServicioService()
@@ -1579,6 +1579,7 @@ async function cargarDesdeExcel(event) {
   event.target.value = ''
   try {
     const buffer = await file.arrayBuffer()
+    const XLSX   = await import('xlsx')
     const wb     = XLSX.read(new Uint8Array(buffer), { type: 'array', cellDates: true })
     const ws     = wb.Sheets[wb.SheetNames[0]]
     const rows   = XLSX.utils.sheet_to_json(ws, { defval: '' })
@@ -1753,11 +1754,6 @@ async function eliminarArrendador(arrendador) {
 }
 
 // ── Helpers de formato ────────────────────────────────────────────────────────
-function formatCOP(val) {
-  if (val == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
-}
-
 function formatFecha(f) {
   if (!f) return '—'
   return String(f).slice(0, 10)
@@ -1772,6 +1768,7 @@ function formatFecha(f) {
 // mano en `components: {...}` y por eso necesitan import explícito aquí.
 import { computed, ref, toRefs } from 'vue'
 import { GBadge } from '~/components/gandalf/base/badge'
+import { formatCOP } from '~/utils/currency'
 import Button from 'primevue/button'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -1934,11 +1931,6 @@ const PagosTabla = {
       filtros.value.año = null
       filtros.value.mes = null
     }
-    function formatCOPLocal(val) {
-      if (val == null) return '—'
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
-    }
-
     return {
       ...toRefs(props),
       MESES_NOMBRES_STATIC,
@@ -1949,7 +1941,7 @@ const PagosTabla = {
       pagosFiltrados,
       hayFiltros,
       limpiar,
-      formatCOPLocal,
+      formatCOP,
     }
   },
   template: `
@@ -2001,7 +1993,7 @@ const PagosTabla = {
         <Column header="Valor pagado" style="width:150px">
           <template #body="{ data }">
             <span class="font-semibold tabular-nums" style="color:#2C2039">
-              {{ formatCOPLocal(data.valor_pagado) }}
+              {{ formatCOP(data.valor_pagado) }}
             </span>
           </template>
         </Column>
@@ -2099,10 +2091,6 @@ const FacturasCobradas = {
     const hayFiltros = computed(() => filtroAño.value || filtroMes.value)
 
     function limpiarFiltros() { filtroAño.value = null; filtroMes.value = null }
-    function formatCOP(val) {
-      if (val == null) return '—'
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
-    }
 
     return {
       ...toRefs(props),
@@ -2198,10 +2186,6 @@ const FacturasEmitidas = {
     const hayFiltros = computed(() => filtroAño.value || filtroMes.value)
 
     function limpiarFiltros() { filtroAño.value = null; filtroMes.value = null }
-    function formatCOP(val) {
-      if (val == null) return '—'
-      return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val)
-    }
 
     return {
       ...toRefs(props),

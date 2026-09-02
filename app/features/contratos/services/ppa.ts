@@ -16,7 +16,7 @@ import type {
   TarifaPpa,
 } from '~/features/contratos/types'
 import { comoLista, type ListaODirecto } from '~/types/api'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/ppa'
 
@@ -39,7 +39,7 @@ const RUTAS = {
     `/cumplimiento/ppa/${id}/plantas-inscritas-por-mes`,
 } as const
 
-export class PpaService extends LegacyBaseService {
+export class PpaService extends BaseService {
   listar(filtros: { proyecto_id?: number; q?: string } = {}): Promise<ContratoPpa[]> {
     return this.get<ContratoPpa[]>(RUTAS.contratos, { query: filtros })
   }

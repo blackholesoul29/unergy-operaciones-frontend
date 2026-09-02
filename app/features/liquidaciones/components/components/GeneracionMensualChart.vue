@@ -30,11 +30,11 @@
       <div class="grid grid-cols-3 gap-2">
         <div class="rounded-lg px-2 py-1.5 text-center" style="background:#F4F1FA">
           <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:var(--color-unergy-purple-dark)">Representación ($/kWh)</p>
-          <p class="text-sm font-bold tabular-nums" style="color:var(--color-unergy-deep)">{{ fmtTarifa(tarifas.representacion) }}</p>
+          <p class="text-sm font-bold tabular-nums" style="color:var(--color-unergy-deep)">{{ fmtCOP(tarifas.representacion) }}</p>
         </div>
         <div class="rounded-lg px-2 py-1.5 text-center" style="background:#F4F1FA">
           <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:var(--color-unergy-purple-dark)">CGM ($/kWh)</p>
-          <p class="text-sm font-bold tabular-nums" style="color:var(--color-unergy-deep)">{{ fmtTarifa(tarifas.cgm) }}</p>
+          <p class="text-sm font-bold tabular-nums" style="color:var(--color-unergy-deep)">{{ fmtCOP(tarifas.cgm) }}</p>
         </div>
         <div class="rounded-lg px-2 py-1.5 text-center" style="background:#F4F1FA">
           <p class="text-[10px] uppercase tracking-wide font-semibold" style="color:var(--color-unergy-purple-dark)">Administración (%)</p>
@@ -54,7 +54,7 @@ import {
 import ProgressSpinner from 'primevue/progressspinner'
 import { MonitoreoLegacyService } from '~/features/operaciones/services/monitoreo-legacy'
 import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
-import { formatPeriodo } from '~/features/liquidaciones/utils/liquidaciones'
+import { fmtCOP, formatPeriodo } from '~/features/liquidaciones/utils/liquidaciones'
 import { ChartColumnIcon, SunIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
@@ -81,11 +81,6 @@ function fmtKwh(v) {
   return `${v.toFixed(0)} kWh`
 }
 
-const _cop2 = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2, maximumFractionDigits: 2 })
-function fmtTarifa(v) {
-  if (v == null) return '—'
-  return _cop2.format(v)
-}
 // Administración se cobra como % (no $/kWh). Acepta fracción (0.02) o número (2).
 function fmtAdminPct(v) {
   if (v == null) return '—'

@@ -6,7 +6,7 @@
  * varios documentos.
  */
 import type { DocumentoArriendo, SubidaCuentaCobro } from '~/features/finanzas/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/arriendos/documentos'
 
@@ -16,7 +16,7 @@ const RUTAS = {
   subirCuentaCobro: `${BASE}/upload-cuenta-cobro`,
 } as const
 
-export class ArriendosDocsService extends LegacyBaseService {
+export class ArriendosDocsService extends BaseService {
   listarPorPeriodo(periodo: string): Promise<DocumentoArriendo[]> {
     return this.get<DocumentoArriendo[]>(RUTAS.periodo(periodo))
   }

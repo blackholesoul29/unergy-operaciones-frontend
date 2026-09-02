@@ -5,7 +5,7 @@ import type {
   FichaInformeOm,
   ProyectoInformeOm,
 } from '~/features/operaciones/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/informe-om'
 
@@ -18,7 +18,7 @@ const RUTAS = {
     `/${basePath}/${proyectoId}/archivos/${seccion}/${archivoId}`,
 } as const
 
-export class InformeOmService extends LegacyBaseService {
+export class InformeOmService extends BaseService {
   listarProyectos(): Promise<ProyectoInformeOm[]> {
     return this.get<ProyectoInformeOm[]>(RUTAS.proyectos)
   }

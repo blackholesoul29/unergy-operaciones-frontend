@@ -375,6 +375,7 @@ import ArriendosZipUpload from './ArriendosZipUpload.vue'
 import CalculoIpcPopover from '~/features/finanzas/components/CalculoIpcPopover.vue'
 const { docsPorProyecto, loadDocs, downloadDoc } = useArriendosDocs()
 import DocumentoIcon from '~/features/finanzas/components/DocumentoIcon.vue'
+import { formatCOP } from '~/utils/currency'
 import { ChartLineIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ClockIcon, InfoIcon, MessageSquareIcon, SaveIcon, TableIcon, TriangleAlertIcon } from '@lucide/vue'
 
 const router = useRouter()
@@ -430,11 +431,6 @@ const colsVisibles = reactive({
   historial:            false,
 })
 const showColMenu = ref(false)
-
-function formatCOP(v) {
-  if (v == null) return '—'
-  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(v)
-}
 
 // ── Tasas IPC ──────────────────────────────────────────────────────────────────
 const showIPCDialog = ref(false)

@@ -4208,7 +4208,7 @@ async function copiarImagenCapa(c) {
   try {
     canvas = _renderCapaCanvas(c)
   } catch (e) {
-    console.error('No se pudo renderizar la imagen de la capa', e)
+    logger.error('mem', e)
     return
   }
   canvas.toBlob(async (blob) => {
@@ -4358,7 +4358,7 @@ async function copiarImagenVenta(c) {
   try {
     canvas = _renderVentaCanvas(c)
   } catch (e) {
-    console.error('No se pudo renderizar la imagen del contrato', e)
+    logger.error('mem', e)
     return
   }
   canvas.toBlob(async (blob) => {
@@ -4641,7 +4641,7 @@ async function exportarAnualExcel() {
     const slug = consolidado ? 'consolidado' : slugify(anualData.value.contrato.nombre_interno || anualData.value.contrato.numero_codigo_contrato || 'contrato')
     XLSX.writeFile(wb, `matriz_anual_cumplimiento_${year}_${slug}.xlsx`)
   } catch (e) {
-    console.error('Error exportando matriz anual a Excel', e)
+    logger.error('mem', e)
     chartError.value = 'No se pudo generar el Excel de la matriz anual.'
   } finally {
     exportingExcel.value = false
@@ -4783,7 +4783,7 @@ async function exportarAnualPdf() {
     const slug = consolidado ? 'consolidado' : slugify(contrato.nombre_interno || contrato.numero_codigo_contrato || 'contrato')
     doc.save(`matriz_anual_cumplimiento_${year}_${slug}.pdf`)
   } catch (e) {
-    console.error('Error exportando matriz anual a PDF', e)
+    logger.error('mem', e)
     chartError.value = 'No se pudo generar el PDF de la matriz anual.'
   } finally {
     exportingPdf.value = false

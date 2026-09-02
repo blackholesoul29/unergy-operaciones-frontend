@@ -408,6 +408,7 @@ import InputNumber from 'primevue/inputnumber'
 import Select from 'primevue/select'
 import { toast } from 'vue-sonner'
 import { ContratosServicioService } from '~/features/contratos/services/contratos-servicio'
+import { formatCOP } from '~/utils/currency'
 import { CheckIcon, ChevronDownIcon, ExternalLinkIcon, FilterIcon, LoaderCircleIcon, ReceiptIcon, Trash2Icon, UsersIcon, XIcon } from '@lucide/vue'
 
 const contratosServicioService = new ContratosServicioService()
@@ -556,13 +557,6 @@ async function eliminarFactura(tipo, id) {
   }
 }
 
-// ── Helper ─────────────────────────────────────────────────────────────────────
-function formatCOP(val) {
-  if (val == null || val === '') return '—'
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency', currency: 'COP', maximumFractionDigits: 0,
-  }).format(val)
-}
 </script>
 
 <style scoped>

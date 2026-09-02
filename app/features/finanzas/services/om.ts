@@ -13,7 +13,7 @@ import type {
   RespuestaSubidaFacturaOm,
   TasaIpc,
 } from '~/features/finanzas/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/om'
 
@@ -35,7 +35,7 @@ const RUTAS = {
     `${BASE}/documento/${periodo}/${contratoId}`,
 } as const
 
-export class OmService extends LegacyBaseService {
+export class OmService extends BaseService {
   obtenerCalculo(periodo: string): Promise<RespuestaCalculoOm> {
     return this.get<RespuestaCalculoOm>(RUTAS.calculo(periodo))
   }

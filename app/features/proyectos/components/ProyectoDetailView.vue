@@ -837,7 +837,6 @@ import DatePicker from 'primevue/datepicker'
 import Checkbox from 'primevue/checkbox'
 import Divider from 'primevue/divider'
 import { toast } from 'vue-sonner'
-import * as XLSX from 'xlsx'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { ClientesService } from '~/features/clientes/services/clientes'
 import { OperadoresRedService } from '~/features/operadores-red/services/operadores-red'
@@ -1032,9 +1031,10 @@ function sanitizeFilename(name) {
   return String(name || 'proyecto').replace(/[\\/:*?"<>|]+/g, '_').trim() || 'proyecto'
 }
 
-function descargarSimulacionExcel() {
+async function descargarSimulacionExcel() {
   try {
     if (!proyecto.value) return
+    const XLSX = await import('xlsx')
     const header = ['Escenario', ...MESES, 'Total anual (kWh)']
     const rows = SIMULACIONES.map(sim => {
       const vals = sim.displayArray.value.map(v => (v == null ? null : Number(v)))

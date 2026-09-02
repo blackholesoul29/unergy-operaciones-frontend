@@ -10,7 +10,7 @@ import type {
   ResumenRegistroCnd,
   ValidacionCreg93,
 } from '~/features/registros-cnd/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/registros-cnd'
 
@@ -32,7 +32,7 @@ const RUTAS = {
   correo: (id: RegistroCnd['id'], tipo: string) => `${BASE}/${id}/correos/${tipo}`,
 } as const
 
-export class RegistrosCndService extends LegacyBaseService {
+export class RegistrosCndService extends BaseService {
   listar(): Promise<ResumenRegistroCnd[]> {
     return this.get<ResumenRegistroCnd[]>(RUTAS.registros)
   }

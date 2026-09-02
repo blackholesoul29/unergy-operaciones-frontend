@@ -5,7 +5,7 @@ import type {
   PayloadEnvioCgm,
   RespuestaEnvioCgm,
 } from '~/features/operadores-red/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const RUTAS = {
   fronteras: '/fronteras',
@@ -16,7 +16,7 @@ const RUTAS = {
 /** "Operaciones Unergy" (todas las fronteras) puede tardar >150 s el último día del mes. */
 const TIMEOUT_ENVIO_MS = 300_000
 
-export class ReporteCgmService extends LegacyBaseService {
+export class ReporteCgmService extends BaseService {
   /** Las fronteras vivas, con sus vínculos de operador y clientes CGM. */
   listarFronteras(): Promise<FronteraCgm[]> {
     return this.get<FronteraCgm[]>(RUTAS.fronteras, {

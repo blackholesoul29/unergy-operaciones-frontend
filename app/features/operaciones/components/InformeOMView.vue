@@ -636,6 +636,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { logger } from '~/core/logger'
 import { InformeOmService } from '~/features/operaciones/services/informe-om'
 import EvidenciaUploader from '~/features/operaciones/components/EvidenciaUploader.vue'
 import ListaEditable from '~/features/operaciones/components/ListaEditable.vue'
@@ -975,7 +976,7 @@ async function descargarPdf() {
     const slug = slugify(detalle.proyecto.nombre_comercial || 'informe').toLowerCase()
     doc.save(`informe_puesta_en_marcha_${slug}.pdf`)
   } catch (e) {
-    console.error('Error exportando informe a PDF', e)
+    logger.error('operaciones', e)
     toast.error('No se pudo generar el PDF', { duration: 3500 })
   } finally {
     exportandoPdf.value = false

@@ -8,7 +8,7 @@ import type {
   RespuestaMonitoreoSolar,
   RespuestaResumenGeneracionDia,
 } from '~/features/solar/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/generacion-solar'
 
@@ -21,7 +21,7 @@ const RUTAS = {
   historialProyecto: (proyectoId: number) => `${BASE}/proyecto/${proyectoId}/historial`,
 } as const
 
-export class GeneracionSolarService extends LegacyBaseService {
+export class GeneracionSolarService extends BaseService {
   obtenerMonitoreo(): Promise<RespuestaMonitoreoSolar> {
     return this.get<RespuestaMonitoreoSolar>(RUTAS.monitoring)
   }

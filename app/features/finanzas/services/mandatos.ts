@@ -7,7 +7,7 @@ import type {
   RespuestaSubidaZipMandatos,
   ResumenMandatosOperaciones,
 } from '~/features/finanzas/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/mandatos'
 
@@ -22,7 +22,7 @@ const RUTAS = {
   inversionistas: '/mandato-inversionistas',
 } as const
 
-export class MandatosService extends LegacyBaseService {
+export class MandatosService extends BaseService {
   listar(periodo: string): Promise<MandatoOperaciones[]> {
     return this.get<MandatoOperaciones[]>(RUTAS.mandatos, { query: { periodo } })
   }

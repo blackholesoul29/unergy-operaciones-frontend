@@ -19,7 +19,7 @@ import type {
   ProyectoPendiente,
   ReporteBackfillInversores,
 } from '~/features/proyectos/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/proyectos'
 
@@ -46,7 +46,7 @@ const RUTAS = {
   contratosServicio: '/contratos-servicio',
 } as const
 
-export class ProyectosService extends LegacyBaseService {
+export class ProyectosService extends BaseService {
   async listar({
     page = 1,
     size = 500,

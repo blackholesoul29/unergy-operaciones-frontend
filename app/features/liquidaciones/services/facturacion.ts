@@ -17,7 +17,7 @@ import type {
   RespuestaFacturacion,
   RespuestaFacturacionDespacho,
 } from '~/features/liquidaciones/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const RUTAS = {
   facturacion: '/facturacion',
@@ -31,7 +31,7 @@ const RUTAS = {
   ippMensual: '/ppa/ipp/mensual',
 } as const
 
-export class FacturacionService extends LegacyBaseService {
+export class FacturacionService extends BaseService {
   obtener(periodo: string): Promise<RespuestaFacturacion> {
     return this.get<RespuestaFacturacion>(RUTAS.facturacion, { query: { periodo } })
   }

@@ -345,6 +345,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
+import { logger } from '~/core/logger'
 import { FronterasService } from '~/features/fronteras/services/fronteras'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { OperadoresRedService } from '~/features/operadores-red/services/operadores-red'
@@ -668,7 +669,7 @@ async function loadData() {
   try {
     fronteras.value = await fronterasService.listar({ limit: 500 })
   } catch (e) {
-    console.error('Error loading fronteras:', e)
+    logger.error('fronteras', e)
   } finally {
     loading.value = false
   }

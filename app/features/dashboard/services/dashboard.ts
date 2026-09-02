@@ -4,14 +4,14 @@
  */
 import type { KpisOperativos } from '~/types/dashboard'
 import type { ResumenCumplimientoPpa } from '~/features/dashboard/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const RUTAS = {
   kpis: '/dashboard/kpis',
   cumplimientoPpaResumen: '/cumplimiento/ppa/resumen',
 } as const
 
-export class DashboardService extends LegacyBaseService {
+export class DashboardService extends BaseService {
   obtenerKpis(): Promise<KpisOperativos> {
     return this.get<KpisOperativos>(RUTAS.kpis)
   }

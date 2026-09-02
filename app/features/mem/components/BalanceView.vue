@@ -95,6 +95,7 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { logger } from '~/core/logger'
 import { EvoService } from '~/features/mem/services/evo'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
@@ -144,7 +145,7 @@ async function fetchData() {
     if (h) history.value = h
     if (c) climaHistory.value = c
   } catch (e) {
-    console.error('Error loading balance data:', e)
+    logger.error('mem', e)
   } finally {
     loading.value = false
   }

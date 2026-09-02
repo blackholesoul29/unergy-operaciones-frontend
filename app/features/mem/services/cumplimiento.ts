@@ -17,7 +17,7 @@ import type {
   RespuestaAnualMatrizContratos,
   SimuladorCumplimiento,
 } from '~/features/mem/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/cumplimiento'
 
@@ -34,7 +34,7 @@ const RUTAS = {
   descubrimientos: `${BASE}/descubrimientos`,
 } as const
 
-export class CumplimientoService extends LegacyBaseService {
+export class CumplimientoService extends BaseService {
   listarPpa(filtros: { incluir_todos: boolean }): Promise<ContratoCumplimientoPpa[]> {
     return this.get<ContratoCumplimientoPpa[]>(RUTAS.ppa, { query: { ...filtros } })
   }

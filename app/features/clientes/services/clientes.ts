@@ -16,7 +16,7 @@ import type {
   ServicioContratosResumen,
   TasaServicioCliente,
 } from '~/features/clientes/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/clientes'
 
@@ -43,7 +43,7 @@ const RUTAS = {
   testCorreo: (id: number) => `${BASE}/${id}/test-correo`,
 } as const
 
-export class ClientesService extends LegacyBaseService {
+export class ClientesService extends BaseService {
   listarVistaComercial(): Promise<ClienteVistaComercial[]> {
     return this.get<ClienteVistaComercial[]>(RUTAS.vistaComercial)
   }

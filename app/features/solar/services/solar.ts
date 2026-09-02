@@ -8,7 +8,7 @@ import type {
   RespuestaRankingSolar,
   RespuestaReloadCacheSolar,
 } from '~/features/solar/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/solar'
 
@@ -21,7 +21,7 @@ const RUTAS = {
   reloadCache: `${BASE}/reload-cache`,
 } as const
 
-export class SolarService extends LegacyBaseService {
+export class SolarService extends BaseService {
   obtenerFiltros(): Promise<FiltrosSolar> {
     return this.get<FiltrosSolar>(RUTAS.filtros)
   }

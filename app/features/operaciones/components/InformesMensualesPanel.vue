@@ -187,6 +187,7 @@ import Select from 'primevue/select'
 import MultiSelect from 'primevue/multiselect'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
+import { logger } from '~/core/logger'
 import { InformesService } from '~/features/operaciones/services/informes'
 import { MonitoreoLegacyService } from '~/features/operaciones/services/monitoreo-legacy'
 import { FallasService } from '~/features/fallas/services/fallas'
@@ -1566,7 +1567,7 @@ async function generar() {
     }
     ultimoTipo.value = tipo.value === 'portafolio' ? 'port' : tipo.value === 'fmo' ? 'fmo' : tipo.value === 'ranking' ? 'ranking' : 'op'
   } catch (e) {
-    console.error('[InformesMensuales] generar error', e)
+    logger.error('operaciones', e)
     error.value = { title: 'Error al generar el informe', detail: e.data?.detail || e.message }
   } finally {
     generando.value = false

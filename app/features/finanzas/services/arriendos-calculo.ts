@@ -9,7 +9,7 @@ import type {
   RespuestaCalculoArriendos,
   TasaIpc,
 } from '~/features/finanzas/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/arriendos'
 
@@ -22,7 +22,7 @@ const RUTAS = {
   ipcAño: (año: number) => `${BASE}/ipc/${año}`,
 } as const
 
-export class ArriendosCalculoService extends LegacyBaseService {
+export class ArriendosCalculoService extends BaseService {
   obtenerCalculo(periodo: string): Promise<RespuestaCalculoArriendos> {
     return this.get<RespuestaCalculoArriendos>(RUTAS.calculo(periodo))
   }

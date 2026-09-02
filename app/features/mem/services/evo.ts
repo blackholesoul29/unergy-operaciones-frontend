@@ -8,7 +8,7 @@ import type {
   RegistroPrecioMensual,
   RegistroPrecipitacion,
 } from '~/features/mem/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const RUTAS = {
   dailySpotHistory: '/evo/dailyspot/history',
@@ -20,7 +20,7 @@ const RUTAS = {
   climaPrecip: '/evo/clima/precip',
 } as const
 
-export class EvoService extends LegacyBaseService {
+export class EvoService extends BaseService {
   obtenerHistoricoSpot(days: number): Promise<RegistroDailySpot[]> {
     return this.get<RegistroDailySpot[]>(RUTAS.dailySpotHistory, { query: { days } })
   }

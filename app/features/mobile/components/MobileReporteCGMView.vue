@@ -100,6 +100,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
+import { logger } from '~/core/logger'
 import { ReporteCgmService } from '~/features/operadores-red/services/reporte-cgm'
 import { formatearNombre } from '~/utils/nombreFormato'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
@@ -235,7 +236,7 @@ async function loadData() {
   try {
     fronteras.value = await reporteCgmService.listarFronteras()
   } catch (e) {
-    console.error('Error loading fronteras:', e)
+    logger.error('mobile', e)
   } finally {
     loading.value = false
   }

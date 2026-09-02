@@ -3,8 +3,10 @@
     <PageHeader title="Consumo"
                 subtitle="Energía contratada hora por hora, según el FTP de XM">
       <template #actions>
-        <Button label="Exportar" icon="pi pi-download" size="small" outlined
-                :disabled="!filtrados.length" @click="exportar" />
+        <Button label="Exportar" size="small" outlined
+                :disabled="!filtrados.length" @click="exportar">
+          <template #icon><DownloadIcon class="size-[1em]" /></template>
+        </Button>
       </template>
     </PageHeader>
 
@@ -51,7 +53,7 @@
 
     <div v-if="error" class="rounded-lg px-3 py-2 text-xs flex items-center gap-2"
          style="background:#FEF2F2; border:1px solid #FECACA; color:#991B1B">
-      <i class="pi pi-times-circle" />{{ error }}
+      <CircleXIcon class="size-[1em]" />{{ error }}
     </div>
 
     <!-- Tabla: 24 horas + total. Las tres primeras columnas quedan fijas para no
@@ -117,7 +119,7 @@ import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import { VERSIONES, VERSION_INICIAL } from '~/features/liquidaciones/types'
 import { LiquidacionesApiService } from '~/features/liquidaciones/services/liquidaciones-api'
-import { LoaderCircleIcon, RefreshCwIcon, SearchIcon, ZapIcon } from '@lucide/vue'
+import { CircleXIcon, DownloadIcon, LoaderCircleIcon, RefreshCwIcon, SearchIcon, ZapIcon } from '@lucide/vue'
 
 const liquidacionesApi = new LiquidacionesApiService()
 

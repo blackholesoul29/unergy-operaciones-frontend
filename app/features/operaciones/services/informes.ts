@@ -7,7 +7,7 @@ import type {
   RespuestaCompuestoInforme,
   RespuestaEnviarInforme,
 } from '~/features/operaciones/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/informes/'
 
@@ -25,7 +25,7 @@ const RUTAS = {
     `${BASE}${id}/comentarios/${comentarioId}`,
 } as const
 
-export class InformesService extends LegacyBaseService {
+export class InformesService extends BaseService {
   listar(filtros: FiltrosListaInformes = {}): Promise<Informe[]> {
     return this.get<Informe[]>(RUTAS.informes, { query: { ...filtros } })
   }

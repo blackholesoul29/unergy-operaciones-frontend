@@ -4,7 +4,7 @@ import type {
   FiltrosArchivosEstadoResultados,
   RespuestaArchivosEstadoResultados,
 } from '~/features/finanzas/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/estados-resultados'
 
@@ -14,7 +14,7 @@ const RUTAS = {
   descargar: (id: ArchivoEstadoResultados['id']) => `${BASE}/archivos/${id}/descargar`,
 } as const
 
-export class EstadosResultadosService extends LegacyBaseService {
+export class EstadosResultadosService extends BaseService {
   listarArchivos(
     filtros: FiltrosArchivosEstadoResultados,
   ): Promise<RespuestaArchivosEstadoResultados> {

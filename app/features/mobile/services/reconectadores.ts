@@ -1,6 +1,6 @@
 /** Reconectadores remotos (Solenium): estado por proyecto y envío de comandos ON/OFF. */
 import type { EstadoReconectador, PayloadComandoReconectador } from '~/features/mobile/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/reconectadores'
 
@@ -9,7 +9,7 @@ const RUTAS = {
   comando: (proyectoId: number | string) => `${BASE}/${proyectoId}/comando`,
 } as const
 
-export class ReconectadoresService extends LegacyBaseService {
+export class ReconectadoresService extends BaseService {
   obtenerEstados(): Promise<EstadoReconectador[]> {
     return this.get<EstadoReconectador[]>(RUTAS.estados)
   }

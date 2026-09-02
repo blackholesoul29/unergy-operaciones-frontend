@@ -1,9 +1,9 @@
 /**
- * Cliente HTTP de la plataforma de operaciones, sobre `air`. Transporte de
- * `LegacyBaseService` (`~/core/legacy-service.ts`) y por tanto de todo
- * service. `air` no tiene interceptores — la forma de replicar el contrato de
- * sesión (Bearer, 401, 403) es envolver `fetch` (ver "Refreshing on a 401" en
- * el README de `air`) y dejar que siga lanzando `AirError` como con cualquier
+ * Cliente HTTP de la plataforma de operaciones, sobre `air`. El transporte por
+ * defecto de `BaseService` (`~/core/service.ts`) y por tanto de todo service.
+ * `air` no tiene interceptores — la forma de replicar el contrato de sesión
+ * (Bearer, 401, 403) es envolver `fetch` (ver "Refreshing on a 401" en el
+ * README de `air`) y dejar que siga lanzando `AirError` como con cualquier
  * no-2xx.
  *
  * El contrato de sesión:
@@ -13,10 +13,10 @@
  *     tiene el suyo);
  *   - un 403 avisa con un toast sin cerrar la sesión.
  *
- * Convive a propósito con `~/core/api.ts` (el `BaseService` que usa `AuthService`,
- * también sobre `air`): aquel no lleva este contrato de sesión porque su token
- * lo resuelve quien lo instancia, no `~/core/security`. En la fase 3, cuando la
- * sesión pase a cookies httpOnly, los dos se funden en uno.
+ * Un service que no quiera este contrato (un login, donde un 401 es una
+ * respuesta normal; el agente local de XM, que no lleva token de la
+ * plataforma) le pasa a `BaseService` una instancia de `air` propia en vez de
+ * esta — ver `OperacionesAuthService` y `XmAgenteLocalService`.
  */
 import air, { type AirClient } from '@korastd/air'
 import { clearTokens, getAccessToken, isPreviewToken } from '~/core/security'

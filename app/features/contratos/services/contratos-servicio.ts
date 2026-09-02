@@ -17,7 +17,7 @@ import type {
   SerieIndexacionCalculada,
   TipoServicioContrato,
 } from '~/features/contratos/types'
-import { LegacyBaseService } from '~/core/legacy-service'
+import { BaseService } from '~/core/service'
 
 const BASE = '/contratos-servicio'
 
@@ -38,7 +38,7 @@ const RUTAS = {
   arrendador: (arrendadorId: Arrendador['id']) => `/arriendos/arrendadores/${arrendadorId}`,
 } as const
 
-export class ContratosServicioService extends LegacyBaseService {
+export class ContratosServicioService extends BaseService {
   listar(
     filtros: { tipo?: TipoServicioContrato; proyecto_id?: number; limit?: number } = {},
   ): Promise<ContratoServicio[]> {
