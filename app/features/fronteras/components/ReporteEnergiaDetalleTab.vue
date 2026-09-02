@@ -71,7 +71,7 @@
         <dt style="color: #9b89b5;">Energía Total</dt><dd class="font-mono">{{ fmtKwh(detalle.energia_final_kwh) }}</dd>
         <template v-if="detalle.tipo === 'generacion'">
           <dt style="color: #9b89b5;">Factor de pérdida (FP)</dt>
-          <dd class="font-mono">{{ detalle.fp != null ? detalle.fp.toFixed(4) : '—' }}</dd>
+          <dd class="font-mono">{{ fpUsadoHoy && detalle.fp != null ? detalle.fp.toFixed(4) : '—' }}</dd>
         </template>
         <template v-if="(detalle.horas_rellenadas_medidor_cruzado || []).length">
           <dt style="color: #9b89b5;">Rellenado (Medidor cruzado)</dt>
@@ -847,6 +847,15 @@ const esCasoConfiado = computed(() => {
 // para 'Detalle de las fuentes' (medidor principal/respaldo/Solenium + fp),
 // no piden nada nuevo al backend. 'Curva típica' es la excepción: ya vivía
 // como su propio endpoint/botón, así que solo se reusa aquí.
+//
+// 'Inversores × FP' depende de 'd.fp' -- desde 2026-09-02 el backend lo
+// calcula y persiste SIEMPRE (ver orquestador._upsert_generacion), no solo
+// cuando el Caso ganador lo usó, así que esta opción se habilita solo con
+// que 'd.curva_solenium' tenga dato real, sin importar el Caso (antes
+// quedaba deshabilitada con Solenium completo si el Caso no necesitaba FP,
+// ver GD Garza / Chiriguaná Norte 1). Que 'd.fp' tenga valor no dice si
+// influyó en el número reportado hoy -- eso es 'fpUsadoHoy', usado solo
+// para el resumen de arriba, no para esta lista.
 const opcionesReportarCon = computed(() => {
   const d = detalle.value
   if (!d) return []
@@ -1080,6 +1089,20 @@ function casoInfo5(d) {
   }
   return { nombre: 'Sin inversores registrados', descripcion: 'Hay medidor con dato, pero el proyecto no tiene inversores en Solenium contra qué validarlo' }
 }
+// 'fp' ahora se calcula y persiste SIEMPRE en el backend (no solo cuando el
+// Caso ganador lo usó para 'energia_final_kwh'), para que 'Reportar con
+// otra fuente' pueda ofrecer "Inversores × FP" sin importar el Caso del día
+// (ver opcionesReportarCon abajo). Que 'fp' tenga valor ya NO implica que
+// influyó en el número reportado hoy -- este computed es la señal de eso:
+// 'medidor_usado' === 'inversores' cubre Caso 3 y los fallbacks de
+// inversores×FP (Caso 5 con Solenium parcial); 'horas_rellenadas_solenium'
+// cubre el relleno horario parcial, que puede usar FP para algunas horas
+// sin que 'medidor_usado' del día cambie (2026-09-02).
+const fpUsadoHoy = computed(() => {
+  const d = detalle.value
+  if (!d) return false
+  return d.medidor_usado === 'inversores' || (d.horas_rellenadas_solenium || []).length > 0
+})
 const casoInfo = computed(() => {
   const d = detalle.value
   if (!d) return { nombre: '', descripcion: '' }
