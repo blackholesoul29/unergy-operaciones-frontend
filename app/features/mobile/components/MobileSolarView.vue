@@ -90,9 +90,9 @@
           <div v-if="(fallasMap[p.proyecto_id] || []).length" class="ms-fallas">
             <button v-for="f in (fallasMap[p.proyecto_id] || []).slice(0, 2)" :key="f.id"
               class="ms-falla" @click="openFalla(f)">
-              <span class="ms-falla-stripe" :style="{ background: f.prioridad?.color_hex || '#9ca3af' }" />
-              <span class="ms-falla-estado" :style="{ background: (f.estado?.color_hex || 'var(--color-unergy-purple)') + '22', color: f.estado?.color_hex || 'var(--color-unergy-purple)' }">{{ f.estado?.etiqueta }}</span>
-              <span class="ms-falla-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</span>
+              <span class="ms-falla-stripe" :style="{ background: colorPrioridad(f.prioridad?.codigo, '#9ca3af') }" />
+              <span class="ms-falla-estado" :style="{ background: colorEstado(f.estado?.codigo) + '22', color: colorEstado(f.estado?.codigo) }">{{ f.estado?.etiqueta }}</span>
+              <span class="ms-falla-tipo">{{ f.tipo?.etiqueta || 'Falla' }}</span>
               <ChevronRightIcon class="ms-falla-arrow size-[1em]" />
             </button>
             <span v-if="(fallasMap[p.proyecto_id] || []).length > 2" class="ms-falla-more">
@@ -153,6 +153,7 @@
 import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { FallasService } from '~/features/fallas/services/fallas'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { UsuariosService } from '~/features/admin/services/usuarios'
 import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'
 import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'

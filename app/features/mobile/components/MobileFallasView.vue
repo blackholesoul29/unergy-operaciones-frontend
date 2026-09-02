@@ -23,7 +23,7 @@
         <button :class="['mf-fchip', filtro === null && 'mf-fchip--on']" @click="filtro = null">Todas</button>
         <button v-for="e in catalogos.estados" :key="e.id"
           :class="['mf-fchip', filtro === e.id && 'mf-fchip--on']"
-          :style="filtro === e.id ? { background: e.color_hex || 'var(--color-unergy-purple)', borderColor: e.color_hex || 'var(--color-unergy-purple)', color: '#fff' } : {}"
+          :style="filtro === e.id ? { background: colorEstado(e.codigo), borderColor: colorEstado(e.codigo), color: '#fff' } : {}"
           @click="filtro = e.id">{{ e.etiqueta }}</button>
       </div>
     </div>
@@ -38,16 +38,16 @@
       </div>
       <template v-else>
         <button v-for="f in filtradas" :key="f.id" class="mf-card" @click="openDetail(f)">
-          <span class="mf-stripe" :style="{ background: f.prioridad?.color_hex || '#9ca3af' }" />
+          <span class="mf-stripe" :style="{ background: colorPrioridad(f.prioridad?.codigo, '#9ca3af') }" />
           <div class="mf-card-main">
             <div class="mf-card-top">
               <code class="mf-card-code">{{ f.codigo_interno }}</code>
-              <span class="mf-card-estado" :style="{ background: (f.estado?.color_hex || 'var(--color-unergy-purple)') + '22', color: f.estado?.color_hex || 'var(--color-unergy-purple)' }">{{ f.estado?.etiqueta }}</span>
+              <span class="mf-card-estado" :style="{ background: colorEstado(f.estado?.codigo) + '22', color: colorEstado(f.estado?.codigo) }">{{ f.estado?.etiqueta }}</span>
             </div>
-            <div class="mf-card-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</div>
+            <div class="mf-card-tipo">{{ f.tipo?.etiqueta || 'Falla' }}</div>
             <div class="mf-card-proj"><ZapIcon class="size-[1em]" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
             <div class="mf-card-foot">
-              <span class="mf-prio" :style="{ color: f.prioridad?.color_hex || '#6b5a8a' }">{{ f.prioridad?.etiqueta }}</span>
+              <span class="mf-prio" :style="{ color: colorPrioridad(f.prioridad?.codigo, '#6b5a8a') }">{{ f.prioridad?.etiqueta }}</span>
               <span class="mf-time">{{ relativeTime(f.fecha_identificacion) }}</span>
               <span v-if="f.asignado_a" class="mf-assignee" :title="f.asignado_a.nombre">{{ initials(f.asignado_a.nombre) }}</span>
             </div>
@@ -69,6 +69,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { FallasService } from '~/features/fallas/services/fallas'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { UsuariosService } from '~/features/admin/services/usuarios'
 import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'

@@ -90,7 +90,7 @@
               <code class="gf-compact-code">{{ f.codigo_interno }}</code>
               <span v-if="f.estado?.codigo"
                 class="gf-compact-dot"
-                :style="{ background: f.estado?.color_hex || 'var(--color-unergy-purple)' }"
+                :style="{ background: colorEstado(f.estado?.codigo, 'var(--color-unergy-purple)') }"
                 v-tooltip.right="f.estado?.etiqueta" />
             </div>
             <div class="gf-compact-line2">{{ tituloFalla(f) }}</div>
@@ -187,7 +187,7 @@
 
         <Column header="Estado" style="width:130px">
           <template #body="{ data }">
-            <GBadge :color="data.estado?.color_hex || '#915BD8'">{{ data.estado?.etiqueta || '—' }}</GBadge>
+            <GBadge :color="colorEstado(data.estado?.codigo)">{{ data.estado?.etiqueta || '—' }}</GBadge>
           </template>
         </Column>
 
@@ -264,7 +264,7 @@
 
             <!-- Badges (estado, prioridad, categoría) -->
             <div class="flex flex-wrap gap-1.5">
-              <GBadge :color="drawerFalla.estado?.color_hex || '#915BD8'">{{ drawerFalla.estado?.etiqueta }}</GBadge>
+              <GBadge :color="colorEstado(drawerFalla.estado?.codigo)">{{ drawerFalla.estado?.etiqueta }}</GBadge>
               <span class="prio-pill" :style="prioPillStyle(drawerFalla.prioridad?.codigo)">
                 {{ drawerFalla.prioridad?.etiqueta }}
               </span>
@@ -436,7 +436,7 @@
                   </div>
                   <p v-if="seg.nota" class="gf-body-text whitespace-pre-line">{{ seg.nota }}</p>
                   <div v-if="seg.estado_nuevo" class="mt-1.5">
-                    <GBadge :color="seg.estado_nuevo?.color_hex || '#915BD8'">{{ seg.estado_nuevo?.etiqueta }}</GBadge>
+                    <GBadge :color="colorEstado(seg.estado_nuevo?.codigo)">{{ seg.estado_nuevo?.etiqueta }}</GBadge>
                   </div>
                 </div>
               </div>
@@ -517,6 +517,7 @@ import { FallasService } from '~/features/fallas/services/fallas'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { UsuariosService } from '~/features/admin/services/usuarios'
 import { tituloFalla, categoriaFalla } from '~/features/fallas/utils/fallaTitulo'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 
 const route = useRoute()
 const router = useRouter()
@@ -532,13 +533,6 @@ const BUCKETS = [
   { key: 'resueltas',   label: 'Resueltas',   icon: CircleCheckIcon,  color: '#16a34a' },
   { key: 'todas',       label: 'Todas',       icon: ListIcon,          color: '#915BD8' },
 ]
-
-const PRIO_COLORS = {
-  critica: '#dc2626',
-  alta:    '#ea580c',
-  media:   '#d97706',
-  baja:    '#6b7280',
-}
 
 const AVATAR_PALETTE = ['#915BD8', '#2563eb', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#7c3aed', '#db2777']
 
@@ -992,7 +986,7 @@ function confirmDelete(falla) {
 }
 
 // ── Helpers visuales ─────────────────────────────────────────────────────
-function prioColor(codigo) { return PRIO_COLORS[codigo] || '#9ca3af' }
+function prioColor(codigo) { return colorPrioridad(codigo, '#9ca3af') }
 function prioPillStyle(codigo) {
   const c = prioColor(codigo)
   return { background: c + '18', color: c, border: `1px solid ${c}40` }

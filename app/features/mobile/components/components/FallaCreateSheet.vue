@@ -107,7 +107,7 @@
               <div class="fc-chips">
                 <button v-for="p in catalogos.prioridades" :key="p.id" type="button"
                   :class="['fc-chip', f.prioridad_id === p.id && 'fc-chip--on']"
-                  :style="f.prioridad_id === p.id ? chipOn(p.color_hex) : {}"
+                  :style="f.prioridad_id === p.id ? chipOn(colorPrioridad(p.codigo)) : {}"
                   @click="f.prioridad_id = p.id">{{ p.etiqueta }}</button>
               </div>
             </div>
@@ -118,7 +118,7 @@
               <div class="fc-chips">
                 <button v-for="e in catalogos.estados" :key="e.id" type="button"
                   :class="['fc-chip', f.estado_id === e.id && 'fc-chip--on']"
-                  :style="f.estado_id === e.id ? chipOn(e.color_hex) : {}"
+                  :style="f.estado_id === e.id ? chipOn(colorEstado(e.codigo)) : {}"
                   @click="f.estado_id = e.id">{{ e.etiqueta }}</button>
               </div>
             </div>
@@ -158,6 +158,7 @@ import { FallasService } from '~/features/fallas/services/fallas'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { CheckIcon, CirclePlusIcon, LoaderCircleIcon, PlusIcon, TriangleAlertIcon, XIcon } from '@lucide/vue'
 import { iconoCategoriaFalla } from '~/features/fallas/utils/fallaTitulo'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 
 const fallasService = new FallasService()
 const proyectosService = new ProyectosService()

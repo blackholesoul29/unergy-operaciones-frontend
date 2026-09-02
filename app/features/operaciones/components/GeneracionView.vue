@@ -360,7 +360,7 @@
             </Column>
             <Column header="Estado" style="width:120px">
               <template #body="{ data }">
-                <GBadge :color="data.estado?.color_hex || '#915BD8'">{{ data.estado?.etiqueta || '—' }}</GBadge>
+                <GBadge :color="colorEstado(data.estado?.codigo)">{{ data.estado?.etiqueta || '—' }}</GBadge>
               </template>
             </Column>
             <Column header="Energía perdida" style="width:140px">
@@ -382,6 +382,7 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { toast } from 'vue-sonner'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import MultiSelect from 'primevue/multiselect'
@@ -956,9 +957,8 @@ const hoverFalla = computed(() => {
 })
 
 // Helpers visuales de la tabla de fallas.
-const PRIO_COLORS = { critica: '#dc2626', alta: '#ea580c', media: '#d97706', baja: '#6b7280' }
 function prioPillStyle(codigo) {
-  const c = PRIO_COLORS[codigo] || '#9ca3af'
+  const c = colorPrioridad(codigo, '#9ca3af')
   return { background: c + '18', color: c, border: `1px solid ${c}40` }
 }
 function fmtFechaCorta(d) {

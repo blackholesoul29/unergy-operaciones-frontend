@@ -101,7 +101,7 @@
                     <code class="gf-compact-code">{{ f.codigo_interno }}</code>
                     <span v-if="f.estado?.codigo"
                       class="gf-compact-dot"
-                      :style="{ background: f.estado?.color_hex || 'var(--color-unergy-purple)' }"
+                      :style="{ background: colorEstado(f.estado?.codigo, 'var(--color-unergy-purple)') }"
                       v-tooltip.right="f.estado?.etiqueta" />
                   </div>
                   <div class="gf-compact-line2">{{ f.tipo?.etiqueta || f.tipo_libre || f.descripcion || 'Sin descripción' }}</div>
@@ -190,7 +190,7 @@
                 <template #body="{ data }">
                   <div class="flex items-center gap-1.5">
                     <span class="w-1.5 h-1.5 rounded-full shrink-0"
-                      :style="{ background: data.estado?.color_hex || '#9ca3af' }"></span>
+                      :style="{ background: colorEstado(data.estado?.codigo, '#9ca3af') }"></span>
                     <span class="text-[11px] text-gray-600">{{ data.estado?.etiqueta || '—' }}</span>
                   </div>
                 </template>
@@ -284,7 +284,7 @@
                 <div>
                   <p class="gf-hero-title">{{ tituloFalla(drawerFalla) }}</p>
                   <div class="flex flex-wrap gap-1.5 mt-2">
-                    <GBadge :color="drawerFalla.estado?.color_hex || '#915BD8'">{{ drawerFalla.estado?.etiqueta }}</GBadge>
+                    <GBadge :color="colorEstado(drawerFalla.estado?.codigo)">{{ drawerFalla.estado?.etiqueta }}</GBadge>
                     <span class="prio-pill" :style="prioPillStyle(drawerFalla.prioridad?.codigo)">
                       {{ drawerFalla.prioridad?.etiqueta }}
                     </span>
@@ -566,7 +566,7 @@
                       </div>
                       <p v-if="seg.nota" class="gf-body-text whitespace-pre-line">{{ seg.nota }}</p>
                       <div v-if="seg.estado_nuevo" class="mt-1.5">
-                        <GBadge :color="seg.estado_nuevo?.color_hex || '#915BD8'">{{ seg.estado_nuevo?.etiqueta }}</GBadge>
+                        <GBadge :color="colorEstado(seg.estado_nuevo?.codigo)">{{ seg.estado_nuevo?.etiqueta }}</GBadge>
                       </div>
                     </div>
                   </div>
@@ -679,6 +679,7 @@ import { FallasService } from '~/features/fallas/services/fallas'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { formatCOP as fmtCOP } from '~/utils/currency'
 import { ArrowRightIcon, BellIcon, BriefcaseIcon, BuildingIcon, CalendarIcon, CalendarPlusIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, ClockIcon, DollarSignIcon, ExternalLinkIcon, HourglassIcon, InboxIcon, InfoIcon, LightbulbIcon, ListIcon, LoaderCircleIcon, MessagesSquareIcon, PencilIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, SendIcon, ServerIcon, TimerIcon, Trash2Icon, UserIcon, UserPenIcon, WifiIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 
@@ -707,13 +708,6 @@ const BUCKETS = [
   { key: 'cerradas', label: 'Cerradas',   icon: CircleCheckIcon,      color: '#16a34a' },
   { key: 'todas',    label: 'Todas',      icon: ListIcon,              color: '#915BD8' },
 ]
-
-const PRIO_COLORS = {
-  critica: '#dc2626',
-  alta:    '#ea580c',
-  media:   '#d97706',
-  baja:    '#6b7280',
-}
 
 const AVATAR_PALETTE = ['#915BD8', '#2563eb', '#16a34a', '#d97706', '#dc2626', '#0891b2', '#7c3aed', '#db2777']
 
@@ -1449,7 +1443,7 @@ function confirmDelete(falla) {
 }
 
 // ── Helpers visuales ──────────────────────────────────────────────────────
-function prioColor(codigo) { return PRIO_COLORS[codigo] || '#9ca3af' }
+function prioColor(codigo) { return colorPrioridad(codigo, '#9ca3af') }
 
 function prioPillStyle(codigo) {
   const c = prioColor(codigo)

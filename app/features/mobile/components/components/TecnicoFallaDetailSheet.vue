@@ -9,7 +9,7 @@
           <div class="td-header">
             <div class="td-head-text">
               <code class="td-code">{{ fa.codigo_interno }}</code>
-              <span class="td-type">{{ fa.tipo?.etiqueta || fa.tipo_libre || 'Falla' }}</span>
+              <span class="td-type">{{ fa.tipo?.etiqueta || 'Falla' }}</span>
             </div>
             <span v-if="saving" class="td-saving"><LoaderCircleIcon class="size-[1em] animate-spin" /></span>
             <button class="td-close" @click="close"><XIcon class="size-[1em]" /></button>
@@ -19,7 +19,7 @@
             <!-- Info básica -->
             <div class="td-info-row">
               <span class="td-badge-estado" :style="estadoStyle(fa.estado)">{{ fa.estado?.etiqueta }}</span>
-              <span class="td-badge-prio" :style="{ color: fa.prioridad?.color_hex }">
+              <span class="td-badge-prio" :style="{ color: colorPrioridad(fa.prioridad?.codigo) }">
                 <FlagIcon class="size-[1em] fill-current" /> {{ fa.prioridad?.etiqueta }}
               </span>
               <span class="td-time">{{ relativeTime(fa.fecha_identificacion) }}</span>
@@ -137,6 +137,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { FallasService } from '~/features/fallas/services/fallas'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { CameraIcon, CircleCheckIcon, FlagIcon, ImageIcon, ImagesIcon, LoaderCircleIcon, RotateCcwIcon, SendIcon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
@@ -174,7 +175,7 @@ watch(() => props.open, async (o) => {
 })
 
 function estadoStyle(estado) {
-  const c = estado?.color_hex || '#915BD8'
+  const c = colorEstado(estado?.codigo)
   return { background: c + '22', color: c }
 }
 function relativeTime(s) {

@@ -115,11 +115,11 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <code class="text-xs font-mono" style="color: #9b89b5;">{{ f.codigo_interno }}</code>
-              <span class="text-xs font-semibold px-1.5 py-0.5 rounded" :style="estadoPillStyleFalla(f.estado?.color_hex)">
+              <span class="text-xs font-semibold px-1.5 py-0.5 rounded" :style="estadoPillStyleFalla(f.estado?.codigo)">
                 {{ f.estado?.etiqueta }}
               </span>
             </div>
-            <p class="text-sm truncate" style="color: var(--color-unergy-deep);">{{ f.tipo?.etiqueta || f.tipo_libre || f.descripcion }}</p>
+            <p class="text-sm truncate" style="color: var(--color-unergy-deep);">{{ f.tipo?.etiqueta || f.descripcion }}</p>
           </div>
           <span v-if="f.dias_abierta != null" class="text-xs font-mono flex-none" style="color: #9b89b5;">
             {{ f.dias_abierta }}d
@@ -368,6 +368,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { toast } from 'vue-sonner'
 import { ReporteEnergiaService } from '~/features/fronteras/services/reporte-energia'
 import { FallasService } from '~/features/fallas/services/fallas'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import Button from 'primevue/button'
 import InputText from 'primevue/inputtext'
 import Calendar from 'primevue/calendar'
@@ -565,10 +566,9 @@ async function cargarFallasActivas(proyectoId) {
     fallasActivas.value = []
   }
 }
-const PRIO_COLORS_FALLA = { critica: '#dc2626', alta: '#ea580c', media: '#d97706', baja: '#6b7280' }
-function prioColorFalla(codigo) { return PRIO_COLORS_FALLA[codigo] || '#9ca3af' }
-function estadoPillStyleFalla(hex) {
-  const c = hex || '#915BD8'
+function prioColorFalla(codigo) { return colorPrioridad(codigo, '#9ca3af') }
+function estadoPillStyleFalla(codigo) {
+  const c = colorEstado(codigo)
   return { background: c + '1a', color: c, border: `1px solid ${c}40` }
 }
 async function cargarCurvaTipicaPreview() {

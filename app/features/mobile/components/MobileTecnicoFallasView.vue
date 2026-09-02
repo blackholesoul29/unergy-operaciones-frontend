@@ -45,16 +45,16 @@
       </div>
       <template v-else>
         <button v-for="f in filtradas" :key="f.id" class="tf-card" @click="openDetail(f)">
-          <span class="tf-stripe" :style="{ background: f.prioridad?.color_hex || '#9ca3af' }" />
+          <span class="tf-stripe" :style="{ background: colorPrioridad(f.prioridad?.codigo, '#9ca3af') }" />
           <div class="tf-card-main">
             <div class="tf-card-top">
               <code class="tf-card-code">{{ f.codigo_interno }}</code>
               <span class="tf-card-estado" :style="estadoStyle(f.estado)">{{ f.estado?.etiqueta }}</span>
             </div>
-            <div class="tf-card-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</div>
+            <div class="tf-card-tipo">{{ f.tipo?.etiqueta || 'Falla' }}</div>
             <div class="tf-card-proj"><ZapIcon class="size-[1em]" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
             <div class="tf-card-foot">
-              <span class="tf-prio" :style="{ color: f.prioridad?.color_hex || '#6b5a8a' }">
+              <span class="tf-prio" :style="{ color: colorPrioridad(f.prioridad?.codigo, '#6b5a8a') }">
                 <FlagIcon class="size-[1em] fill-current" style="font-size:10px" /> {{ f.prioridad?.etiqueta }}
               </span>
               <span class="tf-time">{{ relativeTime(f.fecha_identificacion) }}</span>
@@ -84,6 +84,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { FallasService } from '~/features/fallas/services/fallas'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import TecnicoFallaDetailSheet from '~/features/mobile/components/components/TecnicoFallaDetailSheet.vue'
@@ -130,7 +131,7 @@ const filtradas = computed(() => {
 })
 
 function estadoStyle(estado) {
-  const c = estado?.color_hex || '#915BD8'
+  const c = colorEstado(estado?.codigo)
   return { background: c + '22', color: c }
 }
 function relativeTime(s) {

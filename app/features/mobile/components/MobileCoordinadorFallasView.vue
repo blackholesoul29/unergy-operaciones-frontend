@@ -30,7 +30,7 @@
         <button :class="['cf-fchip', filtro === null && 'cf-fchip--on']" @click="filtro = null">Todas</button>
         <button v-for="e in catalogos.estados" :key="e.id"
           :class="['cf-fchip', filtro === e.id && 'cf-fchip--on']"
-          :style="filtro === e.id ? chipStyle(e.color_hex) : {}"
+          :style="filtro === e.id ? chipStyle(colorEstado(e.codigo)) : {}"
           @click="filtro = e.id">{{ e.etiqueta }}</button>
       </div>
     </div>
@@ -61,16 +61,16 @@
       </div>
       <template v-else>
         <button v-for="f in filtradas" :key="f.id" class="cf-card" @click="openDetail(f)">
-          <span class="cf-stripe" :style="{ background: f.prioridad?.color_hex || '#9ca3af' }" />
+          <span class="cf-stripe" :style="{ background: colorPrioridad(f.prioridad?.codigo, '#9ca3af') }" />
           <div class="cf-card-main">
             <div class="cf-card-top">
               <code class="cf-card-code">{{ f.codigo_interno }}</code>
               <span class="cf-card-estado" :style="estadoStyle(f.estado)">{{ f.estado?.etiqueta }}</span>
             </div>
-            <div class="cf-card-tipo">{{ f.tipo?.etiqueta || f.tipo_libre || 'Falla' }}</div>
+            <div class="cf-card-tipo">{{ f.tipo?.etiqueta || 'Falla' }}</div>
             <div class="cf-card-proj"><ZapIcon class="size-[1em]" /> {{ f.proyecto?.nombre_comercial || '—' }}</div>
             <div class="cf-card-foot">
-              <span class="cf-prio" :style="{ color: f.prioridad?.color_hex || '#6b5a8a' }">{{ f.prioridad?.etiqueta }}</span>
+              <span class="cf-prio" :style="{ color: colorPrioridad(f.prioridad?.codigo, '#6b5a8a') }">{{ f.prioridad?.etiqueta }}</span>
               <span class="cf-time">{{ relativeTime(f.fecha_identificacion) }}</span>
               <!-- Asignado / sin asignar -->
               <span v-if="f.asignado_a" class="cf-assignee cf-assignee--set" :title="f.asignado_a.nombre">
@@ -109,6 +109,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { FallasService } from '~/features/fallas/services/fallas'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { UsuariosService } from '~/features/admin/services/usuarios'
 import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'
@@ -174,7 +175,7 @@ function chipStyle(color) {
   return { background: c, borderColor: c, color: '#fff' }
 }
 function estadoStyle(estado) {
-  const c = estado?.color_hex || '#915BD8'
+  const c = colorEstado(estado?.codigo)
   return { background: c + '22', color: c }
 }
 function initials(nombre) {

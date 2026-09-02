@@ -27,7 +27,7 @@
         </Button>
         <div>
           <div class="flex items-center gap-2 mb-1.5">
-            <GBadge :color="falla.estado?.color_hex || '#915BD8'">{{ falla.estado?.etiqueta || '—' }}</GBadge>
+            <GBadge :color="colorEstado(falla.estado?.codigo)">{{ falla.estado?.etiqueta || '—' }}</GBadge>
             <GBadge :color="prioSeverity(falla.prioridad?.codigo)">{{ falla.prioridad?.etiqueta || '—' }}</GBadge>
             <GBadge v-if="categoria.etiqueta"
               :color="categoria.color || '#915BD8'">{{ categoria.etiqueta }}</GBadge>
@@ -278,7 +278,7 @@
                 <p v-if="seg.nota" class="text-sm text-gray-700 whitespace-pre-line">{{ seg.nota }}</p>
                 <div v-if="seg.estado_nuevo" class="mt-1.5 flex items-center gap-1 text-xs">
                   <ArrowRightIcon class="text-[10px] text-gray-400 size-[1em]" />
-                  <GBadge :color="seg.estado_nuevo?.color_hex || '#915BD8'" class="text-[10px]">{{ seg.estado_nuevo?.etiqueta || '' }}</GBadge>
+                  <GBadge :color="colorEstado(seg.estado_nuevo?.codigo)" class="text-[10px]">{{ seg.estado_nuevo?.etiqueta || '' }}</GBadge>
                 </div>
               </div>
             </div>
@@ -383,6 +383,7 @@ import InputNumber from 'primevue/inputnumber'
 import ProgressSpinner from 'primevue/progressspinner'
 import FallaForm from './FallaForm.vue'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
+import { colorEstado } from '~/features/fallas/utils/colores'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { UsuariosService } from '~/features/admin/services/usuarios'
 
@@ -492,7 +493,10 @@ const slaFillStyle = computed(() => {
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 function prioSeverity(codigo) {
-  return { critica: 'destructive', alta: 'warning', media: 'information', baja: 'default' }[codigo] || 'default'
+  // Códigos reales del catálogo (fallas_cat_prioridades): critica/grave/media/leve
+  // -- "alta"/"baja" nunca calzaban con nada real, "grave" y "leve" caían siempre
+  // al 'default' (bug encontrado al consolidar los colores de fallas, 2026-09-02).
+  return { critica: 'destructive', grave: 'warning', media: 'information', leve: 'default' }[codigo] || 'default'
 }
 function fmtDate(d) {
   if (!d) return '—'

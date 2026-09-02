@@ -61,7 +61,7 @@
               <div class="fd-chips">
                 <button v-for="e in catalogos.estados" :key="e.id" type="button"
                   :class="['fd-chip', fa.estado?.id === e.id && 'fd-chip--on']"
-                  :style="fa.estado?.id === e.id ? chipOn(e.color_hex) : {}"
+                  :style="fa.estado?.id === e.id ? chipOn(colorEstado(e.codigo)) : {}"
                   @click="cambiar({ estado_id: e.id })">{{ e.etiqueta }}</button>
               </div>
             </div>
@@ -72,7 +72,7 @@
               <div class="fd-chips">
                 <button v-for="p in catalogos.prioridades" :key="p.id" type="button"
                   :class="['fd-chip', fa.prioridad?.id === p.id && 'fd-chip--on']"
-                  :style="fa.prioridad?.id === p.id ? chipOn(p.color_hex) : {}"
+                  :style="fa.prioridad?.id === p.id ? chipOn(colorPrioridad(p.codigo)) : {}"
                   @click="cambiar({ prioridad_id: p.id })">{{ p.etiqueta }}</button>
               </div>
             </div>
@@ -121,7 +121,7 @@
                   <span class="fd-seg-time">{{ relativeTime(s.created_at) }}</span>
                 </div>
                 <p v-if="s.nota" class="fd-seg-nota">{{ s.nota }}</p>
-                <span v-if="s.estado_nuevo" class="fd-seg-estado" :style="chipOn(s.estado_nuevo.color_hex)">{{ s.estado_nuevo.etiqueta }}</span>
+                <span v-if="s.estado_nuevo" class="fd-seg-estado" :style="chipOn(colorEstado(s.estado_nuevo.codigo))">{{ s.estado_nuevo.etiqueta }}</span>
               </div>
             </div>
           </div>
@@ -142,6 +142,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { tituloFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
+import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { CircleCheckIcon, LoaderCircleIcon, RotateCcwIcon, SendIcon, ServerIcon, XIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'

@@ -140,6 +140,7 @@ import Select from 'primevue/select'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
 import { BuildingIcon, CircleAlertIcon, CircleCheckIcon, LoaderCircleIcon, MapIcon, MapPinIcon, RefreshCwIcon, Share2Icon, SunIcon, TriangleAlertIcon, XIcon, ZapIcon } from '@lucide/vue'
+import { colorPrioridad } from '~/features/fallas/utils/colores'
 
 const fallasService = new FallasService()
 const proyectosService = new ProyectosService()
@@ -190,8 +191,7 @@ function colorPorN(n) {
   return '#dc2626'
 }
 
-const PRIO = { critica: '#dc2626', alta: '#ea580c', media: '#d97706', baja: '#6b7280' }
-function prioColor(c) { return PRIO[c] || '#9ca3af' }
+function prioColor(c) { return colorPrioridad(c, '#9ca3af') }
 function diasClass(f) {
   const d = f.dias_abierta ?? 0
   if (d >= 7) return 'dias-red'

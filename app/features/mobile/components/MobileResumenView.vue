@@ -98,6 +98,7 @@
 import { ref, reactive, computed, onMounted, h } from 'vue'
 import { logger } from '~/core/logger'
 import { FallasService } from '~/features/fallas/services/fallas'
+import { colorEstado } from '~/features/fallas/utils/colores'
 import { UsuariosService } from '~/features/admin/services/usuarios'
 import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
@@ -190,7 +191,7 @@ function horaCorta(iso) {
   return d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
 }
 function estadoStyle(estado) {
-  const c = estado?.color_hex || '#915BD8'
+  const c = colorEstado(estado?.codigo)
   return { background: c + '22', color: c }
 }
 
