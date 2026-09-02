@@ -920,12 +920,13 @@ const sortedSeguimientos = computed(() =>
 // ── Clasificación estructurada del drawer (equipo que falló) ──────────────
 const clasifDrawer = computed(() => clasificacionDetalle(drawerFalla.value))
 
-// Origen de la falla: alarma automática de monitoreo o centinela manual.
+// Origen de la falla: solo se puede afirmar con certeza el caso automático
+// (alarma_monitoreo_id no se puede falsificar). centinela se eliminó
+// (2026-09-02) -- era texto libre sin validación, no una señal confiable.
 const origenFalla = computed(() => {
   const f = drawerFalla.value
   if (!f) return null
   if (f.alarma_monitoreo_id) return 'Alarma automática de monitoreo'
-  if (f.centinela) return f.centinela
   return null
 })
 
