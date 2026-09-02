@@ -483,20 +483,36 @@
                   <header class="gf-section-head">
                     <ClockIcon class="gf-section-icon size-[1em]" />
                     <h3 class="gf-section-title">SLA</h3>
-                    <GBadge v-if="drawerFalla.sla_limite_horas" class="ml-auto"
-                      :color="slaSeverity(drawerFalla)">{{ slaText(drawerFalla) }}</GBadge>
-                    <span v-else class="ml-auto text-xs text-gray-500">Sin límite</span>
+                    <GBadge class="ml-auto" :color="slaSeverity(drawerFalla)">{{ slaText(drawerFalla) }}</GBadge>
                   </header>
-                  <template v-if="drawerFalla.sla_limite_horas">
-                    <div class="gf-sla-stat">
-                      <span class="gf-sla-num" :style="{ color: slaTextColor(drawerFalla) }">{{ horasTranscurridas(drawerFalla) }}h</span>
-                      <span class="gf-sla-of">de {{ drawerFalla.sla_limite_horas }}h</span>
+                  <div class="gf-sla-stat">
+                    <span class="gf-sla-num" :style="{ color: slaTextColor(drawerFalla) }">{{ horasTranscurridas(drawerFalla) }}h</span>
+                    <span class="gf-sla-of">de {{ drawerFalla.sla_limite_horas_efectivo }}h</span>
+                  </div>
+                  <div class="bg-gray-200 rounded-full h-2 overflow-hidden mt-2">
+                    <div class="h-full rounded-full transition-all" :style="slaFillStyle(drawerFalla)" />
+                  </div>
+
+                  <div class="gf-sla-override">
+                    <div class="gf-sla-override-row">
+                      <span class="gf-sla-override-label">Límite personalizado</span>
+                      <span v-if="!quickEdit.sla_limite_horas" class="gf-sla-override-ref">
+                        Por defecto: <strong>{{ drawerFalla.sla_limite_horas_efectivo }}h</strong>
+                      </span>
                     </div>
-                    <div class="bg-gray-200 rounded-full h-2 overflow-hidden mt-2">
-                      <div class="h-full rounded-full transition-all" :style="slaFillStyle(drawerFalla)" />
+                    <div class="gf-sla-override-input">
+                      <InputNumber v-model="quickEdit.sla_limite_horas" placeholder="Sin personalizar"
+                        :min="1" :max="999" showButtons buttonLayout="horizontal" class="flex-1"
+                        @update:modelValue="autosaveQuick()" />
+                      <button v-if="quickEdit.sla_limite_horas" type="button" class="gf-sla-override-clear"
+                        title="Quitar personalización" @click="quickEdit.sla_limite_horas = null; autosaveQuick()">
+                        <XIcon class="size-[1em]" />
+                      </button>
                     </div>
-                  </template>
-                  <p v-else class="text-sm text-gray-600 mt-1">Esta falla no tiene SLA configurado.</p>
+                    <p class="gf-sla-override-hint">
+                      Opcional. Solo para casos puntuales que necesitan más o menos tiempo que el default de su prioridad.
+                    </p>
+                  </div>
                 </section>
               </div>
 
@@ -653,6 +669,7 @@ import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import Select from 'primevue/select'
 import InputText from 'primevue/inputtext'
+import InputNumber from 'primevue/inputnumber'
 import IconField from 'primevue/iconfield'
 import InputIcon from 'primevue/inputicon'
 import DatePicker from 'primevue/datepicker'
@@ -745,7 +762,7 @@ const stickyHeaderRef = ref(null)
 // ── Drawer / detalle ──────────────────────────────────────────────────────
 const drawerVisible  = ref(false)
 const drawerFalla    = ref(null)
-const quickEdit      = reactive({ estado_id: null, prioridad_id: null })
+const quickEdit      = reactive({ estado_id: null, prioridad_id: null, sla_limite_horas: null })
 const savingQuick    = ref(false)
 const savedFlash     = ref(false)
 const resolvingFalla       = ref(false)
@@ -1164,6 +1181,7 @@ function abrirDrawer(falla) {
   drawerFalla.value       = falla
   quickEdit.estado_id     = falla.estado?.id ?? null
   quickEdit.prioridad_id  = falla.prioridad?.id ?? null
+  quickEdit.sla_limite_horas = falla.sla_limite_horas ?? null
   nuevaNota.nota          = ''
   nuevaNota.estado_id     = null
   drawerVisible.value     = true
@@ -1316,6 +1334,8 @@ async function guardarQuickEdit() {
   const payload = {}
   if (quickEdit.estado_id !== drawerFalla.value.estado?.id) payload.estado_id = quickEdit.estado_id
   if (quickEdit.prioridad_id !== drawerFalla.value.prioridad?.id) payload.prioridad_id = quickEdit.prioridad_id
+  if ((quickEdit.sla_limite_horas || null) !== (drawerFalla.value.sla_limite_horas || null))
+    payload.sla_limite_horas = quickEdit.sla_limite_horas || null
   if (!Object.keys(payload).length) return
 
   savingQuick.value = true
@@ -1330,6 +1350,7 @@ async function guardarQuickEdit() {
     toast.error('No se pudo guardar', { description: err?.data?.detail, duration: 3000 })
     quickEdit.estado_id     = drawerFalla.value.estado?.id ?? null
     quickEdit.prioridad_id  = drawerFalla.value.prioridad?.id ?? null
+    quickEdit.sla_limite_horas = drawerFalla.value.sla_limite_horas ?? null
   } finally {
     savingQuick.value = false
   }
@@ -1491,8 +1512,8 @@ function horasTranscurridas(falla) {
 }
 
 function slaPct(falla) {
-  if (!falla?.sla_limite_horas) return null
-  return Math.min(Math.round((horasTranscurridas(falla) / falla.sla_limite_horas) * 100), 110)
+  if (!falla?.sla_limite_horas_efectivo) return null
+  return Math.min(Math.round((horasTranscurridas(falla) / falla.sla_limite_horas_efectivo) * 100), 110)
 }
 
 function slaVencido(falla) {
@@ -2337,6 +2358,26 @@ watch(bucket, (newBucket) => {
 }
 .gf-sla-num { font-size: 28px; font-weight: 800; line-height: 1; }
 .gf-sla-of  { font-size: 13px; color: #6b5a8a; font-weight: 500; }
+
+/* ══ SLA override (límite personalizado) ════════════════════════════════ */
+.gf-sla-override {
+  margin-top: 12px; padding-top: 10px; border-top: 1px dashed #e5e0f0;
+}
+.gf-sla-override-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.gf-sla-override-label { font-size: 12px; font-weight: 600; color: #4a3b6b; }
+.gf-sla-override-ref { font-size: 11.5px; color: #9b8db5; }
+.gf-sla-override-ref strong { color: #4a3b6b; font-weight: 700; }
+.gf-sla-override-input { display: flex; align-items: center; gap: 6px; }
+.gf-sla-override-clear {
+  width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; border: none;
+  background: #f1eaf9; color: #6b5a8a; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.gf-sla-override-clear:hover { background: #e5d9f5; }
+.gf-sla-override-hint { font-size: 11px; color: #9b8db5; line-height: 1.5; margin: 6px 0 0; }
 
 /* ══ Avatars ═════════════════════════════════════════════════════════════ */
 .avatar-md {

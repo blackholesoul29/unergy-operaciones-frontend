@@ -322,19 +322,15 @@
               <header class="gf-section-head">
                 <ClockIcon class="gf-section-icon size-[1em]" />
                 <h3 class="gf-section-title">SLA</h3>
-                <GBadge v-if="drawerFalla.sla_limite_horas" class="ml-auto" :color="slaSeverity(drawerFalla)">{{ slaText(drawerFalla) }}</GBadge>
-                <span v-else class="ml-auto text-xs text-gray-500">Sin límite</span>
+                <GBadge class="ml-auto" :color="slaSeverity(drawerFalla)">{{ slaText(drawerFalla) }}</GBadge>
               </header>
-              <template v-if="drawerFalla.sla_limite_horas">
-                <div class="gf-sla-stat">
-                  <span class="gf-sla-num" :style="{ color: slaTextColor(drawerFalla) }">{{ horasTranscurridas(drawerFalla) }}h</span>
-                  <span class="gf-sla-of">de {{ drawerFalla.sla_limite_horas }}h</span>
-                </div>
-                <div class="bg-gray-200 rounded-full h-2 overflow-hidden mt-2">
-                  <div class="h-full rounded-full transition-all" :style="slaFillStyle(drawerFalla)" />
-                </div>
-              </template>
-              <p v-else class="text-sm text-gray-600 mt-1">Esta falla no tiene SLA configurado.</p>
+              <div class="gf-sla-stat">
+                <span class="gf-sla-num" :style="{ color: slaTextColor(drawerFalla) }">{{ horasTranscurridas(drawerFalla) }}h</span>
+                <span class="gf-sla-of">de {{ drawerFalla.sla_limite_horas_efectivo }}h</span>
+              </div>
+              <div class="bg-gray-200 rounded-full h-2 overflow-hidden mt-2">
+                <div class="h-full rounded-full transition-all" :style="slaFillStyle(drawerFalla)" />
+              </div>
             </section>
           </div>
 
@@ -975,8 +971,8 @@ function horasTranscurridas(falla) {
 }
 
 function slaPct(falla) {
-  if (!falla?.sla_limite_horas) return null
-  return Math.min(Math.round((horasTranscurridas(falla) / falla.sla_limite_horas) * 100), 110)
+  if (!falla?.sla_limite_horas_efectivo) return null
+  return Math.min(Math.round((horasTranscurridas(falla) / falla.sla_limite_horas_efectivo) * 100), 110)
 }
 
 function slaVencido(falla) {

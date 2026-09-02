@@ -98,6 +98,7 @@ export interface Falla {
   acciones_correctivas?: string | null
   kwh_perdidos_estimado?: number | null
   sla_limite_horas?: number | null
+  sla_limite_horas_efectivo?: number | null
   sla_limite_dias?: number | null
   sla_cumplido?: boolean | null
   dias_abierta?: number | null

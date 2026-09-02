@@ -166,10 +166,10 @@
             <h3 class="font-semibold text-sm text-gray-700">SLA</h3>
             <GBadge :color="slaSeverity" class="ml-auto">{{ slaTexto }}</GBadge>
           </div>
-          <div v-if="falla.sla_limite_horas">
+          <div>
             <div class="flex items-center gap-3 text-xs mb-2">
               <span class="text-gray-500">Límite</span>
-              <span class="font-semibold text-gray-800">{{ falla.sla_limite_horas }}h</span>
+              <span class="font-semibold text-gray-800">{{ falla.sla_limite_horas_efectivo }}h</span>
               <span class="text-gray-500 ml-auto">Transcurrido</span>
               <span class="font-semibold" :style="{ color: slaColor }">{{ horasTranscurridas }}h</span>
             </div>
@@ -177,7 +177,6 @@
               <div class="h-full rounded-full transition-all" :style="slaFillStyle" />
             </div>
           </div>
-          <p v-else class="text-xs text-gray-400">Sin límite SLA configurado</p>
         </div>
 
         <!-- Análisis -->
@@ -444,7 +443,7 @@ const horasTranscurridas = computed(() => {
 })
 
 const slaPct = computed(() => {
-  const h = falla.value?.sla_limite_horas
+  const h = falla.value?.sla_limite_horas_efectivo
   if (!h) return null
   return Math.min(Math.round((horasTranscurridas.value / h) * 100), 110)
 })

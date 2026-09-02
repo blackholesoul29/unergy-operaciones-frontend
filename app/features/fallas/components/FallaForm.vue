@@ -164,6 +164,26 @@
           <small v-if="errors.estado_id" class="ff-error">{{ errors.estado_id }}</small>
         </div>
 
+        <!-- Límite SLA personalizado — solo al editar, caso puntual que se sale del default de su prioridad -->
+        <div v-if="initial" class="ff-field ff-span2 ff-sla-override">
+          <div class="ff-sla-override-row">
+            <label class="ff-label" style="margin:0">Límite SLA personalizado <span class="ff-hint">(horas)</span></label>
+            <span v-if="!form.sla_limite_horas" class="ff-sla-override-ref">
+              Por defecto para esta prioridad: <strong>{{ initial?.sla_limite_horas_efectivo }}h</strong>
+            </span>
+          </div>
+          <div class="ff-sla-override-input">
+            <InputNumber v-model="form.sla_limite_horas" placeholder="Sin personalizar" :min="1" :max="999" class="flex-1" />
+            <button v-if="form.sla_limite_horas" type="button" class="ff-sla-override-clear"
+              title="Quitar personalización" @click="form.sla_limite_horas = null">
+              <XIcon class="size-[1em]" />
+            </button>
+          </div>
+          <span class="ff-hint ff-sla-override-hint">
+            Opcional. Dejalo vacío para usar el límite automático de la prioridad — solo llenalo si este caso puntual necesita más o menos tiempo.
+          </span>
+        </div>
+
         <div class="ff-field">
           <label class="ff-label">
             Fecha y hora de identificación *
@@ -711,7 +731,9 @@ async function submit() {
     }
     // La hora se deriva del mismo campo combinado de identificación.
     base.hora_identificacion = formatHora(form.value.fecha_identificacion)
-    if (form.value.sla_limite_horas)              base.sla_limite_horas     = form.value.sla_limite_horas
+    // Al editar se manda explícito (incluso null, para poder quitar una personalización
+    // ya guardada) -- al crear el campo ni se muestra, así que no hay nada que mandar.
+    if (props.initial) base.sla_limite_horas = form.value.sla_limite_horas || null
     if (form.value.fecha_ocurrencia)              base.fecha_ocurrencia     = form.value.fecha_ocurrencia.toISOString()
     // La fecha de solución solo aplica cuando el estado es final (cerrada).
     if (esEstadoFinal.value && form.value.fecha_resolucion)
@@ -897,6 +919,25 @@ onMounted(async () => {
   border-radius: 8px;
   padding: 10px 12px;
 }
+
+/* ── Límite SLA personalizado ── */
+.ff-sla-override {
+  background: #faf8ff; border: 1px dashed #d8c9f0; border-radius: 8px; padding: 10px 12px;
+}
+.ff-sla-override-row {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.ff-sla-override-ref { font-size: 11px; color: #9b89b5; }
+.ff-sla-override-ref strong { color: #4a3b6b; font-weight: 700; }
+.ff-sla-override-input { display: flex; align-items: center; gap: 6px; }
+.ff-sla-override-clear {
+  width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; border: none;
+  background: #ece4fb; color: #6b5a8a; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.ff-sla-override-clear:hover { background: #ddd0f5; }
+.ff-sla-override-hint { display: block; margin-top: 6px; }
 
 /* ── Dropzone ── */
 .ff-dropzone {

@@ -154,9 +154,9 @@
                 <span class="cal-detail-lbl"><CalendarClockIcon class="size-[1em]" /> Identificado</span>
                 <span class="cal-detail-val">{{ detalle.fecha_identificacion }}</span>
               </div>
-              <div v-if="detalle.sla_limite_horas" class="cal-detail-item">
+              <div class="cal-detail-item">
                 <span class="cal-detail-lbl"><ClockIcon class="size-[1em]" /> SLA</span>
-                <span class="cal-detail-val">{{ detalle.sla_limite_horas }}h ({{ detalle.sla_limite_dias }}d)</span>
+                <span class="cal-detail-val">{{ detalle.sla_limite_horas_efectivo }}h ({{ detalle.sla_limite_dias }}d)</span>
               </div>
             </div>
           </div>

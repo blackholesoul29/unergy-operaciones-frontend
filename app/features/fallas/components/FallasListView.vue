@@ -176,13 +176,13 @@ watch(filters, (f) => {
 }, { deep: true })
 
 function slaAtRisk(data) {
-  if (!data.sla_limite_horas || data.sla_cumplido !== null) return false
+  if (!data.sla_limite_horas_efectivo || data.sla_cumplido !== null) return false
   if (!data.fecha_identificacion) return false
   const created = new Date(data.fecha_identificacion + 'T00:00:00')
-  const deadline = new Date(created.getTime() + data.sla_limite_horas * 3600000)
+  const deadline = new Date(created.getTime() + data.sla_limite_horas_efectivo * 3600000)
   const now = new Date()
   const remaining = (deadline - now) / 3600000
-  return remaining > 0 && remaining < data.sla_limite_horas * 0.25
+  return remaining > 0 && remaining < data.sla_limite_horas_efectivo * 0.25
 }
 
 let debounceTimer = null
