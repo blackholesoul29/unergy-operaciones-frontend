@@ -49,7 +49,6 @@
             <div class="mf-card-foot">
               <span class="mf-prio" :style="{ color: colorPrioridad(f.prioridad?.codigo, '#6b5a8a') }">{{ f.prioridad?.etiqueta }}</span>
               <span class="mf-time">{{ relativeTime(f.fecha_identificacion) }}</span>
-              <span v-if="f.asignado_a" class="mf-assignee" :title="f.asignado_a.nombre">{{ initials(f.asignado_a.nombre) }}</span>
             </div>
           </div>
         </button>
@@ -58,7 +57,7 @@
 
     <MobileTabBar />
 
-    <FallaDetailSheet :open="detailOpen" :falla="detailFalla" :catalogos="catalogos" :usuarios="usuarios"
+    <FallaDetailSheet :open="detailOpen" :falla="detailFalla" :catalogos="catalogos"
       @close="detailOpen = false" @updated="onUpdated" />
     <FallaCreateSheet :open="createOpen" :catalogos="catalogos" :proyectos="proyectos"
       @close="createOpen = false" @created="onCreated" />
@@ -71,7 +70,6 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
-import { UsuariosService } from '~/features/admin/services/usuarios'
 import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
@@ -82,12 +80,10 @@ import { toast } from 'vue-sonner'
 
 const fallasService = new FallasService()
 const proyectosService = new ProyectosService()
-const usuariosService = new UsuariosService()
 const notificacionesService = new NotificacionesService()
 const fallas = ref([])
 const catalogos = reactive({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
 const proyectos = ref([])
-const usuarios = ref([])
 const loading = ref(false)
 
 const search = ref('')
@@ -130,10 +126,6 @@ const filtradas = computed(() => {
   })
 })
 
-function initials(nombre) {
-  if (!nombre) return '?'
-  return nombre.split(' ').filter(Boolean).slice(0, 2).map((s) => s[0]).join('').toUpperCase()
-}
 function relativeTime(s) {
   if (!s) return ''
   const dias = Math.floor((Date.now() - new Date(s + 'T00:00:00').getTime()) / 86400000)
@@ -146,14 +138,12 @@ function relativeTime(s) {
 async function cargar() {
   loading.value = true
   try {
-    const [cat, proy, usr] = await Promise.all([
+    const [cat, proy] = await Promise.all([
       fallasService.obtenerCatalogos(),
       proyectosService.listar({ size: 500 }),
-      usuariosService.listar({ size: 200 }).catch(() => []),
     ])
     Object.assign(catalogos, cat)
     proyectos.value = proy ?? []
-    usuarios.value = usr ?? []
     await cargarFallas()
   } catch (e) {
     toast.error('Error al cargar', { description: e.data?.detail, duration: 3000 })
@@ -244,5 +234,4 @@ onMounted(() => { cargar(); fetchUnread() })
 .mf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
 .mf-prio { font-size: 12.5px; font-weight: 700; }
 .mf-time { font-size: 12px; color: #9ca3af; }
-.mf-assignee { margin-left: auto; width: 26px; height: 26px; border-radius: 50%; background: var(--color-unergy-purple); color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
 </style>

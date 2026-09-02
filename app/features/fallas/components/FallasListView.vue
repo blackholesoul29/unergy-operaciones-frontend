@@ -105,15 +105,6 @@
           </template>
         </Column>
 
-        <Column header="Asignado a" style="min-width: 120px;">
-          <template #body="{ data }">
-            <span v-if="data.asignado_a" class="text-[11px]" style="color: #6b5a8a;">
-              {{ data.asignado_a.nombre }}
-            </span>
-            <span v-else class="text-[11px] italic" style="color: #c5b9db;">Sin asignar</span>
-          </template>
-        </Column>
-
         <Column style="width: 60px;">
           <template #body="{ data }">
             <Button text rounded severity="secondary" size="small" @click.stop="goToDetail({ data })">

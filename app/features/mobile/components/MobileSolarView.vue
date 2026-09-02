@@ -144,7 +144,7 @@
 
     <FallaCreateSheet :open="createOpen" :catalogos="catalogos" :proyectos="proyectosFalla"
       :prefill-proyecto-id="createProyectoId" @close="createOpen = false" @created="onFallaCreated" />
-    <FallaDetailSheet :open="fallaDetailOpen" :falla="fallaDetail" :catalogos="catalogos" :usuarios="usuarios"
+    <FallaDetailSheet :open="fallaDetailOpen" :falla="fallaDetail" :catalogos="catalogos"
       @close="fallaDetailOpen = false" @updated="onFallaUpdated" />
   </div>
 </template>
@@ -154,7 +154,6 @@ import { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } from
 import { useRouter } from 'vue-router'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
-import { UsuariosService } from '~/features/admin/services/usuarios'
 import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'
 import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
 import { ReconectadoresService } from '~/features/mobile/services/reconectadores'
@@ -175,7 +174,6 @@ const router = useRouter()
 const { user, signOut } = useAuth()
 const { register } = usePwa()
 const fallasService = new FallasService()
-const usuariosService = new UsuariosService()
 const notificacionesService = new NotificacionesService()
 const generacionSolarService = new GeneracionSolarService()
 const reconectadoresService = new ReconectadoresService()
@@ -207,7 +205,6 @@ let refreshTimer    = null
 
 // ── Fallas (falla activa por proyecto + reportar) ────────────────────────────
 const catalogos       = reactive({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
-const usuarios        = ref([])
 const fallasMap       = reactive({})   // proyecto_id → [fallas activas]
 const createOpen      = ref(false)
 const createProyectoId = ref(null)
@@ -219,12 +216,8 @@ const proyectosFalla = computed(() =>
 
 async function cargarCatalogos() {
   try {
-    const [cat, usr] = await Promise.all([
-      fallasService.obtenerCatalogos(),
-      usuariosService.listar({ size: 200 }).catch(() => []),
-    ])
+    const cat = await fallasService.obtenerCatalogos()
     Object.assign(catalogos, cat)
-    usuarios.value = usr ?? []
   } catch { /* no crítico — la generación funciona igual */ }
 }
 

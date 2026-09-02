@@ -145,7 +145,6 @@
             <InfoField label="Proyecto" :value="falla.proyecto?.nombre_comercial" highlight />
             <InfoField label="Equipo / evento" :value="titulo" />
             <InfoField label="Registrado por" :value="falla.registrado_por?.nombre" />
-            <InfoField label="Asignado a" :value="falla.asignado_a?.nombre || 'Sin asignar'" />
             <InfoField label="Fecha ocurrencia" :value="fmtDatetime(falla.fecha_ocurrencia)" />
             <InfoField label="Fecha identificación" :value="fmtFechaConHora(falla.fecha_identificacion, falla.hora_identificacion)" />
             <div v-if="falla.fecha_resolucion">
@@ -319,11 +318,6 @@
                 optionValue="id" class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
-              <label class="field-label">Asignado a</label>
-              <Select v-model="quickEdit.asignado_a_id" :options="usuarios" optionLabel="nombre"
-                optionValue="id" placeholder="Sin asignar" showClear class="w-full" />
-            </div>
-            <div class="flex flex-col gap-1">
               <label class="field-label">Energía perdida (kWh)</label>
               <InputNumber v-model="quickEdit.kwh_perdidos_estimado" :minFractionDigits="0" :maxFractionDigits="2"
                 :min="0" locale="en-US" class="w-full" />
@@ -385,10 +379,8 @@ import FallaForm from './FallaForm.vue'
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
 import { colorEstado } from '~/features/fallas/utils/colores'
 import { FallasService } from '~/features/fallas/services/fallas'
-import { UsuariosService } from '~/features/admin/services/usuarios'
 
 const fallasService = new FallasService()
-const usuariosService = new UsuariosService()
 
 const route = useRoute()
 const router = useRouter()
@@ -404,13 +396,11 @@ const savingQuick = ref(false)
 const uploadingFoto = ref(false)
 
 const catalogos = ref({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
-const usuarios = ref([])
 
 const nuevaNota = reactive({ nota: '', estado_id: '' })
 const quickEdit = reactive({
   estado_id: null,
   prioridad_id: null,
-  asignado_a_id: '',
   kwh_perdidos_estimado: null,
   causa_raiz: '',
 })
@@ -569,7 +559,6 @@ async function load() {
     falla.value = data
     quickEdit.estado_id = data.estado?.id ?? null
     quickEdit.prioridad_id = data.prioridad?.id ?? null
-    quickEdit.asignado_a_id = data.asignado_a?.id ?? ''
     quickEdit.kwh_perdidos_estimado = data.kwh_perdidos_estimado ?? null
     quickEdit.causa_raiz = data.causa_raiz ?? ''
   } catch (err) {
@@ -583,12 +572,6 @@ async function loadCatalogos() {
   try {
     catalogos.value = await fallasService.obtenerCatalogos()
   } catch { /* no crítico */ }
-}
-
-async function loadUsuarios() {
-  try {
-    usuarios.value = await usuariosService.listar({ size: 200 })
-  } catch { /* /usuarios puede no existir */ }
 }
 
 // ── Acciones ────────────────────────────────────────────────────────────
@@ -610,7 +593,6 @@ async function saveQuickEdit() {
     const payload = {}
     if (quickEdit.estado_id) payload.estado_id = quickEdit.estado_id
     if (quickEdit.prioridad_id) payload.prioridad_id = quickEdit.prioridad_id
-    if (quickEdit.asignado_a_id) payload.asignado_a_id = quickEdit.asignado_a_id
     if (quickEdit.causa_raiz?.trim()) payload.causa_raiz = quickEdit.causa_raiz.trim()
     if (quickEdit.kwh_perdidos_estimado != null) payload.kwh_perdidos_estimado = quickEdit.kwh_perdidos_estimado
     await fallasService.actualizar(falla.value.id, payload)
@@ -712,7 +694,6 @@ function confirmDelete() {
 
 onMounted(() => {
   loadCatalogos()
-  loadUsuarios()
   load()
 })
 </script>

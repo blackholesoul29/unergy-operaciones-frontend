@@ -421,10 +421,6 @@
                     <dt class="gf-fact-label"><UserPenIcon class="size-[1em]" /> Registrado por</dt>
                     <dd class="gf-fact-value">{{ drawerFalla.registrado_por?.nombre || '—' }}</dd>
                   </div>
-                  <div class="gf-fact">
-                    <dt class="gf-fact-label"><UserIcon class="size-[1em]" /> Asignado a</dt>
-                    <dd class="gf-fact-value">{{ drawerFalla.asignado_a?.nombre || 'Sin asignar' }}</dd>
-                  </div>
                   <div v-if="drawerFalla.resolucion" class="gf-fact">
                     <dt class="gf-fact-label"><WrenchIcon class="size-[1em]" /> Resolución</dt>
                     <dd class="gf-fact-value font-medium text-emerald-700">{{ drawerFalla.resolucion.etiqueta }}</dd>
@@ -681,7 +677,7 @@ import { GeneracionSolarService } from '~/features/solar/services/generacion-sol
 import { tituloFalla, categoriaFalla, clasificacionDetalle } from '~/features/fallas/utils/fallaTitulo'
 import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { formatCOP as fmtCOP } from '~/utils/currency'
-import { ArrowRightIcon, BellIcon, BriefcaseIcon, BuildingIcon, CalendarIcon, CalendarPlusIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, ClockIcon, DollarSignIcon, ExternalLinkIcon, HourglassIcon, InboxIcon, InfoIcon, LightbulbIcon, ListIcon, LoaderCircleIcon, MessagesSquareIcon, PencilIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, SendIcon, ServerIcon, TimerIcon, Trash2Icon, UserIcon, UserPenIcon, WifiIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
+import { ArrowRightIcon, BellIcon, BriefcaseIcon, BuildingIcon, CalendarIcon, CalendarPlusIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, CircleXIcon, ClockIcon, DollarSignIcon, ExternalLinkIcon, HourglassIcon, InboxIcon, InfoIcon, LightbulbIcon, ListIcon, LoaderCircleIcon, MessagesSquareIcon, PencilIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, SendIcon, ServerIcon, TimerIcon, Trash2Icon, UserPenIcon, WifiIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 
 const fallasService = new FallasService()
 const proyectosService = new ProyectosService()

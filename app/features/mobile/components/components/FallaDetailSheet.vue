@@ -77,16 +77,6 @@
               </div>
             </div>
 
-            <!-- Asignado -->
-            <div class="fd-field">
-              <span class="fd-label">Asignado a</span>
-              <select class="fd-select" :value="fa.asignado_a?.id ?? ''"
-                @change="cambiar({ asignado_a_id: $event.target.value ? Number($event.target.value) : null })">
-                <option value="">Sin asignar</option>
-                <option v-for="u in usuarios" :key="u.id" :value="u.id">{{ u.nombre }}</option>
-              </select>
-            </div>
-
             <!-- Datos -->
             <div class="fd-facts">
               <div class="fd-fact"><span>Proyecto</span><b>{{ fa.proyecto?.nombre_comercial || '—' }}</b></div>
@@ -151,7 +141,6 @@ const props = defineProps({
   open:      { type: Boolean, default: false },
   falla:     { type: Object, default: null },
   catalogos: { type: Object, default: () => ({ estados: [], prioridades: [] }) },
-  usuarios:  { type: Array, default: () => [] },
 })
 const emit = defineEmits(['close', 'updated'])
 

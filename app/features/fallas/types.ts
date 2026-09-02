@@ -102,7 +102,6 @@ export interface Falla {
   sla_cumplido?: boolean | null
   dias_abierta?: number | null
   tiempo_afectacion_horas?: number | null
-  asignado_a?: string | null
   registrado_por?: string | null
   resolucion?: CatalogoItemFalla | null
   resolucion_id?: number | null
@@ -159,7 +158,6 @@ export interface FiltrosListaFallas {
   proyecto_id?: number
   estado_id?: number
   prioridad_id?: number
-  asignado_a_id?: number
   con_fecha_programada?: boolean
   q?: string
 }

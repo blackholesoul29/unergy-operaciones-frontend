@@ -23,9 +23,6 @@
         <XIcon class="cf-clear size-[1em]" v-if="search" @click="search = ''" />
       </div>
       <div class="cf-chips">
-        <button :class="['cf-fchip', filtro === 'sin_asignar' && 'cf-fchip--on cf-fchip--warn']" @click="filtro = 'sin_asignar'">
-          <UserPlusIcon class="size-[1em]" /> Sin asignar
-        </button>
         <button :class="['cf-fchip', filtro === 'activas' && 'cf-fchip--on']" @click="filtro = 'activas'">Activas</button>
         <button :class="['cf-fchip', filtro === null && 'cf-fchip--on']" @click="filtro = null">Todas</button>
         <button v-for="e in catalogos.estados" :key="e.id"
@@ -37,10 +34,6 @@
 
     <!-- CONTADORES -->
     <div class="cf-stats">
-      <div class="cf-stat">
-        <span class="cf-stat-n">{{ sinAsignar }}</span>
-        <span class="cf-stat-l">Sin asignar</span>
-      </div>
       <div class="cf-stat">
         <span class="cf-stat-n">{{ activas }}</span>
         <span class="cf-stat-l">Activas</span>
@@ -72,13 +65,6 @@
             <div class="cf-card-foot">
               <span class="cf-prio" :style="{ color: colorPrioridad(f.prioridad?.codigo, '#6b5a8a') }">{{ f.prioridad?.etiqueta }}</span>
               <span class="cf-time">{{ relativeTime(f.fecha_identificacion) }}</span>
-              <!-- Asignado / sin asignar -->
-              <span v-if="f.asignado_a" class="cf-assignee cf-assignee--set" :title="f.asignado_a.nombre">
-                {{ initials(f.asignado_a.nombre) }}
-              </span>
-              <span v-else class="cf-assignee cf-assignee--empty" title="Sin asignar">
-                <UserPlusIcon class="size-[1em]" />
-              </span>
             </div>
           </div>
         </button>
@@ -91,7 +77,6 @@
       :open="detailOpen"
       :falla="detailFalla"
       :catalogos="catalogos"
-      :usuarios="tecnicos"
       @close="detailOpen = false"
       @updated="onUpdated"
     />
@@ -111,23 +96,20 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
-import { UsuariosService } from '~/features/admin/services/usuarios'
 import { NotificacionesService } from '~/features/notificaciones/services/notificaciones'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
 import FallaCreateSheet from '~/features/mobile/components/components/FallaCreateSheet.vue'
 import NotificationsSheet from '~/features/mobile/components/components/NotificationsSheet.vue'
-import { BellIcon, CircleCheckIcon, LoaderCircleIcon, PlusIcon, SearchIcon, UserPlusIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
+import { BellIcon, CircleCheckIcon, LoaderCircleIcon, PlusIcon, SearchIcon, WrenchIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { toast } from 'vue-sonner'
 
 const fallasService = new FallasService()
 const proyectosService = new ProyectosService()
-const usuariosService = new UsuariosService()
 const notificacionesService = new NotificacionesService()
 const fallas = ref([])
 const catalogos = reactive({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
 const proyectos = ref([])
-const tecnicos = ref([])   // solo usuarios con rol tecnico
 const loading = ref(false)
 
 const search = ref('')
@@ -139,16 +121,13 @@ const createOpen = ref(false)
 const notifOpen = ref(false)
 const unreadCount = ref(0)
 
-const sinAsignar = computed(() => fallas.value.filter((f) => !f.asignado_a && !f.estado?.es_estado_final).length)
 const activas    = computed(() => fallas.value.filter((f) => !f.estado?.es_estado_final).length)
 const resueltas  = computed(() => fallas.value.filter((f) =>  f.estado?.es_estado_final).length)
 
 const filtradas = computed(() => {
   const q = search.value.trim().toLowerCase()
   let list = fallas.value
-  if (filtro.value === 'sin_asignar') {
-    list = list.filter((f) => !f.asignado_a && !f.estado?.es_estado_final)
-  } else if (filtro.value === 'activas') {
+  if (filtro.value === 'activas') {
     list = list.filter((f) => !f.estado?.es_estado_final)
   } else if (typeof filtro.value === 'number') {
     list = list.filter((f) => f.estado?.id === filtro.value)
@@ -163,9 +142,6 @@ const filtradas = computed(() => {
     const af = a.estado?.es_estado_final ? 1 : 0
     const bf = b.estado?.es_estado_final ? 1 : 0
     if (af !== bf) return af - bf
-    const aa = a.asignado_a ? 1 : 0
-    const ba = b.asignado_a ? 1 : 0
-    if (aa !== ba) return aa - ba
     return (b.fecha_identificacion || '').localeCompare(a.fecha_identificacion || '')
   })
 })
@@ -177,10 +153,6 @@ function chipStyle(color) {
 function estadoStyle(estado) {
   const c = colorEstado(estado?.codigo)
   return { background: c + '22', color: c }
-}
-function initials(nombre) {
-  if (!nombre) return '?'
-  return nombre.split(' ').filter(Boolean).slice(0, 2).map((s) => s[0]).join('').toUpperCase()
 }
 function relativeTime(s) {
   if (!s) return ''
@@ -194,15 +166,12 @@ function relativeTime(s) {
 async function cargar() {
   loading.value = true
   try {
-    const [cat, proy, usr] = await Promise.all([
+    const [cat, proy] = await Promise.all([
       fallasService.obtenerCatalogos().catch(() => ({ estados: [], prioridades: [], tipos: [], resoluciones: [] })),
       proyectosService.listar({ size: 500 }).catch(() => []),
-      usuariosService.listar({ size: 200 }).catch(() => []),
     ])
     Object.assign(catalogos, cat)
     proyectos.value = proy ?? []
-    const todos = usr ?? []
-    tecnicos.value = todos.filter((u) => u.rol === 'tecnico')
     await cargarFallas()
   } catch (e) {
     toast.error('Error al cargar fallas', {
@@ -286,8 +255,6 @@ onMounted(() => { cargar(); fetchUnread() })
   display: flex; align-items: center; gap: 5px;
 }
 .cf-fchip--on { background: #1e3a5f; border-color: #1e3a5f; color: #fff; }
-.cf-fchip--warn { border-color: #f59e0b; color: #92400e; }
-.cf-fchip--on.cf-fchip--warn { background: #f59e0b; border-color: #f59e0b; color: #fff; }
 
 /* Stats */
 .cf-stats {
@@ -324,10 +291,4 @@ onMounted(() => { cargar(); fetchUnread() })
 .cf-card-foot { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
 .cf-prio { font-size: 12.5px; font-weight: 700; }
 .cf-time { font-size: 12px; color: #9ca3af; }
-.cf-assignee {
-  margin-left: auto; width: 28px; height: 28px; border-radius: 50%;
-  font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center;
-}
-.cf-assignee--set { background: #1e3a5f; color: #fff; }
-.cf-assignee--empty { background: #fef3c7; color: #92400e; border: 1.5px dashed #f59e0b; font-size: 13px; }
 </style>

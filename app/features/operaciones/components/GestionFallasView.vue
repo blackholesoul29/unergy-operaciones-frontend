@@ -46,8 +46,6 @@
         optionValue="id" placeholder="Proyecto" showClear filter class="w-36" size="small" />
       <Select v-model="filtroPrioridad" :options="catalogos.prioridades"
         optionLabel="etiqueta" optionValue="codigo" placeholder="Prioridad" showClear class="w-32" size="small" />
-      <Select v-model="filtroAsignado" :options="opcionesAsignado"
-        optionLabel="label" optionValue="value" placeholder="Responsable" showClear filter class="w-36" size="small" />
       <Select v-model="filtroEstado" :options="catalogos.estados"
         optionLabel="etiqueta" optionValue="codigo" placeholder="Estado" showClear class="w-32" size="small" />
       <DatePicker v-model="filtroFechaDesde" placeholder="Desde" dateFormat="yy-mm-dd"
@@ -162,21 +160,6 @@
           </template>
         </Column>
 
-        <Column header="Asignado" style="width:160px">
-          <template #body="{ data }">
-            <div v-if="data.asignado_a" class="flex items-center gap-2">
-              <div class="avatar-sm" :style="avatarStyle(data.asignado_a)">
-                {{ initials(data.asignado_a.nombre) }}
-              </div>
-              <span class="text-xs text-gray-700 truncate flex-1">{{ data.asignado_a.nombre }}</span>
-            </div>
-            <div v-else class="flex items-center gap-2 text-gray-400">
-              <div class="avatar-sm avatar-sm--empty"><UserIcon class="text-[10px] size-[1em]" /></div>
-              <span class="text-xs">Sin asignar</span>
-            </div>
-          </template>
-        </Column>
-
         <Column header="Prioridad" style="width:100px">
           <template #body="{ data }">
             <span class="prio-pill" :style="prioPillStyle(data.prioridad?.codigo)">
@@ -279,16 +262,6 @@
                 <dd class="gf-fact-value">{{ drawerFalla.proyecto?.nombre_comercial || '—' }}</dd>
               </div>
               <div class="gf-fact">
-                <dt class="gf-fact-label"><UserIcon class="size-[1em]" /> Asignado</dt>
-                <dd class="gf-fact-value">
-                  <div v-if="drawerFalla.asignado_a" class="flex items-center gap-1.5">
-                    <div class="avatar-xs" :style="avatarStyle(drawerFalla.asignado_a)">{{ initials(drawerFalla.asignado_a.nombre) }}</div>
-                    <span>{{ drawerFalla.asignado_a.nombre }}</span>
-                  </div>
-                  <span v-else class="text-gray-500">Sin asignar</span>
-                </dd>
-              </div>
-              <div class="gf-fact">
                 <dt class="gf-fact-label"><CalendarIcon class="size-[1em]" /> Identificada</dt>
                 <dd class="gf-fact-value">
                   {{ fmtFecha(drawerFalla.fecha_identificacion) }}<span v-if="drawerFalla.hora_identificacion"> · {{ fmtHora(drawerFalla.hora_identificacion) }}</span>
@@ -340,12 +313,6 @@
                   <Select v-model="quickEdit.prioridad_id" :options="catalogos.prioridades"
                     optionLabel="etiqueta" optionValue="id" class="flex-1"
                     @change="autosaveQuick()" />
-                </div>
-                <div class="gf-field-row">
-                  <label class="gf-field-label">Asignado</label>
-                  <Select v-model="quickEdit.asignado_a_id" :options="usuarios"
-                    optionLabel="nombre" optionValue="id" placeholder="Sin asignar" showClear filter
-                    class="flex-1" @change="autosaveQuick()" />
                 </div>
               </div>
             </section>
@@ -498,7 +465,7 @@
 </template>
 
 <script setup>
-import { ArrowRightIcon, BuildingIcon, CalendarClockIcon, CalendarIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, ClockIcon, ExternalLinkIcon, InboxIcon, LightbulbIcon, ListIcon, LoaderCircleIcon, MessagesSquareIcon, PencilIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, SendIcon, Trash2Icon, UserIcon, UserPenIcon, XIcon, ZapIcon } from '@lucide/vue'
+import { ArrowRightIcon, BuildingIcon, CalendarClockIcon, CalendarIcon, CheckIcon, ChevronLeftIcon, ChevronRightIcon, CircleAlertIcon, CircleCheckIcon, ClockIcon, ExternalLinkIcon, InboxIcon, LightbulbIcon, ListIcon, LoaderCircleIcon, MessagesSquareIcon, PencilIcon, PlusIcon, RefreshCwIcon, RotateCcwIcon, SearchIcon, SendIcon, Trash2Icon, UserPenIcon, XIcon, ZapIcon } from '@lucide/vue'
 import { ref, reactive, computed, onMounted, watch, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -515,7 +482,6 @@ import Textarea from 'primevue/textarea'
 import FallaForm from '~/features/fallas/components/FallaForm.vue'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { ProyectosService } from '~/features/proyectos/services/proyectos'
-import { UsuariosService } from '~/features/admin/services/usuarios'
 import { tituloFalla, categoriaFalla } from '~/features/fallas/utils/fallaTitulo'
 import { colorEstado, colorPrioridad } from '~/features/fallas/utils/colores'
 
@@ -523,7 +489,6 @@ const route = useRoute()
 const router = useRouter()
 const fallasService = new FallasService()
 const proyectosService = new ProyectosService()
-const usuariosService = new UsuariosService()
 const confirm = useConfirm()
 
 // ── Constantes ──────────────────────────────────────────────────────────
@@ -539,30 +504,27 @@ const AVATAR_PALETTE = ['#915BD8', '#2563eb', '#16a34a', '#d97706', '#dc2626', '
 // ── Estado base ──────────────────────────────────────────────────────────
 const allFallas = ref([])
 const proyectos = ref([])
-const usuarios = ref([])
 const catalogos = ref({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
 
 const loading = ref(false)
 const error = ref(null)
 
 const bucket = ref('todas')
-// Sincronizados con la URL (?q=&proyecto=&prioridad=&asignado=&estado=&desde=&hasta=)
+// Sincronizados con la URL (?q=&proyecto=&prioridad=&estado=&desde=&hasta=)
 // para que se sostengan al volver con "atras" o al refrescar.
 const search = ref(route.query.q || '')
 const filtroProyecto = ref(route.query.proyecto ? Number(route.query.proyecto) : null)
 const filtroPrioridad = ref(route.query.prioridad || null)
-const filtroAsignado = ref(route.query.asignado ? Number(route.query.asignado) : null)
 const filtroEstado = ref(route.query.estado || null)
 const filtroFechaDesde = ref(route.query.desde ? new Date(route.query.desde) : null)
 const filtroFechaHasta = ref(route.query.hasta ? new Date(route.query.hasta) : null)
 
-watch([search, filtroProyecto, filtroPrioridad, filtroAsignado, filtroEstado, filtroFechaDesde, filtroFechaHasta],
-  ([q, proyecto, prioridad, asignado, estado, desde, hasta]) => {
+watch([search, filtroProyecto, filtroPrioridad, filtroEstado, filtroFechaDesde, filtroFechaHasta],
+  ([q, proyecto, prioridad, estado, desde, hasta]) => {
     const query = {}
     if (q) query.q = q
     if (proyecto) query.proyecto = proyecto
     if (prioridad) query.prioridad = prioridad
-    if (asignado) query.asignado = asignado
     if (estado) query.estado = estado
     if (desde) query.desde = desde.toISOString().split('T')[0]
     if (hasta) query.hasta = hasta.toISOString().split('T')[0]
@@ -581,7 +543,6 @@ const drawerFalla = ref(null)
 const quickEdit = reactive({
   estado_id: null,
   prioridad_id: null,
-  asignado_a_id: null,
 })
 const savingQuick = ref(false)
 const savedFlash = ref(false)
@@ -598,10 +559,6 @@ const editingFalla = ref(null)
 const savingForm = ref(false)
 
 // ── Computed ─────────────────────────────────────────────────────────────
-const opcionesAsignado = computed(() => [
-  { value: '__none__', label: 'Sin asignar' },
-  ...usuarios.value.map(u => ({ value: u.id, label: u.nombre })),
-])
 
 const hoy = new Date(); hoy.setHours(0, 0, 0, 0)
 
@@ -638,8 +595,6 @@ const filtradas = computed(() => {
   if (filtroProyecto.value) arr = arr.filter(f => f.proyecto?.id === filtroProyecto.value)
   if (filtroPrioridad.value) arr = arr.filter(f => f.prioridad?.codigo === filtroPrioridad.value)
   if (filtroEstado.value) arr = arr.filter(f => f.estado?.codigo === filtroEstado.value)
-  if (filtroAsignado.value === '__none__') arr = arr.filter(f => !f.asignado_a)
-  else if (filtroAsignado.value) arr = arr.filter(f => f.asignado_a?.id === filtroAsignado.value)
   if (filtroFechaDesde.value) {
     const desde = startOfDay(filtroFechaDesde.value)
     arr = arr.filter(f => f.fecha_identificacion && new Date(f.fecha_identificacion + 'T00:00:00') >= desde)
@@ -652,7 +607,7 @@ const filtradas = computed(() => {
 })
 
 const hayFiltros = computed(() =>
-  search.value || filtroProyecto.value || filtroPrioridad.value || filtroAsignado.value ||
+  search.value || filtroProyecto.value || filtroPrioridad.value ||
   filtroEstado.value || filtroFechaDesde.value || filtroFechaHasta.value
 )
 
@@ -736,18 +691,11 @@ async function cargarProyectos() {
   } catch { /* no crítico */ }
 }
 
-async function cargarUsuarios() {
-  try {
-    usuarios.value = await usuariosService.listar({ size: 200 })
-  } catch { /* /usuarios puede no existir */ }
-}
-
 // ── Acciones ─────────────────────────────────────────────────────────────
 function limpiarFiltros() {
   search.value = ''
   filtroProyecto.value = null
   filtroPrioridad.value = null
-  filtroAsignado.value = null
   filtroEstado.value = null
   filtroFechaDesde.value = null
   filtroFechaHasta.value = null
@@ -763,7 +711,6 @@ async function abrirDrawer(falla) {
   drawerFalla.value = falla
   quickEdit.estado_id = falla.estado?.id ?? null
   quickEdit.prioridad_id = falla.prioridad?.id ?? null
-  quickEdit.asignado_a_id = falla.asignado_a?.id ?? null
   nuevaNota.nota = ''
   nuevaNota.estado_id = null
   drawerVisible.value = true
@@ -854,9 +801,6 @@ async function guardarQuickEdit() {
   const payload = {}
   if (quickEdit.estado_id !== drawerFalla.value.estado?.id) payload.estado_id = quickEdit.estado_id
   if (quickEdit.prioridad_id !== drawerFalla.value.prioridad?.id) payload.prioridad_id = quickEdit.prioridad_id
-  if ((quickEdit.asignado_a_id ?? null) !== (drawerFalla.value.asignado_a?.id ?? null)) {
-    payload.asignado_a_id = quickEdit.asignado_a_id
-  }
   if (!Object.keys(payload).length) return
 
   savingQuick.value = true
@@ -872,7 +816,6 @@ async function guardarQuickEdit() {
     // Revertir UI
     quickEdit.estado_id = drawerFalla.value.estado?.id ?? null
     quickEdit.prioridad_id = drawerFalla.value.prioridad?.id ?? null
-    quickEdit.asignado_a_id = drawerFalla.value.asignado_a?.id ?? null
   } finally {
     savingQuick.value = false
   }
@@ -1166,7 +1109,6 @@ onMounted(() => {
   cargar()
   cargarCatalogos()
   cargarProyectos()
-  cargarUsuarios()
   window.addEventListener('keydown', onKeydown)
   nextTick(() => {
     measureHeader()

@@ -89,7 +89,7 @@
 
     <MobileTabBar />
 
-    <FallaDetailSheet :open="fallaDetailOpen" :falla="fallaDetail" :catalogos="catalogos" :usuarios="usuarios"
+    <FallaDetailSheet :open="fallaDetailOpen" :falla="fallaDetail" :catalogos="catalogos"
       @close="fallaDetailOpen = false" @updated="onFallaUpdated" />
   </div>
 </template>
@@ -99,7 +99,6 @@ import { ref, reactive, computed, onMounted, h } from 'vue'
 import { logger } from '~/core/logger'
 import { FallasService } from '~/features/fallas/services/fallas'
 import { colorEstado } from '~/features/fallas/utils/colores'
-import { UsuariosService } from '~/features/admin/services/usuarios'
 import { GeneracionSolarService } from '~/features/solar/services/generacion-solar'
 import MobileTabBar from '~/features/mobile/components/components/MobileTabBar.vue'
 import FallaDetailSheet from '~/features/mobile/components/components/FallaDetailSheet.vue'
@@ -153,7 +152,6 @@ const TopCard = {
 }
 
 const fallasService = new FallasService()
-const usuariosService = new UsuariosService()
 const generacionSolarService = new GeneracionSolarService()
 
 // ── Estado ───────────────────────────────────────────────────────────────────
@@ -164,7 +162,6 @@ const loadingFallas = ref(false)
 const loading      = computed(() => loadingGen.value || loadingFallas.value)
 
 const catalogos       = reactive({ estados: [], prioridades: [], tipos: [], resoluciones: [] })
-const usuarios        = ref([])
 const fallaDetailOpen = ref(false)
 const fallaDetail     = ref(null)
 
@@ -228,12 +225,8 @@ async function cargarFallas() {
 
 async function cargarCatalogos() {
   try {
-    const [cat, usr] = await Promise.all([
-      fallasService.obtenerCatalogos(),
-      usuariosService.listar({ size: 200 }).catch(() => []),
-    ])
+    const cat = await fallasService.obtenerCatalogos()
     Object.assign(catalogos, cat)
-    usuarios.value = usr ?? []
   } catch { /* no crítico */ }
 }
 
