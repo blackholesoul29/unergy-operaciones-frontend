@@ -1,8 +1,8 @@
 /**
  * Fallas operativas: catálogo, CRUD, seguimientos, adjuntos y notificación.
  *
- * El backend expone tres rutas distintas para adjuntar archivos a una falla
- * (`/archivos`, `/fotos`, `/attachments`) porque tres vistas legacy las fueron
+ * El backend expone dos rutas distintas para adjuntar archivos a una falla
+ * (`/archivos`, `/attachments`) porque dos vistas legacy las fueron
  * agregando por separado — no se unifican acá, cada método refleja el
  * endpoint real que usa su vista.
  */
@@ -36,8 +36,6 @@ const RUTAS = {
   archivos: (id: Falla['id']) => `${BASE}/${id}/archivos`,
   archivo: (id: Falla['id'], archivoId: ArchivoFalla['id']) =>
     `${BASE}/${id}/archivos/${archivoId}`,
-  fotos: (id: Falla['id']) => `${BASE}/${id}/fotos`,
-  foto: (id: Falla['id'], fotoId: number) => `${BASE}/${id}/fotos/${fotoId}`,
   attachments: (id: Falla['id']) => `${BASE}/${id}/attachments`,
   notificar: (id: Falla['id']) => `${BASE}/${id}/notificar`,
   resumenGeneracion: '/monitoreo/resumen-generacion',
@@ -108,19 +106,6 @@ export class FallasService extends BaseService {
 
   eliminarArchivo(id: Falla['id'], archivoId: ArchivoFalla['id']): Promise<unknown> {
     return this.delete<unknown>(RUTAS.archivo(id, archivoId))
-  }
-
-  // ── Fotos (`FallaDetalle.vue`) ────────────────────────────────────────────────
-
-  subirFoto(id: Falla['id'], archivo: File, etapa: string): Promise<unknown> {
-    const form = new FormData()
-    form.append('file', archivo)
-    form.append('etapa', etapa)
-    return this.postFormData<unknown>(RUTAS.fotos(id), form)
-  }
-
-  eliminarFoto(id: Falla['id'], fotoId: number): Promise<unknown> {
-    return this.delete<unknown>(RUTAS.foto(id, fotoId))
   }
 
   // ── Adjuntos (`FallaDetailView.vue`) ──────────────────────────────────────────

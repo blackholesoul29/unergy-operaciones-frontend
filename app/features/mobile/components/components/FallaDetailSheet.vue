@@ -93,7 +93,7 @@
               <div class="fd-fact"><span>Identificada</span><b>{{ fmtFecha(fa.fecha_identificacion) }}</b></div>
               <div class="fd-fact"><span>Registró</span><b>{{ fa.registrado_por?.nombre || '—' }}</b></div>
               <div v-if="fa.fecha_resolucion" class="fd-fact"><span>Resuelta</span><b class="fd-ok">{{ fmtFecha(fa.fecha_resolucion?.slice?.(0,10) || fa.fecha_resolucion) }}</b></div>
-              <div v-if="fa.energia_perdida_kwh != null" class="fd-fact"><span>Energía perdida</span><b class="fd-bad">{{ Number(fa.energia_perdida_kwh).toLocaleString('es-CO') }} kWh</b></div>
+              <div v-if="fa.kwh_perdidos_estimado != null" class="fd-fact"><span>Energía perdida</span><b class="fd-bad">{{ Number(fa.kwh_perdidos_estimado).toLocaleString('es-CO') }} kWh</b></div>
             </div>
 
             <!-- Causa raíz / acciones -->

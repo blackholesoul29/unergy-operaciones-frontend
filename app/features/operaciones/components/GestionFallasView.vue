@@ -307,9 +307,9 @@
                 <dt class="gf-fact-label"><ClockIcon class="size-[1em]" /> Tiempo de afectación</dt>
                 <dd class="gf-fact-value font-semibold" style="color:#b45309">{{ fmtDuracion(drawerFalla.tiempo_afectacion_horas) }}</dd>
               </div>
-              <div v-if="drawerFalla.energia_perdida_kwh != null" class="gf-fact">
+              <div v-if="drawerFalla.kwh_perdidos_estimado != null" class="gf-fact">
                 <dt class="gf-fact-label"><ZapIcon class="size-[1em]" /> Energía perdida</dt>
-                <dd class="gf-fact-value text-red-700 font-semibold">{{ Number(drawerFalla.energia_perdida_kwh).toLocaleString('es-CO') }} kWh</dd>
+                <dd class="gf-fact-value text-red-700 font-semibold">{{ Number(drawerFalla.kwh_perdidos_estimado).toLocaleString('es-CO') }} kWh</dd>
               </div>
             </dl>
           </section>

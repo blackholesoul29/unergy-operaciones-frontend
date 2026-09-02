@@ -1,6 +1,6 @@
 /**
  * Forma verificada contra `FallasListView.vue`, `MonitoreoView.vue`,
- * `FallaDetailView.vue`, `FallaDetalle.vue`, `FallaForm.vue`, `FallaArchivos.vue`,
+ * `FallaDetailView.vue`, `FallaForm.vue`, `FallaArchivos.vue`,
  * `CalendarioFallas.vue`, `FallasMapView.vue` y `FallaCreateSheet.vue` (mobile).
  */
 
@@ -84,7 +84,6 @@ export interface Falla {
   proyecto_id?: number
   tipo?: CatalogoItemFalla
   tipo_id?: number | null
-  tipo_libre?: string | null
   estado?: CatalogoItemFalla
   estado_id?: number | null
   prioridad?: CatalogoItemFalla
@@ -97,8 +96,7 @@ export interface Falla {
   fecha_programada?: string | null
   causa_raiz?: string | null
   acciones_correctivas?: string | null
-  equipo_afectado?: string | null
-  energia_perdida_kwh?: number | null
+  kwh_perdidos_estimado?: number | null
   sla_limite_horas?: number | null
   sla_limite_dias?: number | null
   sla_cumplido?: boolean | null

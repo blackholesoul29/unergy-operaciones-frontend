@@ -325,7 +325,7 @@
             </div>
             <div class="flex flex-col gap-1">
               <label class="field-label">Energía perdida (kWh)</label>
-              <InputNumber v-model="quickEdit.energia_perdida_kwh" :minFractionDigits="0" :maxFractionDigits="2"
+              <InputNumber v-model="quickEdit.kwh_perdidos_estimado" :minFractionDigits="0" :maxFractionDigits="2"
                 :min="0" locale="en-US" class="w-full" />
             </div>
             <div class="flex flex-col gap-1">
@@ -354,9 +354,9 @@
               <span class="text-gray-500">Código</span>
               <code class="font-mono text-gray-700">{{ falla.codigo_interno }}</code>
             </div>
-            <div v-if="falla.energia_perdida_kwh != null" class="flex items-center justify-between">
+            <div v-if="falla.kwh_perdidos_estimado != null" class="flex items-center justify-between">
               <span class="text-gray-500">Energía perdida</span>
-              <span class="font-semibold text-red-600">{{ falla.energia_perdida_kwh.toLocaleString('es-CO') }} kWh</span>
+              <span class="font-semibold text-red-600">{{ falla.kwh_perdidos_estimado.toLocaleString('es-CO') }} kWh</span>
             </div>
             <div v-if="falla.sla_cumplido != null" class="flex items-center justify-between">
               <span class="text-gray-500">SLA</span>
@@ -411,7 +411,7 @@ const quickEdit = reactive({
   estado_id: null,
   prioridad_id: null,
   asignado_a_id: '',
-  energia_perdida_kwh: null,
+  kwh_perdidos_estimado: null,
   causa_raiz: '',
 })
 
@@ -570,7 +570,7 @@ async function load() {
     quickEdit.estado_id = data.estado?.id ?? null
     quickEdit.prioridad_id = data.prioridad?.id ?? null
     quickEdit.asignado_a_id = data.asignado_a?.id ?? ''
-    quickEdit.energia_perdida_kwh = data.energia_perdida_kwh ?? null
+    quickEdit.kwh_perdidos_estimado = data.kwh_perdidos_estimado ?? null
     quickEdit.causa_raiz = data.causa_raiz ?? ''
   } catch (err) {
     if (err?.status === 404) notFound.value = true
@@ -612,7 +612,7 @@ async function saveQuickEdit() {
     if (quickEdit.prioridad_id) payload.prioridad_id = quickEdit.prioridad_id
     if (quickEdit.asignado_a_id) payload.asignado_a_id = quickEdit.asignado_a_id
     if (quickEdit.causa_raiz?.trim()) payload.causa_raiz = quickEdit.causa_raiz.trim()
-    if (quickEdit.energia_perdida_kwh != null) payload.energia_perdida_kwh = quickEdit.energia_perdida_kwh
+    if (quickEdit.kwh_perdidos_estimado != null) payload.kwh_perdidos_estimado = quickEdit.kwh_perdidos_estimado
     await fallasService.actualizar(falla.value.id, payload)
     toast.success('Cambios guardados', { duration: 2500 })
     await load()

@@ -883,7 +883,7 @@ function onChartLeave() { hover.value = null }
 
 // ── Fallas del período + correlación con la gráfica ───────────────────
 function energiaPerdida(f) {
-  const v = f?.energia_perdida_kwh
+  const v = f?.kwh_perdidos_estimado
   return v == null ? 0 : Number(v) || 0
 }
 function involucraGeneracion(f) {
