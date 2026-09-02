@@ -142,12 +142,7 @@
             optionLabel="etiqueta" optionValue="id"
             optionGroupLabel="categoria" optionGroupChildren="items"
             placeholder="Seleccionar tipo" filter filterPlaceholder="Buscar tipo..."
-            showClear class="w-full" :class="{ 'p-invalid': errors.tipo_id }"
-            @clear="form.tipo_libre = ''" />
-          <div v-if="!form.tipo_id" class="mt-1">
-            <InputText v-model="form.tipo_libre" placeholder="O escribe el tipo aquí si no está en la lista..."
-              class="w-full" style="font-size:12px" />
-          </div>
+            showClear class="w-full" :class="{ 'p-invalid': errors.tipo_id }" />
           <small v-if="errors.tipo_id" class="ff-error">{{ errors.tipo_id }}</small>
         </div>
 
@@ -217,17 +212,6 @@
             class="w-full" :class="{ 'p-invalid': errors.descripcion }" />
           <small v-if="errors.descripcion" class="ff-error">{{ errors.descripcion }}</small>
         </div>
-
-        <div class="ff-field ff-span2">
-          <label class="ff-label">
-            Equipo afectado
-            <span class="ff-hint">(inversor, string, medidor, transformador…)</span>
-          </label>
-          <InputText v-model="form.equipo_afectado"
-            placeholder="Ej: Inversor 3, String 7, Medidor principal"
-            class="w-full" />
-        </div>
-
 
       </div>
     </div>
@@ -422,7 +406,6 @@ const form = ref({
   proyecto_id:          props.initial?.proyecto?.id ?? props.initial?.proyecto_id ?? null,
   proyecto_ids:         [...(props.prefillProyectoIds ?? [])],  // pre-seleccionados al crear
   tipo_id:              props.initial?.tipo?.id ?? null,
-  tipo_libre:           props.initial?.tipo_libre ?? '',
   estado_id:            props.initial?.estado?.id ?? null,
   prioridad_id:         props.initial?.prioridad?.id ?? null,
   descripcion:          props.initial?.descripcion ?? '',
@@ -436,8 +419,6 @@ const form = ref({
   sla_limite_horas:     props.initial?.sla_limite_horas ?? null,
   causa_raiz:           props.initial?.causa_raiz ?? '',
   acciones_correctivas: props.initial?.acciones_correctivas ?? '',
-  equipo_afectado:      props.initial?.equipo_afectado ?? '',
-  energia_perdida_kwh:  props.initial?.energia_perdida_kwh ?? null,
   nota_inicial:         '',
   fecha_programada:     props.initial?.fecha_programada ? new Date(props.initial.fecha_programada) : null,
   notificacion:         false,   // siempre OFF por defecto — el usuario lo activa explícitamente
@@ -639,7 +620,7 @@ function validate() {
       if (!cls.value.subtipo) e.subtipo = 'Requerido'
       if (opcionActual.value?.requiere_detalle && !cls.value.detalle?.trim()) e.detalle = 'Requerido'
     }
-  } else if (!form.value.tipo_id && !form.value.tipo_libre?.trim()) {
+  } else if (!form.value.tipo_id) {
     e.tipo_id = 'Requerido'
   }
   if (!form.value.estado_id)            e.estado_id = 'Requerido'
@@ -730,7 +711,6 @@ async function submit() {
     }
     // La hora se deriva del mismo campo combinado de identificación.
     base.hora_identificacion = formatHora(form.value.fecha_identificacion)
-    if (form.value.tipo_libre?.trim())             base.tipo_libre           = form.value.tipo_libre.trim()
     if (form.value.sla_limite_horas)              base.sla_limite_horas     = form.value.sla_limite_horas
     if (form.value.fecha_ocurrencia)              base.fecha_ocurrencia     = form.value.fecha_ocurrencia.toISOString()
     // La fecha de solución solo aplica cuando el estado es final (cerrada).
@@ -739,8 +719,6 @@ async function submit() {
     if (esEstadoFinal.value && form.value.resolucion_id)  base.resolucion_id        = form.value.resolucion_id
     if (form.value.causa_raiz?.trim())            base.causa_raiz           = form.value.causa_raiz.trim()
     if (form.value.acciones_correctivas?.trim())  base.acciones_correctivas = form.value.acciones_correctivas.trim()
-    if (form.value.equipo_afectado?.trim())       base.equipo_afectado      = form.value.equipo_afectado.trim()
-    if (form.value.energia_perdida_kwh != null)   base.energia_perdida_kwh  = form.value.energia_perdida_kwh
     if (form.value.nota_inicial?.trim())          base.nota_inicial         = form.value.nota_inicial.trim()
     if (form.value.fecha_programada)             base.fecha_programada     = formatDate(form.value.fecha_programada)
     base.notificacion = !!form.value.notificacion
