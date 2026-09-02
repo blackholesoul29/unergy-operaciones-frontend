@@ -165,7 +165,7 @@
         </div>
 
         <!-- Límite SLA personalizado — solo al editar, caso puntual que se sale del default de su prioridad -->
-        <div v-if="initial" class="ff-field ff-span2 ff-sla-override">
+        <div v-if="initial" class="ff-field ff-span2">
           <div class="ff-sla-override-row">
             <label class="ff-label" style="margin:0">Límite SLA personalizado <span class="ff-hint">(horas)</span></label>
             <span v-if="!form.sla_limite_horas" class="ff-sla-override-ref">
@@ -921,23 +921,21 @@ onMounted(async () => {
 }
 
 /* ── Límite SLA personalizado ── */
-.ff-sla-override {
-  background: #faf8ff; border: 1px dashed #d8c9f0; border-radius: 8px; padding: 10px 12px;
-}
 .ff-sla-override-row {
   display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
+.ff-sla-override-row .ff-label { font-size: 11.5px; font-weight: 600; }
 .ff-sla-override-ref { font-size: 11px; color: #9b89b5; }
 .ff-sla-override-ref strong { color: #4a3b6b; font-weight: 700; }
 .ff-sla-override-input { display: flex; align-items: center; gap: 6px; }
 .ff-sla-override-clear {
   width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; border: none;
-  background: #ece4fb; color: #6b5a8a; cursor: pointer;
+  background: #f1eef7; color: #6b5a8a; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
 }
-.ff-sla-override-clear:hover { background: #ddd0f5; }
-.ff-sla-override-hint { display: block; margin-top: 6px; }
+.ff-sla-override-clear:hover { background: #e5e0ef; }
+.ff-sla-override-hint { display: block; margin-top: 4px; }
 
 /* ── Dropzone ── */
 .ff-dropzone {

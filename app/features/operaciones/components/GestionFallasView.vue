@@ -328,7 +328,7 @@
                 <span class="gf-sla-num" :style="{ color: slaTextColor(drawerFalla) }">{{ horasTranscurridas(drawerFalla) }}h</span>
                 <span class="gf-sla-of">de {{ drawerFalla.sla_limite_horas_efectivo }}h</span>
               </div>
-              <div class="bg-gray-200 rounded-full h-2 overflow-hidden mt-2">
+              <div class="bg-gray-200 rounded-full h-1.5 overflow-hidden mt-2">
                 <div class="h-full rounded-full transition-all" :style="slaFillStyle(drawerFalla)" />
               </div>
             </section>
@@ -1623,7 +1623,7 @@ watch(bucket, (newBucket) => {
   margin-top: 4px;
 }
 .gf-sla-num { font-size: 28px; font-weight: 800; line-height: 1; }
-.gf-sla-of { font-size: 13px; color: #6b5a8a; font-weight: 500; }
+.gf-sla-of { font-size: 16px; color: #4a3b6b; font-weight: 600; }
 
 /* Avatar tamaños */
 .avatar-xs {
