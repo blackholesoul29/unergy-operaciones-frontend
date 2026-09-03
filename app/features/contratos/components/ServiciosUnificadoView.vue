@@ -855,8 +855,11 @@ const DERIVADOS = {
         'fecha_fin_efectiva', 'comprador', 'vendedor'],
   // `proyecto` es el objeto que el backend arma a partir de proyecto_id: el
   // campo por llenar es el id, y contarlos los dos inflaría el pendiente.
-  contrato: ['contratante', 'prestador', 'proyecto', 'facturas_solenium',
-             'facturas_inversionistas', 'indexacion_anual', 'indexacion_mensual',
+  // facturas_solenium/facturas_inversionistas salieron de la lista: el backend
+  // dejo de exponerlas cuando esos JSONB se reemplazaron por la tabla
+  // contrato_factura (2026-08-30), asi que ya no hay nada que excluir.
+  contrato: ['contratante', 'prestador', 'proyecto',
+             'indexacion_anual', 'indexacion_mensual',
              'nombre_proyecto_ref'],
 }
 
