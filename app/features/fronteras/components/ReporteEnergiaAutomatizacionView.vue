@@ -300,87 +300,6 @@
             </DataTable>
             <p v-if="!resumenHistorico.incompletos.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin datos incompletos en este rango.</p>
           </div>
-
-          <!-- Intervención manual -->
-          <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
-            <p class="text-sm font-bold mb-1" style="color:var(--color-unergy-deep);">Intervención manual recurrente</p>
-            <p class="text-xs mb-3" style="color:#9b89b5;">Fronteras que caen en "Revisar manualmente" o requieren edición manual una y otra vez.</p>
-            <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
-              <template v-for="(c, idx) in resumenHistorico.intervencion_manual_callouts" :key="idx">
-                <span><b class="text-base font-extrabold" style="color:var(--color-unergy-purple-dark);">{{ c.valor }}</b>
-                  <span class="text-xs ml-1.5" style="color:#6b5a8a;">{{ c.etiqueta }}</span></span>
-                <span v-if="idx < resumenHistorico.intervencion_manual_callouts.length - 1" class="w-px h-4" style="background:#e8e0f0;" />
-              </template>
-            </div>
-            <DataTable :value="resumenHistorico.intervencion_manual" class="text-sm resumen-tabla" stripedRows rowHover
-                       paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
-              <Column field="nombre_proyecto" header="Proyecto" sortable />
-              <Column header="Tipo" field="tipo" sortable style="width:110px">
-                <template #body="{ data }">{{ data.tipo === 'generacion' ? 'Generación' : 'Consumo' }}</template>
-              </Column>
-              <Column header="Revisar manualmente" sortable :sortField="'veces_revisar_manualmente'" style="width:180px">
-                <template #body="{ data }">
-                  <span v-if="esCriticoProblema(pctDe(data.veces_revisar_manualmente, data.dias_con_fila))"
-                        class="inline-flex text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
-                    {{ data.veces_revisar_manualmente }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_revisar_manualmente, data.dias_con_fila) }}%
-                  </span>
-                  <span v-else class="text-xs" :style="ESTILO_PLANO">
-                    {{ data.veces_revisar_manualmente }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_revisar_manualmente, data.dias_con_fila) }}%
-                  </span>
-                </template>
-              </Column>
-              <Column header="Editado manualmente" sortable :sortField="'veces_editado_manualmente'" style="width:180px">
-                <template #body="{ data }">
-                  <span class="text-xs" :style="ESTILO_PLANO">
-                    {{ data.veces_editado_manualmente }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_editado_manualmente, data.dias_con_fila) }}%
-                  </span>
-                </template>
-              </Column>
-            </DataTable>
-            <p v-if="!resumenHistorico.intervencion_manual.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin intervención manual en este rango.</p>
-          </div>
-
-          <!-- Recuperación activa -->
-          <div class="bg-white rounded-xl shadow-sm border p-4" style="border-color:#e8e0f0;">
-            <p class="text-sm font-bold mb-1" style="color:var(--color-unergy-deep);">Recuperación activa de medidores</p>
-            <p class="text-xs mb-3" style="color:#9b89b5;">Intentos y éxitos al forzar la lectura de un medidor — por frontera y medidor.</p>
-            <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
-              <template v-for="(c, idx) in resumenHistorico.recuperacion_activa_callouts" :key="idx">
-                <span><b class="text-base font-extrabold" style="color:var(--color-unergy-purple-dark);">{{ c.valor }}</b>
-                  <span class="text-xs ml-1.5" style="color:#6b5a8a;">{{ c.etiqueta }}</span></span>
-                <span v-if="idx < resumenHistorico.recuperacion_activa_callouts.length - 1" class="w-px h-4" style="background:#e8e0f0;" />
-              </template>
-            </div>
-            <DataTable :value="resumenHistorico.recuperacion_activa" class="text-sm resumen-tabla" stripedRows rowHover
-                       paginator :rows="10" @row-click="e => irAFronteraHistorial(e.data.frontera_id)">
-              <Column field="nombre_proyecto" header="Proyecto" sortable />
-              <Column header="Éxito principal" style="width:130px">
-                <template #body="{ data }">
-                  <span v-if="!data.intentos_principal" class="text-xs" style="color:#9b89b5;">— sin intentos</span>
-                  <span v-else-if="esCriticoExito(pctDe(data.exitos_principal, data.intentos_principal))"
-                        class="text-xs font-bold" :style="{ color: GRUPO_COLOR['Sin fuente'] }">
-                    {{ data.exitos_principal }}/{{ data.intentos_principal }}
-                  </span>
-                  <span v-else class="text-xs" :style="ESTILO_PLANO">
-                    {{ data.exitos_principal }}/{{ data.intentos_principal }}
-                  </span>
-                </template>
-              </Column>
-              <Column header="Éxito respaldo" style="width:130px">
-                <template #body="{ data }">
-                  <span v-if="!data.intentos_respaldo" class="text-xs" style="color:#9b89b5;">— sin intentos</span>
-                  <span v-else-if="esCriticoExito(pctDe(data.exitos_respaldo, data.intentos_respaldo))"
-                        class="text-xs font-bold" :style="{ color: GRUPO_COLOR['Sin fuente'] }">
-                    {{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}
-                  </span>
-                  <span v-else class="text-xs" :style="ESTILO_PLANO">
-                    {{ data.exitos_respaldo }}/{{ data.intentos_respaldo }}
-                  </span>
-                </template>
-              </Column>
-            </DataTable>
-            <p v-if="!resumenHistorico.recuperacion_activa.length" class="text-xs text-center py-6" style="color:#9b89b5;">Sin intentos de recuperación en este rango.</p>
-          </div>
         </template>
 
         <p v-else class="text-sm text-center py-8" style="color: #9b89b5;">
@@ -589,9 +508,8 @@ const chartOptionsGen = computed(() => chartOptionsPara('gen', kpiGen.value))
 const chartOptionsCon = computed(() => chartOptionsPara('con', kpiCon.value))
 
 // Semáforo de severidad -- para "% de días con un problema" más alto es
-// peor (incompletos, revisar manualmente, y el drill-down de fuente); para
-// "% de éxito" más alto es mejor (recuperación activa) -- por eso el
-// umbral de "crítico" (esCriticoProblema/esCriticoExito, más abajo) se
+// peor (incompletos y el drill-down de fuente) -- por eso el
+// umbral de "crítico" (esCriticoProblema, más abajo) se
 // evalúa por separado, no invirtiendo un solo número.
 function severidadColor(pct) {
   return pct > 30 ? GRUPO_COLOR['Sin fuente'] : pct > 10 ? GRUPO_COLOR['Estimación'] : GRUPO_COLOR['Medidor']
@@ -601,7 +519,6 @@ function severidadColor(pct) {
 // compitiendo por atención en una sola tabla (pedido 2026-08-21). Lo que
 // no es crítico se muestra en texto plano gris, sin fondo.
 function esCriticoProblema(pct) { return pct > 30 }
-function esCriticoExito(pct) { return pct < 34 }
 function chipEstilo(pct) {
   const color = GRUPO_COLOR['Sin fuente']
   return { background: color + '22', color }

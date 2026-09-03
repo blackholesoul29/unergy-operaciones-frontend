@@ -246,8 +246,4 @@ export interface ResumenHistoricoReporteEnergia {
   }[]
   incompletos: Record<string, unknown>[]
   incompletos_callouts: { etiqueta: string; valor: unknown }[]
-  intervencion_manual: Record<string, unknown>[]
-  intervencion_manual_callouts: { etiqueta: string; valor: unknown }[]
-  recuperacion_activa: Record<string, unknown>[]
-  recuperacion_activa_callouts: { etiqueta: string; valor: unknown }[]
 }
