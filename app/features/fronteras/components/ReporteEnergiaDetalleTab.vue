@@ -181,6 +181,15 @@
           <span v-if="f.usado" class="text-[10px] font-bold text-white rounded-full px-2 py-0.5 flex-none" style="background: var(--color-unergy-purple);">USADO</span>
         </div>
       </div>
+      <p v-if="comparacionHistorico" class="text-[11px] mt-3" style="color: #9b89b5;">
+        <strong>Mediana histórica:</strong> {{ fmtKwh(comparacionHistorico.mediana) }}
+        <span v-if="comparacionHistorico.dias">({{ comparacionHistorico.dias }} días)</span>
+        · este día está
+        <strong :style="{ color: comparacionHistorico.fueraDeRango ? '#B8860B' : '#6b5a8a' }">
+          {{ comparacionHistorico.pct }}% {{ comparacionHistorico.signo }}
+        </strong>
+        <span v-if="comparacionHistorico.fueraDeRango">— fuera del ±30% que dispara la revisión manual</span>
+      </p>
       <p v-if="detalle.recuperacion_datos" class="text-[11px] mt-3" style="color: #9b89b5;">
         <strong>Última recuperación de medidores:</strong> {{ detalle.recuperacion_datos }}
       </p>
@@ -1147,6 +1156,28 @@ const medidorGraficadoLabel = computed(() => {
   if (d.curva_medidor_principal) return 'Medidor principal'
   if (d.curva_medidor_respaldo) return 'Medidor respaldo'
   return 'Medidor'
+})
+
+// Mediana histórica de la frontera y cuánto se aparta el día de ella. Es el
+// criterio que el clasificador usa para decidir la marca de revisión en
+// Consumo (±30%), así que verlo acá evita tener que abrir "Curva Típica" solo
+// para entender por qué una frontera quedó marcada (2026-09-02).
+const TOLERANCIA_HISTORICO_PCT = 30
+const comparacionHistorico = computed(() => {
+  const d = detalle.value
+  const mediana = d?.mediana_historica_kwh
+  const total = d?.energia_final_kwh
+  if (!d || mediana == null || mediana <= 0 || total == null) return null
+  const desvio = ((total - mediana) / mediana) * 100
+  return {
+    mediana,
+    dias: d.dias_historial ?? null,
+    pct: Math.abs(desvio).toFixed(0),
+    signo: desvio >= 0 ? 'por encima' : 'por debajo',
+    // El ±30% solo gobierna la revisión en Consumo -- en Generación la
+    // mediana se usa para rellenar horas, no para marcar el día.
+    fueraDeRango: d.tipo === 'consumo' && Math.abs(desvio) > TOLERANCIA_HISTORICO_PCT,
+  }
 })
 
 const avisosMedidor = computed(() => {

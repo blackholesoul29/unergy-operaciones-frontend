@@ -127,6 +127,10 @@ export interface DetalleReporteEnergia {
   estado_reporte?: string | null
   energia_final_kwh?: number | null
   energia_cgm_kwh?: number | null
+  // Mediana histórica de la frontera y días que la sostienen -- el criterio
+  // contra el que se compara el día para marcar revisión en Consumo.
+  mediana_historica_kwh?: number | null
+  dias_historial?: number | null
   fp?: number | null
   curva_final?: (number | null)[]
   curva_medidor_principal?: (number | null)[]
