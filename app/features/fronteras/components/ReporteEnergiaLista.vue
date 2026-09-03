@@ -71,18 +71,21 @@ const filtroFuente = ref(null)
 // completo (ETIQUETAS_FUENTE) tiene ~20 entradas y la mayoría no aplica en un
 // día cualquiera, así que ofrecerlas todas sería un desplegable lleno de
 // opciones que no filtran nada. Ordenadas por conteo, de mayor a menor.
+//
+// Se agrupa por ETIQUETA, no por `medidor_usado`: varias claves internas
+// comparten etiqueta a propósito ('principal', 'principal_sin_cgm' y
+// 'principal_sin_historico' se muestran las tres como "Medidor principal",
+// ver ETIQUETAS_FUENTE). Agrupando por clave salían opciones repetidas con el
+// mismo nombre y conteos partidos, que es justo lo que no sirve para filtrar.
 const opcionesFuente = computed(() => {
   const conteo = new Map()
   for (const f of props.filas) {
-    const clave = f.medidor_usado || '—'
-    conteo.set(clave, (conteo.get(clave) || 0) + 1)
+    const etiqueta = etiquetaFuente(f)
+    conteo.set(etiqueta, (conteo.get(etiqueta) || 0) + 1)
   }
   return [...conteo.entries()]
     .sort((a, b) => b[1] - a[1])
-    .map(([clave, n]) => ({
-      value: clave,
-      label: `${ETIQUETAS_FUENTE[clave] || clave} (${n})`,
-    }))
+    .map(([etiqueta, n]) => ({ value: etiqueta, label: `${etiqueta} (${n})` }))
 })
 
 const filtradas = computed(() => {
@@ -93,7 +96,7 @@ const filtradas = computed(() => {
     list = list.filter(f => (f.tipo === 'generacion') === genOn.value)
   }
   if (filtroFuente.value) {
-    list = list.filter(f => (f.medidor_usado || '—') === filtroFuente.value)
+    list = list.filter(f => etiquetaFuente(f) === filtroFuente.value)
   }
   if (search.value) {
     const s = search.value.toLowerCase()
