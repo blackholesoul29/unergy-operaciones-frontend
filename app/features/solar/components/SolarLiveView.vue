@@ -162,6 +162,9 @@
                     </div>
                     <span v-if="panelesMedidor[proy.proyecto_id].energiaKwh !== null" class="sl-acum med">
                       {{ panelesMedidor[proy.proyecto_id].energiaKwh.toFixed(1) }} kWh
+                      <span v-if="panelesMedidor[proy.proyecto_id].energiaHasta" class="sl-acum-hasta">
+                        · hasta {{ panelesMedidor[proy.proyecto_id].energiaHasta }}
+                      </span>
                     </span>
                   </div>
                   <!-- Potencia de ahora: el numero que le faltaba a una vista de
@@ -510,6 +513,9 @@ function medidorPanel(id) {
     potenciaKw: m.potencia_kw,
     ultimaLectura: gaiaTime(m.ultima_lectura ?? '') || null,
     energiaKwh: m.energia_kwh > 0 ? m.energia_kwh : null,
+    // El contador va en intervalos mas largos que la potencia: el acumulado
+    // puede ir hasta media hora por detras del numero de ahora.
+    energiaHasta: gaiaTime(m.energia_hasta ?? '') || null,
     // Sin relleno: si la telemetria de potencia se cayo, el hueco se ve.
     chart: data.some(v => v != null)
       ? { labels: TIME_LABELS, datasets: [{ label: 'Medidores (kW)', data, borderColor: '#D4A017',
@@ -744,6 +750,7 @@ onUnmounted(() => {
 .sl-ahora-kw { font-size: 22px; font-weight: 700; color: #2c2340; font-variant-numeric: tabular-nums; }
 .sl-ahora-sin { color: #9b89b5; }
 .sl-ahora-t { font-size: 10px; color: #9b89b5; }
+.sl-acum-hasta { font-weight: 400; opacity: 0.75; }
 .sl-power-badge { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--color-unergy-purple); background: rgba(145,91,216,0.12); padding: 2px 10px; border-radius: 999px; }
 
 /* ── Loading detalle ── */
