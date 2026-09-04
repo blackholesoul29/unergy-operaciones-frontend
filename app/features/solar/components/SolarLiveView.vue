@@ -151,38 +151,37 @@
                 <div v-else class="sl-no-data">Sin datos</div>
               </div>
 
-              <!-- Medidores (mejor nodo: principal o respaldo) -->
+              <!-- Medidores -- el backend ya eligio cual mostrar -->
               <div class="sl-chart-card">
-                <div class="sl-chart-header">
-                  <div class="sl-chart-title">
-                    <span class="sl-dot" style="background:#D4A017" />
-                    Medidores
-                    <span v-if="getBestMedidorTipo(proy.proyecto_id)" class="sl-med-tipo">
-                      {{ getBestMedidorTipo(proy.proyecto_id) }}
+                <template v-if="panelesMedidor[proy.proyecto_id]">
+                  <div class="sl-chart-header">
+                    <div class="sl-chart-title">
+                      <span class="sl-dot" style="background:#D4A017" />
+                      Medidores
+                      <span v-if="panelesMedidor[proy.proyecto_id].tipo" class="sl-med-tipo">{{ panelesMedidor[proy.proyecto_id].tipo }}</span>
+                    </div>
+                    <span v-if="panelesMedidor[proy.proyecto_id].energiaKwh !== null" class="sl-acum med">
+                      {{ panelesMedidor[proy.proyecto_id].energiaKwh.toFixed(1) }} kWh
                     </span>
                   </div>
-                  <span v-if="getMedidorAcum(proy.proyecto_id) !== null" class="sl-acum med">
-                    {{ getMedidorAcum(proy.proyecto_id).toFixed(1) }} kWh
-                  </span>
-                </div>
-                <!-- Potencia de ahora: el numero que le faltaba a una vista de
-                     tiempo real. Cuando no hay lectura se dice desde cuando, en
-                     vez de rellenar la curva con un valor reconstruido. -->
-                <div class="sl-ahora">
-                  <span v-if="getMedidorPotencia(proy.proyecto_id) !== null" class="sl-ahora-kw">
-                    {{ fmtKw(getMedidorPotencia(proy.proyecto_id)) }}
-                  </span>
-                  <span v-else class="sl-ahora-kw sl-ahora-sin">&mdash;</span>
-                  <span v-if="getMedidorUltimaLectura(proy.proyecto_id)" class="sl-ahora-t">
-                    {{ getMedidorPotencia(proy.proyecto_id) !== null ? 'ahora' : 'sin telemetria desde' }}
-                    · {{ getMedidorUltimaLectura(proy.proyecto_id) }}
-                  </span>
-                </div>
-                <div v-if="getMedidorData(proy.proyecto_id).labels.length" class="sl-chart-wrap">
-                  <Line :data="getMedidorData(proy.proyecto_id)" :options="chartOptionsMed(proy.proyecto_id)"
-                    :plugins="[crosshairPlugin]" :key="'med-' + proy.proyecto_id" />
-                </div>
-                <div v-else class="sl-no-data">Sin datos</div>
+                  <!-- Potencia de ahora: el numero que le faltaba a una vista de
+                       tiempo real. Sin lectura se dice desde cuando, en vez de
+                       rellenar la curva con un valor reconstruido. -->
+                  <div class="sl-ahora">
+                    <span :class="['sl-ahora-kw', { 'sl-ahora-sin': panelesMedidor[proy.proyecto_id].potenciaKw === null }]">
+                      {{ panelesMedidor[proy.proyecto_id].potenciaKw !== null ? fmtKw(panelesMedidor[proy.proyecto_id].potenciaKw) : '—' }}
+                    </span>
+                    <span v-if="panelesMedidor[proy.proyecto_id].ultimaLectura" class="sl-ahora-t">
+                      {{ panelesMedidor[proy.proyecto_id].potenciaKw !== null ? 'ahora' : 'sin telemetría desde' }} · {{ panelesMedidor[proy.proyecto_id].ultimaLectura }}
+                    </span>
+                  </div>
+                  <div v-if="panelesMedidor[proy.proyecto_id].chart" class="sl-chart-wrap">
+                    <Line :data="panelesMedidor[proy.proyecto_id].chart" :options="chartOptionsMed(proy.proyecto_id)"
+                      :plugins="[crosshairPlugin]" :key="'med-' + proy.proyecto_id" />
+                  </div>
+                  <div v-else class="sl-no-data">Sin datos</div>
+                </template>
+                <div v-else class="sl-no-data">Sin medidor</div>
               </div>
 
             </div>
@@ -462,20 +461,6 @@ function getInversorData(id) {
   }
 }
 
-function getMedidorData(id) {
-  // `curva` viene sin rellenar: si la telemetria de potencia se cayo, el hueco
-  // se ve. El signo y la unidad ya vienen resueltos del backend.
-  const rows = (_medidor(id)?.curva ?? []).filter(r => r.kw != null)
-  if (!rows.length) return { labels: [], datasets: [] }
-  const data = mapMinutes(rows, r => gaiaTime(r.time), r => +r.kw)
-  if (data.every(v => v == null)) return { labels: [], datasets: [] }
-  return {
-    labels: TIME_LABELS,
-    datasets: [{ label: 'Medidores (kW)', data, borderColor: '#D4A017',
-      backgroundColor: 'rgba(212,160,23,0.15)', fill: true, tension: 0.35,
-      pointRadius: 0, borderWidth: 2, spanGaps: true }],
-  }
-}
 
 // ── Acumulados ────────────────────────────────────────────────────────────
 // Fecha de hoy en hora Colombia (UTC-5) para coincidir con el backend
@@ -503,36 +488,41 @@ function getInversorAcum(id) {
 }
 
 // ── Selección del mejor snapshot de medidor ───────────────────────────────
-// El medidor a mostrar lo elige el BACKEND y llega resuelto en `medidor` /
-// `medidor_tipo`. Antes se re-decidia aca con el mismo criterio ("mayor
-// energia") escrito por segunda vez: coincidian por casualidad, y tocar uno
-// solo dejaba la grafica y el resto de la tarjeta hablando de medidores
-// distintos sin ningun aviso (2026-09-03).
-function _medidor(id) {
-  return detailMap[id]?.medidor ?? null
-}
+// Todo lo que el panel de Medidores necesita, en un solo lugar. El backend ya
+// entrega el medidor elegido y resuelto en `medidor` (potencia de ahora,
+// energia del dia, curva sin rellenar y frescura), asi que aca no se decide
+// nada: se formatea. Antes esto eran seis funciones sueltas y una septima que
+// re-elegia el medidor con un criterio duplicado del backend (2026-09-03).
+// Se calcula una vez por proyecto y no en cada interpolacion del template.
+const panelesMedidor = computed(() => Object.fromEntries(
+  (proyectos.value ?? []).map(p => [p.proyecto_id, medidorPanel(p.proyecto_id)]),
+))
 
-function getBestMedidorTipo(id) {
+function medidorPanel(id) {
   const d = detailMap[id]
-  if (!d?.medidor_respaldo) return null   // solo hay uno, no hace falta etiqueta
-  return d.medidor_tipo === 'respaldo' ? 'R' : d.medidor_tipo === 'principal' ? 'P' : null
+  const m = d?.medidor
+  if (!m) return null
+  const filas = (m.curva ?? []).filter(r => r.kw != null)
+  const data = filas.length ? mapMinutes(filas, r => gaiaTime(r.time), r => +r.kw) : []
+  return {
+    // 'P'/'R' solo si hay dos medidores; con uno solo la etiqueta sobra.
+    tipo: d.medidor_respaldo ? (m.node_id === d.medidor_principal?.node_id ? 'P' : 'R') : null,
+    potenciaKw: m.potencia_kw,
+    ultimaLectura: gaiaTime(m.ultima_lectura ?? '') || null,
+    energiaKwh: m.energia_kwh > 0 ? m.energia_kwh : null,
+    // Sin relleno: si la telemetria de potencia se cayo, el hueco se ve.
+    chart: data.some(v => v != null)
+      ? { labels: TIME_LABELS, datasets: [{ label: 'Medidores (kW)', data, borderColor: '#D4A017',
+          backgroundColor: 'rgba(212,160,23,0.15)', fill: true, tension: 0.35,
+          pointRadius: 0, borderWidth: 2, spanGaps: true }] }
+      : null,
+  }
 }
 
-function getMedidorAcum(id) {
-  // Del contador, no de integrar la curva -- por eso un hueco en la curva no
-  // lo afecta, y por eso no hace falta rellenarla.
-  const kwh = _medidor(id)?.energia_kwh
-  return (kwh != null && kwh > 0) ? kwh : null
-}
+
 
 // Potencia de AHORA y su frescura: los dos ya llegaban en la respuesta y la
 // vista los descartaba, en una pestana cuyo proposito es el tiempo real.
-function getMedidorPotencia(id) {
-  return _medidor(id)?.potencia_kw ?? null
-}
-function getMedidorUltimaLectura(id) {
-  return gaiaTime(_medidor(id)?.ultima_lectura ?? '') || null
-}
 
 function _timeDiffH(t1, t2) {
   if (!t1 || !t2) return 0
@@ -549,7 +539,7 @@ function _timeDiffH(t1, t2) {
 // ── % diferencia ─────────────────────────────────────────────────────────
 function getDiffPct(id) {
   const inv = getInversorAcum(id)
-  const med = getMedidorAcum(id)
+  const med = medidorPanel(id)?.energiaKwh ?? null
   if (inv == null || med == null || med === 0) return null
   return +((inv - med) / med * 100).toFixed(1)
 }
@@ -586,7 +576,7 @@ function makeOptions(color, maxY) {
 // vista en vez de quedar escondida por el autoescalado independiente.
 function getChartMax(id) {
   const invValores = getInversorData(id).datasets?.[0]?.data ?? []
-  const medValores = getMedidorData(id).datasets?.[0]?.data ?? []
+  const medValores = medidorPanel(id)?.chart?.datasets?.[0]?.data ?? []
   const valores = [...invValores, ...medValores].filter(v => v != null)
   if (!valores.length) return undefined
   const max = Math.max(...valores)
