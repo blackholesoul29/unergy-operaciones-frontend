@@ -591,15 +591,22 @@ async function cargar() {
     const res = await generacionSolarService.obtenerMonitoreo()
     proyectos.value = applyOrder(res.projects ?? [])
     lastUpdated.value = new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+
+    // El boton sigue en "cargando" hasta que terminen tambien gen-hoy y los
+    // detalles. Antes `loading` se apagaba apenas respondia /monitoring, que
+    // solo trae la lista y el estado: las tarjetas -- que son lo que de verdad
+    // cambia en pantalla -- seguian llegando de a 10 despues, asi que el boton
+    // decia "listo" varios segundos antes de que los numeros se movieran.
+    const ids = proyectos.value.map(p => p.proyecto_id)
+    const BATCH = 10
+    const detalles = (async () => {
+      for (let i = 0; i < ids.length; i += BATCH) {
+        await Promise.all(ids.slice(i, i + BATCH).map(id => loadDetail(id)))
+      }
+    })()
+    await Promise.all([cargarGenHoy(), detalles])
   } catch { /* silencioso */ } finally {
     loading.value = false
-  }
-  // Cargar gen-hoy y detalles en paralelo
-  cargarGenHoy()
-  const ids = proyectos.value.map(p => p.proyecto_id)
-  const BATCH = 10
-  for (let i = 0; i < ids.length; i += BATCH) {
-    await Promise.all(ids.slice(i, i + BATCH).map(id => loadDetail(id)))
   }
 }
 
