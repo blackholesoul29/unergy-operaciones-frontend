@@ -160,15 +160,6 @@
                       Medidores
                       <span v-if="panelesMedidor[proy.proyecto_id].tipo" class="sl-med-tipo">{{ panelesMedidor[proy.proyecto_id].tipo }}</span>
                     </div>
-                    <!-- Potencia de ahora, arriba a la derecha: es el pulso del
-                         momento, no el resumen del dia. -->
-                    <span v-if="panelesMedidor[proy.proyecto_id].potenciaKw !== null" class="sl-acum med">
-                      {{ fmtKw(panelesMedidor[proy.proyecto_id].potenciaKw) }}
-                      <span v-if="panelesMedidor[proy.proyecto_id].ultimaLectura" class="sl-acum-hasta">· ahora {{ panelesMedidor[proy.proyecto_id].ultimaLectura }}</span>
-                    </span>
-                    <span v-else-if="panelesMedidor[proy.proyecto_id].ultimaLectura" class="sl-acum med sl-acum-sin">
-                      sin telemetría desde {{ panelesMedidor[proy.proyecto_id].ultimaLectura }}
-                    </span>
                   </div>
                   <!-- El numero grande es la generacion del dia: es lo que alguien
                        quiere saber de un vistazo, y no se cae a cero de noche como
@@ -511,8 +502,6 @@ function medidorPanel(id) {
   return {
     // 'P'/'R' solo si hay dos medidores; con uno solo la etiqueta sobra.
     tipo: d.medidor_respaldo ? (m.node_id === d.medidor_principal?.node_id ? 'P' : 'R') : null,
-    potenciaKw: m.potencia_kw,
-    ultimaLectura: gaiaTime(m.ultima_lectura ?? '') || null,
     energiaKwh: m.energia_kwh > 0 ? m.energia_kwh : null,
     // El contador va en intervalos mas largos que la potencia: el acumulado
     // puede ir hasta media hora por detras del numero de ahora.
@@ -752,7 +741,6 @@ onUnmounted(() => {
 .sl-ahora-sin { color: #9b89b5; }
 .sl-ahora-t { font-size: 10px; color: #9b89b5; }
 .sl-acum-hasta { font-weight: 400; opacity: 0.75; }
-.sl-acum-sin { opacity: 0.7; font-weight: 400; }
 .sl-power-badge { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--color-unergy-purple); background: rgba(145,91,216,0.12); padding: 2px 10px; border-radius: 999px; }
 
 /* ── Loading detalle ── */
