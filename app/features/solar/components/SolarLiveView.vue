@@ -140,8 +140,18 @@
                     <span class="sl-dot" style="background:var(--color-unergy-purple)" />
                     Inversores
                   </div>
-                  <span v-if="getInversorAcum(proy.proyecto_id) !== null" class="sl-acum inv">
-                    {{ getInversorAcum(proy.proyecto_id).toFixed(1) }} kWh
+                </div>
+                <!-- Mismo tratamiento que Medidores: el acumulado del dia en
+                     grande, con hasta que hora cubre. Son horas sumadas, no una
+                     lectura del ultimo instante. -->
+                <div class="sl-ahora">
+                  <span :class="['sl-ahora-kw', { 'sl-ahora-sin': getInversorAcum(proy.proyecto_id) === null }]">
+                    {{ getInversorAcum(proy.proyecto_id) !== null
+                        ? getInversorAcum(proy.proyecto_id).toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' kWh'
+                        : '—' }}
+                  </span>
+                  <span v-if="detailMap[proy.proyecto_id]?.generation_today_hasta" class="sl-ahora-t">
+                    hasta {{ detailMap[proy.proyecto_id].generation_today_hasta }}
                   </span>
                 </div>
                 <div v-if="getInversorData(proy.proyecto_id).labels.length" class="sl-chart-wrap">
