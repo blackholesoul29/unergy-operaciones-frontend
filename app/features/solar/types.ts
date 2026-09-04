@@ -1,6 +1,6 @@
 /**
- * Forma verificada contra `SolarLiveView.vue`, `GeneracionSolarView.vue`,
- * `SolarView.vue` y `MobileResumenView.vue` (mobile). Dos aggregates:
+ * Forma verificada contra `SolarLiveView.vue`, `SolarView.vue` y
+ * `MobileResumenView.vue` (mobile). Dos aggregates:
  * `/generacion-solar/*` (monitoreo en vivo, datos de Solenium) y `/solar/*`
  * (estadísticas históricas).
  */
