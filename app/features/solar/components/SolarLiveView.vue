@@ -165,6 +165,19 @@
                     {{ getMedidorAcum(proy.proyecto_id).toFixed(1) }} kWh
                   </span>
                 </div>
+                <!-- Potencia de ahora: el numero que le faltaba a una vista de
+                     tiempo real. Cuando no hay lectura se dice desde cuando, en
+                     vez de rellenar la curva con un valor reconstruido. -->
+                <div class="sl-ahora">
+                  <span v-if="getMedidorPotencia(proy.proyecto_id) !== null" class="sl-ahora-kw">
+                    {{ fmtKw(getMedidorPotencia(proy.proyecto_id)) }}
+                  </span>
+                  <span v-else class="sl-ahora-kw sl-ahora-sin">&mdash;</span>
+                  <span v-if="getMedidorUltimaLectura(proy.proyecto_id)" class="sl-ahora-t">
+                    {{ getMedidorPotencia(proy.proyecto_id) !== null ? 'ahora' : 'sin telemetria desde' }}
+                    · {{ getMedidorUltimaLectura(proy.proyecto_id) }}
+                  </span>
+                </div>
                 <div v-if="getMedidorData(proy.proyecto_id).labels.length" class="sl-chart-wrap">
                   <Line :data="getMedidorData(proy.proyecto_id)" :options="chartOptionsMed(proy.proyecto_id)"
                     :plugins="[crosshairPlugin]" :key="'med-' + proy.proyecto_id" />
@@ -450,10 +463,11 @@ function getInversorData(id) {
 }
 
 function getMedidorData(id) {
-  const snap = _bestMedidorSnap(id).snap
-  const rows = (snap?.time_series?.power ?? []).filter(r => r.kw != null)
+  // `curva` viene sin rellenar: si la telemetria de potencia se cayo, el hueco
+  // se ve. El signo y la unidad ya vienen resueltos del backend.
+  const rows = (_medidor(id)?.curva ?? []).filter(r => r.kw != null)
   if (!rows.length) return { labels: [], datasets: [] }
-  const data = mapMinutes(rows, r => gaiaTime(r.time), r => +Math.abs(r.kw))
+  const data = mapMinutes(rows, r => gaiaTime(r.time), r => +r.kw)
   if (data.every(v => v == null)) return { labels: [], datasets: [] }
   return {
     labels: TIME_LABELS,
@@ -489,28 +503,35 @@ function getInversorAcum(id) {
 }
 
 // ── Selección del mejor snapshot de medidor ───────────────────────────────
-function _bestMedidorSnap(id) {
-  const d = detailMap[id]
-  if (!d) return { snap: null, tipo: null }
-  const sp = d.gaia_snapshot_principal
-  const sr = d.gaia_snapshot_respaldo
-  const ep = sp?.eae_wh ?? 0
-  const er = sr?.eae_wh ?? 0
-  if (!sp && !sr) return { snap: null, tipo: null }
-  if (!sp) return { snap: sr, tipo: 'R' }
-  if (!sr) return { snap: sp, tipo: 'P' }
-  return ep >= er ? { snap: sp, tipo: 'P' } : { snap: sr, tipo: 'R' }
+// El medidor a mostrar lo elige el BACKEND y llega resuelto en `medidor` /
+// `medidor_tipo`. Antes se re-decidia aca con el mismo criterio ("mayor
+// energia") escrito por segunda vez: coincidian por casualidad, y tocar uno
+// solo dejaba la grafica y el resto de la tarjeta hablando de medidores
+// distintos sin ningun aviso (2026-09-03).
+function _medidor(id) {
+  return detailMap[id]?.medidor ?? null
 }
 
 function getBestMedidorTipo(id) {
   const d = detailMap[id]
-  if (!d?.gaia_snapshot_respaldo) return null   // solo hay uno, no hace falta etiqueta
-  return _bestMedidorSnap(id).tipo
+  if (!d?.medidor_respaldo) return null   // solo hay uno, no hace falta etiqueta
+  return d.medidor_tipo === 'respaldo' ? 'R' : d.medidor_tipo === 'principal' ? 'P' : null
 }
 
 function getMedidorAcum(id) {
-  const eae = _bestMedidorSnap(id).snap?.eae_wh
-  return (eae != null && eae > 0) ? eae : null
+  // Del contador, no de integrar la curva -- por eso un hueco en la curva no
+  // lo afecta, y por eso no hace falta rellenarla.
+  const kwh = _medidor(id)?.energia_kwh
+  return (kwh != null && kwh > 0) ? kwh : null
+}
+
+// Potencia de AHORA y su frescura: los dos ya llegaban en la respuesta y la
+// vista los descartaba, en una pestana cuyo proposito es el tiempo real.
+function getMedidorPotencia(id) {
+  return _medidor(id)?.potencia_kw ?? null
+}
+function getMedidorUltimaLectura(id) {
+  return gaiaTime(_medidor(id)?.ultima_lectura ?? '') || null
 }
 
 function _timeDiffH(t1, t2) {
@@ -727,6 +748,12 @@ onUnmounted(() => {
 
 .sl-project-name { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: var(--color-unergy-deep); }
 .sl-status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* Potencia instantanea del medidor */
+.sl-ahora { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 8px; }
+.sl-ahora-kw { font-size: 22px; font-weight: 700; color: #2c2340; font-variant-numeric: tabular-nums; }
+.sl-ahora-sin { color: #9b89b5; }
+.sl-ahora-t { font-size: 10px; color: #9b89b5; }
 .sl-power-badge { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--color-unergy-purple); background: rgba(145,91,216,0.12); padding: 2px 10px; border-radius: 999px; }
 
 /* ── Loading detalle ── */
