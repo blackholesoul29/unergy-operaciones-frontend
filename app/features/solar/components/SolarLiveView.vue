@@ -160,23 +160,24 @@
                       Medidores
                       <span v-if="panelesMedidor[proy.proyecto_id].tipo" class="sl-med-tipo">{{ panelesMedidor[proy.proyecto_id].tipo }}</span>
                     </div>
-                    <span v-if="panelesMedidor[proy.proyecto_id].energiaKwh !== null" class="sl-acum med">
-                      {{ panelesMedidor[proy.proyecto_id].energiaKwh.toFixed(1) }} kWh
-                      <span v-if="panelesMedidor[proy.proyecto_id].energiaHasta" class="sl-acum-hasta">
-                        · hasta {{ panelesMedidor[proy.proyecto_id].energiaHasta }}
-                      </span>
+                    <!-- Potencia de ahora, arriba a la derecha: es el pulso del
+                         momento, no el resumen del dia. -->
+                    <span v-if="panelesMedidor[proy.proyecto_id].potenciaKw !== null" class="sl-acum med">
+                      {{ fmtKw(panelesMedidor[proy.proyecto_id].potenciaKw) }}
+                      <span v-if="panelesMedidor[proy.proyecto_id].ultimaLectura" class="sl-acum-hasta">· ahora {{ panelesMedidor[proy.proyecto_id].ultimaLectura }}</span>
+                    </span>
+                    <span v-else-if="panelesMedidor[proy.proyecto_id].ultimaLectura" class="sl-acum med sl-acum-sin">
+                      sin telemetría desde {{ panelesMedidor[proy.proyecto_id].ultimaLectura }}
                     </span>
                   </div>
-                  <!-- Potencia de ahora: el numero que le faltaba a una vista de
-                       tiempo real. Sin lectura se dice desde cuando, en vez de
-                       rellenar la curva con un valor reconstruido. -->
+                  <!-- El numero grande es la generacion del dia: es lo que alguien
+                       quiere saber de un vistazo, y no se cae a cero de noche como
+                       la potencia instantanea. Sale del contador, con su hora. -->
                   <div class="sl-ahora">
-                    <span :class="['sl-ahora-kw', { 'sl-ahora-sin': panelesMedidor[proy.proyecto_id].potenciaKw === null }]">
-                      {{ panelesMedidor[proy.proyecto_id].potenciaKw !== null ? fmtKw(panelesMedidor[proy.proyecto_id].potenciaKw) : '—' }}
+                    <span :class="['sl-ahora-kw', { 'sl-ahora-sin': panelesMedidor[proy.proyecto_id].energiaKwh === null }]">
+                      {{ panelesMedidor[proy.proyecto_id].energiaKwh !== null ? panelesMedidor[proy.proyecto_id].energiaKwh.toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' kWh' : '—' }}
                     </span>
-                    <span v-if="panelesMedidor[proy.proyecto_id].ultimaLectura" class="sl-ahora-t">
-                      {{ panelesMedidor[proy.proyecto_id].potenciaKw !== null ? 'ahora' : 'sin telemetría desde' }} · {{ panelesMedidor[proy.proyecto_id].ultimaLectura }}
-                    </span>
+                    <span v-if="panelesMedidor[proy.proyecto_id].energiaHasta" class="sl-ahora-t">hasta {{ panelesMedidor[proy.proyecto_id].energiaHasta }}</span>
                   </div>
                   <div v-if="panelesMedidor[proy.proyecto_id].chart" class="sl-chart-wrap">
                     <Line :data="panelesMedidor[proy.proyecto_id].chart" :options="chartOptionsMed(proy.proyecto_id)"
@@ -751,6 +752,7 @@ onUnmounted(() => {
 .sl-ahora-sin { color: #9b89b5; }
 .sl-ahora-t { font-size: 10px; color: #9b89b5; }
 .sl-acum-hasta { font-weight: 400; opacity: 0.75; }
+.sl-acum-sin { opacity: 0.7; font-weight: 400; }
 .sl-power-badge { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--color-unergy-purple); background: rgba(145,91,216,0.12); padding: 2px 10px; border-radius: 999px; }
 
 /* ── Loading detalle ── */
