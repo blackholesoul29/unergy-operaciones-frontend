@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <PageHeader title="Fronteras Comerciales" :subtitle="`${filteredFronteras.length} fronteras registradas`">
+    <PageHeader title="Fronteras Comerciales" :subtitle="errorCarga ? 'No se pudo cargar' : `${filteredFronteras.length} fronteras registradas`">
       <template #actions>
         <Button label="Descargar Excel" size="small" severity="secondary" outlined @click="descargarExcel">
           <template #icon><FileSpreadsheetIcon class="size-[1em]" /></template>
@@ -79,6 +79,13 @@
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-12">
       <LoaderCircleIcon class="text-3xl size-[1em] animate-spin" style="color: var(--color-unergy-purple);" />
+    </div>
+
+    <!-- Fallo de carga: explicito, para no confundirlo con "no hay fronteras" -->
+    <div v-else-if="errorCarga" class="bg-white rounded-xl shadow-sm p-8 text-center" style="border: 1px solid #f0d0d0;">
+      <p class="font-semibold" style="color: #b42318;">No se pudo cargar el listado</p>
+      <p class="text-sm mt-1" style="color: #6b7280;">{{ errorCarga }}</p>
+      <Button label="Reintentar" size="small" class="mt-4" @click="loadData" />
     </div>
 
     <!-- Table -->
@@ -370,6 +377,8 @@ const router = useRouter()
 
 const fronteras = ref([])
 const loading = ref(true)
+/** Mensaje del ultimo fallo de carga; null si la ultima carga salio bien. */
+const errorCarga = ref(null)
 const saving = ref(false)
 
 // Filtros sincronizados con la URL (?q=&estado=&proyecto=&operador=&mes=&anio=&generando=)
@@ -664,12 +673,25 @@ function deleteFrontera(f) {
   })
 }
 
+/**
+ * Un fallo de carga tiene que VERSE como fallo.
+ *
+ * Antes este catch solo hacia logger.error() y dejaba `fronteras` en []. El
+ * 2026-09-05 el listado llevaba cuatro dias respondiendo 500 (el backend
+ * pedia `operador` a un campo que se llama `operador_red`) y la pantalla
+ * decia "0 fronteras registradas": indistinguible de no tener ninguna. Nadie
+ * lo reporto como error porque no parecia uno.
+ */
 async function loadData() {
   loading.value = true
+  errorCarga.value = null
   try {
     fronteras.value = await fronterasService.listar({ limit: 500 })
   } catch (e) {
     logger.error('fronteras', e)
+    errorCarga.value = e?.data?.detail || 'No se pudo cargar el listado de fronteras.'
+    fronteras.value = []
+    toast.error('Error al cargar fronteras', { description: errorCarga.value, duration: 6000 })
   } finally {
     loading.value = false
   }
