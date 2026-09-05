@@ -253,7 +253,7 @@
           <!-- Datos incompletos -->
           <div class="bg-white rounded-xl shadow-sm border p-4 mb-5" style="border-color:#e8e0f0;">
             <p class="text-sm font-bold mb-1" style="color:var(--color-unergy-deep);">Datos incompletos de medidores e inversores</p>
-            <p class="text-xs mb-3" style="color:#9b89b5;">Solo Generación — cuántas veces cada fuente llegó incompleta en el rango.</p>
+            <p class="text-xs mb-3" style="color:#9b89b5;">Solo Generación — en cuántos de sus días llegó incompleta cada fuente.</p>
             <div class="flex items-center gap-3 flex-wrap rounded-lg px-3 py-2.5 mb-3" style="background:#faf9fc;">
               <template v-for="(c, idx) in resumenHistorico.incompletos_callouts" :key="idx">
                 <span><b class="text-base font-extrabold" style="color:var(--color-unergy-purple-dark);">{{ c.valor }}</b>
@@ -266,34 +266,40 @@
               <Column field="nombre_proyecto" header="Proyecto" sortable />
               <Column header="Medidor principal" sortable :sortField="'veces_medidor_principal_incompleto'" style="width:170px">
                 <template #body="{ data }">
-                  <span v-if="esCriticoProblema(pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila))"
-                        class="inline-flex text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
-                    {{ data.veces_medidor_principal_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) }}%
+                  <span v-if="celdaIncompleta(data.veces_medidor_principal_incompleto, data.dias_con_fila).destacar"
+                        class="inline-flex items-center gap-1 text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
+                    <TriangleAlertIcon v-if="celdaIncompleta(data.veces_medidor_principal_incompleto, data.dias_con_fila).simbolo" class="size-[1em]" />
+                    {{ celdaIncompleta(data.veces_medidor_principal_incompleto, data.dias_con_fila).texto }}
                   </span>
-                  <span v-else class="text-xs" :style="ESTILO_PLANO">
-                    {{ data.veces_medidor_principal_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_medidor_principal_incompleto, data.dias_con_fila) }}%
+                  <span v-else class="inline-flex items-center gap-1 text-xs" :style="ESTILO_PLANO">
+                    <CheckIcon v-if="celdaIncompleta(data.veces_medidor_principal_incompleto, data.dias_con_fila).simbolo" class="size-[1em]" style="color:#16a34a;" />
+                    {{ celdaIncompleta(data.veces_medidor_principal_incompleto, data.dias_con_fila).texto }}
                   </span>
                 </template>
               </Column>
               <Column header="Medidor respaldo" sortable :sortField="'veces_medidor_respaldo_incompleto'" style="width:170px">
                 <template #body="{ data }">
-                  <span v-if="esCriticoProblema(pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila))"
-                        class="inline-flex text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
-                    {{ data.veces_medidor_respaldo_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) }}%
+                  <span v-if="celdaIncompleta(data.veces_medidor_respaldo_incompleto, data.dias_con_fila).destacar"
+                        class="inline-flex items-center gap-1 text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
+                    <TriangleAlertIcon v-if="celdaIncompleta(data.veces_medidor_respaldo_incompleto, data.dias_con_fila).simbolo" class="size-[1em]" />
+                    {{ celdaIncompleta(data.veces_medidor_respaldo_incompleto, data.dias_con_fila).texto }}
                   </span>
-                  <span v-else class="text-xs" :style="ESTILO_PLANO">
-                    {{ data.veces_medidor_respaldo_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_medidor_respaldo_incompleto, data.dias_con_fila) }}%
+                  <span v-else class="inline-flex items-center gap-1 text-xs" :style="ESTILO_PLANO">
+                    <CheckIcon v-if="celdaIncompleta(data.veces_medidor_respaldo_incompleto, data.dias_con_fila).simbolo" class="size-[1em]" style="color:#16a34a;" />
+                    {{ celdaIncompleta(data.veces_medidor_respaldo_incompleto, data.dias_con_fila).texto }}
                   </span>
                 </template>
               </Column>
               <Column header="Inversores" sortable :sortField="'veces_solenium_incompleto'" style="width:170px">
                 <template #body="{ data }">
-                  <span v-if="esCriticoProblema(pctDe(data.veces_solenium_incompleto, data.dias_con_fila))"
-                        class="inline-flex text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
-                    {{ data.veces_solenium_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_solenium_incompleto, data.dias_con_fila) }}%
+                  <span v-if="celdaIncompleta(data.veces_solenium_incompleto, data.dias_con_fila).destacar"
+                        class="inline-flex items-center gap-1 text-xs font-bold rounded-full px-2.5 py-1" :style="chipEstilo()">
+                    <TriangleAlertIcon v-if="celdaIncompleta(data.veces_solenium_incompleto, data.dias_con_fila).simbolo" class="size-[1em]" />
+                    {{ celdaIncompleta(data.veces_solenium_incompleto, data.dias_con_fila).texto }}
                   </span>
-                  <span v-else class="text-xs" :style="ESTILO_PLANO">
-                    {{ data.veces_solenium_incompleto }} de {{ data.dias_con_fila }} · {{ pctDe(data.veces_solenium_incompleto, data.dias_con_fila) }}%
+                  <span v-else class="inline-flex items-center gap-1 text-xs" :style="ESTILO_PLANO">
+                    <CheckIcon v-if="celdaIncompleta(data.veces_solenium_incompleto, data.dias_con_fila).simbolo" class="size-[1em]" style="color:#16a34a;" />
+                    {{ celdaIncompleta(data.veces_solenium_incompleto, data.dias_con_fila).texto }}
                   </span>
                 </template>
               </Column>
@@ -327,7 +333,7 @@ import {
 } from 'chart.js'
 import ReporteEnergiaLista from './ReporteEnergiaLista.vue'
 import ReporteEnergiaDetalleTab from './ReporteEnergiaDetalleTab.vue'
-import { CircleStopIcon, FileSpreadsheetIcon, LoaderCircleIcon, PlayIcon, SendIcon } from '@lucide/vue'
+import { CheckIcon, CircleStopIcon, FileSpreadsheetIcon, LoaderCircleIcon, PlayIcon, SendIcon, TriangleAlertIcon } from '@lucide/vue'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend)
 
@@ -507,10 +513,10 @@ const chartCon = computed(() => chartDeGrupos(kpiCon.value))
 const chartOptionsGen = computed(() => chartOptionsPara('gen', kpiGen.value))
 const chartOptionsCon = computed(() => chartOptionsPara('con', kpiCon.value))
 
-// Semáforo de severidad -- para "% de días con un problema" más alto es
-// peor (incompletos y el drill-down de fuente) -- por eso el
-// umbral de "crítico" (esCriticoProblema, más abajo) se
-// evalúa por separado, no invirtiendo un solo número.
+// Semáforo de severidad del drill-down por fuente: acá un % más alto es
+// PEOR, al revés que en las tarjetas KPI, por eso tiene su propia escala en
+// vez de invertir un solo número.
+// (La tabla de incompletos ya no usa porcentaje -- ver celdaIncompleta.)
 function severidadColor(pct) {
   return pct > 30 ? GRUPO_COLOR['Sin fuente'] : pct > 10 ? GRUPO_COLOR['Estimación'] : GRUPO_COLOR['Medidor']
 }
@@ -518,7 +524,40 @@ function severidadColor(pct) {
 // está bien generaba demasiado ruido visual, 30 píldoras de colores
 // compitiendo por atención en una sola tabla (pedido 2026-08-21). Lo que
 // no es crítico se muestra en texto plano gris, sin fondo.
-function esCriticoProblema(pct) { return pct > 30 }
+/**
+ * Como se muestra que una fuente (medidor principal/respaldo, inversores) llego
+ * incompleta en el rango.
+ *
+ * Antes decia siempre `N de M · P%`, y el porcentaje se leia como "que TAN
+ * incompleta llego" cuando en realidad es "en que PROPORCION DE SUS DIAS llego
+ * incompleta". Un 100% podia ser una sola hora faltante cada dia.
+ *
+ * Peor: cuando la frontera tiene un solo dia con dato --el caso normal al mirar
+ * una fecha puntual, que es como se usa esta pantalla-- el porcentaje solo puede
+ * dar 0% o 100%. No aporta nada y confunde. Ahi va un simbolo y ya.
+ *
+ * Con varios dias el numero SI sirve, porque distingue "fallo un dia" de "fallo
+ * todos" -- que es lo que permite priorizar. Se muestra como fraccion y sin
+ * porcentaje: `3 de 30 dias` dice la proporcion sin poder leerse mal.
+ *
+ * `dias` es dias_con_fila de ESA frontera, no el largo del rango: una frontera
+ * con un solo dia de datos dentro de un rango de 30 tiene el mismo problema.
+ */
+function celdaIncompleta(veces, dias) {
+  const total = dias || 0
+  const incompleto = veces > 0
+  if (total <= 1) {
+    return { simbolo: true, incompleto, texto: incompleto ? 'Incompleto' : 'Completo', destacar: incompleto }
+  }
+  return {
+    simbolo: false,
+    incompleto,
+    texto: `${veces} de ${total} días`,
+    // Un tercio de los dias o mas: deja de ser un tropiezo y es un patron.
+    destacar: veces / total > 1 / 3,
+  }
+}
+
 function chipEstilo(pct) {
   const color = GRUPO_COLOR['Sin fuente']
   return { background: color + '22', color }

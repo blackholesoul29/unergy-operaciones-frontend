@@ -1061,7 +1061,7 @@ function casoInfoMedidorConsumo(d) {
 function casoInfo5(d) {
   if (d.medidor_usado === 'cgm') {
     if (d.nota_solenium) {
-      return { nombre: 'Sin inversores registrados', descripcion: 'El reporte CGM fue válido; el proyecto no tiene inversores registrados en Solenium' }
+      return { nombre: 'Sin inversores registrados', descripcion: 'El reporte CGM fue válido; el proyecto no tiene inversores registrados en SolarView' }
     }
     // Solenium incompleto no significa "no se pudo usar" -- si SÍ se
     // comparó contra las horas que reportó (error_final_pct presente), la
@@ -1091,7 +1091,7 @@ function casoInfo5(d) {
     }
     return { nombre: 'Medidor sin CGM ni inversores', descripcion: 'CGM no reportó nada ese día y no hay inversores con qué comparar; se usa el medidor directo' }
   }
-  return { nombre: 'Sin inversores registrados', descripcion: 'Hay medidor con dato, pero el proyecto no tiene inversores en Solenium contra qué validarlo' }
+  return { nombre: 'Sin inversores registrados', descripcion: 'Hay medidor con dato, pero el proyecto no tiene inversores en SolarView contra qué validarlo' }
 }
 // 'fp' ahora se calcula y persiste SIEMPRE en el backend (no solo cuando el
 // Caso ganador lo usó para 'energia_final_kwh'), para que 'Reportar con
