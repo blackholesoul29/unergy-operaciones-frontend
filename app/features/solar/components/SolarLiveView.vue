@@ -22,7 +22,10 @@
         <h1 class="sl-title">Generación Solar</h1>
         <p class="sl-subtitle">
           Potencia en tiempo real por proyecto
-          <span v-if="lastUpdated" class="sl-ts">· {{ lastUpdated }}</span>
+          <!-- Es la hora en que se PREGUNTO, no la del dato. Decirlo evita que
+               se lea como frescura: media flota puede estar horas atrasada y
+               este numero seguiria diciendo la hora actual. -->
+          <span v-if="lastUpdated" class="sl-ts">· consultado {{ lastUpdated }}</span>
         </p>
       </div>
       <div class="sl-header-right">
@@ -152,6 +155,9 @@
                   </span>
                   <span v-if="detailMap[proy.proyecto_id]?.generation_today_hasta" class="sl-ahora-t">
                     hasta {{ detailMap[proy.proyecto_id].generation_today_hasta }}
+                    <template v-if="haceCuanto(detailMap[proy.proyecto_id].generation_today_hasta)">
+                      · {{ haceCuanto(detailMap[proy.proyecto_id].generation_today_hasta) }}
+                    </template>
                   </span>
                 </div>
                 <div v-if="getInversorData(proy.proyecto_id).labels.length" class="sl-chart-wrap">
@@ -178,7 +184,12 @@
                     <span :class="['sl-ahora-kw', { 'sl-ahora-sin': panelesMedidor[proy.proyecto_id].energiaKwh === null }]">
                       {{ panelesMedidor[proy.proyecto_id].energiaKwh !== null ? panelesMedidor[proy.proyecto_id].energiaKwh.toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' kWh' : '—' }}
                     </span>
-                    <span v-if="panelesMedidor[proy.proyecto_id].energiaHasta" class="sl-ahora-t">hasta {{ panelesMedidor[proy.proyecto_id].energiaHasta }}</span>
+                    <span v-if="panelesMedidor[proy.proyecto_id].energiaHasta" class="sl-ahora-t">
+                      hasta {{ panelesMedidor[proy.proyecto_id].energiaHasta }}
+                      <template v-if="haceCuanto(panelesMedidor[proy.proyecto_id].energiaHasta)">
+                        · {{ haceCuanto(panelesMedidor[proy.proyecto_id].energiaHasta) }}
+                      </template>
+                    </span>
                   </div>
                   <div v-if="panelesMedidor[proy.proyecto_id].chart" class="sl-chart-wrap">
                     <Line :data="panelesMedidor[proy.proyecto_id].chart" :options="chartOptionsMed(proy.proyecto_id)"
@@ -422,6 +433,23 @@ const TIME_LABELS = Array.from({ length: 288 }, (_, i) => {
   const m = (i * 5) % 60
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
 })
+
+// Cuanto hace que se tomo un dato de HOY, a partir de su "HH:MM". Se muestra
+// SIEMPRE al lado de la hora: obliga a nadie a restar mentalmente, y es la
+// unica senal de que una fuente dejo de reportar. Caso real del 2026-09-05:
+// 18 de 47 medidores se congelaron a las 07:00 (un corte del lado de Quoia) y
+// la tarjeta solo decia "hasta 06:15" -- correcto, pero habia que darse cuenta.
+function haceCuanto(hhmm) {
+  const m = /^(\d{1,2}):(\d{2})$/.exec(hhmm || '')
+  if (!m) return ''
+  const ahora = new Date()
+  const dato = new Date(ahora)
+  dato.setHours(+m[1], +m[2], 0, 0)
+  const min = Math.floor((ahora - dato) / 60000)
+  if (min < 0) return ''            // reloj adelantado: mejor no decir nada
+  if (min < 60) return `hace ${min} min`
+  return `hace ${Math.floor(min / 60)} h`
+}
 
 function gaiaTime(t) {
   if (!t) return ''
