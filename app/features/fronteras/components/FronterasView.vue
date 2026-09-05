@@ -307,11 +307,13 @@
         Ya existe una frontera con un nombre muy parecido:
         <strong>{{ duplicadoInfo?.candidato_nombre }}</strong>
         (ID {{ duplicadoInfo?.candidato_id }}).
-        Si de verdad es una frontera distinta, puedes crearla igual.
+        Si de verdad es una frontera distinta, puedes {{ pendingConfirmar ? 'agregarla' : 'crearla' }} igual.
       </p>
       <div class="flex justify-end gap-2">
-        <Button label="Cancelar" severity="secondary" text @click="duplicadoVisible = false" />
-        <Button label="Crear de todos modos" :loading="forzando" @click="crearFronteraForzado" />
+        <Button label="Cancelar" severity="secondary" text
+          @click="duplicadoVisible = false; pendingConfirmar = null" />
+        <Button :label="pendingConfirmar ? 'Agregar de todos modos' : 'Crear de todos modos'"
+          :loading="forzando" @click="forzarDuplicado" />
       </div>
     </Dialog>
 
@@ -728,21 +730,56 @@ function abrirPendientes() {
   Promise.all([loadPendientesQuoia(), loadProyectosAll()]).finally(() => { loadingPendientes.value = false })
 }
 
-async function confirmarPendiente(p) {
+/** Pendiente a reintentar con forzar=true tras confirmar el aviso de parecido. */
+const pendingConfirmar = ref(null)
+
+/**
+ * Agrega una frontera que Quoia ya tiene y aca todavia no.
+ *
+ * El 409 de "ya existe una con nombre parecido" es un AVISO reintentable, no un
+ * rechazo: el backend acepta `?forzar=true`. crearFrontera() ya lo trataba asi
+ * desde siempre, pero este camino no, y el usuario quedaba sin salida -- solo
+ * un "No se pudo agregar la frontera" (2026-09-05, al agregar la minigranja de
+ * San Luis de Since).
+ */
+async function confirmarPendiente(p, forzar = false) {
   p._loading = 'confirmar'
   try {
-    await fronterasService.confirmarPendienteQuoia(p.frt_code, p._proyectoId)
+    await fronterasService.confirmarPendienteQuoia(p.frt_code, p._proyectoId, forzar)
     pendientesQuoia.value = pendientesQuoia.value.filter(x => x.frt_code !== p.frt_code)
+    duplicadoVisible.value = false
+    pendingConfirmar.value = null
     toast.success('Frontera agregada', { duration: 2500 })
     await loadData()
   } catch (e) {
+    const detail = e.data?.detail
+    if (!forzar && e.status === 409 && detail?.duplicado_nombre) {
+      duplicadoInfo.value = detail
+      pendingConfirmar.value = p
+      duplicadoVisible.value = true
+      return
+    }
     toast.error('Error', {
-      description: e.data?.detail || 'No se pudo agregar la frontera',
-      duration: 4000,
+      description: typeof detail === 'string' ? detail : (detail?.mensaje || 'No se pudo agregar la frontera'),
+      duration: 5000,
     })
   } finally {
     p._loading = null
   }
+}
+
+/** El boton del dialogo de parecidos sirve a los dos caminos: crear y agregar pendiente. */
+async function forzarDuplicado() {
+  if (pendingConfirmar.value) {
+    forzando.value = true
+    try {
+      await confirmarPendiente(pendingConfirmar.value, true)
+    } finally {
+      forzando.value = false
+    }
+    return
+  }
+  await crearFronteraForzado()
 }
 
 function ignorarPendiente(p) {

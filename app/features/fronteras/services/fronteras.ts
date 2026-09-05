@@ -34,8 +34,15 @@ export class FronterasService extends BaseService {
     return this.get<FronteraPendienteQuoia[]>(RUTAS.quoiaPendientes)
   }
 
-  confirmarPendienteQuoia(frtCode: string, proyectoId: number): Promise<unknown> {
-    return this.post<unknown>(RUTAS.quoiaConfirmar(frtCode), { proyecto_id: proyectoId })
+  /** `forzar` salta el aviso de "ya existe una con nombre parecido", igual que crear(). */
+  confirmarPendienteQuoia(frtCode: string, proyectoId: number, forzar = false): Promise<unknown> {
+    return this.post<unknown>(
+      RUTAS.quoiaConfirmar(frtCode),
+      { proyecto_id: proyectoId },
+      {
+        query: { forzar },
+      },
+    )
   }
 
   ignorarPendienteQuoia(frtCode: string): Promise<unknown> {
