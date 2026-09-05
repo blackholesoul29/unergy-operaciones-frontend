@@ -242,7 +242,9 @@ async function generar() {
   sinCarga.value = false
 
   try {
-    const data = await generacionSolarService.obtenerDetalle(proyId)
+    // true: el fasorial necesita el snapshot electrico completo (voltaje,
+    // corriente y potencia por fase), que el detalle solo trae si se pide.
+    const data = await generacionSolarService.obtenerDetalle(proyId, true)
     lastDetail.value = data
     renderFromDetail(data)
   } catch (e) {

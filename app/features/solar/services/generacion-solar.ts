@@ -26,8 +26,15 @@ export class GeneracionSolarService extends BaseService {
     return this.get<RespuestaMonitoreoSolar>(RUTAS.monitoring)
   }
 
-  obtenerDetalle(proyectoId: number): Promise<DetalleMonitoreoSolar> {
-    return this.get<DetalleMonitoreoSolar>(RUTAS.monitoringDetalle(proyectoId))
+  /**
+   * `incluirSnapshot` agrega el snapshot eléctrico del medidor (voltaje,
+   * corriente y potencia por fase) — lo que necesita el diagrama fasorial.
+   * Cuesta una llamada extra por nodo, así que las tarjetas no lo piden.
+   */
+  obtenerDetalle(proyectoId: number, incluirSnapshot = false): Promise<DetalleMonitoreoSolar> {
+    return this.get<DetalleMonitoreoSolar>(RUTAS.monitoringDetalle(proyectoId), {
+      query: incluirSnapshot ? { incluir_snapshot: true } : undefined,
+    })
   }
 
   obtenerPotenciaInversores(
