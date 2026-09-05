@@ -35,15 +35,13 @@ export function mapMinutes(points, getTime, getKw) {
   })
 }
 
-// Elige el mejor snapshot de medidor (principal vs respaldo, el de mayor energía).
-export function bestMedidorSnap(detail) {
-  if (!detail) return null
-  const sp = detail.gaia_snapshot_principal
-  const sr = detail.gaia_snapshot_respaldo
-  if (!sp && !sr) return null
-  if (!sp) return sr
-  if (!sr) return sp
-  return (sp.eae_wh ?? 0) >= (sr.eae_wh ?? 0) ? sp : sr
+// El medidor a mostrar lo elige el BACKEND y llega resuelto en `medidor`.
+// Antes se re-decidia aca, y ademas leyendo `gaia_snapshot_*` -- campos que
+// dejaron de existir cuando la lectura del medidor paso a pedirse por el mismo
+// camino que el pipeline del ASIC (2026-09-03). Sin esto la grafica de
+// medidores de la app movil quedaba vacia.
+export function medidorDelDetalle(detail) {
+  return detail?.medidor ?? null
 }
 
 // Serie de inversores (288 valores kW o null).
@@ -60,10 +58,11 @@ export function inverterSeries(detail) {
 
 // Serie de medidor (288 valores kW o null).
 export function meterSeries(detail) {
-  const snap = bestMedidorSnap(detail)
-  const rows = (snap?.time_series?.power ?? []).filter((r) => r.kw != null)
+  // `curva` viene sin rellenar y con el signo y la unidad ya resueltos por el
+  // backend: si la telemetria de potencia se cayo, el hueco se ve.
+  const rows = (medidorDelDetalle(detail)?.curva ?? []).filter((r) => r.kw != null)
   if (!rows.length) return null
-  const data = mapMinutes(rows, (r) => gaiaTime(r.time), (r) => +Math.abs(r.kw))
+  const data = mapMinutes(rows, (r) => gaiaTime(r.time), (r) => +r.kw)
   return data.every((v) => v == null) ? null : data
 }
 
